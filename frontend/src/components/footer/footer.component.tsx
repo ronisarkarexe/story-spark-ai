@@ -58,7 +58,7 @@ const FooterComponent = () => {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/help-center"
                   className="text-base text-gray-500 hover:text-gray-900"
                 >
                   Help Center
