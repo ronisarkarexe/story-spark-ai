@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo } from "../../services/auth.service";
+import ScrollToTopComponent from "../ui-component/scroll_to_top.component";
 
 const DashboardLayout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -9,6 +10,7 @@ const DashboardLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const user = getUserInfo();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const currentPage = menuItems
     .flatMap((item) => (item.subRoutes ? [item, ...item.subRoutes] : [item]))
@@ -148,10 +150,11 @@ const DashboardLayout: React.FC = () => {
             </button>
           </div>
         </aside>
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto" ref={scrollContainerRef}>
           <div className="p-4">
             <Outlet />
           </div>
+          <ScrollToTopComponent containerRef={scrollContainerRef} />
         </div>
       </div>
     </div>
