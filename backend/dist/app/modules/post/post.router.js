@@ -15,6 +15,7 @@ const router = express_1.default.Router();
 router.post("/create", (0, auth_middleware_1.default)(user_1.ENUM_USER_ROLE.WRITER, user_1.ENUM_USER_ROLE.ADMIN, user_1.ENUM_USER_ROLE.SUPER_ADMIN, user_1.ENUM_USER_ROLE.USER), (0, validate_request_1.default)(post_validation_1.PostValidator.createPost), post_controller_1.PostController.createPost);
 // Get Posts
 router.get("/lists", post_controller_1.PostController.getPosts);
+router.get("/platform-stats", post_controller_1.PostController.getPlatformStats);
 router.get("/latest-lists", post_controller_1.PostController.getLatestPosts);
 router.get("/feature-lists", post_controller_1.PostController.getFeaturedPosts);
 router.post("/:postId", (0, auth_middleware_1.default)(user_1.ENUM_USER_ROLE.ADMIN, user_1.ENUM_USER_ROLE.SUPER_ADMIN), post_controller_1.PostController.doFeaturedPosts);

@@ -11,6 +11,7 @@ import {
 import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
 import { SortOrder } from "mongoose";
+import { ENUM_USER_ROLE } from "../../../enums/user";
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
   const { email, role } = token;
@@ -165,11 +166,45 @@ const getSinglePost = async (id: string) => {
   return postById;
 };
 
-const getPostsByTag = async (tag: string) => {
-  const result = await Post.find({ tag })
-    .limit(2)
-    .populate("author", "name email createdAt");
-  return result;
+const getPostsByTag = async (
+  tag: string,
+  pagination: IPaginationOptions
+): Promise<IGenericResponse<IPost[]>> => {
+  const { page, limit, skip, sortBy, orderBy } = paginationHelper(pagination);
+  const whereCondition = { tag };
+
+  const [result, total] = await Promise.all([
+    Post.find(whereCondition)
+      .sort({ [sortBy]: orderBy })
+      .skip(skip)
+      .limit(limit)
+      .populate("author", "name email createdAt"),
+    Post.countDocuments(whereCondition),
+  ]);
+
+  return {
+    meta: { page, limit, total },
+    data: result,
+  };
+};
+
+/** Public counts for landing pages and marketing widgets */
+const getPlatformStats = async () => {
+  const [totalPosts, publishedPosts, totalUsers, totalWriters] =
+    await Promise.all([
+      Post.countDocuments(),
+      Post.countDocuments({ isPublished: true }),
+      User.countDocuments(),
+      User.countDocuments({ role: ENUM_USER_ROLE.WRITER }),
+    ]);
+
+  return {
+    totalPosts,
+    publishedPosts,
+    totalUsers,
+    totalWriters,
+    updatedAt: new Date().toISOString(),
+  };
 };
 
 export const PostService = {
@@ -180,4 +215,5 @@ export const PostService = {
   doFeaturedPosts,
   getSinglePost,
   getPostsByTag,
+  getPlatformStats,
 };

@@ -85,11 +85,22 @@ const getSinglePost = (0, catch_async_1.default)((req, res) => __awaiter(void 0,
 }));
 const getPostsByTag = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const tag = (0, route_param_1.routeParam)(req.params.tag);
-    const result = yield post_service_1.PostService.getPostsByTag(tag);
+    const pagination = (0, pick_1.default)(req.query, pagination_1.paginationFields);
+    const result = yield post_service_1.PostService.getPostsByTag(tag, pagination);
     (0, send_response_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
-        message: "Post fetched successfully!",
+        message: "Posts fetched successfully!",
+        data: result.data,
+        meta: result.meta,
+    });
+}));
+const getPlatformStats = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield post_service_1.PostService.getPlatformStats();
+    (0, send_response_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Platform stats fetched successfully!",
         data: result,
     });
 }));
@@ -101,4 +112,5 @@ exports.PostController = {
     doFeaturedPosts,
     getSinglePost,
     getPostsByTag,
+    getPlatformStats,
 };

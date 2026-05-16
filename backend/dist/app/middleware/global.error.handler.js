@@ -8,6 +8,7 @@ const zod_1 = require("zod");
 const handle_validation_error_1 = __importDefault(require("../../errors/handle_validation_error"));
 const handle_cast_error_1 = __importDefault(require("../../errors/handle_cast_error"));
 const handle_zod_error_1 = __importDefault(require("../../errors/handle_zod_error"));
+const handle_duplicate_error_1 = __importDefault(require("../../errors/handle_duplicate_error"));
 const api_error_1 = __importDefault(require("../../errors/api_error"));
 const globalErrorHandler = (err, req, res, next) => {
     config_1.default.env === "development"
@@ -24,6 +25,12 @@ const globalErrorHandler = (err, req, res, next) => {
     }
     else if (err && err.name === "CastError") {
         const simplifiedError = (0, handle_cast_error_1.default)(err);
+        statusCode = simplifiedError.statusCode;
+        message = simplifiedError.message;
+        errorMessage = simplifiedError.errorMessages;
+    }
+    else if (err && err.code === 11000) {
+        const simplifiedError = (0, handle_duplicate_error_1.default)(err);
         statusCode = simplifiedError.statusCode;
         message = simplifiedError.message;
         errorMessage = simplifiedError.errorMessages;

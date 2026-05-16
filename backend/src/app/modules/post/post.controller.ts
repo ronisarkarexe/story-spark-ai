@@ -79,11 +79,23 @@ const getSinglePost = catchAsync(async (req: Request, res: Response) => {
 
 const getPostsByTag = catchAsync(async (req: Request, res: Response) => {
   const tag = routeParam(req.params.tag);
-  const result = await PostService.getPostsByTag(tag);
+  const pagination = pick(req.query, paginationFields);
+  const result = await PostService.getPostsByTag(tag, pagination);
+  sendResponse<IPost[]>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Posts fetched successfully!",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
+const getPlatformStats = catchAsync(async (req: Request, res: Response) => {
+  const result = await PostService.getPlatformStats();
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Post fetched successfully!",
+    message: "Platform stats fetched successfully!",
     data: result,
   });
 });
@@ -96,4 +108,5 @@ export const PostController = {
   doFeaturedPosts,
   getSinglePost,
   getPostsByTag,
+  getPlatformStats,
 };
