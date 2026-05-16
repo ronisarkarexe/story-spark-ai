@@ -68,14 +68,14 @@ function App() {
     <Router>
 
       {/* Dark Mode Toggle Button */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* <div className="fixed top-4 right-4 z-50">
         <button
           onClick={() => setDarkMode(!darkMode)}
           className="px-4 py-2 rounded-md bg-black text-white dark:bg-white dark:text-black transition-colors duration-300 shadow-md"
         >
           {darkMode ? "☀️ Light" : "🌙 Dark"}
         </button>
-      </div>
+      </div> */}
 
       <Routes>
         <Route
