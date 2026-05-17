@@ -42,29 +42,48 @@ export interface ITopicData {
 }
 
 export const topicsData: ITopicData[] = [
-  { title: "#AIWriting", color: "bg-blue-100 text-blue-800", selected: true },
   {
-    title: "#StoryGeneration",
-    color: "bg-purple-100 text-purple-800",
+    title: "#AIWriting",
+    color:
+      "border-sky-400/45 bg-sky-500/25 text-sky-100 shadow-sm shadow-sky-500/20",
     selected: true,
   },
-  { title: "#Writing", color: "bg-blue-100 text-blue-800", selected: false },
+  {
+    title: "#StoryGeneration",
+    color:
+      "border-violet-400/45 bg-violet-500/25 text-violet-100 shadow-sm shadow-violet-500/20",
+    selected: true,
+  },
+  {
+    title: "#Writing",
+    color:
+      "border-indigo-400/45 bg-indigo-500/25 text-indigo-100 shadow-sm shadow-indigo-500/20",
+    selected: false,
+  },
   {
     title: "#Creativity",
-    color: "bg-green-100 text-green-800",
+    color:
+      "border-emerald-400/45 bg-emerald-500/25 text-emerald-100 shadow-sm shadow-emerald-500/20",
     selected: false,
   },
   {
     title: "#DigitalMarketing",
-    color: "bg-yellow-100 text-yellow-800",
+    color:
+      "border-amber-400/45 bg-amber-500/25 text-amber-100 shadow-sm shadow-amber-500/20",
     selected: false,
   },
   {
     title: "#Storytelling",
-    color: "bg-purple-100 text-purple-800",
+    color:
+      "border-fuchsia-400/45 bg-fuchsia-500/25 text-fuchsia-100 shadow-sm shadow-fuchsia-500/20",
     selected: false,
   },
-  { title: "#Productivity", color: "bg-red-100 text-red-800", selected: false },
+  {
+    title: "#Productivity",
+    color:
+      "border-rose-400/45 bg-rose-500/25 text-rose-100 shadow-sm shadow-rose-500/20",
+    selected: false,
+  },
 ];
 
 export const getWordCount = (str: string) => {

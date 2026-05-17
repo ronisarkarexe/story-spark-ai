@@ -4,6 +4,33 @@ import { Link } from "react-router-dom";
 
 const StartWritingComponent = () => {
   return (
+ feat/ui-polish-accessibility
+    <section className="mb-16 mx-5">
+      <div className="premium-card rounded-[2rem] overflow-hidden border border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-16 sm:px-10 lg:px-12 grid gap-10 md:grid-cols-[1.3fr_0.9fr] items-center">
+          <div className="space-y-6">
+            <p className="inline-flex items-center gap-3 rounded-full bg-indigo-500/15 px-4 py-2 text-sm text-indigo-100">
+              <i className="fas fa-rocket" /> Launch your storytelling journey
+            </p>
+            <h2 className="text-4xl font-bold text-white">
+              Ready to start writing today?
+            </h2>
+            <p className="text-slate-300 text-lg leading-8 max-w-xl">
+              Join thousands of writers who are already creating amazing content with our AI-powered platform.
+            </p>
+            <Link to="/stories">
+              <button className="button-primary rounded-full px-8 py-3 text-base font-semibold">
+                Get Started Free
+              </button>
+            </Link>
+          </div>
+          <div className="flex justify-center">
+            <img
+              src={aiWriter}
+              alt="Writing Illustration"
+              className="w-full max-w-lg rounded-[1.5rem] border border-white/10 shadow-2xl"
+            />
+
     <section className="mb-24 mx-5">
       <div className="relative group max-w-6xl mx-auto overflow-hidden rounded-[2.5rem] bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-500 hover:border-blue-500/20">
         {/* Top-weighted border highlight */}
@@ -39,6 +66,7 @@ const StartWritingComponent = () => {
                 className="w-full max-w-sm lg:max-w-md object-contain drop-shadow-2xl transition-transform duration-1000 group-hover:scale-[1.03]"
               />
             </div>
+main
           </div>
         </div>
       </div>

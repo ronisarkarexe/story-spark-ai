@@ -24,6 +24,9 @@ const user_model_1 = require("./app/modules/user/user.model");
 const app = (0, express_1.default)();
 const defaultCorsOrigins = [
     "http://localhost:4001",
+    "http://localhost:4002",
+    "http://127.0.0.1:4001",
+    "http://127.0.0.1:4002",
     "https://storysparkai.vercel.app",
 ];
 const corsOrigins = config_1.default.cors_origins && config_1.default.cors_origins.length > 0
@@ -42,7 +45,7 @@ app.use("/api/v1", router_1.Routers);
 // Global error handler
 app.use(global_error_handler_1.default);
 // Handle API not found
-app.use((req, res, next) => {
+app.use((req, res) => {
     res.status(http_status_1.default.NOT_FOUND).json({
         success: false,
         message: "Not Found",
@@ -53,7 +56,6 @@ app.use((req, res, next) => {
             },
         ],
     });
-    next();
 });
 // Cron job to reset request counts at the beginning of each month (skip on Vercel serverless)
 if (!process.env.VERCEL) {

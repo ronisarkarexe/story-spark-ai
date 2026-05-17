@@ -22,6 +22,7 @@ router.post(
 // Get Posts
 
 router.get("/lists", PostController.getPosts);
+router.get("/platform-stats", PostController.getPlatformStats);
 router.get("/latest-lists", PostController.getLatestPosts);
 router.get("/feature-lists", PostController.getFeaturedPosts);
 

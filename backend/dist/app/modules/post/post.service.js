@@ -30,6 +30,7 @@ const http_status_1 = __importDefault(require("http-status"));
 const post_model_1 = require("./post.model");
 const pagination_helper_1 = __importDefault(require("../../../utils/pagination_helper"));
 const post_constant_1 = require("./post.constant");
+const user_1 = require("../../../enums/user");
 const createPost = (payload, token) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, role } = token;
     const user = yield user_model_1.User.findOne({
@@ -146,11 +147,37 @@ const getSinglePost = (id) => __awaiter(void 0, void 0, void 0, function* () {
     }
     return postById;
 });
-const getPostsByTag = (tag) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield post_model_1.Post.find({ tag })
-        .limit(2)
-        .populate("author", "name email createdAt");
-    return result;
+const getPostsByTag = (tag, pagination) => __awaiter(void 0, void 0, void 0, function* () {
+    const { page, limit, skip, sortBy, orderBy } = (0, pagination_helper_1.default)(pagination);
+    const whereCondition = { tag };
+    const [result, total] = yield Promise.all([
+        post_model_1.Post.find(whereCondition)
+            .sort({ [sortBy]: orderBy })
+            .skip(skip)
+            .limit(limit)
+            .populate("author", "name email createdAt"),
+        post_model_1.Post.countDocuments(whereCondition),
+    ]);
+    return {
+        meta: { page, limit, total },
+        data: result,
+    };
+});
+/** Public counts for landing pages and marketing widgets */
+const getPlatformStats = () => __awaiter(void 0, void 0, void 0, function* () {
+    const [totalPosts, publishedPosts, totalUsers, totalWriters] = yield Promise.all([
+        post_model_1.Post.countDocuments(),
+        post_model_1.Post.countDocuments({ isPublished: true }),
+        user_model_1.User.countDocuments(),
+        user_model_1.User.countDocuments({ role: user_1.ENUM_USER_ROLE.WRITER }),
+    ]);
+    return {
+        totalPosts,
+        publishedPosts,
+        totalUsers,
+        totalWriters,
+        updatedAt: new Date().toISOString(),
+    };
 });
 exports.PostService = {
     createPost,
@@ -160,4 +187,5 @@ exports.PostService = {
     doFeaturedPosts,
     getSinglePost,
     getPostsByTag,
+    getPlatformStats,
 };
