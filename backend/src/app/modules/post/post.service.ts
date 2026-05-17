@@ -97,7 +97,11 @@ const getPosts = async (
     .sort(sortCondition)
     .skip(skip)
     .limit(limit)
-    .populate("author", "name email createdAt");
+    .populate("author", "name email createdAt")
+    .populate({
+      path: "reactions",
+      populate: { path: "userId", select: "email" },
+    });
   const total = await Post.countDocuments(whereCondition);
   return {
     meta: {
@@ -114,7 +118,11 @@ const getLatestPosts = async () => {
     const res = await Post.find()
       .sort({ createdAt: -1 })
       .limit(2)
-      .populate("author", "name email createdAt");
+      .populate("author", "name email createdAt")
+      .populate({
+        path: "reactions",
+        populate: { path: "userId", select: "email" },
+      });
     return res;
   } catch (error) {
     throw new ApiError(
@@ -129,7 +137,11 @@ const getFeaturedPosts = async () => {
     const res = await Post.find({ isFeaturedPost: true })
       .sort({ createdAt: -1, updatedBy: -1 })
       .limit(2)
-      .populate("author", "name email createdAt");
+      .populate("author", "name email createdAt")
+      .populate({
+        path: "reactions",
+        populate: { path: "userId", select: "email" },
+      });
     return res;
   } catch (error) {
     throw new ApiError(
@@ -156,16 +168,19 @@ const doFeaturedPosts = async (postId: string) => {
 };
 
 const getSinglePost = async (id: string) => {
-  const postById = await Post.findOne({ _id: id }).populate(
-    "author",
-    "name email createdAt"
-  );
+  const postById = await Post.findOne({ _id: id })
+    .populate("author", "name email createdAt")
+    .populate({
+      path: "reactions",
+      populate: { path: "userId", select: "email" },
+    });
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
   return postById;
 };
 
+ feat/ui-polish-accessibility
 const getPostsByTag = async (
   tag: string,
   pagination: IPaginationOptions
@@ -205,6 +220,17 @@ const getPlatformStats = async () => {
     totalWriters,
     updatedAt: new Date().toISOString(),
   };
+
+const getPostsByTag = async (tag: string) => {
+  const result = await Post.find({ tag })
+    .limit(2)
+    .populate("author", "name email createdAt")
+    .populate({
+      path: "reactions",
+      populate: { path: "userId", select: "email" },
+    });
+  return result;
+ main
 };
 
 export const PostService = {

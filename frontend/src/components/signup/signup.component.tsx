@@ -104,7 +104,7 @@ const SignUpComponent = () => {
     <div className="bg-slate-700 text-white min-h-screen">
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-10 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h2 className="text-center text-5xl text-indigo-700 font-bold">
+          <h2 className="text-center text-5xl text-indigo-300 font-bold">
             STORY SPARK AI
           </h2>
           <h2 className="mt-4 text-center text-2xl/9 font-bold tracking-tight text-gray-400">
@@ -174,7 +174,7 @@ const SignUpComponent = () => {
               Already have an account?{" "}
               <a
                 href="/login"
-                className="font-semibold text-indigo-600 hover:text-indigo-500"
+                className="font-semibold text-indigo-400 hover:text-indigo-300"
               >
                 Sign in
               </a>

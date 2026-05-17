@@ -10,6 +10,9 @@ import { useNavigate } from "react-router-dom";
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
 import { formatDateShort } from "../../utils/time-formate";
+import { getUserInfo } from "../../services/auth.service";
+import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
+import { toast } from "react-hot-toast";
 
 const PostDetailsComponent = () => {
   const navigate = useNavigate();
@@ -17,6 +20,19 @@ const PostDetailsComponent = () => {
   const { data: post, isLoading } = useGetPostByIdQuery(id || "");
   const tag = post?.tag;
   const { data: relatedPost } = useGetPostByTagQuery(tag || "");
+  const [toggleReaction] = useToggleReactionMutation();
+  const currentUser = getUserInfo();
+
+  const handleLike = async () => {
+    if (!id) return;
+    try {
+      await toggleReaction({ postId: id }).unwrap();
+    } catch (error) {
+      console.error("Failed to toggle reaction", error);
+      toast.error("You need to login to perform this action");
+    }
+  };
+
   if (isLoading) {
     return <LoadingAnimation />;
   }
@@ -75,8 +91,15 @@ const PostDetailsComponent = () => {
 
             <div className="flex items-center justify-between border-t border-b border-gray-500 py-4 mb-12">
               <div className="flex items-center space-x-4">
-                <button className="flex items-center space-x-2 text-gray-600 hover:text-custom">
-                  <i className="far fa-heart"></i>
+                <button 
+                  onClick={handleLike}
+                  className={`flex items-center space-x-2 transition-colors cursor-pointer ${
+                    post?.reactions?.some((r: any) => r.userId?.email === currentUser?.email)
+                      ? "text-red-500 hover:text-red-400"
+                      : "text-gray-600 hover:text-gray-400"
+                  }`}
+                >
+                  <i className={`${post?.reactions?.some((r: any) => r.userId?.email === currentUser?.email) ? 'fas' : 'far'} fa-heart`}></i>
                   <span>{post?.likesCount}</span>
                 </button>
               </div>

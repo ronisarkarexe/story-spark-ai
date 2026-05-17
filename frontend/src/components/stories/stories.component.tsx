@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
+ feat/ui-polish-accessibility
 import { Link } from "react-router-dom";
 import BackLink from "../ui-component/back-link/back-link.component";
+
+import { Link, useLocation, useNavigate } from "react-router-dom";
+ main
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 import { getRequestLimit, getWordCount, prompts } from "./stories.utils";
 import {
@@ -18,6 +22,8 @@ type Inputs = {
 };
 
 const StoriesComponent = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
   const [stories, setStories] = useState<IStories[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -32,6 +38,16 @@ const StoriesComponent = () => {
     parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
   );
   const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    if (location.state && location.state.prompt) {
+      setTextareaValue(location.state.prompt);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     setValue("prompt", textareaValue);
@@ -87,8 +103,17 @@ const StoriesComponent = () => {
   return (
     <div className="page-shell gradient-bg min-h-screen">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+ feat/ui-polish-accessibility
         <div className="py-6 flex justify-between">
           <BackLink />
+
+        <div className="py-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Link to="/">
+            <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded">
+              <i className="fa-solid fa-left-long"></i> BACK
+            </div>
+          </Link>
+ main
           {!login && (
             <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm">
               Free access for 3 requests —{" "}
@@ -125,7 +150,7 @@ const StoriesComponent = () => {
         </div>
 
         <div className="mt-11">
-          <h1 className="text-gray-300 text-4xl font-extrabold text-center mb-12 leading-snug drop-shadow-lg tracking-wide">
+          <h1 className="text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12 leading-snug drop-shadow-lg tracking-wide">
             ✨ Enter Prompt –{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
               Generate Story Today!
@@ -140,12 +165,16 @@ const StoriesComponent = () => {
                 <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
                   <textarea
                     {...register("prompt")}
+ feat/ui-polish-accessibility
                     className="input-dark min-h-[160px] w-full resize-none border-none bg-transparent text-lg leading-relaxed text-slate-200 placeholder:text-slate-500 focus:ring-0"
+
+                    className="w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500"
+main
                     placeholder="Every great story begins with a single idea. What’s yours?"
                     value={textareaValue}
                     onChange={(e) => setTextareaValue(e.target.value)}
                   ></textarea>
-                  <div className="absolute bottom-3 right-3 flex items-center space-x-2">
+                  <div className="flex justify-end mt-2 w-full">
                     <button
                       type="submit"
                       disabled={loading}

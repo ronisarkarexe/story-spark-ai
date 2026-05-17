@@ -60,7 +60,7 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
       <form className="mb-4" onSubmit={handleSubmit(onSubmit)}>
         <textarea
           {...register("comment")}
-          className="w-full border border-gray-400 rounded-lg p-4 focus:ring-custom focus:border-custom"
+          className="w-full border border-gray-600 rounded-lg p-4 bg-transparent text-gray-200 placeholder-gray-400 focus:ring-custom focus:border-custom"
           rows={3}
           placeholder="Add your comment..."
         ></textarea>
@@ -76,9 +76,9 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
           {isBusy ? "Posting..." : "Post Comment"}
         </button>
       </form>
-      <h3 className="text-xl font-semibold mb-6">
-        Comments ({commentList?.totalComments})
-      </h3>
+      <h3 className="text-xl font-semibold mb-6 text-gray-300">
+  Comments ({commentList?.totalComments})
+</h3>
       <div className="space-y-6">
         {commentList?.comments.map((comment) => (
           <div className="flex space-x-4">

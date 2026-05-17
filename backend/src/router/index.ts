@@ -7,6 +7,7 @@ import { PostRouter } from "../app/modules/post/post.router";
 import { NotificationRouter } from "../app/modules/notification/notification.router";
 import { CommentRouter } from "../app/modules/comment/comment.router";
 import { AnalysisRouter } from "../app/modules/analysis/analysis.router";
+import { ReactionRouter } from "../app/modules/reaction/reaction.router";
 const router = express.Router();
 
 const modules = [
@@ -41,6 +42,10 @@ const modules = [
   {
     path: "/analysis",
     router: AnalysisRouter,
+  },
+  {
+    path: "/reaction",
+    router: ReactionRouter,
   },
 ];
 

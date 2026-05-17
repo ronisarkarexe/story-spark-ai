@@ -1,10 +1,37 @@
 @import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
+ feat/ui-polish-accessibility
 
 @theme {
   --color-custom: #60a5fa;
   --color-blue: #3b82f6;
   --max-width-8xl: 88rem;
+
+@theme {
+  --color-custom: #3b82f6;
+  
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes border-gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  --animate-fade-in: fade-in 0.6s ease-out forwards;
+  --animate-border-gradient: border-gradient 3s ease infinite;
+}
+
+@utility gradient-bg {
+  background: radial-gradient(circle at top left, #0f172a, #020617);
+}
+
+@utility glow {
+  filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+ main
 }
 
 :root {
@@ -147,6 +174,7 @@ body {
   opacity: 1;
 }
 
+ feat/ui-polish-accessibility
   .glass-panel {
     background: rgba(15, 23, 42, 0.78);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -355,3 +383,9 @@ a {
 }
 
 
+
+html.dark body {
+  background-color: #111827;
+  color: white;
+}
+ main
