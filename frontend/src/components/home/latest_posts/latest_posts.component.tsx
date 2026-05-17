@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
 import { Post } from "../../../models/post";
 import LoadingAnimation from "../../loading/loading.component";
@@ -15,9 +16,10 @@ const LatestPostsComponent = () => {
       <div className="space-y-6">
         {data?.posts?.length ?? 0 > 0 ? (
           data?.posts?.map((post: Post) => (
-            <div
+            <Link
+              to={`/post/${post._id}`}
               key={post._id}
-              className="bg-blue-500/10 rounded-lg shadow-sm p-6"
+              className="block bg-blue-500/10 rounded-lg shadow-sm p-6 transition-all duration-300 hover:bg-blue-500/20 hover:scale-[1.01] hover:shadow-lg group cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/40"
             >
               <div className="flex items-center mb-4">
                 <SSProfile name={post.author.name} size="h-8 w-8" />
@@ -30,7 +32,7 @@ const LatestPostsComponent = () => {
                   </p>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-300 mb-2">
+              <h3 className="text-xl font-semibold text-gray-300 mb-2 group-hover:text-blue-400 transition-colors duration-300">
                 {post.title}
               </h3>
               <p className="text-gray-400 mb-4">
@@ -56,7 +58,7 @@ const LatestPostsComponent = () => {
                   ))}
                 </div>
               </div>
-            </div>
+            </Link>
           ))
         ) : (
           <div>Post is not available!</div>
