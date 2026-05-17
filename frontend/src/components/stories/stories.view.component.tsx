@@ -158,7 +158,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                     {topics.map((topic, index) => (
                       <span
                         key={index}
-                        className={`px-3 py-1 ${topic.color} rounded-full text-sm hover:bg-blue-200 cursor-pointer`}
+                        className={`px-3 py-1 ${topic.color} rounded-full border text-sm font-semibold cursor-pointer transition hover:brightness-110`}
                         onClick={() => handleTopicClick(index)}
                       >
                         {topic.selected ? (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link } from "react-router-dom";
+import BackLink from "../ui-component/back-link/back-link.component";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 import { getRequestLimit, getWordCount, prompts } from "./stories.utils";
 import {
@@ -84,14 +85,10 @@ const StoriesComponent = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br animate-gradient-slow min-h-screen">
+    <div className="page-shell gradient-bg min-h-screen">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-6 flex justify-between">
-          <Link to="/">
-            <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded">
-              <i className="fa-solid fa-left-long"></i> BACK
-            </div>
-          </Link>
+          <BackLink />
           {!login && (
             <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm">
               Free access for 3 requests —{" "}
@@ -137,12 +134,13 @@ const StoriesComponent = () => {
           </h1>
 
           <div className="max-w-3xl mx-auto p-4">
-            <div className="bg-blue-500/10 rounded-md p-4 border border-gray-400">
+            <div className="premium-card gradient-border rounded-3xl p-1">
+              <div className="rounded-[1.35rem] bg-slate-950/80 p-4 sm:p-6">
               <div className="relative">
                 <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
                   <textarea
                     {...register("prompt")}
-                    className="w-full h-40 resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500"
+                    className="input-dark min-h-[160px] w-full resize-none border-none bg-transparent text-lg leading-relaxed text-slate-200 placeholder:text-slate-500 focus:ring-0"
                     placeholder="Every great story begins with a single idea. What’s yours?"
                     value={textareaValue}
                     onChange={(e) => setTextareaValue(e.target.value)}
@@ -151,7 +149,7 @@ const StoriesComponent = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
+                      className={`button-primary rounded-xl px-6 py-3 font-semibold ${
                         loading
                           ? "opacity-50 cursor-not-allowed"
                           : "hover:shadow-lg hover:shadow-indigo-500/50"
@@ -163,6 +161,7 @@ const StoriesComponent = () => {
                   </div>
                 </form>
               </div>
+              </div>
             </div>
             <div className="w-full max-w-2xl m-auto mt-4">
               <h1 className="text-sm text-gray-500 mb-1">
@@ -170,7 +169,7 @@ const StoriesComponent = () => {
               </h1>
               <div className="relative">
                 <select
-                  className="w-full p-2 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none text-sm"
+                  className="input-dark min-h-[44px] w-full appearance-none text-sm"
                   value={selectedPrompt}
                   onChange={handlePromptSelect}
                 >

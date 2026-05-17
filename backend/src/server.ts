@@ -13,7 +13,14 @@ async function connectDB() {
 
 async function main() {
   try {
-    console.log(config.database_url);
+    if (!config.database_url) {
+      throw new Error(
+        "DATABASE_URL is not set. Copy backend/.env.example to backend/.env and configure MongoDB."
+      );
+    }
+    if (config.env !== "production") {
+      console.log("Connecting to MongoDB...");
+    }
     await connectDB();
     app.listen(config.port, () => {
       console.log(`Story-Spark-AI app listening on port ${config.port}`);

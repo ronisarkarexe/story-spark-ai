@@ -1,4 +1,4 @@
-import express, { Application, NextFunction, Request, Response } from "express";
+import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import httpStatus from "http-status";
 import cron from "node-cron";
@@ -12,6 +12,9 @@ const app: Application = express();
 
 const defaultCorsOrigins = [
   "http://localhost:4001",
+  "http://localhost:4002",
+  "http://127.0.0.1:4001",
+  "http://127.0.0.1:4002",
   "https://storysparkai.vercel.app",
 ];
 const corsOrigins =
@@ -38,7 +41,7 @@ app.use("/api/v1", Routers);
 app.use(globalErrorHandler);
 
 // Handle API not found
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((req: Request, res: Response) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
     message: "Not Found",
@@ -49,7 +52,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       },
     ],
   });
-  next();
 });
 
 // Cron job to reset request counts at the beginning of each month (skip on Vercel serverless)

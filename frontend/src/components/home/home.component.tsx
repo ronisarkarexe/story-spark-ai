@@ -12,8 +12,8 @@ import { isLoggedIn } from "../../services/auth.service";
 const HomeComponent = () => {
   const isLogin = isLoggedIn();
   return (
-    <>
-      <div className="grid grid-cols-12 items-start gap-8 px-5 mb-10 pt-10">
+    <div className="relative bg-slate-950 pb-16">
+      <div className="grid grid-cols-12 items-start gap-8 px-4 sm:px-6 mb-10 pt-4">
         <div className="col-span-12 lg:col-span-8 min-w-0">
           <FeatureComponent />
           <LatestPostsComponent />
@@ -30,7 +30,7 @@ const HomeComponent = () => {
       <WriterFeedbackComponent />
       <PricingComponent />
       <StartWritingComponent />
-    </>
+    </div>
   );
 };
 

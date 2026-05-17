@@ -1,8 +1,10 @@
 import { useState } from "react";
+import useTheme from "../../hooks/useTheme";
 import logo from "../../assets/logo.png";
 
 const TopHeaderComponent = () => {
   const [showNotification, setShowNotification] = useState<boolean>(false);
+  const { isAurora, toggle } = useTheme();
   return (
     <div className="sticky top-0 z-50">
       <div className="relative z-10 mx-auto max-w-8xl px-6 py-4 gradient-bg">
@@ -12,26 +14,37 @@ const TopHeaderComponent = () => {
               <a href="/" className="flex items-center space-x-2">
                 <img src={logo} alt="Logo" className="h-8 w-auto" />
               </a>
-              <a href="/" className="text-white hover:text-custom transition">
+              <a href="/" className="text-white hover:text-slate-100 transition">
                 HOME
               </a>
               <a
                 href="/http_codes"
-                className="text-white hover:text-custom transition"
+                className="text-white hover:text-slate-100 transition"
               >
                 EXPLORE
               </a>
               <a
                 href="/repos"
-                className="text-white hover:text-custom transition"
+                className="text-white hover:text-slate-100 transition"
               >
                 CATEGORIES
               </a>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="!rounded-button bg-blue hover:bg-blue text-white px-6 py-2 font-medium transition-all">
+            <button className="!rounded-button bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 font-medium transition-all">
               JOIN
+            </button>
+            <button
+              onClick={toggle}
+              aria-label="Toggle theme"
+              className="ml-2 inline-flex items-center justify-center rounded-full bg-white/6 p-2 text-sm text-white hover:bg-white/10 transition"
+            >
+              {isAurora ? (
+                <i className="fas fa-moon" aria-hidden="true" />
+              ) : (
+                <i className="fas fa-wand-magic-sparkles" aria-hidden="true" />
+              )}
             </button>
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
               <button

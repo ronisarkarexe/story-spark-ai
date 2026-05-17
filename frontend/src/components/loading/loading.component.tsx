@@ -1,27 +1,41 @@
-import { motion } from "framer-motion";
+import { FC } from "react";
+import SkeletonCard from "../ui-component/skeleton/skeleton-card.component";
 
-const LoadingAnimation = () => {
+interface LoadingAnimationProps {
+  variant?: "fullscreen" | "section" | "skeleton";
+  label?: string;
+  skeletonCount?: number;
+}
+
+const LoadingAnimation: FC<LoadingAnimationProps> = ({
+  variant = "fullscreen",
+  label = "Loading",
+  skeletonCount = 2,
+}) => {
+  if (variant === "skeleton") {
+    return <SkeletonCard count={skeletonCount} />;
+  }
+
+  const wrapClass =
+    variant === "fullscreen"
+      ? "flex min-h-screen items-center justify-center"
+      : "flex min-h-[12rem] items-center justify-center py-12";
+
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="relative w-20 h-20">
-        {[...Array(8)].map((_, index) => (
-          <motion.div
-            key={index}
-            className="absolute w-3 h-3 bg-blue-500 rounded-full"
-            initial={{ opacity: 0, x: 0, y: 0 }}
-            animate={{
-              opacity: [0, 1, 0],
-              x: [0, 30 * Math.cos((index * 2 * Math.PI) / 8)],
-              y: [0, 30 * Math.sin((index * 2 * Math.PI) / 8)],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              delay: index * 0.1,
-            }}
-          />
-        ))}
+    <div
+      className={wrapClass}
+      role="status"
+      aria-live="polite"
+      aria-label={label}
+    >
+      <div className="flex flex-col items-center gap-4">
+        <div
+          className="h-12 w-12 animate-spin rounded-full border-2 border-slate-600 border-t-indigo-400"
+          aria-hidden="true"
+        />
+        <p className="text-sm text-slate-400">{label}</p>
       </div>
+      <span className="sr-only">{label}</span>
     </div>
   );
 };
