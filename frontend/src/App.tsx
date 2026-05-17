@@ -221,7 +221,14 @@ function App() {
             </RootLayout>
           }
         />
-        <Route path="/post/:id" element={<PostDetailsComponent />} />
+        <Route
+          path="/post/:id"
+          element={
+            <RootLayout>
+              <PostDetailsComponent />
+            </RootLayout>
+          }
+        />
         <Route path="*" element={<NotFoundComponent />} />
       </Routes>
 
