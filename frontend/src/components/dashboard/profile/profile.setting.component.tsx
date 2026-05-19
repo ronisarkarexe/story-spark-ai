@@ -58,7 +58,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
     <div className="min-h-screen  py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="bg-blue-500/10 rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-indigo-600 px-6 py-4">
+          <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border-b border-white/5 px-6 py-5">
             <h2 className="text-2xl font-bold text-white">User Settings</h2>
             <p className="text-indigo-200 mt-1">
               Manage your profile and social links
@@ -68,7 +68,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
           <div className="p-6 md:p-8">
             <form onSubmit={handleSubmit}>
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-300 mb-4 border-b pb-2">
+                <h3 className="text-lg font-semibold text-gray-300 mb-4 border-b border-white/5 pb-2">
                   Basic Information
                 </h3>
 
@@ -86,7 +86,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                      className="w-full px-4 py-2 bg-white/5 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 focus:outline-none transition-all duration-300"
                     />
                   </div>
 
@@ -103,7 +103,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       name="email"
                       value={user.email}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition cursor-not-allowed"
+                      className="w-full px-4 py-2 bg-white/5 border border-gray-700 text-gray-400 placeholder-gray-500 rounded-lg cursor-not-allowed focus:outline-none transition-all duration-300"
                       disabled={true}
                     />
                   </div>
@@ -121,7 +121,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       name="avatar"
                       value={formData.avatar}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                      className="w-full px-4 py-2 bg-white/5 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 focus:outline-none transition-all duration-300"
                     />
                     {formData.avatar && (
                       <div className="mt-2">
@@ -147,14 +147,14 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       rows={3}
                       value={formData.bio}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                      className="w-full px-4 py-2 bg-white/5 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 focus:outline-none transition-all duration-300"
                     />
                   </div>
                 </div>
               </div>
 
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-300 mb-4 border-b pb-2">
+                <h3 className="text-lg font-semibold text-gray-300 mb-4 border-b border-white/5 pb-2">
                   Social Links
                 </h3>
 
@@ -179,7 +179,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       name="social.facebook"
                       value={formData.social.facebook}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      className="w-full px-4 py-2 bg-white/5 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 focus:outline-none transition-all duration-300"
                       placeholder="https://facebook.com/username"
                     />
                   </div>
@@ -204,7 +204,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       name="social.twitter"
                       value={formData.social.twitter}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+                      className="w-full px-4 py-2 bg-white/5 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 focus:outline-none transition-all duration-300"
                       placeholder="https://twitter.com/username"
                     />
                   </div>
@@ -229,7 +229,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       name="social.linkedin"
                       value={formData.social.linkedin}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-700 focus:border-blue-700 transition"
+                      className="w-full px-4 py-2 bg-white/5 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-700/40 focus:border-blue-700 focus:outline-none transition-all duration-300"
                       placeholder="https://linkedin.com/in/username"
                     />
                   </div>
@@ -254,7 +254,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       name="social.instagram"
                       value={formData.social.instagram}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition"
+                      className="w-full px-4 py-2 bg-white/5 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-pink-500/40 focus:border-pink-500 focus:outline-none transition-all duration-300"
                       placeholder="https://instagram.com/username"
                     />
                   </div>
@@ -262,48 +262,48 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
               </div>
 
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-300 mb-4 border-b pb-2">
+                <h3 className="text-lg font-semibold text-gray-300 mb-4 border-b border-white/5 pb-2">
                   Account Status
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-50">
-                    <p className="text-sm font-medium text-blue-800">Role</p>
-                    <p className="text-lg font-semibold text-blue-900 capitalize">
+                  <div className="bg-blue-500/10 p-4 rounded-lg border border-blue-500/20 text-blue-400">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Role</p>
+                    <p className="text-lg font-bold capitalize">
                       {user.role}
                     </p>
                   </div>
 
-                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                    <p className="text-sm font-medium text-purple-800">
+                  <div className="bg-purple-500/10 p-4 rounded-lg border border-purple-500/20 text-purple-400">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
                       Status
                     </p>
-                    <p className="text-lg font-semibold text-purple-900 capitalize">
+                    <p className="text-lg font-bold capitalize">
                       {user.status}
                     </p>
                   </div>
 
-                  <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                    <p className="text-sm font-medium text-green-800">
+                  <div className="bg-emerald-500/10 p-4 rounded-lg border border-emerald-500/20 text-emerald-400">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
                       Subscription
                     </p>
-                    <p className="text-lg font-semibold text-green-900 capitalize">
+                    <p className="text-lg font-bold capitalize">
                       {user.subscriptionType}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-4 pt-6 border-t">
+              <div className="flex justify-end space-x-4 pt-6 border-t border-white/5">
                 <button
                   type="button"
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition"
+                  className="px-6 py-2 border border-gray-700 rounded-lg text-gray-400 font-medium hover:bg-white/5 hover:text-gray-200 transition-all duration-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-indigo-600 rounded-lg text-white font-medium hover:bg-indigo-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="px-6 py-2 bg-indigo-600 rounded-lg text-white font-medium hover:bg-indigo-700 active:scale-[0.98] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 >
                   {loading ? "Saving..." : "Save Changes"}
                 </button>
