@@ -1,17 +1,11 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 
 const UserContext = createContext();
 
-const supabaseClient = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key",
-);
-
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const supabase = supabaseClient;
 
   useEffect(() => {
     const getSessionAndUser = async () => {

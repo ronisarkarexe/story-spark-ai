@@ -50,7 +50,7 @@ export const metadata = {
 
 const page = () => {
   return(
-    <main className="bg-white dark:bg-zinc-950">
+    <main className="bg-white dark:bg-surface-950">
       <Navbar/>
       <Content/>
       <Footer/>

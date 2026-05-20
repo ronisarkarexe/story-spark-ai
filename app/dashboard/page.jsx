@@ -63,10 +63,15 @@ export default function Dashboard() {
         <Navbar />
       </div>
       <main className="max-w-4xl mx-auto px-4 py-24">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">My Dashboard</h1>
+          <p className="text-surface-500 dark:text-surface-400 mt-1">Track your learning progress and activity.</p>
+        </div>
+
         {user && (
           <div className="flex justify-start mb-4">
-            <div className="bg-gradient-to-br from-blue-600 shadow-md to-blue-400 rounded-full px-6 py-2">
-              <span className="text-lg text-white dark:text-white">
+            <div className="bg-gradient-to-br from-primary to-primary-dark shadow-md rounded-full px-6 py-2">
+              <span className="text-lg text-white">
               Welcome, {user.user_metadata?.name || user.email.split("@")[0]}
             </span>
             </div>
@@ -80,7 +85,7 @@ export default function Dashboard() {
         )}
 
         <section className="mb-8">
-          <h2 className="text-xl text-gray-800 dark:text-gray-200 mb-4">Modules Completed</h2>
+          <h2 className="text-xl text-surface-800 dark:text-surface-200 mb-4">Modules Completed</h2>
           {(() => {
             const completedModules = modules.filter((mod) => progress[mod.id]?.is_done);
             if (completedModules.length > 0) {
@@ -91,7 +96,7 @@ export default function Dashboard() {
                     {modulesToShow.map((mod) => (
                       <div
                         key={mod.id}
-                        className="border dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-neutral-950 shadow-sm flex flex-col justify-between"
+                        className="card-surface p-4 flex flex-col justify-between"
                       >
                         <div>
                           <img
@@ -99,12 +104,12 @@ export default function Dashboard() {
                             alt={mod.title}
                             className="w-full h-40 object-cover rounded-md mb-2"
                           />
-                          <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 py-2">{mod.title}</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{mod.description}</p>
+                          <h3 className="text-md font-semibold text-surface-800 dark:text-surface-200 py-2">{mod.title}</h3>
+                          <p className="text-sm text-surface-500 dark:text-surface-400">{mod.description}</p>
                         </div>
                         <div className="mt-2 text-right text-xs flex justify-end">
-                          <div className="bg-amber-500 px-2 rounded-full py-1">
-                            <p className="text-black">Conquered : {new Date(progress[mod.id].updated_at).toLocaleDateString()}</p>
+                          <div className="bg-primary/10 px-2 rounded-full py-1">
+                            <p className="text-primary text-xs">Conquered: {new Date(progress[mod.id].updated_at).toLocaleDateString()}</p>
                           </div>
                         </div>
                       </div>
@@ -114,7 +119,7 @@ export default function Dashboard() {
                     <div className="flex justify-center mt-8">
                       <button
                         onClick={() => setShowAllCompleted(!showAllCompleted)}
-                        className="px-4 py-2 rounded-lg font-medium bg-gradient-to-br from-blue-600 to-blue-500 text-white hover:bg-blue-700 shadow-lg transition duration-300"
+                        className="px-4 py-2 rounded-lg font-medium bg-primary hover:bg-primary-dark text-white shadow-lg transition duration-300"
                       >
                         {showAllCompleted ? "Show Less" : "Load More"}
                       </button>
@@ -125,12 +130,12 @@ export default function Dashboard() {
             } else {
               return (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  <p className="text-surface-500 dark:text-surface-400 mb-4">
                     You haven't completed any modules yet.
                   </p>
                   <Link
                     href="/visualizer"
-                    className="px-4 py-2 rounded-full font-medium bg-blue-600 text-white hover:bg-blue-700 transition duration-300"
+                    className="px-4 py-2 rounded-full font-medium bg-primary text-white hover:bg-primary-dark transition duration-300"
                   >
                     Start Learning
                   </Link>

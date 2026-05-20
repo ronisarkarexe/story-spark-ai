@@ -62,11 +62,26 @@ export default async function RootLayout({ children }) {
   const session = null; // auth is handled client-side via AuthContext
 
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <meta name="application-name" content="AlgoBuddy" />
         <meta property="og:site_name" content="AlgoBuddy" />
         <link rel="icon" href="/favicon.ico?v=2" />
+
+        {/* Prevent flash: apply saved theme before React hydrates */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme') || 'light';
+                  if (theme === 'dark') document.documentElement.classList.add('dark');
+                  else document.documentElement.classList.remove('dark');
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
 
         {/* Google Analytics Script */}
         {GA_ID && (
@@ -88,10 +103,18 @@ export default async function RootLayout({ children }) {
           </>
         )}
       </head>
-      <body>
+      <body className="bg-white text-[var(--udemy-text)] dark:bg-[var(--udemy-dark-bg)] dark:text-[var(--udemy-dark-text)]">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[var(--color-primary)] focus:text-white focus:rounded-[var(--radius-md)]"
+        >
+          Skip to content
+        </a>
         <AuthProvider session={session}>
           <UserProvider>
-            <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+            <ClientLayoutWrapper>
+              <div id="main-content">{children}</div>
+            </ClientLayoutWrapper>
           </UserProvider>
         </AuthProvider>
         <SpeedInsights />

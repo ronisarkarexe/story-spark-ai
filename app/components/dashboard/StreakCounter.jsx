@@ -40,13 +40,13 @@ function StreakCounter({ activityDates }) {
         <span className="text-3xl">
           <img src="/assets/fire.svg" className="w-10 h-10" alt="fire" />
         </span>
-        <span className="text-xl font-bold text-gray-800 dark:text-gray-200">
+        <span className="text-xl font-bold text-surface-800 dark:text-surface-200">
           {currentStreak}
         </span>
       </div>
 
       {/* Highest streak label */}
-      <div className="text-sm text-black dark:text-white flex items-center gap-1">
+      <div className="text-sm text-surface-600 dark:text-surface-300 flex items-center gap-1">
         <Award size={24} color="#ff9300"/>Highest: {highestStreak} day{highestStreak !== 1 ? "s" : ""}
       </div>
     </div>

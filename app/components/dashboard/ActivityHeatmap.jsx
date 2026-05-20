@@ -79,7 +79,7 @@ function ActivityHeatmap({ activityDates }) {
             </div>
           </div>
           {/* Weekday labels column */}
-          <div className="grid grid-rows-7 gap-1 mr-1 text-xs md:text-xs text-gray-500 dark:text-gray-400" style={{height: "168px"}}>
+          <div className="grid grid-rows-7 gap-1 mr-1 text-xs md:text-xs text-surface-500 dark:text-surface-400" style={{height: "168px"}}>
             {weekdayLabels.map((day, idx) =>
               visibleWeekdayLabels.includes(day) ? (
                 <div key={day} className="h-6 md:h-6 flex items-center justify-end pr-1 text-[10px] md:text-xs">
@@ -95,7 +95,7 @@ function ActivityHeatmap({ activityDates }) {
           {/* Month labels row */}
           <div className="grid grid-cols-[repeat(auto-fit,minmax(24px,1fr))] gap-1 mb-1" style={{gridTemplateColumns: `repeat(${weeks.length}, 24px)`}}>
             {monthLabels.map((month, idx) => (
-              <div key={idx} className="text-[10px] md:text-xs font-medium text-gray-600 dark:text-gray-300 text-center">
+              <div key={idx} className="text-[10px] md:text-xs font-medium text-surface-600 dark:text-surface-300 text-center">
                 {month}
               </div>
             ))}
@@ -116,7 +116,7 @@ function ActivityHeatmap({ activityDates }) {
                     className={`w-6 h-6 rounded-sm transition-colors duration-300 ${
                       isActive
                         ? "bg-green-500"
-                        : "bg-gray-200 dark:bg-gray-700"
+                        : "bg-surface-200 dark:bg-surface-700"
                     }`}
                   ></div>
                 );

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { event } from "@/lib/gtag";
+import { ArrowRight } from "lucide-react";
 
 const TOPICS = [
   { label: "Sorting Algorithms", color: "#a435f0", bg: "#faf5ff" },
@@ -37,8 +38,7 @@ const HeroSection = () => {
 
   return (
     <main
-      className="bg-white dark:bg-[#1c1d1f]"
-      style={{ fontFamily: "'Source Sans 3', sans-serif" }}
+      className="bg-white dark:bg-surface-900"
     >
       <section className="min-h-[calc(100vh-72px)] flex items-center justify-center px-5 py-20 relative overflow-hidden">
         <div className="relative z-10 w-full max-w-[1100px] mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
@@ -46,15 +46,11 @@ const HeroSection = () => {
           <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-7">
             {/* headline */}
             <h1
-              className="text-[2.8rem] sm:text-[3.5rem] lg:text-[4rem] font-extrabold leading-[1.1] tracking-tight text-[#1c1d1f] dark:text-[#f7f9fa]"
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                letterSpacing: "-0.03em",
-              }}
+              className="text-[2.8rem] sm:text-[3.5rem] lg:text-[4rem] font-extrabold leading-[1.1] tracking-tighter text-surface-900 dark:text-surface-50"
             >
               The smartest way
               <br />
-              to learn DSA — <span className="text-[#a435f0]">visually.</span>
+              to learn DSA — <span className="text-primary">visually.</span>
             </h1>
 
             {/* animated topic pill */}
@@ -82,27 +78,15 @@ const HeroSection = () => {
               <Link
                 href="/visualizer"
                 onClick={handleStart}
-                className="group inline-flex items-center gap-2 h-[52px] px-8 rounded-full bg-[#1a1a1a] dark:bg-white text-white dark:text-[#1a1a1a] text-[15px] font-bold hover:bg-[#a435f0] dark:hover:bg-[#a435f0] dark:hover:text-white active:scale-95 transition-all duration-200"
+                className="group inline-flex items-center gap-2 h-[52px] min-h-[44px] px-8 rounded-full bg-surface-900 dark:bg-white text-white dark:text-surface-900 text-[15px] font-bold hover:bg-primary dark:hover:bg-primary dark:hover:text-white active:scale-95 transition-all duration-200"
               >
                 Start Visualizing
-                <svg
-                  className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
               </Link>
 
               <Link
                 href="/blogs"
-                className="inline-flex items-center gap-2 h-[52px] px-8 rounded-full border-2 border-[#1a1a1a] dark:border-[#f7f9fa] text-[#1a1a1a] dark:text-[#f7f9fa] text-[15px] font-bold hover:bg-[#1a1a1a] hover:text-white dark:hover:bg-white dark:hover:text-[#1a1a1a] transition-all duration-200"
+                className="inline-flex items-center gap-2 h-[52px] min-h-[44px] px-8 rounded-full border-2 border-surface-900 dark:border-surface-50 text-surface-900 dark:text-surface-50 text-[15px] font-bold hover:bg-surface-900 hover:text-white dark:hover:bg-white dark:hover:text-surface-900 transition-all duration-200"
               >
                 Read Blogs
               </Link>

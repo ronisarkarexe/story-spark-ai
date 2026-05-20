@@ -1,16 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { useRouter } from "next/navigation";
-import {
-  FiMail,
-  FiLock,
-  FiUser,
-  FiLogIn,
-  FiUserPlus,
-  FiSun,
-  FiMoon,
-} from "react-icons/fi";
+import { Mail, Lock, User, LogIn, UserPlus, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -27,24 +20,11 @@ export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [theme, setTheme] = useState("light");
   const [captchaToken, setCaptchaToken] = useState(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light";
-    setTheme(savedTheme);
-    document.documentElement.classList.toggle("dark", savedTheme === "dark");
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
-  };
-
-  const handleAuth = async () => {
+  const handleAuth = async (event) => {
+    event?.preventDefault();
     setLoading(true);
     setError("");
 
@@ -90,7 +70,7 @@ export default function LoginPage() {
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.message || "Signup failed");
-        alert(data.message);
+        toast.success(data.message || "Account created! Please sign in.");
         setIsLogin(true);
       }
     } catch (err) {
@@ -132,9 +112,10 @@ export default function LoginPage() {
           {/* Google OAuth */}
           <button
             onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center py-3 px-4 rounded-lg border border-udemy-border dark:border-udemy-dark-border bg-white dark:bg-udemy-dark-surface text-udemy-text dark:text-udemy-dark-text font-medium hover:bg-udemy-surface dark:hover:bg-udemy-dark-bg duration-300 transition-all"
+            disabled={loading}
+            className="w-full flex items-center justify-center py-3 px-4 rounded-lg border border-udemy-border dark:border-udemy-dark-border bg-white dark:bg-udemy-dark-surface text-udemy-text dark:text-udemy-dark-text font-medium hover:bg-udemy-surface dark:hover:bg-udemy-dark-bg duration-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <img src="./google.webp" width={24}></img>
+            <img src="./google.webp" width={24} alt="" aria-hidden="true" />
             <span className="mx-2">Continue with Google</span>
           </button>
         </div>
@@ -152,6 +133,8 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              id="error-message"
+              role="alert"
               className="bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 p-3 rounded"
             >
               {error}
@@ -159,13 +142,15 @@ export default function LoginPage() {
           )}
 
           {/* Form */}
-          <div className="space-y-4">
+          <form onSubmit={handleAuth} noValidate className="space-y-4">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiMail className="text-gray-400 dark:text-gray-500" />
+                <Mail size={18} className="text-gray-400 dark:text-gray-500" />
               </div>
               <input
                 type="email"
+                aria-label="Email address"
+                disabled={loading}
                 className="w-full pl-10 pr-4 py-3 rounded-lg border border-udemy-border dark:border-udemy-dark-border focus:outline-none focus:ring-2 focus:ring-udemy-purple bg-white dark:bg-udemy-dark-surface text-udemy-text dark:text-udemy-dark-text"
                 placeholder="Email address"
                 value={email}
@@ -175,10 +160,12 @@ export default function LoginPage() {
 
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiLock className="text-gray-400 dark:text-gray-500" />
+                <Lock size={18} className="text-gray-400 dark:text-gray-500" />
               </div>
               <input
                 type="password"
+                aria-label="Password"
+                disabled={loading}
                 className="w-full pl-10 pr-4 py-3 rounded-lg border border-udemy-border dark:border-udemy-dark-border focus:outline-none focus:ring-2 focus:ring-udemy-purple bg-white dark:bg-udemy-dark-surface text-udemy-text dark:text-udemy-dark-text"
                 placeholder="Password"
                 value={password}
@@ -189,10 +176,12 @@ export default function LoginPage() {
             {!isLogin && (
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiUser className="text-gray-400 dark:text-gray-500" />
+                  <User size={18} className="text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
                   type="text"
+                  aria-label="Full name"
+                  disabled={loading}
                   className="w-full pl-10 pr-4 py-3 rounded-lg border border-udemy-border dark:border-udemy-dark-border focus:outline-none focus:ring-2 focus:ring-udemy-purple bg-white dark:bg-udemy-dark-surface text-udemy-text dark:text-udemy-dark-text"
                   placeholder="Full name"
                   value={name}
@@ -210,8 +199,8 @@ export default function LoginPage() {
             </div>
 
             <button
-              onClick={handleAuth}
-              disabled={loading}
+              type="submit"
+              disabled={loading || !captchaToken}
               className={`w-full flex items-center justify-center py-3 px-4 rounded text-white font-bold transition-all ${
                 loading
                   ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed"
@@ -219,18 +208,21 @@ export default function LoginPage() {
               }`}
             >
               {loading ? (
-                "Processing..."
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
               ) : isLogin ? (
                 <>
-                  <FiLogIn className="mr-2" /> Continue
+                  <LogIn size={18} className="mr-2" /> Continue
                 </>
               ) : (
                 <>
-                  <FiUserPlus className="mr-2" /> Continue
+                  <UserPlus size={18} className="mr-2" /> Continue
                 </>
               )}
             </button>
-          </div>
+          </form>
 
           {/* Switch forms */}
           <div className="text-center text-sm text-udemy-muted dark:text-udemy-dark-muted">

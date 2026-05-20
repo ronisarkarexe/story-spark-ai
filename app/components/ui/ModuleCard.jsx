@@ -94,16 +94,16 @@ export default function ModuleCard({ moduleId, description, initialDone }) {
 
   return (
     <div
-      className={`border border-gray-200 dark:border-gray-700 max-w-4xl mx-auto rounded-lg p-4 shadow-lg flex flex-col justify-between ${
-        isDone ? "bg-green-50 dark:bg-green-900/30" : "bg-white dark:bg-zinc-950"
+      className={`border border-surface-200 dark:border-surface-700 max-w-4xl mx-auto rounded-lg p-4 shadow-lg flex flex-col justify-between ${
+        isDone ? "bg-green-50 dark:bg-green-900/30" : "bg-white dark:bg-surface-900"
       }`}
     >
       <div className="my-4 px-4 flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-black text-gray-800 dark:text-gray-200" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: '-0.03em' }}>
+          <h1 className="text-lg font-semibold text-surface-800 dark:text-surface-200">
             Done With the Learning
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
+          <p className="text-sm text-surface-500 dark:text-surface-400">{description}</p>
         </div>
         <input
           type="checkbox"

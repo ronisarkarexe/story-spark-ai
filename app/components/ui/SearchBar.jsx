@@ -54,13 +54,13 @@ const SearchBar = ({ sections, onSearchResults }) => {
       <input
         type="text"
         placeholder="Search algorithms, data structures..."
-        className="w-full px-6 py-3.5 rounded-full border border-[#e5e7eb] dark:border-[#333] focus:outline-none focus:ring-2 focus:ring-[#a435f0]/40 focus:border-[#a435f0] bg-white dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-[#f5f5f5] placeholder-[#9ca3af] dark:placeholder-[#555] text-[15px] transition-all shadow-sm"
+        className="w-full px-6 py-3.5 rounded-full border border-surface-200 dark:border-surface-700 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-50 placeholder-surface-400 dark:placeholder-surface-500 text-[15px] transition-all shadow-sm"
         value={searchQuery}
         onChange={handleSearch}
       />
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5 absolute right-5 top-1/2 -translate-y-1/2 text-[#9ca3af] dark:text-[#555]"
+        className="h-5 w-5 absolute right-5 top-1/2 -translate-y-1/2 text-surface-400 dark:text-surface-500"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

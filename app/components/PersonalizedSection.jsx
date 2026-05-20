@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 /* DSA topic map — rows of topic cards, some completed, some locked */
 const TOPIC_ROWS = [
@@ -43,7 +44,7 @@ const TOPIC_ROWS = [
 function TopicCard({ label, color, done, lock }) {
   return (
     <div
-      className="relative flex flex-col gap-1 px-3 py-2 rounded-xl bg-white border border-[#e5e7eb] shadow-sm select-none"
+      className="relative flex flex-col gap-1 px-3 py-2 rounded-xl bg-white border border-surface-200 shadow-sm select-none"
       style={{
         filter: lock ? "blur(3px)" : "none",
         opacity: lock ? 0.55 : 1,
@@ -52,11 +53,11 @@ function TopicCard({ label, color, done, lock }) {
     >
       {/* colour bar */}
       <div className="h-[3px] w-8 rounded-full" style={{ background: color }} />
-      <span className="text-[12px] font-semibold text-[#1a1a1a] leading-tight">
+      <span className="text-[12px] font-semibold text-surface-900 leading-tight">
         {label}
       </span>
       {done && (
-        <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white border border-[#e5e7eb] flex items-center justify-center text-[10px] text-[#22c55e] font-bold shadow-sm">
+        <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white border border-surface-200 flex items-center justify-center text-[10px] text-[#22c55e] font-bold shadow-sm">
           ✓
         </span>
       )}
@@ -67,72 +68,39 @@ function TopicCard({ label, color, done, lock }) {
 export default function PersonalizedSection() {
   return (
     <section
-      className="py-24 px-6 overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(180deg, #ffffff 0%, #eef2ff 20%, #f0fdf4 60%, #faf5ff 100%)",
-        fontFamily: "'Inter', 'Source Sans 3', sans-serif",
-      }}
+      className="py-24 px-6 overflow-hidden bg-gradient-to-b from-white via-surface-50 to-purple-50/40 dark:from-surface-900 dark:via-surface-900 dark:to-surface-900"
     >
       <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
         {/* ── LEFT: text ── */}
         <div className="flex-1 flex flex-col gap-5 items-start lg:min-w-[320px]">
           <h2
-            className="text-[2.6rem] sm:text-[3.2rem] font-black leading-[1.08] tracking-tight text-[#1a1a1a]"
-            style={{ letterSpacing: "-0.03em" }}
+            className="text-[2.6rem] sm:text-[3.2rem] font-black leading-[1.08] tracking-tighter text-surface-900"
           >
             Your DSA path,
             <br />
             your pace
           </h2>
-          <p className="text-[1.1rem] text-[#4b5563] leading-relaxed max-w-[400px]">
+          <p className="text-[1.1rem] text-surface-600 leading-relaxed max-w-[400px]">
             Every topic you master unlocks the next. AlgoBuddy maps your
             progress across Arrays, Trees, Graphs and beyond — so you always
             know exactly where to go next.
           </p>
           <Link
             href="/visualizer"
-            className="inline-flex items-center gap-2 h-[46px] px-7 rounded-full bg-[#1a1a1a] text-white text-[15px] font-bold hover:bg-[#a435f0] transition-all duration-200"
+            className="inline-flex items-center gap-2 h-[46px] min-h-[44px] px-7 rounded-full bg-surface-900 text-white text-[15px] font-bold hover:bg-primary transition-all duration-200"
           >
             Start your path
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M14 5l7 7m0 0l-7 7m7-7H3"
-              />
-            </svg>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
         {/* ── RIGHT: topic map ── */}
         <div className="flex-1 relative w-full overflow-hidden">
           {/* fade edges left & right */}
-          <div
-            className="absolute left-0 top-0 bottom-0 w-12 z-10 pointer-events-none"
-            style={{
-              background: "linear-gradient(to right, #eef2ff, transparent)",
-            }}
-          />
-          <div
-            className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-            style={{
-              background: "linear-gradient(to left, #faf5ff, transparent)",
-            }}
-          />
+          <div className="absolute left-0 top-0 bottom-0 w-12 z-10 pointer-events-none bg-gradient-to-r from-surface-100 via-transparent to-transparent" />
+          <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none bg-gradient-to-l from-purple-50 via-transparent to-transparent" />
           {/* fade bottom */}
-          <div
-            className="absolute left-0 right-0 bottom-0 h-20 z-10 pointer-events-none"
-            style={{
-              background: "linear-gradient(to top, #f0fdf4, transparent)",
-            }}
-          />
+          <div className="absolute left-0 right-0 bottom-0 h-20 z-10 pointer-events-none bg-gradient-to-t from-green-50 via-transparent to-transparent" />
 
           <div className="flex flex-col gap-3 py-2">
             {TOPIC_ROWS.map((row, ri) => (

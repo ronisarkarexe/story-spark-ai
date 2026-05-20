@@ -32,17 +32,17 @@ function ActivityDashboard({ userId }) {
 
   if (loading) {
     return (
-      <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-600 dark:text-gray-300">
+      <div className="card-surface p-4 text-surface-500 dark:text-surface-400">
         Loading activity...
       </div>
     );
   }
 
   return (
-    <main className="rounded-xl bg-white border border-gray-200 dark:border-gray-700 dark:bg-neutral-950 p-4">
+    <main className="card-surface p-4">
       <div className="flex items-center gap-2">
-        <ChartNoAxesCombined className="text-black dark:text-white"/>
-        <h1 className="font-poppins text-lg text-black dark:text-white">Your Stats</h1>
+        <ChartNoAxesCombined className="text-surface-700 dark:text-surface-300"/>
+        <h1 className="font-poppins text-lg text-surface-800 dark:text-surface-200">Your Stats</h1>
       </div>
       <div className="flex flex-col md:flex-row items-center justify-center md:gap-6">
         <StreakCounter activityDates={activityDates} />

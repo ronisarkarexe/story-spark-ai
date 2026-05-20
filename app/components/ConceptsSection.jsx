@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 const CONCEPTS = [
   {
@@ -40,10 +41,10 @@ function SortingVisual() {
         <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
         <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
         <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-        <span className="ml-2 text-[12px] font-mono text-[#6b7280]">bubbleSort.js — step 4</span>
+        <span className="ml-2 text-[12px] font-mono text-surface-500">bubbleSort.js — step 4</span>
       </div>
       <div className="p-5">
-        <p className="text-[11px] uppercase tracking-widest text-[#6b7280] mb-4 font-semibold">Comparing indices 2 & 3</p>
+        <p className="text-[11px] uppercase tracking-widest text-surface-500 mb-4 font-semibold">Comparing indices 2 & 3</p>
         <div className="flex items-end gap-1.5 h-[80px]">
           {bars.map((h, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -60,10 +61,10 @@ function SortingVisual() {
           ))}
         </div>
         <div className="flex gap-4 mt-3">
-          <span className="flex items-center gap-1.5 text-[11px] text-[#6b7280]">
+          <span className="flex items-center gap-1.5 text-[11px] text-surface-500">
             <span className="w-2.5 h-2.5 rounded-sm bg-[#22c55e] inline-block" /> comparing
           </span>
-          <span className="flex items-center gap-1.5 text-[11px] text-[#6b7280]">
+          <span className="flex items-center gap-1.5 text-[11px] text-surface-500">
             <span className="w-2.5 h-2.5 rounded-sm bg-[#d1fae5] inline-block" /> unsorted
           </span>
         </div>
@@ -83,10 +84,10 @@ function SearchVisual() {
         <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
         <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
         <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-        <span className="ml-2 text-[12px] font-mono text-[#6b7280]">binarySearch.js — step 2</span>
+        <span className="ml-2 text-[12px] font-mono text-surface-500">binarySearch.js — step 2</span>
       </div>
       <div className="p-5">
-        <p className="text-[11px] uppercase tracking-widest text-[#6b7280] mb-4 font-semibold">Target: 16 &nbsp;·&nbsp; mid = index 4</p>
+        <p className="text-[11px] uppercase tracking-widest text-surface-500 mb-4 font-semibold">Target: 16 &nbsp;·&nbsp; mid = index 4</p>
         <div className="flex gap-1.5">
           {arr.map((v, i) => (
             <div
@@ -110,14 +111,14 @@ function SearchVisual() {
           ))}
         </div>
         <div className="flex gap-4 mt-3">
-          <span className="flex items-center gap-1.5 text-[11px] text-[#6b7280]">
+          <span className="flex items-center gap-1.5 text-[11px] text-surface-500">
             <span className="w-2.5 h-2.5 rounded-sm bg-[#a435f0] inline-block" /> mid
           </span>
-          <span className="flex items-center gap-1.5 text-[11px] text-[#6b7280]">
+          <span className="flex items-center gap-1.5 text-[11px] text-surface-500">
             <span className="w-2.5 h-2.5 rounded-sm bg-[#ede9fe] inline-block" /> active
           </span>
-          <span className="flex items-center gap-1.5 text-[11px] text-[#6b7280]">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#f3f4f6] inline-block" /> eliminated
+          <span className="flex items-center gap-1.5 text-[11px] text-surface-500">
+            <span className="w-2.5 h-2.5 rounded-sm bg-surface-100 inline-block" /> eliminated
           </span>
         </div>
       </div>
@@ -135,10 +136,10 @@ function StackVisual() {
         <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
         <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
         <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-        <span className="ml-2 text-[12px] font-mono text-[#6b7280]">stack.js — operations</span>
+        <span className="ml-2 text-[12px] font-mono text-surface-500">stack.js — operations</span>
       </div>
       <div className="p-5">
-        <p className="text-[11px] uppercase tracking-widest text-[#6b7280] mb-4 font-semibold">Stack — top of stack ↑</p>
+        <p className="text-[11px] uppercase tracking-widest text-surface-500 mb-4 font-semibold">Stack — top of stack ↑</p>
         <div className="flex flex-col-reverse gap-2">
           {stack.map((item, i) => (
             <div
@@ -174,12 +175,11 @@ function AppMockup() {
 
   return (
     <div
-      className="w-full max-w-[320px] rounded-[2rem] bg-white shadow-2xl border border-[#e5e7eb] overflow-hidden"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      className="w-full max-w-[320px] rounded-[2rem] bg-white shadow-2xl border border-surface-200 overflow-hidden"
     >
       {/* top bar */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
-        <button className="w-7 h-7 flex items-center justify-center rounded-full bg-[#f3f4f6] text-[#6b7280] text-[14px] font-bold">×</button>
+        <button className="w-7 h-7 flex items-center justify-center rounded-full bg-surface-100 text-surface-500 text-[14px] font-bold">×</button>
         {/* progress bar */}
         <div className="flex-1 mx-3 flex items-center gap-1.5">
           <div className="flex-1 h-2.5 rounded-full bg-[#22c55e]" style={{ flex: "2.5" }} />
@@ -193,12 +193,12 @@ function AppMockup() {
 
       {/* task label */}
       <div className="px-5 pb-3">
-        <p className="text-[13px] font-semibold text-[#374151]">Traverse the graph</p>
+        <p className="text-[13px] font-semibold text-surface-700">Traverse the graph</p>
       </div>
 
       {/* grid visual */}
-      <div className="mx-5 mb-4 rounded-xl overflow-hidden border border-[#e5e7eb] bg-[#f9fafb]">
-        <div className="grid grid-cols-5 gap-px bg-[#e5e7eb] p-px">
+      <div className="mx-5 mb-4 rounded-xl overflow-hidden border border-surface-200 bg-surface-50">
+        <div className="grid grid-cols-5 gap-px bg-surface-200 p-px">
           {Array.from({ length: 25 }).map((_, i) => {
             const path = [6, 11, 16, 21, 22, 17, 12, 7];
             const gems = [4, 9, 14];
@@ -223,15 +223,15 @@ function AppMockup() {
       </div>
 
       {/* pseudocode steps */}
-      <div className="mx-5 mb-5 rounded-xl bg-[#f9fafb] border border-[#e5e7eb] overflow-hidden">
+      <div className="mx-5 mb-5 rounded-xl bg-surface-50 border border-[#e5e7eb] overflow-hidden">
         {steps.map((s) => (
           <div
             key={s.line}
-            className="flex items-center gap-3 px-4 py-2.5 border-b border-[#f3f4f6] last:border-0"
+            className="flex items-center gap-3 px-4 py-2.5 border-b border-surface-100 last:border-0"
             style={{ background: s.active ? "#fff" : "transparent" }}
           >
             {s.active ? (
-              <span className="w-3 h-3 rounded-full bg-[#1a1a1a] flex-shrink-0" />
+              <span className="w-3 h-3 rounded-full bg-surface-900 flex-shrink-0" />
             ) : (
               <span className="w-3 h-3 flex-shrink-0" />
             )}
@@ -250,8 +250,7 @@ function AppMockup() {
 export default function ConceptsSection() {
   return (
     <section
-      className="bg-white dark:bg-[#1c1d1f]"
-      style={{ fontFamily: "'Inter', 'Source Sans 3', sans-serif" }}
+      className="bg-white dark:bg-surface-900"
     >
       {CONCEPTS.map((c, idx) => (
         <div
@@ -272,12 +271,11 @@ export default function ConceptsSection() {
             {/* Text */}
             <div className="flex-1 flex flex-col gap-5 items-start">
               <h2
-                className="text-[2.6rem] sm:text-[3.2rem] font-black leading-[1.08] tracking-tight text-[#1a1a1a] dark:text-[#f7f9fa] whitespace-pre-line"
-                style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}
+                className="text-[2.6rem] sm:text-[3.2rem] font-black leading-[1.08] tracking-tighter text-surface-900 dark:text-surface-50 whitespace-pre-line"
               >
                 {c.heading}
               </h2>
-              <p className="text-[1.1rem] text-[#4b5563] dark:text-[#9e9e9e] leading-relaxed max-w-[460px]">
+              <p className="text-[1.1rem] text-surface-600 dark:text-surface-400 leading-relaxed max-w-[460px]">
                 {c.body}
               </p>
               <Link
@@ -285,9 +283,7 @@ export default function ConceptsSection() {
                 className="inline-flex items-center gap-2 h-[46px] px-7 rounded-full bg-white dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-white text-[15px] font-bold hover:bg-[#a435f0] dark:hover:bg-[#a435f0] dark:hover:text-white transition-all duration-200"
               >
                 {c.cta.label}
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -295,20 +291,19 @@ export default function ConceptsSection() {
       ))}
 
       {/* ── "More effective, more fun" block ── */}
-      <div className="py-20 px-6" style={{ background: "#f0fdf4" }}>
+      <div className="py-20 px-6 bg-green-50">
         <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24">
 
           {/* Text side */}
           <div className="flex-1 flex flex-col gap-5 items-start">
             <h2
-              className="text-[2.6rem] sm:text-[3.2rem] font-black leading-[1.08] tracking-tight text-[#1a1a1a] dark:text-[#f7f9fa]"
-              style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}
+              className="text-[2.6rem] sm:text-[3.2rem] font-black leading-[1.08] tracking-tighter text-surface-900 dark:text-surface-50"
             >
               More effective,{" "}
               <br />
               more fun
             </h2>
-            <p className="text-[1.1rem] text-[#4b5563] dark:text-[#9e9e9e] leading-relaxed max-w-[460px]">
+            <p className="text-[1.1rem] text-surface-600 dark:text-surface-400 leading-relaxed max-w-[460px]">
               AlgoBuddy&apos;s interactive approach helps you master DSA concepts in less time, with more purpose and joy.
             </p>
             <Link
@@ -316,9 +311,7 @@ export default function ConceptsSection() {
               className="inline-flex items-center gap-2 h-[46px] px-7 rounded-full bg-white dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-white text-[15px] font-bold hover:bg-[#a435f0] dark:hover:bg-[#a435f0] dark:hover:text-white transition-all duration-200"
             >
               Start learning
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
