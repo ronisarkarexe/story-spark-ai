@@ -95,15 +95,22 @@ const NavListComponent: React.FC = () => {
               </button>
             </div>
             {isLogin ? (
-              <button onClick={handelLogout} className="text-gray-400 px-6 py-2 font-medium cursor-pointer">
+              <button onClick={handelLogout} className="text-gray-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-white/5 hover:text-white transition">
                 LOGOUT
               </button>
             ) : (
-              <Link to="/login">
-                <button className="text-gray-400 px-6 py-2 font-medium cursor-pointer">
-                  LOGIN
-                </button>
-              </Link>
+              <>
+                <Link to="/login">
+                  <button className="text-gray-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-white/5 hover:text-white transition">
+                    LOGIN
+                  </button>
+                </Link>
+                <Link to="/signup">
+                  <button className="text-gray-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-white/5 hover:text-white transition">
+                    SIGN UP
+                  </button>
+                </Link>
+              </>
             )}
           </div>
 
@@ -147,7 +154,10 @@ const NavListComponent: React.FC = () => {
                 LOGOUT
               </button>
             ) : (
-              <Link to="/login" className="text-gray-400 py-2">LOGIN</Link>
+              <>
+                <Link to="/login" className="text-gray-400 block px-3 py-2 rounded-md hover:bg-white/5 hover:text-white">LOGIN</Link>
+                <Link to="/signup" className="text-gray-400 block px-3 py-2 rounded-md hover:bg-white/5 hover:text-white">SIGN UP</Link>
+              </>
             )
           }
         </div>
