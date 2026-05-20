@@ -36,7 +36,10 @@ const HeroSectionComponent = () => {
   return (
     <div className="gradient-bg min-h-screen flex flex-col">
       <div className="relative overflow-hidden flex-grow" onMouseMove={handleMouseMove}>
-        <div className="relative z-10 mx-auto max-w-7xl px-6 pt-14 pb-24 text-center">
+        <div 
+          className="relative z-10 mx-auto max-w-7xl px-6 pb-24 text-center"
+          style={{ paddingTop: 'calc(var(--header-height) + 3.5rem)' }}
+        >
           <div className="inline-flex items-center justify-center mx-auto px-4 py-1.5 mb-8 rounded-full bg-opacity-10 border border-white/20 opacity-80 bg-blue-500/20 text-white">
             <span className="text-sm font-medium">
               NEW TEXT TO STORY GENERATION

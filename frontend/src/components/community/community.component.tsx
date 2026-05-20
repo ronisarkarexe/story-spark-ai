@@ -11,7 +11,10 @@ const CommunityComponent: React.FC = () => {
   return (
     <div className="gradient-bg min-h-screen text-white">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      <section 
+        className="relative pb-20 overflow-hidden"
+        style={{ paddingTop: 'calc(var(--header-height) + 8rem)' }}
+      >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] -z-10"></div>
         
         <div className="max-w-7xl mx-auto px-6 text-center">
