@@ -11,12 +11,8 @@ import toast, { Toaster } from "react-hot-toast";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import { getErrorMessage } from "../../error/error.message";
-<<<<<<< HEAD
-import StorySkeleton from "../signup/story-skeleton";
-=======
+import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
->>>>>>> upstream/main
-
 type Inputs = {
   prompt: string;
 };
@@ -25,13 +21,9 @@ const MAX_PROMPT_LENGTH = 2000;
 const WARN_THRESHOLD = 0.85;
 
 const StoriesComponent = () => {
-<<<<<<< HEAD
-  const { register, handleSubmit, reset, setValue, watch } = useForm<Inputs>();
-=======
   const location = useLocation();
-  const navigate = useNavigate();
-  const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
->>>>>>> upstream/main
+const navigate = useNavigate();
+const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
   const [stories, setStories] = useState<IStories[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const { data } = useGetProfileInfoQuery(undefined);
@@ -40,57 +32,57 @@ const StoriesComponent = () => {
   const [generateModel] = useGenerateModelMutation();
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
-<<<<<<< HEAD
-  const promptValue = watch("prompt") || "";
-=======
-  const [selectedGenre, setSelectedGenre] = useState<string>("");
-  const [selectedLength, setSelectedLength] = useState<string>("medium");
-  const [textareaValue, setTextareaValue] = useState<string>("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-    parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
-  );
-  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+const [selectedGenre, setSelectedGenre] = useState<string>("");
+const [selectedLength, setSelectedLength] = useState<string>("medium");
+const [textareaValue, setTextareaValue] = useState<string>("");
+const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+const dropdownRef = useRef<HTMLDivElement>(null);
+const inputRef = useRef<HTMLTextAreaElement>(null);
+const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
+  parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
+);
+const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+useEffect(() => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (location.state && location.state.prompt) {
-      setTextareaValue(location.state.prompt);
-      navigate(location.pathname, { replace: true, state: {} });
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
+      setIsDropdownOpen(false);
     }
-  }, [location, navigate]);
+  };
 
-  useEffect(() => {
-    setValue("prompt", textareaValue);
-  }, [textareaValue, setValue]);
->>>>>>> upstream/main
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      setIsDropdownOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+  document.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+    document.removeEventListener("keydown", handleKeyDown);
+  };
+}, []);
+
+useEffect(() => {
+  if (location.state && location.state.prompt) {
+    setTextareaValue(location.state.prompt);
+    navigate(location.pathname, { replace: true, state: {} });
+  }
+}, [location, navigate]);
+
+useEffect(() => {
+  setValue("prompt", textareaValue);
+}, [textareaValue, setValue]);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (!login && guestRequestCount >= 3) {
@@ -142,25 +134,38 @@ const StoriesComponent = () => {
     }
   };
 
-<<<<<<< HEAD
-  const handlePromptSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = e.target.value;
-    setSelectedPrompt(selectedValue);
-    setValue("prompt", selectedValue);
-=======
-  const handleClearPrompt = () => {
-    setTextareaValue("");
-    setSelectedPrompt("");
-    setValue("prompt", "");
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
->>>>>>> upstream/main
-  };
+const handleClearPrompt = () => {
+  setTextareaValue("");
+  setSelectedPrompt("");
+  setValue("prompt", "");
+
+  if (inputRef.current) {
+    inputRef.current.focus();
+  }
+};
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
-
+  console.log("Stories component rendered");
+  
+  useKeyboardShortcuts({
+  onOpenHelp: () => setShowHelpModal(true),
+  onCloseHelp: () => setShowHelpModal(false),
+  onGenerate: () => {
+    const form = document.querySelector("form");
+    if (form) {
+      form.requestSubmit();
+    }
+  },
+  onPublish: () => {
+    const publishBtn = document.getElementById("publish-story-btn");
+    publishBtn?.click();
+  },
+  focusPrompt: () => {
+    inputRef.current?.focus();
+  },
+  hasStory: stories.length > 0,
+});
   return (
     <div className="bg-gradient-to-br animate-gradient-slow min-h-screen">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -225,241 +230,226 @@ const StoriesComponent = () => {
 
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
             <div className="bg-blue-500/10 rounded-md p-4 border border-gray-400">
-<<<<<<< HEAD
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <textarea
-                  {...register("prompt")}
-                  className="w-full h-40 resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500"
-                  placeholder="Describe your world, characters, conflict, or adventure..."
-                  aria-label="Story prompt input"
-                />
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
-                  <span
-                    className={`text-xs font-medium tabular-nums transition-colors duration-200 ${
-                      getWordCount(promptValue) >= 10
-                        ? "text-green-400"
-                        : promptValue.length > 0 ? "text-amber-400" : "text-gray-500"
-                    }`}
-                  >
-                    {getWordCount(promptValue) < 10 
-                      ? `Enter at least 10 words (${getWordCount(promptValue)}/10)`
-                      : `${getWordCount(promptValue)} words - Ready to Generate!`}
-                  </span>
-                  <button
-                    type="submit"
-                    disabled={loading || getWordCount(promptValue) < 10}
-                    className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-2.5 font-semibold transition-all duration-300 flex items-center gap-2 group ${
-                      loading || getWordCount(promptValue) < 10
-                        ? "opacity-50 cursor-not-allowed grayscale-[0.5]"
-                        : "hover:shadow-lg hover:shadow-indigo-500/50 transform hover:scale-105 cursor-pointer"
-                    }`}
-                  >
-                    <i className="fas fa-wand-magic-sparkles transition-transform duration-300 group-hover:animate-wiggle"></i>
-                    {loading ? "Generating..." : "Generate"}
-                  </button>
-                </div>
-              </form>
-=======
-              <div className="relative">
-                <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {["🎭 Drama", "😂 Comedy", "😱 Horror", "💕 Romance", "🚀 Sci-Fi", "🧙 Fantasy", "🔍 Mystery", "🌟 Adventure"].map((genre) => (
-                      <button
-                        key={genre}
-                        type="button"
-                        onClick={() => setSelectedGenre(selectedGenre === genre ? "" : genre)}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedGenre === genre
-                          ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                          : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                          }`}
-                      >
-                        {genre}
-                      </button>
-                    ))}
-                  </div>
+<div className="relative">
+  <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+    <div className="flex flex-wrap gap-2 mb-3">
+      {[
+        "🎭 Drama",
+        "😂 Comedy",
+        "😱 Horror",
+        "💕 Romance",
+        "🚀 Sci-Fi",
+        "🧙 Fantasy",
+        "🔍 Mystery",
+        "🌟 Adventure",
+      ].map((genre) => (
+        <button
+          key={genre}
+          type="button"
+          onClick={() =>
+            setSelectedGenre(selectedGenre === genre ? "" : genre)
+          }
+          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+            selectedGenre === genre
+              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+          }`}
+        >
+          {genre}
+        </button>
+      ))}
+    </div>
 
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs text-gray-400 mr-1">📏 Length:</span>
-                    {(["short", "medium", "long"] as const).map((length) => (
-                      <button
-                        key={length}
-                        type="button"
-                        onClick={() => setSelectedLength(length)}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                          selectedLength === length
-                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                            : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                        }`}
-                      >
-                        {length.charAt(0).toUpperCase() + length.slice(1)}
-                      </button>
-                    ))}
-                  </div>
+    <div className="flex items-center gap-2 mb-3">
+      <span className="text-xs text-gray-400 mr-1">📏 Length:</span>
 
-                  <div className="relative">
-                    <textarea
-                      {...register("prompt")}
-                      ref={inputRef}
-                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 pr-10 transition-colors duration-200 ${
-                        isOverLimit
-                          ? "ring-1 ring-red-500 rounded"
-                          : isNearLimit
-                          ? "ring-1 ring-yellow-400 rounded"
-                          : ""
-                      }`}
-                      placeholder="Every great story begins with a single idea. What's yours?"
-                      value={textareaValue}
-                      maxLength={MAX_PROMPT_LENGTH}
-                      onChange={(e) => setTextareaValue(e.target.value)}
-                    />
+      {(["short", "medium", "long"] as const).map((length) => (
+        <button
+          key={length}
+          type="button"
+          onClick={() => setSelectedLength(length)}
+          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+            selectedLength === length
+              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+          }`}
+        >
+          {length.charAt(0).toUpperCase() + length.slice(1)}
+        </button>
+      ))}
+    </div>
 
-                    {textareaValue.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleClearPrompt}
-                        className="absolute right-2 top-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
-                        aria-label="Clear prompt"
-                        title="Clear prompt"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    )}
+    <div className="relative">
+      <textarea
+  {...register("prompt")}
+  ref={(el) => {
+    register("prompt").ref(el);
+    inputRef.current = el;
+  }}
+        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 pr-10 transition-colors duration-200 ${
+          isOverLimit
+            ? "ring-1 ring-red-500 rounded"
+            : isNearLimit
+            ? "ring-1 ring-yellow-400 rounded"
+            : ""
+        }`}
+        placeholder="Every great story begins with a single idea. What's yours?"
+        value={textareaValue}
+        maxLength={MAX_PROMPT_LENGTH}
+        onChange={(e) => setTextareaValue(e.target.value)}
+      />
 
-                    {/* Character count row */}
-                    <div className="flex items-center justify-between mt-1 px-1">
-                      {isOverLimit ? (
-                        <p className="text-xs text-red-400 flex items-center gap-1">
-                          <span>⚠</span> Character limit reached — generate is disabled
-                        </p>
-                      ) : isNearLimit ? (
-                        <p className="text-xs text-yellow-400 flex items-center gap-1">
-                          <span>⚠</span> {MAX_PROMPT_LENGTH - textareaValue.length} characters remaining
-                        </p>
-                      ) : (
-                        <span />
-                      )}
-                      <span
-                        className={`text-xs tabular-nums ml-auto ${
-                          isOverLimit
-                            ? "text-red-400 font-medium"
-                            : isNearLimit
-                            ? "text-yellow-400"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {textareaValue.length} / {MAX_PROMPT_LENGTH}
-                      </span>
-                    </div>
-                  </div>
+      {textareaValue.length > 0 && (
+        <button
+          type="button"
+          onClick={handleClearPrompt}
+          className="absolute right-2 top-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
+          aria-label="Clear prompt"
+          title="Clear prompt"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      )}
 
-                  <p className="text-xs text-gray-500 mt-1 px-1">
-                    💡 <span className="font-medium">Keyboard tip:</span> Press{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Tab
-                    </kbd>{" "}
-                    to navigate fields and{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Enter
-                    </kbd>{" "}
-                    to generate your story.
-                  </p>
+      <div className="flex items-center justify-between mt-1 px-1">
+        {isOverLimit ? (
+          <p className="text-xs text-red-400 flex items-center gap-1">
+            <span>⚠</span> Character limit reached — generate is disabled
+          </p>
+        ) : isNearLimit ? (
+          <p className="text-xs text-yellow-400 flex items-center gap-1">
+            <span>⚠</span>{" "}
+            {MAX_PROMPT_LENGTH - textareaValue.length} characters remaining
+          </p>
+        ) : (
+          <span />
+        )}
 
-                  <div className="flex justify-end mt-2 w-full">
-                    <button
-                      type="submit"
-                      disabled={loading || isOverLimit}
-                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-                        loading || isOverLimit
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:shadow-lg hover:shadow-indigo-500/50"
-                      } transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 group cursor-pointer`}
-                    >
-                      <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
-                      {loading ? "Generating..." : "Generate"}
-                    </button>
-                  </div>
-                </form>
-              </div>
->>>>>>> upstream/main
+        <span
+          className={`text-xs tabular-nums ml-auto ${
+            isOverLimit
+              ? "text-red-400 font-medium"
+              : isNearLimit
+              ? "text-yellow-400"
+              : "text-gray-500"
+          }`}
+        >
+          {textareaValue.length} / {MAX_PROMPT_LENGTH}
+        </span>
+      </div>
+    </div>
+
+    <p className="text-xs text-gray-500 mt-1 px-1">
+      💡 <span className="font-medium">Keyboard tip:</span> Press{" "}
+      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+        Ctrl + Enter
+      </kbd>{" "}
+      to generate story
+    </p>
+
+    <div className="flex justify-end mt-2 w-full">
+      <button
+        type="submit"
+        disabled={loading || isOverLimit}
+        className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
+          loading || isOverLimit
+            ? "opacity-50 cursor-not-allowed"
+            : "hover:shadow-lg hover:shadow-indigo-500/50"
+        } transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 group cursor-pointer`}
+      >
+        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
+        {loading ? "Generating..." : "Generate"}
+      </button>
+    </div>
+  </form>
+</div>
             </div>
 
             <div className="w-full max-w-2xl m-auto mt-4">
-              <h1 className="text-sm text-gray-500 mb-1">
-                Here are some example prompts you can refer to:-
-              </h1>
-<<<<<<< HEAD
-              <div className="relative">
-                <select
-                  className="w-full p-2 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none text-sm"
-                  value={selectedPrompt}
-                  aria-label="Select an example prompt"
-                  onChange={handlePromptSelect}
-=======
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full p-3 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-between text-sm text-left transition-all duration-200"
->>>>>>> upstream/main
-                >
-                  <span className="truncate pr-4">
-                    {selectedPrompt || "Select a prompt"}
-                  </span>
-                  <span className={`text-gray-300 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}>
-                    ▼
-                  </span>
-                </button>
+  <h1 className="text-sm text-gray-500 mb-1">
+    Here are some example prompts you can refer to:-
+  </h1>
 
-                {isDropdownOpen && (
-                  <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
-                    {prompts.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedPrompt(item.prompt);
-                            setTextareaValue(item.prompt);
-                            setIsDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
-                        >
-                          {item.prompt}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
+  <div className="relative" ref={dropdownRef}>
+    <button
+      type="button"
+      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+      className="w-full p-3 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-between text-sm text-left transition-all duration-200"
+    >
+      <span className="truncate pr-4">
+        {selectedPrompt || "Select a prompt"}
+      </span>
+
+      <span
+        className={`text-gray-300 transition-transform duration-200 ${
+          isDropdownOpen ? "rotate-180" : ""
+        }`}
+      >
+        ▼
+      </span>
+    </button>
+
+    {isDropdownOpen && (
+      <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
+        {prompts.map((item) => (
+          <li key={item.id}>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPrompt(item.prompt);
+                setTextareaValue(item.prompt);
+                setIsDropdownOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
+            >
+              {item.prompt}
+            </button>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</div>
           </div>
         </div>
       </div>
-<<<<<<< HEAD
-      
-      {loading ? (
-        <div className="mt-12 mb-16 px-4 sm:px-6 lg:px-8 transition-opacity duration-500 ease-in-out opacity-100">
-          <StorySkeleton />
+
+      {showHelpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold text-white mb-4">
+              Keyboard Shortcuts
+            </h2>
+
+            <div className="space-y-3 text-gray-300 text-sm">
+              <div><kbd>?</kbd> Open help</div>
+              <div><kbd>Esc</kbd> Close help</div>
+              <div><kbd>/</kbd> Focus prompt</div>
+              <div><kbd>Ctrl + Enter</kbd> Generate story</div>
+              <div><kbd>Ctrl + S</kbd> Publish story</div>
+            </div>
+
+            <button
+              onClick={() => setShowHelpModal(false)}
+              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
+            >
+              Close
+            </button>
+          </div>
         </div>
-      ) : (
-        <StoriesViewComponent
-          stories={stories}
-          isLogin={login}
-          setStories={setStories}
-        />
       )}
-=======
 
       {loading && <StoryGeneratingAnimation />}
       <StoriesViewComponent
@@ -467,7 +457,6 @@ const StoriesComponent = () => {
         isLogin={login}
         setStories={setStories}
       />
->>>>>>> upstream/main
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
 
       {showLimitModal && (
