@@ -59,9 +59,9 @@ const PricingComponent = () => {
         {pricingPlans.map((plan, index) => (
           <div
             key={index}
-            className={`bg-blue-500/20 p-8 rounded-lg shadow-sm border border-gray-200 ${
+            className={`bg-blue-500/20 p-8 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-indigo-500/20 hover:border-indigo-500/50 cursor-pointer ${
               plan.highlight
-                ? "border-indigo-600 relative transform scale-105"
+                ? "border-indigo-600 relative transform md:scale-105 hover:md:scale-110"
                 : ""
             }`}
           >
@@ -84,7 +84,7 @@ const PricingComponent = () => {
               ))}
             </ul>
             <button
-              className={`w-full !rounded-button px-4 py-2 ${plan.buttonStyle}`}
+              className={`w-full !rounded-button px-4 py-2 mt-auto ${plan.buttonStyle}`}
             >
               {plan.buttonLabel}
             </button>
