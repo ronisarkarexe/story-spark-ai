@@ -49,3 +49,9 @@ coverage/
 
 # Optional tooling
 .eslintcache
+backend/ml/__pycache__/
+backend/ml/my_tuner/
+backend/ml/saved/
+*.pyc
+.env
+node_modules/
