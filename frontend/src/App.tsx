@@ -31,6 +31,7 @@ import PostListsComponent from "./components/dashboard/posts/post_lists.componen
 import ProfileComponent from "./components/dashboard/profile/profile.component";
 import Contact from "./components/contactus/contactus";
 import HelpCenterComponent from "./components/help_center/help_center.component";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 
 import AboutUsComponent from "./components/footer/about-us.tsx";
@@ -74,6 +75,7 @@ function App() {
   }, [darkMode]);
 
   return (
+     <ErrorBoundary>
     <Router>
       {/* Dark Mode Toggle Button */}
       {/* <div className="fixed top-4 right-4 z-50">
@@ -395,6 +397,7 @@ function App() {
         />
       </Routes>
     </Router>
+    </ErrorBoundary>
   );
 }
 export default App;
