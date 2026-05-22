@@ -1,13 +1,12 @@
-import Navbar from "@/app/components/navbarinner";
-import Breadcrumbs from "@/app/components/ui/Breadcrumbs";
 import ArticleActions from "@/app/components/ui/ArticleActions";
 import Content from "@/app/visualizer/stack/implementation/usingArray/content";
 import Code from "@/app/visualizer/stack/implementation/usingArray/codeBlock";
 import ModuleCard from "@/app/components/ui/ModuleCard";
-import { MODULE_MAPS } from "@/lib/modulesMap";
-import Footer from "@/app/components/footer";
 import ExploreOther from "@/app/components/ui/exploreOther";
-import BackToTopButton from "@/app/components/ui/backtotop";
+import VisualizerPageLayout, {
+  createVisualizerPaths,
+} from "@/app/visualizer/components/VisualizerPageLayout";
+import { MODULE_MAPS } from "@/lib/modulesMap";
 
 export const metadata = {
   title:
@@ -43,62 +42,26 @@ export const metadata = {
 };
 
 export default function Page() {
-  const paths = [
-    { name: "Home", href: "/" },
-    { name: "Visualizer", href: "/visualizer" },
-    { name: "Stack : Implementation Using Array", href: "" },
-  ];
-
   return (
-    <>
-      <div>
-        <Navbar />
-      </div>
-
-      <div className="pt-6 pb-16 bg-white dark:bg-[#0f0f0f] text-[#1a1a1a] dark:text-[#f5f5f5]">
-        <section className="px-6 md:px-12">
-          <div className="mt-2 mb-4">
-            <Breadcrumbs paths={paths} />
-          </div>
-
-          <div className="flex items-center flex-col">
-            <div className="flex">
-              <p className="uppercase tracking-wide bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] px-4 py-1 mb-2 rounded-full text-sm font-semibold">
-                Stack
-              </p>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-center text-[#1a1a1a] dark:text-white mb-0">
-              Implementation Using Array
-            </h1>
-            <ArticleActions />
-          </div>
-          <div className="h-px max-w-4xl mx-auto my-10 bg-gradient-to-r from-transparent via-[#d1d7dc] dark:via-[#333] to-transparent"></div>
-          <Content />
-        </section>
-
-        <section className="px-6">
-          <Code />
-        </section>
-
-        <section className="px-6 md:px-12 my-12">
-          <ModuleCard
-            moduleId={MODULE_MAPS.stackArray}
-            title="Stack Implementation using Array"
-            description="Mark Stack using Array as done and view it on your dashboard"
-            initialDone={false}
-          />
-        </section>
-
-        <section>
-          <ExploreOther
-            title="Explore other implementation"
-            links={[{ text: "Using Linked List", url: "./usingLinkedList" }]}
-          />
-        </section>
-      </div>
-
-      <BackToTopButton />
-      <Footer />
-    </>
+    <VisualizerPageLayout
+      paths={createVisualizerPaths("Stack", "Implementation Using Array")}
+      title="Implementation Using Array"
+      headerActions={<ArticleActions />}
+      content={<Content />}
+      code={<Code />}
+      moduleCard={
+        <ModuleCard
+          moduleId={MODULE_MAPS.stackArray}
+          description="Mark Stack using Array as done and view it on your dashboard"
+          initialDone={false}
+        />
+      }
+      exploreOther={
+        <ExploreOther
+          title="Explore other implementation"
+          links={[{ text: "Using Linked List", url: "./usingLinkedList" }]}
+        />
+      }
+    />
   );
 }

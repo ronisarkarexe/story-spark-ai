@@ -75,11 +75,32 @@ export async function POST(req) {
         { status: 200 },
       );
     } else if (action === "login") {
-      // For login, only verify captcha and return success.
+      // Verify captcha, then perform login server-side
+      const client = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key",
+      );
+
+      const { data, error } = await client.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        return new Response(
+          JSON.stringify({ success: false, message: error.message }),
+          { status: 401 },
+        );
+      }
+
       return new Response(
         JSON.stringify({
           success: true,
-          message: "Captcha verified. You can now login using email/password.",
+          message: "Login successful",
+          session: {
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          },
         }),
         { status: 200 },
       );

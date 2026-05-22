@@ -32,8 +32,8 @@ export default function LoginPage() {
       if (!captchaToken) throw new Error("Please complete captcha");
 
       if (isLogin) {
-        // Verify captcha first via API route
-        const verifyRes = await fetch("/api/auth", {
+        // Perform login server-side via API route (captcha + auth)
+        const res = await fetch("/api/auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -43,16 +43,16 @@ export default function LoginPage() {
             action: "login",
           }),
         });
-        const verifyData = await verifyRes.json();
-        if (!verifyData.success)
-          throw new Error(verifyData.message || "Captcha verification failed");
+        const data = await res.json();
+        if (!data.success)
+          throw new Error(data.message || "Login failed");
 
-        // After captcha verified, login using frontend anon key
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+        // Restore the session returned by the server
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
         });
-        if (error) throw error;
+        if (sessionError) throw sessionError;
 
         router.push("/dashboard");
       } else {

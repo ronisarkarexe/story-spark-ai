@@ -1,8 +1,8 @@
-'use client';
-import React, { useState, useRef, useEffect } from 'react';
+"use client";
+import React, { useState, useRef, useEffect } from "react";
 import { gsap } from "gsap";
-import ArrayGenerator from '@/app/components/ui/randomArray';
-import CustomArrayInput from '@/app/components/ui/customArrayInput';
+import ArrayGenerator from "@/app/components/ui/randomArray";
+import CustomArrayInput from "@/app/components/ui/customArrayInput";
 
 const getFontSize = (value) => {
   const len = String(value).length;
@@ -175,7 +175,7 @@ const SelectionSortVisualizer = () => {
                     maxValue={100}
                   />
                   <CustomArrayInput
-                    onSubmit={handleCustomArray}
+                    onUseCustomArray={handleCustomArray}
                     disabled={sorting}
                     placeholder="e.g. 5, 3, 8, 1, 2"
                   />

@@ -1,16 +1,14 @@
-import Animation from "@/app/visualizer/trees/traversing/in-order/animation";
+import TreeTraversalVisualizer from "@/app/visualizer/trees/traversing/TreeTraversalVisualizer";
 
 export const metadata = {
-  title: 'Tree Visualizer | Learn Tree Data Structures with Animation',
-  description: 'Visualize how Tree Data Structures work in DSA with interactive animations. Perfect for beginners and interview prep.',
-  keywords: ['Tree DSA', 'Tree Visualizer', 'Learn Tree', 'Binary Tree', 'DSA Animation'],
+  title: 'In-Order Traversal Visualizer | AlgoBuddy',
+  description: 'Visualize In-Order (Left → Root → Right) binary tree traversal step-by-step with interactive animations, pseudocode highlighting, and quizzes.',
+  keywords: ['In-Order Traversal', 'Binary Tree', 'BST', 'DSA Animation', 'Tree Visualizer'],
   robots: "index, follow",
 };
 
-const TreeVisualizer = () => {
-  return (
-    <Animation />
-  );
+const InOrderPage = () => {
+  return <TreeTraversalVisualizer initialMode="in-order" />;
 };
 
-export default TreeVisualizer;
+export default InOrderPage;

@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
 /* DSA topic map — rows of topic cards, some completed, some locked */
 const TOPIC_ROWS = [
@@ -53,11 +52,11 @@ function TopicCard({ label, color, done, lock }) {
     >
       {/* colour bar */}
       <div className="h-[3px] w-8 rounded-full" style={{ background: color }} />
-      <span className="text-[12px] font-semibold text-surface-900 leading-tight">
+      <span className="text-[12px] font-semibold text-[#1a1a1a] dark:text-[#f7f9fa] leading-tight transition-colors duration-300">
         {label}
       </span>
       {done && (
-        <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white border border-surface-200 flex items-center justify-center text-[10px] text-[#22c55e] font-bold shadow-sm">
+        <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white dark:bg-[#2d2f31] border border-[#e5e7eb] dark:border-[#3e4143] flex items-center justify-center text-[10px] text-[#22c55e] font-bold shadow-sm transition-colors duration-300">
           ✓
         </span>
       )}
@@ -69,39 +68,70 @@ export default function PersonalizedSection() {
   return (
     <section
       className="py-24 px-6 overflow-hidden bg-gradient-to-b from-white via-[#eef2ff] to-[#faf5ff] dark:bg-none dark:bg-[#1c1d1f] transition-colors duration-300"
-      style={{ fontFamily: "'Inter', 'Source Sans 3', sans-serif" }}
+      style={{
+        fontFamily: "'Inter', 'Source Sans 3', sans-serif",
+      }}
     >
       <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
         {/* ── LEFT: text ── */}
         <div className="flex-1 flex flex-col gap-5 items-start lg:min-w-[320px]">
           <h2
-            className="text-[2.6rem] sm:text-[3.2rem] font-black leading-[1.08] tracking-tighter text-surface-900"
+            className="text-[2.6rem] sm:text-[3.2rem] font-black leading-[1.08] tracking-tight text-[#1a1a1a] dark:text-white transition-colors duration-300"
+            style={{ letterSpacing: "-0.03em" }}
           >
             Your DSA path,
             <br />
             your pace
           </h2>
-          <p className="text-[1.1rem] text-surface-600 leading-relaxed max-w-[400px]">
+          <p className="text-[1.1rem] text-[#4b5563] dark:text-[#9e9e9e] leading-relaxed max-w-[400px] transition-colors duration-300">
             Every topic you master unlocks the next. AlgoBuddy maps your
             progress across Arrays, Trees, Graphs and beyond — so you always
             know exactly where to go next.
           </p>
+          
           <Link
             href="/visualizer"
-            className="inline-flex items-center gap-2 h-[46px] min-h-[44px] px-7 rounded-full bg-surface-900 text-white text-[15px] font-bold hover:bg-primary transition-all duration-200"
+            className="inline-flex items-center gap-2 h-[46px] px-7 rounded-full bg-[#1a1a1a] text-white text-[15px] font-bold hover:bg-[#a435f0] transition-all duration-200"
           >
             Start your path
-            <ArrowRight className="w-4 h-4" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M14 5l7 7m0 0l-7 7m7-7H3"
+              />
+            </svg>
           </Link>
         </div>
 
         {/* ── RIGHT: topic map ── */}
         <div className="flex-1 relative w-full overflow-hidden">
           {/* fade edges left & right */}
-          <div className="absolute left-0 top-0 bottom-0 w-12 z-10 pointer-events-none bg-gradient-to-r from-surface-100 via-transparent to-transparent" />
-          <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none bg-gradient-to-l from-purple-50 via-transparent to-transparent" />
+          <div
+            className="absolute left-0 top-0 bottom-0 w-12 z-10 pointer-events-none"
+            style={{
+              background: "linear-gradient(to right, #eef2ff, transparent)",
+            }}
+          />
+          <div
+            className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+            style={{
+              background: "linear-gradient(to left, #faf5ff, transparent)",
+            }}
+          />
           {/* fade bottom */}
-          <div className="absolute left-0 right-0 bottom-0 h-20 z-10 pointer-events-none bg-gradient-to-t from-green-50 via-transparent to-transparent" />
+          <div
+            className="absolute left-0 right-0 bottom-0 h-20 z-10 pointer-events-none"
+            style={{
+              background: "linear-gradient(to top, #f0fdf4, transparent)",
+            }}
+          />
 
           <div className="flex flex-col gap-3 py-2">
             {TOPIC_ROWS.map((row, ri) => (

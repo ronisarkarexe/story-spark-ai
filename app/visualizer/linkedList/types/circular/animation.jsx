@@ -1,14 +1,11 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
-import Footer from '@/app/components/footer';
 import ResetButton from '@/app/components/ui/resetButton';
-import ExploreOther from '@/app/components/ui/exploreOther';
-import Content from "@/app/visualizer/linkedList/types/circular/content";
-import Quiz from '@/app/visualizer/linkedList/types/circular/quiz';
-import CodeBlock from "@/app/visualizer/linkedList/types/circular/codeBlock";
-import BackToTop from '@/app/components/ui/backtotop';
-import GoBackButton from "@/app/components/ui/goback";
+import {
+  VisualizerCard,
+  VisualizerInteractiveLayout,
+} from "@/app/visualizer/components/VisualizerInteractiveLayout";
 
 const CircularLinkedListVisualizer = () => {
   const [inputValue, setInputValue] = useState('');
@@ -92,25 +89,12 @@ const CircularLinkedListVisualizer = () => {
   }, [list]);
 
   return (
-    <div className="min-h-screen max-h-auto bg-gray-100 dark:bg-zinc-950 text-gray-800 dark:text-gray-200">
-      <main className="container mx-auto px-6 pt-16 pb-4">
-        {/* go back block here */}
-        <div className="mt-10 sm:mt-10">
-          <GoBackButton />
-        </div>
-
-        {/* main logic here */}
-        <h1 className="text-4xl md:text-4xl mt-6 ml-10 font-bold text-left text-gray-900 dark:text-white mb-0">
-          <span className="text-black dark:text-white">Circular Linked List</span>
-        </h1>
-        <div className="bg-black border border-none dark:bg-gray-600 w-100 h-[2px] rounded-xl mt-2 mb-5"></div>
-        <Content />
-        <p className="text-lg text-center text-gray-600 dark:text-gray-400 mb-8">
+    <VisualizerInteractiveLayout>
+      <p className="text-center text-lg text-[#6b7280] dark:text-[#9ca3af]">
           Visualize Circular Linked List Operations
-        </p>
-        
-        {/* Input Form */}
-        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-8 border border-gray-200 dark:border-gray-700">
+      </p>
+
+      <VisualizerCard className="mx-auto w-full max-w-md">
           <div className="mb-4">
             <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">
               Node Value
@@ -135,10 +119,9 @@ const CircularLinkedListVisualizer = () => {
             </button>
             <ResetButton onReset={resetList} isAnimating={isAnimating} />
           </div>
-        </div>
+      </VisualizerCard>
 
-        {/* Visualization Area */}
-        <div className="relative max-w-4xl mx-auto">
+      <VisualizerCard className="relative">
           {list.length === 0 ? (
             <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-dashed border-gray-300 dark:border-gray-700">
               <div className="inline-block p-6 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
@@ -256,27 +239,8 @@ const CircularLinkedListVisualizer = () => {
               </div>
             </div>
           )}
-        </div>
-
-        <p className="text-lg text-center text-gray-600 dark:text-gray-400 mt-8 mb-8">
-          Test Your Knowledge before moving forward!
-        </p>
-        <Quiz />
-
-        <CodeBlock/>
-
-        <ExploreOther
-          title="Explore Other Types"
-          links={[
-            { text: "Singly Linked List", url: "./singly" },
-            { text: "Doubly Linked List", url: "./doubly" },
-          ]}
-        />
-
-      </main>
-      <BackToTop/>
-      <Footer />
-    </div>
+      </VisualizerCard>
+    </VisualizerInteractiveLayout>
   );
 };
 

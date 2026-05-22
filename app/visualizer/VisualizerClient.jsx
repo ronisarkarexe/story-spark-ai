@@ -2,18 +2,14 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Search, ChevronRight } from "lucide-react";
-import { VISUALIZER_THEMES, getVisualizerTheme } from "@/lib/visualizerThemes";
+import { FiArrowLeft, FiSearch, FiChevronRight } from "react-icons/fi";
 
 /* ─── colour + icon theme per DS ─── */
 const DS_THEME = {
   Array: {
     color: "#a435f0",
     bg: "#faf5ff",
-    darkBg: "rgb(22, 13, 34)",
     border: "#e9d5ff",
-    label: "7 algorithms",
-    bars: [65, 30, 80, 45, 55, 20, 70],
     icon: (c) => (
       <svg viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
         <rect x="3" y="3" width="4" height="18" rx="1" /><rect x="10" y="8" width="4" height="13" rx="1" /><rect x="17" y="5" width="4" height="16" rx="1" />
@@ -23,10 +19,7 @@ const DS_THEME = {
   Stack: {
     color: "#2563eb",
     bg: "#eff6ff",
-    darkBg: "rgb(13, 22, 39)",
     border: "#bfdbfe",
-    label: "8 algorithms",
-    stack: ["push(42)", "push(17)", "peek → 17"],
     icon: (c) => (
       <svg viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
         <rect x="4" y="2" width="16" height="5" rx="1.5" /><rect x="4" y="9" width="16" height="5" rx="1.5" /><rect x="4" y="16" width="16" height="5" rx="1.5" />
@@ -36,9 +29,7 @@ const DS_THEME = {
   Queue: {
     color: "#059669",
     bg: "#f0fdf4",
-    darkBg: "rgb(13, 31, 20)",
     border: "#d1fae5",
-    label: "10 algorithms",
     icon: (c) => (
       <svg viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
         <rect x="2" y="7" width="5" height="10" rx="1.5" /><rect x="9.5" y="7" width="5" height="10" rx="1.5" /><rect x="17" y="7" width="5" height="10" rx="1.5" /><path d="M22 12h-1" /><path d="M3 12H2" />
@@ -48,9 +39,7 @@ const DS_THEME = {
   "Linked List": {
     color: "#d97706",
     bg: "#fffbeb",
-    darkBg: "rgb(26, 21, 6)",
     border: "#fde68a",
-    label: "10 algorithms",
     icon: (c) => (
       <svg viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
         <circle cx="5" cy="12" r="3" /><circle cx="19" cy="12" r="3" /><path d="M8 12h8" /><path d="M14 9l3 3-3 3" />
@@ -60,9 +49,7 @@ const DS_THEME = {
   Tree: {
     color: "#7c3aed",
     bg: "#faf5ff",
-    darkBg: "rgb(22, 13, 34)",
     border: "#e9d5ff",
-    label: "20 algorithms",
     icon: (c) => (
       <svg viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
         <circle cx="12" cy="5" r="2.5" /><circle cx="6" cy="15" r="2.5" /><circle cx="18" cy="15" r="2.5" /><path d="M10.2 7.2L7.5 12.5" /><path d="M13.8 7.2l2.7 5.3" />
@@ -72,9 +59,7 @@ const DS_THEME = {
   Graph: {
     color: "#dc2626",
     bg: "#fef2f2",
-    darkBg: "rgb(31, 13, 13)",
     border: "#fecaca",
-    label: "8 algorithms",
     icon: (c) => (
       <svg viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
         <circle cx="5" cy="6" r="2.5" /><circle cx="19" cy="6" r="2.5" /><circle cx="5" cy="18" r="2.5" /><circle cx="19" cy="18" r="2.5" /><path d="M7.5 6h9" /><path d="M5 8.5v7" /><path d="M19 8.5v7" /><path d="M7.5 18h9" /><path d="M7 8l10 8" />
@@ -82,6 +67,7 @@ const DS_THEME = {
     ),
   },
 };
+
 const getTheme = (t) =>
   DS_THEME[t] || {
     icon: (c) => (
@@ -91,9 +77,7 @@ const getTheme = (t) =>
     ),
     color: "#6b7280",
     bg: "#f9fafb",
-    darkBg: "rgb(17, 17, 17)",
     border: "#e5e7eb",
-    label: "",
   };
 
 /* ═══════════════════════════════════════
@@ -107,7 +91,7 @@ function ArrayMiniViz({ color }) {
       {bars.map((h, i) => (
         <div
           key={i}
-          className="flex-1 rounded-t-sm transition-all"
+          className={`flex-1 rounded-t-sm transition-all ${i === highlight ? '' : 'mini-viz-inactive'}`}
           style={{
             height: `${(h / 80) * 44}px`,
             background: i === highlight ? color : color + "30",
@@ -125,7 +109,7 @@ function StackMiniViz({ color }) {
       {items.map((v, i) => (
         <div
           key={i}
-          className="h-[14px] rounded text-[10px] font-bold flex items-center justify-center"
+          className={`h-[14px] rounded text-[10px] font-bold flex items-center justify-center ${i === 0 ? '' : 'mini-viz-inactive'}`}
           style={{
             background: i === 0 ? color : color + "25",
             color: i === 0 ? "#fff" : color,
@@ -145,7 +129,7 @@ function QueueMiniViz({ color }) {
       {items.map((v, i) => (
         <div
           key={i}
-          className="w-8 h-8 rounded-md text-[10px] font-bold flex items-center justify-center"
+          className={`w-8 h-8 rounded-md text-[10px] font-bold flex items-center justify-center ${i === 0 ? '' : 'mini-viz-inactive'}`}
           style={{
             background: i === 0 ? color : color + "20",
             color: i === 0 ? "#fff" : color,
@@ -154,7 +138,7 @@ function QueueMiniViz({ color }) {
           {v}
         </div>
       ))}
-      <span className="text-[10px] font-bold ml-1" style={{ color }}>
+      <span className="text-[10px] font-bold ml-1 mini-viz-arrow" style={{ color }}>
         →
       </span>
     </div>
@@ -168,29 +152,16 @@ function LinkedListMiniViz({ color }) {
       {nodes.map((v, i) => (
         <div key={i} className="flex items-center">
           <div
-            className="w-7 h-7 rounded-full text-[10px] font-bold flex items-center justify-center"
+            className="w-7 h-7 rounded-full text-[10px] font-bold flex items-center justify-center mini-viz-inactive"
             style={{ background: color + "20", color }}
           >
             {v}
           </div>
           {i < nodes.length - 1 && (
             <svg width="12" height="8" className="flex-shrink-0">
-              <path
-                d="M0 4 L10 4"
-                stroke={color}
-                strokeWidth="1.5"
-                fill="none"
-                markerEnd="url(#arrowhead)"
-              />
+              <path d="M0 4 L10 4" stroke={color} strokeWidth="1.5" fill="none" markerEnd="url(#arrowhead)"/>
               <defs>
-                <marker
-                  id="arrowhead"
-                  markerWidth="4"
-                  markerHeight="4"
-                  refX="4"
-                  refY="2"
-                  orient="auto"
-                >
+                <marker id="arrowhead" markerWidth="4" markerHeight="4" refX="4" refY="2" orient="auto">
                   <path d="M0,0 L4,2 L0,4" fill={color} />
                 </marker>
               </defs>
@@ -205,76 +176,15 @@ function LinkedListMiniViz({ color }) {
 function TreeMiniViz({ color }) {
   return (
     <svg viewBox="0 0 80 50" className="w-full h-[48px]">
-      {/* edges */}
-      <line
-        x1="40"
-        y1="10"
-        x2="20"
-        y2="30"
-        stroke={color + "40"}
-        strokeWidth="1.5"
-      />
-      <line
-        x1="40"
-        y1="10"
-        x2="60"
-        y2="30"
-        stroke={color + "40"}
-        strokeWidth="1.5"
-      />
-      <line
-        x1="20"
-        y1="30"
-        x2="10"
-        y2="45"
-        stroke={color + "40"}
-        strokeWidth="1.5"
-      />
-      <line
-        x1="20"
-        y1="30"
-        x2="30"
-        y2="45"
-        stroke={color + "40"}
-        strokeWidth="1.5"
-      />
-      {/* nodes */}
+      <line x1="40" y1="10" x2="20" y2="30" stroke={color + "40"} strokeWidth="1.5" className="mini-viz-line" />
+      <line x1="40" y1="10" x2="60" y2="30" stroke={color + "40"} strokeWidth="1.5" className="mini-viz-line" />
+      <line x1="20" y1="30" x2="10" y2="45" stroke={color + "40"} strokeWidth="1.5" className="mini-viz-line" />
+      <line x1="20" y1="30" x2="30" y2="45" stroke={color + "40"} strokeWidth="1.5" className="mini-viz-line" />
       <circle cx="40" cy="10" r="6" fill={color} />
-      <circle cx="20" cy="30" r="5" fill={color + "60"} />
-      <circle cx="60" cy="30" r="5" fill={color + "60"} />
-      <circle cx="10" cy="45" r="4" fill={color + "30"} />
-      <circle cx="30" cy="45" r="4" fill={color + "30"} />
-      {/* labels */}
-      <text
-        x="40"
-        y="13"
-        textAnchor="middle"
-        fill="#fff"
-        fontSize="7"
-        fontWeight="bold"
-      >
-        8
-      </text>
-      <text
-        x="20"
-        y="33"
-        textAnchor="middle"
-        fill="#fff"
-        fontSize="6"
-        fontWeight="bold"
-      >
-        3
-      </text>
-      <text
-        x="60"
-        y="33"
-        textAnchor="middle"
-        fill="#fff"
-        fontSize="6"
-        fontWeight="bold"
-      >
-        10
-      </text>
+      <circle cx="20" cy="30" r="5" fill={color + "60"} className="mini-viz-inactive-node" />
+      <circle cx="60" cy="30" r="5" fill={color + "60"} className="mini-viz-inactive-node" />
+      <circle cx="10" cy="45" r="4" fill={color + "30"} className="mini-viz-inactive-node" />
+      <circle cx="30" cy="45" r="4" fill={color + "30"} className="mini-viz-inactive-node" />
     </svg>
   );
 }
@@ -282,58 +192,16 @@ function TreeMiniViz({ color }) {
 function GraphMiniViz({ color }) {
   return (
     <svg viewBox="0 0 80 50" className="w-full h-[48px]">
-      <line
-        x1="15"
-        y1="15"
-        x2="40"
-        y2="10"
-        stroke={color + "40"}
-        strokeWidth="1.5"
-      />
-      <line
-        x1="40"
-        y1="10"
-        x2="65"
-        y2="18"
-        stroke={color + "40"}
-        strokeWidth="1.5"
-      />
-      <line
-        x1="15"
-        y1="15"
-        x2="25"
-        y2="40"
-        stroke={color + "40"}
-        strokeWidth="1.5"
-      />
-      <line
-        x1="25"
-        y1="40"
-        x2="55"
-        y2="38"
-        stroke={color + "40"}
-        strokeWidth="1.5"
-      />
-      <line
-        x1="65"
-        y1="18"
-        x2="55"
-        y2="38"
-        stroke={color + "40"}
-        strokeWidth="1.5"
-      />
-      <line
-        x1="40"
-        y1="10"
-        x2="25"
-        y2="40"
-        stroke={color + "40"}
-        strokeWidth="1.5"
-      />
+      <line x1="15" y1="15" x2="40" y2="10" stroke={color + "40"} strokeWidth="1.5" className="mini-viz-line" />
+      <line x1="40" y1="10" x2="65" y2="18" stroke={color + "40"} strokeWidth="1.5" className="mini-viz-line" />
+      <line x1="15" y1="15" x2="25" y2="40" stroke={color + "40"} strokeWidth="1.5" className="mini-viz-line" />
+      <line x1="25" y1="40" x2="55" y2="38" stroke={color + "40"} strokeWidth="1.5" className="mini-viz-line" />
+      <line x1="65" y1="18" x2="55" y2="38" stroke={color + "40"} strokeWidth="1.5" className="mini-viz-line" />
+      <line x1="40" y1="10" x2="25" y2="40" stroke={color + "40"} strokeWidth="1.5" className="mini-viz-line" />
       <circle cx="15" cy="15" r="5" fill={color} />
-      <circle cx="40" cy="10" r="5" fill={color + "80"} />
-      <circle cx="65" cy="18" r="5" fill={color + "60"} />
-      <circle cx="25" cy="40" r="5" fill={color + "80"} />
+      <circle cx="40" cy="10" r="5" fill={color + "80"} className="mini-viz-inactive-node" />
+      <circle cx="65" cy="18" r="5" fill={color + "60"} className="mini-viz-inactive-node" />
+      <circle cx="25" cy="40" r="5" fill={color + "80"} className="mini-viz-inactive-node" />
       <circle cx="55" cy="38" r="5" fill={color} />
     </svg>
   );
@@ -370,69 +238,70 @@ function DSCard({ section, theme, onClick, delay }) {
       <div
         className="rounded-2xl border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
         style={{ borderColor: theme.border }}
+        data-theme-card={section.title || "Custom Code"}
       >
-        {/* title bar — like homepage code cards */}
+        {/* title bar */}
         <div
-          className="flex items-center gap-2 px-4 py-3 border-b"
+          className="flex items-center gap-2 px-4 py-3 border-b transition-colors duration-300"
           style={{ background: theme.bg, borderColor: theme.border }}
+          data-theme-header={section.title || "Custom Code"}
         >
           <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
           <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
           <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-          <span className="ml-2 text-[12px] font-mono text-surface-500 dark:text-surface-400">
+          <span className="ml-2 text-[12px] font-mono text-surface-500 dark:text-surface-300">
             {section.title.toLowerCase().replace(/\s/g, "")}.js
           </span>
         </div>
 
         {/* card body */}
         <div
-          className="p-5 bg-white dark:bg-surface-900 transition-colors duration-200"
-          style={{
-            backgroundColor: "white",
-          }}
-          data-theme-card={section.title}
+          className="p-5 bg-white transition-colors duration-300"
+          data-theme-card={section.title || "Custom Code"}
         >
           {/* icon + title */}
           <div className="flex items-center gap-3 mb-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center p-2 flex-shrink-0"
+              className="w-10 h-10 rounded-xl flex items-center justify-center p-2 flex-shrink-0 transition-colors duration-300"
               style={{ background: theme.bg }}
+              data-theme-header={section.title || "Custom Code"}
             >
               {theme.icon(theme.color)}
             </div>
             <div>
-              <h3 className="text-[18px] font-extrabold text-surface-900 ">
+              <h3 className="text-[18px] font-extrabold text-surface-900 dark:text-white transition-colors">
                 {section.title}
               </h3>
-              <p className="text-[12px] text-surface-500 dark:text-surface-400 font-medium">
+              <p className="text-[12px] text-surface-500 dark:text-surface-400 font-medium transition-colors">
                 {count} algorithm{count !== 1 ? "s" : ""} to explore
               </p>
             </div>
           </div>
 
           {/* description */}
-          <p className="text-[13px] text-surface-600 leading-relaxed mb-4">
+          <p className="text-[13px] text-surface-600 dark:text-surface-300 leading-relaxed mb-4 transition-colors">
             {section.desc}
           </p>
 
           {/* mini visualization */}
           {MiniViz && (
             <div
-              className="rounded-lg p-3 mb-4 border"
+              className="rounded-lg p-3 mb-4 border transition-colors duration-300"
               style={{ background: theme.bg, borderColor: theme.border }}
+              data-theme-header={section.title || "Custom Code"}
             >
               <MiniViz color={theme.color} />
             </div>
           )}
 
-          {/* CTA pill — like homepage buttons */}
+          {/* CTA pill */}
           <div
             className="inline-flex items-center gap-2 h-[36px] px-5 rounded-full text-[13px] font-bold text-white
               group-hover:gap-3 transition-all duration-200"
             style={{ background: theme.color }}
           >
             Explore {section.title}
-            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-200" />
+            <FiChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-200" />
           </div>
         </div>
       </div>
@@ -455,41 +324,38 @@ function ModuleView({ section, theme, onBack }) {
       exit={{ opacity: 0, x: -40 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* hero banner for this DS */}
       <div
-        className="rounded-2xl border p-8 sm:p-10 mb-10"
+        className="rounded-2xl border p-8 sm:p-10 mb-10 transition-colors duration-300"
         style={{ background: theme.bg, borderColor: theme.border }}
-        data-theme-banner={section.title}
+        data-theme-card={section.title}
       >
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 text-[13px] font-bold text-surface-500 dark:text-surface-400
-            hover:text-surface-900 dark:hover:text-surface-600 transition-colors duration-200 mb-5"
+            hover:text-surface-900 dark:hover:text-surface-100 transition-colors duration-200 mb-5"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to all topics
+          <FiArrowLeft className="w-4 h-4" /> Back to all topics
         </button>
 
         <div className="flex items-center gap-4 mb-3">
           <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center p-3 flex-shrink-0"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center p-3 flex-shrink-0 transition-colors duration-300"
             style={{ background: theme.bg }}
+            data-theme-header={section.title}
           >
             {theme.icon(theme.color)}
           </div>
           <div>
-            <h2
-              className="text-[2rem] sm:text-[2.8rem] font-black leading-[1.1] tracking-tighter text-surface-900 "
-            >
+            <h2 className="text-[2rem] sm:text-[2.8rem] font-black leading-[1.1] tracking-tighter text-surface-900 dark:text-white transition-colors duration-300">
               {section.title}
             </h2>
-            <p className="text-[14px] text-surface-600 mt-1">
+            <p className="text-[14px] text-surface-600 dark:text-surface-300 mt-1 transition-colors duration-300">
               {count} algorithm{count !== 1 ? "s" : ""} · {section.desc}
             </p>
           </div>
         </div>
       </div>
 
-      {/* subsections */}
       <div className="space-y-8">
         {section.subsections?.map((sub, si) => (
           <motion.div
@@ -510,29 +376,23 @@ function ModuleView({ section, theme, onBack }) {
                   key={ii}
                   href={item.path}
                   className="group/item flex items-center justify-between p-4 rounded-xl border
-                    bg-white dark:bg-surface-800 hover:shadow-md transition-all duration-200"
+                    bg-white dark:bg-[#2d2f31] dark:border-[#4b5563] hover:shadow-md transition-all duration-200"
                   style={{ borderColor: theme.border }}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[14px] font-bold"
-                      style={{
-                        background: theme.color + "15",
-                        color: theme.color,
-                      }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[14px] font-bold transition-colors duration-300"
+                      style={{ background: theme.color + "15", color: theme.color }}
+                      data-theme-header={section.title}
                     >
                       {ii + 1}
                     </div>
-                    <span
-                      className="text-[14px] font-semibold text-surface-900 dark:text-surface-50
-                      group-hover/item:text-primary transition-colors"
-                    >
+                    <span className="text-[14px] font-semibold text-surface-900 dark:text-white group-hover/item:text-primary transition-colors">
                       {item.name}
                     </span>
                   </div>
-                  <ChevronRight
-                    className="w-4 h-4 text-surface-300 dark:text-surface-600
-                      group-hover/item:translate-x-1 transition-all duration-200"
+                  <FiChevronRight
+                    className="w-4 h-4 text-surface-300 dark:text-surface-500 group-hover/item:translate-x-1 transition-all duration-200"
                     style={{ color: theme.color + "60" }}
                   />
                 </Link>
@@ -552,7 +412,6 @@ export default function VisualizerClient({ initialSections }) {
   const [activeSection, setActiveSection] = useState(null);
   const [search, setSearch] = useState("");
 
-  /* ── filter sections ── */
   const filtered = useMemo(() => {
     if (!search.trim()) return initialSections;
     const q = search.toLowerCase();
@@ -562,9 +421,7 @@ export default function VisualizerClient({ initialSections }) {
         const subs = sec.subsections
           ?.map((sub) => {
             const subHit = sub.title.toLowerCase().includes(q);
-            const items = sub.items.filter((i) =>
-              i.name.toLowerCase().includes(q),
-            );
+            const items = sub.items.filter((i) => i.name.toLowerCase().includes(q));
             return { ...sub, items: subHit ? sub.items : items };
           })
           .filter((sub) => sub.items.length > 0);
@@ -577,7 +434,6 @@ export default function VisualizerClient({ initialSections }) {
       .filter((s) => s._hit);
   }, [search, initialSections]);
 
-  /* ── flat results for search ── */
   const flatResults = useMemo(() => {
     if (!search.trim()) return [];
     const q = search.toLowerCase();
@@ -596,72 +452,74 @@ export default function VisualizerClient({ initialSections }) {
   return (
     <div>
       <style>{`
-        /* Dark mode gradient backgrounds for visualizer cards */
-        .dark [data-theme-card="Array"] { 
-          background: linear-gradient(135deg, rgba(109, 40, 217, 0.2) 0%, rgba(168, 85, 247, 0.08) 100%);
-        }
-        .dark [data-theme-card="Stack"] { 
-          background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(96, 165, 250, 0.08) 100%);
-        }
-        .dark [data-theme-card="Queue"] { 
-          background: linear-gradient(135deg, rgba(5, 150, 105, 0.2) 0%, rgba(52, 211, 153, 0.08) 100%);
-        }
-        .dark [data-theme-card="Linked List"] { 
-          background: linear-gradient(135deg, rgba(217, 119, 6, 0.2) 0%, rgba(251, 146, 60, 0.08) 100%);
-        }
-        .dark [data-theme-card="Tree"] { 
-          background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(168, 85, 247, 0.08) 100%);
-        }
-        .dark [data-theme-card="Graph"] { 
-          background: linear-gradient(135deg, rgba(220, 38, 38, 0.2) 0%, rgba(248, 113, 113, 0.08) 100%);
-        }
+        /* Overriding inline styles aggressively for perfect dark mode */
         
-        /* Dark mode gradient backgrounds for module view hero banners */
-        .dark [data-theme-banner="Array"] { 
-          background: linear-gradient(135deg, rgba(109, 40, 217, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%);
-          border-color: rgba(168, 85, 247, 0.3);
-        }
-        .dark [data-theme-banner="Stack"] { 
-          background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(96, 165, 250, 0.05) 100%);
-          border-color: rgba(96, 165, 250, 0.3);
-        }
-        .dark [data-theme-banner="Queue"] { 
-          background: linear-gradient(135deg, rgba(5, 150, 105, 0.15) 0%, rgba(52, 211, 153, 0.05) 100%);
-          border-color: rgba(52, 211, 153, 0.3);
-        }
-        .dark [data-theme-banner="Linked List"] { 
-          background: linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(251, 146, 60, 0.05) 100%);
-          border-color: rgba(251, 146, 60, 0.3);
-        }
-        .dark [data-theme-banner="Tree"] { 
-          background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%);
-          border-color: rgba(168, 85, 247, 0.3);
-        }
-        .dark [data-theme-banner="Graph"] { 
-          background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(248, 113, 113, 0.05) 100%);
-          border-color: rgba(248, 113, 113, 0.3);
-        }
+        /* Dark mode solid card body elevations */
+        .dark [data-theme-card="Custom Code"] { background: #2d2f31 !important; border-color: #4b5563 !important; }
+        .dark [data-theme-card="Array"] { background: #1a0e2d !important; border-color: #5b21b6 !important; }
+        .dark [data-theme-card="Stack"] { background: #111d33 !important; border-color: #1e3a8a !important; }
+        .dark [data-theme-card="Queue"] { background: #122b19 !important; border-color: #166534 !important; }
+        .dark [data-theme-card="Linked List"] { background: #2b1a08 !important; border-color: #92400e !important; }
+        .dark [data-theme-card="Tree"] { background: #1a0e2d !important; border-color: #5b21b6 !important; }
+        .dark [data-theme-card="Graph"] { background: #2c1215 !important; border-color: #991b1b !important; }
+
+        /* Dark mode solid card headers & icons */
+        .dark [data-theme-header="Custom Code"] { background: #3e4143 !important; border-color: #4b5563 !important; }
+        .dark [data-theme-header="Array"] { background: #23133d !important; border-color: #5b21b6 !important; }
+        .dark [data-theme-header="Stack"] { background: #182847 !important; border-color: #1e3a8a !important; }
+        .dark [data-theme-header="Queue"] { background: #173820 !important; border-color: #166534 !important; }
+        .dark [data-theme-header="Linked List"] { background: #3d240a !important; border-color: #92400e !important; }
+        .dark [data-theme-header="Tree"] { background: #23133d !important; border-color: #5b21b6 !important; }
+        .dark [data-theme-header="Graph"] { background: #3d171b !important; border-color: #991b1b !important; }
+
+        /* Mini Viz Overrides for Dark Mode (Rich saturated colors) */
+        .dark [data-theme-card="Array"] .mini-viz-inactive { background: #5b21b6 !important; }
+        .dark [data-theme-card="Stack"] .mini-viz-inactive { background: #1e3a8a !important; color: #93c5fd !important; }
+        .dark [data-theme-card="Queue"] .mini-viz-inactive { background: #166534 !important; color: #86efac !important; }
+        .dark [data-theme-card="Queue"] .mini-viz-arrow { color: #86efac !important; }
+        .dark [data-theme-card="Linked List"] .mini-viz-inactive { background: #92400e !important; color: #fcd34d !important; }
+        .dark [data-theme-card="Tree"] .mini-viz-inactive-node { fill: #5b21b6 !important; }
+        .dark [data-theme-card="Graph"] .mini-viz-inactive-node { fill: #991b1b !important; }
+        .dark .mini-viz-line { stroke: #4b5563 !important; }
       `}</style>
+      
       {/* ═══════ CONTENT AREA ═══════ */}
       <section
-        className="px-5 pt-28 pb-20 min-h-screen bg-gradient-to-b from-white via-surface-50 to-purple-50/40 dark:from-surface-900 dark:via-surface-900 dark:to-surface-900"
+        className="px-5 pt-28 pb-20 min-h-screen bg-gradient-to-b from-white via-surface-50 to-purple-50/40 dark:bg-none dark:bg-[#1c1d1f] transition-colors duration-300"
       >
         <div className="max-w-[1100px] mx-auto">
           {/* page heading + search */}
           <div className="text-center mb-14">
-            <h1
-              className="text-[2.6rem] sm:text-[3.4rem] lg:text-[4rem] font-black leading-[1.08] tracking-tighter text-surface-900 dark:text-surface-50 mb-4"
-            >
+            <h1 className="text-[2.6rem] sm:text-[3.4rem] lg:text-[4rem] font-black leading-[1.08] tracking-tighter text-surface-900 dark:text-white mb-4 transition-colors">
               Algorithm <span className="text-primary">Visualizer</span>
             </h1>
-            <p className="text-[1.1rem] text-surface-600 dark:text-surface-400 leading-relaxed max-w-[480px] mx-auto">
+            <p className="text-[1.1rem] text-surface-600 dark:text-surface-400 leading-relaxed max-w-[480px] mx-auto transition-colors">
               Pick any data structure, tap an algorithm, and watch it run step
               by step. Learning DSA has never been this fun.
             </p>
+
+            {/* Search Bar */}
+            <div className="relative max-w-[480px] mx-auto mt-8">
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search algorithms and topics..."
+                className="w-full h-[52px] pl-12 pr-4 rounded-2xl border border-[#e5e7eb] dark:border-[#333] bg-white dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-white placeholder-[#9ca3af] text-[15px] shadow-sm focus:outline-none focus:border-[#a435f0] focus:ring-2 focus:ring-[#a435f0]/20 transition-all"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#1a1a1a] dark:hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
 
           <AnimatePresence mode="wait">
-            {/* ─── SEARCH RESULTS ─── */}
             {search.trim() ? (
               <motion.div
                 key="search"
@@ -672,7 +530,7 @@ export default function VisualizerClient({ initialSections }) {
               >
                 {flatResults.length > 0 ? (
                   <div className="max-w-3xl mx-auto">
-                    <p className="text-[13px] font-bold text-surface-500 uppercase tracking-wider mb-5">
+                    <p className="text-[13px] font-bold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-5">
                       {flatResults.length} result
                       {flatResults.length !== 1 ? "s" : ""}
                     </p>
@@ -683,25 +541,25 @@ export default function VisualizerClient({ initialSections }) {
                           <Link
                             key={i}
                             href={item.path}
-                            className="group/r flex items-center gap-3 p-4 rounded-xl bg-white border
-                              hover:shadow-md transition-all duration-200"
+                            className="group/r flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-[#2d2f31] border dark:border-[#4b5563] hover:shadow-md transition-all duration-200"
                             style={{ borderColor: t.border }}
                           >
                             <div
-                              className="w-8 h-8 rounded-lg flex items-center justify-center p-1.5 flex-shrink-0"
+                              className="w-8 h-8 rounded-lg flex items-center justify-center p-1.5 flex-shrink-0 transition-colors"
                               style={{ background: t.bg }}
+                              data-theme-header={item.ds}
                             >
                               {t.icon(t.color)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-[14px] font-semibold text-surface-900 group-hover/r:text-primary transition-colors">
+                              <span className="text-[14px] font-semibold text-surface-900 dark:text-white group-hover/r:text-primary transition-colors">
                                 {item.name}
                               </span>
-                              <span className="block text-[11px] text-surface-500">
+                              <span className="block text-[11px] text-surface-500 dark:text-surface-400">
                                 {item.ds}
                               </span>
                             </div>
-                            <ChevronRight className="w-4 h-4 text-surface-300 group-hover/r:translate-x-1 transition-all" />
+                            <FiChevronRight className="w-4 h-4 text-surface-300 dark:text-surface-500 group-hover/r:translate-x-1 transition-all" />
                           </Link>
                         );
                       })}
@@ -710,19 +568,18 @@ export default function VisualizerClient({ initialSections }) {
                 ) : (
                   <div className="text-center py-16">
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-surface-100 dark:bg-surface-800">
-                      <Search className="h-6 w-6 text-surface-400" />
+                      <FiSearch className="h-6 w-6 text-surface-400" />
                     </div>
-                    <h3 className="text-2xl font-bold text-surface-900 mb-2">
+                    <h3 className="text-2xl font-bold text-surface-900 dark:text-white mb-2">
                       No results found
                     </h3>
-                    <p className="text-surface-500 text-[15px]">
+                    <p className="text-surface-500 dark:text-surface-400 text-[15px]">
                       Try a different search term
                     </p>
                   </div>
                 )}
               </motion.div>
-            ) : /* ─── MODULE DRILL-DOWN ─── */
-            activeSection ? (
+            ) : activeSection ? (
               <ModuleView
                 key={`module-${activeSection.title}`}
                 section={activeSection}
@@ -730,7 +587,6 @@ export default function VisualizerClient({ initialSections }) {
                 onBack={() => setActiveSection(null)}
               />
             ) : (
-              /* ─── MAIN GRID ─── */
               <motion.div
                 key="grid"
                 initial={{ opacity: 0 }}
@@ -749,20 +605,6 @@ export default function VisualizerClient({ initialSections }) {
                     />
                   ))}
                 </div>
-
-                {filtered.length === 0 && (
-                  <div className="text-center py-16">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-surface-100 dark:bg-surface-800">
-                      <Search className="h-6 w-6 text-surface-400" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-surface-900 mb-2">
-                      No topics found
-                    </h3>
-                    <p className="text-surface-500">
-                      Try a different search term
-                    </p>
-                  </div>
-                )}
               </motion.div>
             )}
           </AnimatePresence>

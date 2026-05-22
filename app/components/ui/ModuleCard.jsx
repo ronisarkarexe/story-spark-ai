@@ -20,7 +20,7 @@ export default function ModuleCard({ moduleId, description, initialDone }) {
       .select("is_done")
       .eq("user_id", user.id)
       .eq("module_id", moduleId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error("Error fetching user progress:", error);

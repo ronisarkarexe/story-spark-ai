@@ -1,14 +1,12 @@
 import Animation from "@/app/visualizer/searching/binarysearch/animation";
-import Navbar from "@/app/components/navbarinner";
-import Footer from "@/app/components/footer";
-import BackToTop from "@/app/components/ui/backtotop";
 import ExploreOther from "@/app/components/ui/exploreOther";
 import Code from "@/app/visualizer/searching/binarysearch/codeBlock";
 import Quiz from "@/app/visualizer/searching/binarysearch/quiz";
-import Content from '@/app/visualizer/searching/binarysearch/content';
-import Breadcrumbs from "@/app/components/ui/Breadcrumbs";
-
+import Content from "@/app/visualizer/searching/binarysearch/content";
 import ModuleCard from "@/app/components/ui/ModuleCard";
+import VisualizerPageLayout, {
+  createVisualizerPaths,
+} from "@/app/visualizer/components/VisualizerPageLayout";
 import { MODULE_MAPS } from "@/lib/modulesMap";
 
 export const metadata = {
@@ -54,72 +52,27 @@ export const metadata = {
 };
 
 export default function Page() {
-  const paths = [
-    { name: "Home", href: "/" },
-    { name: "Visualizer", href: "/visualizer" },
-    { name: "Searching", href: "/visualizer" },
-    { name: "Binary Search", href: "" },
-  ];
-
   return (
-    <>
-      <div>
-        <Navbar />
-      </div>
-
-      <div className="pt-6 pb-16 bg-white dark:bg-[#0f0f0f] text-[#1a1a1a] dark:text-[#f5f5f5]">
-        <section className="px-6 md:px-12">
-          <div className="mt-2 mb-4">
-            <Breadcrumbs paths={paths} />
-          </div>
-          <div className="flex items-center flex-col">
-
-            <h1
-              className="text-4xl md:text-5xl font-black text-center text-[#1a1a1a] dark:text-white mb-0"
-              style={{ fontFamily: "'Inter', sans-serif", letterSpacing: '-0.03em' }}
-            >
-              Binary Search
-            </h1>
-
-          </div>
-          <div className="h-px max-w-4xl mx-auto my-10 bg-gradient-to-r from-transparent via-[#d1d7dc] dark:via-[#333] to-transparent"></div>
-        </section>
-
-        <section className="px-6">
-          <Animation />
-        </section>
-
-        <section className="px-6 md:px-12">
-          <Content />
-        </section>
-
-        <section className="px-6">
-          <Code />
-        </section>
-
-        <section className="px-6">
-          <Quiz />
-        </section>
-
-        <section className="px-6 md:px-12 my-12">
-          <ModuleCard
-            moduleId={MODULE_MAPS.binarySearch}
-            title="Binary Search"
-            description="Mark binary search as done and view it on your dashboard"
-            initialDone={false}
-          />
-        </section>
-
-        <section className="px-6">
-          <ExploreOther
-            title="Explore other operations"
-            links={[{ text: "Linear Search", url: "./linearsearch" }]}
-          />
-        </section>
-      </div>
-
-      <BackToTop />
-      <Footer />
-    </>
+    <VisualizerPageLayout
+      paths={createVisualizerPaths("Searching", "Binary Search")}
+      title="Binary Search"
+      animation={<Animation />}
+      content={<Content />}
+      code={<Code />}
+      quiz={<Quiz />}
+      moduleCard={
+        <ModuleCard
+          moduleId={MODULE_MAPS.binarySearch}
+          description="Mark binary search as done and view it on your dashboard"
+          initialDone={false}
+        />
+      }
+      exploreOther={
+        <ExploreOther
+          title="Explore other operations"
+          links={[{ text: "Linear Search", url: "./linearsearch" }]}
+        />
+      }
+    />
   );
 }

@@ -1,7 +1,6 @@
 import "./globals.css";
 import Script from "next/script";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { AuthProvider } from "@/app/contexts/AuthContext";
 import { UserProvider } from "@/app/contexts/UserContext";
 import ClientLayoutWrapper from "@/app/components/ui/ClientLayoutWrapper";
 
@@ -59,7 +58,7 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  const session = null; // auth is handled client-side via AuthContext
+  // auth is handled client-side via UserContext (Supabase)
 
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
@@ -69,7 +68,9 @@ export default async function RootLayout({ children }) {
         <link rel="icon" href="/favicon.ico?v=2" />
 
         {/* Prevent flash: apply saved theme before React hydrates */}
-        <script
+        <Script
+          id="theme-script"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -110,13 +111,11 @@ export default async function RootLayout({ children }) {
         >
           Skip to content
         </a>
-        <AuthProvider session={session}>
-          <UserProvider>
-            <ClientLayoutWrapper>
-              <div id="main-content">{children}</div>
-            </ClientLayoutWrapper>
-          </UserProvider>
-        </AuthProvider>
+        <UserProvider>
+          <ClientLayoutWrapper>
+            <div id="main-content">{children}</div>
+          </ClientLayoutWrapper>
+        </UserProvider>
         <SpeedInsights />
       </body>
     </html>

@@ -1,13 +1,10 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import Footer from '@/app/components/footer';
 import ResetButton from '@/app/components/ui/resetButton';
-import ExploreOther from '@/app/components/ui/exploreOther';
-import Content from "@/app/visualizer/linkedList/types/singly/content";
-import Quiz from '@/app/visualizer/linkedList/types/singly/quiz';
-import CodeBlock from "@/app/visualizer/linkedList/types/singly/codeBlock";
-import BackToTop from '@/app/components/ui/backtotop';
-import GoBackButton from "@/app/components/ui/goback";
+import {
+  VisualizerCard,
+  VisualizerInteractiveLayout,
+} from "@/app/visualizer/components/VisualizerInteractiveLayout";
 
 const SinglyLinkedListVisualizer = () => {
   const [inputValue, setInputValue] = useState('');
@@ -18,6 +15,14 @@ const SinglyLinkedListVisualizer = () => {
   const nodeIdCounter = useRef(1);
   const animationRef = useRef(null);
   const isMounted = useRef(true);
+
+  const steps = [0, 1, 2, 3];
+  const explanations = [
+    'Creating a new node in memory.',
+    'Storing the input value in the node.',
+    'Linking the previous node to the new node.',
+    'Node added successfully.'
+  ];
 
   // Generate random memory addresses for visualization
   const generateMemoryAddress = () => {
@@ -88,25 +93,12 @@ const SinglyLinkedListVisualizer = () => {
   }, []);
 
   return (
-    <div className="min-h-screen max-h-auto bg-gray-100 dark:bg-zinc-950 text-gray-800 dark:text-gray-200">
-      <main className="container mx-auto px-6 pt-16 pb-4">
-        {/* go back block here */}
-        <div className="mt-10 sm:mt-10">
-          <GoBackButton />
-        </div>
-
-        {/* main logic here */}
-        <h1 className="text-4xl md:text-4xl mt-6 ml-10 font-bold text-left text-gray-900 dark:text-white mb-0">
-          <span className="text-black dark:text-white">Singly Linked List</span>
-        </h1>
-        <div className="bg-black border border-none dark:bg-gray-600 w-100 h-[2px] rounded-xl mt-2 mb-5"></div>
-        <Content />
-        <p className="text-lg text-center text-gray-600 dark:text-gray-400 mb-8">
+    <VisualizerInteractiveLayout>
+      <p className="text-center text-lg text-[#6b7280] dark:text-[#9ca3af]">
           Visualize Singly Linked List Operations
-        </p>
-          
-          {/* Input Form */}
-          <div className="bg-white max-w-4xl mx-auto dark:bg-gray-800 p-4 rounded-lg shadow-md mb-6 border border-gray-200 dark:border-gray-700">
+      </p>
+
+      <VisualizerCard className="mb-0">
             <div className="mb-3">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Node Value
@@ -146,9 +138,9 @@ const SinglyLinkedListVisualizer = () => {
               </button>
               <ResetButton onReset={resetList} isAnimating={isAnimating} />
             </div>
-          </div>
-          {/* Linked List Visualization */}
-          <div className="bg-white mx-auto max-w-4xl dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+      </VisualizerCard>
+
+      <VisualizerCard>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 text-center flex items-center justify-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -210,30 +202,8 @@ const SinglyLinkedListVisualizer = () => {
                 ))}
               </div>
             )}
-          </div>
-
-          <p className="text-lg text-center text-gray-600 dark:text-gray-400 mt-8 mb-8">
-          Test Your Knowledge before moving forward!
-        </p>
-        <Quiz />
-
-        <CodeBlock/>
-
-        <ExploreOther
-          title="Explore Other Types"
-          links={[
-            { text: "Doubly Linked List", url: "./doubly" },
-            { text: "Circular Linked List", url: "./circular" },
-          ]}
-        />
-      </main>
-      <div>
-        <div className="bg-gray-700 z-10 h-[1px]"></div>
-      </div>
-      <div className="bg-gray-700 z-10 h-[1px]"></div>
-      <BackToTop />
-      <Footer />
-    </div>
+      </VisualizerCard>
+    </VisualizerInteractiveLayout>
   );
 };
 

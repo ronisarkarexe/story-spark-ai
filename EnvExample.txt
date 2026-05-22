@@ -9,3 +9,11 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=Your Cloudfare Captcha Key
 TURNSTILE_SECRET_KEY=Your Cloudfare backend route api key
 SUPABASE_SERVICE_KEY=Your supabase service key
 REVIEW_INBOX_EMAIL=Optional: fixed inbox for review emails (defaults to EMAIL_USER)
+
+# Upstash Redis — required in production to enforce rate limits across all
+# serverless instances. Create a free database at https://console.upstash.com
+# and copy the REST URL and token from the database dashboard.
+# Without these, rate limiting falls back to a per-process in-memory store
+# which is bypassed in serverless deployments (multiple Lambda instances).
+UPSTASH_REDIS_REST_URL=https://your-database.upstash.io
+UPSTASH_REDIS_REST_TOKEN=Your Upstash Redis REST token

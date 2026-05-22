@@ -1,8 +1,5 @@
 import nodemailer from "nodemailer";
-
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX_REQUESTS = 5;
-const rateLimitBuckets = new Map();
+import { checkRateLimit } from "@/lib/rateLimit";
 
 function getClientIp(headers) {
   const forwardedFor = headers.get("x-forwarded-for");
@@ -13,18 +10,6 @@ function getClientIp(headers) {
   const realIp = headers.get("x-real-ip");
   if (realIp) return realIp.trim();
   return "unknown";
-}
-
-function allowRequest(ip) {
-  const now = Date.now();
-  const bucket = rateLimitBuckets.get(ip);
-  if (!bucket || bucket.resetAt <= now) {
-    rateLimitBuckets.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-  if (bucket.count >= RATE_LIMIT_MAX_REQUESTS) return false;
-  bucket.count += 1;
-  return true;
 }
 
 function escapeHtml(value) {
@@ -77,7 +62,12 @@ async function verifyTurnstile(captchaToken, ip) {
 export async function POST(req) {
   try {
     const ip = getClientIp(req.headers);
-    if (!allowRequest(ip)) {
+
+    // checkRateLimit uses a global Redis sliding-window counter in production
+    // so the limit is enforced across all serverless instances, not just the
+    // current one. Falls back to an in-memory check in local development.
+    const { allowed } = await checkRateLimit(`contact:${ip}`);
+    if (!allowed) {
       return Response.json(
         { message: "Too many requests. Please try again later." },
         { status: 429 }
@@ -151,7 +141,6 @@ export async function POST(req) {
       );
     }
 
-    // Create transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -160,7 +149,6 @@ export async function POST(req) {
       },
     });
 
-    // Email options
     const mailOptions = {
       from: process.env.EMAIL_USER,
       replyTo: trimmedEmail,
@@ -182,12 +170,10 @@ export async function POST(req) {
       `,
     };
 
-    // Send email
     await transporter.sendMail(mailOptions);
 
     return Response.json({ message: "Email sent successfully" });
   } catch (error) {
-    console.error("Error sending email:", error);
     return new Response(JSON.stringify({ message: "Error sending email" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

@@ -20,6 +20,8 @@ const BubbleSortVisualizer = () => {
   const [swaps, setSwaps] = useState(0);
   const [currentIndices, setCurrentIndices] = useState({ i: -1, j: -1 });
   const animationRef = useRef(null);
+  const isSortingRef = useRef(false);
+  const resolveRef = useRef(null);
 
   // Handle array generation from child component
   const handleArrayGenerated = (newArray) => {
@@ -38,10 +40,18 @@ const BubbleSortVisualizer = () => {
     }
   };
 
+  // Helper: cancellable delay
+  const cancellableDelay = () =>
+    new Promise((resolve) => {
+      resolveRef.current = resolve;
+      animationRef.current = setTimeout(resolve, 1000 / speed);
+    });
+
   // Optimized bubble sort
   const bubbleSort = async () => {
     if (sorted || sorting || array.length === 0) return;
 
+    isSortingRef.current = true;
     setSorting(true);
     let arr = [...array];
     let n = arr.length;
@@ -52,14 +62,13 @@ const BubbleSortVisualizer = () => {
       let swapped = false;
 
       for (let j = 0; j < n - i - 1; j++) {
+        if (!isSortingRef.current) return;
         setCurrentIndices({ i: j, j: j + 1 });
         tempComparisons++;
         setComparisons(tempComparisons);
 
-        await new Promise(
-          (resolve) =>
-            (animationRef.current = setTimeout(resolve, 1000 / speed))
-        );
+        await cancellableDelay();
+        if (!isSortingRef.current) return;
 
         if (arr[j] > arr[j + 1]) {
           const bars = document.querySelectorAll(".bar");
@@ -88,22 +97,27 @@ const BubbleSortVisualizer = () => {
           setSwaps(tempSwaps);
           setArray([...arr]);
 
-          await new Promise(
-            (resolve) =>
-              (animationRef.current = setTimeout(resolve, 1000 / speed))
-          );
+          await cancellableDelay();
+          if (!isSortingRef.current) return;
         }
       }
 
       if (!swapped) break;
     }
 
+    isSortingRef.current = false;
     setSorting(false);
     setSorted(true);
   };
 
   // Reset everything
   const reset = () => {
+    // Unblock any suspended async loop immediately
+    isSortingRef.current = false;
+    if (resolveRef.current) {
+      resolveRef.current();
+      resolveRef.current = null;
+    }
     if (animationRef.current) {
       clearTimeout(animationRef.current);
     }
