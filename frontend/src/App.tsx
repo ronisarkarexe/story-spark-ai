@@ -1,3 +1,4 @@
+import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import { JSX, useEffect, useState } from "react";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 import {
@@ -6,6 +7,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+
 
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
@@ -112,14 +114,23 @@ function App() {
           }
         />
         <Route
-          path="/dashboard"
+          path="/story-inspiration"
           element={
-            <ProtectedRoute
-              element={<DashboardLayout />}
-              allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN]}
-            />
+            <RootLayout>
+              <StoryInspirationWrapper />
+            </RootLayout>
           }
-        >
+        />
+
+<Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute
+      element={<DashboardLayout />}
+      allowedRoles={[USER_ROLE.ADMIN]}
+    />
+  }
+>
           <Route
             index
             element={
@@ -216,8 +227,8 @@ function App() {
               />
             }
           />
-        </Route>
-
+        
+         </Route>     
         <Route
           path="/stories"
           element={
