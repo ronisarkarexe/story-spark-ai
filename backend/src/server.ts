@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import { JwtHalers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import { setNotificationSocket } from "./socket/notification.socket";
+import { isAllowedOrigin } from "./utils/cors.util";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
@@ -23,9 +24,18 @@ async function main() {
     const httpServer = http.createServer(app);
     const io = new Server(httpServer, {
       cors: {
-        origin: config.cors_origins?.length
-          ? config.cors_origins
-          : ["http://localhost:4001", "https://storysparkai.vercel.app"],
+        origin: (origin, callback) => {
+          const allowedOrigins = config.cors_origins?.length
+            ? config.cors_origins
+            : ["http://localhost:4001", "https://storysparkai.vercel.app"];
+
+          if (isAllowedOrigin(origin, allowedOrigins)) {
+            callback(null, true);
+            return;
+          }
+
+          callback(new Error("Origin not allowed by CORS"));
+        },
         credentials: true,
       },
     });

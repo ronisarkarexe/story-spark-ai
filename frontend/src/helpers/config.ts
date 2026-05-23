@@ -12,3 +12,5 @@ export const getBaseUrl = (): string => {
 
   return import.meta.env.DEV ? "http://localhost:5001/api/v1" : "";
 };
+
+export const hasConfiguredBaseUrl = () => Boolean(import.meta.env.VITE_BASE_URL?.trim());
