@@ -1,29 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
-import { getUserInfo, isLoggedIn } from "../services/auth.service";
+import { getAccessToken } from "../services/auth.service";
 import { socketIo } from "../socket/socket.oi";
 import {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
 } from "../redux/apis/notification.api";
 import { NotificationItem } from "../models/notification";
+import { useAuthSession } from "./useAuthSession";
 
 export const useNotifications = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const isAuthed = isLoggedIn();
-  const user = getUserInfo();
+  const { user, isAuthenticated } = useAuthSession();
 
   const { data, isFetching, refetch } = useGetNotificationsQuery(undefined, {
-    skip: !isAuthed,
+    skip: !isAuthenticated,
   });
   const [markNotificationRead] = useMarkNotificationReadMutation();
   const [liveNotifications, setLiveNotifications] = useState<NotificationItem[]>([]);
 
   useEffect(() => {
-    if (!isAuthed || !user?.userId) {
+    if (!isAuthenticated || !user?.userId) {
       return;
     }
 
-    socketIo.auth = { token: localStorage.getItem("accessToken") || "" };
+    socketIo.auth = { token: getAccessToken() };
     socketIo.connect();
 
     const handleNotification = (notification: NotificationItem) => {
@@ -35,7 +35,7 @@ export const useNotifications = () => {
       socketIo.off("notification:new", handleNotification);
       socketIo.disconnect();
     };
-  }, [isAuthed, user?.userId]);
+  }, [isAuthenticated, user?.userId]);
 
   const notifications = useMemo(() => {
     const combined = [...(liveNotifications || []), ...(data || [])];
@@ -53,7 +53,7 @@ export const useNotifications = () => {
 
   const toggle = () => {
     setIsOpen((prev) => !prev);
-    if (!data && isAuthed) {
+    if (!data && isAuthenticated) {
       void refetch();
     }
   };

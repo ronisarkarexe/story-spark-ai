@@ -1,104 +1,213 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { MoodProfile } from "../story-effects/StoryMoodDetector";
 
-const PHASES = [
-  "Gathering plot threads…",
-  "Breathing life into characters…",
-  "Painting the world…",
-  "Weaving the narrative…",
-  "Polishing every word…",
-];
+const DEFAULT_MOOD: MoodProfile = {
+  mood: "drama",
+  confidence: 0.5,
+  animationTheme: "cinematic",
+  soundTheme: "soft-strings",
+  backgroundStyle: "from-slate-950 via-blue-950/90 to-violet-950/80",
+  overlayEffect: "glow",
+  narrationTone: "grounded",
+  accentClass: "from-slate-100 via-blue-200 to-violet-200",
+  cardClassName:
+    "border-blue-300/20 bg-slate-950/40 shadow-[0_0_70px_rgba(96,165,250,0.15)]",
+  particleShape: "star",
+  particleColors: ["#bfdbfe", "#c4b5fd", "#e2e8f0"],
+};
 
-const StoryGeneratingAnimation = () => {
+const loadingPhases: Record<string, string[]> = {
+  romance: [
+    "Listening for tender sparks...",
+    "Painting a dreamy atmosphere...",
+    "Scoring soft dialogue beats...",
+    "Framing the final heartfelt moment...",
+  ],
+  horror: [
+    "Summoning eerie tension...",
+    "Breathing fog into the scene...",
+    "Timing each flicker in the dark...",
+    "Sharpening the final shiver...",
+  ],
+  fantasy: [
+    "Gathering enchanted details...",
+    "Igniting magical particles...",
+    "Calling heroes into the frame...",
+    "Polishing a mythic ending...",
+  ],
+  "sci-fi": [
+    "Projecting holographic scenes...",
+    "Scanning futuristic environments...",
+    "Calibrating neon motion...",
+    "Finalizing cinematic output...",
+  ],
+  mystery: [
+    "Collecting hidden clues...",
+    "Threading suspense through each beat...",
+    "Locking in the reveal...",
+    "Polishing the final mystery...",
+  ],
+  comedy: [
+    "Tuning playful timing...",
+    "Adding lively visual beats...",
+    "Balancing charm and chaos...",
+    "Finishing the punchline...",
+  ],
+  adventure: [
+    "Charting a dramatic journey...",
+    "Moving clouds across the horizon...",
+    "Building heroic momentum...",
+    "Cutting the final cinematic pass...",
+  ],
+  drama: [
+    "Building emotional tension...",
+    "Weaving character arcs together...",
+    "Shaping the emotional climax...",
+    "Polishing each line of dialogue...",
+  ],
+};
+
+interface StoryGeneratingAnimationProps {
+  mood?: MoodProfile;
+  selectedGenre?: string;
+}
+
+const StoryGeneratingAnimation = ({
+  mood = DEFAULT_MOOD,
+  selectedGenre,
+}: StoryGeneratingAnimationProps) => {
+  const phases = useMemo(
+    () => loadingPhases[mood.mood] ?? loadingPhases.drama,
+    [mood.mood]
+  );
   const [phaseIndex, setPhaseIndex] = useState(0);
-  const [progress, setProgress] = useState(20);
+  const [progress, setProgress] = useState(12);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPhaseIndex((prev) => (prev + 1) % PHASES.length);
-    }, 2800);
-    return () => clearInterval(interval);
-  }, []);
+    const interval = window.setInterval(() => {
+      setPhaseIndex((prev) => (prev + 1) % phases.length);
+    }, 2200);
+
+    return () => window.clearInterval(interval);
+  }, [phases]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 88 ? 20 : prev + 0.4));
-    }, 60);
-    return () => clearInterval(interval);
-  }, []);
+    const interval = window.setInterval(() => {
+      setProgress((prev) => (prev >= 93 ? 20 : prev + 1.15));
+    }, 160);
 
-  const dots = [0, 1, 2, 3, 4, 5, 6, 7];
+    return () => window.clearInterval(interval);
+  }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4">
-      {/* Orbiting dots around book icon */}
-      <div className="relative w-32 h-32 flex items-center justify-center mb-8">
-        {dots.map((i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2.5 h-2.5 rounded-full bg-indigo-400"
-            animate={{
-              x: 52 * Math.cos((i * 2 * Math.PI) / 8),
-              y: 52 * Math.sin((i * 2 * Math.PI) / 8),
-              opacity: [0.2, 1, 0.2],
-              scale: [0.8, 1.2, 0.8],
-            }}
-            transition={{
-              duration: 2.4,
-              repeat: Infinity,
-              delay: i * 0.18,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/72 px-4 backdrop-blur-xl">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className={`relative w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br ${mood.backgroundStyle} p-8 shadow-[0_25px_120px_rgba(15,23,42,0.8)]`}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_28%)]" />
+        <div className="absolute inset-x-0 top-0 h-20 bg-black/35" />
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-white/60">
+                AI Story Forge
+              </p>
+              <h3 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+                Building your cinematic story
+              </h3>
+            </div>
+            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-slate-100">
+              {selectedGenre || mood.mood}
+            </span>
+          </div>
 
-        {/* Book icon in center */}
-        <motion.div
-          animate={{ scale: [1, 1.08, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="z-10 text-5xl select-none"
-        >
-          📖
-        </motion.div>
-      </div>
+          <div className="mt-10 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="relative flex min-h-64 items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/20">
+              {Array.from({ length: 12 }).map((_, index) => (
+                <motion.span
+                  key={`${mood.mood}-${index}`}
+                  className="absolute rounded-full"
+                  style={{
+                    width: 10 + (index % 4) * 8,
+                    height: 10 + (index % 4) * 8,
+                    background: mood.particleColors[index % mood.particleColors.length],
+                  }}
+                  animate={{
+                    x: [0, (index % 2 === 0 ? 1 : -1) * (34 + index * 4), 0],
+                    y: [0, -50 - (index % 3) * 18, 0],
+                    opacity: [0.15, 0.85, 0.15],
+                    scale: [0.8, 1.25, 0.9],
+                  }}
+                  transition={{
+                    duration: 3.6 + index * 0.25,
+                    delay: index * 0.12,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              ))}
+              <motion.div
+                className="relative z-10 text-6xl"
+                animate={{ scale: [1, 1.08, 1], rotate: [0, 3, -3, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                🎬
+              </motion.div>
+            </div>
 
-      {/* Phase label */}
-      <div className="h-8 mb-6 overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={phaseIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.45 }}
-            className="text-indigo-300 font-medium text-lg text-center"
-          >
-            {PHASES[phaseIndex]}
-          </motion.p>
-        </AnimatePresence>
-      </div>
+            <div className="flex flex-col justify-center">
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={phaseIndex}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.35 }}
+                  className="text-lg font-medium text-slate-100"
+                >
+                  {phases[phaseIndex]}
+                </motion.p>
+              </AnimatePresence>
 
-      {/* Typing dots */}
-      <div className="flex gap-2 mb-8">
-        {[0, 0.2, 0.4].map((delay, i) => (
-          <motion.span
-            key={i}
-            className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block"
-            animate={{ y: [0, -8, 0], opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: 1.2, repeat: Infinity, delay, ease: "easeInOut" }}
-          />
-        ))}
-      </div>
+              <p className="mt-4 text-sm leading-7 text-slate-300">
+                StorySparkAI is matching visuals, sound texture, narration tone, and scene energy to your story before the reveal.
+              </p>
 
-      {/* Progress bar */}
-      <div className="w-72 h-1.5 rounded-full bg-white/10 overflow-hidden">
-        <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400"
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.25, ease: "linear" }}
-        />
-      </div>
-      <p className="text-gray-500 text-xs mt-3">Crafting your story with AI magic…</p>
+              <div className="mt-8 overflow-hidden rounded-full bg-white/10">
+                <motion.div
+                  className={`h-2 rounded-full bg-gradient-to-r ${mood.accentClass}`}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.2, ease: "linear" }}
+                />
+              </div>
+
+              <div className="mt-3 flex items-center justify-between text-xs uppercase tracking-[0.28em] text-slate-400">
+                <span>Rendering</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                {[
+                  `Mood: ${mood.mood}`,
+                  `Sound: ${mood.soundTheme}`,
+                  `Narration: ${mood.narrationTone}`,
+                  "Scene transition: live",
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-200"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };

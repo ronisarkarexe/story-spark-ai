@@ -7,9 +7,9 @@ import {
   useGoogleLoginMutation,
 } from "../../redux/apis/auth.api";
 import { storeUserInfo, getUserInfo } from "../../services/auth.service";
-import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin } from "@react-oauth/google";
+import { useLocation, useNavigate } from "react-router-dom";
 
 type Inputs = {
   email: string;
@@ -19,11 +19,12 @@ type Inputs = {
 const LoginComponent = () => {
   const [loginUser] = useLoginUserMutation();
   const [googleLogin] = useGoogleLoginMutation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const { register, handleSubmit } = useForm<Inputs>();
 
   const [isBusy, setIsBusy] = useState<boolean>(false);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setIsBusy(true);
@@ -37,12 +38,19 @@ const LoginComponent = () => {
         storeUserInfo({
           accessToken: res.data.accessToken,
         });
+        const userInfo = getUserInfo();
+        const redirectPath =
+          typeof location.state?.from === "string" ? location.state.from : null;
+        const isDashboardUser =
+          userInfo?.role === "admin" || userInfo?.role === "super_admin";
 
-        setIsLoggedIn(true);
+        navigate(
+          redirectPath ||
+            (isDashboardUser ? "/dashboard" : "/explore"),
+          { replace: true }
+        );
       }
-    } catch (err: unknown) {
-      console.log("error: ", err);
-
+    } catch {
       toast.error(
         "Login failed. Please check your credentials."
       );
@@ -52,7 +60,7 @@ const LoginComponent = () => {
   };
 
   const handleGoogleLoginSuccess = async (
-    credentialResponse: any
+    credentialResponse: { credential?: string }
   ) => {
     setIsBusy(true);
 
@@ -69,12 +77,19 @@ const LoginComponent = () => {
         storeUserInfo({
           accessToken: res.data.accessToken,
         });
+        const userInfo = getUserInfo();
+        const redirectPath =
+          typeof location.state?.from === "string" ? location.state.from : null;
+        const isDashboardUser =
+          userInfo?.role === "admin" || userInfo?.role === "super_admin";
 
-        setIsLoggedIn(true);
+        navigate(
+          redirectPath ||
+            (isDashboardUser ? "/dashboard" : "/explore"),
+          { replace: true }
+        );
       }
-    } catch (err: unknown) {
-      console.log("Google login error: ", err);
-
+    } catch {
       toast.error(
         "Failed to login with Google. Please try again."
       );
@@ -84,31 +99,10 @@ const LoginComponent = () => {
   };
 
   const handleGoogleLoginError = () => {
-    console.log("Login Failed");
-
     toast.error(
       "Google login failed. Please try again."
     );
   };
-
-  // Role-based redirect fix
-  if (isLoggedIn) {
-    const userInfo = getUserInfo();
-
-    const isDashboardUser =
-      userInfo?.role === "admin" ||
-      userInfo?.role === "super_admin";
-
-    return (
-      <RedirectComponent
-        defaultPath={
-          isDashboardUser
-            ? "/dashboard"
-            : "/explore"
-        }
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center relative overflow-hidden px-4">
@@ -180,10 +174,16 @@ const LoginComponent = () => {
           </div>
 
           <div className="mt-6 flex justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogleLoginSuccess}
-              onError={handleGoogleLoginError}
-            />
+            {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+              <GoogleLogin
+                onSuccess={handleGoogleLoginSuccess}
+                onError={handleGoogleLoginError}
+              />
+            ) : (
+              <p className="text-sm text-slate-400 text-center">
+                Google login is unavailable until `VITE_GOOGLE_CLIENT_ID` is configured.
+              </p>
+            )}
           </div>
 
           <p className="mt-8 text-center text-sm text-slate-400">

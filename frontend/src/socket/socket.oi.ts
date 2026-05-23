@@ -1,6 +1,5 @@
 import { io } from "socket.io-client";
-import { getFromLocalStorage } from "../utils/local-storage";
-import { AUTH_KEY } from "../constants/storage-key";
+import { getAccessToken } from "../services/auth.service";
 
 const socketUrl =
   import.meta.env.VITE_SOCKET_URL ||
@@ -9,6 +8,6 @@ const socketUrl =
 export const socketIo = io(socketUrl, {
   transports: ["websocket", "polling"],
   autoConnect: false,
-  auth: { token: getFromLocalStorage(AUTH_KEY) },
+  auth: { token: getAccessToken() },
   withCredentials: true,
 });

@@ -1,6 +1,7 @@
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
 interface CustomJwtPayload extends JwtPayload {
+  _id?: string | undefined;
   email?: string | undefined;
   userId?: string | undefined;
   name?: string | undefined;

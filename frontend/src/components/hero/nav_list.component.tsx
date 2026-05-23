@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
-import { Link, useNavigate} from "react-router-dom";
+import { removeUserInfo } from "../../services/auth.service";
+import { Link, useNavigate } from "react-router-dom";
 import { USER_ROLE } from "../../constants/role";
 import logo from "../../assets/logoNew.png";
 import NotificationComponent from "../notification/notification.component";
 import { useNotifications } from "../../hooks/useNotifications";
+import { useAuthSession } from "../../hooks/useAuthSession";
 
 const NavListComponent: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState<boolean>(isLoggedIn());
   const notificationMenuRef = useRef<HTMLDivElement | null>(null);
+  const { user, isAuthenticated } = useAuthSession();
   const {
     notifications,
     unreadCount,
@@ -20,17 +21,12 @@ const NavListComponent: React.FC = () => {
     markAsRead,
   } = useNotifications();
 
-  const user = getUserInfo();
   const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
 
   const handelLogout = () => {
     removeUserInfo();
-    setIsLogin(false);
+    navigate("/login", { replace: true });
   };
-
-  useEffect(() => {
-    setIsLogin(isLoggedIn());
-  }, []);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -64,7 +60,7 @@ const NavListComponent: React.FC = () => {
             <Link to="/story-inspiration" className="text-gray-400 hover:text-custom transition">INSPIRING STORIES</Link>
             <Link to="/contact-us" className="text-gray-400 hover:text-custom transition">CONTACT US</Link>
             <Link to="/community" className="text-gray-400 hover:text-custom transition">COMMUNITY</Link>
-            {isLogin && (
+            {isAuthenticated && (
               <>
                 <Link to="/bookmarks" className="text-gray-400 hover:text-custom transition">SAVED STORIES</Link>
                 {isAdmin && (
@@ -101,7 +97,7 @@ const NavListComponent: React.FC = () => {
                 )}
               </button>
             </div>
-            {isLogin ? (
+            {isAuthenticated ? (
               <button onClick={handelLogout} className="text-gray-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-white/5 hover:text-white transition">
                 LOGOUT
               </button>
@@ -144,7 +140,7 @@ const NavListComponent: React.FC = () => {
           <Link to="/" className="text-gray-400 hover:text-white py-2">HOME</Link>
           <Link to="/explore" className="text-gray-400 hover:text-white py-2">EXPLORE</Link>
           <Link to="/community" className="text-gray-400 hover:text-white py-2">COMMUNITY</Link>
-          {isLogin && (
+          {isAuthenticated && (
             <>
               <Link to="/bookmarks" className="text-gray-400 hover:text-white py-2">SAVED STORIES</Link>
               {isAdmin && (
@@ -156,7 +152,7 @@ const NavListComponent: React.FC = () => {
             NOTIFICATIONS {unreadCount > 0 && `(${unreadCount})`}
           </button>
           {
-            isLogin ? (
+            isAuthenticated ? (
               <button onClick={handelLogout} className="text-left text-gray-400 py-2">
                 LOGOUT
               </button>

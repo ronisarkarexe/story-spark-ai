@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
@@ -13,6 +13,7 @@ import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import { getErrorMessage } from "../../error/error.message";
 import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
+import { detectStoryMood } from "../story-effects/StoryMoodDetector";
 type Inputs = {
   prompt: string;
 };
@@ -22,13 +23,15 @@ const WARN_THRESHOLD = 0.85;
 
 const StoriesComponent = () => {
   const location = useLocation();
-const navigate = useNavigate();
-const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
+  const navigate = useNavigate();
+  const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
   const [stories, setStories] = useState<IStories[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const { data } = useGetProfileInfoQuery(undefined);
-  const userRole = getUserInfo();
   const login = isLoggedIn();
+  const { data } = useGetProfileInfoQuery(undefined, {
+    skip: !login,
+  });
+  const userRole = getUserInfo();
   const [generateModel] = useGenerateModelMutation();
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
@@ -43,6 +46,17 @@ const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
   parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
 );
 const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+
+const activeMood = useMemo(
+  () =>
+    detectStoryMood({
+      selectedGenre,
+      prompt: textareaValue,
+      title: stories[0]?.title,
+      content: stories[0]?.content,
+    }),
+  [selectedGenre, stories, textareaValue]
+);
 
 useEffect(() => {
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -146,8 +160,6 @@ const handleClearPrompt = () => {
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
-  console.log("Stories component rendered");
-  
   useKeyboardShortcuts({
   onOpenHelp: () => setShowHelpModal(true),
   onCloseHelp: () => setShowHelpModal(false),
@@ -450,10 +462,17 @@ const handleClearPrompt = () => {
         </div>
       )}
 
-      {loading && <StoryGeneratingAnimation />}
+      {loading && (
+        <StoryGeneratingAnimation
+          mood={activeMood}
+          selectedGenre={selectedGenre}
+        />
+      )}
       <StoriesViewComponent
         stories={stories}
         isLogin={login}
+        selectedGenre={selectedGenre}
+        prompt={textareaValue || selectedPrompt}
         setStories={setStories}
       />
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
