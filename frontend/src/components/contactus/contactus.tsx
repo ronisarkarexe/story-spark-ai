@@ -19,25 +19,19 @@ const INITIAL_FORM_DATA: FormData = {
 };
 
 const SERVICE_KEY = import.meta.env.VITE_SERVICE_KEY ?? "";
-
 const TEMPLATE_KEY = import.meta.env.VITE_TEMPLATE_KEY ?? "";
-
 const PUBLIC_KEY = import.meta.env.VITE_PUBLIC_KEY ?? "";
 
 export default function Contact() {
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
-
   const [error, setError] = useState<string>("");
-
   const [success, setSuccess] = useState<boolean>(false);
-
   const [loading, setLoading] = useState<boolean>(false);
 
   const changeHandler = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ): void => {
     const fieldName = e.target.name as FormField;
-
     const value = e.target.value;
 
     setFormData((prev) => ({
@@ -64,10 +58,9 @@ export default function Contact() {
       return false;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!emailRegex.test(trimmedData.email)) {
-      setError("Invalid email address.");
+      setError("Please enter a valid email address.");
       return false;
     }
 
@@ -78,15 +71,18 @@ export default function Contact() {
     e: FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-
     if (loading) return;
 
     setError("");
     setSuccess(false);
 
     const isValid = validateForm();
-
     if (!isValid) return;
+
+    if (!SERVICE_KEY || !TEMPLATE_KEY || !PUBLIC_KEY) {
+      setError("Email service is currently unavailable. Please try again later.");
+      return;
+    }
 
     setLoading(true);
 
@@ -104,12 +100,10 @@ export default function Contact() {
       );
 
       setSuccess(true);
-
       setFormData(INITIAL_FORM_DATA);
     } catch (err: unknown) {
       console.error("EmailJS Error:", err);
-
-      setError("✕ Failed to send message. Please try again later.");
+      setError("✕ Failed to send message. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -118,197 +112,244 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="min-h-screen  text-white px-4 sm:px-6 md:px-10 lg:px-20 py-16 sm:py-20 relative overflow-hidden flex items-center justify-center"
+      className="min-h-screen bg-[#030712] text-white px-4 py-12 relative overflow-hidden flex items-center justify-center font-sans"
     >
-      {/* Background Glow */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 blur-[120px] rounded-full" />
+      {/* Background Orbs */}
+      <div className="absolute -top-24 -left-24 w-80 h-80 bg-blue-600/15 blur-[100px] rounded-full" />
+      <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-purple-600/15 blur-[100px] rounded-full" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.03)_0%,transparent_70%)]" />
 
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-500/10 blur-[130px] rounded-full" />
-
-      {/* Main Container */}
-      <div className="w-full max-w-5xl relative z-10">
-        {/* Heading */}
-        <div className="text-center mb-5 sm:mb-14">
-          <p className="text-blue-400 uppercase tracking-[5px] sm:tracking-[7px] text-xs sm:text-sm mb-3 font-semibold">
+      <div className="w-full max-w-4xl relative z-10 flex flex-col items-center">
+        {/* Header Section */}
+        <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <p className="text-blue-400 text-[11px] font-bold tracking-[0.2em] uppercase mb-2 block opacity-80">
             GET IN TOUCH
           </p>
-
-          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-            Contact <span className="text-blue-400">Me</span>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-3 leading-tight">
+            Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Me</span>
           </h2>
-
-          <div className="w-24 h-1 bg-yellow-400 mx-auto mt-5 rounded-full" />
+          <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
         </div>
 
-        {/* Form Card */}
-        <div className="w-full flex justify-center">
+        {/* Form Container */}
+        <div className="w-full max-w-lg group relative">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[1.5rem] blur opacity-10 group-hover:opacity-15 transition duration-1000"></div>
+          
           <form
             onSubmit={submitHandler}
             className="
-            w-full
-            max-w-4xl
-            bg-white/[0.05]
-            border
-            border-white/10
-            rounded-[2rem]
-            p-5
-            sm:p-8
-            md:p-10
-            backdrop-blur-2xl
-            space-y-6
-            shadow-2xl
-          "
+              relative
+              w-full
+              bg-[#111827]/40
+              backdrop-blur-2xl
+              border
+              border-white/10
+              rounded-[1.5rem]
+              p-5
+              md:p-8
+              space-y-4
+              shadow-2xl
+              transition-all
+              duration-500
+              hover:border-white/20
+            "
           >
-            {/* Name */}
-            <input
-              type="text"
-              name="fullname"
-              placeholder="Your Name"
-              value={formData.fullname}
-              onChange={changeHandler}
-              className="
-              w-full
-              bg-white/[0.04]
-              border
-              border-white/10
-              rounded-2xl
-              px-5
-              py-4
-              text-sm
-              sm:text-base
-              outline-none
-              transition-all
-              duration-300
-              focus:border-yellow-400
-              focus:ring-2
-              focus:ring-yellow-400/30
-            "
-              required
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Name */}
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-semibold text-gray-400 ml-1 uppercase tracking-wider">Full Name</label>
+                <input
+                  type="text"
+                  name="fullname"
+                  placeholder="Enter your name"
+                  value={formData.fullname}
+                  onChange={changeHandler}
+                  className="
+                    w-full
+                    bg-white/[0.03]
+                    border
+                    border-white/10
+                    rounded-lg
+                    px-4
+                    py-2.5
+                    text-sm
+                    placeholder:text-gray-600
+                    outline-none
+                    transition-all
+                    duration-300
+                    hover:bg-white/[0.05]
+                    focus:bg-white/[0.07]
+                    focus:border-blue-500/50
+                    focus:ring-4
+                    focus:ring-blue-500/10
+                  "
+                  required
+                />
+              </div>
 
-            {/* Email */}
-            <input
-              type="email"
-              name="email"
-              placeholder="Your Email"
-              value={formData.email}
-              onChange={changeHandler}
-              className="
-              w-full
-              bg-white/[0.04]
-              border
-              border-white/10
-              rounded-2xl
-              px-5
-              py-4
-              text-sm
-              sm:text-base
-              outline-none
-              transition-all
-              duration-300
-              focus:border-yellow-400
-              focus:ring-2
-              focus:ring-yellow-400/30
-            "
-              required
-            />
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-semibold text-gray-400 ml-1 uppercase tracking-wider">Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="example@example.com"
+                  value={formData.email}
+                  onChange={changeHandler}
+                  className="
+                    w-full
+                    bg-white/[0.03]
+                    border
+                    border-white/10
+                    rounded-lg
+                    px-4
+                    py-2.5
+                    text-sm
+                    placeholder:text-gray-600
+                    outline-none
+                    transition-all
+                    duration-300
+                    hover:bg-white/[0.05]
+                    focus:bg-white/[0.07]
+                    focus:border-blue-500/50
+                    focus:ring-4
+                    focus:ring-blue-500/10
+                  "
+                  required
+                />
+              </div>
+            </div>
 
             {/* Subject */}
-            <input
-              type="text"
-              name="subject"
-              placeholder="Subject"
-              value={formData.subject}
-              onChange={changeHandler}
-              className="
-              w-full
-              bg-white/[0.04]
-              border
-              border-white/10
-              rounded-2xl
-              px-5
-              py-4
-              text-sm
-              sm:text-base
-              outline-none
-              transition-all
-              duration-300
-              focus:border-yellow-400
-              focus:ring-2
-              focus:ring-yellow-400/30
-            "
-              required
-            />
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-semibold text-gray-400 ml-1 uppercase tracking-wider">Subject</label>
+              <input
+                type="text"
+                name="subject"
+                placeholder="How can I help you?"
+                value={formData.subject}
+                onChange={changeHandler}
+                className="
+                  w-full
+                  bg-white/[0.03]
+                  border
+                  border-white/10
+                  rounded-lg
+                  px-4
+                  py-2.5
+                  text-sm
+                  placeholder:text-gray-600
+                  outline-none
+                  transition-all
+                  duration-300
+                  hover:bg-white/[0.05]
+                  focus:bg-white/[0.07]
+                  focus:border-blue-500/50
+                  focus:ring-4
+                  focus:ring-blue-500/10
+                "
+                required
+              />
+            </div>
 
             {/* Message */}
-            <textarea
-              rows={7}
-              name="message"
-              placeholder="Your Message"
-              value={formData.message}
-              onChange={changeHandler}
-              className="
-              w-full
-              bg-white/[0.04]
-              border
-              border-white/10
-              rounded-2xl
-              px-5
-              py-4
-              text-sm
-              sm:text-base
-              outline-none
-              resize-none
-              transition-all
-              duration-300
-              focus:border-yellow-400
-              focus:ring-2
-              focus:ring-yellow-400/30
-            "
-              required
-            />
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-semibold text-gray-400 ml-1 uppercase tracking-wider">Your Message</label>
+              <textarea
+                rows={4}
+                name="message"
+                placeholder="Write your message here..."
+                value={formData.message}
+                onChange={changeHandler}
+                className="
+                  w-full
+                  bg-white/[0.03]
+                  border
+                  border-white/10
+                  rounded-lg
+                  px-4
+                  py-2.5
+                  text-sm
+                  placeholder:text-gray-600
+                  outline-none
+                  resize-none
+                  transition-all
+                  duration-300
+                  hover:bg-white/[0.05]
+                  focus:bg-white/[0.07]
+                  focus:border-blue-500/50
+                  focus:ring-4
+                  focus:ring-blue-500/10
+                "
+                required
+              />
+            </div>
 
             {/* Button */}
             <button
               type="submit"
               disabled={loading}
               className="
-              w-full
-              py-4
-              rounded-2xl
-              bg-gray-400
-              text-black
-              font-bold
-              text-sm
-              sm:text-base
-              transition-all
-              duration-300
-              hover:scale-[1.01]
-              hover:bg-white
-              disabled:opacity-50
-              disabled:cursor-not-allowed
-            "
+                w-full
+                group/btn
+                relative
+                py-3
+                rounded-lg
+                bg-gradient-to-r
+                from-blue-600
+                to-purple-600
+                text-white
+                font-bold
+                text-sm
+                overflow-hidden
+                transition-all
+                duration-300
+                hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.6)]
+                hover:scale-[1.01]
+                active:scale-[0.99]
+                disabled:opacity-50
+                disabled:cursor-not-allowed
+                disabled:hover:scale-100
+              "
             >
-              {loading ? "Sending..." : "Send Message"}
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Send Message
+                    <svg 
+                      className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </>
+                )}
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
             </button>
 
-            {/* Success */}
-            {success && (
-              <div className="bg-green-500/10 border border-green-500/30 rounded-2xl px-4 py-4">
-                <p className="text-green-400 text-sm sm:text-base font-medium text-center">
-                  ✓ Message sent successfully. I’ll get back to you soon.
-                </p>
-              </div>
-            )}
+            {/* Status Messages */}
+            <div className="min-h-[16px]">
+              {success && (
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2 animate-in fade-in zoom-in duration-300">
+                  <p className="text-green-400 text-[11px] font-medium text-center flex items-center justify-center gap-2">
+                    ✓ Message sent successfully!
+                  </p>
+                </div>
+              )}
 
-            {/* Error */}
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-4">
-                <p className="text-red-400 text-sm sm:text-base font-medium text-center">
-                  {error}
-                </p>
-              </div>
-            )}
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2 animate-in fade-in zoom-in duration-300">
+                  <p className="text-red-400 text-[11px] font-medium text-center">
+                    {error}
+                  </p>
+                </div>
+              )}
+            </div>
           </form>
         </div>
       </div>
