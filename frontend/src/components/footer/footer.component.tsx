@@ -84,7 +84,6 @@ const FooterComponent = () => {
           <div className="col-span-12 md:col-span-5 flex flex-col gap-5">
             <Link
               to="/"
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               className="group inline-block w-fit"
             >
               <img

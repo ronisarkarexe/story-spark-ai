@@ -7,6 +7,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
 
 
 import HeroSectionComponent from "./components/hero/hero_section.component";
@@ -77,6 +78,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       {/* Dark Mode Toggle Button */}
       {/* <div className="fixed top-4 right-4 z-50">
         <button
