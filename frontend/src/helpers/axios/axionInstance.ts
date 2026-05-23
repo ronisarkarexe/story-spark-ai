@@ -2,11 +2,13 @@ import axios, { AxiosResponse } from "axios";
 import { getFromLocalStorage } from "../../utils/local-storage";
 import { AUTH_KEY } from "../../constants/storage-key";
 import { IMeta, ResponseErrorType } from "../../types";
+import { isTokenExpired, removeUserInfo } from "../../services/auth.service";
 
 const instance = axios.create();
 instance.defaults.headers.post["Content-Type"] = "application/json";
 instance.defaults.headers["Accept"] = "application/json";
 instance.defaults.timeout = 60000;
+instance.defaults.withCredentials = true;
 
 export interface ApiResponseData<T = unknown> {
   data: T;
@@ -16,8 +18,10 @@ export interface ApiResponseData<T = unknown> {
 instance.interceptors.request.use(
   function (config) {
     const accessToken = getFromLocalStorage(AUTH_KEY);
-    if (accessToken) {
+    if (accessToken && !isTokenExpired(accessToken)) {
       config.headers.Authorization = accessToken;
+    } else if (accessToken) {
+      removeUserInfo();
     }
     return config;
   },
@@ -44,6 +48,9 @@ instance.interceptors.response.use(
         ],
       };
     } else if (error.response) {
+      if ((error.response.status === 401 || error.response.status === 403) && getFromLocalStorage(AUTH_KEY)) {
+        removeUserInfo();
+      }
       errorObject = {
         statusCode: error.response.data?.statusCode || 500,
         message: error.response.data?.message || "Something went wrong!",

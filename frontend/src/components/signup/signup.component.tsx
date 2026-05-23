@@ -11,6 +11,8 @@ import {
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
 import { useNavigate } from "react-router-dom";
+import { getErrorMessage } from "../../error/error.message";
+import { hasConfiguredBaseUrl } from "../../helpers/config";
 
 interface IRegisterInfo {
   name: string;
@@ -58,7 +60,6 @@ const SignUpComponent = () => {
   const [showOtpField, setShowOtpField] = useState<boolean>(false);
   const [registerInfo, setRegisterInfo] = useState<IRegisterInfo>();
   const [expiredAt, setExpiredAt] = useState(0);
-  const [verificationToken, setVerificationToken] = useState<string>("");
 
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
@@ -66,6 +67,13 @@ const SignUpComponent = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
+      if (!hasConfiguredBaseUrl() && !import.meta.env.DEV) {
+        toast.error(
+          "Signup is not configured yet. The production frontend is missing its API URL."
+        );
+        return;
+      }
+
       const user = {
         name: data.name,
         email: data.email,
@@ -95,9 +103,7 @@ const SignUpComponent = () => {
           setShowOtpField(true);
         }
       } catch (error) {
-        const message =
-          (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-          "Failed to send OTP. Check backend .env email credentials.";
+        const message = getErrorMessage(error) || "Failed to send OTP.";
         toast.error(message);
         console.log("error: ", error);
       } finally {
@@ -129,8 +135,6 @@ const SignUpComponent = () => {
       
       // Store the verification token returned from OTP verification
       if (otpResponse?.data?.verificationToken) {
-        setVerificationToken(otpResponse.data.verificationToken);
-        
         // Now register user with verification token
         const res = await registerUser({ 
           ...registerInfo,
@@ -147,7 +151,7 @@ const SignUpComponent = () => {
       }
     } catch (err: unknown) {
       const message =
-        (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
+        getErrorMessage(err) ||
         "OTP verification failed. Please check the code and try again.";
       toast.error(message);
       console.log("error: ", err);

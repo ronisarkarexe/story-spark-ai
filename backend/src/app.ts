@@ -8,6 +8,7 @@ import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import { User } from "./app/modules/user/user.model";
 import { NewsletterSubscriber } from "./app/modules/newsletter/newsletter.model";
+import { isAllowedOrigin } from "./utils/cors.util";
 
 const app: Application = express();
 
@@ -24,7 +25,14 @@ const corsOrigins =
 // Middleware
 app.use(
   cors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin, corsOrigins)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("Origin not allowed by CORS"));
+    },
     credentials: true,
   })
 );

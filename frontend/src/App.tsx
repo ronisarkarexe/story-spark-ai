@@ -6,6 +6,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 
 
@@ -24,7 +25,6 @@ import PricingComponent from "./components/pricing/pricing.component";
 import ExploreComponent from "./components/post/post.component";
 import PostDetailsComponent from "./components/post/post.details.component";
 import BookmarksComponent from "./components/post/bookmarks.component";
-import { getUserInfo } from "./services/auth.service";
 import UserListComponent from "./components/dashboard/users/user.list.component";
 import NotFoundComponent from "./components/not-found.component";
 import EmailValidationComponent from "./components/email_validation/email.validation.component";
@@ -34,7 +34,6 @@ import ProfileComponent from "./components/dashboard/profile/profile.component";
 import PaymentComponent from "./components/home/pricing/payment.component";
 import Contact from "./components/contactus/contactus";
 import HelpCenterComponent from "./components/help_center/help_center.component";
-import ErrorBoundary from "./components/ErrorBoundary";
 import AboutUsComponent from "./components/footer/about-us.tsx";
 import CareerComponent from "./components/footer/career.tsx";
 // import ContactUsComponent from "./components/footer/contact-us.tsx";
@@ -43,6 +42,8 @@ import BlogComponent from "./components/footer/blog.tsx";
 import GuidelinesComponent from "./components/footer/guidelines.tsx";
 import TemplatesComponent from "./components/templates/templates.component";
 import CommunityComponent from "./components/community/community.component";
+import { useAuthSession } from "./hooks/useAuthSession";
+
 const ProtectedRoute = ({
   element,
   allowedRoles,
@@ -50,13 +51,17 @@ const ProtectedRoute = ({
   element: JSX.Element;
   allowedRoles: string[];
 }) => {
-  const user = getUserInfo();
-  if (!user) {
-    return <Navigate to="/login" replace />;
+  const location = useLocation();
+  const { user, isAuthenticated } = useAuthSession();
+
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
+
   if (!allowedRoles.includes(user.role)) {
     return <Navigate to="/" />;
   }
+
   return element;
 };
 
@@ -127,7 +132,7 @@ function App() {
           element={
             <ProtectedRoute
               element={<DashboardLayout />}
-              allowedRoles={[USER_ROLE.ADMIN]}
+              allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN]}
             />
           }
         >

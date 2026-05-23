@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
-import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
+import React, { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 import jsPDF from "jspdf";
+import { useCreatePostMutation } from "../../redux/apis/post.api";
+import { ITopicData, topicsData } from "./stories.utils";
+import StoryAnimationWrapper from "../story-effects/StoryAnimationWrapper";
+import { detectStoryMood } from "../story-effects/StoryMoodDetector";
 
 export interface IStories {
   uuid: string;
@@ -19,16 +22,20 @@ interface IPost extends IStories {
 interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
+  selectedGenre?: string;
+  prompt?: string;
   setStories: (stories: IStories[]) => void;
 }
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
+  selectedGenre,
+  prompt,
   setStories,
 }) => {
   const [selectedStory, setSelectedStory] = useState<IStories | null>(
-    stories && stories[0]
+    stories[0] ?? null
   );
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
@@ -41,78 +48,83 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   }, [topics]);
 
   useEffect(() => {
-    if (stories && stories.length > 0) {
-      setSelectedStory(stories[0]);
-    }
+    setSelectedStory(stories[0] ?? null);
   }, [stories]);
 
-  const handelStorySelection = (story: IStories) => {
-    setSelectedStory(story);
-  };
+  const mood = useMemo(
+    () =>
+      detectStoryMood({
+        selectedGenre,
+        title: selectedStory?.title,
+        content: selectedStory?.content,
+        prompt,
+      }),
+    [prompt, selectedGenre, selectedStory?.content, selectedStory?.title]
+  );
 
   const handleTopicClick = (index: number) => {
-    const updatedTopics = [...topics];
-    updatedTopics[index].selected = !updatedTopics[index].selected;
-    setTopics(updatedTopics);
+    setTopics((currentTopics) =>
+      currentTopics.map((topic, topicIndex) =>
+        topicIndex === index ? { ...topic, selected: !topic.selected } : topic
+      )
+    );
   };
-const handleCopyStory = async () => {
-  if (selectedStory?.content) {
+
+  const handleCopyStory = async () => {
+    if (!selectedStory?.content) {
+      return;
+    }
+
     await navigator.clipboard.writeText(selectedStory.content);
     setIsCopied(true);
     toast.success("Story copied!");
-    setTimeout(() => setIsCopied(false), 2000);
-       }
-    };
+    window.setTimeout(() => setIsCopied(false), 2000);
+  };
 
-const handleExportPDF = () => {
-  if (!selectedStory) {
-    toast.error("No story available to export.");
-    return;
-  }
+  const handleExportPDF = () => {
+    if (!selectedStory) {
+      toast.error("No story available to export.");
+      return;
+    }
 
-  try {
-    const doc = new jsPDF();
+    try {
+      const doc = new jsPDF();
+      const title = selectedStory.title || "Story";
+      const content = selectedStory.content || "";
 
-    const title = selectedStory.title || "Story";
-    const content = selectedStory.content || "";
+      doc.setFontSize(18);
+      doc.text(title, 15, 20);
+      doc.setFontSize(12);
+      doc.text(doc.splitTextToSize(content, 180), 15, 35);
+      doc.save(`${title}.pdf`);
 
-    doc.setFontSize(18);
-    doc.text(title, 15, 20);
+      toast.success("PDF downloaded!");
+    } catch {
+      toast.error("Failed to export PDF.");
+    }
+  };
 
-    doc.setFontSize(12);
-
-    const splitText = doc.splitTextToSize(content, 180);
-    doc.text(splitText, 15, 35);
-
-    doc.save(`${title}.pdf`);
-
-    toast.success("PDF downloaded!");
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to export PDF.");
-  }
-};
-  const handelPublishStory = async () => {
+  const handlePublishStory = async () => {
     if (!isLogin) {
       toast.error("Please login to publish the story.");
       return;
     }
+
     if (!selectedStory) {
       toast.error("No story available. Please generate a story first.");
       return;
     }
-    const post: IPost = {
-      ...selectedStory,
-      topic: selectTopics,
-    };
+
     setLoading(true);
     try {
-      const result = await createPost(post).unwrap();
-      if (result) {
-        toast.success("Story published successfully!");
-        setStories([]);
-        setSelectedStory(null);
-      }
+      await createPost({
+        ...selectedStory,
+        topic: selectTopics,
+      } as IPost).unwrap();
+
+      toast.success("Story published successfully!");
+      setStories([]);
+      setSelectedStory(null);
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -120,192 +132,186 @@ const handleExportPDF = () => {
     }
   };
 
-  if (!stories || stories.length === 0) {
+  if (!stories.length) {
     return (
-      <div className="mt-16 px-4 sm:px-6 lg:px-8 pb-16 flex justify-center">
-        <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 sm:p-12 text-center text-slate-400 max-w-2xl w-full shadow-lg transition-all duration-500 ease-in-out mx-auto">
-          <div className="text-5xl mb-6 animate-pulse">✨</div>
-          <h3 className="text-2xl font-bold text-slate-200 tracking-wide">
-            Your AI-generated story will appear here
-          </h3>
-          <p className="mt-3 text-base text-slate-400">
-            Enter a creative prompt above and let StorySparkAI craft something magical.
-          </p>
+      <div className="mt-16 px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-3xl justify-center">
+          <div className="w-full rounded-[2rem] border border-slate-700 bg-slate-900/60 p-8 text-center text-slate-400 shadow-2xl backdrop-blur-xl sm:p-12">
+            <div className="mb-6 text-5xl animate-pulse">✨</div>
+            <h3 className="text-2xl font-bold text-slate-100">
+              Your AI-generated story will appear here
+            </h3>
+            <p className="mt-3 text-base text-slate-400">
+              Enter a creative prompt above and StorySparkAI will turn it into a cinematic short-form story.
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
-      <style>
-        {`
-          @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-fade-in-up {
-            animation: fadeInUp 0.6s ease-out forwards;
-          }
-        `}
-      </style>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in-up">
-        <div className="col-span-1 lg:col-span-8 flex flex-col">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <div className="">
-              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-                {selectedStory?.title}
-              </h1>
+    <div className="mx-auto mt-16 max-w-8xl px-4 pb-10 sm:px-6 lg:px-8">
+      <div className="grid gap-8 xl:grid-cols-[0.9fr_2.1fr]">
+        <aside className="space-y-4">
+          <div className="rounded-[2rem] border border-white/10 bg-slate-950/55 p-5 shadow-xl backdrop-blur-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                  Story Reels
+                </p>
+                <h3 className="mt-2 text-xl font-semibold text-slate-100">
+                  Generated Scenes
+                </h3>
+              </div>
+              <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300">
+                {stories.length} versions
+              </span>
             </div>
-            <div className="flex justify-start sm:justify-end">
-              <div className="flex -space-x-5">
-                {stories && stories.length > 0 ? (
-                  stories.map((story) => (
-                    <button
-                      key={story.uuid}
-                      className={`relative w-16 h-16 rounded-full border-2 ${
-                        selectedStory?.uuid === story.uuid
-                          ? "border-blue-500 scale-110"
-                          : "border-white"
-                      } hover:scale-110 transition-transform duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-fuchsia-600`}
-                      onClick={() => handelStorySelection(story)}
-                    >
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              {stories.map((story, index) => {
+                const thumbnailMood = detectStoryMood({
+                  selectedGenre,
+                  title: story.title,
+                  content: story.content,
+                  prompt,
+                });
+
+                return (
+                  <motion.button
+                    key={story.uuid}
+                    type="button"
+                    onClick={() => setSelectedStory(story)}
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className={`group overflow-hidden rounded-[1.6rem] border text-left transition ${
+                      selectedStory?.uuid === story.uuid
+                        ? "border-white/30 bg-white/10"
+                        : "border-white/10 bg-white/5"
+                    }`}
+                  >
+                    <div className="relative h-40 overflow-hidden">
                       <img
                         src={story.imageURL}
                         alt={story.title}
-                        className="w-full h-full object-cover rounded-full"
+                        className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                       />
-                    </button>
-                  ))
-                ) : (
-                  <div className="text-gray-400">
-                    No stories available. Please generate some stories first.
-                  </div>
-                )}
-              </div>
+                      <div className={`absolute inset-0 bg-gradient-to-t ${thumbnailMood.backgroundStyle} opacity-80`} />
+                      <div className="absolute inset-x-0 bottom-0 p-4">
+                        <p className="text-xs uppercase tracking-[0.3em] text-white/70">
+                          Scene {index + 1}
+                        </p>
+                        <h4 className="mt-2 line-clamp-2 text-lg font-semibold text-white">
+                          {story.title}
+                        </h4>
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-            {/* Ambient AI Glow inside the story card */}
-            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-slate-200 relative z-10">
-                Generated Story
-              </h3>
-              <div className="flex items-center gap-2 relative z-10">
-                {selectedStory && (
-                  <>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors"
-                      onClick={handleCopyStory}
-                    >
-                      {isCopied ? "✓ Copied" : "📋 Copy"}
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors"
-                      onClick={handleExportPDF}
-                    >
-                      📄 Export PDF
-                    </button>
-                  </>
-                )}
+          <div className="rounded-[2rem] border border-white/10 bg-slate-950/55 p-5 shadow-xl backdrop-blur-xl">
+            <h3 className="text-lg font-semibold text-slate-100">
+              Select Topics
+            </h3>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {topics.map((topic, index) => (
                 <button
+                  key={topic.title}
                   type="button"
-                  className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 ${
-                    loading
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/25 active:scale-95"
-                  }`}
-                  onClick={handelPublishStory}
-                  disabled={loading}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition hover:scale-[1.02] ${topic.color}`}
+                  onClick={() => handleTopicClick(index)}
                 >
-                  {loading ? "Publishing..." : "Publish"}
+                  {topic.selected ? "✓" : "+"} {topic.title}
                 </button>
-              </div>
-            </div>
-            <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
-              {selectedStory ? (
-                <p className="break-words">{selectedStory.content}</p>
-              ) : (
-                <p>No story available. Please generate a story first.</p>
-              )}
+              ))}
             </div>
           </div>
-          <div className="mt-7">
-            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
-              <h3 className="text-lg font-bold text-slate-200 mb-4">
-                Select Topics
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {selectedStory ? (
-                  <>
-                    {topics.map((topic, index) => (
-                      <span
-                        key={index}
-                        className={`px-4 py-1.5 ${topic.color} rounded-full text-sm font-medium transition-transform hover:scale-105 cursor-pointer shadow-sm`}
-                        onClick={() => handleTopicClick(index)}
-                      >
-                        {topic.selected ? (
-                          <i className="fa-solid fa-check"></i>
-                        ) : (
-                          <i className="fa-solid fa-plus"></i>
-                        )}{" "}
-                        {topic.title}
-                      </span>
-                    ))}
-                  </>
-                ) : (
-                  <p className="text-gray-400">
-                    No topics available. Please generate a story first.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        </aside>
 
-        <div className="col-span-1 lg:col-span-4">
-          <div className="mb-5">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-              Preview
-            </h1>
-          </div>
-          <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
-            {selectedStory ? (
-              <div className="relative flex flex-col rounded-lg">
-                <div className="relative m-3 overflow-hidden text-white rounded-xl">
-                  <img
-                    src={selectedStory.imageURL}
-                    alt="card-image"
-                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="px-3 py-1">
-                  <div className="mb-2 inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                   {selectedStory.tag.toUpperCase()}
+        <div className="space-y-6">
+          {selectedStory && (
+            <StoryAnimationWrapper
+              title={selectedStory.title}
+              content={selectedStory.content}
+              mood={mood}
+            >
+              <div className="space-y-6">
+                <div className="overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/20 shadow-2xl backdrop-blur-md">
+                  <div className="relative h-64 overflow-hidden sm:h-80">
+                    <motion.img
+                      src={selectedStory.imageURL}
+                      alt={selectedStory.title}
+                      className="h-full w-full object-cover"
+                      initial={{ scale: 1.04 }}
+                      animate={{ scale: [1.02, 1.08, 1.03] }}
+                      transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <div className={`absolute inset-0 bg-gradient-to-t ${mood.backgroundStyle} opacity-65`} />
+                    <div className="absolute inset-x-0 bottom-0 p-6">
+                      <p className="text-xs uppercase tracking-[0.35em] text-white/65">
+                        {selectedStory.tag || mood.mood}
+                      </p>
+                      <h1 className="mt-3 text-3xl font-bold text-white sm:text-4xl">
+                        {selectedStory.title}
+                      </h1>
+                    </div>
                   </div>
-                  <h6 className="mb-1 text-gray-300 text-xl font-semibold">
-                    {selectedStory.title}
-                  </h6>
-                  <p className="text-gray-400 font-light breakwords text-sm sm:text-base">
-                    {getShortenedText(selectedStory.content)}
-                  </p>
+                </div>
+
+                <div className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6 shadow-xl backdrop-blur-md">
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                    <h3 className="text-xl font-semibold text-slate-100">
+                      Generated Story
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        className="rounded-full border border-white/15 px-4 py-2 text-sm text-slate-100 transition hover:bg-white/10"
+                        onClick={handleCopyStory}
+                      >
+                        {isCopied ? "Copied" : "Copy"}
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full border border-white/15 px-4 py-2 text-sm text-slate-100 transition hover:bg-white/10"
+                        onClick={handleExportPDF}
+                      >
+                        Export PDF
+                      </button>
+                      <button
+                        id="publish-story-btn"
+                        type="button"
+                        className={`rounded-full px-5 py-2 text-sm font-semibold text-white transition ${
+                          loading
+                            ? "cursor-not-allowed bg-slate-600"
+                            : "bg-blue-600 hover:bg-blue-500"
+                        }`}
+                        onClick={handlePublishStory}
+                        disabled={loading}
+                      >
+                        {loading ? "Publishing..." : "Publish"}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="prose prose-invert max-w-none text-slate-200">
+                    {selectedStory.content
+                      .split(/\n+/)
+                      .filter(Boolean)
+                      .map((paragraph, index) => (
+                        <p key={`${selectedStory.uuid}-${index}`} className="leading-8 text-slate-200/95">
+                          {paragraph}
+                        </p>
+                      ))}
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div className="p-6 text-center text-gray-400">
-                No story available. Please generate a story first.
-              </div>
-            )}
-          </div>
+            </StoryAnimationWrapper>
+          )}
         </div>
       </div>
-      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };
