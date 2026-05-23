@@ -60,7 +60,27 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                 </p>
                 <div className="flex items-center justify-between text-sm text-slate-500 border-t border-slate-700/50 pt-4 mt-auto">
                   <div className="flex items-center gap-4">
-
+                    <button
+                      onClick={(e) => handleLike(e, story._id as string)}
+                      className={`flex items-center gap-1.5 transition-colors group/btn ${
+                        story.reactions?.some((r: any) => r.userId?.email === currentUser?.email)
+                          ? "text-red-400"
+                          : "hover:text-red-400"
+                      }`}
+                      aria-label="Like story"
+                    >
+                      <i
+                        className={`${story.reactions?.some((r: any) => r.userId?.email === currentUser?.email) ? "fas" : "far"} fa-heart group-hover/btn:scale-110 transition-transform`}
+                        aria-hidden="true"
+                      ></i>{" "}
+                      <span className="font-medium">{story.likesCount || 0}</span>
+                    </button>
+                    <button className="flex items-center gap-1.5 hover:text-blue-400 transition-colors group/btn" aria-label="Comment on story">
+                      <i className="far fa-comment group-hover/btn:scale-110 transition-transform" aria-hidden="true"></i>{" "}
+                      <span className="font-medium">{story.commentsCount || 0}</span>
+                    </button>
+                  </div>
+                  <BookmarkButton storyId={story._id as string} bookmarks={story.bookmarks} className="ml-auto" />
                 </div>
               </div>
             </div>

@@ -1,5 +1,6 @@
 # Covered by root .gitignore; kept for standalone tooling / clones of backend only
 node_modules/
+dist/
 .env
 ml/saved_scorer/
 ml/scorer_venv/
