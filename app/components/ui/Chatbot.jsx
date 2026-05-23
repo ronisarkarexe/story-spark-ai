@@ -1,10 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, X, Send, RotateCcw, Copy, Check, Maximize2, Minimize2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+const Turnstile = dynamic(
+  () => import("@marsidev/react-turnstile").then((mod) => mod.Turnstile),
+  { ssr: false },
+);
 
 const INITIAL_MESSAGES = [
   {
@@ -21,6 +27,7 @@ export default function Chatbot() {
   const [error, setError] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   const messagesEndRef = useRef(null);
 
@@ -58,6 +65,11 @@ export default function Chatbot() {
     const text = textToSend || input;
     if (!text.trim() || isLoading) return;
 
+    if (!captchaToken) {
+      setError("Verifying... Please wait a moment.");
+      return;
+    }
+
     setError(null);
     if (!textToSend) setInput("");
 
@@ -77,7 +89,7 @@ export default function Chatbot() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ messages: apiMessages }),
+        body: JSON.stringify({ messages: apiMessages, captchaToken }),
       });
 
       const data = await res.json();
@@ -310,6 +322,15 @@ export default function Chatbot() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Turnstile captcha (invisible) */}
+      <div className="w-0 h-0 overflow-hidden" aria-hidden="true">
+        <Turnstile
+          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+          onSuccess={(token) => setCaptchaToken(token)}
+          options={{ size: "invisible" }}
+        />
+      </div>
 
       {/* Floating Toggle Button */}
       <button
