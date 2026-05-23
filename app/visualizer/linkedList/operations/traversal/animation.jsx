@@ -33,18 +33,19 @@ const LinkedListTraversal = () => {
     const size = Math.min(Math.floor(Math.random() * 3) + 3, values.length);
     const shuffledValues = [...values].sort(() => 0.5 - Math.random());
 
+    // First generate stable addresses for each node.
+    // This ensures the next pointer references the address of the actual next node.
+    const addresses = Array.from({ length: size }, () =>
+      `0x${Math.floor(Math.random() * 0x10000)
+        .toString(16)
+        .padStart(4, "0")}`
+    );
+
     const newList = shuffledValues.slice(0, size).map((value, index) => ({
       value,
       id: Date.now() + index,
-      address: `0x${Math.floor(Math.random() * 0x10000)
-        .toString(16)
-        .padStart(4, "0")}`,
-      next:
-        index < size - 1
-          ? `0x${Math.floor(Math.random() * 0x10000)
-              .toString(16)
-              .padStart(4, "0")}`
-          : "NULL",
+      address: addresses[index],
+      next: index < size - 1 ? addresses[index + 1] : "NULL",
     }));
 
     setList(newList);
