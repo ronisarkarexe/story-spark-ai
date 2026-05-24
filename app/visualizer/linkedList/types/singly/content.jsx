@@ -273,7 +273,7 @@ const content = () => {
             </ul>
             <div className="mt-4 p-4 bg-[#faf5ff] dark:bg-[#1a0a2e] rounded-xl border border-[#e9d5ff] dark:border-[#3b1a6e]">
               <p className="text-[#374151] dark:text-[#d1d5db] leading-relaxed">
-                <strong>Note:</strong> Singly linked lists are preferred when you need constant-time insertions/deletions at the beginning and don't require backward traversal.
+                <strong>Note:</strong> Singly linked lists are preferred when you need constant-time insertions/deletions at the beginning and don&apos;t require backward traversal.
               </p>
             </div>
           </div>

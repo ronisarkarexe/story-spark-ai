@@ -1,5 +1,4 @@
 import Animation from "@/app/visualizer/sorting/insertionsort/animation";
-import ArticleActions from "@/app/components/ui/ArticleActions";
 import Content from "@/app/visualizer/sorting/insertionsort/content";
 import Quiz from "@/app/visualizer/sorting/insertionsort/quiz";
 import Code from "@/app/visualizer/sorting/insertionsort/codeBlock";
@@ -53,7 +52,6 @@ export default function Page() {
     <VisualizerPageLayout
       paths={createVisualizerPaths("Sorting", "Insertion Sort")}
       title="Insertion Sort"
-      headerActions={<ArticleActions />}
       animation={<Animation />}
       content={<Content />}
       code={<Code />}

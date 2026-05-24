@@ -1,5 +1,4 @@
 import Animation from "@/app/visualizer/sorting/mergesort/animation";
-import ArticleActions from "@/app/components/ui/ArticleActions";
 import Content from "@/app/visualizer/sorting/mergesort/content";
 import Quiz from "@/app/visualizer/sorting/mergesort/quiz";
 import Code from "@/app/visualizer/sorting/mergesort/codeBlock";
@@ -52,7 +51,6 @@ export default function Page() {
     <VisualizerPageLayout
       paths={createVisualizerPaths("Sorting", "Merge Sort")}
       title="Merge Sort"
-      headerActions={<ArticleActions />}
       animation={<Animation />}
       content={<Content />}
       code={<Code />}

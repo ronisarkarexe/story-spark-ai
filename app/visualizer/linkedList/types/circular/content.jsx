@@ -86,7 +86,7 @@ const content = () => {
             ))}
             <div className="mt-4 p-4 bg-[#faf5ff] dark:bg-[#1a0a2e] rounded-xl border border-[#e9d5ff] dark:border-[#3b1a6e]">
               <p className="text-[#374151] dark:text-[#d1d5db] leading-relaxed">
-                <strong>Key Property:</strong> The last node's next pointer always points back to the first node, creating a continuous loop.
+                <strong>Key Property:</strong> The last node&apos;s next pointer always points back to the first node, creating a continuous loop.
               </p>
             </div>
           </div>

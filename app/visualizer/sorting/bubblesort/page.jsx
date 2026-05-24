@@ -1,5 +1,4 @@
 import Animation from "@/app/visualizer/sorting/bubblesort/animation";
-import ArticleActions from "@/app/components/ui/ArticleActions";
 import Content from "@/app/visualizer/sorting/bubblesort/content";
 import Quiz from "@/app/visualizer/sorting/bubblesort/quiz";
 import Code from "@/app/visualizer/sorting/bubblesort/codeBlock";
@@ -53,7 +52,6 @@ export default function Page() {
     <VisualizerPageLayout
       paths={createVisualizerPaths("Sorting", "Bubble Sort")}
       title="Bubble Sort"
-      headerActions={<ArticleActions />}
       animation={<Animation />}
       content={<Content />}
       code={<Code />}

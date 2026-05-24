@@ -2,7 +2,7 @@
 import ComplexityGraph from "@/app/components/ui/graph";
 import { useEffect, useState } from "react";
 
-const content = () => {
+const Content = () => {
   const [theme, setTheme] = useState('light');
   const [mounted, setMounted] = useState(false);
 
@@ -125,7 +125,7 @@ const content = () => {
               </ol>
 
               <p className="text-[#374151] dark:text-[#d1d5db] mt-4 leading-relaxed">
-                The operation simply checks if the stack's size/length is zero.
+                The operation simply checks if the stack&apos;s size/length is zero.
               </p>
             </div>
           </section>
@@ -258,4 +258,4 @@ const content = () => {
     );
   };
   
-  export default content;
+  export default Content;

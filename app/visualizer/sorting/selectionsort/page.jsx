@@ -1,5 +1,4 @@
 import Animation from "@/app/visualizer/sorting/selectionsort/animation";
-import ArticleActions from "@/app/components/ui/ArticleActions";
 import Content from "@/app/visualizer/sorting/selectionsort/content";
 import ExploreOther from "@/app/components/ui/exploreOther";
 import Code from "@/app/visualizer/sorting/selectionsort/codeBlock";
@@ -49,7 +48,6 @@ export default function Page() {
     <VisualizerPageLayout
       paths={createVisualizerPaths("Sorting", "Selection Sort")}
       title="Selection Sort"
-      headerActions={<ArticleActions />}
       animation={<Animation />}
       content={<Content />}
       code={<Code />}

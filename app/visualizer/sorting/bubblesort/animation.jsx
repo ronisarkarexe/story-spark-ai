@@ -1,9 +1,11 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react"; // ← added useCallback
 import { gsap } from "gsap";
 import ArrayGenerator from "@/app/components/ui/randomArray";
 import CustomArrayInput from "@/app/components/ui/customArrayInput";
-import { saveToStorage, loadFromStorage,removeFromStorage, } from "@/utils/storage";
+import { saveToStorage, loadFromStorage, removeFromStorage } from "@/utils/storage";
+import useVisualizerKeyboard from "@/app/hooks/useVisualizerKeyboard";       // ← NEW
+import KeyboardShortcutsLegend from "@/app/components/ui/KeyboardShortcutsLegend"; // ← NEW
 
 const getFontSize = (value) => {
   const len = String(value).length;
@@ -13,26 +15,16 @@ const getFontSize = (value) => {
 };
 
 const BubbleSortVisualizer = () => {
-  
   const [sorting, setSorting] = useState(false);
   const [sorted, setSorted] = useState(false);
-  const [array, setArray] = useState(() =>
-    loadFromStorage("bubble-array", [])
-  );
-
-  const [speed, setSpeed] = useState(() =>
-    loadFromStorage("bubble-speed", 1)
-  );
+  const [array, setArray] = useState(() => loadFromStorage("bubble-array", []));
+  const [speed, setSpeed] = useState(() => loadFromStorage("bubble-speed", 1));
   const [currentStep, setCurrentStep] = useState(0);
   const [totalSteps, setTotalSteps] = useState(0);
 
-  useEffect(() => {
-    saveToStorage("bubble-array", array);
-  }, [array]);
+  useEffect(() => { saveToStorage("bubble-array", array); }, [array]);
+  useEffect(() => { saveToStorage("bubble-speed", speed); }, [speed]);
 
-  useEffect(() => {
-    saveToStorage("bubble-speed", speed);
-  }, [speed]);
   const [comparisons, setComparisons] = useState(0);
   const [swaps, setSwaps] = useState(0);
   const [currentIndices, setCurrentIndices] = useState({ i: -1, j: -1 });
@@ -40,33 +32,27 @@ const BubbleSortVisualizer = () => {
   const isSortingRef = useRef(false);
   const resolveRef = useRef(null);
 
-  // Handle array generation from child component
   const handleArrayGenerated = (newArray) => {
     setArray(newArray);
     setSorted(false);
     resetStats();
   };
 
-  // Reset all stats and state
   const resetStats = () => {
     setComparisons(0);
     setSwaps(0);
     setCurrentStep(0);
     setTotalSteps(0);
     setCurrentIndices({ i: -1, j: -1 });
-    if (animationRef.current) {
-      clearTimeout(animationRef.current);
-    }
+    if (animationRef.current) clearTimeout(animationRef.current);
   };
 
-  // Helper: cancellable delay
   const cancellableDelay = () =>
     new Promise((resolve) => {
       resolveRef.current = resolve;
       animationRef.current = setTimeout(resolve, 1000 / speed);
     });
 
-  // Optimized bubble sort
   const bubbleSort = async () => {
     if (sorted || sorting || array.length === 0) return;
 
@@ -97,20 +83,9 @@ const BubbleSortVisualizer = () => {
           const bar1 = bars[j];
           const bar2 = bars[j + 1];
           if (bar1 && bar2) {
-            await gsap.to(bar1, {
-              x: "+=40",
-              duration: 0.3,
-              yoyo: true,
-            });
-            await gsap.to(bar2, {
-              x: "-=40",
-              duration: 0.3,
-              yoyo: true,
-            });
-            await gsap.to([bar1, bar2], {
-              x: "0",
-              duration: 0,
-            });
+            await gsap.to(bar1, { x: "+=40", duration: 0.3, yoyo: true });
+            await gsap.to(bar2, { x: "-=40", duration: 0.3, yoyo: true });
+            await gsap.to([bar1, bar2], { x: "0", duration: 0 });
           }
 
           [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
@@ -132,31 +107,46 @@ const BubbleSortVisualizer = () => {
     setSorted(true);
   };
 
-  // Reset everything
   const reset = () => {
-    // Unblock any suspended async loop immediately
     isSortingRef.current = false;
-    if (resolveRef.current) {
-      resolveRef.current();
-      resolveRef.current = null;
-    }
-    if (animationRef.current) {
-      clearTimeout(animationRef.current);
-    }
+    if (resolveRef.current) { resolveRef.current(); resolveRef.current = null; }
+    if (animationRef.current) clearTimeout(animationRef.current);
     setArray([]);
     setSorting(false);
     setSorted(false);
     resetStats();
   };
 
-  // Clean up on unmount
   useEffect(() => {
-    return () => {
-      if (animationRef.current) {
-        clearTimeout(animationRef.current);
-      }
-    };
+    return () => { if (animationRef.current) clearTimeout(animationRef.current); };
   }, []);
+
+  // ── Stable callbacks for the keyboard hook ──────────────────────────────
+  // useCallback keeps the function reference stable so the hook's useEffect
+  // doesn't re-subscribe on every render.
+  const handleStart = useCallback(() => {
+    bubbleSort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sorting, sorted, array, speed]);
+
+  const handleReset = useCallback(() => {
+    reset();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSpeedChange = useCallback((nextSpeed) => {
+    setSpeed(nextSpeed);
+  }, []);
+
+  // ── Wire up keyboard shortcuts ──────────────────────────────────────────
+  useVisualizerKeyboard({
+    onStart:       handleStart,
+    onReset:       handleReset,
+    onSpeedChange: handleSpeedChange,
+    speed,
+    sorting,
+    sorted,
+  });
 
   return (
     <main className="container mx-auto px-6 pb-4">
@@ -170,10 +160,7 @@ const BubbleSortVisualizer = () => {
         <div className="bg-white dark:bg-neutral-950 p-4 sm:p-6 rounded-lg shadow-md mb-6 md:mb-8 border border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div className="flex flex-col gap-1">
-              <ArrayGenerator
-                onGenerate={handleArrayGenerated}
-                disabled={sorting}
-              />
+              <ArrayGenerator onGenerate={handleArrayGenerated} disabled={sorting} />
               <CustomArrayInput
                 onUseCustomArray={(arr) => {
                   setArray(arr);
@@ -203,9 +190,7 @@ const BubbleSortVisualizer = () => {
 
           {/* Speed controls */}
           <div className="flex items-center gap-4 mb-4">
-            <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">
-              Speed:
-            </span>
+            <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">Speed:</span>
             <input
               type="range"
               min="0.5"
@@ -216,9 +201,12 @@ const BubbleSortVisualizer = () => {
               className="w-24 sm:w-32"
               disabled={sorting}
             />
-            <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">
-              {speed}x
-            </span>
+            <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">{speed}x</span>
+
+            {/* ── Keyboard legend ── placed at the end of the speed row ── */}
+            <div className="ml-auto">                  {/* ← NEW */}
+              <KeyboardShortcutsLegend />               {/* ← NEW */}
+            </div>                                      {/* ← NEW */}
           </div>
 
           {/* Stats */}
@@ -249,27 +237,22 @@ const BubbleSortVisualizer = () => {
 
         {/* Visualization */}
         <div className="bg-white dark:bg-neutral-950 p-4 sm:p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg sm:text-xl font-semibold mb-4">
-            Array Visualization
-          </h2>
+          <h2 className="text-lg sm:text-xl font-semibold mb-4">Array Visualization</h2>
           {array.length > 0 ? (
             <div className="flex flex-wrap gap-2 sm:gap-4 justify-center">
               {array.map((value, index) => {
-                const isComparing =
-                  index === currentIndices.i || index === currentIndices.j;
+                const isComparing = index === currentIndices.i || index === currentIndices.j;
                 const isSorted = sorted;
-
                 return (
                   <div key={index} className="flex flex-col items-center">
                     <div
                       className={`bar w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center rounded-lg border-2 shadow-md dark:shadow-blue-900 transition-all duration-300 ${getFontSize(value)} font-bold
-                            ${
-                              isComparing
-                                ? "bg-yellow-400 dark:bg-yellow-400 border-yellow-600 dark:border-yellow-600 dark:text-gray-900"
-                                : isSorted
-                                ? "bg-green-400 dark:bg-green-400 border-green-600 dark:border-green-600 dark:text-gray-900"
-                                : "bg-blue-400 dark:bg-blue-400 border-blue-600 dark:border-blue-600 dark:text-gray-900"
-                            }`}
+                        ${isComparing
+                          ? "bg-yellow-400 dark:bg-yellow-400 border-yellow-600 dark:border-yellow-600 dark:text-gray-900"
+                          : isSorted
+                          ? "bg-green-400 dark:bg-green-400 border-green-600 dark:border-green-600 dark:text-gray-900"
+                          : "bg-blue-400 dark:bg-blue-400 border-blue-600 dark:border-blue-600 dark:text-gray-900"
+                        }`}
                     >
                       {value}
                     </div>

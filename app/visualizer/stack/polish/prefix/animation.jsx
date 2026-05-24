@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 
@@ -192,25 +192,24 @@ const InfixToPrefixVisualizer = () => {
   };
 
   /* ----------  playback  ---------- */
-  const playNextStep = () => {
-    if (currentStep < steps.length - 1) setCurrentStep((s) => s + 1);
-    else setIsPlaying(false);
-  };
-  const playPrevStep = () => {
-    if (currentStep > 0) setCurrentStep((s) => s - 1);
-  };
-  const togglePlayPause = () => setIsPlaying((p) => !p);
-  const jumpToStep = (idx) => {
+  const playNextStep = useCallback(() => {
+    setCurrentStep((s) => s + 1);
+  }, []);
+  const playPrevStep = useCallback(() => {
+    setCurrentStep((s) => (s > 0 ? s - 1 : s));
+  }, []);
+  const togglePlayPause = useCallback(() => setIsPlaying((p) => !p), []);
+  const jumpToStep = useCallback((idx) => {
     setCurrentStep(idx);
     if (idx === steps.length - 1) setIsPlaying(false);
-  };
+  }, [steps.length]);
 
   useEffect(() => {
     let t;
     if (isPlaying && currentStep < steps.length - 1) t = setTimeout(playNextStep, speed);
     else if (currentStep >= steps.length - 1) setIsPlaying(false);
     return () => clearTimeout(t);
-  }, [isPlaying, currentStep, steps.length, speed]);
+  }, [isPlaying, currentStep, steps.length, speed, playNextStep]);
 
   /* ----------  GSAP flash on message change  ---------- */
   const statusRef = useRef();

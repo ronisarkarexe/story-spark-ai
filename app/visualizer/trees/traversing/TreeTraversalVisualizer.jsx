@@ -311,7 +311,7 @@ export default function TreeTraversalVisualizer({ initialMode = 'in-order' }) {
     if (!root) {
       generateRandomTree();
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-calculate steps based on current tree and traversal mode
   const preCalculateSteps = () => {
@@ -967,13 +967,13 @@ export default function TreeTraversalVisualizer({ initialMode = 'in-order' }) {
   };
 
   // Reset Playback
-  const resetPlayback = () => {
+  function resetPlayback() {
     setIsAnimating(false);
     if (timerRef.current) clearTimeout(timerRef.current);
     setCurrentStepIdx(-1);
     setSteps([]);
     setMessage('Playback reset. Click Start Traversal to begin.');
-  };
+  }
 
   const handleResetTree = () => {
     setRoot(null);

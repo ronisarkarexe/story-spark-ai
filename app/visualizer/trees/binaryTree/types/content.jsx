@@ -12,7 +12,7 @@ function drawTree(
   radius = 18
 ) {
   // clear previous drawings
-  svg.innerHTML = '';
+  svg.replaceChildren();
 
   // edges (lines)
   edges.forEach(({ from, to }) => {
@@ -55,7 +55,7 @@ function drawTree(
   });
 }
 
-export default function content() {
+export default function Content() {
   /* refs for the three svgs */
   const fullSvg    = useRef(null);
   const degenSvg   = useRef(null);

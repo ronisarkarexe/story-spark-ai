@@ -38,7 +38,7 @@ export default function Page() {
       exploreOther={
         <ExploreOther
           title="Explore other implementation"
-          links={[{ text: "Structure & Properties", url: "./properties" }]}
+          links={[{ text: "Structure & Properties", url: "/visualizer/trees/binaryTree/properties" }]}
         />
       }
     />

@@ -26,7 +26,7 @@ const InfixToPostfixVisualizer = () => {
         <CodeBlock />
         <ExploreOther
           title="Explore other implementation"
-          links={[{ text: "Structure & Properties", url: "./properties" }]}
+          links={[{ text: "Structure & Properties", url: "/visualizer/trees/binaryTree/properties" }]}
         />
       </main>
       <div className="bg-gray-700 z-10 h-[1px]"></div>

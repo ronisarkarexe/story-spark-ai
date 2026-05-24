@@ -7,10 +7,32 @@ import { checkRateLimit } from "@/lib/rateLimit";
 // Service-role client is only used for signup so it can create users regardless
 // of RLS policies. It is never used for login — that goes through the anon client
 // so that Supabase's own per-user RLS applies from the first request.
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
-  process.env.SUPABASE_SERVICE_KEY || "placeholder-key",
-);
+function getValidUrl(value) {
+  if (!value) return null;
+  const trimmed = String(value).trim();
+  if (!trimmed || trimmed.startsWith("Your ")) return null;
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "http:" || url.protocol === "https:" ? trimmed : null;
+  } catch {
+    return null;
+  }
+}
+
+function getValidKey(value) {
+  if (!value) return null;
+  const trimmed = String(value).trim();
+  return trimmed && !trimmed.startsWith("Your ") ? trimmed : null;
+}
+
+const supabaseUrl = getValidUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const supabaseAnonKey = getValidKey(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+const supabaseServiceKey = getValidKey(process.env.SUPABASE_SERVICE_KEY);
+
+const supabaseAdmin =
+  supabaseUrl && supabaseServiceKey
+    ? createClient(supabaseUrl, supabaseServiceKey)
+    : null;
 
 const AUTH_RATE_LIMIT_PREFIX = "auth";
 
@@ -202,6 +224,13 @@ export async function POST(req) {
     }
 
     if (action === "signup") {
+      if (!supabaseAdmin) {
+        return new Response(
+          JSON.stringify({ success: false, message: "Auth server is not configured." }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
       const { error } = await supabaseAdmin.auth.signUp({
         email,
         password,
@@ -236,13 +265,20 @@ export async function POST(req) {
         );
       }
 
+      if (!supabaseUrl || !supabaseAnonKey) {
+        return new Response(
+          JSON.stringify({ success: false, message: "Auth server is not configured." }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
       const cookieStore = await cookies();
 
       // createServerClient writes the session into cookies automatically when
       // signInWithPassword resolves. Tokens are never placed in the response body.
       const client = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key",
+        supabaseUrl,
+        supabaseAnonKey,
         {
           cookies: {
             getAll() {

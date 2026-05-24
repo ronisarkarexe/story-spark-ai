@@ -158,7 +158,7 @@ const content = () => {
             ))}
             <div className="mt-4 p-4 bg-[#faf5ff] dark:bg-[#1a0a2e] rounded-xl border border-[#e9d5ff] dark:border-[#3b1a6e]">
               <p className="text-[#374151] dark:text-[#d1d5db] leading-relaxed">
-                <strong>Key Insight:</strong> Linked list insertion doesn't require shifting elements like arrays, but does require careful pointer manipulation to maintain list integrity.
+                <strong>Key Insight:</strong> Linked list insertion doesn&apos;t require shifting elements like arrays, but does require careful pointer manipulation to maintain list integrity.
               </p>
             </div>
           </div>
@@ -319,7 +319,7 @@ const content = () => {
           </div>
           <div className="mt-4 p-4 bg-[#faf5ff] dark:bg-[#1a0a2e] rounded-xl border border-[#e9d5ff] dark:border-[#3b1a6e]">
             <p className="text-[#374151] dark:text-[#d1d5db] leading-relaxed">
-              <strong>When to Choose:</strong> Prefer linked lists when you need frequent insertions at arbitrary positions and don't require random access. Use arrays when you need index-based access and memory efficiency for small, fixed-size collections.
+              <strong>When to Choose:</strong> Prefer linked lists when you need frequent insertions at arbitrary positions and don&apos;t require random access. Use arrays when you need index-based access and memory efficiency for small, fixed-size collections.
             </p>
           </div>
         </section>

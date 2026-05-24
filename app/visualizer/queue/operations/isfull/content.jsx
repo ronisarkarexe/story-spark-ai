@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const content = () => {
+const Content = () => {
   const [theme, setTheme] = useState("light");
   const [mounted, setMounted] = useState(false);
 
@@ -133,7 +133,7 @@ const content = () => {
           </h1>
           <div className="prose dark:prose-invert max-w-none">
             <p className="text-[#374151] dark:text-[#d1d5db] mb-4 leading-relaxed">
-              The isFull operation examines the queue's capacity and current
+              The isFull operation examines the queue&apos;s capacity and current
               state.
             </p>
             <p className="text-[#374151] dark:text-[#d1d5db] mb-4 leading-relaxed">
@@ -164,7 +164,7 @@ const content = () => {
             </ol>
 
             <p className="text-[#374151] dark:text-[#d1d5db] mt-4 leading-relaxed">
-              Note: Dynamic implementations (like linked lists) typically don't
+              Note: Dynamic implementations (like linked lists) typically don&apos;t
               need this operation as they can grow indefinitely.
             </p>
           </div>
@@ -319,4 +319,4 @@ const content = () => {
   );
 };
 
-export default content;
+export default Content;

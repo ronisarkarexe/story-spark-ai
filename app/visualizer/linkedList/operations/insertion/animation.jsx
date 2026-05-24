@@ -6,6 +6,7 @@ import {
   VisualizerCard,
   VisualizerInteractiveLayout,
 } from "@/app/visualizer/components/VisualizerInteractiveLayout";
+import { createLinkedListTempNode } from "@/app/visualizer/linkedList/utils/createTempNode";
 
 const LinkedListVisualizer = () => {
   const [inputValue, setInputValue] = useState("");
@@ -32,12 +33,10 @@ const LinkedListVisualizer = () => {
       next: "NULL",
     };
 
-    const tempNode = document.createElement("div");
-    tempNode.className = "node absolute flex border border-gray-300";
-    tempNode.innerHTML = `
-      <div class="data-part rounded-l-lg bg-blue-500 p-4 text-white">${inputValue}</div>
-      <div class="next-part rounded-r-lg bg-blue-300 p-4">NULL</div>
-    `;
+    const tempNode = createLinkedListTempNode({
+      value: inputValue,
+      nextText: "NULL",
+    });
     containerRef.current.appendChild(tempNode);
 
     gsap.set(tempNode, {

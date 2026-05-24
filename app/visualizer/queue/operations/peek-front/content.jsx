@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const content = () => {
+const Content = () => {
   const [theme, setTheme] = useState("light");
   const [mounted, setMounted] = useState(false);
 
@@ -137,7 +137,7 @@ const content = () => {
             </ol>
 
             <p className="text-[#374151] dark:text-[#d1d5db] mt-4 leading-relaxed">
-              Contrast with dequeue() which would remove 'A' from the queue.
+              Contrast with dequeue() which would remove &apos;A&apos; from the queue.
             </p>
           </div>
         </section>
@@ -291,4 +291,4 @@ const content = () => {
   );
 };
 
-export default content;
+export default Content;

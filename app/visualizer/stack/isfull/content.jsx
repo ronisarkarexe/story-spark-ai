@@ -2,7 +2,7 @@
 import ComplexityGraph from "@/app/components/ui/graph";
 import { useEffect, useState } from "react";
 
-const content = () => {
+const Content = () => {
   const [theme, setTheme] = useState("light");
   const [mounted, setMounted] = useState(false);
 
@@ -93,7 +93,7 @@ const content = () => {
         <section className="p-6 border-b border-[#f3f4f6] dark:border-[#1e1e1e]">
           <h1 className="text-2xl font-bold text-[#1a1a1a] dark:text-white mb-4 flex items-center">
             <span className="w-1 h-6 bg-[#a435f0] mr-3 rounded-full"></span>
-            What is the "Is Full" Operation?
+            What is the &quot;Is Full&quot; Operation?
           </h1>
           <div className="prose dark:prose-invert max-w-none">
             <p className="text-[#374151] dark:text-[#d1d5db] leading-relaxed">
@@ -130,7 +130,7 @@ const content = () => {
           </h1>
           <div className="prose dark:prose-invert max-w-none">
             <p className="text-[#374151] dark:text-[#d1d5db] mb-4 leading-relaxed">
-              Here's the time and space complexity analysis for stack
+              Here&apos;s the time and space complexity analysis for stack
               operations:
             </p>
             <ul className="space-y-3 list-disc pl-5 marker:text-gray-500 dark:marker:text-gray-400">
@@ -272,4 +272,4 @@ const content = () => {
   );
 };
 
-export default content;
+export default Content;

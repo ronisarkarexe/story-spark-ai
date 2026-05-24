@@ -35,12 +35,20 @@ if (numbers[1] < numbers[minIndex]) {
 }
 swap(numbers[0], numbers[minIndex]);
 cout << numbers[0] << " " << numbers[1];`,
+  Java: `int[] numbers = {5, 2, 8, 1};
+int minIndex = 0;
+if (numbers[1] < numbers[minIndex]) {
+  minIndex = 1;
+}
+swap(numbers, 0, minIndex);
+System.out.println(numbers);`,
 };
 
 const LANGUAGE_HINTS = {
   JavaScript: "Traces assignments, arrays, if branches, swap calls, and console.log output.",
   Python: "Traces lists, assignments, if branches, swap calls, and print output.",
   "C++": "Traces vector declarations, scalar assignments, if branches, swap calls, and cout output.",
+  Java: "Traces primitive types, array declarations, if branches, swap calls, and System.out.println output.",
 };
 
 function cloneVariables(variables) {
@@ -53,11 +61,19 @@ function cloneVariables(variables) {
 }
 
 function stripLine(line) {
-  return line
+  let clean = line
     .replace(/\/\/.*$/, "")
     .replace(/#.*$/, "")
-    .replace(/[;{}]/g, "")
+    .replace(/;+$/, "")
     .trim();
+
+  if (clean === "}") return "";
+
+  if (clean.endsWith("{")) {
+    clean = clean.slice(0, -1).trim();
+  }
+
+  return clean;
 }
 
 function parseArrayLiteral(raw) {
@@ -137,6 +153,7 @@ function interpolateOutput(raw, variables) {
   const callBody = raw
     .replace(/^console\.log\(/, "")
     .replace(/^print\(/, "")
+    .replace(/^System\.out\.print(?:ln)?\(/, "")
     .replace(/\)$/, "")
     .replace(/^cout\s*<</, "")
     .trim();
@@ -185,31 +202,56 @@ function buildTrace(source) {
 
     let note = "Read this statement.";
 
-    const vectorMatch = line.match(/^(?:const|let|var|int|auto|vector<[^>]+>)?\s*([A-Za-z_]\w*)\s*=\s*(.+)$/);
+    const vectorMatch = line.match(/^(?:[A-Za-z_]\w*\[\]|const|let|var|int|double|float|char|boolean|String|auto|vector<[^>]+>)?\s*([A-Za-z_]\w*)\s*=\s*(.+)$/);
+    const arrayUpdateMatch = line.match(/^([A-Za-z_]\w*)\[(.+?)\]\s*=\s*(.+)$/);
     const ifMatch = line.match(/^if\s*\(?(.+?)\)?\s*:?\s*$/);
+    const elseIfMatch = line.match(/^(?:else\s+if|elif)\s*\(?(.+?)\)?\s*:?\s*$/);
+    const elseMatch = line.match(/^else\s*:?\s*$/);
     const forMatch = line.match(/^for\s*\(?(.+?)\)?\s*:?\s*$/);
+    const whileMatch = line.match(/^while\s*\(?(.+?)\)?\s*:?\s*$/);
     const swapMatch = line.match(/^swap\((.+)\)$/);
-    const outputMatch = /^(console\.log|print)\(/.test(line) || /^cout\s*<</.test(line);
+    const outputMatch = /^(console\.log|print|System\.out\.print(?:ln)?)\(/.test(line) || /^cout\s*<</.test(line);
 
     if (forMatch) {
       callStack.push("loop");
       note = `Entered a loop header: ${forMatch[1]}. The tracer records the control point without executing untrusted loops.`;
+    } else if (whileMatch) {
+      callStack.push("loop");
+      const result = evaluateExpression(whileMatch[1], variables);
+      note = `Entered a while loop header with condition evaluating to ${formatValue(result)}.`;
     } else if (ifMatch) {
       const result = evaluateExpression(ifMatch[1], variables);
       note = `Condition evaluated to ${formatValue(result)}.`;
+    } else if (elseIfMatch) {
+      const result = evaluateExpression(elseIfMatch[1], variables);
+      note = `Else-if condition evaluated to ${formatValue(result)}.`;
+    } else if (elseMatch) {
+      note = "Entered else branch.";
     } else if (swapMatch) {
       const targets = swapMatch[1].split(",").map((part) => part.trim());
-      const arrayName = targets[0]?.match(/^([A-Za-z_]\w*)/)?.[1];
-      const arrayValue = variables[arrayName];
-      const leftIndex = targets[0]?.match(/\[(.+)\]/)?.[1];
-      const rightIndex = targets[1]?.match(/\[(.+)\]/)?.[1] || targets[2];
+      
+      // Try Style B (JS/Python): swap(array, idx1, idx2)
+      let arrayName = targets[0];
+      let arrayValue = variables[arrayName];
+      let leftIndex = targets[1];
+      let rightIndex = targets[2];
 
-      if (Array.isArray(arrayValue) && leftIndex && rightIndex) {
+      // If Style B is not matched (i.e. targets[0] is not a raw array name), try Style A (C++)
+      if (!Array.isArray(arrayValue)) {
+        arrayName = targets[0]?.match(/^([A-Za-z_]\w*)/)?.[1];
+        arrayValue = variables[arrayName];
+        leftIndex = targets[0]?.match(/\[(.+)\]/)?.[1];
+        rightIndex = targets[1]?.match(/\[(.+)\]/)?.[1];
+      }
+
+      if (Array.isArray(arrayValue) && leftIndex !== undefined && rightIndex !== undefined) {
         const a = Number(resolveValue(leftIndex, variables));
         const b = Number(resolveValue(rightIndex, variables));
-        if (Number.isInteger(a) && Number.isInteger(b)) {
+        if (Number.isInteger(a) && Number.isInteger(b) && a >= 0 && b >= 0 && a < arrayValue.length && b < arrayValue.length) {
           [arrayValue[a], arrayValue[b]] = [arrayValue[b], arrayValue[a]];
           note = `Swapped ${arrayName}[${a}] and ${arrayName}[${b}].`;
+        } else {
+          note = `Tried to swap index ${a} and ${b}, but one of them is invalid or out of bounds.`;
         }
       } else {
         note = "Detected a swap operation and marked it in the execution timeline.";
@@ -218,6 +260,21 @@ function buildTrace(source) {
       const output = interpolateOutput(line, variables);
       consoleOutput.push(output);
       note = `Console output appended: ${output || "(empty)"}.`;
+    } else if (arrayUpdateMatch) {
+      const arrayName = arrayUpdateMatch[1];
+      const arrayValue = variables[arrayName];
+      if (Array.isArray(arrayValue)) {
+        const idx = Number(resolveValue(arrayUpdateMatch[2], variables));
+        const val = resolveValue(arrayUpdateMatch[3], variables);
+        if (Number.isInteger(idx) && idx >= 0 && idx < arrayValue.length) {
+          arrayValue[idx] = val;
+          note = `Updated ${arrayName}[${idx}] to ${formatValue(val)}.`;
+        } else {
+          note = `Tried to update index ${idx} of array ${arrayName}, but it is out of bounds.`;
+        }
+      } else {
+        note = `Tried to perform an array update on ${arrayName}, but it is not an array.`;
+      }
     } else if (vectorMatch) {
       const [, name, expression] = vectorMatch;
       const value = evaluateExpression(expression, variables);
@@ -236,7 +293,7 @@ function buildTrace(source) {
       })
     );
 
-    if (forMatch) callStack.pop();
+    if (forMatch || whileMatch) callStack.pop();
   });
 
   return frames.length

@@ -2,7 +2,7 @@
 import ComplexityGraph from "@/app/components/ui/graph";
 import { useEffect, useState } from "react";
 
-const content = () => {
+const Content = () => {
   const [theme, setTheme] = useState("light");
   const [mounted, setMounted] = useState(false);
 
@@ -161,4 +161,4 @@ const content = () => {
   );
 };
 
-export default content;
+export default Content;

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const content = () => {
+const Content = () => {
   const [theme, setTheme] = useState("light");
   const [mounted, setMounted] = useState(false);
 
@@ -151,7 +151,7 @@ const content = () => {
             </ol>
 
             <p className="text-[#374151] dark:text-[#d1d5db] mt-4 leading-relaxed">
-              The operation doesn't modify the queue in any way - it only checks
+              The operation doesn&apos;t modify the queue in any way - it only checks
               its state.
             </p>
           </div>
@@ -303,4 +303,4 @@ const content = () => {
   );
 };
 
-export default content;
+export default Content;

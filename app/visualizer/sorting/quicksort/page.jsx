@@ -1,5 +1,4 @@
 import Animation from "@/app/visualizer/sorting/quicksort/animation";
-import ArticleActions from "@/app/components/ui/ArticleActions";
 import Content from "@/app/visualizer/sorting/quicksort/content";
 import Quiz from "@/app/visualizer/sorting/quicksort/quiz";
 import Code from "@/app/visualizer/sorting/quicksort/codeBlock";
@@ -52,7 +51,6 @@ export default function Page() {
     <VisualizerPageLayout
       paths={createVisualizerPaths("Sorting", "Quick Sort")}
       title="Quick Sort"
-      headerActions={<ArticleActions />}
       animation={<Animation />}
       content={<Content />}
       code={<Code />}

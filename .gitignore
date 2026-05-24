@@ -21,7 +21,10 @@
 /build
 
 # misc
-._.DS_Store
+.DS_Store
+# AppleDouble metadata files (resource forks) — keep scoped to `app/` to avoid
+# ignoring intentionally-named dot-underscore files (e.g. `._config.js`).
+app/**/._*
 *.pem
 
 # debug

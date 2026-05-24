@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiArrowLeft, FiSearch, FiChevronRight } from "react-icons/fi";
@@ -412,6 +412,107 @@ export default function VisualizerClient({ initialSections }) {
   const [activeSection, setActiveSection] = useState(null);
   const [search, setSearch] = useState("");
 
+  // Sync state with URL search parameters (category) and restore scroll coordinates
+  useEffect(() => {
+    const handleUrlState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const category = params.get("category");
+      if (category) {
+        const section = initialSections.find((s) => s.title.toLowerCase() === category.toLowerCase());
+        if (section) {
+          setActiveSection(section);
+
+          // Restore module scroll position
+          const savedModulePos = sessionStorage.getItem("visualizerModuleScrollPosition");
+          if (savedModulePos) {
+            const scrollPos = parseInt(savedModulePos, 10);
+            if (!isNaN(scrollPos) && scrollPos > 0) {
+              setTimeout(() => {
+                window.scrollTo({
+                  top: scrollPos,
+                  behavior: "instant",
+                });
+              }, 100);
+            }
+          }
+          return;
+        }
+      }
+
+      // If no category parameter, show grid view
+      setActiveSection(null);
+
+      // Restore grid scroll position
+      const savedGridPos = sessionStorage.getItem("visualizerGridScrollPosition");
+      if (savedGridPos) {
+        const scrollPos = parseInt(savedGridPos, 10);
+        if (!isNaN(scrollPos) && scrollPos > 0) {
+          setTimeout(() => {
+            window.scrollTo({
+              top: scrollPos,
+              behavior: "instant",
+            });
+          }, 100);
+        }
+      }
+    };
+
+    // Run on mount
+    handleUrlState();
+
+    // Listen to browser Back/Forward navigation
+    window.addEventListener("popstate", handleUrlState);
+    return () => window.removeEventListener("popstate", handleUrlState);
+  }, [initialSections]);
+
+  // Track window scroll position in sessionStorage
+  useEffect(() => {
+    const handleScroll = () => {
+      if (activeSection) {
+        sessionStorage.setItem("visualizerModuleScrollPosition", window.scrollY.toString());
+      } else {
+        sessionStorage.setItem("visualizerGridScrollPosition", window.scrollY.toString());
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [activeSection]);
+
+  const handleCardClick = (section) => {
+    // Save grid scroll position before entering the module view
+    sessionStorage.setItem("visualizerGridScrollPosition", window.scrollY.toString());
+
+    // Update URL to include category search query in browser history
+    window.history.pushState(null, "", `?category=${encodeURIComponent(section.title.toLowerCase())}`);
+
+    // Reset module scroll position to top
+    sessionStorage.setItem("visualizerModuleScrollPosition", "0");
+
+    setActiveSection(section);
+    window.scrollTo(0, 0);
+  };
+
+  const handleBackToGrid = () => {
+    // Revert URL to base visualizer path
+    window.history.pushState(null, "", "/visualizer");
+
+    setActiveSection(null);
+
+    // Restore grid scroll position
+    const savedGridPos = sessionStorage.getItem("visualizerGridScrollPosition");
+    if (savedGridPos) {
+      const scrollPos = parseInt(savedGridPos, 10);
+      if (!isNaN(scrollPos) && scrollPos > 0) {
+        setTimeout(() => {
+          window.scrollTo({
+            top: scrollPos,
+            behavior: "instant",
+          });
+        }, 50);
+      }
+    }
+  };
+
   const filtered = useMemo(() => {
     if (!search.trim()) return initialSections;
     const q = search.toLowerCase();
@@ -584,7 +685,7 @@ export default function VisualizerClient({ initialSections }) {
                 key={`module-${activeSection.title}`}
                 section={activeSection}
                 theme={getTheme(activeSection.title)}
-                onBack={() => setActiveSection(null)}
+                onBack={handleBackToGrid}
               />
             ) : (
               <motion.div
@@ -600,7 +701,7 @@ export default function VisualizerClient({ initialSections }) {
                       key={section.title}
                       section={section}
                       theme={getTheme(section.title)}
-                      onClick={() => setActiveSection(section)}
+                      onClick={() => handleCardClick(section)}
                       delay={i * 0.07}
                     />
                   ))}
