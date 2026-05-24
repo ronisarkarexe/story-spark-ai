@@ -2,8 +2,10 @@ import { Link } from "react-router-dom";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { TextPlugin } from "gsap/TextPlugin";
 
-gsap.registerPlugin(useGSAP);
+gsap.registerPlugin(useGSAP, ScrollTrigger, TextPlugin);
 
 const HeroSectionComponent = () => {
   const [stars, setStars] = useState<Array<{ id: number; x: number; y: number; size: number }>>([]);
@@ -11,6 +13,7 @@ const HeroSectionComponent = () => {
   const starTimers = useRef<number[]>([]);
   const heroRef = useRef<HTMLDivElement>(null);
   const magneticBtnRef = useRef<HTMLButtonElement>(null);
+  const mockupRef = useRef<HTMLDivElement>(null);
 
   // GSAP Text Reveal Animation
   useGSAP(() => {
@@ -53,6 +56,57 @@ const HeroSectionComponent = () => {
       duration: 0.5,
       stagger: 0.15,
     }, "-=0.3");
+
+    // Parallax Blobs on Scroll
+    gsap.to(".parallax-blob-1", {
+      y: 300,
+      ease: "none",
+      scrollTrigger: {
+        trigger: heroRef.current,
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      }
+    });
+
+    gsap.to(".parallax-blob-2", {
+      y: -200,
+      ease: "none",
+      scrollTrigger: {
+        trigger: heroRef.current,
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      }
+    });
+
+    // Next-Level Mockup Animations
+    const mockupTl = gsap.timeline({ repeat: -1, repeatDelay: 2 });
+    mockupTl.to(".mockup-typing-text", {
+      text: " Suddenly, a heavy footstep echoed behind him. He froze.",
+      duration: 2.5,
+      ease: "none",
+      delay: 1
+    })
+      .to(".mockup-ai-popup", {
+        opacity: 1,
+        scale: 1,
+        y: -10,
+        duration: 0.5,
+        ease: "back.out(1.5)"
+      }, "+=0.5")
+      .to(".mockup-ai-popup", {
+        opacity: 0,
+        scale: 0.95,
+        y: 0,
+        duration: 0.3,
+        delay: 3
+      })
+      .to(".mockup-typing-text", {
+        text: "",
+        duration: 0.1
+      });
+
   }, { scope: heroRef });
 
   // Magnetic Button Effect
@@ -80,6 +134,33 @@ const HeroSectionComponent = () => {
       y: 0,
       duration: 0.5,
       ease: "elastic.out(1, 0.4)",
+    });
+  };
+
+  // 3D Mockup Tilt Effect
+  const handleMockupMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!mockupRef.current) return;
+    const rect = mockupRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width / 2) / 25;
+    const y = -(e.clientY - rect.top - rect.height / 2) / 25;
+
+    gsap.to(mockupRef.current, {
+      rotateY: x,
+      rotateX: y,
+      duration: 0.5,
+      ease: "power2.out",
+      transformPerspective: 1000,
+      transformOrigin: "center center"
+    });
+  };
+
+  const handleMockupLeave = () => {
+    if (!mockupRef.current) return;
+    gsap.to(mockupRef.current, {
+      rotateY: 0,
+      rotateX: 0,
+      duration: 0.7,
+      ease: "power3.out",
     });
   };
 
@@ -126,8 +207,8 @@ const HeroSectionComponent = () => {
 
   return (
     <div ref={heroRef} className="relative min-h-screen bg-slate-900 text-slate-100 overflow-hidden font-sans">
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10" />
-      <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="parallax-blob-1 absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse" style={{ animationDuration: '4s' }} />
+      <div className="parallax-blob-2 absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse" style={{ animationDuration: '5s', animationDelay: '1s' }} />
 
       <div className="relative overflow-hidden" onMouseMove={handleMouseMove}>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20 text-center">
@@ -165,6 +246,167 @@ const HeroSectionComponent = () => {
                 Explore Stories
               </button>
             </Link>
+          </div>
+
+          {/* 3D Dashboard Mockup */}
+          <div className="mt-20 relative w-full max-w-5xl mx-auto hidden sm:block" style={{ perspective: '1000px' }}>
+            <div
+              ref={mockupRef}
+              onMouseMove={handleMockupMove}
+              onMouseLeave={handleMockupLeave}
+              className="relative rounded-2xl border border-slate-700/50 bg-slate-800/60 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300"
+              style={{ transformStyle: 'preserve-3d' }}
+            >
+              {/* Mockup Header */}
+              <div className="flex items-center px-4 py-3 border-b border-slate-700/50 bg-slate-900/40">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                </div>
+                <div className="mx-auto px-6 py-1 rounded-md bg-slate-900/60 text-xs text-slate-400 font-mono tracking-wider border border-slate-700/30">
+                  app.storyspark.ai
+                </div>
+              </div>
+
+              {/* Mockup Body - Next Level Ultra Detailed AI Editor */}
+              <div className="flex h-[450px] bg-slate-900/80">
+
+                {/* Left Sidebar - Projects & Files */}
+                <div className="w-64 border-r border-slate-700/50 bg-slate-900/60 flex flex-col hidden md:flex">
+                  <div className="p-4 border-b border-slate-700/50 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-inner">
+                      JS
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-slate-200">John's Workspace</div>
+                      <div className="text-xs text-purple-400 font-medium">Pro Plan ✨</div>
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-2 flex-1">
+                    <div className="text-[10px] font-bold text-slate-500 mb-3 uppercase tracking-widest">Recent Stories</div>
+                    {["The Quantum Thief", "Neon Shadows", "Cyber City 2099", "Dragon's Legacy"].map((p, i) => (
+                      <div key={i} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${i === 0 ? 'bg-blue-500/15 text-blue-400 shadow-[inset_2px_0_0_#3b82f6]' : 'text-slate-400 hover:bg-slate-800'}`}>
+                        <svg className="w-4 h-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="truncate">{p}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Main Editor Canvas */}
+                <div className="flex-1 flex flex-col relative overflow-hidden bg-[#0f172a]">
+                  {/* Editor Toolbar */}
+                  <div className="h-12 border-b border-slate-700/50 bg-slate-800/40 flex items-center justify-between px-4">
+                    <div className="flex gap-4 text-slate-400 items-center">
+                      <div className="flex gap-2">
+                        <div className="w-6 h-6 rounded flex items-center justify-center hover:bg-slate-700 hover:text-slate-200 cursor-pointer text-xs font-bold">B</div>
+                        <div className="w-6 h-6 rounded flex items-center justify-center hover:bg-slate-700 hover:text-slate-200 cursor-pointer text-xs italic font-serif">I</div>
+                        <div className="w-6 h-6 rounded flex items-center justify-center hover:bg-slate-700 hover:text-slate-200 cursor-pointer text-xs underline">U</div>
+                      </div>
+                      <div className="w-px h-4 bg-slate-700"></div>
+                      <div className="text-xs flex items-center gap-1 bg-slate-800 px-2 py-1 rounded border border-slate-700/80 cursor-pointer hover:bg-slate-700">
+                        Body Text
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </div>
+                    </div>
+                    <button className="flex items-center gap-1.5 text-xs font-bold bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white px-4 py-1.5 rounded-full shadow-lg shadow-purple-500/20 transition-all">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      AI Co-Writer
+                    </button>
+                  </div>
+
+                  {/* Writing Area */}
+                  <div className="p-8 md:p-12 relative h-full overflow-hidden">
+                    <h2 className="text-3xl font-bold text-slate-100 mb-6 font-serif tracking-wide">The Quantum Thief</h2>
+                    <div className="text-slate-300 font-serif text-lg leading-relaxed space-y-5 max-w-2xl">
+                      <p>
+                        The neon rain bounced off Kael's cybernetic arm as he stared down the dark alley.
+                        He knew the <span className="bg-blue-500/20 text-blue-300 border-b border-blue-400/50 cursor-pointer hover:bg-blue-500/30">data crystal</span> was close, humming with a frequency only his modified optics could detect.
+                      </p>
+                      <p>
+                        <span className="mockup-typing-text text-slate-200"></span>
+                        <span className="mockup-cursor inline-block w-[2px] h-5 bg-blue-400 align-middle animate-pulse ml-0.5"></span>
+                      </p>
+                    </div>
+
+                    {/* Floating AI Suggestion Popup */}
+                    <div className="absolute top-48 left-12 md:left-24 bg-slate-800/95 backdrop-blur-xl border border-purple-500/30 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.6)] p-4 w-[320px] opacity-0 mockup-ai-popup scale-95 z-20">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2 text-xs text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 font-bold uppercase tracking-wider">
+                          <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                          AI Suggestion
+                        </div>
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 rounded-full bg-slate-600"></div>
+                          <div className="w-2 h-2 rounded-full bg-slate-600"></div>
+                          <div className="w-2 h-2 rounded-full bg-slate-600"></div>
+                        </div>
+                      </div>
+                      <div className="text-sm text-slate-200 font-serif italic mb-4 leading-relaxed border-l-2 border-purple-500/50 pl-3">
+                        "He pulled his collar up, gripping the plasma pistol hidden beneath his coat. The shadows seemed to move."
+                      </div>
+                      <div className="flex gap-2">
+                        <button className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs py-2 rounded-lg transition-colors">Accept (Tab)</button>
+                        <button className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium text-xs py-2 rounded-lg transition-colors">Regenerate</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Sidebar - Story Branches */}
+                <div className="w-72 border-l border-slate-700/50 bg-[#0b1120] p-5 hidden lg:block relative">
+                  <div className="text-[10px] font-bold text-slate-400 mb-6 flex items-center gap-2 uppercase tracking-widest">
+                    <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                    Story Branches
+                  </div>
+
+                  {/* Branching Graph Visualization */}
+                  <div className="relative h-72 w-full mt-4">
+                    {/* Connecting SVG Lines */}
+                    <svg className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
+                      <path d="M 30 20 L 30 70" stroke="#334155" strokeWidth="2" fill="none" />
+                      <path d="M 30 70 L 30 140" stroke="#334155" strokeWidth="2" fill="none" />
+                      <path d="M 30 70 Q 30 90, 60 90 T 90 110" stroke="#4f46e5" strokeWidth="2.5" fill="none" className="drop-shadow-[0_0_5px_rgba(79,70,229,0.5)]" />
+                      <path d="M 30 70 Q 30 90, 0 90 T -30 110" stroke="#334155" strokeWidth="2" fill="none" strokeDasharray="4 4" />
+                    </svg>
+
+                    {/* Graph Nodes */}
+                    <div className="absolute top-[10px] left-[20px] w-5 h-5 rounded-full bg-slate-700 border-[3px] border-slate-900 shadow-md z-10 flex items-center justify-center text-[9px] text-slate-300 font-bold hover:scale-125 transition-transform cursor-pointer">1</div>
+                    <div className="absolute top-[60px] left-[20px] w-5 h-5 rounded-full bg-slate-700 border-[3px] border-slate-900 shadow-md z-10 flex items-center justify-center text-[9px] text-slate-300 font-bold hover:scale-125 transition-transform cursor-pointer">2</div>
+
+                    {/* Active Node */}
+                    <div className="absolute top-[130px] left-[20px] w-5 h-5 rounded-full bg-blue-500 border-[3px] border-slate-900 shadow-[0_0_15px_rgba(59,130,246,0.6)] z-10 flex items-center justify-center text-[9px] text-white font-bold hover:scale-125 transition-transform cursor-pointer">3a</div>
+
+                    {/* AI Generated Node */}
+                    <div className="absolute top-[100px] left-[80px] w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 border-[3px] border-slate-900 shadow-[0_0_15px_rgba(168,85,247,0.6)] z-10 flex items-center justify-center text-[9px] text-white font-bold hover:scale-125 transition-transform cursor-pointer animate-pulse">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    </div>
+
+                    {/* Inactive Branch */}
+                    <div className="absolute top-[100px] left-[-40px] w-5 h-5 rounded-full bg-slate-800 border-[3px] border-slate-900 shadow-md z-10 flex items-center justify-center text-[9px] text-slate-500 font-bold hover:scale-125 transition-transform cursor-pointer">3b</div>
+
+                    {/* Node Labels */}
+                    <div className="absolute top-[95px] left-[110px] text-[10px] text-purple-400 font-medium">AI Branch</div>
+                    <div className="absolute top-[132px] left-[45px] text-[10px] text-blue-400 font-medium">Current</div>
+                  </div>
+
+                  {/* Branch Details */}
+                  <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
+                    <div className="text-xs font-semibold text-slate-300 mb-1">AI Branch Selected</div>
+                    <div className="text-[10px] text-slate-400 leading-relaxed">This alternate timeline introduces a stealth approach instead of combat.</div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Glowing overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none"></div>
+            </div>
           </div>
         </div>
 
