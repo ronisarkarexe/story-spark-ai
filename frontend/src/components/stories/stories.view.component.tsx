@@ -4,6 +4,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
 import BookmarkButton from "../BookmarkButton";
+import logo from "../../assets/logoNew.png";
 
 export interface IStories {
   uuid: string;
@@ -133,28 +134,229 @@ useEffect(() => {
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!selectedStory) {
       toast.error("No story available to export.");
       return;
     }
 
+    const toastId = toast.loading("Preparing your premium PDF...");
+
     try {
-      const doc = new jsPDF();
-      const title = selectedStory.title || "Story";
+      // Helper to load image assets asynchronously with a safe timeout
+      const loadImageWithTimeout = (src: string, timeoutMs: number = 3000): Promise<HTMLImageElement> => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          const timeout = setTimeout(() => {
+            img.src = ""; // stop loading
+            reject(new Error(`Timeout loading image: ${src}`));
+          }, timeoutMs);
+
+          img.onload = () => {
+            clearTimeout(timeout);
+            resolve(img);
+          };
+          img.onerror = (e) => {
+            clearTimeout(timeout);
+            reject(e);
+          };
+          img.src = src;
+        });
+      };
+
+      let logoImg: HTMLImageElement | null = null;
+      let storyImg: HTMLImageElement | null = null;
+
+      try {
+        logoImg = await loadImageWithTimeout(logo);
+      } catch (err) {
+        console.warn("Failed to load StorySparkAI logo for PDF", err);
+      }
+
+      if (selectedStory.imageURL) {
+        try {
+          storyImg = await loadImageWithTimeout(selectedStory.imageURL);
+        } catch (err) {
+          console.warn("Failed to load story banner image for PDF", err);
+        }
+      }
+
+      // Initialize A4 PDF document (210mm x 297mm)
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const title = selectedStory.title || "Untitled Story";
       const content = selectedStory.content || "";
+      const tag = (selectedStory.tag || "STORY").toUpperCase();
 
-      doc.setFontSize(18);
-      doc.text(title, 15, 20);
+      const leftMargin = 20;
+      const rightMargin = 20;
+      const topMargin = 20;
+      const bottomMargin = 20;
+      const printableWidth = 210 - leftMargin - rightMargin; // 170 mm
+      const maxY = 297 - bottomMargin - 10; // Bottom boundary (267mm) leaving room for footer
 
-      doc.setFontSize(12);
-      const splitText = doc.splitTextToSize(content, 180);
-      doc.text(splitText, 15, 35);
+      let yCursor = topMargin;
 
-      doc.save(`${title}.pdf`);
-      toast.success("PDF downloaded!");
+      // 1. Header (Logo & Sub-header)
+      if (logoImg) {
+        const logoHeight = 8;
+        const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
+        doc.addImage(logoImg, "PNG", leftMargin, yCursor, logoWidth, logoHeight);
+      } else {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(99, 102, 241); // Brand Indigo
+        doc.text("StorySparkAI", leftMargin, yCursor + 6);
+      }
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184); // Slate 400
+      doc.text("PREMIUM AI GENERATED STORY", 190, yCursor + 5, { align: "right" });
+
+      yCursor += 10;
+
+      // Header Divider Line
+      doc.setDrawColor(99, 102, 241); // Brand Indigo
+      doc.setLineWidth(0.5);
+      doc.line(leftMargin, yCursor, 190, yCursor);
+
+      yCursor += 8;
+
+      // 2. Story Banner Image (only on Page 1)
+      if (storyImg) {
+        const bannerHeight = 55;
+        doc.addImage(storyImg, "JPEG", leftMargin, yCursor, printableWidth, bannerHeight);
+        yCursor += bannerHeight + 8;
+      }
+
+      // 3. Story Title
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(30, 41, 59); // Slate 800
+      const splitTitle = doc.splitTextToSize(title, printableWidth);
+      splitTitle.forEach((line: string) => {
+        doc.text(line, leftMargin, yCursor);
+        yCursor += 9;
+      });
+
+      yCursor += 1;
+
+      // 4. Meta Row (Generated Date & Genre Pill Badge)
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139); // Slate 500
+      const formattedDate = new Date().toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      doc.text(`Generated on ${formattedDate}`, leftMargin, yCursor);
+
+      // Genre pill badge on the right
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      const tagWidth = doc.getTextWidth(tag);
+      const chipWidth = tagWidth + 5;
+      const chipHeight = 5;
+      const chipX = 190 - chipWidth;
+      const chipY = yCursor - 3.8;
+
+      doc.setFillColor(99, 102, 241); // Brand Indigo background
+      doc.roundedRect(chipX, chipY, chipWidth, chipHeight, 1, 1, "F");
+
+      doc.setTextColor(255, 255, 255); // White text inside pill
+      doc.text(tag, chipX + 2.5, chipY + 3.5);
+
+      yCursor += 4.5;
+
+      // Meta row bottom line
+      doc.setDrawColor(226, 232, 240); // Slate 200
+      doc.setLineWidth(0.2);
+      doc.line(leftMargin, yCursor, 190, yCursor);
+
+      yCursor += 10;
+
+      // 5. Story Paragraphs Flowing
+      const paragraphs = content.split(/\n+/);
+      const lineHeight = 6.5;
+      const paragraphSpacing = 4.5;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(30, 41, 59); // Slate 800
+
+      paragraphs.forEach((para: string, pIdx: number) => {
+        const cleanPara = para.trim();
+        if (!cleanPara) return;
+
+        const lines = doc.splitTextToSize(cleanPara, printableWidth);
+        lines.forEach((line: string) => {
+          if (yCursor > maxY) {
+            doc.addPage();
+            yCursor = 30; // Top padding for subsequent pages
+          }
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(11);
+          doc.setTextColor(30, 41, 59); // Slate 800
+          doc.text(line, leftMargin, yCursor);
+          yCursor += lineHeight;
+        });
+
+        if (pIdx < paragraphs.length - 1) {
+          yCursor += paragraphSpacing;
+        }
+      });
+
+      // 6. Running Header and Footer generation
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+
+        // Footer line
+        doc.setDrawColor(241, 245, 249);
+        doc.setLineWidth(0.25);
+        doc.line(leftMargin, 280, 190, 280);
+
+        // Footer Text
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139); // Slate 500
+        doc.text("Generated with StorySparkAI", leftMargin, 285);
+        doc.text(`Page ${i} of ${totalPages}`, 190, 285, { align: "right" });
+
+        // Header on pages 2+
+        if (i > 1) {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setTextColor(99, 102, 241); // Brand Indigo
+          doc.text("StorySparkAI", leftMargin, 14);
+
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(148, 163, 184); // Slate 400
+          const headerTitle = title.length > 50 ? title.substring(0, 50) + "..." : title;
+          doc.text(headerTitle, 190, 14, { align: "right" });
+
+          doc.setDrawColor(241, 245, 249);
+          doc.setLineWidth(0.2);
+          doc.line(leftMargin, 17, 190, 17);
+        }
+      }
+
+      // Save PDF with sanitized name
+      const safeTitle = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+      doc.save(`${safeTitle}.pdf`);
+      toast.dismiss(toastId);
+      toast.success("Premium PDF downloaded!");
     } catch (error) {
       console.error(error);
+      toast.dismiss(toastId);
       toast.error("Failed to export PDF.");
     }
   };
