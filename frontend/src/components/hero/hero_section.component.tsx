@@ -1,10 +1,102 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(useGSAP);
 
 const HeroSectionComponent = () => {
   const [stars, setStars] = useState<Array<{ id: number; x: number; y: number; size: number }>>([]);
   const nextStarId = useRef(1);
   const starTimers = useRef<number[]>([]);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const magneticBtnRef = useRef<HTMLButtonElement>(null);
+
+  // GSAP Text Reveal Animation
+  useGSAP(() => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+    // Badge fade in from top
+    tl.from(".hero-badge", {
+      y: -30,
+      opacity: 0,
+      duration: 0.6,
+    });
+
+    // Heading words reveal one by one
+    tl.from(".hero-word", {
+      y: 80,
+      opacity: 0,
+      duration: 0.7,
+      stagger: 0.08,
+    }, "-=0.2");
+
+    // Gradient text reveal
+    tl.from(".hero-gradient-text", {
+      y: 60,
+      opacity: 0,
+      duration: 0.8,
+      scale: 0.95,
+    }, "-=0.3");
+
+    // Paragraph slide up
+    tl.from(".hero-description", {
+      y: 40,
+      opacity: 0,
+      duration: 0.6,
+    }, "-=0.4");
+
+    // Buttons stagger in
+    tl.from(".hero-cta", {
+      y: 30,
+      opacity: 0,
+      duration: 0.5,
+      stagger: 0.15,
+    }, "-=0.3");
+  }, { scope: heroRef });
+
+  // Magnetic Button Effect
+  const handleMagneticMove = (e: globalThis.MouseEvent) => {
+    if (!magneticBtnRef.current) return;
+    const btn = magneticBtnRef.current;
+    const rect = btn.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const deltaX = (e.clientX - centerX) * 0.3;
+    const deltaY = (e.clientY - centerY) * 0.3;
+
+    gsap.to(btn, {
+      x: deltaX,
+      y: deltaY,
+      duration: 0.3,
+      ease: "power2.out",
+    });
+  };
+
+  const handleMagneticLeave = () => {
+    if (!magneticBtnRef.current) return;
+    gsap.to(magneticBtnRef.current, {
+      x: 0,
+      y: 0,
+      duration: 0.5,
+      ease: "elastic.out(1, 0.4)",
+    });
+  };
+
+  useEffect(() => {
+    const btn = magneticBtnRef.current;
+    if (!btn) return;
+    const parent = btn.parentElement;
+    if (!parent) return;
+
+    parent.addEventListener("mousemove", handleMagneticMove);
+    parent.addEventListener("mouseleave", handleMagneticLeave);
+
+    return () => {
+      parent.removeEventListener("mousemove", handleMagneticMove);
+      parent.removeEventListener("mouseleave", handleMagneticLeave);
+    };
+  }, []);
 
   const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -30,42 +122,45 @@ const HeroSectionComponent = () => {
       starTimers.current.forEach((timerId) => window.clearTimeout(timerId));
       starTimers.current = [];
     };
-  }, []);
+  }, [])
 
   return (
-    <div className="relative min-h-screen bg-slate-900 text-slate-100 overflow-hidden font-sans">
+    <div ref={heroRef} className="relative min-h-screen bg-slate-900 text-slate-100 overflow-hidden font-sans">
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10" />
       <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <div className="relative overflow-hidden" onMouseMove={handleMouseMove}>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700/50 backdrop-blur-md mb-8 shadow-sm cursor-pointer hover:bg-slate-700/50 transition-colors">
+          <div className="hero-badge inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700/50 backdrop-blur-md mb-8 shadow-sm cursor-pointer hover:bg-slate-700/50 transition-colors">
             <span className="flex h-2.5 w-2.5 rounded-full bg-blue-400 animate-pulse"></span>
             <span className="text-sm font-semibold text-slate-300 tracking-wide">StorySparkAI v2.0 is live</span>
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
-            Ignite Your Imagination With <br className="hidden sm:block" />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 drop-shadow-sm pb-2">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight overflow-hidden">
+            {"Ignite Your Imagination With".split(" ").map((word, i) => (
+              <span key={i} className="hero-word inline-block mr-[0.3em]">{word}</span>
+            ))}
+            <br className="hidden sm:block" />
+            <span className="hero-gradient-text bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 drop-shadow-sm pb-2 inline-block">
               AI-Driven Storytelling
             </span>
           </h1>
 
-          <p className="max-w-2xl mx-auto text-lg sm:text-xl text-slate-400 leading-relaxed mb-10">
+          <p className="hero-description max-w-2xl mx-auto text-lg sm:text-xl text-slate-400 leading-relaxed mb-10">
             Create, edit, and generate engaging multiple story variations from a single prompt.
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/stories" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-lg transition-all duration-300 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-95 flex items-center justify-center gap-2 group">
+            <Link to="/stories" className="hero-cta w-full sm:w-auto">
+              <button ref={magneticBtnRef} className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-lg transition-colors duration-300 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-95 flex items-center justify-center gap-2 group">
                 Start Writing for Free
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </button>
             </Link>
-            <Link to="/explore" className="w-full sm:w-auto">
+            <Link to="/explore" className="hero-cta w-full sm:w-auto">
               <button className="w-full sm:w-auto px-8 py-4 bg-slate-800/60 backdrop-blur-md border border-slate-700/50 hover:bg-slate-700/60 text-slate-200 rounded-xl font-bold text-lg transition-all duration-300 active:scale-95 flex items-center justify-center gap-2">
                 Explore Stories
               </button>
