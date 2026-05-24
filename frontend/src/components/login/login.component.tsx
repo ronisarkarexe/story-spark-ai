@@ -180,7 +180,8 @@ const LoginComponent = () => {
 
           </div>
 
-          <div className="mt-6 flex justify-center">
+          {/* Explicitly added list-none to prevent stray bullet point artifact on production build */}
+          <div className="mt-6 flex justify-center list-none">
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}
