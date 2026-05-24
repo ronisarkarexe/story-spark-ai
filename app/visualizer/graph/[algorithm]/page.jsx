@@ -7,6 +7,11 @@ export async function generateStaticParams() {
     { algorithm: "bfs" },
     { algorithm: "dfs" },
     { algorithm: "dijkstra" },
+    { algorithm: "prim" },
+    { algorithm: "kruskal" },
+    { algorithm: "topological-sort" },
+    { algorithm: "adjacency-list" },
+    { algorithm: "adjacency-matrix" },
   ];
 }
 
@@ -23,8 +28,9 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function Page({ params }) {
+export default async function Page({ params, searchParams }) {
   const { algorithm } = await params;
+  const { startNode } = (await searchParams) || {};
   const topic = graphTopics[algorithm];
 
   if (!topic) {
@@ -44,6 +50,7 @@ export default async function Page({ params }) {
     <GraphTopicPage 
       topic={topic} 
       Animation={AnimationWrapper}
+      startNode={startNode}
     />
   );
 }

@@ -516,11 +516,11 @@ const sections = [
         items: [
           {
             name: "Adjacency Matrix",
-            path: "/visualizer/graph/representation/adjacency-matrix",
+            path: "/visualizer/graph/adjacency-matrix",
           },
           {
             name: "Adjacency List",
-            path: "/visualizer/graph/representation/adjacency-list",
+            path: "/visualizer/graph/adjacency-list",
           },
         ],
       },
@@ -529,11 +529,11 @@ const sections = [
         items: [
           {
             name: "Breadth-First Search (BFS)",
-            path: "/visualizer/graph/traversal/bfs",
+            path: "/visualizer/graph/bfs",
           },
           {
             name: "Depth-First Search (DFS)",
-            path: "/visualizer/graph/traversal/dfs",
+            path: "/visualizer/graph/dfs",
           },
         ],
       },
@@ -542,19 +542,19 @@ const sections = [
         items: [
           {
             name: "Dijkstra's Algorithm",
-            path: "/visualizer/graph/algorithms/dijkstra",
+            path: "/visualizer/graph/dijkstra",
           },
           {
             name: "Prim's Algorithm",
-            path: "/visualizer/graph/algorithms/prim",
+            path: "/visualizer/graph/prim",
           },
           {
             name: "Kruskal's Algorithm",
-            path: "/visualizer/graph/algorithms/kruskal",
+            path: "/visualizer/graph/kruskal",
           },
           {
             name: "Topological Sort",
-            path: "/visualizer/graph/algorithms/topological-sort",
+            path: "/visualizer/graph/topological-sort",
           },
         ],
       },

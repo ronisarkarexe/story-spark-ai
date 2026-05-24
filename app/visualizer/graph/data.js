@@ -1,29 +1,29 @@
 const baseRelatedLinks = [
   {
-    key: "adjacencyMatrix",
+    key: "adjacency-matrix",
     text: "Adjacency Matrix",
-    url: "/visualizer/graph/representation/adjacency-matrix",
+    url: "/visualizer/graph/adjacency-matrix",
   },
   {
-    key: "adjacencyList",
+    key: "adjacency-list",
     text: "Adjacency List",
-    url: "/visualizer/graph/representation/adjacency-list",
+    url: "/visualizer/graph/adjacency-list",
   },
   { key: "bfs", text: "BFS", url: "/visualizer/graph/bfs" },
   { key: "dfs", text: "DFS", url: "/visualizer/graph/dfs" },
   { key: "dijkstra", text: "Dijkstra", url: "/visualizer/graph/dijkstra" },
-  { key: "prim", text: "Prim", url: "/visualizer/graph/algorithms/prim" },
-  { key: "kruskal", text: "Kruskal", url: "/visualizer/graph/algorithms/kruskal" },
+  { key: "prim", text: "Prim", url: "/visualizer/graph/prim" },
+  { key: "kruskal", text: "Kruskal", url: "/visualizer/graph/kruskal" },
   {
-    key: "topologicalSort",
+    key: "topological-sort",
     text: "Topological Sort",
-    url: "/visualizer/graph/algorithms/topological-sort",
+    url: "/visualizer/graph/topological-sort",
   },
 ];
 
 export const graphTopics = {
-  adjacencyMatrix: {
-    key: "adjacencyMatrix",
+  "adjacency-matrix": {
+    key: "adjacency-matrix",
     title: "Adjacency Matrix",
     category: "Graph Representation",
     description:
@@ -46,8 +46,8 @@ export const graphTopics = {
       { label: "List neighbors", value: "O(V)" },
     ],
   },
-  adjacencyList: {
-    key: "adjacencyList",
+  "adjacency-list": {
+    key: "adjacency-list",
     title: "Adjacency List",
     category: "Graph Representation",
     description:
@@ -191,8 +191,8 @@ export const graphTopics = {
       { label: "Output", value: "Minimum spanning tree" },
     ],
   },
-  topologicalSort: {
-    key: "topologicalSort",
+  "topological-sort": {
+    key: "topological-sort",
     title: "Topological Sort",
     category: "Directed Acyclic Graph",
     description:

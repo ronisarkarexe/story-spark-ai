@@ -22,7 +22,16 @@ import {
   Cell
 } from 'recharts';
 import GraphCanvas from "@/app/components/models/GraphCanvas";
-import { bfsFrames, dfsFrames, dijkstraFrames, primFrames, kruskalFrames, topologicalSortFrames } from "../utils/algorithms";
+import { 
+  bfsFrames, 
+  dfsFrames, 
+  dijkstraFrames, 
+  primFrames, 
+  kruskalFrames, 
+  topologicalSortFrames,
+  adjacencyListFrames,
+  adjacencyMatrixFrames
+} from "../utils/algorithms";
 
 const defaultGraphs = {
   bfs: {
@@ -117,7 +126,7 @@ const defaultGraphs = {
       { from: "4", to: "5", weight: 2, directed: false },
     ]
   },
-  topologicalSort: {
+  "topological-sort": {
     nodes: [
       { id: "0", x: 100, y: 100, label: "A" },
       { id: "1", x: 300, y: 100, label: "B" },
@@ -135,7 +144,7 @@ const defaultGraphs = {
       { from: "2", to: "5", weight: 1, directed: true },
     ]
   },
-  adjacencyList: {
+  "adjacency-list": {
     nodes: [
       { id: "0", x: 100, y: 250, label: "0" },
       { id: "1", x: 300, y: 100, label: "1" },
@@ -149,7 +158,7 @@ const defaultGraphs = {
       { from: "2", to: "3", weight: 1, directed: false },
     ]
   },
-  adjacencyMatrix: {
+  "adjacency-matrix": {
     nodes: [
       { id: "0", x: 100, y: 250, label: "0" },
       { id: "1", x: 300, y: 100, label: "1" },
@@ -186,15 +195,15 @@ const complexityData = {
     { name: 'Time', value: 90, label: 'O(ElogE)', full: 'Time Complexity' },
     { name: 'Space', value: 60, label: 'O(V)', full: 'Space Complexity' },
   ],
-  topologicalSort: [
+  "topological-sort": [
     { name: 'Time', value: 80, label: 'O(V+E)', full: 'Time Complexity' },
     { name: 'Space', value: 60, label: 'O(V)', full: 'Space Complexity' },
   ],
-  adjacencyList: [
+  "adjacency-list": [
     { name: 'Space', value: 60, label: 'O(V+E)', full: 'Space Complexity' },
     { name: 'Add Node', value: 10, label: 'O(1)', full: 'Time Complexity' },
   ],
-  adjacencyMatrix: [
+  "adjacency-matrix": [
     { name: 'Space', value: 90, label: 'O(V^2)', full: 'Space Complexity' },
     { name: 'Edge Check', value: 10, label: 'O(1)', full: 'Time Complexity' },
   ],
@@ -207,7 +216,7 @@ const comparisonData = [
   { name: 'MST', time: 90, space: 60 },
 ];
 
-export default function GraphVisualizer({ algorithm = "bfs" }) {
+export default function GraphVisualizer({ algorithm = "bfs", startNode: initialStartNode }) {
   const [nodes, setNodes] = useState(defaultGraphs[algorithm]?.nodes || []);
   const [edges, setEdges] = useState(defaultGraphs[algorithm]?.edges || []);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -229,15 +238,17 @@ export default function GraphVisualizer({ algorithm = "bfs" }) {
       }
     });
 
-    const startNode = nodes.length > 0 ? nodes[0].id : null;
-    if (algorithm === "bfs") return bfsFrames(adj, startNode);
-    if (algorithm === "dfs") return dfsFrames(adj, startNode);
-    if (algorithm === "dijkstra") return dijkstraFrames(adj, startNode);
-    if (algorithm === "prim") return primFrames(adj, startNode);
+    const startNodeId = initialStartNode || (nodes.length > 0 ? nodes[0].id : null);
+    if (algorithm === "bfs") return bfsFrames(adj, startNodeId);
+    if (algorithm === "dfs") return dfsFrames(adj, startNodeId);
+    if (algorithm === "dijkstra") return dijkstraFrames(adj, startNodeId);
+    if (algorithm === "prim") return primFrames(adj, startNodeId);
     if (algorithm === "kruskal") return kruskalFrames(nodes.map(n => n.id), edges);
-    if (algorithm === "topologicalSort") return topologicalSortFrames(adj, nodes.map(n => n.id));
+    if (algorithm === "topological-sort") return topologicalSortFrames(adj, nodes.map(n => n.id));
+    if (algorithm === "adjacency-list") return adjacencyListFrames(nodes, edges);
+    if (algorithm === "adjacency-matrix") return adjacencyMatrixFrames(nodes, edges);
     return [];
-  }, [nodes, edges, algorithm]);
+  }, [nodes, edges, algorithm, initialStartNode]);
 
   useEffect(() => {
     let timer;
@@ -280,7 +291,7 @@ export default function GraphVisualizer({ algorithm = "bfs" }) {
   const currentFrameData = frames[currentFrame] || {};
 
   return (
-    <div className="space-y-6">
+    <div className="mt-8 space-y-6">
       {/* Main Visualizer Area */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
@@ -330,7 +341,7 @@ export default function GraphVisualizer({ algorithm = "bfs" }) {
           animationState={!isEditing ? currentFrameData : {}}
           interactive={isEditing}
           isWeighted={algorithm === "dijkstra" || algorithm === "prim" || algorithm === "kruskal"}
-          isDirected={algorithm === "dijkstra" || algorithm === "topologicalSort"}
+          isDirected={algorithm === "dijkstra" || algorithm === "topological-sort"}
           className="w-full"
         />
 
