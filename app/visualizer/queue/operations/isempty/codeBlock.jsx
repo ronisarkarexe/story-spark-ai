@@ -1,244 +1,155 @@
 'use client';
-import { useState, useRef } from 'react';
-import { FaCopy, FaCheck, FaCode } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
-import hljs from 'highlight.js';
-import 'highlight.js/styles/github.css';
-import 'highlight.js/styles/github-dark.css';
 
-export const highlightCode = (code, language) => {
-  const validLanguage = hljs.getLanguage(language) ? language : 'plaintext';
-  return hljs.highlight(code, { language: validLanguage }).value;
-};
+import AppleCodeBlock from '@/app/components/ui/AppleCodeBlock';
 
-const CodeBlock = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState("javascript");
-  const [copied, setCopied] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const topRef = useRef(null);
+// ─── All code examples for Queue isEmpty ─────────────────────────
+const codeExamples = {
+  javascript: `// Queue Implementation (isEmpty)
 
-  const languages = [
-    { id: "javascript", name: "JavaScript" },
-    { id: "python", name: "Python" },
-    { id: "java", name: "Java" },
-    { id: "c", name: "C" },
-    { id: "cpp", name: "C++" },
-  ];
+class Queue{
 
-  const copyToClipboard = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
+    constructor(){
+
+        this.front=null;
+        this.rear=null;
     }
-  };
 
-  const codeExamples = {
-    javascript: `// Queue Implementation in JavaScript (Linked List)
-class Queue {
-  constructor() {
-    this.front = null;
-    this.rear = null;
-  }
+    isEmpty(){
 
-  // Check if queue is empty
-  isEmpty() {
-    return this.front === null;
-  }
+        return this.front===null;
+    }
 }`,
-  
-    python: `# Queue Implementation in Python (Linked List)
+
+  python: `# Queue Implementation (isEmpty)
+
 class Queue:
-    def __init__(self):
-        self.front = None
-        self.rear = None
-    
-    # Check if queue is empty
-    def is_empty(self):
-        return self.front is None`,
-  
-    java: `// Queue Implementation in Java (Array)
-public class ArrayQueue {
-    private int front, rear;
+
+    def __init__(
+            self):
+
+        self.front=None
+        self.rear=None
+
+    def is_empty(
+            self):
+
+        return (
+        self.front
+        is None
+        )`,
+
+  java: `// Queue Implementation (isEmpty)
+
+public class ArrayQueue{
+
+    private int front;
+    private int rear;
+
     private int[] arr;
-    
-    public ArrayQueue(int size) {
-        arr = new int[size];
-        front = rear = -1;
+
+    public ArrayQueue(
+            int size){
+
+        arr=
+        new int[size];
+
+        front=
+        rear=-1;
     }
-    
-    // Check if queue is empty
-    public boolean isEmpty() {
-        return front == -1;
+
+    public boolean isEmpty(){
+
+        return front==-1;
     }
 }`,
-  
-    c: `// Queue Implementation in C (Array)
-#include <stdbool.h>
+
+  c: `// Queue Implementation (isEmpty)
+#include<stdbool.h>
+
 #define MAX_SIZE 100
 
-typedef struct {
-    int arr[MAX_SIZE];
-    int front, rear;
-} Queue;
+typedef struct{
 
-// Check if queue is empty
-bool isEmpty(Queue *q) {
-    return q->front == -1;
+    int arr[
+    MAX_SIZE
+    ];
+
+    int front;
+    int rear;
+
+}Queue;
+
+bool isEmpty(
+        Queue* q){
+
+    return
+    q->front==-1;
 }`,
 
-    cpp: `// Queue Implementation in C++ (Linked List)
-#include <iostream>
+  cpp: `// Queue Implementation (isEmpty)
+#include<iostream>
 
-class Node {
+class Node{
+
 public:
+
     int data;
+
     Node* next;
-    
-    Node(int val) : data(val), next(nullptr) {}
+
+    Node(
+        int val){
+
+        data=val;
+
+        next=
+        nullptr;
+    }
 };
 
-class Queue {
+class Queue{
+
 private:
+
     Node* front;
     Node* rear;
-    
+
 public:
-    Queue() : front(nullptr), rear(nullptr) {}
-    
-    ~Queue() {
-        while (front != nullptr) {
-            Node* temp = front;
-            front = front->next;
-            delete temp;
-        }
+
+    Queue(){
+
+        front=
+        nullptr;
+
+        rear=
+        nullptr;
     }
-    
-    // Check if queue is empty
-    bool isEmpty() const {
-        return front == nullptr;
+
+    bool isEmpty()
+    const{
+
+        return
+        front==
+        nullptr;
     }
 };`
-  };
+};
 
-  return (
-        <div
-          className="max-w-4xl mx-auto"
-          ref={topRef}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white dark:bg-neutral-950 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-colors duration-300"
-          >
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-gray-50 dark:bg-neutral-950 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center mb-2 sm:mb-0">
-                <FaCode className="text-blue-500 mr-2 text-lg" />
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-                  Queue Implementation (IsEmpty)
-                </h3>
-              </div>
-    
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => copyToClipboard(codeExamples[selectedLanguage])}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors text-gray-800 dark:text-gray-100 text-sm font-medium"
-                aria-label="Copy code"
-              >
-                <AnimatePresence mode="wait">
-                  {copied ? (
-                    <motion.span
-                      key="check"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center text-green-600 dark:text-green-400"
-                    >
-                      <FaCheck className="mr-1" /> Copied
-                    </motion.span>
-                  ) : (
-                    <motion.span
-                      key="copy"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center"
-                    >
-                      <FaCopy className="mr-1" /> Copy Code
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </motion.button>
-            </div>
-    
-            {/* Language Selector */}
-            <div className="px-4 pt-3 pb-2 flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700">
-              {languages.map((lang) => (
-                <motion.button
-                  key={lang.id}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setSelectedLanguage(lang.id)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    selectedLanguage === lang.id
-                      ? "bg-blue-500 text-white shadow-md"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
-                  }`}
-                >
-                  {lang.name}
-                </motion.button>
-              ))}
-            </div>
-    
-            {/* Code Block */}
-            <div className="relative">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={selectedLanguage}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-x-auto p-4 bg-gray-900 text-white"
-                >
-                  <pre className="text-sm leading-relaxed">
-                    <code
-                      className={`language-${selectedLanguage}`}
-                      dangerouslySetInnerHTML={{
-                        __html: highlightCode(
-                          codeExamples[selectedLanguage],
-                          selectedLanguage
-                        ),
-                      }}
-                    />
-                  </pre>
-                </motion.div>
-              </AnimatePresence>
-    
-              {/* Language indicator (shown on hover) */}
-              <AnimatePresence>
-                {isHovered && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute bottom-3 right-3 px-2 py-1 bg-gray-800 text-gray-300 text-xs rounded-md"
-                  >
-                    {selectedLanguage.toUpperCase()}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        </div>
-      );
-    };
-    
-    export default CodeBlock;
+// ─── Filenames ─────────────────────────────
+const fileNames = {
+    javascript:'queueIsEmpty.js',
+    python:'queue_is_empty.py',
+    java:'ArrayQueue.java',
+    c:'queue_is_empty.c',
+    cpp:'queue_is_empty.cpp'
+};
+
+// ─── Component ─────────────────────────────
+const CodeBlock = () => (
+    <AppleCodeBlock
+        codeExamples={codeExamples}
+        fileNames={fileNames}
+    />
+);
+
+export default CodeBlock;

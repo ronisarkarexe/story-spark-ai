@@ -47,19 +47,9 @@ export default function LoginPage() {
         const data = await res.json();
         if (!data.success) throw new Error(data.message || "Login failed");
 
-        // The API route set the session as cookies. Read the session from those
-        // cookies to hydrate the client-side SDK and update the user context.
-        // Tokens are never passed through the response body.
-        const {
-          data: { user },
-          error: sessionError,
-        } = await supabase.auth.getUser();
-
-        if (sessionError || !user) {
-          throw new Error("Session could not be established. Please try again.");
-        }
-
-        setUser(user);
+        // The API route set the session as cookies.
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user || null);
         router.push("/dashboard");
       } else {
         const res = await fetch("/api/auth", {
@@ -88,6 +78,9 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
     if (error) setError(error.message);
   };
@@ -127,7 +120,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full flex items-center justify-center py-3 px-4 rounded-lg border border-udemy-border dark:border-udemy-dark-border bg-white dark:bg-udemy-dark-surface text-udemy-text dark:text-udemy-dark-text font-medium hover:bg-udemy-surface dark:hover:bg-udemy-dark-bg duration-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <img src="./google.webp" width={24} alt="" aria-hidden="true" />
+            <img src="/google.webp" width={24} alt="" aria-hidden="true" />
             <span className="mx-2">Continue with Google</span>
           </button>
         </div>

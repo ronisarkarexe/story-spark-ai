@@ -1,7 +1,12 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiX, FiMail, FiMessageSquare, FiSend } from "react-icons/fi";
+// -------------------------------------------------------------------
+// Fix: Added missing FiChevronRight icon import.
+// This resolves ReferenceError when rendering the "View all help articles"
+// button in the Support Center tab.
+// -------------------------------------------------------------------
+import { FiX, FiMail, FiMessageSquare, FiSend, FiChevronRight } from "react-icons/fi"; // Added FiChevronRight import for Support Center icon
 import dynamic from "next/dynamic";
 
 const Turnstile = dynamic(
