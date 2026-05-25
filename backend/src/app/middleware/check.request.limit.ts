@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import httpStatus from "http-status";
-import { User } from "../modules/user/user.model";
-import { REQUEST_LIMITS } from "../../interfaces/ai_model_request_limit";
 import ApiError from "../../errors/api_error";
 import { JwtHalers } from "../../utils/jwt.helper";
 import config from "../../config";
 import { Secret } from "jsonwebtoken";
+import { reserveUserQuota } from "../modules/ai_model/quota.service";
+import { createUserQuotaGuard } from "../modules/ai_model/quota.lifecycle";
 
 const checkRequestLimit =
   () => async (req: Request, res: Response, next: NextFunction) => {
@@ -22,35 +22,11 @@ const checkRequestLimit =
         config.jwt.secret as Secret
       );
       const { email: userEmail } = verifiedUser;
-      const user = await User.findOne({ email: userEmail });
 
-      if (!user) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
-      }
+      await reserveUserQuota(userEmail);
 
-      const currentDate = new Date();
-      const firstDayOfMonth = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        1
-      );
-
-      // Reset the request count if the last request was in a previous month
-      if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
-        user.requestsThisMonth = 0;
-        user.lastRequestDate = currentDate;
-      }
-
-      const requestLimit =
-        REQUEST_LIMITS[user.subscriptionType as keyof typeof REQUEST_LIMITS];
-
-      // Check if the user has exceeded their monthly limit
-      if (user.requestsThisMonth >= requestLimit) {
-        throw new ApiError(
-          httpStatus.CONFLICT,
-          "Monthly request limit exceeded!"
-        );
-      }
+      res.locals.quotaUserEmail = userEmail;
+      res.locals.quotaRefundGuard = createUserQuotaGuard(userEmail);
       next();
     } catch (err) {
       next(err);

@@ -1,58 +1,62 @@
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
-import { timeoutLimit } from "../../../utils/timeout_limit";
-import { User } from "../user/user.model";
+import {
+  GenerationTimeoutError,
+  raceGenerationWithTimeout,
+} from "../../../utils/generation_timeout";
 import { IAIModel } from "./ai_model.interface";
 import { generateWithGeminiStories } from "./ai_model.utils";
+import { assertSuccessfulGeneration } from "./quota.lifecycle";
 import httpStatus from "http-status";
 
+const AUTHENTICATED_GENERATION_TIMEOUT_MS = 60000;
+const FREE_GENERATION_TIMEOUT_MS = 10000;
+
+const GENERATION_FAILED_MESSAGE =
+  "Story generation failed. Your request quota has been restored.";
+const FREE_GENERATION_FAILED_MESSAGE =
+  "Story generation failed. Your free generation quota has been restored.";
+
 const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
+  const { email } = token;
+  const { prompt, wordLength, numStories } = payload;
+
   try {
-    const { email } = token;
-    const { prompt, wordLength, numStories } = payload;
-    const result = await Promise.race([
-      timeoutLimit(60000),
-      generateWithGeminiStories(prompt, wordLength, numStories),
-    ]);
-
-    if (result) {
-      const user = await User.findOne({ email: email });
-
-      if (!user) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
-      }
-
-      const currentDate = new Date();
-      const firstDayOfMonth = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        1
-      );
-      if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
-        user.requestsThisMonth = 0;
-        user.lastRequestDate = currentDate;
-      }
-
-      user.requestsThisMonth += 1;
-      user.lastRequestDate = currentDate;
-      await user.save();
-    }
+    const result = await raceGenerationWithTimeout(
+      (signal) => generateWithGeminiStories(prompt, wordLength, numStories, signal),
+      AUTHENTICATED_GENERATION_TIMEOUT_MS
+    );
+    assertSuccessfulGeneration(result, GENERATION_FAILED_MESSAGE);
     return result;
   } catch (error) {
-    throw new ApiError(httpStatus.GATEWAY_TIMEOUT, "Request timed out!");
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    if (error instanceof GenerationTimeoutError) {
+      throw new ApiError(httpStatus.GATEWAY_TIMEOUT, "Request timed out!");
+    }
+    throw new ApiError(httpStatus.BAD_GATEWAY, GENERATION_FAILED_MESSAGE);
   }
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel) => {
+  const { prompt } = payload;
+
   try {
-    const { prompt } = payload;
-    const result = await Promise.race([
-      timeoutLimit(10000),
-      generateWithGeminiStories(prompt, 150),
-    ]);
+    const result = await raceGenerationWithTimeout(
+      (signal) => generateWithGeminiStories(prompt, 150, 2, signal),
+      FREE_GENERATION_TIMEOUT_MS
+    );
+    assertSuccessfulGeneration(result, FREE_GENERATION_FAILED_MESSAGE);
     return result;
   } catch (error) {
-    throw new ApiError(httpStatus.GATEWAY_TIMEOUT, "Request timed out!");
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    if (error instanceof GenerationTimeoutError) {
+      throw new ApiError(httpStatus.GATEWAY_TIMEOUT, "Request timed out!");
+    }
+    throw new ApiError(httpStatus.BAD_GATEWAY, FREE_GENERATION_FAILED_MESSAGE);
   }
 };
 
