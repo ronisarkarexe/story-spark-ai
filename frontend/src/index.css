@@ -2,6 +2,17 @@
 @import "tailwindcss";
 @theme {
   --color-custom: #3b82f6;
+  --color-spark-dark-green: #1f2a1d;
+  --color-spark-medium-green: #2d3a2a;
+  --color-spark-button-hover: #2a3827;
+  --color-spark-text-green: #4b5b47;
+  --color-spark-heading-primary: #336443;
+  --color-spark-heading-accent: #85AB8B;
+  --color-spark-bottom-text: #3d5638;
+  --color-spark-bottom-btn-bg: #3d5638;
+  --color-spark-bottom-btn-hover: #2d4228;
+  --font-sans: "Neue Haas Grotesk Display Pro 55 Roman", "Inter", sans-serif;
+  --font-inter: "Inter", sans-serif;
   
   @keyframes fade-in {
     from { opacity: 0; transform: translateY(10px); }
@@ -653,4 +664,44 @@ html.dark body {
   .magic-cursor-sparkle {
     transform: none;
   }
+}
+
+/* Redesign Overrides */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: 'Neue Haas Grotesk Display Pro 55 Roman', 'Neue Haas Grotesk Text Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth custom transition base class */
+.theme-transition {
+  transition: background-color 0.3s ease, border-color 0.3s ease, text-color 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(51, 100, 67, 0.3);
+  border-radius: 999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(133, 171, 139, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(51, 100, 67, 0.6);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(133, 171, 139, 0.6);
 }

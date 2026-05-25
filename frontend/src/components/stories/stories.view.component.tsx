@@ -521,7 +521,7 @@ useEffect(() => {
                     {topics.map((topic, index) => (
                       <span
                         key={index}
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.color} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
+                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.color || "bg-slate-700 text-slate-200"} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
                       >
                         <button
                           type="button"

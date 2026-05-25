@@ -37,18 +37,7 @@ export const doPublishAccessibility = (subscriptionType: string) => {
 
 export interface ITopicData {
   title: string;
-  color: string;
-  selected: boolean;
-}
-
-export interface ITopicData {
-  title: string;
-  // REMOVED: color: string;
-  selected: boolean;
-}
-
-export interface ITopicData {
-  title: string;
+  color?: string;
   selected: boolean;
 }
 
