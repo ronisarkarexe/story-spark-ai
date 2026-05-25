@@ -21,8 +21,8 @@ const LatestPostsComponent = () => {
     return <LoadingAnimation />;
   }
   return (
-    <div className="text-slate-100">
-      <h2 className="text-2xl font-bold text-slate-100 mb-6">Latest Posts</h2>
+    <div className="text-slate-900 dark:text-slate-100">
+      <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">Latest Posts</h2>
       <div className="space-y-6">
         {data?.posts?.length ?? 0 > 0 ? (
           data?.posts?.map((post: Post) => (
@@ -35,14 +35,14 @@ const LatestPostsComponent = () => {
                 <div className="flex items-center">
                   <SSProfile name={post.author?.name || 'Unknown User'} size="h-8 w-8" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-400">
+                    <p className="text-sm font-medium text-slate-600 dark:text-gray-400">
                       {post.author?.name || 'Unknown User'}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-slate-500 dark:text-gray-500">
                         {formatDateShort(post.createdAt)}
                       </p>
-                      <span className="text-gray-600 text-xs">•</span>
+                      <span className="text-slate-400 dark:text-gray-600 text-xs">•</span>
                       {/* ⏱️ Dynamic Reading Time Element Addition */}
                       <p className="text-xs text-purple-400 font-medium flex items-center gap-1">
                         ⏱️ {calculateReadingTime(post.content)} min read
@@ -60,14 +60,14 @@ const LatestPostsComponent = () => {
                   />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-300 mb-2 group-hover:text-blue-400 transition-colors">
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-gray-300 mb-2 group-hover:text-blue-400 transition-colors">
                 {post.title}
               </h3>
-              <p className="text-gray-400 mb-4 line-clamp-2">
+              <p className="text-slate-600 dark:text-gray-400 mb-4 line-clamp-2">
                 {post.content}
               </p>
               <div className="flex items-center justify-between">
-                <div className="flex items-center text-sm text-gray-400">
+                <div className="flex items-center text-sm text-slate-500 dark:text-gray-400">
                   <span className="flex items-center mr-4">
                     <i className="far fa-heart mr-1"></i> {post.likesCount}
                   </span>
@@ -89,7 +89,7 @@ const LatestPostsComponent = () => {
             </div>
           ))
         ) : (
-          <div className="rounded-lg border border-slate-700/70 bg-slate-900/40 px-4 py-5 text-slate-300">
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700/70 bg-slate-100 dark:bg-slate-900/40 px-4 py-5 text-slate-700 dark:text-slate-300">
             Post is not available!
           </div>
         )}

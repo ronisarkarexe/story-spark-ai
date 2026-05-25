@@ -98,18 +98,18 @@ const PostDetailsComponent = () => {
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
       <div className="max-w-6xl mx-auto px-4">
         <div className="py-6 flex justify-between">
           <div
             onClick={() => navigate(-1)}
-            className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded"
+            className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded border border-gray-200 dark:border-white/10"
           >
             <i className="fa-solid fa-left-long"></i> BACK
           </div>
           <div className=""></div>
         </div>
-        <div className="rounded-lg shadow-sm bg-blue-500/10 mb-10">
+        <div className="rounded-lg shadow-sm bg-gray-50 border border-gray-200 text-slate-900 mb-10 dark:bg-blue-500/10 dark:border-transparent dark:text-white">
           <div className="p-8">
             <div className="flex justify-between">
               <div className="flex items-center space-x-4 mb-6">
@@ -118,10 +118,10 @@ const PostDetailsComponent = () => {
                   size="h-12 w-12"
                 />
                 <div>
-                  <h3 className="font-medium text-gray-400">
+                  <h3 className="font-medium text-slate-700 dark:text-gray-400">
                     {post?.author?.name || "Unknown User"}
                   </h3>
-                  <div className="flex items-center text-sm text-gray-500">
+                  <div className="flex items-center text-sm text-slate-500 dark:text-gray-500">
                     <span>{formatDateShort(post ? post?.createdAt : "")}</span>
                   </div>
                 </div>
@@ -133,7 +133,7 @@ const PostDetailsComponent = () => {
                     className={`mt-2 rounded px-4 py-1 text-sm cursor-pointer transition-all ${
                       isFollowing
                         ? "bg-blue-500/50 text-white hover:bg-red-500/30"
-                        : "bg-blue-500/30 text-gray-300 hover:bg-blue-500/40"
+                        : "bg-blue-500/30 text-slate-900 dark:text-gray-300 hover:bg-blue-500/40"
                     }`}
                   >
                     {isFollowing ? "Following" : "Follow"}
@@ -142,7 +142,7 @@ const PostDetailsComponent = () => {
               </div>
             </div>
 
-            <h1 className="text-4xl font-bold text-gray-300 mb-6">
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-gray-300 mb-6">
               {post?.title}
             </h1>
 
@@ -154,18 +154,18 @@ const PostDetailsComponent = () => {
               />
             </div>
 
-            <div className="prose max-w-none mb-12 text-gray-400">
+            <div className="prose max-w-none mb-12 text-slate-600 dark:text-gray-400">
               <p>{post?.content}</p>
             </div>
 
-            <div className="flex items-center justify-between border-t border-b border-gray-500 py-4 mb-12">
+            <div className="flex items-center justify-between border-t border-b border-gray-200 py-4 mb-12 dark:border-gray-500">
               <div className="flex items-center space-x-6">
                 <button
                   onClick={handleLike}
                   className={`flex items-center space-x-2 transition-colors cursor-pointer ${
                     hasUserReacted
                       ? "text-red-500 hover:text-red-400"
-                      : "text-gray-600 hover:text-gray-400"
+                      : "text-slate-600 hover:text-slate-900 dark:text-gray-600 dark:hover:text-gray-400"
                   }`}
                 >
                   <i
@@ -219,7 +219,7 @@ const PostDetailsComponent = () => {
             )}
 
             <div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-300">
+              <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
                 Related Stories
               </h3>
               <RelatedStoriesComponent

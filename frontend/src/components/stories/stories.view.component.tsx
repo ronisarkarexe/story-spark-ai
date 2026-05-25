@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { getShortenedText, ITopicData, topicsData, getWordCount } from "./stories.utils";
+import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
+import {
+  useGenerateAlternateEndingsMutation,
+  useGenerateFreeAlternateEndingsMutation,
+} from "../../redux/apis/ai.model.api";
+
 
 export interface IStories {
   uuid: string;
@@ -37,6 +42,91 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
+
+  // Alternate ending state & hooks
+  const [endingsCache, setEndingsCache] = useState<{
+    [uuid: string]: { style: string; ending: string; fullStory: string }[];
+  }>({});
+  const [originalStoryContent, setOriginalStoryContent] = useState<{
+    [uuid: string]: string;
+  }>({});
+  const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
+  const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
+
+  const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
+  const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+
+  useEffect(() => {
+    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
+      setOriginalStoryContent((prev) => ({
+        ...prev,
+        [selectedStory.uuid]: selectedStory.content,
+      }));
+    }
+  }, [selectedStory, originalStoryContent]);
+
+  const handleGenerateAlternateEndings = async () => {
+    if (!selectedStory) return;
+    setIsGeneratingEndings(true);
+    const toastId = toast.loading("Generating alternate endings...");
+    try {
+      const payload = {
+        title: selectedStory.title,
+        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
+        tag: selectedStory.tag,
+      };
+      
+      const generationRequest = isLogin
+        ? generateAlternateEndings(payload)
+        : generateFreeAlternateEndings(payload);
+        
+      const res = await generationRequest.unwrap();
+      if (res && res.data) {
+        setEndingsCache((prev) => ({
+          ...prev,
+          [selectedStory.uuid]: res.data,
+        }));
+        toast.success("Alternate endings generated successfully!");
+      } else {
+        toast.error("Failed to generate alternate endings.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate alternate endings. Please try again.");
+    } finally {
+      toast.dismiss(toastId);
+      setIsGeneratingEndings(false);
+    }
+  };
+
+  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
+    if (!selectedStory) return;
+    const updatedStory = {
+      ...selectedStory,
+      content: endingData.fullStory,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success(`${endingData.style} applied to story!`);
+  };
+
+  const handleResetEnding = () => {
+    if (!selectedStory) return;
+    const originalContent = originalStoryContent[selectedStory.uuid];
+    if (!originalContent) return;
+    const updatedStory = {
+      ...selectedStory,
+      content: originalContent,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success("Reverted to original story ending!");
+  };
+
 
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
@@ -107,7 +197,7 @@ useEffect(() => {
       ...currentTopics,
       {
         title: normalizedTitle,
-        color: "bg-indigo-100 text-indigo-800",
+        className: SELECTED_TOPIC_CLASSES,
         selected: true,
       },
     ]);
@@ -521,7 +611,7 @@ useEffect(() => {
                     {topics.map((topic, index) => (
                       <span
                         key={index}
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.color} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
+                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
                       >
                         <button
                           type="button"
@@ -554,6 +644,142 @@ useEffect(() => {
                 )}
               </div>
             </div>
+
+            {/* Alternate Endings Section */}
+            {selectedStory && (
+              <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
+                <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-200 flex items-center gap-2">
+                      Alternate Endings
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Explore alternate narrative styles for your story context.
+                    </p>
+                  </div>
+                  {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
+                    <button
+                      type="button"
+                      onClick={handleResetEnding}
+                      className="rounded-lg px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-200 border border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                    >
+                      <i className="fa-solid fa-rotate-left"></i> Reset to Original
+                    </button>
+                  )}
+                </div>
+
+                {isGeneratingEndings ? (
+                  <div className="flex flex-col items-center justify-center py-10">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mb-4"></div>
+                    <p className="text-slate-300 text-sm font-medium animate-pulse">
+                      Generating alternate endings...
+                    </p>
+                  </div>
+                ) : endingsCache[selectedStory.uuid]?.length > 0 ? (
+                  <div>
+                    {/* Tabs */}
+                    <div className="flex border-b border-slate-700/50 mb-6 overflow-x-auto whitespace-nowrap scrollbar-none">
+                      {[
+                        { name: "Happy Ending" },
+                        { name: "Dark Ending" },
+                        { name: "Plot Twist Ending" },
+                        { name: "Open Ending" },
+                        { name: "Cliffhanger Ending" }
+                      ].map((s) => {
+                        const hasEndings = endingsCache[selectedStory.uuid] || [];
+                        const endingData = hasEndings.find((e) => e.style === s.name);
+                        const isApplied = endingData && selectedStory.content === endingData.fullStory;
+                        
+                        return (
+                          <button
+                            key={s.name}
+                            type="button"
+                            onClick={() => setActiveEndingTab(s.name)}
+                            className={`px-5 py-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                              activeEndingTab === s.name
+                                ? "border-purple-500 text-purple-400 bg-purple-500/5"
+                                : "border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700"
+                            }`}
+                          >
+                            <span>{s.name}</span>
+                            {isApplied && (
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Tab content */}
+                    {(() => {
+                      const currentEndings = endingsCache[selectedStory.uuid] || [];
+                      const currentEndingData = currentEndings.find((e) => e.style === activeEndingTab);
+                      if (!currentEndingData) return null;
+                      
+                      const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
+                      
+                      return (
+                        <div className="bg-slate-900/40 rounded-xl p-6 border border-slate-700/30">
+                          <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-lg font-bold text-slate-200">
+                              {activeEndingTab} Suggestion
+                            </h4>
+                            <div>
+                              {isCurrentlyApplied ? (
+                                <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
+                                  <i className="fa-solid fa-check"></i> Applied to Story
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleApplyEnding(currentEndingData)}
+                                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
+                                >
+                                  Apply to Story
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800 leading-relaxed text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap">
+                              <p>{currentEndingData.ending}</p>
+                            </div>
+                            
+                            <div>
+                              <details className="group border border-slate-800 rounded-lg overflow-hidden bg-slate-950/20">
+                                <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none">
+                                  <span>PREVIEW FULL STORY WITH THIS ENDING</span>
+                                  <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
+                                </summary>
+                                <div className="p-4 border-t border-slate-800/80 text-xs text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
+                                  {currentEndingData.fullStory}
+                                </div>
+                              </details>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8 bg-slate-900/20 border border-dashed border-slate-700/40 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={handleGenerateAlternateEndings}
+                      className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer"
+                    >
+                      Generate Alternate Endings
+                    </button>
+                    <p className="text-xs text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
+                      Uses the story context to produce 5 unique ending variations (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

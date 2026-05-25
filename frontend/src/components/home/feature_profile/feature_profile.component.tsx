@@ -13,29 +13,29 @@ const FeatureProfileComponent = () => {
           imageUrl={data?.profile.avatar}
         />
         <div className="ml-4">
-          <h3 className="text-lg font-semibold text-gray-300">{data?.name}</h3>
-          <p className="text-sm text-gray-400">{data?.email}</p>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-gray-300">{data?.name}</h3>
+          <p className="text-sm text-slate-600 dark:text-gray-400">{data?.email}</p>
         </div>
       </div>
-      <div className="border-t border-b border-gray-500 py-4 mb-6">
+      <div className="border-t border-b border-slate-300 dark:border-gray-500 py-4 mb-6">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-semibold text-gray-400">
+            <p className="text-2xl font-semibold text-slate-700 dark:text-gray-400">
               {data?.postsCount}
             </p>
-            <p className="text-sm text-gray-500">Posts</p>
+            <p className="text-sm text-slate-500 dark:text-gray-500">Posts</p>
           </div>
           <div>
-            <p className="text-2xl font-semibold text-gray-400">
+            <p className="text-2xl font-semibold text-slate-700 dark:text-gray-400">
               {data?.followers.length}
             </p>
-            <p className="text-sm text-gray-500">Followers</p>
+            <p className="text-sm text-slate-500 dark:text-gray-500">Followers</p>
           </div>
           <div>
-            <p className="text-2xl font-semibold text-gray-400">
+            <p className="text-2xl font-semibold text-slate-700 dark:text-gray-400">
               {data?.following.length}
             </p>
-            <p className="text-sm text-gray-500">Following</p>
+            <p className="text-sm text-slate-500 dark:text-gray-500">Following</p>
           </div>
         </div>
       </div>

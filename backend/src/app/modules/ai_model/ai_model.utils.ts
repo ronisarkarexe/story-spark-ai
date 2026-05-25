@@ -6,6 +6,7 @@ import {
 import { fetchImageURL } from "../../../utils/image_generation";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
+import { IAlternateEnding } from "./ai_model.interface";
 
 const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
 
@@ -69,3 +70,43 @@ export async function generateWithGeminiStories(
     return [];
   }
 }
+
+export async function generateAlternateEndingsWithGemini(
+  title: string,
+  content: string,
+  tag: string
+): Promise<IAlternateEnding[]> {
+  try {
+    const chatSession = model.startChat({
+      generationConfig,
+      safetySettings,
+      history: [],
+    });
+    const response = await chatSession.sendMessage(
+      `You are a professional narrative editor. Analyze the following story (Title: "${title}", Genre/Tag: "${tag}"):
+      
+      Story Content:
+      "${content}"
+      
+      Generate 5 alternate endings for this story corresponding to the following styles:
+      1. "Happy Ending"
+      2. "Dark Ending"
+      3. "Plot Twist Ending"
+      4. "Open Ending"
+      5. "Cliffhanger Ending"
+      
+      For each alternate ending, provide:
+      - "style": The style name exactly as listed above.
+      - "ending": A short paragraph or two describing the alternate ending scene itself.
+      - "fullStory": The complete rewritten story with this new ending seamlessly integrated. The new ending should replace the original ending of the story, preserving the original story's context, setup, character names, and writing tone.
+      
+      Return the output as a JSON array of objects with the fields: "style", "ending", and "fullStory".`
+    );
+    const text = response.response.text();
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Error generating alternate endings with Gemini:", error);
+    return [];
+  }
+}
+

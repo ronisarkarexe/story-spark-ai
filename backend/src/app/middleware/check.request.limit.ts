@@ -7,6 +7,9 @@ import { JwtHalers } from "../../utils/jwt.helper";
 import config from "../../config";
 import { Secret } from "jsonwebtoken";
 
+// Note: Actual quota/limit enforcement was moved to the ai_model.service layer 
+// to allow for atomic MongoDB operations and rollback on failure.
+// This middleware now only ensures the user is authenticated and exists.
 const checkRequestLimit =
   () => async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -28,29 +31,6 @@ const checkRequestLimit =
         throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
       }
 
-      const currentDate = new Date();
-      const firstDayOfMonth = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        1
-      );
-
-      // Reset the request count if the last request was in a previous month
-      if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
-        user.requestsThisMonth = 0;
-        user.lastRequestDate = currentDate;
-      }
-
-      const requestLimit =
-        REQUEST_LIMITS[user.subscriptionType as keyof typeof REQUEST_LIMITS];
-
-      // Check if the user has exceeded their monthly limit
-      if (user.requestsThisMonth >= requestLimit) {
-        throw new ApiError(
-          httpStatus.CONFLICT,
-          "Monthly request limit exceeded!"
-        );
-      }
       next();
     } catch (err) {
       next(err);

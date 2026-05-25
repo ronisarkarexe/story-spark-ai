@@ -65,7 +65,7 @@ const HelpCenterComponent = () => {
   }, [searchQuery, filteredCategories, filteredFaqs, filteredTroubleshoot]);
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-900 dark:text-white">
       <HelpHero
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}

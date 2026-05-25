@@ -1,5 +1,5 @@
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import { JSX, useEffect, useState } from "react";
+import { JSX } from "react";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 import {
   BrowserRouter as Router,
@@ -40,6 +40,7 @@ import CareerComponent from "./components/footer/career.tsx";
 // import ContactUsComponent from "./components/footer/contact-us.tsx";
 import BlogComponent from "./components/footer/blog.tsx";
 import PrivacyPolicy from "./components/footer/Privacy.tsx";
+import Terms from "./components/footer/terms.tsx";
 // import HelpCenterComponent from "./components/footer/help-center.tsx";
 import GuidelinesComponent from "./components/footer/guidelines.tsx";
 import TemplatesComponent from "./components/templates/templates.component";
@@ -65,20 +66,6 @@ const ProtectedRoute = ({
 };
 
 function App() {
-  const [darkMode] = useState(
-    localStorage.getItem("theme") === "dark",
-  );
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [darkMode]);
-
   return (
     <Router>
       <MagicCursorComponent />
@@ -375,6 +362,14 @@ function App() {
           </RootLayout>
         }
       />
+        <Route
+          path="/terms"
+          element={
+            <RootLayout>
+              <Terms />
+            </RootLayout>
+          }
+        />
         <Route
           path="/help-center"
           element={

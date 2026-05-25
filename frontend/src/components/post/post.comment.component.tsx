@@ -113,23 +113,23 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
       <form className="mb-8" onSubmit={handleSubmit(onSubmit)}>
         <textarea
           {...register("comment")}
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none placeholder:text-slate-500 transition-all shadow-inner"
+          className="w-full bg-gray-100/80 border border-gray-200 rounded-xl p-4 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none placeholder:text-slate-400 transition-all shadow-inner dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-200 dark:placeholder:text-slate-500"
           rows={3}
           placeholder="Share your thoughts on this story..."
         ></textarea>
         <button
           type="submit"
-          className={`!rounded-button mt-3 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md ${
+          className={`!rounded-button mt-3 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md ${
             isBusy
-              ? "bg-slate-700 text-slate-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-500 active:scale-95 cursor-pointer"
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400"
+              : "bg-blue-600 text-white hover:bg-blue-500 active:scale-95 cursor-pointer"
           }`}
           disabled={isBusy}
         >
           {isBusy ? "Posting..." : "Post Comment"}
         </button>
       </form>
-      <h3 className="text-2xl font-bold mb-8 text-slate-200 tracking-tight border-t border-slate-700/50 pt-8">
+      <h3 className="text-2xl font-bold mb-8 text-slate-900 tracking-tight border-t border-gray-200 pt-8 dark:text-slate-200 dark:border-slate-700/50">
         Comments ({commentList?.totalComments || 0})
       </h3>
       <div className="space-y-6">
@@ -138,18 +138,18 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
             <div className="flex space-x-4">
               <SSProfile name={comment?.userId?.name || "Unknown User"} size="w-10 h-10" />
               <div className="flex-1">
-                <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-5 shadow-sm hover:border-slate-600 transition-colors">
+                <div className="bg-gray-50 backdrop-blur-sm border border-gray-200 rounded-2xl p-5 shadow-sm hover:border-slate-600 transition-colors dark:bg-slate-800/40 dark:border-slate-700/50">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-blue-400 text-lg">
+                    <h4 className="font-semibold text-blue-600 text-lg dark:text-blue-400">
                       {comment?.userId?.name || "Unknown User"}
                     </h4>
-                    <span className="text-sm text-slate-500 font-medium">
+                    <span className="text-sm text-slate-500 font-medium dark:text-slate-500">
                       {timeAgo(comment.createdAt)}
                     </span>
                   </div>
-                  <p className="text-slate-300 leading-relaxed mt-2">{comment.comment}</p>
+                  <p className="text-slate-600 leading-relaxed mt-2 dark:text-slate-300">{comment.comment}</p>
                 </div>
-                <div className="flex items-center mt-3 pl-2 space-x-4 text-sm text-slate-500 font-medium">
+                <div className="flex items-center mt-3 pl-2 space-x-4 text-sm text-slate-500 font-medium dark:text-slate-500">
                   <button
                     onClick={() => handleLike(comment._id)}
                     className={`hover:text-red-400 transition-colors flex items-center gap-1 ${isCommentLiked(comment.likes) ? "text-red-400" : ""}`}
@@ -172,7 +172,7 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                       value={replyForms[comment._id] || ""}
                       onChange={(e) => setReplyForms({ ...replyForms, [comment._id]: e.target.value })}
                       placeholder="Write a reply..."
-                      className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 bg-gray-100/80 border border-gray-200 rounded-lg px-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-200"
                     />
                     <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition-colors">
                       Reply
@@ -181,21 +181,21 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                 )}
 
                 {comment.replies && comment.replies.length > 0 && (
-                  <div className="mt-4 space-y-4 border-l-2 border-slate-700 pl-4 ml-2">
+                  <div className="mt-4 space-y-4 border-l-2 border-gray-200 pl-4 ml-2 dark:border-slate-700">
                     {comment.replies.map((reply) => (
                       <div key={reply._id} className="flex space-x-3">
                         <SSProfile name={reply?.userId?.name || "Unknown User"} size="w-8 h-8" />
                         <div className="flex-1">
-                          <div className="rounded-lg p-3 border border-slate-700 bg-slate-800/20">
+                          <div className="rounded-lg p-3 border border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/20">
                             <div className="flex items-center justify-between mb-1">
-                              <h4 className="font-medium text-sm text-blue-400">
+                              <h4 className="font-medium text-sm text-blue-600 dark:text-blue-400">
                                 {reply?.userId?.name || "Unknown User"}
                               </h4>
-                              <span className="text-xs text-slate-500">
+                              <span className="text-xs text-slate-500 dark:text-slate-500">
                                 {timeAgo(reply.createdAt)}
                               </span>
                             </div>
-                            <p className="text-slate-300 text-sm">{reply.comment}</p>
+                            <p className="text-slate-600 text-sm dark:text-slate-300">{reply.comment}</p>
                           </div>
                           <div className="flex items-center mt-1 space-x-4 text-xs text-slate-500">
                             <button

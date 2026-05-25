@@ -53,6 +53,19 @@ if (!email || !emailRegex.test(email)) {
     { label: "Guidelines",  to: "/guidelines" },
   ];
 
+  const legalLinks = [
+  { label: "Privacy Policy", to: "/privacy-policy" },
+  { label: "Terms & Conditions", to: "/terms" },
+  { label: "Guidelines", to: "/guidelines" },
+];
+
+const socialLinks = [
+  { icon: "fa-instagram", url: "https://www.instagram.com/" },
+  { icon: "fa-linkedin", url: "https://www.linkedin.com/" },
+  { icon: "fa-twitter", url: "https://x.com/" },
+  { icon: "fa-facebook", url: "https://www.facebook.com/" },
+];
+
   return (
     <footer className="relative w-full bg-gradient-to-b from-[#090F24] via-[#080E22] to-[#060A18] overflow-hidden">
 
@@ -160,7 +173,40 @@ if (!email || !emailRegex.test(email)) {
               ))}
             </ul>
           </div>
+{/* Legal */}
+<div className="col-span-6 md:col-span-2 flex flex-col gap-4">
+  <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
+    Legal
+  </h3>
 
+  <ul className="flex flex-col gap-[12.5px]">
+    {legalLinks.map(({ label, to }) => (
+      <li key={to}>
+        <Link
+          to={to}
+          className="text-slate-300/85 hover:text-blue-300"
+        >
+          {label}
+        </Link>
+      </li>
+    ))}
+  </ul>
+
+  <div className="flex gap-3 pt-2">
+    {socialLinks.map((item) => (
+<a
+  key={item.icon}
+  href={item.url}
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <i
+    className={`fa-brands ${item.icon} text-slate-300 hover:text-blue-300 transition-colors`}
+  />
+</a>
+    ))}
+  </div>
+</div>
           {/* Newsletter */}
           <div className="col-span-12 md:col-span-3 flex flex-col gap-3.5">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Stay Updated</h3>
@@ -222,20 +268,25 @@ if (!email || !emailRegex.test(email)) {
             <span className="hidden sm:inline text-white/[0.12]">|</span>
             <span className="italic text-slate-400/60">Crafted for storytellers</span>
           </div>
-          <div className="flex items-center gap-2.5">
-            {["Privacy", "Terms", "Cookies"].map((item, i, arr) => (
-              <span key={item} className="flex items-center gap-2.5">
-                              <Link
-                to="/privacy-policy"
-                className="text-slate-400/80 transition-colors duration-200 hover:text-blue-300"
-              >
-                Privacy
-              </Link>
-                {i < arr.length - 1 && <span className="text-white/[0.12]">|</span>}
-              </span>
-            ))}
+          
+<div className="flex items-center gap-2.5">
+  {legalLinks.map(({ label, to }, i) => (
+    <span key={to} className="flex items-center gap-2">
+      <Link
+        to={to}
+        className="text-slate-400/80 hover:text-blue-300"
+      >
+        {label}
+      </Link>
+
+      {i < legalLinks.length - 1 && (
+        <span className="text-white/[0.12]">|</span>
+      )}
+    </span>
+  ))}
+</div>
           </div>
-        </div>
+        
       </div>
     </footer>
   );

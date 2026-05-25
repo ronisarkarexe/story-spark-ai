@@ -72,15 +72,15 @@ const HeroSectionComponent = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-slate-900 text-slate-100 overflow-hidden font-sans">
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10" />
-      <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10" />
+    <div className="relative min-h-screen bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-300">
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-sky-200/55 dark:bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10 transition-colors duration-300" />
+      <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-fuchsia-200/45 dark:bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10 transition-colors duration-300" />
 
       <div className="relative overflow-hidden" onMouseMove={handleMouseMove}>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20 text-center">
-          <div className="motion-card-subtle inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700/50 backdrop-blur-md mb-8 shadow-sm cursor-pointer hover:bg-slate-700/50 hover:border-blue-400/30">
+          <div className="motion-card-subtle inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 backdrop-blur-md mb-8 shadow-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:border-blue-400/30 transition-all duration-300">
             <span className="flex h-2.5 w-2.5 rounded-full bg-blue-400 animate-pulse"></span>
-            <span className="text-sm font-semibold text-slate-300 tracking-wide">StorySparkAI v2.0 is live</span>
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 tracking-wide">StorySparkAI v2.0 is live</span>
           </div>
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
@@ -90,7 +90,7 @@ const HeroSectionComponent = () => {
             </span>
           </h1>
 
-          <p className="max-w-2xl mx-auto text-lg sm:text-xl text-slate-400 leading-relaxed mb-10">
+          <p className="max-w-2xl mx-auto text-lg sm:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 transition-colors duration-300">
             Create, edit, and generate engaging multiple story variations from a single prompt.
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
           </p>
@@ -105,7 +105,7 @@ const HeroSectionComponent = () => {
               </button>
             </Link>
             <Link to="/explore" className="w-full sm:w-auto">
-              <button className="motion-cta w-full sm:w-auto px-8 py-4 bg-slate-800/60 backdrop-blur-md border border-slate-700/50 hover:bg-slate-700/60 hover:border-blue-400/30 text-slate-200 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-[0_0_24px_rgba(59,130,246,0.14)]">
+              <button className="motion-cta w-full sm:w-auto px-8 py-4 bg-white/85 dark:bg-slate-800/60 backdrop-blur-md border border-slate-300 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:border-blue-400/30 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-[0_0_24px_rgba(59,130,246,0.14)] transition-all duration-300">
                 Explore Stories
               </button>
             </Link>
@@ -128,14 +128,15 @@ const HeroSectionComponent = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <div key={index} className={`bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl ${feature.shadowClass} group cursor-pointer`}>
-              <div className={`w-14 h-14 ${feature.bgClass} rounded-2xl flex items-center justify-center mb-6 ${feature.hoverBgClass} transition-colors`}>
+            <div
+              key={index}
+              className={`motion-card ${feature.bgClass} backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-3xl p-8 hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl ${feature.shadowClass} group cursor-pointer`}
+            >
+              <div className={`w-14 h-14 ${feature.bgClass} rounded-2xl flex items-center justify-center mb-6 ${feature.hoverBgClass} transition-colors duration-200`}>
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-bold text-slate-200 mb-3">{feature.title}</h3>
-              <p className="text-slate-400 leading-relaxed">
-                {feature.description}
-              </p>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-3">{feature.title}</h3>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>

@@ -61,6 +61,9 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
 
 UserSchema.pre("save", async function (next) {
   const user = this;
+  if (!user.isModified("password")) {
+    return next();
+  }
   
   // Only hash password if it exists and is not empty (for password-based auth)
   // Skip for Google OAuth users who don't have passwords
