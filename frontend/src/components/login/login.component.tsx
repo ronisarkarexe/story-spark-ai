@@ -129,6 +129,13 @@ const LoginComponent = () => {
 
         <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
 
+            <button
+            onClick={() => window.location.href = "/"}
+            className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2"
+                      >
+            ← Back to Home
+            </button>
+
           <h3 className="mb-6 text-center text-2xl font-bold tracking-tight text-slate-200">
             Welcome Back
           </h3>

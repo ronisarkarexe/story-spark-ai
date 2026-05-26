@@ -24,6 +24,11 @@ interface IRoom {
   story: IStoryChunk[];
 }
 
+interface ITypingUser {
+  userId: string;
+  username: string;
+}
+
 const BACKEND_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000";
 
 export default function CollabRoom() {
@@ -32,7 +37,7 @@ export default function CollabRoom() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [room, setRoom] = useState<IRoom | null>(null);
   const [inputText, setInputText] = useState("");
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [typingUsers, setTypingUsers] = useState<ITypingUser[]>([]);
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
@@ -63,11 +68,19 @@ export default function CollabRoom() {
       setRoom((prev) => prev ? { ...prev, story } : prev)
     );
     newSocket.on("collab:ai_thinking", () => setIsAIThinking(true));
-    newSocket.on("collab:user_typing", ({ username: u }) => {
-      setTypingUsers((prev) => [...new Set([...prev, u])]);
+    newSocket.on("collab:user_typing", ({ userId: uid, username: u }) => {
+      setTypingUsers((prev) => {
+        const existing = prev.find((user) => user.userId === uid);
+        if (existing) {
+          return prev.map((user) =>
+            user.userId === uid ? { ...user, username: u } : user
+          );
+        }
+        return [...prev, { userId: uid, username: u }];
+      });
     });
     newSocket.on("collab:user_stop_typing", ({ userId: uid }) => {
-      setTypingUsers((prev) => prev.filter((u) => u !== uid));
+      setTypingUsers((prev) => prev.filter((user) => user.userId !== uid));
       setIsAIThinking(false);
     });
     newSocket.on("collab:error", ({ message }) => setError(message));
@@ -197,7 +210,8 @@ export default function CollabRoom() {
         )}
         {typingUsers.length > 0 && (
           <p className="text-xs text-white/40 italic">
-            {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing...
+            {typingUsers.map((user) => user.username).join(", ")}{" "}
+            {typingUsers.length === 1 ? "is" : "are"} typing...
           </p>
         )}
         <div ref={storyEndRef} />

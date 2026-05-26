@@ -1,17 +1,27 @@
 import { useEffect, useState } from "react";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronUp, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ScrollFAB = () => {
   const [showTop, setShowTop] = useState(false);
   const [showBottom, setShowBottom] = useState(true);
+  const [isNearBottom, setIsNearBottom] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
       const scrolled = window.scrollY;
-      const atBottom =
-        window.innerHeight + scrolled >= document.body.scrollHeight - 10;
+      const docHeight = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight
+      );
+      const windowHeight = window.innerHeight;
+      
+      const atBottom = windowHeight + scrolled >= docHeight - 10;
+      const nearBottom = windowHeight + scrolled >= docHeight - 95; // Trigger near the footer
+      
       setShowTop(scrolled > 300);
       setShowBottom(!atBottom);
+      setIsNearBottom(nearBottom);
     };
     window.addEventListener("scroll", onScroll);
     onScroll();
@@ -23,25 +33,39 @@ const ScrollFAB = () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 
   return (
-    <div className="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
-      {showTop && (
-        <button
-          onClick={scrollToTop}
-          aria-label="Scroll to top"
-          className="w-10 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-black transition-all duration-200"
-        >
-          <ArrowUp size={18} />
-        </button>
-      )}
-      {showBottom && (
-        <button
-          onClick={scrollToBottom}
-          aria-label="Scroll to bottom"
-          className="w-10 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-black transition-all duration-200"
-        >
-          <ArrowDown size={18} />
-        </button>
-      )}
+    <div className={`fixed right-6 flex flex-col gap-3 z-50 transition-all duration-300 ${isNearBottom ? "bottom-20" : "bottom-6"}`}>
+      <AnimatePresence>
+        {showTop && (
+          <motion.button
+            key="scroll-to-top"
+            initial={{ opacity: 0, scale: 0.8, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 15 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            onClick={scrollToTop}
+            aria-label="Scroll to top"
+            className="scroll-fab-btn scroll-fab-btn-up"
+          >
+            <ChevronUp className="scroll-icon" size={20} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showBottom && (
+          <motion.button
+            key="scroll-to-bottom"
+            initial={{ opacity: 0, scale: 0.8, y: -15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -15 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            onClick={scrollToBottom}
+            aria-label="Scroll to bottom"
+            className="scroll-fab-btn scroll-fab-btn-down"
+          >
+            <ChevronDown className="scroll-icon" size={20} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

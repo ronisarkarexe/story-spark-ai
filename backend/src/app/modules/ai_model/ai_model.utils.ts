@@ -4,6 +4,7 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { fetchImageURL } from "../../../utils/image_generation";
+import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding } from "./ai_model.interface";
@@ -40,35 +41,62 @@ interface Story {
   imageURL?: string;
 }
 
+const throwIfAborted = (signal?: AbortSignal): void => {
+  if (signal?.aborted) {
+    throw new GenerationAbortedError();
+  }
+};
+
 export async function generateWithGeminiStories(
   prompt: string,
   wordLength: number = 250,
-  numStories: number = 2
+  numStories: number = 2,
+  signal?: AbortSignal
 ): Promise<Story[]> {
-  try {
-    const chatSession = model.startChat({
-      generationConfig,
-      safetySettings,
-      history: [],
-    });
-    const response = await chatSession.sendMessage(
-      `Generate ${numStories} different short stories based on the following prompt: "${prompt}".
+  throwIfAborted(signal);
+
+  const chatSession = model.startChat({
+    generationConfig,
+    safetySettings,
+    history: [],
+  });
+
+  const response = await chatSession.sendMessage(
+    `Generate ${numStories} different short stories based on the following prompt: "${prompt}".
         Each story should be in JSON format with fields: "title", "content", and "tag".
         Ensure each story is approximately ${wordLength} words long.
         Return the output as a JSON array.`
-    );
-    const text = response.response.text();
-    const stories: Story[] = JSON.parse(text);
-    const imagePromises = stories.map((story) => fetchImageURL(story.tag));
-    const imageResults = await Promise.all(imagePromises);
-    return stories.map((story, index) => ({
-      ...story,
-      imageURL: imageResults[index].imageUrl,
-      uuid: uuidv4(),
-    }));
-  } catch (error) {
-    return [];
+  );
+
+  throwIfAborted(signal);
+
+  const text = response.response.text();
+  let stories: Story[];
+
+  try {
+    stories = JSON.parse(text);
+  } catch {
+    throw new Error("Gemini returned invalid JSON for story generation");
   }
+
+  if (!Array.isArray(stories) || stories.length === 0) {
+    throw new Error("Gemini returned no stories");
+  }
+
+  const imageResults = await Promise.all(
+    stories.map(async (story) => {
+      throwIfAborted(signal);
+      return fetchImageURL(story.tag);
+    })
+  );
+
+  throwIfAborted(signal);
+
+  return stories.map((story, index) => ({
+    ...story,
+    imageURL: imageResults[index].imageUrl,
+    uuid: uuidv4(),
+  }));
 }
 
 export async function generateAlternateEndingsWithGemini(

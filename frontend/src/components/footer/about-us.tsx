@@ -1,5 +1,6 @@
 import logo from "../../assets/logoNew.png";
 import { Link } from "react-router-dom";
+
 import { motion } from "framer-motion";
 import {
   Sparkles,
@@ -50,6 +51,7 @@ const features = [
       "Collaborate, contribute, and help shape the future of AI storytelling.",
   },
 ];
+ main
 
 const AboutUs = () => {
   return (

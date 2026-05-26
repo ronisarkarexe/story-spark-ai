@@ -97,9 +97,13 @@ export default function Contact() {
       } else {
         setError("✕ Failed to send message. Please try again.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Contact Form Error:", err);
-      setError(err.message || "✕ Failed to send message. Please check your connection.");
+      const message =
+        err instanceof Error
+          ? err.message
+          : "✕ Failed to send message. Please check your connection.";
+      setError(message);
     } finally {
       // 4. Release BOTH the lock and the loading state in all scenarios
       setLoading(false);

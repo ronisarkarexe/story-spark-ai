@@ -662,15 +662,12 @@ html.dark body {
   color: #f5ead6;
 }
 
-/* ── Back to Top Button ── */
-#back-to-top {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  z-index: 9999;
-  width: 44px;
-  height: 44px;
+/* ── Premium Scroll FAB Styles ── */
+.scroll-fab-btn {
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
+
   border: 2px solid #c9a227;
   background: linear-gradient(135deg, #8b1a1a, #5c3d2e);
   color: #f5ead6;
@@ -682,21 +679,104 @@ html.dark body {
   visibility: hidden;
   transform: translateY(12px);
   transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  
+  /* Glassmorphism base styling */
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  color: #6366f1; /* Premium Indigo */
+  
+  /* Soft, deep glowing shadow matching the site's light mode theme */
+  box-shadow: 
+    0 10px 25px -5px rgba(99, 102, 241, 0.15),
+    0 8px 16px -6px rgba(99, 102, 241, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  
+  /* Transitions */
+  transition: 
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#back-to-top.visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+.scroll-fab-btn .scroll-icon {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  stroke-width: 2.5px;
 }
+
+/* Hover States (Light mode) */
+.scroll-fab-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #4f46e5;
+  box-shadow: 
+    0 12px 30px -5px rgba(99, 102, 241, 0.25),
+    0 0 12px 2px rgba(99, 102, 241, 0.15);
+  transform: translateY(-2px);
+
+}
+
+/* Micro-animations for arrow slide on hover */
+.scroll-fab-btn-up:hover .scroll-icon {
+  transform: translateY(-3px);
+}
+
 
 #back-to-top:hover {
   box-shadow: 0 6px 20px rgba(44, 24, 16, 0.5), 0 0 0 3px rgba(201,162,39,0.3);
   transform: translateY(-2px);
+
+.scroll-fab-btn-down:hover .scroll-icon {
+  transform: translateY(3px);
+
 }
 
-#back-to-top:active {
-  transform: translateY(0) scale(0.95);
+/* Active press effect */
+.scroll-fab-btn:active {
+  transform: translateY(1px) scale(0.95);
+  box-shadow: 
+    0 4px 12px -5px rgba(99, 102, 241, 0.2),
+    0 0 4px 1px rgba(99, 102, 241, 0.05);
+}
+
+/* ── Dark Mode Styles ── */
+html.dark .scroll-fab-btn {
+  /* Dark glassmorphism with subtle dark blue/indigo gradient feel */
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(30, 27, 75, 0.65) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3); /* Violet glow border */
+  color: #c084fc; /* Light Violet/Purple */
+  
+  /* Glowing shadow matching the site's dark mode glow aesthetic */
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.5),
+    0 0 15px 1px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0px rgba(255, 255, 255, 0.1);
+}
+
+/* Hover States (Dark mode) */
+html.dark .scroll-fab-btn:hover {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(49, 46, 129, 0.8) 100%);
+  border-color: rgba(167, 139, 250, 0.6); /* brighter violet */
+  color: #e9d5ff; /* even brighter purple */
+  box-shadow: 
+    0 12px 30px -5px rgba(0, 0, 0, 0.6),
+    0 0 22px 4px rgba(139, 92, 246, 0.4);
+}
+
+/* Active states (Dark mode) */
+html.dark .scroll-fab-btn:active {
+  box-shadow: 
+    0 4px 12px -5px rgba(0, 0, 0, 0.5),
+    0 0 8px 1px rgba(139, 92, 246, 0.15);
 }
 
 @media (prefers-reduced-motion: reduce) {

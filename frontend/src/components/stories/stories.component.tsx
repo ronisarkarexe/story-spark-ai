@@ -488,11 +488,14 @@ const handleClearPrompt = () => {
         </div>
       )}
 
-      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
+{loading && (
+  <StoryGeneratingAnimation onCancel={handleCancelGeneration} />
+)}
       <StoriesViewComponent
         stories={stories}
         isLogin={login}
         setStories={setStories}
+        isLoading={loading}
       />
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-[#c9a227]/5 rounded-full blur-3xl -z-10"></div>
 

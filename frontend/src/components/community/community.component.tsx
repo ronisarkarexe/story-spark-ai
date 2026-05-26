@@ -1,12 +1,13 @@
-import React from 'react';
+import React  from 'react';
 import { Link } from 'react-router-dom';
 import GenreCard from './genre_card.component';
 import { isLoggedIn } from '../../services/auth.service';
 import { genres, featuredWriters, resources, stats } from './community.data';
+import GithubcontributorsComponent from './Githubcontributors.component';
 
 const CommunityComponent: React.FC = () => {
   const isLogin = isLoggedIn();
-
+ 
   return (
     <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
       {/* Hero Section */}
@@ -101,6 +102,10 @@ const CommunityComponent: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Featured github contributor  Section */}
+
+      <GithubcontributorsComponent/>
 
       {/* Writing Resources Section */}
       <section className="max-w-7xl mx-auto px-6 py-20">

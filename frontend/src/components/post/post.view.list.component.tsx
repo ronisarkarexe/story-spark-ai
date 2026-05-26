@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../models/post";
-import LoadingAnimation from "../loading/loading.component";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
@@ -15,7 +14,40 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   const navigate = useNavigate();
 
   if (isLoading) {
-    return <LoadingAnimation />;
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={i}
+            className="animate-pulse bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full"
+          >
+            {/* Image Placeholder */}
+            <div className="relative h-48 bg-slate-700/50">
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 pointer-events-none"></div>
+              {/* Tag Badges Skeleton */}
+              <div className="absolute top-4 left-4 h-6 w-20 bg-slate-600/50 rounded-full" />
+            </div>
+
+            {/* Body Content Placeholder */}
+            <div className="p-6 flex-1 flex flex-col">
+              {/* Title Line */}
+              <div className="h-6 bg-slate-700/50 rounded-md w-3/4 mb-3" />
+
+              {/* Excerpt Lines */}
+              <div className="space-y-2 mb-6 flex-1">
+                <div className="h-4 bg-slate-700/50 rounded-md w-full" />
+                <div className="h-4 bg-slate-700/50 rounded-md w-5/6" />
+              </div>
+
+              {/* Footer Metadata */}
+              <div className="border-t border-slate-700/50 pt-4 mt-auto">
+                <div className="h-4 bg-slate-700/50 rounded-md w-1/3" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (
