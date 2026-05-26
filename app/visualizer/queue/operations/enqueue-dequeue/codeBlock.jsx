@@ -1,6 +1,6 @@
 'use client';
 
-import AppleCodeBlock from '@/app/components/ui/AppleCodeBlock';
+import CodeBlock from '@/app/components/ui/CodeBlock';
 
 // ─── All code examples for Queue (Enqueue & Dequeue) ───────────────
 const codeExamples = {
@@ -364,18 +364,19 @@ public:
 };
 
 const fileNames = {
-    javascript:'queue.js',
-    python:'queue.py',
-    java:'ArrayQueue.java',
-    c:'queue.c',
-    cpp:'queue.cpp'
+    javascript:'enqueueDequeue.js',
+    python:'enqueue_dequeue.py',
+    java:'EnqueueDequeue.java',
+    c:'enqueue_dequeue.c',
+    cpp:'enqueue_dequeue.cpp'
 };
 
-const CodeBlock = () => (
-    <AppleCodeBlock
+const EnqueueDequeueCode = () => (
+    <CodeBlock
+        variant="macos"
         codeExamples={codeExamples}
         fileNames={fileNames}
     />
 );
 
-export default CodeBlock;
+export default EnqueueDequeueCode;

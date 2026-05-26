@@ -1,6 +1,6 @@
 'use client';
 
-import AppleCodeBlock from '@/app/components/ui/AppleCodeBlock';
+import CodeBlockUI from '@/app/components/ui/CodeBlock';
 
 // ─── All code examples for Stack with Peek ───────────────────────────
 const codeExamples = {
@@ -435,7 +435,8 @@ const fileNames = {
 
 // ─── Component ──────────────────────────────
 const CodeBlock = () => (
-    <AppleCodeBlock
+    <CodeBlockUI
+        variant="macos"
         codeExamples={codeExamples}
         fileNames={fileNames}
     />

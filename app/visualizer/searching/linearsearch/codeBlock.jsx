@@ -122,11 +122,19 @@ int main() {
 }`,
 };
 
+const fileNames = {
+  javascript: 'linearSearch.js',
+  python: 'linear_search.py',
+  java: 'LinearSearch.java',
+  c: 'linear_search.c',
+  cpp: 'linear_search.cpp',
+};
+
 const LinearSearchCode = () => (
   <CodeBlock
-    variant="standard"
-    title="Linear Search Implementation"
+    variant="macos"
     codeExamples={codeExamples}
+    fileNames={fileNames}
   />
 );
 

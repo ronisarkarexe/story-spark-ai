@@ -3,6 +3,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { gsap } from "gsap";
 import ArrayGenerator from "@/app/components/ui/randomArray";
 import CustomArrayInput from "@/app/components/ui/customArrayInput";
+import useVisualizerKeyboard from "@/app/hooks/useVisualizerKeyboard";
+import usePlayback from "@/app/hooks/usePlayback";
+import PlaybackControls from "@/app/components/ui/PlaybackControls";
 
 const getFontSize = (value) => {
   const len = String(value).length;
@@ -15,7 +18,16 @@ const MergeSortVisualizer = () => {
   const [array, setArray] = useState([]);
   const [sorting, setSorting] = useState(false);
   const [sorted, setSorted] = useState(false);
-  const [speed, setSpeed] = useState(1);
+  const {
+    isPaused,
+    speed,
+    speedRef,
+    setSpeed,
+    togglePlayPause,
+    increaseSpeed,
+    decreaseSpeed,
+    checkPause,
+  } = usePlayback(1);
   const [comparisons, setComparisons] = useState(0);
   const [swaps, setSwaps] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
@@ -34,14 +46,15 @@ const MergeSortVisualizer = () => {
   const isSortingRef = useRef(false);
   const resolveRef = useRef(null);
 
-  const cancellableDelay = (ms) => {
-    return new Promise((resolve) => {
+  const cancellableDelay = async (ms) => {
+    await new Promise((resolve) => {
       resolveRef.current = resolve;
       animationRef.current = setTimeout(() => {
         resolveRef.current = null;
         resolve();
-      }, ms);
+      }, ms / speedRef.current);
     });
+    await checkPause();
   };
   
 
@@ -93,7 +106,7 @@ const MergeSortVisualizer = () => {
 
       setComparisons((prev) => prev + 1);
       setCurrentStep((prev) => prev + 1);
-      await cancellableDelay(1000 / speed);
+      await cancellableDelay(1000);
       if (!isSortingRef.current) return;
 
       if (L[i] <= R[j]) {
@@ -117,7 +130,7 @@ const MergeSortVisualizer = () => {
       }
 
       k++;
-      await cancellableDelay(1000 / speed);
+      await cancellableDelay(1000);
       if (!isSortingRef.current) return;
     }
 
@@ -136,7 +149,7 @@ const MergeSortVisualizer = () => {
         }
       }
       k++;
-      await cancellableDelay(1000 / speed);
+      await cancellableDelay(1000);
       if (!isSortingRef.current) return;
     }
 
@@ -155,7 +168,7 @@ const MergeSortVisualizer = () => {
         }
       }
       k++;
-      await cancellableDelay(1000 / speed);
+      await cancellableDelay(1000);
       if (!isSortingRef.current) return;
     }
   };
@@ -174,7 +187,7 @@ const MergeSortVisualizer = () => {
       right: r,
       mid: m,
     }));
-    await cancellableDelay(1000 / speed);
+    await cancellableDelay(1000);
     if (!isSortingRef.current) return;
     await mergeSortHelper(arr, l, m, level + 1, currentPath);
     if (!isSortingRef.current) return;
@@ -232,6 +245,17 @@ const MergeSortVisualizer = () => {
     };
   }, []);
 
+  // keyboard shortcuts
+  useVisualizerKeyboard({
+    onStart:       mergeSort,
+    onReset:       reset,
+    onSpeedChange: setSpeed,
+    onTogglePlayPause: togglePlayPause,
+    speed,
+    sorting,
+    sorted,
+  });
+
   const isInCurrentRange = (index) => index >= currentIndices.left && index <= currentIndices.right;
   const isBeingMerged = (index) => index >= currentIndices.mergeStart && index <= currentIndices.mergeEnd;
 
@@ -252,6 +276,7 @@ const MergeSortVisualizer = () => {
                   resetStats();
                 }}
                 disabled={sorting}
+                isPrimary={array.length === 0}
               />
               <CustomArrayInput
                 onUseCustomArray={(newArray) => {
@@ -267,13 +292,13 @@ const MergeSortVisualizer = () => {
               <button
                 onClick={mergeSort}
                 disabled={!array.length || sorting || sorted}
-                className="w-full disabled:opacity-75 bg-none bg-green-500 px-4 py-2 rounded shadow-sm transition-all duration-300 text-sm sm:text-base text-black"
+                className="w-full disabled:opacity-75 bg-none bg-[#a435f0] hover:bg-[#8f2cd6] px-4 py-2 rounded shadow-sm transition-all duration-300 text-sm sm:text-base text-white"
               >
                 {sorting ? "Sorting..." : "Start Merge Sort"}
               </button>
               <button
                 onClick={reset}
-                className="w-full bg-none text-white bg-red-500 px-4 py-2 rounded transition-colors text-sm sm:text-base"
+                className="w-full bg-none text-[#a435f0] border border-[#a435f0] hover:bg-[#f3e8ff] dark:hover:bg-[#a435f0]/20 px-4 py-2 rounded transition-colors text-sm sm:text-base"
               >
                 Reset All
               </button>
@@ -328,6 +353,36 @@ const MergeSortVisualizer = () => {
               </div>
             )}
           </div>
+
+          {/* Playback & Speed controls */}
+          {sorting && (
+            <PlaybackControls
+              isPaused={isPaused}
+              onTogglePlayPause={togglePlayPause}
+              speed={speed}
+              onIncreaseSpeed={increaseSpeed}
+              onDecreaseSpeed={decreaseSpeed}
+              onSpeedChange={setSpeed}
+            />
+          )}
+
+          {!sorting && (
+            <div className="flex items-center gap-4 mb-4">
+              <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">Speed:</span>
+              <input
+                type="range"
+                min="0.5"
+                max="5"
+                step="0.5"
+                value={speed}
+                onChange={(e) => setSpeed(parseFloat(e.target.value))}
+                className="w-24 sm:w-32"
+                disabled={sorting}
+              />
+              <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">{speed}x</span>
+            </div>
+          )}
+
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="bg-gray-100 dark:bg-neutral-900 p-3 rounded">

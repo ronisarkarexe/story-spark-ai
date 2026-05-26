@@ -1,6 +1,6 @@
 'use client';
 
-import AppleCodeBlock from '@/app/components/ui/AppleCodeBlock';
+import CodeBlock from '@/app/components/ui/CodeBlock';
 
 // ─── All code examples for Queue isEmpty ─────────────────────────
 const codeExamples = {
@@ -139,17 +139,18 @@ public:
 const fileNames = {
     javascript:'queueIsEmpty.js',
     python:'queue_is_empty.py',
-    java:'ArrayQueue.java',
+    java:'QueueIsEmpty.java',
     c:'queue_is_empty.c',
     cpp:'queue_is_empty.cpp'
 };
 
 // ─── Component ─────────────────────────────
-const CodeBlock = () => (
-    <AppleCodeBlock
+const QueueIsEmptyCode = () => (
+    <CodeBlock
+        variant="macos"
         codeExamples={codeExamples}
         fileNames={fileNames}
     />
 );
 
-export default CodeBlock;
+export default QueueIsEmptyCode;

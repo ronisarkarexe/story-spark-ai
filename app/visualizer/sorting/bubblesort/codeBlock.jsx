@@ -117,11 +117,19 @@ int main() {
 }`,
 };
 
+const fileNames = {
+  javascript: 'bubbleSort.js',
+  python: 'bubble_sort.py',
+  java: 'BubbleSort.java',
+  c: 'bubble_sort.c',
+  cpp: 'bubble_sort.cpp',
+};
+
 const BubbleSortCode = () => (
   <CodeBlock
-    variant="standard"
-    title="Bubble Sort Implementation"
+    variant="macos"
     codeExamples={codeExamples}
+    fileNames={fileNames}
   />
 );
 

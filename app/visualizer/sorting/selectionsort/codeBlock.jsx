@@ -1,6 +1,6 @@
 'use client';
 
-import AppleCodeBlock from '@/app/components/ui/AppleCodeBlock';
+import CodeBlock from '@/app/components/ui/CodeBlock';
 
 // ─── All code examples for Selection Sort ───────────────────────────────
 const codeExamples = {
@@ -214,11 +214,12 @@ const fileNames = {
 };
 
 // ─── Component ──────────────────────────────────────
-const CodeBlock = () => (
-    <AppleCodeBlock
+const SelectionSortCode = () => (
+    <CodeBlock
+        variant="macos"
         codeExamples={codeExamples}
         fileNames={fileNames}
     />
 );
 
-export default CodeBlock;
+export default SelectionSortCode;

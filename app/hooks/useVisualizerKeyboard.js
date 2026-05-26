@@ -27,6 +27,7 @@ export default function useVisualizerKeyboard({
   onStart,
   onReset,
   onSpeedChange,
+  onTogglePlayPause,
   speed,
   sorting,
   sorted,
@@ -43,8 +44,9 @@ export default function useVisualizerKeyboard({
       switch (e.key) {
         case " ":
           e.preventDefault(); // prevent page scroll
-          if (sorting) {
-            // Space while running → Reset (there is no pause in the current impl)
+          if (onTogglePlayPause && sorting) {
+            onTogglePlayPause();
+          } else if (sorting) {
             onReset?.();
           } else if (!sorted) {
             // Space while idle → Start
@@ -73,5 +75,5 @@ export default function useVisualizerKeyboard({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [enabled, onStart, onReset, onSpeedChange, speed, sorting, sorted]);
+  }, [enabled, onStart, onReset, onSpeedChange, onTogglePlayPause, speed, sorting, sorted]);
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import AppleCodeBlock from '@/app/components/ui/AppleCodeBlock';
+import CodeBlock from '@/app/components/ui/CodeBlock';
 import CodeExamples from '@/app/visualizer/linkedList/operations/comparison/data/codeExamples.json';
 
 // ─── Code Examples ─────────────────────────────
@@ -16,11 +16,12 @@ const fileNames = {
 };
 
 // ─── Component ─────────────────────────────
-const CodeBlock = () => (
-    <AppleCodeBlock
+const LinkedListComparisonCode = () => (
+    <CodeBlock
+        variant="macos"
         codeExamples={codeExamples}
         fileNames={fileNames}
     />
 );
 
-export default CodeBlock;
+export default LinkedListComparisonCode;

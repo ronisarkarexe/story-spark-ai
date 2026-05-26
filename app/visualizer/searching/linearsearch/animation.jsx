@@ -3,6 +3,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import ResetButton from "@/app/components/ui/resetButton";
 import GoButton from "@/app/components/ui/goButton";
+import useVisualizerKeyboard from "@/app/hooks/useVisualizerKeyboard";
+import usePlayback from "@/app/hooks/usePlayback";
+import PlaybackControls from "@/app/components/ui/PlaybackControls";
 
 const getFontSize = (value) => {
   const len = String(value).length;
@@ -20,9 +23,19 @@ const LinearSearch = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState(""); // FIX: "success" | "error" | "warning"
-  const [speed, setSpeed] = useState(1);
-  const speedRef = useRef(1);
+  const {
+    isPaused,
+    speed,
+    speedRef,
+    setSpeed,
+    togglePlayPause,
+    increaseSpeed,
+    decreaseSpeed,
+    checkPause,
+  } = usePlayback(1);
   const animationRef = useRef(null);
+  const resolveRef = useRef(null);
+  const isSearchingRef = useRef(false);
   const formRef = useRef(null);
   const elementRefs = useRef([]);
 
@@ -33,7 +46,12 @@ const LinearSearch = () => {
   }, []);
 
   const handleReset = () => {
+    isSearchingRef.current = false;
     clearTimeout(animationRef.current);
+    if (resolveRef.current) {
+      resolveRef.current();
+      resolveRef.current = null;
+    }
     setArray([]);
     setCurrentIndex(-1);
     setFoundIndex(-1);
@@ -111,17 +129,19 @@ const targetValue = parseInt(target);
     animateLinearSearch(elements, targetValue);
   };
 
-  const animateLinearSearch = (arr, targetValue) => {
-    let index = 0;
+  const cancellableDelay = async () => {
+    await new Promise((resolve) => {
+      resolveRef.current = resolve;
+      animationRef.current = setTimeout(resolve, 1500 / speedRef.current);
+    });
+    await checkPause();
+  };
 
-    const step = () => {
-      if (index >= arr.length) {
-        setMessage(`Element ${targetValue} not found in the array.`);
-        setMessageType("error"); // FIX: search result "not found" → red
-        setIsAnimating(false);
-        return;
-      }
+  const animateLinearSearch = async (arr, targetValue) => {
+    isSearchingRef.current = true;
 
+    for (let index = 0; index < arr.length; index++) {
+      if (!isSearchingRef.current) return;
       setCurrentIndex(index);
 
       // highlight current
@@ -136,39 +156,36 @@ const targetValue = parseInt(target);
         }
       });
 
-      const delay = 1500 / speedRef.current;
-      animationRef.current = setTimeout(() => {
-        if (arr[index] === targetValue) {
-          setFoundIndex(index);
-          setMessage(`Element ${targetValue} found at index ${index}!`);
-          setMessageType("success"); // FIX: found → green
-          setIsAnimating(false);
-          gsap.to(elementRefs.current[index], { backgroundColor: "#22C55E", borderColor: "#15803D", duration: 0.3 });
-        } else {
-          index++;
-          step();
-        }
-      }, delay);
-    };
+      await cancellableDelay();
+      if (!isSearchingRef.current) return;
 
-    step();
+      if (arr[index] === targetValue) {
+        setFoundIndex(index);
+        setMessage(`Element ${targetValue} found at index ${index}!`);
+        setMessageType("success"); // FIX: found → green
+        setIsAnimating(false);
+        isSearchingRef.current = false;
+        gsap.to(elementRefs.current[index], { backgroundColor: "#22C55E", borderColor: "#15803D", duration: 0.3 });
+        return;
+      }
+    }
+
+    if (!isSearchingRef.current) return;
+    setMessage(`Element ${targetValue} not found in the array.`);
+    setMessageType("error"); // FIX: search result "not found" → red
+    setIsAnimating(false);
+    isSearchingRef.current = false;
   };
 
-  const increaseSpeed = () => {
-    setSpeed((prev) => {
-      const next = Math.min(prev + 0.5, 5);
-      speedRef.current = next;
-      return next;
-    });
-  };
-
-  const decreaseSpeed = () => {
-    setSpeed((prev) => {
-      const next = Math.max(prev - 0.5, 0.5);
-      speedRef.current = next;
-      return next;
-    });
-  };
+  useVisualizerKeyboard({
+    onStart: () => {}, // Handled by Go button
+    onReset: handleReset,
+    onSpeedChange: setSpeed,
+    onTogglePlayPause: togglePlayPause,
+    speed,
+    sorting: isAnimating,
+    sorted: foundIndex !== -1 || messageType === "error",
+  });
 
   // FIX: derive message box classes from messageType instead of foundIndex
   const messageClass =
@@ -238,25 +255,14 @@ const targetValue = parseInt(target);
         </div>
 
         {isAnimating && (
-          <div className="flex items-center justify-between mb-4">
-            <button
-              type="button"
-              onClick={decreaseSpeed}
-              className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-lg transition-colors"
-              disabled={speed <= 0.5}
-            >
-              -
-            </button>
-            <span className="text-gray-700 dark:text-gray-300">Speed: {speed}x</span>
-            <button
-              type="button"
-              onClick={increaseSpeed}
-              className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-lg transition-colors"
-              disabled={speed >= 5}
-            >
-              +
-            </button>
-          </div>
+          <PlaybackControls
+            isPaused={isPaused}
+            onTogglePlayPause={togglePlayPause}
+            speed={speed}
+            onIncreaseSpeed={increaseSpeed}
+            onDecreaseSpeed={decreaseSpeed}
+            onSpeedChange={setSpeed}
+          />
         )}
       </form>
 

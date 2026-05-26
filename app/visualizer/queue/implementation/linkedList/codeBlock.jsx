@@ -1,6 +1,6 @@
 'use client';
 
-import AppleCodeBlock from '@/app/components/ui/AppleCodeBlock';
+import CodeBlock from '@/app/components/ui/CodeBlock';
 
 // ─── All code examples for Queue using Linked List ─────────────────
 const codeExamples = {
@@ -403,11 +403,12 @@ const fileNames = {
 };
 
 // ─── Component ─────────────────────────────
-const CodeBlock = () => (
-    <AppleCodeBlock
+const LinkedListQueueCode = () => (
+    <CodeBlock
+        variant="macos"
         codeExamples={codeExamples}
         fileNames={fileNames}
     />
 );
 
-export default CodeBlock;
+export default LinkedListQueueCode;

@@ -3,6 +3,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { gsap } from "gsap";
 import ArrayGenerator from "@/app/components/ui/randomArray";
 import CustomArrayInput from "@/app/components/ui/customArrayInput";
+import useVisualizerKeyboard from "@/app/hooks/useVisualizerKeyboard";
+import usePlayback from "@/app/hooks/usePlayback";
+import PlaybackControls from "@/app/components/ui/PlaybackControls";
 
 const getFontSize = (value) => {
   const len = String(value).length;
@@ -15,7 +18,16 @@ const SelectionSortVisualizer = () => {
     const [array, setArray] = useState([]);
     const [sorting, setSorting] = useState(false);
     const [sorted, setSorted] = useState(false);
-    const [speed, setSpeed] = useState(1);
+    const {
+      isPaused,
+      speed,
+      speedRef,
+      setSpeed,
+      togglePlayPause,
+      increaseSpeed,
+      decreaseSpeed,
+      checkPause,
+    } = usePlayback(1);
     const [comparisons, setComparisons] = useState(0);
     const [swaps, setSwaps] = useState(0);
     const [currentStep, setCurrentStep] = useState(0);
@@ -26,6 +38,16 @@ const SelectionSortVisualizer = () => {
       min: -1   // Current minimum element index
     });
     const animationRef = useRef(null);
+    const resolveRef = useRef(null);
+    const isSortingRef = useRef(false);
+
+    const cancellableDelay = async () => {
+      await new Promise((resolve) => {
+        resolveRef.current = resolve;
+        animationRef.current = setTimeout(resolve, 1000 / speedRef.current);
+      });
+      await checkPause();
+    };
   
     // Generate random array
     const handleGenerateRandomArray = (newArray) => {
@@ -51,12 +73,18 @@ const SelectionSortVisualizer = () => {
       if (animationRef.current) {
         clearTimeout(animationRef.current);
       }
+      if (resolveRef.current) {
+        resolveRef.current();
+        resolveRef.current = null;
+      }
+      isSortingRef.current = false;
     };
   
     // Selection sort algorithm
     const selectionSort = async () => {
       if (sorted || sorting || array.length === 0) return;
       
+      isSortingRef.current = true;
       setSorting(true);
       let arr = [...array];
       let n = arr.length;
@@ -75,17 +103,19 @@ const SelectionSortVisualizer = () => {
           setComparisons(tempComparisons);
           setCurrentStep((prev) => prev + 1);
   
-          await new Promise(resolve => 
-            animationRef.current = setTimeout(resolve, 1000 / speed)
-          );
+          setCurrentStep((prev) => prev + 1);
+  
+          await cancellableDelay();
+          if (!isSortingRef.current) return;
   
           if (arr[j] < arr[minIndex]) {
             minIndex = j;
             setCurrentIndices(prev => ({ ...prev, min: minIndex }));
             
-            await new Promise(resolve => 
-              animationRef.current = setTimeout(resolve, 1000 / speed)
-            );
+            setCurrentIndices(prev => ({ ...prev, min: minIndex }));
+            
+            await cancellableDelay();
+            if (!isSortingRef.current) return;
           }
         }
         
@@ -112,9 +142,8 @@ const SelectionSortVisualizer = () => {
             });
           }
           
-          await new Promise(resolve => 
-            animationRef.current = setTimeout(resolve, 1000 / speed)
-          );
+          await cancellableDelay();
+          if (!isSortingRef.current) return;
         }
       }
       
@@ -137,6 +166,7 @@ const SelectionSortVisualizer = () => {
         });
       }
       
+      isSortingRef.current = false;
       setSorting(false);
       setSorted(true);
       setCurrentIndices({ i: -1, j: -1, min: -1 });
@@ -161,6 +191,17 @@ const SelectionSortVisualizer = () => {
         }
       };
     }, []);
+
+    // keyboard shortcuts
+    useVisualizerKeyboard({
+      onStart:       selectionSort,
+      onReset:       reset,
+      onSpeedChange: setSpeed,
+      onTogglePlayPause: togglePlayPause,
+      speed,
+      sorting,
+      sorted,
+    });
   
     return (
       <main className="container mx-auto px-6 py-6">
@@ -177,6 +218,7 @@ const SelectionSortVisualizer = () => {
                   <ArrayGenerator
                     onGenerate={handleGenerateRandomArray}
                     disabled={sorting}
+                    isPrimary={array.length === 0}
                     defaultSize={10}
                     minValue={5}
                     maxValue={100}
@@ -191,36 +233,46 @@ const SelectionSortVisualizer = () => {
                   <button
                     onClick={selectionSort}
                     disabled={!array.length || sorting || sorted}
-                    className="w-full bg-green-500 text-black px-4 py-2 rounded disabled:opacity-50"
+                    className="w-full bg-[#a435f0] hover:bg-[#8f2cd6] text-white px-4 py-2 rounded disabled:opacity-50 transition-colors"
                   >
                     {sorting ? "Sorting..." : "Start Selection Sort"}
                   </button>
                   <button
                     onClick={reset}
-                    className="w-full bg-red-500 text-white mt-4 px-4 py-2 rounded"
+                    className="w-full bg-transparent border border-[#a435f0] text-[#a435f0] hover:bg-[#f3e8ff] dark:hover:bg-[#a435f0]/20 mt-4 px-4 py-2 rounded transition-colors"
                   >
                     Reset All
                   </button>
                 </div>
               </div>
-
-              {/* Speed controls */}
-              <div className="flex items-center gap-4 mb-4">
-                <span className="text-gray-700 dark:text-gray-300">Speed:</span>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="5"
-                  step="0.5"
-                  value={speed}
-                  onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                  className="w-32"
-                  disabled={sorting}
+              {/* Playback & Speed controls */}
+              {sorting && (
+                <PlaybackControls
+                  isPaused={isPaused}
+                  onTogglePlayPause={togglePlayPause}
+                  speed={speed}
+                  onIncreaseSpeed={increaseSpeed}
+                  onDecreaseSpeed={decreaseSpeed}
+                  onSpeedChange={setSpeed}
                 />
-                <span className="text-gray-700 dark:text-gray-300">
-                  {speed}x
-                </span>
-              </div>
+              )}
+
+              {!sorting && (
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">Speed:</span>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="5"
+                    step="0.5"
+                    value={speed}
+                    onChange={(e) => setSpeed(parseFloat(e.target.value))}
+                    className="w-24 sm:w-32"
+                    disabled={sorting}
+                  />
+                  <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">{speed}x</span>
+                </div>
+              )}
 
               {/* Stats */}
               <div className="grid grid-cols-2 gap-4 text-sm">

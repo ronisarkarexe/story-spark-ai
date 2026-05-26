@@ -4,11 +4,10 @@ import { gsap } from "gsap";
 import { Play, Pause } from "lucide-react";
 import ResetButton from "@/app/components/ui/resetButton";
 import GoButton from "@/app/components/ui/goButton";
-import {
-  saveToStorage,
-  loadFromStorage,
-  removeFromStorage,
-} from "@/utils/storage";
+import { saveToStorage, loadFromStorage, removeFromStorage } from "@/utils/storage";
+import useVisualizerKeyboard from "@/app/hooks/useVisualizerKeyboard";
+import usePlayback from "@/app/hooks/usePlayback";
+import PlaybackControls from "@/app/components/ui/PlaybackControls";
 
 const getFontSize = (value) => {
   const len = String(value).length;
@@ -32,24 +31,23 @@ const BinarySearch = () => {
   const [mid, setMid] = useState(-1);
   const [foundIndex, setFoundIndex] = useState(-1);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
-  const [speed, setSpeed] = useState(() =>
-    loadFromStorage("binary-speed", 1)
-  );
+  const {
+    isPaused,
+    speed,
+    speedRef,
+    setSpeed,
+    togglePlayPause,
+    increaseSpeed,
+    decreaseSpeed,
+    checkPause,
+  } = usePlayback(() => loadFromStorage("binary-speed", 1));
 
-  const speedRef = useRef(speed);
   const animationRef = useRef(null);
-  const isPausedRef = useRef(false);
-
-  const searchStateRef = useRef({
-    l: 0,
-    h: 0,
-    arr: [],
-    targetValue: 0,
-  });
+  const resolveRef = useRef(null);
+  const isSearchingRef = useRef(false);
 
   const formRef = useRef(null);
   const elementRefs = useRef([]);
@@ -66,7 +64,7 @@ const BinarySearch = () => {
   useEffect(() => {
     saveToStorage("binary-speed", speed);
     speedRef.current = speed;
-  }, [speed]);
+  }, [speed, speedRef]);
 
   const handleReset = () => {
     clearTimeout(animationRef.current);
@@ -83,8 +81,11 @@ const BinarySearch = () => {
     setMessage("");
     setMessageType("");
     setIsAnimating(false);
-    setIsPaused(false);
-    isPausedRef.current = false;
+    isSearchingRef.current = false;
+    if (resolveRef.current) {
+      resolveRef.current();
+      resolveRef.current = null;
+    }
 
     setArrayElements("");
     setTarget("");
@@ -181,143 +182,76 @@ const BinarySearch = () => {
     setMessage("");
     setMessageType("");
     setIsAnimating(true);
-    setIsPaused(false);
-    isPausedRef.current = false;
+    isSearchingRef.current = true;
 
-    searchStateRef.current = {
-      l: 0,
-      h: elements.length - 1,
-      arr: elements,
-      targetValue,
-    };
-
-    animateBinarySearch();
+    animateBinarySearch(elements, targetValue);
   };
 
-  const animateBinarySearch = () => {
-    const { l, h, arr, targetValue } =
-      searchStateRef.current;
-
-    const delay = 1500 / speedRef.current;
-
-    if (l > h) {
-      setMessage(
-        `Element ${targetValue} not found in the array.`
-      );
-
-      setMessageType("error");
-      setIsAnimating(false);
-      return;
-    }
-
-    const m = Math.floor((l + h) / 2);
-
-    setI(l);
-    setJ(h);
-    setMid(m);
-
-    elementRefs.current.forEach((ref, index) => {
-      if (index === m) {
-        gsap.to(ref, {
-          backgroundColor: "#EAB308",
-          borderColor: "#A16207",
-          duration: 0.3,
-        });
-      } else if (index >= l && index <= h) {
-        gsap.to(ref, {
-          backgroundColor: "#93C5FD",
-          borderColor: "#3B82F6",
-          duration: 0.3,
-        });
-      } else {
-        gsap.to(ref, {
-          backgroundColor: "#E5E7EB",
-          borderColor: "#D1D5DB",
-          duration: 0.3,
-        });
-      }
+  const cancellableDelay = async () => {
+    await new Promise((resolve) => {
+      resolveRef.current = resolve;
+      animationRef.current = setTimeout(resolve, 1500 / speedRef.current);
     });
+    await checkPause();
+  };
 
-    animationRef.current = setTimeout(() => {
-      if (arr[m] === targetValue) {
+  const animateBinarySearch = async (elements, targetValue) => {
+    let l = 0;
+    let h = elements.length - 1;
+
+    while (l <= h) {
+      if (!isSearchingRef.current) return;
+
+      const m = Math.floor((l + h) / 2);
+      setI(l);
+      setJ(h);
+      setMid(m);
+
+      elementRefs.current.forEach((ref, index) => {
+        if (!ref) return;
+        if (index === m) {
+          gsap.to(ref, { backgroundColor: "#EAB308", borderColor: "#A16207", duration: 0.3 });
+        } else if (index >= l && index <= h) {
+          gsap.to(ref, { backgroundColor: "#93C5FD", borderColor: "#3B82F6", duration: 0.3 });
+        } else {
+          gsap.to(ref, { backgroundColor: "#E5E7EB", borderColor: "#D1D5DB", duration: 0.3 });
+        }
+      });
+
+      await cancellableDelay();
+      if (!isSearchingRef.current) return;
+
+      if (elements[m] === targetValue) {
         setFoundIndex(m);
-
-        setMessage(
-          `Element ${targetValue} found at index ${m}!`
-        );
-
+        setMessage(`Element ${targetValue} found at index ${m}!`);
         setMessageType("success");
         setIsAnimating(false);
-
-        gsap.to(elementRefs.current[m], {
-          backgroundColor: "#22C55E",
-          borderColor: "#15803D",
-          duration: 0.3,
-        });
+        isSearchingRef.current = false;
+        gsap.to(elementRefs.current[m], { backgroundColor: "#22C55E", borderColor: "#15803D", duration: 0.3 });
+        return;
+      } else if (elements[m] < targetValue) {
+        l = m + 1;
       } else {
-        if (arr[m] < targetValue) {
-          searchStateRef.current.l = m + 1;
-        } else {
-          searchStateRef.current.h = m - 1;
-        }
-
-        if (!isPausedRef.current) {
-          animateBinarySearch();
-        }
+        h = m - 1;
       }
-    }, delay);
+    }
+
+    if (!isSearchingRef.current) return;
+    setMessage(`Element ${targetValue} not found in the array.`);
+    setMessageType("error");
+    setIsAnimating(false);
+    isSearchingRef.current = false;
   };
 
-  const togglePlayPause = () => {
-    setIsPaused((prev) => {
-      const newPaused = !prev;
-      isPausedRef.current = newPaused;
-      if (!newPaused) {
-        animateBinarySearch();
-      }
-      return newPaused;
-    });
-  };
-
-  const togglePlayPauseRef = useRef(togglePlayPause);
-  useEffect(() => {
-    togglePlayPauseRef.current = togglePlayPause;
+  useVisualizerKeyboard({
+    onStart: () => {}, // Handled by Go button
+    onReset: handleReset,
+    onSpeedChange: setSpeed,
+    onTogglePlayPause: togglePlayPause,
+    speed,
+    sorting: isAnimating,
+    sorted: foundIndex !== -1 || messageType === "error",
   });
-
-  const isAnimatingRef = useRef(isAnimating);
-  useEffect(() => {
-    isAnimatingRef.current = isAnimating;
-  }, [isAnimating]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (
-        e.code === "Space" &&
-        isAnimatingRef.current &&
-        document.activeElement.tagName !== "INPUT" &&
-        document.activeElement.tagName !== "BUTTON"
-      ) {
-        e.preventDefault();
-        togglePlayPauseRef.current();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  const increaseSpeed = () => {
-    setSpeed((prev) => Math.min(prev + 0.5, 5));
-  };
-
-  const decreaseSpeed = () => {
-    setSpeed((prev) => Math.max(prev - 0.5, 0.5));
-  };
-
-  useEffect(() => {
-    return () => {
-      clearTimeout(animationRef.current);
-    };
-  }, []);
 
   const messageClass =
     messageType === "success"
@@ -407,40 +341,14 @@ const BinarySearch = () => {
         </div>
 
         {isAnimating && (
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-4 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-200 dark:border-gray-700 gap-4">
-            <button
-              type="button"
-              onClick={togglePlayPause}
-              className="flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm w-full sm:w-auto justify-center"
-            >
-              {isPaused ? <Play size={20} /> : <Pause size={20} />}
-              {isPaused ? "Play" : "Pause"}
-            </button>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={decreaseSpeed}
-                className="bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg transition-colors shadow-sm"
-                disabled={speed <= 0.5}
-              >
-                -
-              </button>
-
-              <span className="text-gray-700 dark:text-gray-300 font-medium min-w-[80px] text-center">
-                Speed: {speed}x
-              </span>
-
-              <button
-                type="button"
-                onClick={increaseSpeed}
-                className="bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg transition-colors shadow-sm"
-                disabled={speed >= 5}
-              >
-                +
-              </button>
-            </div>
-          </div>
+          <PlaybackControls
+            isPaused={isPaused}
+            onTogglePlayPause={togglePlayPause}
+            speed={speed}
+            onIncreaseSpeed={increaseSpeed}
+            onDecreaseSpeed={decreaseSpeed}
+            onSpeedChange={setSpeed}
+          />
         )}
       </form>
 

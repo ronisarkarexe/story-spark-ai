@@ -1,6 +1,6 @@
 'use client';
 
-import AppleCodeBlock from '@/app/components/ui/AppleCodeBlock';
+import CodeBlock from '@/app/components/ui/CodeBlock';
 
 // ─── Code Examples ─────────────────────────────
 const codeExamples = {
@@ -236,11 +236,12 @@ const fileNames = {
 };
 
 // ─── Component ─────────────────────────────
-const CodeBlock = () => (
-    <AppleCodeBlock
+const DoublyLinkedListCode = () => (
+    <CodeBlock
+        variant="macos"
         codeExamples={codeExamples}
         fileNames={fileNames}
     />
 );
 
-export default CodeBlock;
+export default DoublyLinkedListCode;

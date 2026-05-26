@@ -1,6 +1,6 @@
 'use client';
 
-import AppleCodeBlock from '@/app/components/ui/AppleCodeBlock';
+import CodeBlock from '@/app/components/ui/CodeBlock';
 import CodeExamples from '@/app/visualizer/linkedList/operations/traversal/data/codeExamples.json';
 
 // ─── Code Examples ─────────────────────────────
@@ -16,11 +16,12 @@ const fileNames = {
 };
 
 // ─── Component ─────────────────────────────
-const CodeBlock = () => (
-    <AppleCodeBlock
+const LinkedListTraversalCode = () => (
+    <CodeBlock
+        variant="macos"
         codeExamples={codeExamples}
         fileNames={fileNames}
     />
 );
 
-export default CodeBlock;
+export default LinkedListTraversalCode;

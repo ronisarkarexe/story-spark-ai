@@ -56,7 +56,7 @@ const CustomArrayInput = ({
         <button
           onClick={handleSubmit}
           disabled={disabled || !inputValue.trim()}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:opacity-50"
+          className="bg-[#a435f0] hover:bg-[#8f2cd6] text-white px-4 py-2 rounded disabled:opacity-50 transition-colors font-medium"
         >
           Use Array
         </button>
