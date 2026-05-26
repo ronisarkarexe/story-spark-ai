@@ -586,7 +586,11 @@
 
 :root {
   --header-height: 82px;
+
   font-family: 'EB Garamond', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+=======
+  font-family: "Roboto Condensed", sans-serif;
+
   font-optical-sizing: auto;
   font-style: normal;
   font-synthesis: none;
@@ -604,10 +608,15 @@
   --accent-sepia: #8b5e3c;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
   scroll-behavior: smooth;
   background-color: var(--parchment-bg);
   background-image:
@@ -801,6 +810,11 @@ html.dark .scroll-fab-btn:active {
   .magic-cursor-glow,
   .magic-cursor-sparkle {
     transform: none;
+  }
+  .magic-cursor-sparkle,
+  .magic-cursor-dot,
+  .magic-cursor-glow {
+    display: none;
   }
 }
 

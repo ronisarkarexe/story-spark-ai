@@ -1,7 +1,7 @@
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { User } from "../user/user.model";
-import { IComment, ICommentPayload } from "./comment.interface";
+import { IComment, ICommentDTO, ICommentPayload, ILeanComment } from "./comment.interface";
 import httpStatus from "http-status";
 import { Comment } from "./comment.model";
 import { Types } from "mongoose";
@@ -45,26 +45,51 @@ const getCommentsByPostId = async (postId: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
 
-  const comments = await Comment.find({ postId, parentCommentId: null })
+  const allComments = (await Comment.find({ postId })
     .populate("userId", "name email")
-    .populate({
-      path: "likes",
-    })
-    .sort({ createdAt: -1 });
-  const commentsWithReplies = await Promise.all(
-    comments.map(async (comment) => {
-      const replies = await Comment.find({ parentCommentId: comment._id })
-        .populate("userId", "name email")
-        .populate({ path: "likes" })
-        .sort({ createdAt: 1 });
-      return {
-        ...comment.toObject(),
-        replies,
-      };
-    })
-  );
-  const totalComments = await Comment.countDocuments({ postId });
-  return { comments: commentsWithReplies, totalComments };
+    .populate("likes")
+    .sort({ createdAt: -1 })
+    .lean()) as unknown as ILeanComment[];
+
+  const totalComments = allComments.length;
+
+  const topLevelComments: ICommentDTO[] = [];
+  const replyMap = new Map<string, ICommentDTO[]>();
+
+  // Distribute comments into top-level list and replies map
+  for (const comment of allComments) {
+    const commentDTO: ICommentDTO = {
+      ...comment,
+      replies: [],
+    };
+
+    if (!commentDTO.parentCommentId) {
+      topLevelComments.push(commentDTO);
+    } else {
+      const parentIdStr = commentDTO.parentCommentId.toString();
+      if (!replyMap.has(parentIdStr)) {
+        replyMap.set(parentIdStr, []);
+      }
+      replyMap.get(parentIdStr)!.push(commentDTO);
+    }
+  }
+
+  // Attach replies to their corresponding top-level comments and sort them chronologically (createdAt: 1)
+  for (const comment of topLevelComments) {
+    const idStr = comment._id.toString();
+    const replies = replyMap.get(idStr) || [];
+    
+    // Sort replies in ascending chronological order, avoiding new Date allocation where possible
+    replies.sort((a, b) => {
+      const timeA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
+      const timeB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
+      return timeA - timeB;
+    });
+    
+    comment.replies = replies;
+  }
+
+  return { comments: topLevelComments, totalComments };
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {

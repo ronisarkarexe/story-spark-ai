@@ -35,7 +35,7 @@ const dummyFeaturedPosts: any[] = [
 ];
 
 const FeatureComponent = () => {
-  const { data, isLoading } = useGetFeaturedListsQuery(undefined);
+  const { data, isLoading, isError } = useGetFeaturedListsQuery(undefined);
   const navigate = useNavigate();
 
   // Dynamic reading calculation logic
@@ -51,7 +51,20 @@ const FeatureComponent = () => {
     return <LoadingAnimation />;
   }
 
+
   const postsToRender = data?.posts && data.posts.length > 0 ? data.posts : dummyFeaturedPosts;
+=======
+  if (isError) {
+    return (
+      <div className="mb-12 text-slate-900 dark:text-slate-100">
+        <h2 className="text-2xl font-bold mb-6">Featured Posts</h2>
+        <div className="rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-900/20 px-4 py-5 text-red-700 dark:text-red-400">
+          Failed to load featured posts. Please try again later.
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="mb-12">

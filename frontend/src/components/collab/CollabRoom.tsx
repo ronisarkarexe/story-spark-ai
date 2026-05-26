@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { useParams, useNavigate } from "react-router-dom";
+import { resolveSocketUrl } from "../../helpers/socket-url";
 
 interface IStoryChunk {
   authorId: string;
@@ -29,7 +30,7 @@ interface ITypingUser {
   username: string;
 }
 
-const BACKEND_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000";
+const BACKEND_URL = resolveSocketUrl();
 
 export default function CollabRoom() {
   const { roomId } = useParams<{ roomId: string }>();

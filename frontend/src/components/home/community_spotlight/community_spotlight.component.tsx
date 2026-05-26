@@ -8,7 +8,7 @@ import { useToggleReactionMutation } from "../../../redux/apis/reaction.api";
 import toast from "react-hot-toast";
 
 const CommunitySpotlightComponent = () => {
-  const { data, isLoading } = useGetLatestListsQuery(undefined);
+  const { data, isLoading, isError } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
   const [toggleReaction] = useToggleReactionMutation();
 
@@ -35,6 +35,23 @@ const CommunitySpotlightComponent = () => {
     return <LoadingAnimation />;
   }
 
+  if (isError) {
+    return (
+      <div className="px-5 py-10">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-200">
+            Community Spotlight
+          </h2>
+          <p className="text-slate-600 dark:text-gray-400 mt-2">
+            Top stories handpicked from our community
+          </p>
+        </div>
+        <div className="rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-900/20 px-4 py-5 text-red-700 dark:text-red-400">
+          Failed to load community spotlight stories. Please try again later.
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="px-5 py-10">
       <div className="mb-8">
@@ -46,7 +63,7 @@ const CommunitySpotlightComponent = () => {
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {data?.posts?.length ?? 0 > 0 ? (
+        {(data?.posts?.length ?? 0) > 0 ? (
           data?.posts?.slice(0, 6).map((post: Post) => (
             <div
               key={post._id}

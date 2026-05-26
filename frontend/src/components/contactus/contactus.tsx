@@ -136,8 +136,12 @@ export default function Contact() {
         </div>
 
         {/* Form Container */}
+
         <div className="w-full max-w-lg group relative">
           <div className="absolute -inset-1 bg-gradient-to-r from-[#8b1a1a] to-[#c9a227] rounded-[1rem] blur opacity-15 group-hover:opacity-25 transition duration-1000"></div>
+=======
+          <div className="w-full max-w-xl mx-auto group relative">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[1.5rem] blur opacity-10 group-hover:opacity-15 transition duration-1000"></div>
 
           <form
             onSubmit={submitHandler}

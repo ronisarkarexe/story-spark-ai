@@ -42,8 +42,8 @@ const FooterComponent = () => {
 
   const platformLinks = [
     { label: "About Us", to: "/about-us" },
-    { label: "Careers", to: "/career" },
-    { label: "Contact", to: "/contact-us" },
+    { label: "Careers",  to: "/career"   },
+    { label: "Contact Us",  to: "/contact-us"},
   ];
 
   const resourceLinks = [

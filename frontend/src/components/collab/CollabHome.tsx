@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
+import { resolveSocketUrl } from "../../helpers/socket-url";
 
-const BACKEND_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000";
+declare global {
+  interface Window {
+    __storySparkCollabSocket?: Socket;
+  }
+}
+
+const BACKEND_URL = resolveSocketUrl();
 
 export default function CollabHome() {
   const navigate = useNavigate();
@@ -19,32 +26,48 @@ export default function CollabHome() {
     setIsCreating(true);
     setError("");
 
+    window.__storySparkCollabSocket?.disconnect();
+
     const socket = io(`${BACKEND_URL}/collab`, {
       auth: { token },
       transports: ["websocket"],
     });
 
-    socket.on("connect", () => {
+    window.__storySparkCollabSocket = socket;
+
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      setError("Connection timed out. Please try again.");
+      setIsCreating(false);
+      socket.disconnect();
+      if (window.__storySparkCollabSocket === socket) {
+        window.__storySparkCollabSocket = undefined;
+      }
+    }, 5000);
+
+    socket.once("connect", () => {
       socket.emit("collab:create_room", { userId, username });
     });
 
-    socket.on("collab:room_created", ({ roomId }) => {
-      socket.disconnect();
+    socket.once("collab:room_created", ({ roomId }) => {
+      settled = true;
+      clearTimeout(timeoutId);
+      setIsCreating(false);
       navigate(`/collab/${roomId}`);
     });
 
-    socket.on("connect_error", () => {
+    socket.once("connect_error", () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
       setError("Could not connect to server. Make sure backend is running.");
       setIsCreating(false);
-    });
-
-    setTimeout(() => {
-      if (isCreating) {
-        setError("Connection timed out. Please try again.");
-        setIsCreating(false);
-        socket.disconnect();
+      if (window.__storySparkCollabSocket === socket) {
+        window.__storySparkCollabSocket = undefined;
       }
-    }, 5000);
+    });
   };
 
   const joinRoom = () => {

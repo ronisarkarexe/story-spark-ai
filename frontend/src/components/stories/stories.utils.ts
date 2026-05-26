@@ -130,7 +130,8 @@ export const prompts = [
   },
   {
     id: 6,
-    prompt: "Tell the story of a robot who desperately wants to become human.",
+    prompt:
+      "Tell the story of a robot who desperately wants to become human.",
   },
   {
     id: 7,

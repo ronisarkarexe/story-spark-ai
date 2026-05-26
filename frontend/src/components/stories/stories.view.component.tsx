@@ -28,6 +28,7 @@ interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
+  onPublishSuccess?: () => void;
   isLoading?: boolean;
 }
 
@@ -36,6 +37,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   isLogin,
   setStories,
   isLoading,
+  onPublishSuccess,
 }) => {
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
@@ -176,7 +178,6 @@ useEffect(() => {
       )
     );
   };
-
   const handleAddTopic = () => {
     const title = newTopicTitle.trim();
 
@@ -217,7 +218,6 @@ useEffect(() => {
       currentTopics.filter((_, topicIndex) => topicIndex !== index)
     );
   };
-
   const handleCopyStory = async () => {
     if (selectedStory?.content) {
       await navigator.clipboard.writeText(selectedStory.content);
@@ -501,7 +501,6 @@ ${content}
       toast.error("Failed to export Markdown.");
     }
   };
-
   const handelPublishStory = async () => {
     if (!isLogin) {
       toast.error("Please login to publish the story.");
@@ -526,6 +525,7 @@ ${content}
         toast.success("Story published successfully!");
         setStories([]);
         setSelectedStory(null);
+        onPublishSuccess?.();
       }
     } catch {
       toast.error("Something went wrong. Please try again.");
