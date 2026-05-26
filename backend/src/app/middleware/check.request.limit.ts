@@ -20,7 +20,7 @@ const checkRequestLimit =
           "You are not authorized to access"
         );
       }
-      const verifiedUser = await JwtHalers.verifyToken(
+      const verifiedUser = JwtHalers.verifyToken(
         token,
         config.jwt.secret as Secret
       );

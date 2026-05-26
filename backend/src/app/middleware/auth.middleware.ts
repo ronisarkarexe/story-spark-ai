@@ -18,7 +18,7 @@ const auth =
       }
 
       // verify token
-      const verifiedUser = await JwtHalers.verifyToken(
+      const verifiedUser = JwtHalers.verifyToken(
         token,
         config.jwt.secret as Secret
       );
