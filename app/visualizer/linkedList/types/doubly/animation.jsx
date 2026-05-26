@@ -18,7 +18,7 @@ const DoublyLinkedListVisualizer = () => {
 
   const PointerBridge = ({ direction, label, color, reversed = false }) => {
     const laneClass = direction === 'next'
-      ? 'text-blue-600 dark:text-blue-400'
+      ? 'text-primary dark:text-[#c27cf7]'
       : 'text-purple-600 dark:text-purple-400';
 
     const markerId = `${direction}-bridge-arrow`;
@@ -166,15 +166,15 @@ const DoublyLinkedListVisualizer = () => {
           {/* Linked List Visualization */}
           <div className="bg-white max-w-4xl mx-auto dark:bg-gray-800 px-4 pt-4 pb-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-visible">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 text-center flex items-center justify-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               Doubly Linked List Representation
             </h2>
 
             <div className="mb-3 flex flex-wrap items-center justify-center gap-4 text-xs font-medium">
-              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                <span className="h-2.5 w-6 rounded-full bg-blue-500" />
+              <div className="flex items-center gap-2 text-primary dark:text-[#c27cf7]">
+                <span className="h-2.5 w-6 rounded-full bg-primary" />
                 <span>next pointer</span>
               </div>
               <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
@@ -195,12 +195,12 @@ const DoublyLinkedListVisualizer = () => {
                 {list.map((node, index) => (
                   <React.Fragment key={node.id}>
                     <div className="w-full max-w-xs relative group z-10">
-                    <div className={`relative flex flex-col rounded-lg p-3 bg-white dark:bg-gray-700 border ${index === 0 ? 'border-green-500' : 'border-blue-500'} shadow-sm transition-all duration-200 overflow-hidden`}>
+                    <div className={`relative flex flex-col rounded-lg p-3 bg-white dark:bg-gray-700 border ${index === 0 ? 'border-green-500' : 'border-primary'} shadow-sm transition-all duration-200 overflow-hidden`}>
                       <div className="flex justify-between items-center mb-2">
                         <span className="font-mono text-xs text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
                           {node.address}
                         </span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded ${index === 0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'}`}>
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${index === 0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/50 text-primary-dark dark:text-blue-200'}`}>
                           {index === 0 ? 'HEAD' : index === list.length - 1 ? 'TAIL' : `Node ${index}`}
                         </span>
                       </div>

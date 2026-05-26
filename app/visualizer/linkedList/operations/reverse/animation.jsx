@@ -246,14 +246,14 @@ const LinkedListReverse = () => {
           <button
             onClick={generateRandomList}
             disabled={isAnimating}
-            className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 text-white transition hover:bg-emerald-700 disabled:bg-gray-400 sm:px-6"
+            className="flex-1 rounded-lg bg-[#a435f0]/10 px-4 py-3 text-[#a435f0] transition hover:bg-[#a435f0]/20 border border-[#a435f0]/30 disabled:opacity-50 sm:px-6"
           >
             Generate List
           </button>
           <button
             onClick={animateReverse}
             disabled={isAnimating || list.length === 0}
-            className="flex-1 rounded-lg bg-blue-600 px-4 py-3 text-white transition hover:bg-blue-700 disabled:bg-gray-400 sm:px-6"
+            className="flex-1 rounded-lg bg-primary px-4 py-3 text-white transition hover:bg-primary-dark disabled:opacity-50 sm:px-6"
           >
             {isAnimating ? "Reversing..." : "Reverse List"}
           </button>
@@ -269,11 +269,11 @@ const LinkedListReverse = () => {
       <VisualizerCard>
         <div className="mb-6 flex flex-wrap justify-center gap-3 text-sm sm:gap-6 sm:text-base">
           <div className="flex items-center">
-            <div className="mr-2 h-4 w-4 rounded-md bg-emerald-600"></div>
+            <div className="mr-2 h-4 w-4 rounded-md bg-primary"></div>
             <span>List Node</span>
           </div>
           <div className="flex items-center">
-            <div className="mr-2 h-4 w-4 rounded-md bg-blue-600"></div>
+            <div className="mr-2 h-4 w-4 rounded-md bg-primary"></div>
             <span>Current Node</span>
           </div>
           <div className="flex items-center">
@@ -306,12 +306,12 @@ const LinkedListReverse = () => {
                       ref={(el) => (listRefs.current[index] = el)}
                       className={`node flex h-16 w-20 flex-col items-center justify-center rounded-md text-lg text-white shadow-md transition-all ${
                         index === currentPointer
-                          ? "scale-110 bg-blue-600 ring-4 ring-blue-300"
+                          ? "scale-110 bg-primary ring-4 ring-primary/40"
                           : index === prevPointer
                             ? "scale-105 bg-amber-500 ring-4 ring-amber-300"
                             : index === nextPointer
                               ? "bg-gray-600 ring-2 ring-gray-400"
-                              : "bg-emerald-600"
+                              : "bg-primary"
                       }`}
                     >
                       {node.value}

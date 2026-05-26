@@ -329,7 +329,7 @@ const MergeSortVisualizer = () => {
                                 ? "bg-yellow-400 dark:bg-yellow-400 border-yellow-600 dark:border-yellow-600 text-gray-800"
                                 : isSorted
                                 ? "bg-green-400 dark:bg-green-400 border-green-600 dark:border-green-600 text-gray-800"
-                                : "bg-blue-400 dark:bg-blue-500 border-blue-600 dark:border-blue-600 text-gray-800"
+                                : "bg-primary/80 dark:bg-primary border-primary dark:border-primary text-gray-800"
                             }`}
                       >
                         {value}
@@ -431,7 +431,7 @@ const MergeSortVisualizer = () => {
                             ? "bg-yellow-400 dark:bg-yellow-400 border-yellow-600 dark:border-yellow-600 text-gray-800"
                             : isSorted
                             ? "bg-green-400 dark:bg-green-400 border-green-600 dark:border-green-600 text-gray-800"
-                            : "bg-blue-400 dark:bg-blue-500 border-blue-600 dark:border-blue-600 text-gray-800"
+                            : "bg-primary/80 dark:bg-primary border-primary dark:border-primary text-gray-800"
                         }`}
                     >
                       {value}

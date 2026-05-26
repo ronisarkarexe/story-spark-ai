@@ -180,7 +180,7 @@ const Content = () => {
               <p className="text-[#374151] dark:text-[#d1d5db] leading-relaxed">
                 {paragraph[2]}
               </p>
-              <ul className="mt-2 space-y-1 list-disc pl-5 marker:text-blue-500 dark:marker:text-blue-400">
+              <ul className="mt-2 space-y-1 list-disc pl-5 marker:text-primary dark:marker:text-[#c27cf7]">
                 <li className="text-[#374151] dark:text-[#d1d5db]">When the maximum queue size is unpredictable</li>
                 <li className="text-[#374151] dark:text-[#d1d5db]">When memory efficiency is more important than cache performance</li>
                 <li className="text-[#374151] dark:text-[#d1d5db]">In applications with frequent dynamic memory allocation/deallocation</li>

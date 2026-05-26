@@ -264,7 +264,7 @@ const content = () => {
         <section className="p-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Applications</h2>
           <div className="prose dark:prose-invert max-w-none">
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 list-disc pl-5 marker:text-blue-500 dark:marker:text-blue-400">
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 list-disc pl-5 marker:text-primary dark:marker:text-[#c27cf7]">
               {applications.map((app, index) => (
                 <li key={index} className="text-[#374151] dark:text-[#d1d5db] pl-2">
                   {app}

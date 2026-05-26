@@ -80,7 +80,7 @@ body {
   background: var(--udemy-bg);
 }
 
-h1, h2, h3, h4 {
+.landing-page h1, .landing-page h2, .landing-page h3, .landing-page h4 {
   font-family: 'Source Serif 4', 'Source Serif Pro', Georgia, serif;
   font-weight: 700;
 }

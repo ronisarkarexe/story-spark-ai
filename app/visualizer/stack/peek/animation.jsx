@@ -2,12 +2,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import PushPop from "@/app/components/ui/PushPop";
+import usePlayback from "@/app/hooks/usePlayback";
 
 const StackVisualizer = () => {
   const [stack, setStack] = useState([]);
   const [operation, setOperation] = useState(null);
   const [message, setMessage] = useState("");
   const [isAnimating, setIsAnimating] = useState(false);
+  const { speed, setSpeed } = usePlayback(1);
 
   const stackRef = useRef(null);
   const itemRefs = useRef([]);
@@ -26,7 +28,7 @@ const StackVisualizer = () => {
       setStack(nums);
       setOperation(null);
       setIsAnimating(false);
-    }, 600);
+    }, 600 / speed);
   };
 
   /* ---------- gsap animations (safe) ---------- */
@@ -97,25 +99,16 @@ const StackVisualizer = () => {
           setStack={setStack}
           isAnimating={isAnimating}
           setIsAnimating={setIsAnimating}
-          setMessage={setMessage}
+          operation={operation}
           setOperation={setOperation}
+          message={message}
+          setMessage={setMessage}
+          speed={speed}
+          setSpeed={setSpeed}
+          extraActions={[
+            { label: "Add Random Stack", onClick: addRandomStack, disabled: isAnimating || stack.length > 0 }
+          ]}
         />
-
-        <div className="max-w-4xl mx-auto mb-6">
-          <button
-            onClick={addRandomStack}
-            disabled={isAnimating || stack.length}
-            className="w-full bg-[#a435f0] hover:bg-[#8f2cd6] text-white font-bold px-4 py-3 rounded-lg transition-all duration-200 disabled:opacity-50"
-          >
-            Add Random Stack
-          </button>
-        </div>
-
-        {message && (
-          <div className="max-w-4xl mx-auto mb-8 p-4 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-            <p className="text-center font-medium">{message}</p>
-          </div>
-        )}
 
         <div ref={stackRef} className="bg-white dark:bg-neutral-950 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
           {/* vertical stack */}
@@ -132,7 +125,7 @@ const StackVisualizer = () => {
                       key={idx}
                       ref={(el) => (itemRefs.current[idx] = el)}
                       className={`p-4 rounded-lg border-2 text-center font-medium transition-all ${
-                        idx === 0 ? "bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700" : "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
+                        idx === 0 ? "bg-blue-100 dark:bg-blue-900 border-[#c27cf7] dark:border-primary-dark" : "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
                       }`}
                     >
                       {num}

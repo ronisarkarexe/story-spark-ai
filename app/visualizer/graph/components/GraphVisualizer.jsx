@@ -320,12 +320,12 @@ export default function GraphVisualizer({ algorithm = "bfs", startNode: initialS
                   {currentFrameData.description || "Ready to start"}
                 </div>
                 {currentFrameData.queue && currentFrameData.queue.length > 0 && (
-                  <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                  <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-bold text-primary dark:bg-blue-900/20 dark:text-[#c27cf7]">
                     Queue: [{currentFrameData.queue.join(", ")}]
                   </div>
                 )}
                 {currentFrameData.stack && currentFrameData.stack.length > 0 && (
-                  <div className="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-600 dark:bg-purple-900/20 dark:text-blue-400">
+                  <div className="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-600 dark:bg-purple-900/20 dark:text-[#c27cf7]">
                     Stack: [{currentFrameData.stack.join(", ")}]
                   </div>
                 )}

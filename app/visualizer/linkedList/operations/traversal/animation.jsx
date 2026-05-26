@@ -178,14 +178,14 @@ const LinkedListTraversal = () => {
           <button
             onClick={generateRandomList}
             disabled={isAnimating}
-            className="flex-1 rounded-lg bg-emerald-600 px-6 py-3 text-white transition hover:bg-emerald-700 disabled:bg-gray-400"
+            className="flex-1 rounded-lg bg-[#a435f0]/10 px-6 py-3 text-[#a435f0] transition hover:bg-[#a435f0]/20 border border-[#a435f0]/30 disabled:opacity-50"
           >
             Generate List
           </button>
           <button
             onClick={animateTraversal}
             disabled={isAnimating || list.length === 0}
-            className="flex-1 rounded-lg bg-blue-600 px-6 py-3 text-white transition hover:bg-blue-700 disabled:bg-gray-400"
+            className="flex-1 rounded-lg bg-primary px-6 py-3 text-white transition hover:bg-primary-dark disabled:bg-gray-400"
           >
             {isAnimating ? "Traversing..." : "Animate Traversal"}
           </button>
@@ -201,7 +201,7 @@ const LinkedListTraversal = () => {
       <VisualizerCard>
         <div className="mb-6 flex flex-wrap justify-center gap-3 text-sm sm:gap-6 sm:text-base">
           <div className="flex items-center">
-            <div className="mr-2 h-4 w-4 rounded-full bg-blue-500"></div>
+            <div className="mr-2 h-4 w-4 rounded-full bg-primary"></div>
             <span>Node</span>
           </div>
           <div className="flex items-center">
@@ -209,7 +209,7 @@ const LinkedListTraversal = () => {
             <span>Visited</span>
           </div>
           <div className="flex items-center">
-            <div className="mr-2 h-4 w-4 rounded-full bg-blue-300"></div>
+            <div className="mr-2 h-4 w-4 rounded-full bg-[#c27cf7]"></div>
             <span>Address</span>
           </div>
           <div className="flex items-center">
@@ -241,7 +241,7 @@ const LinkedListTraversal = () => {
                     </div>
                     <div
                       ref={(el) => (nodeRefs.current[index] = el)}
-                      className="node flex h-16 w-16 cursor-pointer flex-col items-center justify-center rounded-full bg-blue-500 text-3xl text-white shadow-md transition-all hover:shadow-lg"
+                      className="node flex h-16 w-16 cursor-pointer flex-col items-center justify-center rounded-full bg-primary text-3xl text-white shadow-md transition-all hover:shadow-lg"
                       onClick={animateTraversal}
                     >
                       {node.value}

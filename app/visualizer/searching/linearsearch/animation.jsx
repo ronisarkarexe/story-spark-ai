@@ -286,7 +286,7 @@ const targetValue = parseInt(target);
                       : currentIndex === index && foundIndex === -1
                       ? "bg-yellow-500 dark:bg-yellow-600 border-yellow-700 dark:border-yellow-400 text-gray-800 dark:text-white"
                       : index < currentIndex
-                      ? "bg-blue-300 dark:bg-blue-700 border-blue-500 dark:border-blue-400 text-gray-800 dark:text-white"
+                      ? "bg-[#c27cf7] dark:bg-blue-700 border-primary dark:border-primary/80 text-gray-800 dark:text-white"
                       : "bg-gray-200 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
                   }`}
                 >
@@ -307,7 +307,7 @@ const targetValue = parseInt(target);
               <span className="text-sm">Found Element</span>
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 bg-blue-300 dark:bg-blue-700 rounded mr-2"></div>
+              <div className="w-4 h-4 bg-[#c27cf7] dark:bg-blue-700 rounded mr-2"></div>
               <span className="text-sm">Checked Elements</span>
             </div>
             <div className="flex items-center">

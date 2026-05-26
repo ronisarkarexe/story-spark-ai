@@ -2,6 +2,9 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
+import usePlayback from "@/app/hooks/usePlayback";
+import PlaybackControls from "@/app/components/ui/PlaybackControls";
+import useVisualizerKeyboard from "@/app/hooks/useVisualizerKeyboard";
 
 /* ----------  tiny reusable animated bits  ---------- */
 const AnimatedStackItem = ({ char, isTop }) => (
@@ -11,7 +14,7 @@ const AnimatedStackItem = ({ char, isTop }) => (
     exit={{ y: 30, opacity: 0, scale: 0.8 }}
     transition={{ type: "spring", stiffness: 300, damping: 20 }}
     className={`p-3 border-2 rounded text-center font-medium
-      ${isTop ? "bg-blue-100 dark:bg-blue-900 border-blue-300" : "bg-white dark:bg-gray-700 border-gray-200"}`}
+      ${isTop ? "bg-blue-100 dark:bg-blue-900 border-[#c27cf7]" : "bg-white dark:bg-gray-700 border-gray-200"}`}
   >
     {char}
     {isTop && <div className="text-xs mt-1 text-gray-500">(Top)</div>}
@@ -45,7 +48,7 @@ const InfixToPostfixVisualizer = () => {
   const [operation, setOperation] = useState(null);
   const [message, setMessage] = useState("Enter an infix expression and click Convert");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1000);
+  const { speed, setSpeed } = usePlayback(1);
 
   const precedence = { "^": 4, "*": 3, "/": 3, "+": 2, "-": 2 };
 
@@ -104,7 +107,7 @@ const InfixToPostfixVisualizer = () => {
 
   useEffect(() => {
     let t;
-    if (isPlaying && currentStep < steps.length - 1) t = setTimeout(playNextStep, speed);
+    if (isPlaying && currentStep < steps.length - 1) t = setTimeout(playNextStep, 1000 / speed);
     else if (currentStep >= steps.length - 1) setIsPlaying(false);
     return () => clearTimeout(t);
   }, [isPlaying, currentStep, steps.length, speed, playNextStep]);
@@ -115,7 +118,18 @@ const InfixToPostfixVisualizer = () => {
     if (statusRef.current) gsap.fromTo(statusRef.current, { scale: 0.95, opacity: 0.7 }, { scale: 1, opacity: 1, duration: 0.3 });
   }, [message]);
 
-  useEffect(() => { if (steps.length && currentStep < steps.length) { setIsAnimating(true); const s = steps[currentStep]; setStack(s.stack); setOutput(s.output); setOperation(s.action); setMessage(s.description); const t = setTimeout(() => setIsAnimating(false), 500); return () => clearTimeout(t); } }, [currentStep, steps]);
+  useVisualizerKeyboard({
+    onStart: undefined, // Space toggles play/pause, but only if sorting=true (or start if we add it)
+    onReset: reset,
+    onSpeedChange: setSpeed,
+    onTogglePlayPause: togglePlayPause,
+    speed: speed,
+    sorting: steps.length > 0 && currentStep < steps.length - 1,
+    sorted: currentStep === steps.length - 1 && steps.length > 0,
+    enabled: true,
+  });
+
+  useEffect(() => { if (steps.length && currentStep < steps.length) { setIsAnimating(true); const s = steps[currentStep]; setStack(s.stack); setOutput(s.output); setOperation(s.action); setMessage(s.description); const t = setTimeout(() => setIsAnimating(false), 500 / speed); return () => clearTimeout(t); } }, [currentStep, steps, speed]);
 
   /* ----------  UI  ---------- */
   return (
@@ -156,55 +170,21 @@ const InfixToPostfixVisualizer = () => {
           </div>
 
           {steps.length > 0 && (
-            <div className="flex flex-col gap-4 mt-6 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
-              <div className="flex justify-between items-center gap-2">
-                <button
-                  onClick={playPrevStep}
-                  disabled={currentStep === 0 || isAnimating}
-                  className="flex-1 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg transition-colors font-medium shadow-sm disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={togglePlayPause}
-                  className="flex-1 bg-[#a435f0] text-white px-6 py-2 rounded-lg hover:bg-[#8f2cd6] transition-colors font-medium shadow-sm"
-                >
-                  {isPlaying ? "Pause" : "Play"}
-                </button>
-                <button
-                  onClick={playNextStep}
-                  disabled={currentStep >= steps.length - 1 || isAnimating}
-                  className="flex-1 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg transition-colors font-medium shadow-sm disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Speed:</span>
-                  <select
-                    value={speed}
-                    onChange={e => setSpeed(Number(e.target.value))}
-                    className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-gray-200 text-sm focus:ring-2 focus:ring-[#a435f0]/20 outline-none"
-                  >
-                    <option value={2000}>Slow</option>
-                    <option value={1000}>Normal</option>
-                    <option value={500}>Fast</option>
-                    <option value={250}>Very Fast</option>
-                  </select>
-                </div>
-                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Step {currentStep + 1} of {steps.length}
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
-                <motion.div
-                  className="bg-[#a435f0] h-full"
-                  initial={false}
-                  animate={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
-                  transition={{ type: "spring", stiffness: 80 }}
-                />
-              </div>
+            <div className="mt-6">
+              <PlaybackControls
+                isPaused={!isPlaying}
+                onTogglePlayPause={togglePlayPause}
+                speed={speed}
+                onSpeedChange={setSpeed}
+                onIncreaseSpeed={() => setSpeed(Math.min(speed + 0.5, 5))}
+                onDecreaseSpeed={() => setSpeed(Math.max(speed - 0.5, 0.5))}
+                disabled={isAnimating && !isPlaying}
+                showShortcuts={true}
+                onStepForward={currentStep < steps.length - 1 ? playNextStep : undefined}
+                onStepBackward={currentStep > 0 ? playPrevStep : undefined}
+                onReset={reset}
+                progressText={`Step ${currentStep + 1} of ${steps.length}`}
+              />
             </div>
           )}
         </div>
@@ -219,7 +199,7 @@ const InfixToPostfixVisualizer = () => {
             </div>
           )}
           {message && (
-            <div className="p-4 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+            <div className="p-4 rounded-lg bg-blue-100 dark:bg-blue-900 text-primary-dark dark:text-blue-200">
               <p className="font-medium text-center">{message}</p>
             </div>
           )}
@@ -236,7 +216,7 @@ const InfixToPostfixVisualizer = () => {
           {/* Stack */}
           <div className="bg-white dark:bg-neutral-950 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-              <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span>
+              <span className="w-1.5 h-6 bg-primary rounded-full"></span>
               Stack (Operators)
             </h2>
             <div className="flex flex-col items-center min-h-[300px]">

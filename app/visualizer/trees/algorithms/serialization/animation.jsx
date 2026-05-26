@@ -116,7 +116,7 @@ export default function SerializationAnimation() {
   };
 
   return (
-    <div className="bg-slate-950 text-slate-100 font-sans p-6 rounded-3xl border border-slate-900 shadow-2xl flex flex-col gap-6 max-w-5xl mx-auto selection:bg-orange-500/30 selection:text-orange-200">
+    <div className="bg-slate-950 text-slate-100 font-sans p-6 rounded-3xl border border-slate-900 shadow-2xl flex flex-col gap-6 max-w-5xl mx-auto selection:bg-[#a435f0]/30 selection:text-[#c27cf7]">
       
       {/* Control Bar */}
       <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 p-5 rounded-2xl flex flex-wrap gap-4 justify-between items-center shadow-lg shadow-black/20">
@@ -130,7 +130,7 @@ export default function SerializationAnimation() {
                     ? "bg-orange-500 text-white scale-110" 
                     : val === "N" 
                         ? "bg-slate-800 text-slate-400" 
-                        : "bg-orange-950/50 text-orange-400 border border-orange-900/50"
+                        : "bg-orange-950/50 text-[#a435f0] border border-orange-900/50"
                 }`}>
                     {val}
                 </div>
@@ -142,7 +142,7 @@ export default function SerializationAnimation() {
           <button 
             onClick={handleSerialize} 
             disabled={animating || mode === "serializing" || serializedArray.length === SEQUENCE.length}
-            className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold bg-orange-600 hover:bg-orange-500 disabled:bg-orange-900/40 text-white rounded-xl transition-all shadow-md shadow-orange-500/20"
+            className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold bg-primary hover:bg-primary-dark disabled:bg-primary-dark/40 disabled:opacity-50 text-white rounded-xl transition-all shadow-md shadow-purple-500/20"
           >
             <FileDown className="w-4 h-4" /> Serialize
           </button>
@@ -150,14 +150,14 @@ export default function SerializationAnimation() {
           <button 
             onClick={handleDeserialize} 
             disabled={animating || serializedArray.length !== SEQUENCE.length || mode === "deserializing"}
-            className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold bg-orange-600 hover:bg-orange-500 disabled:bg-orange-900/40 text-white rounded-xl transition-all shadow-md shadow-orange-500/20"
+            className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold bg-primary hover:bg-primary-dark disabled:bg-primary-dark/40 disabled:opacity-50 text-white rounded-xl transition-all shadow-md shadow-purple-500/20"
           >
             <FileUp className="w-4 h-4" /> Deserialize
           </button>
 
           <button 
             onClick={handleReset} 
-            className="px-4 py-2.5 text-sm font-bold text-orange-400 bg-orange-950/20 hover:bg-orange-950/40 rounded-xl transition-all border border-orange-900/30 flex items-center gap-2"
+            className="px-4 py-2.5 text-sm font-bold text-[#a435f0] bg-[#a435f0]/10 hover:bg-[#a435f0]/20 rounded-xl transition-all border border-[#a435f0]/30 flex items-center gap-2"
           >
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
@@ -167,7 +167,7 @@ export default function SerializationAnimation() {
       {/* Explanation Panel */}
       <div className="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 flex flex-col gap-2">
         <div className="flex items-center text-xs text-slate-400 font-semibold gap-1.5">
-          <Info className="w-4 h-4 text-orange-400" /> Animation Status
+          <Info className="w-4 h-4 text-[#a435f0]" /> Animation Status
         </div>
         <div className="text-sm font-medium text-orange-200/90 leading-relaxed min-h-[20px]">{message}</div>
       </div>

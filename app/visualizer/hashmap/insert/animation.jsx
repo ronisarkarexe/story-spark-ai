@@ -107,7 +107,7 @@ const HashMapVisualizer = () => {
 
         {/* Operation Status */}
         {operation && (
-          <div className="mb-4 p-3 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-center">
+          <div className="mb-4 p-3 rounded-lg bg-blue-100 dark:bg-blue-900 text-primary-dark dark:text-blue-200 text-center">
             {operation}
           </div>
         )}

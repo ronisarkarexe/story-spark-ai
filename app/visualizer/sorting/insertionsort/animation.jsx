@@ -272,7 +272,7 @@ const InsertionSortVisualizer = () => {
                                 ? "bg-red-400 dark:bg-red-400 border-red-600 dark:border-red-600 dark:text-gray-800"
                                 : isSorted
                                 ? "bg-green-400 dark:bg-green-400 border-green-600 dark:border-green-600 dark:text-gray-800"
-                                : "bg-blue-400 dark:bg-blue-400 border-blue-600 dark:border-blue-600 dark:text-gray-800"
+                                : "bg-primary/80 dark:bg-primary/80 border-primary dark:border-primary dark:text-gray-800"
                             }`}
                     >
                       {value}

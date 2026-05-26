@@ -341,7 +341,7 @@ export default function FenwickAnimation() {
               <button
                 onClick={triggerQuery}
                 disabled={isAnimating}
-                className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-900/40 text-white rounded-xl transition-all shadow-md"
+                className="px-4 py-2 text-xs font-bold bg-primary hover:bg-primary-dark disabled:bg-primary-dark/40 disabled:opacity-50 text-white rounded-xl transition-all shadow-md"
               >
                 Query Sum
               </button>

@@ -204,7 +204,7 @@ export default function InOrderVisualizer() {
             <button
               onClick={generateRandomTree}
               disabled={isAnimating}
-              className="mb-2 w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+              className="mb-2 w-full rounded-lg bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
             >
               Generate Random Tree
             </button>
@@ -221,7 +221,7 @@ export default function InOrderVisualizer() {
               <button
                 onClick={handleInsert}
                 disabled={isAnimating}
-                className="rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+                className="rounded-lg bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
               >
                 Insert
               </button>
@@ -362,8 +362,8 @@ export default function InOrderVisualizer() {
             <p className="mt-2">For BSTs, this produces nodes in sorted order.</p>
           </div>
 
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20">
-            <h3 className="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">Algorithm:</h3>
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-primary-dark dark:bg-blue-900/20">
+            <h3 className="mb-2 text-sm font-medium text-primary-dark dark:text-blue-200">Algorithm:</h3>
             <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs dark:bg-gray-700">
 {`function inOrder(node) {
   if (node !== null) {

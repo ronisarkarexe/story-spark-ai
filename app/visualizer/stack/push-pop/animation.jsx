@@ -1,13 +1,15 @@
 "use client";
-import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import PushPop from "@/app/components/ui/PushPop";
+import usePlayback from "@/app/hooks/usePlayback";
 
 const StackVisualizer = () => {
   const [stack, setStack] = useState([]);
   const [operation, setOperation] = useState(null);
   const [message, setMessage] = useState("Stack is empty");
   const [isAnimating, setIsAnimating] = useState(false);
+  const { speed, setSpeed } = usePlayback(1);
   const stackRefs = useRef([]);
 
   // Reset stack
@@ -24,19 +26,19 @@ const StackVisualizer = () => {
         gsap.fromTo(
           el,
           { y: -50, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }
+          { y: 0, opacity: 1, duration: 0.5 / speed, ease: "power3.out" }
         );
       } else if (operation?.includes("popped")) {
-        gsap.to(el, { y: 50, opacity: 0, duration: 0.3, ease: "power1.in" });
+        gsap.to(el, { y: 50, opacity: 0, duration: 0.3 / speed, ease: "power1.in" });
       } else if (operation?.includes("Peek")) {
         gsap.fromTo(
           el,
           { scale: 1 },
-          { scale: 1.2, yoyo: true, repeat: 1, duration: 0.2 }
+          { scale: 1.2, yoyo: true, repeat: 1, duration: 0.2 / speed }
         );
       }
     }
-  }, [stack, operation, isAnimating]);
+  }, [stack, operation, isAnimating, speed]);
 
   return (
     <main className="container mx-auto">
@@ -50,27 +52,17 @@ const StackVisualizer = () => {
           setStack={setStack}
           isAnimating={isAnimating}
           setIsAnimating={setIsAnimating}
-          setMessage={setMessage}
+          operation={operation}
           setOperation={setOperation}
+          message={message}
+          setMessage={setMessage}
+          speed={speed}
+          setSpeed={setSpeed}
         />
-
-        {message && (
-          <div className="max-w-3xl mx-auto mb-8 p-4 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-            <p className="text-center font-medium">{message}</p>
-          </div>
-        )}
 
         {/* Stack Visualization */}
         <div className="bg-white dark:bg-neutral-950 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold mb-4">Stack Visualization</h2>
-
-          {/* Operation Status */}
-          {operation && (
-            <div className="mb-4 p-3 rounded-lg bg-[#a435f0]/10 dark:bg-[#a435f0]/20 text-[#a435f0] border border-[#a435f0]/20">
-              <span className="font-semibold uppercase text-xs tracking-wider mr-2">Status:</span>
-              {operation}
-            </div>
-          )}
 
           {/* Vertical Stack */}
           <div className="flex flex-col items-center min-h-[300px]">
@@ -93,7 +85,7 @@ const StackVisualizer = () => {
                       ref={(el) => (stackRefs.current[index] = el)}
                       className={`p-3 border-2 rounded text-center font-medium transition-all duration-300 ${
                         index === 0
-                          ? "bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
+                          ? "bg-blue-100 dark:bg-blue-900 border-[#c27cf7] dark:border-primary-dark"
                           : "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
                       }`}
                     >

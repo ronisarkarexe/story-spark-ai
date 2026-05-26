@@ -142,7 +142,7 @@ const SinglyLinkedListVisualizer = () => {
 
       <VisualizerCard>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 text-center flex items-center justify-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Linked List Memory Representation
@@ -161,13 +161,13 @@ const SinglyLinkedListVisualizer = () => {
                   <React.Fragment key={node.id}>
                     <div className="w-full max-w-xs relative group">
                       {/* Node Card */}
-                      <div className={`relative flex flex-col rounded-lg p-3 bg-white dark:bg-gray-700 border ${index === 0 ? 'border-green-500' : 'border-blue-500'} shadow-sm transition-all duration-200 overflow-hidden`}>
+                      <div className={`relative flex flex-col rounded-lg p-3 bg-white dark:bg-gray-700 border ${index === 0 ? 'border-green-500' : 'border-primary'} shadow-sm transition-all duration-200 overflow-hidden`}>
                         {/* Node Header */}
                         <div className="flex justify-between items-center mb-2">
                           <span className="font-mono text-xs text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
                             {node.address}
                           </span>
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${index === 0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'}`}>
+                          <span className={`text-xs px-1.5 py-0.5 rounded ${index === 0 ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' : 'bg-blue-100 dark:bg-blue-900/50 text-primary-dark dark:text-blue-200'}`}>
                             {index === 0 ? 'HEAD' : `Node ${index}`}
                           </span>
                         </div>

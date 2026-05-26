@@ -368,7 +368,7 @@ export default function BTreeAnimation() {
                 className="w-full sm:w-32 px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors"
                 disabled={isAnimating} onKeyDown={e => e.key === "Enter" && triggerSearch()} />
               <button onClick={triggerSearch} disabled={isAnimating}
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-900/40 text-white rounded-xl transition-all shadow-md">
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-primary hover:bg-primary-dark disabled:bg-primary-dark/40 disabled:opacity-50 text-white rounded-xl transition-all shadow-md">
                 <Search className="w-3.5 h-3.5" /> Search
               </button>
             </>
@@ -414,7 +414,7 @@ export default function BTreeAnimation() {
         <div className="flex flex-wrap gap-2 text-xs">
           {[
             { color: "bg-purple-600", label: "Visiting" },
-            { color: "bg-emerald-600", label: "Split / Active" },
+            { color: "bg-primary", label: "Split / Active" },
             { color: "bg-amber-500", label: "Found" },
             { color: "bg-rose-600", label: "Not Found" },
           ].map(({ color, label }) => (

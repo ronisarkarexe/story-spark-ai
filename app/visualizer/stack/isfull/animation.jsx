@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import PushPop from "@/app/components/ui/PushPop";
+import usePlayback from "@/app/hooks/usePlayback";
 
 const StackVisualizer = () => {
   const [stack, setStack] = useState([]);
@@ -9,6 +10,7 @@ const StackVisualizer = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [stackLimit] = useState(5); // Set stack capacity
   const [isFull, setIsFull] = useState(false);
+  const { speed, setSpeed } = usePlayback(1); // Read speed from hook (controlled inside PushPop)
 
   // Check if stack is full
   const checkIfFull = () => {
@@ -21,7 +23,7 @@ const StackVisualizer = () => {
       setOperation(null);
       setMessage(fullStatus ? "Stack is FULL!" : "Stack is NOT full");
       setIsAnimating(false);
-    }, 1000);
+    }, 1000 / speed);
   };
 
   // Reset stack
@@ -50,48 +52,21 @@ const StackVisualizer = () => {
           setStack={setStack}
           isAnimating={isAnimating}
           setIsAnimating={setIsAnimating}
-          setMessage={setMessage}
+          operation={operation}
           setOperation={setOperation}
+          message={message}
+          setMessage={setMessage}
           stackLimit={stackLimit}
+          speed={speed}
+          setSpeed={setSpeed}
+          extraActions={[
+            { label: "Check If Full", onClick: checkIfFull, variant: "secondary" }
+          ]}
         />
-
-        <div className="max-w-4xl mx-auto mb-8">
-          <button
-            onClick={checkIfFull}
-            disabled={isAnimating}
-            className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold px-6 py-4 rounded-xl transition-all duration-200 disabled:opacity-50 shadow-sm flex items-center justify-center gap-2 group"
-          >
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Check If Full (isFull)
-          </button>
-        </div>
-
-        {operation && (
-          <div className="max-w-4xl mx-auto mb-4 p-3 rounded-lg bg-[#a435f0]/10 dark:bg-[#a435f0]/20 text-[#a435f0] border border-[#a435f0]/20">
-            <span className="font-semibold uppercase text-xs tracking-wider mr-2">Operation:</span>
-            {operation}
-          </div>
-        )}
-
-        {message && (
-          <div className="max-w-4xl mx-auto mb-8 p-6 rounded-xl bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 text-blue-800 dark:text-blue-200">
-            <p className="text-center font-medium text-lg italic">&quot;{message}&quot;</p>
-          </div>
-        )}
 
         {/* Stack Visualization */}
         <div className="bg-white dark:bg-neutral-950 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold mb-4">Stack Visualization</h2>
-
-          {/* Operation Status */}
-          {operation && (
-            <div className="mb-4 p-3 rounded-lg bg-[#a435f0]/10 dark:bg-[#a435f0]/20 text-[#a435f0] border border-[#a435f0]/20">
-              <span className="font-semibold uppercase text-xs tracking-wider mr-2">Status:</span>
-              {operation}
-            </div>
-          )}
 
           {/* Stack capacity indicator */}
           <div className="mb-4 text-center text-sm font-medium">
@@ -118,7 +93,7 @@ const StackVisualizer = () => {
                       key={index}
                       className={`p-3 border-2 rounded text-center font-medium transition-all duration-300 ${
                         index === 0
-                          ? "bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
+                          ? "bg-blue-100 dark:bg-blue-900 border-[#c27cf7] dark:border-primary-dark"
                           : "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
                       } ${
                         isAnimating &&

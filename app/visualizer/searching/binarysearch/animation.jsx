@@ -350,7 +350,7 @@ const BinarySearch = () => {
               </div>
               <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-4 text-xs text-gray-500 dark:text-gray-400">
                 <span><span className="font-semibold text-yellow-600 dark:text-yellow-400">■ Yellow</span> = mid index</span>
-                <span><span className="font-semibold text-blue-500 dark:text-blue-400">■ Blue</span> = active search range</span>
+                <span><span className="font-semibold text-primary dark:text-[#c27cf7]">■ Blue</span> = active search range</span>
                 <span><span className="font-semibold text-gray-400">■ Gray</span> = eliminated</span>
                 <span><span className="font-semibold text-green-500">■ Green</span> = found</span>
               </div>
@@ -382,7 +382,7 @@ const BinarySearch = () => {
                             label === "mid"
                               ? "text-yellow-600 dark:text-yellow-400 font-semibold"
                               : label === "low" || label === "high"
-                              ? "text-blue-500 dark:text-blue-400 font-semibold"
+                              ? "text-primary dark:text-[#c27cf7] font-semibold"
                               : ""
                           }
                         >

@@ -43,7 +43,7 @@ export const metadata = {
 export default function Home() {
   return (
     <>
-      <div className="min-h-screen bg-surface-50 dark:bg-surface-900">
+      <div className="landing-page min-h-screen bg-surface-50 dark:bg-surface-900">
         <Navbar />
         <div id="hero">
           <Hero />

@@ -11,6 +11,7 @@ export default function PlaybackControls({
   onSpeedChange,
   disabled = false,
   showShortcuts = true,
+  showPlayPause = true,
   onStepForward,
   onStepBackward,
   onReset,
@@ -19,8 +20,9 @@ export default function PlaybackControls({
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between mb-4 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-200 dark:border-gray-700 gap-4">
       {/* Play/Pause Button & Frame Stepping */}
-      <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
-        {onReset && (
+      {showPlayPause && (
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
+          {onReset && (
           <button
             type="button"
             onClick={onReset}
@@ -66,6 +68,7 @@ export default function PlaybackControls({
           </button>
         )}
       </div>
+      )}
 
       {/* Speed Controls */}
       <div className="flex items-center gap-3">

@@ -1193,7 +1193,7 @@ export default function TreeTraversalVisualizer({ initialMode = 'in-order' }) {
                   <button
                     onClick={handleInsert}
                     disabled={isAnimating}
-                    className="px-3.5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-900 disabled:opacity-40 text-emerald-950 hover:text-white rounded-xl transition-all font-semibold"
+                    className="px-3.5 py-2 text-xs font-bold bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:bg-primary-dark disabled:opacity-40 text-white hover:text-white rounded-xl transition-all font-semibold"
                   >
                     Insert
                   </button>

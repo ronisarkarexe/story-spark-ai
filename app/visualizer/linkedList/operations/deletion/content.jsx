@@ -378,7 +378,7 @@ const content = () => {
         <section className="p-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Implementation Notes</h2>
           <div className="prose dark:prose-invert max-w-none">
-            <ul className="list-disc pl-5 space-y-2 marker:text-blue-500 dark:marker:text-blue-400">
+            <ul className="list-disc pl-5 space-y-2 marker:text-primary dark:marker:text-[#c27cf7]">
               <li className="text-[#374151] dark:text-[#d1d5db]">
                 <strong>Memory Management:</strong> In languages without garbage collection, ensure proper memory deallocation when deleting nodes
               </li>

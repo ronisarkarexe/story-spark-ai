@@ -314,12 +314,12 @@ const BubbleSortVisualizer = () => {
                           ? "bg-yellow-400 dark:bg-yellow-400 border-yellow-600 dark:border-yellow-600 dark:text-gray-900"
                           : isSorted
                           ? "bg-green-400 dark:bg-green-400 border-green-600 dark:border-green-600 dark:text-gray-900"
-                          : "bg-blue-400 dark:bg-blue-400 border-blue-600 dark:border-blue-600 dark:text-gray-900"
+                          : "bg-primary/80 dark:bg-primary/80 border-primary dark:border-primary dark:text-gray-900"
                         }`}
                     >
                       {value}
                     </div>
-                    <div className="mt-1 text-xs text-gray-700 dark:text-blue-300 font-semibold">
+                    <div className="mt-1 text-xs text-gray-700 dark:text-[#c27cf7] font-semibold">
                       {index === currentIndices.i && "i"}
                       {index === currentIndices.j && "j"}
                     </div>
