@@ -542,7 +542,7 @@ ${content}
   }
 
   return (
-    <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
+    <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10 font-[EB_Garamond]">
       <style>
         {`
           @keyframes fadeInUp {
@@ -558,7 +558,7 @@ ${content}
         <div className="col-span-1 lg:col-span-8 flex flex-col">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
-              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
+              <h1 className="text-2xl font-bold font-[Playfair_Display] text-[#8b1a1a] dark:text-[#c9a227]">
                 {selectedStory?.title}
               </h1>
             </div>
@@ -570,8 +570,8 @@ ${content}
                       key={story.uuid}
                       className={`relative w-16 h-16 rounded-full border-2 ${
                         selectedStory?.uuid === story.uuid
-                          ? "border-blue-500 scale-110"
-                          : "border-white"
+                          ? "border-[#c9a227] scale-110 shadow-lg"
+                          : "border-[#d4b896]"
                       } hover:scale-110 transition-transform duration-200 focus:outline-none`}
                       onClick={() => handelStorySelection(story)}
                     >
@@ -587,18 +587,18 @@ ${content}
             </div>
           </div>
 
-          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="parchment-card p-8 relative overflow-hidden bg-[#f5ead6] border border-[#d4b896] dark:bg-[#2c1810] dark:border-[#5c3d2e]">
+            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-[#c9a227]/5 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-[#8b1a1a]/5 rounded-full blur-3xl pointer-events-none"></div>
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <h3 className="text-xl font-bold text-slate-200 relative z-10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-[#d4b896]/40 pb-4 dark:border-[#5c3d2e]/40">
+              <h3 className="text-lg font-bold font-[Playfair_Display] text-[#2c1810] relative z-10 dark:text-[#f5ead6]">
                 Generated Story
               </h3>
-              <div className="flex flex-wrap items-center gap-2 relative z-10">
+              <div className="flex flex-wrap items-center gap-2 relative z-10 font-[Cormorant_Garamond]">
                 <button
                   type="button"
-                  className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="parchment-btn text-xs"
                   onClick={handleCopyStory}
                   disabled={!selectedStory}
                 >
@@ -606,7 +606,7 @@ ${content}
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="parchment-btn text-xs"
                   onClick={handleExportPDF}
                   disabled={!selectedStory}
                 >
@@ -614,17 +614,17 @@ ${content}
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="parchment-btn text-xs"
                   onClick={handleExportMarkdown}
                   disabled={!selectedStory}
                 >
-                  ⬇️ Export Markdown
+                  ⬇️ Export MD
                 </button>
                 <button
                   type="button"
                   id="publish-story-btn"
-                  className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
+                  className={`parchment-btn-primary px-5 py-2 text-xs flex items-center space-x-2 ${
+                    loading ? "opacity-50" : ""
                   }`}
                   onClick={handelPublishStory}
                   disabled={loading || !selectedStory}
@@ -633,16 +633,16 @@ ${content}
                 </button>
               </div>
             </div>
-            <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
-              <p className="break-words">{selectedStory.content}</p>
+            <div id="story-content" className="prose max-w-none text-[#2c1810] font-[EB_Garamond] text-lg leading-relaxed tracking-wide relative z-10 dark:text-[#f5ead6]">
+              <p className="break-words first-letter:text-4xl first-letter:font-bold first-letter:text-[#8b1a1a] dark:first-letter:text-[#c9a227] first-letter:mr-1 first-letter:float-left">{selectedStory.content}</p>
             </div>
           </div>
           <div className="mt-7">
-            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
-              <h3 className="text-lg font-bold text-slate-200 mb-4">
+            <div className="parchment-card p-6 mb-8 bg-[#f5ead6] border border-[#d4b896] dark:bg-[#2c1810] dark:border-[#5c3d2e]">
+              <h3 className="text-lg font-bold font-[Playfair_Display] text-[#2c1810] mb-4 dark:text-[#f5ead6]">
                 Select Topics
               </h3>
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4 font-[Cormorant_Garamond]">
                 <input
                   type="text"
                   value={newTopicTitle}
@@ -654,11 +654,11 @@ ${content}
                     }
                   }}
                   placeholder="Add related topic"
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                  className="flex-1 rounded border border-[#d4b896] bg-[#fdf8f0] px-4 py-2 text-sm text-[#2c1810] placeholder:text-[#5c3d2e]/40 focus:border-[#8b1a1a] focus:outline-none focus:ring-2 focus:ring-[#8b1a1a]/20 dark:bg-[#1a0f08] dark:border-[#5c3d2e] dark:text-[#f5ead6] dark:placeholder:text-[#d4b896]/30 dark:focus:border-[#c9a227] dark:focus:ring-[#c9a227]/20 font-[EB_Garamond]"
                 />
                 <button
                   type="button"
-                  className="rounded-lg px-4 py-2 bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-500 transition-colors"
+                  className="parchment-btn-primary px-5 py-2 text-xs"
                   onClick={handleAddTopic}
                 >
                   Add Topic
@@ -670,7 +670,7 @@ ${content}
                     {topics.map((topic, index) => (
                       <span
                         key={index}
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
+                        className={`inline-flex items-center gap-2 px-3 py-1 bg-[#fdf8f0] border border-[#d4b896] text-[#5c3d2e] rounded-full text-xs font-semibold uppercase tracking-wider transition-all hover:scale-105 shadow-sm dark:bg-[#1a0f08] dark:border-[#5c3d2e] dark:text-[#d4b896] font-[Cormorant_Garamond]`}
                       >
                         <button
                           type="button"
@@ -678,15 +678,15 @@ ${content}
                           onClick={() => handleTopicClick(index)}
                         >
                           {topic.selected ? (
-                            <i className="fa-solid fa-check"></i>
+                            <i className="fa-solid fa-check text-emerald-600 dark:text-emerald-400"></i>
                           ) : (
-                            <i className="fa-solid fa-plus"></i>
+                            <i className="fa-solid fa-plus text-[#8b5e3c]"></i>
                           )}{" "}
                           {topic.title}
                         </button>
                         <button
                           type="button"
-                          className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="cursor-pointer border-l border-[#d4b896] pl-2 disabled:cursor-not-allowed disabled:opacity-40 hover:text-red-600 dark:border-[#5c3d2e]"
                           onClick={() => handleRemoveTopic(index)}
                           disabled={topics.length <= 2}
                           aria-label={`Remove ${topic.title}`}
@@ -697,7 +697,7 @@ ${content}
                     ))}
                   </>
                 ) : (
-                  <p className="text-gray-400">
+                  <p className="text-[#5c3d2e]/60 dark:text-[#d4b896]/60">
                     No topics available. Please generate a story first.
                   </p>
                 )}
@@ -706,15 +706,15 @@ ${content}
 
             {/* Alternate Endings Section */}
             {selectedStory && (
-              <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
-                <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+              <div className="parchment-card p-6 mt-8 relative overflow-hidden bg-[#f5ead6] border border-[#d4b896] dark:bg-[#2c1810] dark:border-[#5c3d2e]">
+                <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-[#8b1a1a]/5 rounded-full blur-3xl pointer-events-none"></div>
                 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                   <div>
-                    <h3 className="text-xl font-bold text-slate-200 flex items-center gap-2">
+                    <h3 className="text-xl font-bold font-[Playfair_Display] text-[#2c1810] dark:text-[#f5ead6] flex items-center gap-2">
                       Alternate Endings
                     </h3>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-[#5c3d2e]/80 dark:text-[#d4b896]/80 font-[EB_Garamond] mt-1">
                       Explore alternate narrative styles for your story context.
                     </p>
                   </div>
@@ -722,7 +722,7 @@ ${content}
                     <button
                       type="button"
                       onClick={handleResetEnding}
-                      className="rounded-lg px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-200 border border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                      className="parchment-btn border-red-800 text-red-700 hover:bg-red-50 text-xs flex items-center gap-1.5 dark:text-red-400 dark:hover:bg-red-950/20"
                     >
                       <i className="fa-solid fa-rotate-left"></i> Reset to Original
                     </button>
@@ -731,15 +731,15 @@ ${content}
 
                 {isGeneratingEndings ? (
                   <div className="flex flex-col items-center justify-center py-10">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-                    <p className="text-slate-300 text-sm font-medium animate-pulse">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#8b1a1a] dark:border-[#c9a227] mb-4"></div>
+                    <p className="text-[#2c1810] dark:text-[#f5ead6] text-sm font-semibold animate-pulse">
                       Generating alternate endings...
                     </p>
                   </div>
                 ) : endingsCache[selectedStory.uuid]?.length > 0 ? (
                   <div>
                     {/* Tabs */}
-                    <div className="flex border-b border-slate-700/50 mb-6 overflow-x-auto whitespace-nowrap scrollbar-none">
+                    <div className="flex border-b border-[#d4b896] mb-6 overflow-x-auto whitespace-nowrap scrollbar-none dark:border-[#5c3d2e]">
                       {[
                         { name: "Happy Ending" },
                         { name: "Dark Ending" },
@@ -756,15 +756,15 @@ ${content}
                             key={s.name}
                             type="button"
                             onClick={() => setActiveEndingTab(s.name)}
-                            className={`px-5 py-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                            className={`px-5 py-3 font-semibold font-[Cormorant_Garamond] uppercase tracking-wider text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                               activeEndingTab === s.name
-                                ? "border-purple-500 text-purple-400 bg-purple-500/5"
-                                : "border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700"
+                                ? "border-[#8b1a1a] text-[#8b1a1a] bg-[#8b1a1a]/5 dark:border-[#c9a227] dark:text-[#c9a227]"
+                                : "border-transparent text-[#5c3d2e] hover:text-[#2c1810] dark:text-[#d4b896] dark:hover:text-[#f5ead6]"
                             }`}
                           >
                             <span>{s.name}</span>
                             {isApplied && (
-                              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span>
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-ping"></span>
                             )}
                           </button>
                         );
@@ -780,21 +780,21 @@ ${content}
                       const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
                       
                       return (
-                        <div className="bg-slate-900/40 rounded-xl p-6 border border-slate-700/30">
+                        <div className="bg-[#fdf8f0] rounded-xl p-6 border border-[#d4b896] dark:bg-[#1a0f08] dark:border-[#5c3d2e]">
                           <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-lg font-bold text-slate-200">
+                            <h4 className="text-lg font-bold font-[Playfair_Display] text-[#2c1810] dark:text-[#f5ead6]">
                               {activeEndingTab} Suggestion
                             </h4>
-                            <div>
+                            <div className="font-[Cormorant_Garamond]">
                               {isCurrentlyApplied ? (
-                                <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
+                                <span className="text-xs text-emerald-600 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5 dark:text-emerald-400">
                                   <i className="fa-solid fa-check"></i> Applied to Story
                                 </span>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => handleApplyEnding(currentEndingData)}
-                                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
+                                  className="parchment-btn-primary px-4 py-2 text-xs"
                                 >
                                   Apply to Story
                                 </button>
@@ -802,18 +802,18 @@ ${content}
                             </div>
                           </div>
                           
-                          <div className="space-y-4">
-                            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800 leading-relaxed text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap">
+                          <div className="space-y-4 font-[EB_Garamond]">
+                            <div className="bg-[#fdf8f0]/40 p-5 rounded-xl border border-[#d4b896]/60 leading-relaxed text-[#3d2314] text-sm md:text-base italic shadow-inner whitespace-pre-wrap dark:bg-[#1a0f08]/40 dark:border-[#5c3d2e]/60 dark:text-[#d4b896]">
                               <p>{currentEndingData.ending}</p>
                             </div>
                             
                             <div>
-                              <details className="group border border-slate-800 rounded-lg overflow-hidden bg-slate-950/20">
-                                <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none">
+                              <details className="group border border-[#d4b896] rounded-lg overflow-hidden bg-[#fdf8f0]/20 dark:border-[#5c3d2e]">
+                                <summary className="list-none flex items-center justify-between p-3 text-xs font-bold font-[Cormorant_Garamond] text-[#8b5e3c] hover:text-[#2c1810] cursor-pointer select-none dark:text-[#d4b896]">
                                   <span>PREVIEW FULL STORY WITH THIS ENDING</span>
                                   <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
                                 </summary>
-                                <div className="p-4 border-t border-slate-800/80 text-xs text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
+                                <div className="p-4 border-t border-[#d4b896]/80 text-xs text-[#5c3d2e] leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap dark:border-[#5c3d2e]/80 dark:text-[#d4b896]">
                                   {currentEndingData.fullStory}
                                 </div>
                               </details>
@@ -824,15 +824,15 @@ ${content}
                     })()}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-8 bg-slate-900/20 border border-dashed border-slate-700/40 rounded-xl">
+                  <div className="flex flex-col items-center justify-center py-8 bg-[#fdf8f0] border border-dashed border-[#d4b896] rounded-xl dark:bg-[#1a0f08] dark:border-[#5c3d2e]">
                     <button
                       type="button"
                       onClick={handleGenerateAlternateEndings}
-                      className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer"
+                      className="parchment-btn-primary px-6 py-3 font-semibold font-[Cormorant_Garamond] tracking-widest uppercase flex items-center gap-2 transition-all duration-300 hover:scale-[1.02]"
                     >
                       Generate Alternate Endings
                     </button>
-                    <p className="text-xs text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
+                    <p className="text-xs text-[#5c3d2e]/80 mt-3 text-center max-w-sm px-4 leading-relaxed dark:text-[#d4b896]/80 font-[EB_Garamond]">
                       Uses the story context to produce 5 unique ending variations (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.
                     </p>
                   </div>
@@ -843,12 +843,12 @@ ${content}
         </div>
 
         <div className="col-span-1 lg:col-span-4">
-          <div className="mb-5">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
+          <div className="mb-5 font-[Playfair_Display]">
+            <h1 className="text-2xl font-bold text-[#8b1a1a] dark:text-[#c9a227]">
               Preview
             </h1>
           </div>
-          <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
+          <div className="parchment-card overflow-hidden group">
             <div className="relative flex flex-col rounded-lg">
               <div className="relative m-3 overflow-hidden text-white rounded-xl">
                 <img
@@ -858,12 +858,12 @@ ${content}
                 />
               </div>
               <div className="px-3 py-1">
-                <div className="flex justify-between items-center mb-2 w-full">
+                <div className="flex justify-between items-center mb-2 w-full font-[Cormorant_Garamond]">
                   <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
+                    <div className="inline-flex items-center rounded bg-[#8b1a1a] py-1 px-3 text-xs font-semibold text-white shadow-sm">
                       {selectedStory.tag.toUpperCase()}
                     </div>
-                    <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
+                    <div className="inline-flex items-center rounded bg-[#f5ead6] py-1 px-2.5 text-xs font-medium text-[#5c3d2e] shadow-sm gap-1 border border-[#d4b896] dark:bg-[#2c1810] dark:text-[#d4b896] dark:border-[#5c3d2e]">
                       ⏱️ {calculateReadingTime(selectedStory.content)} min read
                     </div>
                   </div>
@@ -871,10 +871,10 @@ ${content}
                     <BookmarkButton storyId={selectedStory.uuid} />
                   </div>
                 </div>
-                <h6 className="mb-1 text-gray-300 text-xl font-semibold">
+                <h6 className="mb-1 text-[#2c1810] text-xl font-bold font-[Playfair_Display] dark:text-[#f5ead6]">
                   {selectedStory.title}
                 </h6>
-                <p className="text-gray-400 font-light breakwords text-sm sm:text-base">
+                <p className="text-[#5c3d2e] font-light breakwords text-sm sm:text-base dark:text-[#d4b896]">
                   {getShortenedText(selectedStory.content)}
                 </p>
               </div>

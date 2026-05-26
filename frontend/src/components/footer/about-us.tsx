@@ -6,7 +6,6 @@ import {
   PenTool,
   BrainCircuit,
   Users,
-  Github,
   Rocket,
   ArrowLeft,
   Wand2,

@@ -110,206 +110,239 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="min-h-screen px-4 py-16 relative flex items-center justify-center overflow-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white sm:px-6 sm:py-20 md:px-10 lg:px-20"
+      className="min-h-screen px-4 py-16 relative flex items-center justify-center overflow-hidden bg-[#fdf8f0] text-[#2c1810] transition-colors duration-300 dark:bg-[#1a0f08] dark:text-[#f5ead6] sm:px-6 sm:py-20 md:px-10 lg:px-20 parchment-page"
     >
       {/* Background Glow */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 blur-[120px] rounded-full" />
-
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-500/10 blur-[130px] rounded-full" />
+      <div className="absolute top-20 left-10 w-72 h-72 bg-[#c9a227]/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-80 h-80 bg-[#8b5e3c]/5 blur-[130px] rounded-full pointer-events-none" />
 
       {/* Main Container */}
-      <div className="w-full max-w-5xl relative z-10">
+      <div className="w-full max-w-5xl relative z-10 flex flex-col items-center">
         {/* Heading */}
-        <div className="text-center mb-5 sm:mb-14">
-          <p className="text-blue-500 uppercase tracking-[5px] sm:tracking-[7px] text-xs sm:text-sm mb-3 font-semibold dark:text-blue-400">
+        <div className="text-center mb-8 sm:mb-14">
+          <p className="text-[#8b5e3c] uppercase tracking-[5px] sm:tracking-[7px] text-xs sm:text-sm mb-3 font-semibold font-[Cormorant_Garamond] dark:text-[#d4b896]">
             GET IN TOUCH
           </p>
 
-          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Contact <span className="text-blue-500 dark:text-blue-400">Me</span>
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight font-[Playfair_Display] text-[#2c1810] dark:text-[#f5ead6]">
+            Contact <span className="text-[#8b1a1a] dark:text-[#c9a227]">Us</span>
           </h2>
 
-          <div className="w-24 h-1 bg-yellow-400 mx-auto mt-5 rounded-full" />
+          <div className="w-24 h-1 bg-[#c9a227]/70 mx-auto mt-4 rounded-full" />
         </div>
 
         {/* Form Container */}
         <div className="w-full max-w-lg group relative">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[1.5rem] blur opacity-10 group-hover:opacity-15 transition duration-1000"></div>
+          <div className="absolute -inset-1 bg-gradient-to-r from-[#8b1a1a] to-[#c9a227] rounded-[1rem] blur opacity-15 group-hover:opacity-25 transition duration-1000"></div>
 
           <form
             onSubmit={submitHandler}
             className="
-            w-full
-            max-w-4xl
-            bg-gray-100/80
-            border
-            border-gray-200
-            rounded-[2rem]
-            p-5
-            sm:p-8
-            md:p-10
-            backdrop-blur-2xl
-            space-y-6
-            shadow-2xl
-            transition-colors
-            duration-300
-            dark:bg-white/10
-            dark:border-white/10
-          "
+              w-full
+              max-w-4xl
+              bg-[#f5ead6]
+              border
+              border-[#d4b896]
+              rounded-[1rem]
+              p-6
+              sm:p-10
+              space-y-6
+              shadow-xl
+              transition-all
+              duration-300
+              dark:bg-[#2c1810]
+              dark:border-[#5c3d2e]
+            "
           >
             {/* Name */}
-            <input
-              type="text"
-              name="fullname"
-              placeholder="Your Name"
-              value={formData.fullname}
-              onChange={changeHandler}
-              className="
-              w-full
-              bg-gray-100/80
-              border
-              border-gray-200
-              rounded-2xl
-              px-5
-              py-4
-              text-sm
-              sm:text-base
-              text-slate-900
-              placeholder:text-slate-400
-              outline-none
-              transition-[border-color,box-shadow]
-              duration-300
-              hover:border-white/30
-              focus:border-yellow-400
-              focus:ring-2
-              focus:ring-yellow-400/30
-            "
-              required
-            />
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#5c3d2e] dark:text-[#d4b896] mb-2 font-[Cormorant_Garamond]">
+                Your Name
+              </label>
+              <input
+                type="text"
+                name="fullname"
+                placeholder="E.g., Arthur Pendragon"
+                value={formData.fullname}
+                onChange={changeHandler}
+                className="
+                  w-full
+                  bg-[#fdf8f0]
+                  border
+                  border-[#d4b896]
+                  rounded-lg
+                  px-4
+                  py-3.5
+                  text-sm
+                  text-[#2c1810]
+                  placeholder:text-[#5c3d2e]/40
+                  outline-none
+                  font-[EB_Garamond]
+                  transition-all
+                  duration-300
+                  hover:border-[#c9a227]/60
+                  focus:border-[#8b1a1a]
+                  focus:ring-2
+                  focus:ring-[#8b1a1a]/20
+                  dark:bg-[#1a0f08]
+                  dark:border-[#5c3d2e]
+                  dark:text-[#f5ead6]
+                  dark:placeholder:text-[#d4b896]/30
+                  dark:focus:border-[#c9a227]
+                  dark:focus:ring-[#c9a227]/20
+                "
+                required
+              />
+            </div>
 
             {/* Email */}
-            <input
-              type="email"
-              name="email"
-              placeholder="Your Email"
-              value={formData.email}
-              onChange={changeHandler}
-              className="
-              w-full
-              bg-gray-100/80
-              border
-              border-gray-200
-              rounded-2xl
-              px-5
-              py-4
-              text-sm
-              sm:text-base
-              text-slate-900
-              placeholder:text-slate-400
-              outline-none
-              transition-[border-color,box-shadow]
-              duration-300
-              hover:border-white/30
-              focus:border-yellow-400
-              focus:ring-2
-              focus:ring-yellow-400/30
-            "
-              required
-            />
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#5c3d2e] dark:text-[#d4b896] mb-2 font-[Cormorant_Garamond]">
+                Your Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                placeholder="E.g., arthur@camelot.org"
+                value={formData.email}
+                onChange={changeHandler}
+                className="
+                  w-full
+                  bg-[#fdf8f0]
+                  border
+                  border-[#d4b896]
+                  rounded-lg
+                  px-4
+                  py-3.5
+                  text-sm
+                  text-[#2c1810]
+                  placeholder:text-[#5c3d2e]/40
+                  outline-none
+                  font-[EB_Garamond]
+                  transition-all
+                  duration-300
+                  hover:border-[#c9a227]/60
+                  focus:border-[#8b1a1a]
+                  focus:ring-2
+                  focus:ring-[#8b1a1a]/20
+                  dark:bg-[#1a0f08]
+                  dark:border-[#5c3d2e]
+                  dark:text-[#f5ead6]
+                  dark:placeholder:text-[#d4b896]/30
+                  dark:focus:border-[#c9a227]
+                  dark:focus:ring-[#c9a227]/20
+                "
+                required
+              />
+            </div>
 
             {/* Subject */}
-            <input
-              type="text"
-              name="subject"
-              placeholder="Subject"
-              value={formData.subject}
-              onChange={changeHandler}
-              className="
-              w-full
-              bg-gray-100/80
-              border
-              border-gray-200
-              rounded-2xl
-              px-5
-              py-4
-              text-sm
-              sm:text-base
-              text-slate-900
-              placeholder:text-slate-400
-              outline-none
-              transition-[border-color,box-shadow]
-              duration-300
-              hover:border-white/30
-              focus:border-yellow-400
-              focus:ring-2
-              focus:ring-yellow-400/30
-            "
-              required
-            />
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#5c3d2e] dark:text-[#d4b896] mb-2 font-[Cormorant_Garamond]">
+                Subject
+              </label>
+              <input
+                type="text"
+                name="subject"
+                placeholder="What is your story about?"
+                value={formData.subject}
+                onChange={changeHandler}
+                className="
+                  w-full
+                  bg-[#fdf8f0]
+                  border
+                  border-[#d4b896]
+                  rounded-lg
+                  px-4
+                  py-3.5
+                  text-sm
+                  text-[#2c1810]
+                  placeholder:text-[#5c3d2e]/40
+                  outline-none
+                  font-[EB_Garamond]
+                  transition-all
+                  duration-300
+                  hover:border-[#c9a227]/60
+                  focus:border-[#8b1a1a]
+                  focus:ring-2
+                  focus:ring-[#8b1a1a]/20
+                  dark:bg-[#1a0f08]
+                  dark:border-[#5c3d2e]
+                  dark:text-[#f5ead6]
+                  dark:placeholder:text-[#d4b896]/30
+                  dark:focus:border-[#c9a227]
+                  dark:focus:ring-[#c9a227]/20
+                "
+                required
+              />
+            </div>
 
             {/* Message */}
-            <textarea
-              rows={7}
-              name="message"
-              placeholder="Your Message"
-              value={formData.message}
-              onChange={changeHandler}
-              className="
-              w-full
-              bg-gray-100/80
-              border
-              border-gray-200
-              rounded-2xl
-              px-5
-              py-4
-              text-sm
-              sm:text-base
-              text-slate-900
-              placeholder:text-slate-400
-              outline-none
-              resize-none
-              transition-[border-color,box-shadow]
-              duration-300
-              hover:border-white/30
-              focus:border-yellow-400
-              focus:ring-2
-              focus:ring-yellow-400/30
-            "
-              required
-            />
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#5c3d2e] dark:text-[#d4b896] mb-2 font-[Cormorant_Garamond]">
+                Your Message
+              </label>
+              <textarea
+                rows={6}
+                name="message"
+                placeholder="Pen your thoughts here..."
+                value={formData.message}
+                onChange={changeHandler}
+                className="
+                  w-full
+                  bg-[#fdf8f0]
+                  border
+                  border-[#d4b896]
+                  rounded-lg
+                  px-4
+                  py-3.5
+                  text-sm
+                  text-[#2c1810]
+                  placeholder:text-[#5c3d2e]/40
+                  outline-none
+                  resize-none
+                  font-[EB_Garamond]
+                  transition-all
+                  duration-300
+                  hover:border-[#c9a227]/60
+                  focus:border-[#8b1a1a]
+                  focus:ring-2
+                  focus:ring-[#8b1a1a]/20
+                  dark:bg-[#1a0f08]
+                  dark:border-[#5c3d2e]
+                  dark:text-[#f5ead6]
+                  dark:placeholder:text-[#d4b896]/30
+                  dark:focus:border-[#c9a227]
+                  dark:focus:ring-[#c9a227]/20
+                "
+                required
+              />
+            </div>
 
             {/* Button */}
             <button
               type="submit"
               disabled={loading}
               className="
-              relative
-overflow-hidden
-group/btn
-w-full
-py-4
-rounded-2xl
-bg-gray-400
-text-black
-font-bold
-text-sm
-sm:text-base
-transition-[background-color,transform]
-duration-300
-hover:scale-[1.01]
-hover:bg-white
-disabled:opacity-50
-disabled:cursor-not-allowed
-          "
+                parchment-btn-primary
+                w-full
+                py-4
+                font-bold
+                tracking-widest
+                transition-all
+                duration-300
+                disabled:opacity-50
+                disabled:cursor-not-allowed
+              "
             >
-              <span className="relative z-10 flex items-center justify-center gap-2">
+              <span className="relative z-10 flex items-center justify-center gap-2 font-[Cormorant_Garamond] text-base">
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin dark:border-slate-400/30 dark:border-t-slate-900" />
                 ) : (
                   <>
                     Send Message
                     <svg
-                      className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1"
+                      className="w-4 h-4 transition-transform duration-300"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -319,13 +352,12 @@ disabled:cursor-not-allowed
                   </>
                 )}
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
             </button>
 
             {/* Success */}
             {success && (
-              <div className="bg-green-500/10 border border-green-500/30 rounded-2xl px-4 py-4">
-                <p className="text-green-400 text-sm sm:text-base font-medium text-center">
+              <div className="bg-[#8b1a1a]/5 border border-[#8b1a1a]/30 rounded-lg px-4 py-4 dark:bg-[#c9a227]/5 dark:border-[#c9a227]/30">
+                <p className="text-[#8b1a1a] text-sm sm:text-base font-semibold text-center font-[EB_Garamond] dark:text-[#c9a227]">
                   ✓ Message sent successfully. I’ll get back to you soon.
                 </p>
               </div>
@@ -333,8 +365,8 @@ disabled:cursor-not-allowed
 
             {/* Error */}
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-4">
-                <p className="text-red-400 text-sm sm:text-base font-medium text-center">
+              <div className="bg-[#8b1a1a]/5 border border-[#8b1a1a]/30 rounded-lg px-4 py-4">
+                <p className="text-[#8b1a1a] text-sm sm:text-base font-semibold text-center font-[EB_Garamond] dark:text-red-400">
                   {error}
                 </p>
               </div>
