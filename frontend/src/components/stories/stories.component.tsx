@@ -198,12 +198,12 @@ const StoriesComponent = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 animate-gradient-slow transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
+    <div className="min-h-screen bg-[#fdf8f0] text-[#2c1810] transition-colors duration-300 dark:bg-[#1a0f08] dark:text-[#f5ead6] parchment-page">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
           <div className="pt-2 w-full md:w-auto flex justify-start">
             <Link to="/">
-              <div className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
+              <div className="parchment-btn flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap text-xs">
                 <i className="fa-solid fa-left-long"></i> BACK
               </div>
             </Link>
@@ -211,11 +211,11 @@ const StoriesComponent = () => {
 
           {!login && (
             <div className="pt-2 text-center">
-              <div className="!rounded-button bg-gray-100/80 text-slate-600 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed border border-gray-200 dark:bg-white/20 dark:text-gray-400 dark:border-white/10">
+              <div className="parchment-card px-4 py-2 flex items-center gap-2 rounded text-xs whitespace-normal md:whitespace-nowrap leading-relaxed font-[Cormorant_Garamond] font-semibold text-[#8b5e3c] dark:text-[#d4b896]">
                 <span>
                   Free access for 3 requests —{" "}
                   <Link to="/login">
-                    <span className="text-indigo-400 underline font-semibold">
+                    <span className="text-[#8b1a1a] underline font-bold dark:text-[#c9a227]">
                       Login
                     </span>
                   </Link>{" "}
@@ -226,19 +226,19 @@ const StoriesComponent = () => {
           )}
 
           <div className="flex flex-col items-center md:items-end pt-2 w-full md:w-auto">
-            <button className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
+            <button className="parchment-btn flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap text-xs">
               <span>
                 {" "}
-                <span className="text-gray-400 text-xs">Per Month</span>{" "}
+                <span className="text-[#8b5e3c] text-xs font-[Cormorant_Garamond] dark:text-[#d4b896]/70">Per Month</span>{" "}
                 {getRequestLimit(userRole?.subscriptionType as string)}
               </span>
-              <Link to="/pricing" className="border-1 border-white/20 pl-2 text-gray-300">
+              <Link to="/pricing" className="border-l border-[#d4b896] pl-2 text-[#8b1a1a] font-bold dark:text-[#c9a227]">
                Upgrade
               </Link>
               
-              <i className="fas fa-bolt text-yellow-400"></i>
+              <i className="fas fa-bolt text-[#c9a227]"></i>
             </button>
-            <div className="mt-3 text-slate-500 text-xs text-center md:text-right dark:text-gray-500">
+            <div className="mt-3 text-[#5c3d2e] text-xs text-center md:text-right font-[Cormorant_Garamond] dark:text-[#d4b896]">
               <span>
                 This month request:{" "}
                 {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}
@@ -250,16 +250,16 @@ const StoriesComponent = () => {
         </div>
 
         <div className="mt-11">
-          <h1 className="text-slate-900 dark:text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">
+          <h1 className="text-[#2c1810] dark:text-[#f5ead6] text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-12 font-[Playfair_Display]">
             ✨ Turn Your Ideas Into{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#8b1a1a] to-[#c9a227]">
               Amazing Stories!
             </span>{" "}
             ✨
           </h1>
 
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white">
+            <div className="parchment-card p-6">
 <div className="relative">
   <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
     <div className="flex flex-wrap gap-2 mb-3">
@@ -279,10 +279,10 @@ const StoriesComponent = () => {
           onClick={() =>
             setSelectedGenre(selectedGenre === genre ? "" : genre)
           }
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+          className={`px-3 py-1 rounded-full text-xs font-semibold font-[Cormorant_Garamond] uppercase tracking-wider transition-all duration-200 cursor-pointer ${
             selectedGenre === genre
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+              ? "bg-[#8b1a1a] text-[#fdf8f0] shadow-md border border-[#8b1a1a]"
+              : "bg-[#fdf8f0] text-[#5c3d2e] border border-[#d4b896] hover:bg-[#e8d5b0] dark:bg-[#1a0f08] dark:text-[#d4b896] dark:border-[#5c3d2e] dark:hover:bg-[#2c1810]"
           }`}
         >
           {genre}
@@ -291,17 +291,17 @@ const StoriesComponent = () => {
     </div>
 
     <div className="flex items-center gap-2 mb-3">
-      <span className="text-xs text-gray-400 mr-1">📏 Length:</span>
+      <span className="text-xs text-[#8b5e3c] font-semibold uppercase tracking-wider font-[Cormorant_Garamond] mr-1 dark:text-[#d4b896]">📏 Length:</span>
 
       {(["short", "medium", "long"] as const).map((length) => (
         <button
           key={length}
           type="button"
           onClick={() => setSelectedLength(length)}
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+          className={`px-3 py-1 rounded-full text-xs font-semibold font-[Cormorant_Garamond] uppercase tracking-wider transition-all duration-200 cursor-pointer ${
             selectedLength === length
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+              ? "bg-[#8b1a1a] text-[#fdf8f0] shadow-md border border-[#8b1a1a]"
+              : "bg-[#fdf8f0] text-[#5c3d2e] border border-[#d4b896] hover:bg-[#e8d5b0] dark:bg-[#1a0f08] dark:text-[#d4b896] dark:border-[#5c3d2e] dark:hover:bg-[#2c1810]"
           }`}
         >
           {length.charAt(0).toUpperCase() + length.slice(1)}
@@ -309,18 +309,18 @@ const StoriesComponent = () => {
       ))}
     </div>
 
-    <div className="relative">
+    <div className="relative border border-[#d4b896] rounded-lg p-4 bg-[#fdf8f0] dark:bg-[#1a0f08] dark:border-[#5c3d2e]">
       <textarea
   {...register("prompt")}
   ref={(el) => {
     register("prompt").ref(el);
     inputRef.current = el;
   }}
-        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 pr-10 transition-colors duration-200 ${
+        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-[#2c1810] dark:text-[#f5ead6] focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-[#5c3d2e]/40 pr-10 transition-colors duration-200 font-[EB_Garamond] ${
           isOverLimit
             ? "ring-1 ring-red-500 rounded"
             : isNearLimit
-            ? "ring-1 ring-yellow-400 rounded"
+            ? "ring-1 ring-[#c9a227] rounded"
             : ""
         }`}
         placeholder="Every great story begins with a single idea. What's yours?"
@@ -340,7 +340,7 @@ const StoriesComponent = () => {
         <button
           type="button"
           onClick={handleClearPrompt}
-          className="absolute right-2 top-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
+          className="absolute right-3 top-3 text-[#5c3d2e]/70 hover:text-red-600 transition-colors duration-200 dark:text-[#d4b896]/70 dark:hover:text-red-400"
           aria-label="Clear prompt"
           title="Clear prompt"
         >
@@ -360,13 +360,13 @@ const StoriesComponent = () => {
         </button>
       )}
 
-      <div className="flex items-center justify-between mt-1 px-1">
+      <div className="flex items-center justify-between mt-2 px-1 font-[Cormorant_Garamond]">
         {isOverLimit ? (
-          <p className="text-xs text-red-400 flex items-center gap-1">
+          <p className="text-xs text-red-500 font-semibold flex items-center gap-1">
             <span>⚠</span> Character limit reached — generate is disabled
           </p>
         ) : isNearLimit ? (
-          <p className="text-xs text-yellow-400 flex items-center gap-1">
+          <p className="text-xs text-[#c9a227] font-semibold flex items-center gap-1">
             <span>⚠</span>{" "}
             {MAX_PROMPT_LENGTH - textareaValue.length} characters remaining
           </p>
@@ -375,12 +375,12 @@ const StoriesComponent = () => {
         )}
 
         <span
-          className={`text-xs tabular-nums ml-auto ${
+          className={`text-xs font-semibold tabular-nums ml-auto ${
             isOverLimit
-              ? "text-red-400 font-medium"
+              ? "text-red-500"
               : isNearLimit
-              ? "text-yellow-400"
-              : "text-gray-500"
+              ? "text-[#c9a227]"
+              : "text-[#5c3d2e]/70 dark:text-[#d4b896]/60"
           }`}
         >
           {textareaValue.length} / {MAX_PROMPT_LENGTH}
@@ -388,17 +388,17 @@ const StoriesComponent = () => {
       </div>
     </div>
 
-    <p className="text-xs text-gray-500 mt-1 px-1">
-      💡  <span className="font-medium">Keyboard tip:</span> Press{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+    <p className="text-xs text-[#5c3d2e] font-[Cormorant_Garamond] mt-1 px-1 dark:text-[#d4b896]">
+      💡  <span className="font-bold">Keyboard tip:</span> Press{" "}
+      <kbd className="px-1 py-0.5 text-xs bg-[#f5ead6] text-[#2c1810] rounded border border-[#d4b896] dark:bg-[#2c1810] dark:text-[#f5ead6] dark:border-[#5c3d2e]">
         Enter
       </kbd>{" "}
       to generate &bull;{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+      <kbd className="px-1 py-0.5 text-xs bg-[#f5ead6] text-[#2c1810] rounded border border-[#d4b896] dark:bg-[#2c1810] dark:text-[#f5ead6] dark:border-[#5c3d2e]">
         Ctrl + Enter
       </kbd>{" "}
       also works &bull;{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+      <kbd className="px-1 py-0.5 text-xs bg-[#f5ead6] text-[#2c1810] rounded border border-[#d4b896] dark:bg-[#2c1810] dark:text-[#f5ead6] dark:border-[#5c3d2e]">
         Shift + Enter
       </kbd>{" "}
       for new line
@@ -408,13 +408,13 @@ const StoriesComponent = () => {
       <button
         type="submit"
         disabled={loading || isOverLimit}
-        className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
+        className={`parchment-btn-primary px-8 py-3 font-semibold font-[Cormorant_Garamond] tracking-widest uppercase flex items-center space-x-2 transition-all duration-300 hover:scale-[1.03] ${
           loading || isOverLimit
             ? "opacity-50 cursor-not-allowed"
-            : "hover:shadow-lg hover:shadow-indigo-500/50"
-        } transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 group cursor-pointer`}
+            : ""
+        }`}
       >
-        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
+        <i className="fas fa-wand-magic-sparkles text-lg"></i>
         {loading ? "Generating..." : "Generate"}
       </button>
     </div>
@@ -422,8 +422,8 @@ const StoriesComponent = () => {
 </div>
             </div>
 
-            <div className="w-full max-w-2xl m-auto mt-4">
-          <h1 className="text-sm text-slate-500 mb-1 dark:text-gray-500">
+            <div className="w-full max-w-2xl m-auto mt-6">
+          <h1 className="text-sm font-semibold font-[Cormorant_Garamond] text-[#8b5e3c] mb-2 uppercase tracking-wide dark:text-[#d4b896]">
     Here are some example prompts you can refer to:-
   </h1>
 
@@ -431,14 +431,14 @@ const StoriesComponent = () => {
     <button
       type="button"
       onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-      className="w-full p-3 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-between text-sm text-left transition-all duration-200"
+      className="w-full p-3 bg-[#fdf8f0] border border-[#d4b896] text-[#5c3d2e] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8b1a1a]/30 flex items-center justify-between text-sm text-left font-[EB_Garamond] transition-all duration-200 dark:bg-[#1a0f08] dark:border-[#5c3d2e] dark:text-[#d4b896] dark:focus:ring-[#c9a227]/30"
     >
-      <span className="truncate pr-4">
-        {selectedPrompt || "Select a prompt"}
+      <span className="truncate pr-4 font-semibold italic">
+        {selectedPrompt || "Select a classical motif..."}
       </span>
 
       <span
-        className={`text-gray-300 transition-transform duration-200 ${
+        className={`text-[#c9a227] transition-transform duration-200 ${
           isDropdownOpen ? "rotate-180" : ""
         }`}
       >
@@ -447,7 +447,7 @@ const StoriesComponent = () => {
     </button>
 
     {isDropdownOpen && (
-      <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
+      <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto bg-[#fdf8f0] border border-[#d4b896] rounded-lg shadow-xl focus:outline-none divide-y divide-[#d4b896]/30 dark:bg-[#1a0f08] dark:border-[#5c3d2e] dark:divide-[#5c3d2e]/30">
         {prompts.map((item) => (
           <li key={item.id}>
             <button
@@ -457,7 +457,7 @@ const StoriesComponent = () => {
                 setTextareaValue(item.prompt);
                 setIsDropdownOpen(false);
               }}
-              className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
+              className="w-full text-left px-4 py-3 text-sm text-[#5c3d2e] hover:bg-[#8b1a1a] hover:text-[#fdf8f0] transition-colors duration-150 whitespace-normal break-words font-[EB_Garamond] leading-relaxed dark:text-[#d4b896] dark:hover:bg-[#c9a227] dark:hover:text-[#1a0f08]"
             >
               {item.prompt}
             </button>
@@ -472,23 +472,23 @@ const StoriesComponent = () => {
       </div>
 
       {showHelpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md w-full text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
-              <h2 className="text-xl font-bold text-slate-900 mb-4 dark:text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-[#f5ead6] border border-[#d4b896] rounded-2xl p-6 max-w-md w-full text-[#2c1810] shadow-xl dark:bg-[#2c1810] dark:border-[#5c3d2e] dark:text-[#f5ead6]">
+              <h2 className="text-xl font-bold font-[Playfair_Display] mb-4 text-[#8b1a1a] dark:text-[#c9a227]">
               Keyboard Shortcuts
             </h2>
 
-            <div className="space-y-3 text-slate-600 text-sm dark:text-gray-300">
-              <div><kbd>?</kbd> Open help</div>
-              <div><kbd>Esc</kbd> Close help</div>
-              <div><kbd>/</kbd> Focus prompt</div>
-              <div><kbd>Ctrl + Enter</kbd> Generate story</div>
-              <div><kbd>Ctrl + S</kbd> Publish story</div>
+            <div className="space-y-3 text-[#5c3d2e] text-sm font-[EB_Garamond] dark:text-[#d4b896]">
+              <div><kbd className="px-1.5 py-0.5 bg-[#fdf8f0] border border-[#d4b896] rounded text-xs dark:bg-[#1a0f08] dark:border-[#5c3d2e] font-mono">?</kbd> Open help</div>
+              <div><kbd className="px-1.5 py-0.5 bg-[#fdf8f0] border border-[#d4b896] rounded text-xs dark:bg-[#1a0f08] dark:border-[#5c3d2e] font-mono">Esc</kbd> Close help</div>
+              <div><kbd className="px-1.5 py-0.5 bg-[#fdf8f0] border border-[#d4b896] rounded text-xs dark:bg-[#1a0f08] dark:border-[#5c3d2e] font-mono">/</kbd> Focus prompt</div>
+              <div><kbd className="px-1.5 py-0.5 bg-[#fdf8f0] border border-[#d4b896] rounded text-xs dark:bg-[#1a0f08] dark:border-[#5c3d2e] font-mono">Ctrl + Enter</kbd> Generate story</div>
+              <div><kbd className="px-1.5 py-0.5 bg-[#fdf8f0] border border-[#d4b896] rounded text-xs dark:bg-[#1a0f08] dark:border-[#5c3d2e] font-mono">Ctrl + S</kbd> Publish story</div>
             </div>
 
             <button
               onClick={() => setShowHelpModal(false)}
-              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
+              className="mt-6 w-full parchment-btn-primary py-2 text-xs"
             >
               Close
             </button>
@@ -506,32 +506,32 @@ const StoriesComponent = () => {
         onPublishSuccess={handlePublishSuccess}
         isLoading={loading}
       />
-      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-[#c9a227]/5 rounded-full blur-3xl -z-10"></div>
 
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.15)] max-w-md w-full p-6 transform transition-all text-slate-900 dark:bg-[#0f172a] dark:border-white/10 dark:text-white dark:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+          <div className="bg-[#f5ead6] border border-[#d4b896] rounded-2xl shadow-2xl max-w-md w-full p-6 text-[#2c1810] dark:bg-[#2c1810] dark:border-[#5c3d2e] dark:text-[#f5ead6]">
             <div className="text-center">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="fas fa-lock text-2xl text-blue-400"></i>
+              <div className="w-16 h-16 bg-[#8b1a1a]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#8b1a1a]/30">
+                <i className="fas fa-lock text-2xl text-[#8b1a1a] dark:text-[#c9a227]"></i>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2 dark:text-gray-200">
+              <h3 className="text-2xl font-bold font-[Playfair_Display] text-[#8b1a1a] mb-2 dark:text-[#c9a227]">
                 Free Limit Reached
               </h3>
-              <p className="text-slate-600 mb-6 leading-relaxed dark:text-gray-400">
+              <p className="text-[#5c3d2e] font-[EB_Garamond] mb-6 leading-relaxed dark:text-[#d4b896]">
                 You've used all 3 free story generations. Login to continue
                 creating more stories.
               </p>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 font-[Cormorant_Garamond]">
                 <Link
                   to="/login"
-                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
+                  className="w-full parchment-btn-primary py-3 text-sm text-center"
                 >
                   Login
                 </Link>
                 <button
                   onClick={() => setShowLimitModal(false)}
-                  className="w-full bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-medium py-3 px-4 rounded-xl transition-all dark:hover:bg-white/5 dark:text-gray-400 dark:hover:text-gray-300"
+                  className="w-full parchment-btn py-3 text-sm"
                 >
                   Continue Browsing
                 </button>

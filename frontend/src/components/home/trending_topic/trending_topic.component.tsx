@@ -3,8 +3,8 @@ import { topicsData } from "../../stories/stories.utils";
 
 const TrendingTopicComponent = () => {
   return (
-    <section className="bg-blue-500/10 rounded-lg shadow-sm p-6 mb-8">
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-gray-300 mb-4">
+    <section className="parchment-card p-6 mb-8">
+      <h3 className="text-lg font-bold font-[Playfair_Display] text-[#2c1810] dark:text-[#f5ead6] mb-4 border-b border-[#d4b896]/20 pb-2">
         Trending Topics
       </h3>
       <div className="flex flex-wrap gap-2">
@@ -12,7 +12,7 @@ const TrendingTopicComponent = () => {
           <a
             key={index}
             href="#"
-            className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-sm hover:bg-blue-500/20 transition-colors"
+            className="px-3 py-1 bg-[#fdf8f0] dark:bg-[#3d2314] text-[#8b1a1a] dark:text-[#c9a227] border border-[#d4b896] dark:border-[#5c3d2e] rounded-full text-xs font-[Cormorant_Garamond] font-bold shadow-sm hover:bg-[#e8d5b0] dark:hover:bg-[#5c3d2e] transition-all hover:scale-105"
           >
             {topic.title}
           </a>

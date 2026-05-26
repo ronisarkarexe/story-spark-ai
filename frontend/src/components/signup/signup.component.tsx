@@ -98,6 +98,15 @@ const SignUpComponent = () => {
   const [showOtpField, setShowOtpField] = useState<boolean>(false);
   const [registerInfo, setRegisterInfo] = useState<IRegisterInfo>();
   const [expiredAt, setExpiredAt] = useState(0);
+
+  const [cooldown, setCooldown] = useState<number>(0);
+
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
@@ -106,6 +115,7 @@ const SignUpComponent = () => {
       setCooldown((prev) => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(timer);
+
   }, [cooldown]);
 
   const password = watch("password");

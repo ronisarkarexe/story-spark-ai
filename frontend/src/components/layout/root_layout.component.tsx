@@ -14,9 +14,18 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const hideFooter = pathname === "/login" || pathname === "/signup";
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+    <div className="parchment-page flex flex-col min-h-screen transition-colors duration-500 dark:bg-[#1a0f08] dark:text-[#f5ead6]">
+      {/* Floating dust particles */}
+      <div className="dust-container" aria-hidden="true">
+        <span className="dust-particle" />
+        <span className="dust-particle" />
+        <span className="dust-particle" />
+        <span className="dust-particle" />
+        <span className="dust-particle" />
+        <span className="dust-particle" />
+      </div>
       {!hideHeader && <NavListComponent />}
-      <div className="flex-grow min-h-0">{children}</div>
+      <div className="flex-grow min-h-0 relative z-10">{children}</div>
       {!hideFooter && <FooterComponent />}
       <ScrollFAB />
     </div>
