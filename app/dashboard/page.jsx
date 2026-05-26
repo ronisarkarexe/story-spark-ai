@@ -136,7 +136,7 @@ export default function Dashboard() {
                   </p>
                   <Link
                     href="/visualizer"
-                    className="px-4 py-2 rounded-full font-medium bg-primary text-white hover:bg-primary-dark transition duration-300"
+                    className="group inline-flex items-center gap-2 h-[52px] min-h-[44px] px-8 rounded-full bg-surface-900 dark:bg-white text-white dark:text-surface-900 text-[15px] font-bold hover:bg-primary dark:hover:bg-primary dark:hover:text-white active:scale-95 transition-all duration-200"
                   >
                     Start Learning
                   </Link>
