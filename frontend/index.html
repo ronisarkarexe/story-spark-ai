@@ -42,30 +42,5 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 
-     <!-- Back to Top Button -->
-    <button id="back-to-top" aria-label="Back to top" title="Back to top">
-      &#8679;
-    </button>
-    
-      <!-- Back to Top Logic -->
-  <script>
-    (function () {
-      var btn = document.getElementById("back-to-top");
-      if (!btn) return;
-
-      window.addEventListener("scroll", function () {
-        if (window.scrollY > 300) {
-          btn.classList.add("visible");
-        } else {
-          btn.classList.remove("visible");
-        }
-      });
-
-      btn.addEventListener("click", function () {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-    })();
-  </script>
-  
   </body>
 </html>

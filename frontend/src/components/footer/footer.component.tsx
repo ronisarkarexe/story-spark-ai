@@ -125,7 +125,7 @@ const FooterComponent = () => {
         <div className="grid grid-cols-12 gap-x-6 gap-y-10 items-start">
 
           {/* Brand */}
-          <div className="col-span-12 md:col-span-5 flex flex-col gap-5">
+          <div className="col-span-12 md:col-span-3 flex flex-col gap-5">
             <Link
               to="/"
               className="group inline-block w-fit"
@@ -209,36 +209,38 @@ const FooterComponent = () => {
             </div>
           </div>
           {/* Newsletter */}
-          <div className="col-span-12 md:col-span-3 flex flex-col gap-3.5">
+          <div className="col-span-12 md:col-span-3 flex flex-col gap-4">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Stay Updated</h3>
-            <p className="text-[13.5px] leading-[1.65] text-slate-300/80 max-w-[270px]">
-              Writing tips, product updates, and stories straight to your inbox.
-            </p>
-            <form
-              onSubmit={handleSubscribe}
-              noValidate
-              className="group/form mt-0.5 flex items-center rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-1 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30 focus-within:shadow-[0_0_0_1px_rgba(59,130,246,0.08),0_0_16px_rgba(59,130,246,0.06)]"
-            >
-              <span className="shrink-0 pl-3 text-slate-500 text-[13px]">
-                <i className="fa-solid fa-envelope" aria-hidden="true" />
-              </span>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@storyspark.ai"
-                disabled={status === "loading"}
-                className="w-full min-w-0 bg-transparent pl-2.5 pr-1.5 py-2 text-[13px] text-white placeholder-slate-500 focus:outline-none"
-              />
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-[12px] font-semibold text-white tracking-wide shadow-[0_1px_14px_rgba(79,130,246,0.30)] hover:from-blue-400 hover:to-indigo-400 hover:shadow-[0_2px_22px_rgba(79,130,246,0.42)] active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60"
+            <div className="flex flex-col gap-3">
+              <p className="text-[13.5px] leading-[1.65] text-slate-300/80 max-w-[270px]">
+                Writing tips, product updates, and stories straight to your inbox.
+              </p>
+              <form
+                onSubmit={handleSubscribe}
+                noValidate
+                className="group/form flex items-center rounded-full border border-white/[0.08] bg-[#0D1630]/60 p-1 backdrop-blur-sm transition-all duration-300 hover:border-white/[0.15] focus-within:border-blue-500/40 focus-within:shadow-[0_0_20px_rgba(59,130,246,0.12)]"
               >
-                {status === "loading" ? "..." : "Subscribe"}
-                <i className="fa-solid fa-arrow-right text-[10px]" aria-hidden="true" />
-              </button>
-            </form>
+                <span className="shrink-0 pl-3.5 text-slate-500 text-[13px]">
+                  <i className="fa-solid fa-envelope" aria-hidden="true" />
+                </span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@storyspark.ai"
+                  disabled={status === "loading"}
+                  className="w-full min-w-0 bg-transparent pl-2.5 pr-2 py-2 text-[13px] text-white placeholder-slate-500 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={status === "loading"}
+                  className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-[12px] font-semibold text-white tracking-wide shadow-[0_1px_10px_rgba(79,130,246,0.25)] hover:from-blue-400 hover:to-indigo-400 hover:shadow-[0_2px_15px_rgba(79,130,246,0.35)] active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60"
+                >
+                  {status === "loading" ? "..." : "Subscribe"}
+                  <i className="fa-solid fa-arrow-right text-[10px]" aria-hidden="true" />
+                </button>
+              </form>
+            </div>
 
             <div aria-live="polite" role="status">
               {status === "success" && (

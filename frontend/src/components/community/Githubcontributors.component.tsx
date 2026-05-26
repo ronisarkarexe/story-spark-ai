@@ -1,8 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 
+interface GitHubContributor {
+  id: number;
+  login: string;
+  avatar_url: string;
+  contributions: number;
+}
+
 const GithubcontributorsComponent : React.FC = () =>{
 
-  const [githubcontributors, setGitHubContributors] = useState([]);
+  const [githubcontributors, setGitHubContributors] = useState<GitHubContributor[]>([]);
   const [showAll, setShowAll] = useState(false);
   const contributorsRef = useRef<HTMLDivElement | null> (null);
 

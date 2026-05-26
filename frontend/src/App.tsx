@@ -3,6 +3,7 @@ import { JSX } from "react";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
+import AnalyticsDashboard from "./components/analytics/AnalyticsDashboard";
 import {
   BrowserRouter as Router,
   Routes,
@@ -452,6 +453,7 @@ function App() {
             </RootLayout>
           }
         />
+        <Route path="/analytics" element={<AnalyticsDashboard />} />
         <Route path="/collab" element={<CollabHome />} />
         <Route path="/collab/:roomId" element={<CollabRoom />} />
         <Route

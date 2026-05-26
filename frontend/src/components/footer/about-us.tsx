@@ -1,56 +1,5 @@
 import logo from "../../assets/logoNew.png";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import {
-  Sparkles,
-  PenTool,
-  BrainCircuit,
-  Users,
-  Github,
-  Rocket,
-  ArrowLeft,
-  Wand2,
-} from "lucide-react";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
-  visible: (delay = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.7,
-      delay,
-      ease: "easeOut",
-    },
-  }),
-};
-
-const features = [
-  {
-    icon: <Sparkles size={24} />,
-    title: "Multiple Story Variations",
-    description:
-      "Generate multiple unique story outcomes from a single creative prompt.",
-  },
-  {
-    icon: <BrainCircuit size={24} />,
-    title: "AI-Powered Creativity",
-    description:
-      "Leverage intelligent AI assistance to spark ideas and overcome writer’s block.",
-  },
-  {
-    icon: <PenTool size={24} />,
-    title: "Creative Writing Support",
-    description:
-      "Perfect for writers, students, creators, and storytellers of all levels.",
-  },
-  {
-    icon: <Users size={24} />,
-    title: "Open Source Community",
-    description:
-      "Collaborate, contribute, and help shape the future of AI storytelling.",
-  },
-];
 
 const AboutUs = () => {
   return (

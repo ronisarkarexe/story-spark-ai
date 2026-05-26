@@ -1,61 +1,90 @@
 import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import { USER_STATUS } from "../../../enums/user_status";
-import { IPost } from "../post/post.interface";
 import { Post } from "../post/post.model";
 import { User } from "../user/user.model";
 
 const getDashboardAnalysis = async () => {
-  // get all users
-  const users = await User.find({});
-  const totalUsers = users.length;
-  const activeUsers = users.filter(
-    (u) => u.status === USER_STATUS.ACTIVE
-  ).length;
-  const inactiveUsers = users.filter(
-    (u) => u.status === USER_STATUS.INACTIVE
-  ).length;
-  const blockedUsers = users.filter(
-    (u) => u.status === USER_STATUS.BLOCKED
-  ).length;
-  const writers = users.filter((u) => u.role === ENUM_USER_ROLE.WRITER).length;
-  const applyForWriter = users.filter(
-    (u) => u.isApplyForWriter === true
-  ).length;
+  // Run all database queries in parallel for maximum throughput.
+  // Each query is handled by MongoDB's engine — nothing is loaded into
+  // Node.js memory, so this stays fast regardless of collection size.
+  const [
+    // ── User counts ──
+    totalUsers,
+    activeUsers,
+    inactiveUsers,
+    blockedUsers,
+    writers,
+    applyForWriter,
 
-  // user subscription types
-  const freeUsers = users.filter(
-    (u) => u.subscriptionType === SUBSCRIPTION_TYPE.FREE
-  ).length;
-  const proUsers = users.filter(
-    (u) => u.subscriptionType === SUBSCRIPTION_TYPE.PRO
-  ).length;
-  const premiumUsers = users.filter(
-    (u) => u.subscriptionType === SUBSCRIPTION_TYPE.PREMIUM
-  ).length;
+    // ── Subscription counts ──
+    freeUsers,
+    proUsers,
+    premiumUsers,
 
-  // get all posts
-  const posts = await Post.find({});
-  const totalPosts = posts.length;
-  const publishedPosts = posts.filter((p) => p.isPublished).length;
-  const featuredPosts = posts.filter((p) => p.isFeaturedPost).length;
+    // ── Post counts ──
+    totalPosts,
+    publishedPosts,
+    featuredPosts,
 
-  const postsPerMonth: { [key: string]: number } = {};
-  posts.forEach((post: IPost) => {
-    const month: string | undefined = post?.publishedAt
-      ?.toISOString()
-      .substring(0, 7);
-    if (month) {
-      postsPerMonth[month] = (postsPerMonth[month] || 0) + 1;
-    }
-  });
+    // ── Post aggregations ──
+    postsPerMonthAgg,
+    topicCountAgg,
+  ] = await Promise.all([
+    // User counts
+    User.countDocuments({}),
+    User.countDocuments({ status: USER_STATUS.ACTIVE }),
+    User.countDocuments({ status: USER_STATUS.INACTIVE }),
+    User.countDocuments({ status: USER_STATUS.BLOCKED }),
+    User.countDocuments({ role: ENUM_USER_ROLE.WRITER }),
+    User.countDocuments({ isApplyForWriter: true }),
 
-  const topicCount: { [title: string]: number } = {};
-  posts.forEach((post) => {
-    post.topic.forEach((t) => {
-      topicCount[t.title] = (topicCount[t.title] || 0) + 1;
-    });
-  });
+    // Subscription counts
+    User.countDocuments({ subscriptionType: SUBSCRIPTION_TYPE.FREE }),
+    User.countDocuments({ subscriptionType: SUBSCRIPTION_TYPE.PRO }),
+    User.countDocuments({ subscriptionType: SUBSCRIPTION_TYPE.PREMIUM }),
+
+    // Post counts
+    Post.countDocuments({}),
+    Post.countDocuments({ isPublished: true }),
+    Post.countDocuments({ isFeaturedPost: true }),
+
+    // Posts per month — group by YYYY-MM substring of publishedAt
+    Post.aggregate<{ _id: string; count: number }>([
+      { $match: { publishedAt: { $exists: true, $ne: null } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$publishedAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
+
+    // Topic frequency — unwind the topic array, then count per title
+    Post.aggregate<{ _id: string; count: number }>([
+      { $unwind: "$topic" },
+      {
+        $group: {
+          _id: "$topic.title",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]),
+  ]);
+
+  // Convert aggregation arrays into the same { key: count } map shape
+  // that the existing frontend expects.
+  const postsPerMonth: Record<string, number> = {};
+  for (const entry of postsPerMonthAgg) {
+    postsPerMonth[entry._id] = entry.count;
+  }
+
+  const topicCount: Record<string, number> = {};
+  for (const entry of topicCountAgg) {
+    topicCount[entry._id] = entry.count;
+  }
 
   return {
     users: {
@@ -63,8 +92,8 @@ const getDashboardAnalysis = async () => {
       active: activeUsers,
       inactive: inactiveUsers,
       blocked: blockedUsers,
-      writers: writers,
-      applyForWriter: applyForWriter,
+      writers,
+      applyForWriter,
     },
     subscriptionTypes: {
       free: freeUsers,

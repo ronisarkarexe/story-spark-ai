@@ -104,6 +104,26 @@ const NavListComponent: React.FC = () => {
                 </>
               )}
             </NavLink>
+            <NavLink to="/analytics" className={({ isActive }) => getLinkClass(isActive)}>
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
+                  📊 ANALYTICS
+                </>
+              )}
+            </NavLink>
+            <NavLink to="/collab" className={({ isActive }) => getLinkClass(isActive)}>
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
+                  ✍️ COLLAB
+                </>
+              )}
+            </NavLink>
             <NavLink to="/contact-us" className={({ isActive }) => getLinkClass(isActive)}>
               {({ isActive }) => (
                 <>
@@ -237,6 +257,22 @@ const NavListComponent: React.FC = () => {
                   <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
                 )}
                 EXPLORE
+              </>
+            )}
+          </NavLink>
+          <NavLink to="/analytics" className={({ isActive }) => getMobileLinkClass(isActive)}>
+            {({ isActive }) => (
+              <>
+                {isActive && <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />}
+                📊 ANALYTICS
+              </>
+            )}
+          </NavLink>
+          <NavLink to="/collab" className={({ isActive }) => getMobileLinkClass(isActive)}>
+            {({ isActive }) => (
+              <>
+                {isActive && <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />}
+                ✍️ COLLAB
               </>
             )}
           </NavLink>

@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "lucide-react": "^1.16.0",
+    "recharts": "^3.8.1",
     "socket.io": "^4.8.3"
   }
 }
