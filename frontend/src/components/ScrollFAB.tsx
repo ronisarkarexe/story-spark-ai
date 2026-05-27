@@ -33,7 +33,7 @@ const ScrollFAB = () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 
   return (
-    <div className={`fixed right-6 flex flex-col gap-3 z-50 transition-all duration-300 ${isNearBottom ? "bottom-20" : "bottom-6"}`}>
+    <div className={`scroll-fab-container fixed right-6 flex flex-col gap-3 z-50 transition-all duration-300 ${isNearBottom ? "bottom-20" : "bottom-6"}`}>
       <AnimatePresence>
         {showTop && (
           <motion.button

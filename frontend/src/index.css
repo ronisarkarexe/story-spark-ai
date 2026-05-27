@@ -699,14 +699,39 @@ html.dark .scroll-fab-btn:active {
 
 /* ── Premium Navbar Styles ── */
 .nav-header {
+  position: relative;
   transition: 
-    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    backdrop-filter 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Subtle top-edge glow that appears on scroll */
+.nav-header-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.4) 30%,
+    rgba(139, 92, 246, 0.6) 50%,
+    rgba(99, 102, 241, 0.4) 70%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.nav-header-scrolled .nav-header-glow {
+  opacity: 1;
+}
+
+/* Animated gradient border at the bottom */
 .nav-header-border {
   position: absolute;
   bottom: 0;
@@ -715,29 +740,226 @@ html.dark .scroll-fab-btn:active {
   height: 1px;
   background: linear-gradient(90deg, 
     transparent 0%, 
-    rgba(99, 130, 255, 0.2) 20%, 
-    rgba(167, 139, 250, 0.35) 50%, 
-    rgba(99, 130, 255, 0.2) 80%, 
+    rgba(99, 102, 241, 0.15) 15%,
+    rgba(139, 92, 246, 0.3) 35%,
+    rgba(59, 130, 246, 0.4) 50%,
+    rgba(139, 92, 246, 0.3) 65%,
+    rgba(99, 102, 241, 0.15) 85%,
     transparent 100%
   );
+  background-size: 200% 100%;
+  animation: nav-border-shimmer 4s ease-in-out infinite;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease;
 }
 
 .nav-header-scrolled .nav-header-border {
   opacity: 1;
 }
 
+@keyframes nav-border-shimmer {
+  0% { background-position: 100% 0; }
+  50% { background-position: 0% 0; }
+  100% { background-position: 100% 0; }
+}
+
+/* ── Nav Link Styles ── */
+.nav-link-item {
+  position: relative;
+}
+
+.nav-link-item::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1, #3b82f6);
+  border-radius: 999px;
+  transform: translateX(-50%);
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-link-item:hover::after {
+  width: 60%;
+}
+
+.nav-link-active::after {
+  width: 0 !important;
+}
+
+/* ── Icon-only Tooltip (lg → xl breakpoint) ── */
+.nav-tooltip-wrapper {
+  position: relative;
+}
+
+.nav-tooltip-wrapper::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.85);
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  color: #e0e7ff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(30, 27, 75, 0.3);
+}
+
+/* Light mode tooltip */
+:root .nav-tooltip-wrapper::after {
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+  color: #312e81;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.12);
+}
+
+html.dark .nav-tooltip-wrapper::after {
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  color: #e0e7ff;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.nav-tooltip-wrapper:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* Hide tooltips at xl+ where text labels are already visible */
+@media (min-width: 1280px) {
+  .nav-tooltip-wrapper::after {
+    display: none;
+  }
+}
+
+/* Animated pill indicator behind active link (framer-motion layoutId) */
+.nav-active-indicator {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(59, 130, 246, 0.08));
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.12);
+  z-index: -1;
+}
+
+html.dark .nav-active-indicator {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(59, 130, 246, 0.08));
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.15);
+}
+
+/* ── Logo Hover Glow ── */
+.nav-logo-link {
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  padding: 4px;
+  transition: filter 0.5s ease;
+}
+
+.nav-logo-link:hover {
+  filter: drop-shadow(0 0 14px rgba(99, 102, 241, 0.45)) drop-shadow(0 0 6px rgba(139, 92, 246, 0.3));
+}
+
+/* ── Signup Button Shimmer ── */
+.nav-signup-btn {
+  position: relative;
+  overflow: hidden;
+  background-size: 200% 100%;
+  animation: signup-gradient-shift 3s ease infinite;
+}
+
+.nav-signup-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  animation: signup-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes signup-shimmer {
+  0% { left: -100%; }
+  50%, 100% { left: 100%; }
+}
+
+@keyframes signup-gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ── Mobile Drawer ── */
 .mobile-drawer-overlay {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: -10px 0 30px rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 
+    -12px 0 40px rgba(15, 23, 42, 0.06),
+    inset 1px 0 0 rgba(255, 255, 255, 0.5);
+  border-left: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 html.dark .mobile-drawer-overlay {
-  background: rgba(11, 17, 32, 0.92);
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
+  background: rgba(11, 17, 32, 0.93);
+  box-shadow: 
+    -12px 0 50px rgba(0, 0, 0, 0.45),
+    inset 1px 0 0 rgba(255, 255, 255, 0.04);
+  border-left: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+/* Mobile active link styling */
+.nav-mobile-link-active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(59, 130, 246, 0.06));
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.08);
+}
+
+.nav-mobile-link-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(180deg, #6366f1, #3b82f6);
+}
+
+html.dark .nav-mobile-link-active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(59, 130, 246, 0.06));
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.1);
+}
+
+.nav-hamburger {
+  backdrop-filter: blur(8px);
+  border: 1px solid transparent;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-hamburger:hover {
+  border-color: rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.1);
+}
+
+/* Hide scroll button when mobile drawer is open */
+body.mobile-menu-open .scroll-fab-container {
+  display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -6,7 +6,7 @@ import logo from "../../assets/logoNew.png";
 import NotificationComponent from "../notification/notification.component";
 import { useNotifications } from "../../hooks/useNotifications";
 import ThemeToggle from "../theme/theme_toggle.component";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { 
   Home, 
   Compass, 
@@ -116,16 +116,30 @@ const NavListComponent: React.FC = () => {
   };
 
   const getLinkClass = (isActive: boolean) =>
-    `flex items-center gap-1.5 px-3 xl:px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-300 border ${isActive
-      ? "bg-custom/10 text-slate-900 dark:text-white border-custom/35 shadow-[0_0_15px_rgba(59,130,246,0.25)]"
-      : "text-slate-500 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-custom"
+    `nav-link-item flex items-center justify-center gap-1.5 px-2 lg:px-2.5 xl:px-3.5 py-1.5 rounded-full text-[11px] xl:text-xs font-bold tracking-wider uppercase transition-all duration-300 relative ${isActive
+      ? "nav-link-active text-slate-900 dark:text-white"
+      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
     }`;
 
   const getMobileLinkClass = (isActive: boolean) =>
-    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-300 border ${isActive
-      ? "bg-custom/10 text-slate-900 dark:text-white border-custom/30 shadow-[0_0_12px_rgba(59,130,246,0.15)]"
-      : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-300 relative overflow-hidden ${isActive
+      ? "nav-mobile-link-active text-slate-900 dark:text-white"
+      : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/40 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
     }`;
+
+  // Staggered entrance for desktop nav links
+  const navContainerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.06, delayChildren: 0.15 },
+    },
+  };
+
+  const navItemVariants: Variants = {
+    hidden: { opacity: 0, y: -8 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
+  };
 
   const [isLogin, setIsLogin] = useState<boolean>(isLoggedIn());
   const notificationMenuRef = useRef<HTMLDivElement | null>(null);
@@ -159,6 +173,17 @@ const NavListComponent: React.FC = () => {
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.classList.add("mobile-menu-open");
+    } else {
+      document.body.classList.remove("mobile-menu-open");
+    }
+    return () => {
+      document.body.classList.remove("mobile-menu-open");
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -204,110 +229,147 @@ const NavListComponent: React.FC = () => {
       </div>
 
       <header 
-        className={`sticky top-0 z-50 w-full nav-header border-b backdrop-blur-md ${
+        className={`sticky top-0 z-50 w-full nav-header backdrop-blur-xl ${
           scrolled 
-            ? "py-2.5 bg-white/95 border-slate-200/80 shadow-md shadow-slate-900/5 dark:bg-[#0B1120]/90 dark:border-slate-800/80 nav-header-scrolled" 
-            : "py-4 bg-white/80 border-transparent dark:bg-[#0B1120]/75"
+            ? "py-2 bg-white/90 shadow-lg shadow-slate-900/[0.03] dark:bg-[#0B1120]/85 nav-header-scrolled" 
+            : "py-3.5 bg-white/70 dark:bg-[#0B1120]/60"
         }`}
       >
+        <div className="nav-header-glow" />
         <div className="nav-header-border" />
         <div className="relative z-10 mx-auto max-w-8xl px-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6 xl:space-x-8">
+            <div className="flex items-center space-x-3 lg:space-x-4 xl:space-x-6">
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                whileHover={{ scale: 1.02 }}
-                className="flex items-center shrink-0"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="flex items-center shrink-0 nav-logo-wrapper"
               >
-                <Link to="/" onClick={handleNavbarClick}>
-                  <img src={logo} alt="logo" className="h-9 xl:h-10 w-auto object-contain transition-all duration-300 hover:drop-shadow-[0_0_12px_rgba(99,102,241,0.45)]" />
+                <Link to="/" onClick={handleNavbarClick} className="nav-logo-link">
+                  <img src={logo} alt="logo" className="h-9 xl:h-10 w-auto object-contain transition-all duration-500" />
                 </Link>
               </motion.div>
               
-              <div className="hidden md:flex items-center space-x-1.5 lg:space-x-2 xl:space-x-3">
-                <NavLink to="/" end className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
-                  {({ isActive }) => (
-                    <>
-                      <Home size={13} className={isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"} />
-                      <span>HOME</span>
-                    </>
-                  )}
-                </NavLink>
-                <NavLink to="/explore" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
-                  {({ isActive }) => (
-                    <>
-                      <Compass size={13} className={isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"} />
-                      <span>EXPLORE</span>
-                    </>
-                  )}
-                </NavLink>
-                <NavLink to="/story-inspiration" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
-                  {({ isActive }) => (
-                    <>
-                      <BookOpen size={13} className={isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"} />
-                      <span>STORIES</span>
-                    </>
-                  )}
-                </NavLink>
-                <NavLink to="/analytics" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
-                  {({ isActive }) => (
-                    <>
-                      <BarChart2 size={13} className={isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"} />
-                      <span>ANALYTICS</span>
-                    </>
-                  )}
-                </NavLink>
-                <NavLink to="/collab" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
-                  {({ isActive }) => (
-                    <>
-                      <Users size={13} className={isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"} />
-                      <span>COLLAB</span>
-                    </>
-                  )}
-                </NavLink>
-                <NavLink to="/contact-us" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
-                  {({ isActive }) => (
-                    <>
-                      <Mail size={13} className={isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"} />
-                      <span>CONTACT</span>
-                    </>
-                  )}
-                </NavLink>
-                <NavLink to="/community" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
-                  {({ isActive }) => (
-                    <>
-                      <Globe size={13} className={isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"} />
-                      <span>COMMUNITY</span>
-                    </>
-                  )}
-                </NavLink>
+              <motion.div 
+                className="hidden lg:flex items-center space-x-0.5 xl:space-x-1.5"
+                variants={navContainerVariants}
+                initial="hidden"
+                animate="show"
+              >
+                <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Home">
+                  <NavLink to="/" end className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
+                    {({ isActive }) => (
+                      <>
+                        <Home size={13} className={`transition-colors duration-300 ${isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"}`} />
+                        <span className="hidden xl:inline">HOME</span>
+                        {isActive && <motion.span layoutId="navIndicator" className="nav-active-indicator" />}
+                      </>
+                    )}
+                  </NavLink>
+                </motion.div>
+                <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Explore">
+                  <NavLink to="/explore" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
+                    {({ isActive }) => (
+                      <>
+                        <Compass size={13} className={`transition-colors duration-300 ${isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"}`} />
+                        <span className="hidden xl:inline">EXPLORE</span>
+                        {isActive && <motion.span layoutId="navIndicator" className="nav-active-indicator" />}
+                      </>
+                    )}
+                  </NavLink>
+                </motion.div>
+                <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Stories">
+                  <NavLink to="/story-inspiration" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
+                    {({ isActive }) => (
+                      <>
+                        <BookOpen size={13} className={`transition-colors duration-300 ${isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"}`} />
+                        <span className="hidden xl:inline">STORIES</span>
+                        {isActive && <motion.span layoutId="navIndicator" className="nav-active-indicator" />}
+                      </>
+                    )}
+                  </NavLink>
+                </motion.div>
+                <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Analytics">
+                  <NavLink to="/analytics" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
+                    {({ isActive }) => (
+                      <>
+                        <BarChart2 size={13} className={`transition-colors duration-300 ${isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"}`} />
+                        <span className="hidden xl:inline">ANALYTICS</span>
+                        {isActive && <motion.span layoutId="navIndicator" className="nav-active-indicator" />}
+                      </>
+                    )}
+                  </NavLink>
+                </motion.div>
+                <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Collab">
+                  <NavLink to="/collab" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
+                    {({ isActive }) => (
+                      <>
+                        <Users size={13} className={`transition-colors duration-300 ${isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"}`} />
+                        <span className="hidden xl:inline">COLLAB</span>
+                        {isActive && <motion.span layoutId="navIndicator" className="nav-active-indicator" />}
+                      </>
+                    )}
+                  </NavLink>
+                </motion.div>
+                <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Contact">
+                  <NavLink to="/contact-us" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
+                    {({ isActive }) => (
+                      <>
+                        <Mail size={13} className={`transition-colors duration-300 ${isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"}`} />
+                        <span className="hidden xl:inline">CONTACT</span>
+                        {isActive && <motion.span layoutId="navIndicator" className="nav-active-indicator" />}
+                      </>
+                    )}
+                  </NavLink>
+                </motion.div>
+                <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Community">
+                  <NavLink to="/community" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
+                    {({ isActive }) => (
+                      <>
+                        <Globe size={13} className={`transition-colors duration-300 ${isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"}`} />
+                        <span className="hidden xl:inline">COMMUNITY</span>
+                        {isActive && <motion.span layoutId="navIndicator" className="nav-active-indicator" />}
+                      </>
+                    )}
+                  </NavLink>
+                </motion.div>
                 {isLogin && (
                   <>
-                    <NavLink to="/bookmarks" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
-                      {({ isActive }) => (
-                        <>
-                          <Bookmark size={13} className={isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"} />
-                          <span>SAVED</span>
-                        </>
-                      )}
-                    </NavLink>
-                    <NavLink to="/dashboard" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
-                      {({ isActive }) => (
-                        <>
-                          <LayoutDashboard size={13} className={isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"} />
-                          <span>DASHBOARD</span>
-                        </>
-                      )}
-                    </NavLink>
+                    <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Saved">
+                      <NavLink to="/bookmarks" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
+                        {({ isActive }) => (
+                          <>
+                            <Bookmark size={13} className={`transition-colors duration-300 ${isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"}`} />
+                            <span className="hidden xl:inline">SAVED</span>
+                            {isActive && <motion.span layoutId="navIndicator" className="nav-active-indicator" />}
+                          </>
+                        )}
+                      </NavLink>
+                    </motion.div>
+                    <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Dashboard">
+                      <NavLink to="/dashboard" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
+                        {({ isActive }) => (
+                          <>
+                            <LayoutDashboard size={13} className={`transition-colors duration-300 ${isActive ? "text-custom" : "text-slate-400 dark:text-slate-500"}`} />
+                            <span className="hidden xl:inline">DASHBOARD</span>
+                            {isActive && <motion.span layoutId="navIndicator" className="nav-active-indicator" />}
+                          </>
+                        )}
+                      </NavLink>
+                    </motion.div>
                   </>
                 )}
-              </div>
+              </motion.div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="hidden md:flex items-center gap-2 lg:gap-3">
+            <motion.div 
+              className="flex items-center gap-3"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="hidden lg:flex items-center gap-1.5 xl:gap-3">
                 <button
                   type="button"
                   aria-label="Open Help Center"
@@ -319,23 +381,23 @@ const NavListComponent: React.FC = () => {
                 {isLogin ? (
                   <button 
                     onClick={(e) => { handleNavbarClick(e); handelLogout(); }} 
-                    className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 px-4 py-2 font-bold text-xs uppercase tracking-wider cursor-pointer rounded-full hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300"
+                    className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 px-2.5 xl:px-4 py-2 font-bold text-xs uppercase tracking-wider cursor-pointer rounded-full hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300"
                   >
                     <LogOut size={13} />
-                    <span>LOGOUT</span>
+                    <span className="hidden xl:inline">LOGOUT</span>
                   </button>
                 ) : (
                   <>
                     <Link to="/login" onClick={handleNavbarClick}>
-                      <button className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 px-4 py-2 font-bold text-xs uppercase tracking-wider cursor-pointer rounded-full hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
+                      <button className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 px-2.5 xl:px-4 py-2 font-bold text-xs uppercase tracking-wider cursor-pointer rounded-full hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
                         <LogIn size={13} />
-                        <span>LOGIN</span>
+                        <span className="hidden xl:inline">LOGIN</span>
                       </button>
                     </Link>
                     <Link to="/signup" onClick={handleNavbarClick}>
-                      <button className="flex items-center gap-1.5 text-white bg-gradient-to-r from-blue-600 to-indigo-600 px-4.5 py-2 font-bold text-xs uppercase tracking-wider cursor-pointer rounded-full shadow-[0_4px_12px_rgba(59,130,246,0.25)] hover:shadow-[0_4px_16px_rgba(59,130,246,0.4)] hover:scale-[1.02] transition-all duration-300">
+                      <button className="nav-signup-btn flex items-center gap-1.5 text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-3 xl:px-4.5 py-2 font-bold text-xs uppercase tracking-wider cursor-pointer rounded-full shadow-[0_4px_12px_rgba(99,102,241,0.3)] hover:shadow-[0_6px_20px_rgba(99,102,241,0.45)] hover:scale-[1.03] transition-all duration-300">
                         <UserPlus size={13} />
-                        <span>SIGN UP</span>
+                        <span className="hidden xl:inline">SIGN UP</span>
                       </button>
                     </Link>
                   </>
@@ -362,12 +424,43 @@ const NavListComponent: React.FC = () => {
               <button
                 type="button"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
-                className="md:hidden text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300 p-2 rounded-full hover:bg-slate-200/60 dark:hover:bg-white/5 transition-all duration-300"
+                className="nav-hamburger lg:hidden text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300 p-2.5 rounded-xl hover:bg-slate-200/60 dark:hover:bg-white/8 transition-all duration-300"
                 onClick={(e) => { handleNavbarClick(e); setMenuOpen((prev) => !prev); }}
               >
-                {menuOpen ? <X size={20} /> : <Menu size={20} />}
+                <motion.div
+                  animate={menuOpen ? "open" : "closed"}
+                  className="flex flex-col items-center justify-center w-5 h-5 relative"
+                >
+                  <motion.span
+                    variants={{
+                      closed: { rotate: 0, y: 0 },
+                      open: { rotate: 45, y: 0 },
+                    }}
+                    className="absolute w-5 h-[2px] rounded-full bg-current origin-center"
+                    style={{ top: menuOpen ? '50%' : '30%' }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                  <motion.span
+                    variants={{
+                      closed: { opacity: 1, scaleX: 1 },
+                      open: { opacity: 0, scaleX: 0 },
+                    }}
+                    className="absolute w-5 h-[2px] rounded-full bg-current origin-center"
+                    style={{ top: '50%' }}
+                    transition={{ duration: 0.2 }}
+                  />
+                  <motion.span
+                    variants={{
+                      closed: { rotate: 0, y: 0 },
+                      open: { rotate: -45, y: 0 },
+                    }}
+                    className="absolute w-5 h-[2px] rounded-full bg-current origin-center"
+                    style={{ top: menuOpen ? '50%' : '70%' }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                </motion.div>
               </button>
-            </div>
+            </motion.div>
           </div>
 
           <NotificationComponent
@@ -390,23 +483,22 @@ const NavListComponent: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-sm dark:bg-black/60 md:hidden"
+              className="fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-sm dark:bg-black/60 lg:hidden"
             />
             {/* Sliding menu drawer */}
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 26, stiffness: 210 }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-72 max-w-[85vw] mobile-drawer-overlay p-6 flex flex-col md:hidden border-l border-slate-200/30 dark:border-white/5"
+              transition={{ type: "spring", damping: 28, stiffness: 260 }}
+              className="fixed top-0 right-0 bottom-0 z-50 w-72 max-w-[85vw] mobile-drawer-overlay p-6 flex flex-col lg:hidden"
             >
-              <div className="flex items-center justify-between mb-8">
-                <Link to="/" onClick={(e) => { handleNavbarClick(e); setMenuOpen(false); }}>
-                  <img src={logo} alt="logo" className="h-8 w-auto object-contain" />
-                </Link>
+              {/* Drawer header — no logo to avoid duplication with the sticky header */}
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-sm font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Menu</span>
                 <button
                   onClick={(e) => { handleNavbarClick(e); setMenuOpen(false); }}
-                  className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-full hover:bg-slate-200/50 dark:hover:bg-white/5"
+                  className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-slate-200/50 dark:hover:bg-white/5 transition-colors duration-200"
                 >
                   <X size={18} />
                 </button>
