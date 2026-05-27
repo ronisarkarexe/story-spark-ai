@@ -167,8 +167,7 @@ const GithubcontributorsComponent: React.FC = () => {
 
             <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-fuchsia-400 rounded-full blur-[1px] animate-pulse"></div>
 
-            <div className="absolute bottom-15 left-1/3 w-4 h-4 bg-violet-300 rounded-full blur-[3px] animate-pulse"></div> 
-
+<div className="absolute bottom-16 left-1/3 w-4 h-4 bg-violet-300 rounded-full blur-[3px] animate-pulse"></div>
             <img
               src={githubHero}
               alt="GitHub Hero"
@@ -536,7 +535,7 @@ const GithubcontributorsComponent: React.FC = () => {
             transition-all
           "
           >
-            Contribute Now →
+            Contribute Now &rarr;
           </a>
         </div>
       </div>
