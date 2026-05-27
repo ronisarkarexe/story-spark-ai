@@ -8,7 +8,7 @@ const WriterFeedbackComponent = () => {
 
   if (isLoading) {
     return (
-      <div className="text-center text-gray-400 py-10">
+      <div className="text-center text-slate-600 dark:text-gray-400 py-10">
         Loading reviews...
       </div>
     );
@@ -18,11 +18,11 @@ const WriterFeedbackComponent = () => {
     <section className="mb-16 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-300">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-300">
             What Our Writers Say
           </h2>
 
-          <p className="mt-4 text-gray-400 max-w-2xl mx-auto">
+          <p className="mt-4 text-slate-600 dark:text-gray-400 max-w-2xl mx-auto">
             Hear from our community of writers about their experience
           </p>
         </div>
@@ -41,17 +41,17 @@ const WriterFeedbackComponent = () => {
                 />
 
                 <div className="ml-4">
-                  <h4 className="text-lg font-semibold text-gray-400">
+                  <h4 className="text-lg font-semibold text-slate-700 dark:text-gray-400">
                     {writer.name}
                   </h4>
 
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-slate-600 dark:text-gray-400">
                     {writer.role}
                   </p>
                 </div>
               </div>
 
-              <p className="text-gray-500 italic">
+              <p className="text-slate-600 dark:text-gray-500 italic">
                 &#34;{writer.feedback}&#34;
               </p>
             </div>

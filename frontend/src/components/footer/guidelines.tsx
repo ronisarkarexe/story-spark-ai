@@ -1,22 +1,22 @@
 import { Link } from "react-router-dom";
 
 const Guidelines = () => {
-    return (<div className="min-h-screen bg-black text-white px-6 py-12"> <div className="max-w-4xl mx-auto text-center">
+    return (<div className="min-h-screen bg-white text-slate-900 px-6 py-12 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white"> <div className="max-w-4xl mx-auto text-center">
 
         <h1 className="text-4xl font-bold mb-6">
             Guidelines
         </h1>
 
-        <p className="text-lg text-gray-300 leading-8">
+        <p className="text-lg text-slate-600 leading-8 dark:text-gray-300">
             Follow these guidelines to ensure a positive and creative community experience.
         </p>
 
-        <div className="mt-10 bg-zinc-900 p-6 rounded-2xl">
-            <h2 className="text-2xl font-semibold mb-4 text-blue-400">
+            <div className="mt-10 bg-gray-50 p-6 rounded-2xl border border-gray-200 dark:bg-zinc-900 dark:border-zinc-800">
+            <h2 className="text-2xl font-semibold mb-4 text-blue-600 dark:text-blue-400">
                 Community Rules
             </h2>
 
-            <ul className="space-y-2 text-gray-300">
+            <ul className="space-y-2 text-slate-600 dark:text-gray-300">
                 <li>- Respect all creators and contributors</li>
                 <li>- Share original and meaningful content</li>
                 <li>- Maintain a friendly environment</li>

@@ -12,7 +12,10 @@ const toggleBookmark = async (storyId: string, token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-  const post = await Post.findById(storyId);
+  const post = await Post.findOne({
+    _id: storyId,
+    isDeleted: { $ne: true },
+  });
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Story not found!");
   }
@@ -72,6 +75,7 @@ const getBookmarks = async (
     .limit(limit)
     .populate({
       path: "storyId",
+      match: { isDeleted: { $ne: true } },
       populate: [
         { path: "author", select: "name email createdAt" },
         {

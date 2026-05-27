@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 const LoadingAnimation = () => {
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="w-full flex items-center justify-center py-12 bg-transparent">
       <div className="relative w-20 h-20">
         {[...Array(8)].map((_, index) => (
           <motion.div

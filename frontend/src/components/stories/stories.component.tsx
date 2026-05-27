@@ -22,8 +22,8 @@ const WARN_THRESHOLD = 0.85;
 
 const StoriesComponent = () => {
   const location = useLocation();
-const navigate = useNavigate();
-const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
+  const navigate = useNavigate();
+  const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
   const [stories, setStories] = useState<IStories[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const { data } = useGetProfileInfoQuery(undefined);
@@ -33,63 +33,63 @@ const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-const [selectedGenre, setSelectedGenre] = useState<string>("");
-const [selectedLength, setSelectedLength] = useState<string>("medium");
-const [textareaValue, setTextareaValue] = useState<string>("");
-const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-const dropdownRef = useRef<HTMLDivElement>(null);
-const inputRef = useRef<HTMLTextAreaElement>(null);
-const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
-const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-  parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
-);
-const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+  const [selectedGenre, setSelectedGenre] = useState<string>("");
+  const [selectedLength, setSelectedLength] = useState<string>("medium");
+  const [textareaValue, setTextareaValue] = useState<string>("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
+  const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
+    parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
+  );
+  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
 
-useEffect(() => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}, []);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
-useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
-      setIsDropdownOpen(false);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (location.state && location.state.prompt) {
+      setTextareaValue(location.state.prompt);
+      navigate(location.pathname, { replace: true, state: {} });
     }
-  };
+  }, [location, navigate]);
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      setIsDropdownOpen(false);
-    }
-  };
+  useEffect(() => {
+    setValue("prompt", textareaValue);
+  }, [textareaValue, setValue]);
 
-  document.addEventListener("mousedown", handleClickOutside);
-  document.addEventListener("keydown", handleKeyDown);
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-    document.removeEventListener("keydown", handleKeyDown);
-  };
-}, []);
-
-useEffect(() => {
-  if (location.state && location.state.prompt) {
-    setTextareaValue(location.state.prompt);
-    navigate(location.pathname, { replace: true, state: {} });
-  }
-}, [location, navigate]);
-
-useEffect(() => {
-  setValue("prompt", textareaValue);
-}, [textareaValue, setValue]);
-
-useEffect(() => {
-  return () => {
-    activeGenerationRef.current?.abort();
-  };
-}, []);
+  useEffect(() => {
+    return () => {
+      activeGenerationRef.current?.abort();
+    };
+  }, []);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (loading) {
@@ -151,51 +151,59 @@ useEffect(() => {
     }
   };
 
-const handleCancelGeneration = () => {
-  activeGenerationRef.current?.abort();
-  activeGenerationRef.current = null;
-  setLoading(false);
-  toast("Story generation cancelled.");
-};
+  const handleCancelGeneration = () => {
+    activeGenerationRef.current?.abort();
+    activeGenerationRef.current = null;
+    setLoading(false);
+    toast("Story generation cancelled.");
+  };
 
-const handleClearPrompt = () => {
-  setTextareaValue("");
-  setSelectedPrompt("");
-  setValue("prompt", "");
+  const handleClearPrompt = () => {
+    setTextareaValue("");
+    setSelectedPrompt("");
+    setValue("prompt", "");
 
-  if (inputRef.current) {
-    inputRef.current.focus();
-  }
-};
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  const handlePublishSuccess = () => {
+    setTextareaValue("");
+    setSelectedPrompt("");
+    setValue("prompt", "");
+    reset();
+  };
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
-  
+
   useKeyboardShortcuts({
-  onOpenHelp: () => setShowHelpModal(true),
-  onCloseHelp: () => setShowHelpModal(false),
-  onGenerate: () => {
-    if (inputRef.current) {
-      const form = inputRef.current.closest("form");
-      if (form) form.requestSubmit();
-    }
-  },
-  onPublish: () => {
-    const publishBtn = document.getElementById("publish-story-btn");
-    publishBtn?.click();
-  },
-  focusPrompt: () => {
-    inputRef.current?.focus();
-  },
-  hasStory: stories.length > 0,
-});
+    onOpenHelp: () => setShowHelpModal(true),
+    onCloseHelp: () => setShowHelpModal(false),
+    onGenerate: () => {
+      if (inputRef.current) {
+        const form = inputRef.current.closest("form");
+        if (form) form.requestSubmit();
+      }
+    },
+    onPublish: () => {
+      const publishBtn = document.getElementById("publish-story-btn");
+      publishBtn?.click();
+    },
+    focusPrompt: () => {
+      inputRef.current?.focus();
+    },
+    hasStory: stories.length > 0,
+  });
+
   return (
-    <div className="bg-gradient-to-br animate-gradient-slow min-h-screen">
+    <div className="min-h-screen bg-white text-slate-900 animate-gradient-slow transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
           <div className="pt-2 w-full md:w-auto flex justify-start">
             <Link to="/">
-              <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
+              <div className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
                 <i className="fa-solid fa-left-long"></i> BACK
               </div>
             </Link>
@@ -203,7 +211,7 @@ const handleClearPrompt = () => {
 
           {!login && (
             <div className="pt-2 text-center">
-              <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed">
+              <div className="!rounded-button bg-gray-100/80 text-slate-600 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed border border-gray-200 dark:bg-white/20 dark:text-gray-400 dark:border-white/10">
                 <span>
                   Free access for 3 requests —{" "}
                   <Link to="/login">
@@ -218,7 +226,7 @@ const handleClearPrompt = () => {
           )}
 
           <div className="flex flex-col items-center md:items-end pt-2 w-full md:w-auto">
-            <button className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
+            <button className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
               <span>
                 {" "}
                 <span className="text-gray-400 text-xs">Per Month</span>{" "}
@@ -230,7 +238,7 @@ const handleClearPrompt = () => {
               
               <i className="fas fa-bolt text-yellow-400"></i>
             </button>
-            <div className="mt-3 text-gray-500 text-xs text-center md:text-right">
+            <div className="mt-3 text-slate-500 text-xs text-center md:text-right dark:text-gray-500">
               <span>
                 This month request:{" "}
                 {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}
@@ -242,7 +250,7 @@ const handleClearPrompt = () => {
         </div>
 
         <div className="mt-11">
-          <h1 className="text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">
+          <h1 className="text-slate-900 dark:text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">
             ✨ Turn Your Ideas Into{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
               Amazing Stories!
@@ -251,7 +259,7 @@ const handleClearPrompt = () => {
           </h1>
 
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
-            <div className="bg-blue-500/10 rounded-md p-4 border border-gray-400">
+            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white">
 <div className="relative">
   <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
     <div className="flex flex-wrap gap-2 mb-3">
@@ -415,7 +423,7 @@ const handleClearPrompt = () => {
             </div>
 
             <div className="w-full max-w-2xl m-auto mt-4">
-  <h1 className="text-sm text-gray-500 mb-1">
+          <h1 className="text-sm text-slate-500 mb-1 dark:text-gray-500">
     Here are some example prompts you can refer to:-
   </h1>
 
@@ -464,13 +472,13 @@ const handleClearPrompt = () => {
       </div>
 
       {showHelpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full">
-            <h2 className="text-xl font-bold text-white mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md w-full text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
+              <h2 className="text-xl font-bold text-slate-900 mb-4 dark:text-white">
               Keyboard Shortcuts
             </h2>
 
-            <div className="space-y-3 text-gray-300 text-sm">
+            <div className="space-y-3 text-slate-600 text-sm dark:text-gray-300">
               <div><kbd>?</kbd> Open help</div>
               <div><kbd>Esc</kbd> Close help</div>
               <div><kbd>/</kbd> Focus prompt</div>
@@ -488,25 +496,29 @@ const handleClearPrompt = () => {
         </div>
       )}
 
-      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
+{loading && (
+  <StoryGeneratingAnimation onCancel={handleCancelGeneration} />
+)}
       <StoriesViewComponent
         stories={stories}
         isLogin={login}
         setStories={setStories}
+        onPublishSuccess={handlePublishSuccess}
+        isLoading={loading}
       />
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
 
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#0f172a] border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.5)] max-w-md w-full p-6 transform transition-all">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.15)] max-w-md w-full p-6 transform transition-all text-slate-900 dark:bg-[#0f172a] dark:border-white/10 dark:text-white dark:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i className="fas fa-lock text-2xl text-blue-400"></i>
               </div>
-              <h3 className="text-2xl font-bold text-gray-200 mb-2">
+              <h3 className="text-2xl font-bold text-slate-900 mb-2 dark:text-gray-200">
                 Free Limit Reached
               </h3>
-              <p className="text-gray-400 mb-6 leading-relaxed">
+              <p className="text-slate-600 mb-6 leading-relaxed dark:text-gray-400">
                 You've used all 3 free story generations. Login to continue
                 creating more stories.
               </p>
@@ -519,7 +531,7 @@ const handleClearPrompt = () => {
                 </Link>
                 <button
                   onClick={() => setShowLimitModal(false)}
-                  className="w-full bg-transparent hover:bg-white/5 text-gray-400 hover:text-gray-300 font-medium py-3 px-4 rounded-xl transition-all"
+                  className="w-full bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-medium py-3 px-4 rounded-xl transition-all dark:hover:bg-white/5 dark:text-gray-400 dark:hover:text-gray-300"
                 >
                   Continue Browsing
                 </button>

@@ -5,6 +5,8 @@ import { IUser } from "./user.interface";
 import { User } from "./user.model";
 import httpStatus from "http-status";
 
+const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram"] as const;
+
 const getAllUsers = async (): Promise<IUser[]> => {
   const result = await User.find({});
   return result;
@@ -16,10 +18,48 @@ const getUser = async (payload: string): Promise<IUser | null> => {
 };
 
 const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
-  const result = await User.findOneAndUpdate({ email: token.email }, payload, {
+  const updateData: Record<string, unknown> = {};
+
+  if (typeof payload.name === "string") {
+    updateData.name = payload.name;
+  }
+
+  if (payload.profile) {
+    if (typeof payload.profile.avatar === "string") {
+      updateData["profile.avatar"] = payload.profile.avatar;
+    }
+
+    if (typeof payload.profile.bio === "string") {
+      updateData["profile.bio"] = payload.profile.bio;
+    }
+
+    if (payload.profile.social) {
+      for (const field of allowedSocialFields) {
+        const value = payload.profile.social[field];
+        if (typeof value === "string") {
+          updateData[`profile.social.${field}`] = value;
+        }
+      }
+    }
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "No valid user fields provided!");
+  }
+
+  const result = await User.findOneAndUpdate(
+    { email: token.email },
+    { $set: updateData },
+    {
     new: true,
     runValidators: true,
-  });
+    }
+  );
+
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
   return result;
 };
 

@@ -83,7 +83,7 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
 
   const isExistUser = await User.findOne({ email: userEmail });
   if (isExistUser) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User already exist!");
+    throw new ApiError(httpStatus.CONFLICT, "User already exists!");
   }
   
   const result = await User.create(payload);

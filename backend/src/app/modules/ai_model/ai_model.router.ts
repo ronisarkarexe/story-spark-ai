@@ -20,4 +20,20 @@ router.post(
   AiModelController.aiFreeModelGenerate
 );
 
+// Generate Alternate Endings
+router.post(
+  "/generate-alternate-endings",
+  validateRequest(AIModelValidator.aiAlternateEndings),
+  checkRequestLimit(),
+  AiModelController.aiModelAlternateEndings
+);
+
+// Generate Free Alternate Endings
+router.post(
+  "/generate-free-alternate-endings",
+  validateRequest(AIModelValidator.aiAlternateEndings),
+  AiModelController.aiFreeModelAlternateEndings
+);
+
 export const AIModelRouter = router;
+

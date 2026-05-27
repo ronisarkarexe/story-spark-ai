@@ -1,53 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
-import { getUserInfo, isLoggedIn } from "../services/auth.service";
-import { socketIo } from "../socket/socket.oi";
+import { useMemo, useState } from "react";
+import { isLoggedIn } from "../services/auth.service";
 import {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
 } from "../redux/apis/notification.api";
-import { NotificationItem } from "../models/notification";
 
+/**
+ * Notification bell: REST only. Socket.IO (`socket.oi.ts`) is disabled to avoid
+ * slow page loads and unreliable realtime hosts; re-enable by restoring the
+ * previous useEffect that called socketIo.connect / "notification:new".
+ */
 export const useNotifications = () => {
   const [isOpen, setIsOpen] = useState(false);
   const isAuthed = isLoggedIn();
-  const user = getUserInfo();
 
   const { data, isFetching, refetch } = useGetNotificationsQuery(undefined, {
     skip: !isAuthed,
   });
   const [markNotificationRead] = useMarkNotificationReadMutation();
-  const [liveNotifications, setLiveNotifications] = useState<NotificationItem[]>([]);
 
-  useEffect(() => {
-    if (!isAuthed || !user?.userId) {
-      return;
-    }
-
-    socketIo.auth = { token: localStorage.getItem("accessToken") || "" };
-    socketIo.connect();
-
-    const handleNotification = (notification: NotificationItem) => {
-      setLiveNotifications((prev) => [notification, ...prev]);
-    };
-
-    socketIo.on("notification:new", handleNotification);
-    return () => {
-      socketIo.off("notification:new", handleNotification);
-      socketIo.disconnect();
-    };
-  }, [isAuthed, user?.userId]);
-
-  const notifications = useMemo(() => {
-    const combined = [...(liveNotifications || []), ...(data || [])];
-    const seen = new Set<string>();
-    return combined.filter((item) => {
-      if (seen.has(item._id)) {
-        return false;
-      }
-      seen.add(item._id);
-      return true;
-    });
-  }, [data, liveNotifications]);
+  const notifications = useMemo(() => data ?? [], [data]);
 
   const unreadCount = notifications.filter((item) => !item.isRead).length;
 

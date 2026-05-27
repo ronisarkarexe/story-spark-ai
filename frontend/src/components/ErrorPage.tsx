@@ -1,8 +1,8 @@
 const ErrorPage = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-white px-4 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white text-slate-900 px-4 text-center transition-colors duration-300 dark:bg-slate-950 dark:text-white">
       <h1 className="text-5xl font-bold mb-4">Oops!</h1>
-      <p className="text-lg text-slate-300 mb-6">
+      <p className="text-lg text-slate-600 mb-6 dark:text-slate-300">
         Something went wrong while loading this page.
       </p>
       <button

@@ -1,6 +1,9 @@
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import { JSX, useEffect, useState } from "react";
+import { JSX } from "react";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import CollabHome from "./components/collab/CollabHome";
+import CollabRoom from "./components/collab/CollabRoom";
+import AnalyticsDashboard from "./components/analytics/AnalyticsDashboard";
 import {
   BrowserRouter as Router,
   Routes,
@@ -35,11 +38,13 @@ import ProfileComponent from "./components/dashboard/profile/profile.component";
 import PaymentComponent from "./components/home/pricing/payment.component";
 import Contact from "./components/contactus/contactus";
 import HelpCenterComponent from "./components/help_center/help_center.component";
+import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import AboutUsComponent from "./components/footer/about-us.tsx";
 import CareerComponent from "./components/footer/career.tsx";
 // import ContactUsComponent from "./components/footer/contact-us.tsx";
 import BlogComponent from "./components/footer/blog.tsx";
 import PrivacyPolicy from "./components/footer/Privacy.tsx";
+import Terms from "./components/footer/terms.tsx";
 // import HelpCenterComponent from "./components/footer/help-center.tsx";
 import GuidelinesComponent from "./components/footer/guidelines.tsx";
 import TemplatesComponent from "./components/templates/templates.component";
@@ -47,6 +52,8 @@ import CommunityComponent from "./components/community/community.component";
 import ResourcesListComponent from "./components/community/resources_list.component";
 import ResourceDetailComponent from "./components/community/resource_detail.component";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import ContributorsComponent from "./components/footer/contributors";
+
 const ProtectedRoute = ({
   element,
   allowedRoles,
@@ -65,20 +72,6 @@ const ProtectedRoute = ({
 };
 
 function App() {
-  const [darkMode] = useState(
-    localStorage.getItem("theme") === "dark",
-  );
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [darkMode]);
-
   return (
     <Router>
       <MagicCursorComponent />
@@ -133,7 +126,7 @@ function App() {
           element={
             <ProtectedRoute
               element={<DashboardLayout />}
-              allowedRoles={[USER_ROLE.ADMIN]}
+              allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER]}
             />
           }
         >
@@ -142,7 +135,22 @@ function App() {
             element={
               <ProtectedRoute
                 element={<DashboardComponent />}
-                allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN]}
+                allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER]}
+              />
+            }
+          />
+
+          <Route
+            path="analytics"
+            element={
+              <ProtectedRoute
+                element={<AnalyticsPage />}
+                allowedRoles={[
+                  USER_ROLE.USER,
+                  USER_ROLE.ADMIN,
+                  USER_ROLE.SUPER_ADMIN,
+                  USER_ROLE.WRITER,
+                ]}
               />
             }
           />
@@ -161,6 +169,7 @@ function App() {
               />
             }
           />
+
 
           <Route
             path="settings"
@@ -344,19 +353,9 @@ function App() {
         <Route
           path="/contact-us"
           element={
-            <ProtectedRoute
-              element={
-                <RootLayout>
-                  <Contact />
-                </RootLayout>
-              }
-              allowedRoles={[
-                USER_ROLE.USER,
-                USER_ROLE.WRITER,
-                USER_ROLE.ADMIN,
-                USER_ROLE.SUPER_ADMIN,
-              ]}
-            />
+            <RootLayout>
+            <Contact />
+            </RootLayout>
           }
         />
         <Route
@@ -375,6 +374,14 @@ function App() {
           </RootLayout>
         }
       />
+        <Route
+          path="/terms"
+          element={
+            <RootLayout>
+              <Terms />
+            </RootLayout>
+          }
+        />
         <Route
           path="/help-center"
           element={
@@ -445,6 +452,17 @@ function App() {
             />
           }
         />
+        <Route
+          path="/contributors"
+          element={
+            <RootLayout>
+              <ContributorsComponent />
+            </RootLayout>
+          }
+        />
+        <Route path="/analytics" element={<AnalyticsDashboard />} />
+        <Route path="/collab" element={<CollabHome />} />
+        <Route path="/collab/:roomId" element={<CollabRoom />} />
         <Route
           path="*"
           element={
