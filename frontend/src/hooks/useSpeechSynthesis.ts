@@ -30,6 +30,12 @@ export interface UseSpeechSynthesisResult {
   rate: number;
   /** Update playback speed for future narration and active utterances when possible. */
   setRate: (nextRate: number) => void;
+  /** Available browser voices for narration. */
+  voices: SpeechSynthesisVoice[];
+  /** Browser voice URI selected for narration. */
+  selectedVoiceURI: string;
+  /** Update and persist the preferred browser voice. */
+  setSelectedVoiceURI: (voiceURI: string) => void;
   /** Word-level progress metadata for UI rendering and text highlighting. */
   progress: SpeechProgress;
   /** Browser support flag for the Web Speech API. */
@@ -48,6 +54,28 @@ const hasSpeechSupport = (): boolean => {
     "speechSynthesis" in window &&
     "SpeechSynthesisUtterance" in window
   );
+};
+
+const RATE_STORAGE_KEY = "storyspark:narration-rate";
+const VOICE_STORAGE_KEY = "storyspark:narration-voice";
+
+const readStoredRate = () => {
+  if (typeof window === "undefined") {
+    return 1;
+  }
+
+  const storedRate = Number(window.localStorage.getItem(RATE_STORAGE_KEY));
+  return Number.isFinite(storedRate) && storedRate >= 0.5 && storedRate <= 2
+    ? storedRate
+    : 1;
+};
+
+const readStoredVoiceURI = () => {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return window.localStorage.getItem(VOICE_STORAGE_KEY) ?? "";
 };
 
 const buildWordRanges = (inputText: string): WordRange[] => {
@@ -114,8 +142,10 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [rateState, setRateState] = useState(1);
+  const [rateState, setRateState] = useState(readStoredRate);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceURIState, setSelectedVoiceURIState] = useState(readStoredVoiceURI);
 
   const wordRanges = useMemo(() => buildWordRanges(text), [text]);
   const totalWords = wordRanges.length;
@@ -186,6 +216,12 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
     utterance.rate = rateState;
     utterance.lang = window.navigator.language || "en-US";
 
+    const selectedVoice = voices.find((voice) => voice.voiceURI === selectedVoiceURIState);
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+      utterance.lang = selectedVoice.lang;
+    }
+
     utterance.onstart = () => {
       if (sessionRef.current !== sessionId) {
         return;
@@ -235,7 +271,17 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
 
     utteranceRef.current = utterance;
     speechSynthesis.speak(utterance);
-  }, [clearUtterance, isReady, isSupported, rateState, text, totalWords, wordRanges]);
+  }, [
+    clearUtterance,
+    isReady,
+    isSupported,
+    rateState,
+    selectedVoiceURIState,
+    text,
+    totalWords,
+    voices,
+    wordRanges,
+  ]);
 
   const pause = useCallback(() => {
     if (!isSupported || !utteranceRef.current) {
@@ -272,8 +318,24 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
   const setRate = useCallback((nextRate: number) => {
     setRateState(nextRate);
 
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(RATE_STORAGE_KEY, String(nextRate));
+    }
+
     if (utteranceRef.current) {
       utteranceRef.current.rate = nextRate;
+    }
+  }, []);
+
+  const setSelectedVoiceURI = useCallback((voiceURI: string) => {
+    setSelectedVoiceURIState(voiceURI);
+
+    if (typeof window !== "undefined") {
+      if (voiceURI) {
+        window.localStorage.setItem(VOICE_STORAGE_KEY, voiceURI);
+      } else {
+        window.localStorage.removeItem(VOICE_STORAGE_KEY);
+      }
     }
   }, []);
 
@@ -295,8 +357,17 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
         return;
       }
 
-      const voices = speechSynthesis.getVoices();
-      setIsReady(voices.length > 0);
+      const nextVoices = speechSynthesis.getVoices();
+      setVoices(nextVoices);
+      setIsReady(nextVoices.length > 0);
+
+      if (
+        nextVoices.length > 0 &&
+        selectedVoiceURIState &&
+        !nextVoices.some((voice) => voice.voiceURI === selectedVoiceURIState)
+      ) {
+        setSelectedVoiceURI("");
+      }
     };
 
     syncVoices();
@@ -313,7 +384,7 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [selectedVoiceURIState, setSelectedVoiceURI]);
 
   useEffect(() => {
     const textChanged = previousTextRef.current !== text;
@@ -344,6 +415,9 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
     stop,
     rate: rateState,
     setRate,
+    voices,
+    selectedVoiceURI: selectedVoiceURIState,
+    setSelectedVoiceURI,
     progress,
     isSupported,
     isReady,

@@ -1,8 +1,10 @@
 import React, {
   forwardRef,
+  useCallback,
   useEffect,
   useId,
   useImperativeHandle,
+  useMemo,
 } from "react";
 import {
   AlertCircle,
@@ -14,16 +16,16 @@ import {
   Volume2,
 } from "lucide-react";
 
-import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
+import { useSpeechSynthesis } from "../../hooks/useSpeechSynthesis";
 
 export type NarrationPlaybackState = "idle" | "playing" | "paused";
 
-export interface AudioPlayerHandle {
+export interface StoryNarratorHandle {
   stop: () => void;
   currentWordIndex: number;
 }
 
-interface AudioPlayerProps {
+interface StoryNarratorProps {
   text: string;
   title?: string;
   onWordIndexChange?: (currentWordIndex: number) => void;
@@ -35,10 +37,43 @@ const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 const controlButtonBaseClass =
   "inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-950";
 
-const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
+const StoryNarrator = forwardRef<StoryNarratorHandle, StoryNarratorProps>(
   ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
     const speech = useSpeechSynthesis(text);
     const speedSelectId = useId();
+    const voiceSelectId = useId();
+    const speedOptions = useMemo(() => [...SPEED_OPTIONS], []);
+    const isLoading = speech.isSupported && !speech.isReady;
+    const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
+
+    const setAdjacentSpeed = useCallback((direction: "slower" | "faster") => {
+      const currentIndex = speedOptions.findIndex((option) => option === speech.rate);
+      const fallbackIndex = speedOptions.findIndex((option) => option === 1);
+      const index = currentIndex >= 0 ? currentIndex : fallbackIndex;
+      const nextIndex = direction === "faster"
+        ? Math.min(index + 1, speedOptions.length - 1)
+        : Math.max(index - 1, 0);
+
+      speech.setRate(speedOptions[nextIndex]);
+    }, [speech, speedOptions]);
+
+    const togglePlayback = useCallback(() => {
+      if (!canNarrate) {
+        return;
+      }
+
+      if (speech.isPlaying) {
+        speech.pause();
+        return;
+      }
+
+      if (speech.isPaused) {
+        speech.resume();
+        return;
+      }
+
+      speech.play();
+    }, [canNarrate, speech]);
 
     useImperativeHandle(
       ref,
@@ -63,14 +98,58 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       onPlaybackStateChange?.(nextState);
     }, [onPlaybackStateChange, speech.isPaused, speech.isPlaying]);
 
-    const isLoading = speech.isSupported && !speech.isReady;
-    const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
     const spokenWordCount =
       speech.progress.totalWords === 0
         ? 0
         : speech.isPlaying || speech.isPaused || speech.currentWordIndex > 0
           ? Math.min(speech.currentWordIndex + 1, speech.progress.totalWords)
           : 0;
+
+    useEffect(() => {
+      const handleKeyboardControls = (event: KeyboardEvent) => {
+        const target = event.target as HTMLElement | null;
+        const isTypingTarget =
+          target?.tagName === "INPUT" ||
+          target?.tagName === "TEXTAREA" ||
+          target?.tagName === "SELECT" ||
+          target?.isContentEditable;
+
+        if (isTypingTarget) {
+          return;
+        }
+
+        if (event.code === "Space") {
+          event.preventDefault();
+          togglePlayback();
+        }
+
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          setAdjacentSpeed("faster");
+        }
+
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          setAdjacentSpeed("slower");
+        }
+      };
+
+      document.addEventListener("keydown", handleKeyboardControls);
+
+      return () => {
+        document.removeEventListener("keydown", handleKeyboardControls);
+      };
+    }, [
+      canNarrate,
+      setAdjacentSpeed,
+      speech.isPaused,
+      speech.isPlaying,
+      speech.pause,
+      speech.play,
+      speech.resume,
+      speech.rate,
+      togglePlayback,
+    ]);
 
     if (!speech.isSupported) {
       return (
@@ -183,7 +262,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
               </button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_180px] md:items-end">
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(180px,240px)] md:items-end">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>Progress</span>
@@ -206,6 +285,31 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 </div>
               </div>
 
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-1">
+              <div className="space-y-2">
+                <label
+                  htmlFor={voiceSelectId}
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
+                  Voice
+                </label>
+                <select
+                  id={voiceSelectId}
+                  aria-label="Narration voice"
+                  value={speech.selectedVoiceURI}
+                  onChange={(event) => speech.setSelectedVoiceURI(event.target.value)}
+                  disabled={speech.voices.length === 0}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                >
+                  <option value="">System default</option>
+                  {speech.voices.map((voice) => (
+                    <option key={voice.voiceURI} value={voice.voiceURI}>
+                      {voice.name} ({voice.lang})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="space-y-2">
                 <label
                   htmlFor={speedSelectId}
@@ -222,13 +326,14 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     onChange={(event) => speech.setRate(Number(event.target.value))}
                     className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                   >
-                    {SPEED_OPTIONS.map((option) => (
+                    {speedOptions.map((option) => (
                       <option key={option} value={option}>
                         {option.toFixed(2).replace(/\.00$/, "")}&times;
                       </option>
                     ))}
                   </select>
                 </div>
+              </div>
               </div>
             </div>
 
@@ -244,6 +349,9 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
               </span>
               <span>{Math.round(speech.progress.percentage * 100)}%</span>
             </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Shortcuts: Space toggles narration. Arrow left and right adjust speed.
+            </p>
           </div>
         )}
       </section>
@@ -251,6 +359,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
   },
 );
 
-AudioPlayer.displayName = "AudioPlayer";
+StoryNarrator.displayName = "StoryNarrator";
 
-export default AudioPlayer;
+export default StoryNarrator;

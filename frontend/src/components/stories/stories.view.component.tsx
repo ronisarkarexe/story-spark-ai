@@ -8,7 +8,7 @@ import StoryWorldMap from "../story-map/StoryWorldMap";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
+import StoryNarrator, { type StoryNarratorHandle, type NarrationPlaybackState } from "./StoryNarrator";
 import { useLocation } from "react-router-dom";
 
 import {
@@ -36,44 +36,35 @@ interface StoriesComponentProps {
   isLoading?: boolean;
 }
 
-type StorySentenceSegment = {
+type StoryWordToken = {
   id: string;
   text: string;
-  startWordIndex: number;
-  endWordIndex: number;
+  wordIndex: number | null;
 };
 
-const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+const buildStoryWordTokens = (content: string): StoryWordToken[] => {
   if (!content.trim()) {
     return [];
   }
 
-  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
-  const segments: StorySentenceSegment[] = [];
+  const matches = content.match(/\S+|\s+/g) ?? [content];
+  const tokens: StoryWordToken[] = [];
   let wordCursor = 0;
 
-  sentenceMatches.forEach((sentence, index) => {
-    const trimmedSentence = sentence.trim();
-    if (!trimmedSentence) {
-      return;
-    }
-
-    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
-    const startWordIndex = wordCursor;
-    const endWordIndex =
-      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
-
-    segments.push({
-      id: `${index}-${startWordIndex}-${endWordIndex}`,
-      text: sentence,
-      startWordIndex,
-      endWordIndex,
+  matches.forEach((token, index) => {
+    const isWord = /\S/.test(token);
+    tokens.push({
+      id: `${index}-${wordCursor}`,
+      text: token,
+      wordIndex: isWord ? wordCursor : null,
     });
 
-    wordCursor += wordsInSentence;
+    if (isWord) {
+      wordCursor += 1;
+    }
   });
 
-  return segments;
+  return tokens;
 };
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
@@ -84,7 +75,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   onPublishSuccess,
 }) => {
   const location = useLocation();
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const storyNarratorRef = useRef<StoryNarratorHandle>(null);
 
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
@@ -195,7 +186,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   }, [topics]);
 
   useEffect(() => {
-    const player = audioPlayerRef.current;
+    const player = storyNarratorRef.current;
     return () => {
       player?.stop();
     };
@@ -206,9 +197,22 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     setNarrationState("idle");
   }, [selectedStory?.uuid]);
 
-  const sentenceSegments = useMemo(() => {
-    return buildSentenceSegments(selectedStory?.content ?? "");
+  const storyWordTokens = useMemo(() => {
+    return buildStoryWordTokens(selectedStory?.content ?? "");
   }, [selectedStory?.content]);
+
+  useEffect(() => {
+    if (narrationState === "idle") {
+      return;
+    }
+
+    const activeWord = document.getElementById(`story-narration-word-${narrationWordIndex}`);
+    activeWord?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "nearest",
+    });
+  }, [narrationState, narrationWordIndex]);
 
   // Sync state instantly whenever a new template is submitted or selected
   useEffect(() => {
@@ -720,8 +724,8 @@ if (isLoading) {
           </div>
 
           <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute top-[-50px] right-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-[-50px] left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
               <h3 className="text-xl font-bold text-slate-200 relative z-10">
@@ -775,23 +779,24 @@ if (isLoading) {
             </div>
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
               <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment) => {
-                    const isActiveSentence =
+                {storyWordTokens.length > 0 ? (
+                  storyWordTokens.map((token) => {
+                    const isActiveWord =
                       isNarrationActive &&
-                      narrationWordIndex >= segment.startWordIndex &&
-                      narrationWordIndex <= segment.endWordIndex;
+                      token.wordIndex !== null &&
+                      token.wordIndex === narrationWordIndex;
 
                     return (
                       <span
-                        key={segment.id}
+                        key={token.id}
+                        id={token.wordIndex !== null ? `story-narration-word-${token.wordIndex}` : undefined}
                         className={
-                          isActiveSentence
-                            ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-100 ring-1 ring-indigo-400/30"
+                          isActiveWord
+                            ? "rounded-md bg-indigo-500/30 px-0.5 py-0.5 text-indigo-50 ring-1 ring-indigo-300/40 transition-colors duration-200"
                             : undefined
                         }
                       >
-                        {segment.text}
+                        {token.text}
                       </span>
                     );
                   })
@@ -802,8 +807,8 @@ if (isLoading) {
             </div>
 
             <div className="relative z-10 mt-6">
-              <AudioPlayer
-                ref={audioPlayerRef}
+              <StoryNarrator
+                ref={storyNarratorRef}
                 text={selectedStory.content}
                 title={selectedStory.title}
                 onWordIndexChange={setNarrationWordIndex}
@@ -881,7 +886,7 @@ if (isLoading) {
             {/* Alternate Endings Section */}
             {selectedStory && (
               <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
-                <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute top-[-50px] right-0 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
                 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                   <div>
