@@ -16,7 +16,7 @@ You can refer to the following articles on basics of Git and Github and also con
 in case you are stuck:
 
 - [Forking a Repo](https://help.github.com/en/github/getting-started-with-github/fork-a-repo)
-- [Cloning a Repo](https://help.github.com/en/desktop/contributing-to-projects/creating-an-issue-or-pull-request)
+- [Cloning a Repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
 - [How to create a Pull Request](https://opensource.com/article/19/7/create-pull-request-github)
 - [Getting started with Git and GitHub](https://towardsdatascience.com/getting-started-with-git-and-github-6fcd0f2d4ac6)
 - [Learn GitHub from Scratch](https://docs.github.com/en/get-started/start-your-journey/git-and-github-learning-resources)
@@ -49,7 +49,7 @@ git remote add upstream https://github.com/ronisarkarexe/story-spark-ai.git
 git remote -v
 ```
 
-**6.** Always take a pull from the upstream repository to your master branch to keep it at par with the main project (updated repository).
+**6.** Always take a pull from the upstream repository to your main branch to keep it at par with the main project (updated repository).
 
 ```
 git pull upstream main
@@ -95,8 +95,8 @@ git push -u origin <your_branch_name>
    Launch GitHub Desktop and log in to your GitHub account if you haven't already.
 
 2. **Clone the Repository:**
-   - If you haven't cloned the ResourceHub repository yet, you can do so by clicking on the "File" menu and selecting "Clone Repository."
-   - Choose the ResourceHub repository from the list of repositories on GitHub and clone it to your local machine.
+   - If you haven't cloned the story-spark-ai repository yet, you can do so by clicking on the "File" menu and selecting "Clone Repository."
+   - Choose the story-spark-ai repository from the list of repositories on GitHub and clone it to your local machine.
 
 3. **Switch to the Correct Branch:**
    - Ensure you are on the branch that you want to submit a pull request for.
@@ -113,7 +113,7 @@ git push -u origin <your_branch_name>
    After committing your changes, click the "Push origin" button in the top right corner of GitHub Desktop to push your changes to your forked repository on GitHub.
 
 7. **Create a Pull Request:**
-   - Go to the GitHub website and navigate to your fork of the ResourceHub repository.
+   - Go to the GitHub website and navigate to your fork of the story-spark-ai repository.
    - You should see a button to "Compare & pull request" between your fork and the original repository. Click on it.
 
 8. **Review and Submit:**
@@ -121,7 +121,7 @@ git push -u origin <your_branch_name>
    - Once you're satisfied, click the "Create pull request" button to submit your pull request.
 
 9. **Wait for Review:**
-    Your pull request will now be available for review by the project maintainers. They may provide feedback or ask for changes before merging your pull request into the main branch of the ResourceHub repository.
+    Your pull request will now be available for review by the project maintainers. They may provide feedback or ask for changes before merging your pull request into the main branch of the story-spark-ai repository.
 
 ⭐️ Support the Project
 If you find this project helpful, please consider giving it a star on GitHub! Your support helps to grow the project and reach more contributors.
@@ -131,7 +131,7 @@ If you find this project helpful, please consider giving it a star on GitHub! Yo
 1. Go to the project's issues.
 2. Give proper description for the issues.
 3. Don't spam to get the assignment of the issue 😀.
-4. Wait for till someone is looking into it !.
+4. Wait until someone is looking into it ! 
 5. Start working on issue only after you got assigned that issue 🚀.
 
 <br>
@@ -148,8 +148,8 @@ We understand that open source collaboration is filled with excitement and fulfi
 
 1. Ensure that you have self reviewed your code 😀
 2. Make sure you have added the proper description for the functionality of the code
-3. I have commented my code, particularly in hard-to-understand areas.
-4. Add screenshot it help in review.
+3. Ensure you have commented your code, particularly in hard-to-understand areas.
+4. Add screenshots — they help in the review process.
 5. Submit your PR by giving the necessary information in PR template and hang tight we will review it really soon 🚀
 
 <br>

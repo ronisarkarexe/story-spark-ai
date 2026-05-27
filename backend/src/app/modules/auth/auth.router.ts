@@ -24,4 +24,18 @@ router.post(
 // Refresh Token API route
 router.post("/refresh-token", AuthController.refreshToken);
 
+// Forgot Password API route
+router.post(
+  "/forgot-password",
+  validateRequest(UserValidator.forgotPassword),
+  AuthController.forgotPassword
+);
+
+// Reset Password API route
+router.post(
+  "/reset-password",
+  validateRequest(UserValidator.resetPassword),
+  AuthController.resetPassword
+);
+
 export const AuthRouter = router;

@@ -7,6 +7,7 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
     content: { type: String, required: true },
     tag: { type: String, required: true },
     imageURL: { type: String, required: true },
+    language: { type: String, default: "English" },
     topic: [
       {
         title: { type: String, required: true },

@@ -93,7 +93,7 @@
     </script>
 </head>
 <body class="bg-background text-on-surface font-body-md min-h-screen selection:bg-primary/30">
-<div class="min-h-screen flex items-center justify-center">
+<div class="min-h-screen flex items-center justify-center p-4 md:p-0">
 <main class="auth-container flex flex-col md:flex-row overflow-hidden md:rounded-2xl">
 
     <!-- Left Pane: Concept Showcase -->
@@ -117,17 +117,23 @@
     </section>
 
     <!-- Right Pane: Auth Form -->
-    <section class="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 bg-surface z-10">
-        <div class="w-full max-w-[380px] glass-panel p-[24px] rounded-[20px] relative">
+    <section class="w-full md:w-1/2 flex items-center justify-center p-4 md:p-10 bg-surface z-10">
+        <div class="w-full max-w-[400px] glass-panel p-6 md:p-8 rounded-2xl relative">
             <!-- Brand Anchor -->
-            <div class="flex justify-center mb-4">
-                <div class="font-display-lg text-[18px] font-extrabold text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-tertiary">
+            <div class="flex justify-center mb-5">
+                <div class="font-display-lg text-[18px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary">
                     Story Spark AI
                 </div>
             </div>
 
+            <!-- Header -->
+            <div class="mb-5">
+                <h2 class="text-[20px] font-bold text-on-surface leading-tight">Create your account</h2>
+                <p class="text-[13px] text-on-surface-variant mt-1">Start generating illustrated stories in minutes.</p>
+            </div>
+
             <!-- Tab Switcher -->
-            <div class="flex border-b border-white/10 mb-4 overflow-hidden">
+            <div class="flex border-b border-white/10 mb-5 overflow-hidden">
                 <a href="login.html" class="flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300" id="tab-signin">SIGN IN</a>
                 <button class="flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300" id="tab-signup" onclick="toggleAuthMode('signup')">CREATE ACCOUNT</button>
             </div>
@@ -162,37 +168,51 @@
             </div>
 
             <!-- Auth Forms -->
-            <form class="space-y-3" id="auth-form">
-                <div class="animate-in fade-in duration-500" id="signup-fields">
-                    <label class="block text-label-caps text-on-surface-variant mb-2">FULL NAME</label>
-                    <div class="relative">
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary" placeholder="Alex Spark" type="text" id="name-field" required/>
+            <div id="form-alert" class="ds-alert hidden" role="status" aria-live="polite"></div>
+
+            <form class="space-y-4" id="auth-form" novalidate>
+                <div class="animate-in fade-in duration-500 ds-field" id="signup-fields">
+                    <label class="block text-label-caps text-on-surface-variant mb-2" for="name-field">FULL NAME</label>
+                    <div class="ds-input-group">
+                        <span class="material-symbols-outlined ds-input-icon" aria-hidden="true">person</span>
+                        <input class="w-full ds-input with-icon" placeholder="Alex Spark" type="text" id="name-field" name="name" autocomplete="name" required aria-describedby="name-help name-error" aria-invalid="false"/>
                     </div>
+                    <p class="ds-help" id="name-help">This will be shown on your profile.</p>
+                    <p class="ds-error" id="name-error" role="alert" aria-live="polite"></p>
                 </div>
-                <div>
-                    <label class="block text-label-caps text-on-surface-variant mb-2">EMAIL ADDRESS</label>
-                    <div class="relative">
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary" placeholder="name@storyspark.ai" type="email" id="email-field" required/>
+                <div class="ds-field">
+                    <label class="block text-label-caps text-on-surface-variant mb-2" for="email-field">EMAIL ADDRESS</label>
+                    <div class="ds-input-group">
+                        <span class="material-symbols-outlined ds-input-icon" aria-hidden="true">mail</span>
+                        <input class="w-full ds-input with-icon" placeholder="name@storyspark.ai" type="email" id="email-field" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required aria-describedby="email-help email-error" aria-invalid="false"/>
                     </div>
+                    <p class="ds-help" id="email-help">We’ll send account updates to this address.</p>
+                    <p class="ds-error" id="email-error" role="alert" aria-live="polite"></p>
                 </div>
-                <div>
+                <div class="ds-field">
                     <div class="flex justify-between mb-2">
-                        <label class="block text-label-caps text-on-surface-variant">PASSWORD</label>
+                        <label class="block text-label-caps text-on-surface-variant" for="password-field">PASSWORD</label>
                         <a class="text-[13px] text-primary hover:text-secondary transition-colors font-semibold invisible" href="#" id="forgot-password-link">Forgot Password?</a>
                     </div>
-                    <div class="relative">
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary pr-12" id="password-field" placeholder="••••••••" type="password" required/>
-                        <button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors" onclick="togglePasswordVisibility()" type="button">
+                    <div class="ds-input-group has-action">
+                        <span class="material-symbols-outlined ds-input-icon" aria-hidden="true">lock</span>
+                        <input class="w-full ds-input with-icon" id="password-field" name="password" autocomplete="new-password" placeholder="At least 8 characters" type="password" required aria-describedby="password-help password-error password-strength" aria-invalid="false"/>
+                        <button class="ds-input-action" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
                             <span class="material-symbols-outlined" id="eye-icon">visibility</span>
                         </button>
                     </div>
+                    <div class="ds-meter" aria-hidden="true"><div class="ds-meter-bar" id="password-meter-bar"></div></div>
+                    <p class="ds-help" id="password-help">Use 8+ characters with a mix of letters and numbers.</p>
+                    <p class="ds-help" id="password-strength"></p>
+                    <p class="ds-error" id="password-error" role="alert" aria-live="polite"></p>
                 </div>
                 <div class="flex items-center gap-2">
                     <input class="w-4 h-4 rounded border-white/10 bg-surface-container-high text-primary focus:ring-primary ring-offset-surface" id="remember" type="checkbox"/>
                     <label class="text-[13px] text-on-surface-variant" for="remember">Remember me for 30 days</label>
                 </div>
                 <button class="w-full ds-btn-submit" id="submit-btn" type="submit">
-                    Create Account
+                    <span id="submit-btn-text">Create Account</span>
+                    <span class="ds-spinner hidden" id="submit-btn-spinner" aria-hidden="true"></span>
                 </button>
             </form>
 

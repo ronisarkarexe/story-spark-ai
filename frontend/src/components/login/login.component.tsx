@@ -41,9 +41,7 @@ const LoginComponent = () => {
 
         setIsLoggedIn(true);
       }
-    } catch (err: unknown) {
-      console.log("error: ", err);
-
+    } catch {
       toast.error(
         "Login failed. Please check your credentials."
       );
@@ -73,9 +71,7 @@ const LoginComponent = () => {
 
         setIsLoggedIn(true);
       }
-    } catch (err: unknown) {
-      console.log("Google login error: ", err);
-
+    } catch {
       toast.error(
         "Failed to login with Google. Please try again."
       );
@@ -85,8 +81,6 @@ const LoginComponent = () => {
   };
 
   const handleGoogleLoginError = () => {
-    console.log("Login Failed");
-
     toast.error(
       "Google login failed. Please try again."
     );
@@ -164,6 +158,15 @@ const LoginComponent = () => {
               icon="fas fa-lock"
               register={register}
             />
+
+            <div className="flex justify-end -mt-2">
+              <a
+                href="/forgot-password"
+                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+              >
+                Forgot Password?
+              </a>
+            </div>
 
             <SSButton
               text="Sign In"

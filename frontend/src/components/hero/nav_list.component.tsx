@@ -18,6 +18,7 @@ import {
   Bookmark, 
   LayoutDashboard, 
   Search, 
+  HelpCircle,
   Bell, 
   LogOut, 
   LogIn, 
@@ -336,7 +337,7 @@ const NavListComponent: React.FC = () => {
                 </motion.div>
                 {isLogin && (
                   <>
-                    <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Saved">
+                    <motion.div variants={navItemVariants} className="nav-tooltip-wrapper" data-tooltip="Bookmarks">
                       <NavLink to="/bookmarks" className={({ isActive }) => getLinkClass(isActive)} onClick={handleNavbarClick}>
                         {({ isActive }) => (
                           <>
@@ -376,7 +377,7 @@ const NavListComponent: React.FC = () => {
                   onClick={(e) => { handleNavbarClick(e); navigate("/help-center"); }}
                   className="rounded-full p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300"
                 >
-                  <Search size={16} />
+                  <HelpCircle size={16} />
                 </button>
                 {isLogin ? (
                   <button 

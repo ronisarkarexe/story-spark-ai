@@ -20,6 +20,16 @@ const postApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.post, tagTypes.user],
     }),
 
+    updatePost: build.mutation({
+      query: (arg: { id: string; data: Record<string, unknown> }) => ({
+        url: `/${POST_URL}/${arg.id}`,
+        method: "PATCH",
+        data: arg.data,
+      }),
+      invalidatesTags: [tagTypes.post],
+    }),
+
+
     getPostLists: build.query({
       query: (arg: Record<string, string | number>) => ({
         url: `/${POST_URL}/lists`,
@@ -164,6 +174,7 @@ const postApi = baseApi.injectEndpoints({
 
 export const {
   useCreatePostMutation,
+  useUpdatePostMutation,
   useGetPostListsQuery,
   useGetLatestListsQuery,
   useGetFeaturedListsQuery,
