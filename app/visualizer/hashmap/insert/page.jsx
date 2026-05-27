@@ -3,10 +3,12 @@ import ArticleActions from "@/app/components/ui/ArticleActions";
 import Content from "@/app/visualizer/hashmap/insert/content";
 import Quiz from "@/app/visualizer/hashmap/insert/quiz";
 import Code from "@/app/visualizer/hashmap/insert/codeBlock";
+import ModuleCard from "@/app/components/ui/ModuleCard";
 import ExploreOther from "@/app/components/ui/exploreOther";
 import VisualizerPageLayout, {
   createVisualizerPaths,
 } from "@/app/visualizer/components/VisualizerPageLayout";
+import { MODULE_MAPS } from "@/lib/modulesMap";
 
 export const metadata = {
   title: "HashMap Insert Visualizer | Learn HashMap Operations",
@@ -23,6 +25,13 @@ export default function Page() {
       content={<Content />}
       code={<Code />}
       quiz={<Quiz />}
+      moduleCard={
+        <ModuleCard
+          moduleId={MODULE_MAPS.hashmapInsert}
+          description="Mark HashMap : Insert as done and view it on your dashboard"
+          initialDone={false}
+        />
+      }
       exploreOther={
         <ExploreOther
           title="Explore other operations"

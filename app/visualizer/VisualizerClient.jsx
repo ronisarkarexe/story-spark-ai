@@ -283,6 +283,31 @@ function RecursionMiniViz({ color }) {
   );
 }
 
+
+function CustomCodeMiniViz({ color }) {
+  const lines = [
+    { width: "75%", highlight: true },
+    { width: "55%", highlight: false },
+    { width: "85%", highlight: false },
+    { width: "45%", highlight: false },
+  ];
+  return (
+    <div className="flex flex-col gap-1.5 justify-center h-[48px] px-1">
+      {lines.map((l, i) => (
+        <div
+          key={i}
+          className="rounded-sm h-[9px] transition-all duration-300"
+          style={{
+            width: l.width,
+            background: l.highlight ? color : color + "30",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+
 const MINI_VIZ = {
   Array: ArrayMiniViz,
   Stack: StackMiniViz,
@@ -292,6 +317,7 @@ const MINI_VIZ = {
   Graph: GraphMiniViz,
   HashMap: HashMapMiniViz,
   Recursion: RecursionMiniViz,
+  "Custom Code": CustomCodeMiniViz,
 };
 
 /* ═══════════════════════════════════════
@@ -311,10 +337,10 @@ function DSCard({ section, theme, onClick, delay }) {
       transition={{ duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -6, scale: 1.02 }}
       whileTap={{ scale: 0.97 }}
-      className="group w-full text-left cursor-pointer"
+      className="group w-full h-full text-left cursor-pointer"
     >
       <div
-        className="rounded-2xl border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+        className="rounded-2xl border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col"
         style={{ borderColor: theme.border }}
         data-theme-card={section.title || "Custom Code"}
       >
@@ -334,7 +360,7 @@ function DSCard({ section, theme, onClick, delay }) {
 
         {/* card body */}
         <div
-          className="p-5 bg-white transition-colors duration-300"
+          className="p-5 bg-white transition-colors duration-300 flex-1 flex flex-col"
           data-theme-card={section.title || "Custom Code"}
         >
           {/* icon + title */}
@@ -374,7 +400,7 @@ function DSCard({ section, theme, onClick, delay }) {
 
           {/* CTA pill */}
           <div
-            className="inline-flex items-center gap-2 h-[36px] px-5 rounded-full text-[13px] font-bold text-white
+            className="mt-auto inline-flex items-center gap-2 h-[36px] px-5 rounded-full text-[13px] font-bold text-white
               group-hover:gap-3 transition-all duration-200"
             style={{ background: theme.color }}
           >
@@ -780,7 +806,7 @@ export default function VisualizerClient({ initialSections }) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
                   {filtered.map((section, i) => (
                     <DSCard
                       key={section.title}
