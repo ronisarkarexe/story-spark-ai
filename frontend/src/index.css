@@ -697,6 +697,49 @@ html.dark .scroll-fab-btn:active {
     0 0 8px 1px rgba(139, 92, 246, 0.15);
 }
 
+/* ── Premium Navbar Styles ── */
+.nav-header {
+  transition: 
+    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-header-border {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(99, 130, 255, 0.2) 20%, 
+    rgba(167, 139, 250, 0.35) 50%, 
+    rgba(99, 130, 255, 0.2) 80%, 
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.nav-header-scrolled .nav-header-border {
+  opacity: 1;
+}
+
+.mobile-drawer-overlay {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: -10px 0 30px rgba(15, 23, 42, 0.05);
+}
+
+html.dark .mobile-drawer-overlay {
+  background: rgba(11, 17, 32, 0.92);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
