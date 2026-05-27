@@ -108,15 +108,12 @@ export default function Contact() {
     } catch (err: unknown) {
       console.error("Contact Form Error:", err);
 
-
-
-
       const message =
         err instanceof Error
           ? err.message
           : "✕ Failed to send message. Please check your connection.";
-      setError(message);
 
+      setError(message);
     } finally {
       setLoading(false);
       isSubmittingRef.current = false;
@@ -138,17 +135,12 @@ export default function Contact() {
       lg:px-16
     "
     >
-
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.15),transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.18),transparent_30%)]" />
 
-      <div className="absolute top-20 left-20 h-72 w-72 rounded-full bg-blue-500/10 blur-[120px]" />
-
-      {/* Background Glow */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 blur-[120px] rounded-full" />
+
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-500/10 blur-[130px] rounded-full" />
-      
-      <div className="absolute bottom-10 right-10 h-80 w-80 rounded-full bg-purple-500/10 blur-[140px]" />
 
       <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2">
         {/* Left Content */}
@@ -181,16 +173,7 @@ export default function Contact() {
             </span>
           </h2>
 
-
           <div className="mt-6 h-1 w-28 rounded-full bg-yellow-400" />
-
-          <div className="w-24 h-1 bg-yellow-400 mx-auto mt-5 rounded-full" />
-        </div>
-
-        {/* Form Container */}
-        <div className="w-full max-w-lg mx-auto group relative">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[1.5rem] blur opacity-10 group-hover:opacity-15 transition duration-1000"></div>
-
 
           <p
             className="
@@ -201,28 +184,10 @@ export default function Contact() {
             text-slate-300
           "
           >
-
             Have a story idea, suggestion, or just want to say hello?
             We’d love to hear from you. Let’s create something
             extraordinary together.
           </p>
-
-            {/* Name */}
-            <input
-              type="text"
-              name="fullname"
-              placeholder="Your Name"
-              value={formData.fullname}
-              onChange={changeHandler}
-              className="
-              w-full bg-gray-100/80 border border-gray-200 rounded-2xl px-5 py-4
-              text-sm sm:text-base text-slate-900 placeholder:text-slate-400
-              outline-none transition-[border-color,box-shadow] duration-300
-              hover:border-white/30 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30
-            "
-              required
-            />
-
 
           {/* Illustration */}
           <div className="relative mt-16 flex items-center justify-center lg:justify-start">
@@ -230,58 +195,16 @@ export default function Contact() {
               src={storybook}
               alt="storybook"
               className="
-
               w-full
               max-w-[420px]
               object-contain
               drop-shadow-[0_0_80px_rgba(139,92,246,0.45)]
-
-              w-full bg-gray-100/80 border border-gray-200 rounded-2xl px-5 py-4
-              text-sm sm:text-base text-slate-900 placeholder:text-slate-400
-              outline-none transition-[border-color,box-shadow] duration-300
-              hover:border-white/30 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30
-
             "
             />
-
 
             <div className="absolute h-52 w-52 rounded-full bg-purple-500/20 blur-[120px]" />
           </div>
         </div>
-
-
-            {/* Subject */}
-            <input
-              type="text"
-              name="subject"
-              placeholder="Subject"
-              value={formData.subject}
-              onChange={changeHandler}
-              className="
-              w-full bg-gray-100/80 border border-gray-200 rounded-2xl px-5 py-4
-              text-sm sm:text-base text-slate-900 placeholder:text-slate-400
-              outline-none transition-[border-color,box-shadow] duration-300
-              hover:border-white/30 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30
-            "
-              required
-            />
-
-            {/* Message */}
-            <textarea
-              rows={7}
-              name="message"
-              placeholder="Your Message"
-              value={formData.message}
-              onChange={changeHandler}
-              className="
-              w-full bg-gray-100/80 border border-gray-200 rounded-2xl px-5 py-4
-              text-sm sm:text-base text-slate-900 placeholder:text-slate-400
-              outline-none resize-none transition-[border-color,box-shadow] duration-300
-              hover:border-white/30 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30
-            "
-              required
-            />
-
 
         {/* Form Section */}
         <div className="group relative">
@@ -301,38 +224,12 @@ export default function Contact() {
           />
 
           {/* Form Container */}
-          <div className="w-full max-w-xl mx-auto group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[1.5rem] blur opacity-10 group-hover:opacity-15 transition duration-1000"></div>
-
-
-            <form
-              onSubmit={submitHandler}
-              className="
-
-            relative
-            rounded-[2rem]
-            border
-            border-white/10
-            bg-white/[0.04]
-            p-6
-            backdrop-blur-2xl
-            sm:p-8
-            lg:p-10
-          "
-
-              relative overflow-hidden group/btn w-full py-4 rounded-2xl
-              bg-gray-400 text-black font-bold text-sm sm:text-base
-              transition-[background-color,transform] duration-300
-              hover:scale-[1.01] hover:bg-white
-              disabled:opacity-50 disabled:cursor-not-allowed
-            "
-
-            >
-              <div className="space-y-6">
-                {/* Name */}
-                <div className="relative">
-                  <User
-                    className="
+          <div className="relative rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-2xl sm:p-8 lg:p-10">
+            <form onSubmit={submitHandler} className="space-y-6">
+              {/* Name */}
+              <div className="relative">
+                <User
+                  className="
                   absolute
                   left-5
                   top-1/2
@@ -341,16 +238,16 @@ export default function Contact() {
                   -translate-y-1/2
                   text-purple-300
                 "
-                  />
+                />
 
-                  <input
-                    type="text"
-                    name="fullname"
-                    placeholder="Your Name"
-                    value={formData.fullname}
-                    onChange={changeHandler}
-                    required
-                    className="
+                <input
+                  type="text"
+                  name="fullname"
+                  placeholder="Your Name"
+                  value={formData.fullname}
+                  onChange={changeHandler}
+                  required
+                  className="
                   h-16
                   w-full
                   rounded-2xl
@@ -369,13 +266,13 @@ export default function Contact() {
                   focus:ring-2
                   focus:ring-purple-500/30
                 "
-                  />
-                </div>
+                />
+              </div>
 
-                {/* Email */}
-                <div className="relative">
-                  <Mail
-                    className="
+              {/* Email */}
+              <div className="relative">
+                <Mail
+                  className="
                   absolute
                   left-5
                   top-1/2
@@ -384,16 +281,16 @@ export default function Contact() {
                   -translate-y-1/2
                   text-purple-300
                 "
-                  />
+                />
 
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Your Email"
-                    value={formData.email}
-                    onChange={changeHandler}
-                    required
-                    className="
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Your Email"
+                  value={formData.email}
+                  onChange={changeHandler}
+                  required
+                  className="
                   h-16
                   w-full
                   rounded-2xl
@@ -412,13 +309,13 @@ export default function Contact() {
                   focus:ring-2
                   focus:ring-purple-500/30
                 "
-                  />
-                </div>
+                />
+              </div>
 
-                {/* Subject */}
-                <div className="relative">
-                  <FileText
-                    className="
+              {/* Subject */}
+              <div className="relative">
+                <FileText
+                  className="
                   absolute
                   left-5
                   top-1/2
@@ -427,16 +324,16 @@ export default function Contact() {
                   -translate-y-1/2
                   text-purple-300
                 "
-                  />
+                />
 
-                  <input
-                    type="text"
-                    name="subject"
-                    placeholder="Subject"
-                    value={formData.subject}
-                    onChange={changeHandler}
-                    required
-                    className="
+                <input
+                  type="text"
+                  name="subject"
+                  placeholder="Subject"
+                  value={formData.subject}
+                  onChange={changeHandler}
+                  required
+                  className="
                   h-16
                   w-full
                   rounded-2xl
@@ -455,13 +352,13 @@ export default function Contact() {
                   focus:ring-2
                   focus:ring-purple-500/30
                 "
-                  />
-                </div>
+                />
+              </div>
 
-                {/* Message */}
-                <div className="relative">
-                  <Pencil
-                    className="
+              {/* Message */}
+              <div className="relative">
+                <Pencil
+                  className="
                   absolute
                   left-5
                   top-7
@@ -469,16 +366,16 @@ export default function Contact() {
                   w-5
                   text-purple-300
                 "
-                  />
+                />
 
-                  <textarea
-                    rows={7}
-                    name="message"
-                    placeholder="Your Message"
-                    value={formData.message}
-                    onChange={changeHandler}
-                    required
-                    className="
+                <textarea
+                  rows={7}
+                  name="message"
+                  placeholder="Your Message"
+                  value={formData.message}
+                  onChange={changeHandler}
+                  required
+                  className="
                   w-full
                   resize-none
                   rounded-2xl
@@ -498,14 +395,14 @@ export default function Contact() {
                   focus:ring-2
                   focus:ring-purple-500/30
                 "
-                  />
-                </div>
+                />
+              </div>
 
-                {/* Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="
+              {/* Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="
                 relative
                 flex
                 h-16
@@ -528,57 +425,34 @@ export default function Contact() {
                 disabled:cursor-not-allowed
                 disabled:opacity-50
               "
-                >
-                  {loading ? (
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  ) : (
-                    <>
-                      <Sparkles className="h-5 w-5" />
-                      <span>Send Message</span>
-                    </>
-                  )}
-                </button>
-
-                {/* Success */}
-                {success && (
-                  <div className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-4">
-                    <p className="text-center text-sm font-medium text-green-400 sm:text-base">
-                      ✓ Message sent successfully. I’ll get back to you soon.
-                    </p>
-                  </div>
+              >
+                {loading ? (
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                ) : (
+                  <>
+                    <Sparkles className="h-5 w-5" />
+                    <span>Send Message</span>
+                  </>
                 )}
+              </button>
 
-                {/* Error */}
-                {error && (
-                  <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4">
-                    <p className="text-center text-sm font-medium text-red-400 sm:text-base">
-                      {error}
-                    </p>
-                  </div>
-                )}
+              {/* Success */}
+              {success && (
+                <div className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-4">
+                  <p className="text-center text-sm font-medium text-green-400 sm:text-base">
+                    ✓ Message sent successfully. I’ll get back to you soon.
+                  </p>
+                </div>
+              )}
 
-
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
-            </button>
-
-            {/* Success */}
-            {success && (
-              <div className="bg-green-500/10 border border-green-500/30 rounded-2xl px-4 py-4">
-                <p className="text-green-400 text-sm sm:text-base font-medium text-center">
-                  ✓ Message sent successfully. I'll get back to you soon.
-                </p>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-4">
-                <p className="text-red-400 text-sm sm:text-base font-medium text-center">
-                  {error}
-                </p>
-
-              </div>
+              {/* Error */}
+              {error && (
+                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4">
+                  <p className="text-center text-sm font-medium text-red-400 sm:text-base">
+                    {error}
+                  </p>
+                </div>
+              )}
             </form>
           </div>
         </div>

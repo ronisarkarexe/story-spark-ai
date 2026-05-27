@@ -34,6 +34,7 @@ const GithubcontributorsComponent: React.FC = () => {
         const data = await githubRes.json();
         setGitHubContributors(data);
 
+
         // To fetch real time stars count
         const repoRes = await fetch(
           `https://api.github.com/repos/${owner}/${repo}`,
@@ -56,6 +57,11 @@ const GithubcontributorsComponent: React.FC = () => {
 
       } catch (e) {
         console.log(e);
+
+    
+      
+      }catch{
+
       }
 
     };

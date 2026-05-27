@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
+import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
+import StoryWorldMap from "../story-map/StoryWorldMap";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
+import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
+import { useLocation } from "react-router-dom";
 
 import {
   useGenerateAlternateEndingsMutation,
@@ -33,6 +36,46 @@ interface StoriesComponentProps {
   isLoading?: boolean;
 }
 
+type StorySentenceSegment = {
+  id: string;
+  text: string;
+  startWordIndex: number;
+  endWordIndex: number;
+};
+
+const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+  if (!content.trim()) {
+    return [];
+  }
+
+  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
+  const segments: StorySentenceSegment[] = [];
+  let wordCursor = 0;
+
+  sentenceMatches.forEach((sentence, index) => {
+    const trimmedSentence = sentence.trim();
+    if (!trimmedSentence) {
+      return;
+    }
+
+    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
+    const startWordIndex = wordCursor;
+    const endWordIndex =
+      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
+
+    segments.push({
+      id: `${index}-${startWordIndex}-${endWordIndex}`,
+      text: sentence,
+      startWordIndex,
+      endWordIndex,
+    });
+
+    wordCursor += wordsInSentence;
+  });
+
+  return segments;
+};
+
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
@@ -40,6 +83,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   isLoading,
   onPublishSuccess,
 }) => {
+  const location = useLocation();
+  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
@@ -47,8 +93,14 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [newTopicTitle, setNewTopicTitle] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
+  const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
+  const lastSavedContentRef = useRef<string>("");
+  const isSavingRef = useRef<boolean>(false);
+  const hasSavedSessionRef = useRef<boolean>(false);
+  const savedPostIdRef = useRef<string | null>(null);
   // Alternate ending state & hooks
   const [endingsCache, setEndingsCache] = useState<{
     [uuid: string]: { style: string; ending: string; fullStory: string }[];
@@ -58,6 +110,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   }>({});
   const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
   const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
+  const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
+  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
 
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
@@ -140,6 +194,21 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     setSelectTopics(topics.filter((topic) => topic.selected));
   }, [topics]);
 
+  useEffect(() => {
+    return () => {
+      audioPlayerRef.current?.stop();
+    };
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setNarrationWordIndex(0);
+    setNarrationState("idle");
+  }, [selectedStory?.uuid]);
+
+  const sentenceSegments = useMemo(() => {
+    return buildSentenceSegments(selectedStory?.content ?? "");
+  }, [selectedStory?.content]);
+
   // Sync state instantly whenever a new template is submitted or selected
   useEffect(() => {
     if (stories && stories.length > 0) {
@@ -147,27 +216,59 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     } else {
       setSelectedStory(null);
     }
+    // Reset auto-save status for new story session
+    lastSavedContentRef.current = "";
+    hasSavedSessionRef.current = false;
+    savedPostIdRef.current = null;
   }, [stories]);
 
-useEffect(() => {
-  const autoSaveStory = async () => {
-    if (!selectedStory) return;
+  useEffect(() => {
+    const autoSaveStory = async () => {
+      // 1. Prevent guest auto-save requests
+      if (!isLogin || !selectedStory) return;
 
-    const post: IPost = {
-      ...selectedStory,
-      topic: selectTopics,
+      // 2. Prevent duplicate auto-save requests for unchanged story content
+      if (selectedStory.content === lastSavedContentRef.current) {
+        return;
+      }
+
+      // 3. Only one draft/post is created per story session (prevent variation/topic duplicates)
+      if (hasSavedSessionRef.current) {
+        return;
+      }
+
+      // 4. Prevent duplicate network calls while a save is already running
+      if (isSavingRef.current) return;
+
+      isSavingRef.current = true;
+
+      const post: IPost = {
+        ...selectedStory,
+        topic: selectTopics,
+      };
+
+      try {
+        const result = await createPost(post).unwrap();
+        if (result && result.data && result.data._id) {
+          savedPostIdRef.current = result.data._id;
+        }
+        lastSavedContentRef.current = selectedStory.content;
+        hasSavedSessionRef.current = true;
+        toast.success("Story auto-saved!");
+      } catch (error) {
+        console.error("Auto-save failed", error);
+      } finally {
+        isSavingRef.current = false;
+      }
     };
 
-    try {
-      await createPost(post).unwrap();
-      toast.success("Story auto-saved!");
-    } catch (error) {
-      console.error("Auto-save failed", error);
-    }
-  };
+    // Debounce to prevent multiple immediate renders/rerenders from triggering save
+    const timer = setTimeout(() => {
+      autoSaveStory();
+    }, 1000);
 
-  autoSaveStory();
-}, [selectedStory, isLogin, selectTopics, createPost]);
+    return () => clearTimeout(timer);
+  }, [selectedStory?.content, isLogin, selectTopics, createPost]);
 
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
@@ -524,6 +625,13 @@ ${content}
     };
     setLoading(true);
     try {
+      if (savedPostIdRef.current) {
+        try {
+          await deletePost(savedPostIdRef.current).unwrap();
+        } catch (deleteError) {
+          console.warn("Failed to delete auto-saved draft before publishing:", deleteError);
+        }
+      }
       const result = await createPost(post).unwrap();
       if (result) {
         toast.success("Story published successfully!");
@@ -542,6 +650,8 @@ ${content}
     const words = getWordCount(content);
     return Math.max(1, Math.ceil(words / 200));
   };
+
+  const isNarrationActive = narrationState !== "idle";
 
 if (isLoading) {
   return (
@@ -643,6 +753,14 @@ if (isLoading) {
                 </button>
                 <button
                   type="button"
+                  className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowWorldMap(true)}
+                  disabled={!selectedStory}
+                >
+                  🗺️ World Map
+                </button>
+                <button
+                  type="button"
                   id="publish-story-btn"
                   className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                     loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
@@ -655,7 +773,41 @@ if (isLoading) {
               </div>
             </div>
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
-              <p className="break-words">{selectedStory.content}</p>
+              <p className="break-words whitespace-pre-wrap">
+                {sentenceSegments.length > 0 ? (
+                  sentenceSegments.map((segment) => {
+                    const isActiveSentence =
+                      isNarrationActive &&
+                      narrationWordIndex >= segment.startWordIndex &&
+                      narrationWordIndex <= segment.endWordIndex;
+
+                    return (
+                      <span
+                        key={segment.id}
+                        className={
+                          isActiveSentence
+                            ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-100 ring-1 ring-indigo-400/30"
+                            : undefined
+                        }
+                      >
+                        {segment.text}
+                      </span>
+                    );
+                  })
+                ) : (
+                  selectedStory.content
+                )}
+              </p>
+            </div>
+
+            <div className="relative z-10 mt-6">
+              <AudioPlayer
+                ref={audioPlayerRef}
+                text={selectedStory.content}
+                title={selectedStory.title}
+                onWordIndexChange={setNarrationWordIndex}
+                onPlaybackStateChange={setNarrationState}
+              />
             </div>
           </div>
           <div className="mt-7">
@@ -906,6 +1058,13 @@ if (isLoading) {
           </div>
         </div>
       </div>
+      {showWorldMap && selectedStory && (
+        <StoryWorldMap
+          story={selectedStory.content}
+          title={selectedStory.title}
+          onClose={() => setShowWorldMap(false)}
+        />
+      )}
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

@@ -66,13 +66,17 @@ const NavListComponent: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-[#0B1120]/80 backdrop-blur-md border-b border-slate-200/70 dark:border-white/10 transition-colors duration-300">
       <div className="relative z-10 mx-auto max-w-8xl px-5 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-8">
+        <div className="flex items-center justify-between w-full">
+          {/* Logo */}
+          <div className="flex items-center shrink-0">
             <Link to="/">
               <img src={logo} alt="logo" className="h-10 w-auto object-contain" />
             </Link>
-            <div className="hidden md:flex items-center space-x-4">
-              <NavLink to="/" end className={({ isActive }) => getLinkClass(isActive)}>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="hidden lg:flex flex-1 items-center justify-center space-x-1.5 xl:space-x-3 px-4">
+            <NavLink to="/" end className={({ isActive }) => getLinkClass(isActive)}>
                 {({ isActive }) => (
                   <>
                     {isActive && (
@@ -166,9 +170,7 @@ const NavListComponent: React.FC = () => {
                   </NavLink>
                 </>
               )}
-            </div>
           </div>
-
           <div className="flex items-center gap-3">
             <div className="hidden md:flex items-center gap-3">
               <button
@@ -177,7 +179,7 @@ const NavListComponent: React.FC = () => {
                 onClick={() => navigate("/help-center")}
                 className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-300"
               >
-                <i className="fas fa-search"></i>
+                <i className="fas fa-circle-question"></i>
               </button>
               {isLogin ? (
                 <button onClick={handelLogout} className="text-slate-600 dark:text-slate-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">

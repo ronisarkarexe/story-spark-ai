@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import logger from "../utils/logger.util";
 
 const COLORS = [
   "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4",
@@ -43,7 +44,7 @@ export const setupCollabSocket = (io: Server) => {
   const collabNamespace = io.of("/collab");
 
   collabNamespace.on("connection", (socket: Socket) => {
-    console.log("Collab socket connected:", socket.id);
+    logger.debug("Collab socket connected");
 
     // Create a new room
     socket.on("collab:create_room", ({ userId, username }) => {

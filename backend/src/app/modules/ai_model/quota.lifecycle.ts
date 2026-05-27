@@ -15,7 +15,12 @@ export class QuotaRefundGuard {
       return;
     }
     this.refunded = true;
-    await this.refund();
+    try {
+      await this.refund();
+    } catch (error) {
+      this.refunded = false;
+      throw error;
+    }
   }
 
   get hasRefunded(): boolean {

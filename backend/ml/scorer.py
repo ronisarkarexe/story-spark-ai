@@ -28,6 +28,9 @@ EMBED_DIM  = 64
 LSTM_UNITS = 64
 SAVE_DIR   = os.path.join(os.path.dirname(__file__), "saved_scorer")
 
+# Module-level cache — model and tokenizer loaded once on first call
+_model     = None
+_tokenizer = None
 
 def build_model() -> Model:
     """
@@ -72,6 +75,27 @@ def build_model() -> Model:
     )
     return model
 
+def _load_artifacts() -> None:
+    """
+    Load model and tokenizer from disk into module-level cache.
+    Called once on the first score() invocation — subsequent calls
+    reuse the already-loaded objects, avoiding repeated disk I/O.
+    """
+    global _model, _tokenizer
+
+    model_path     = os.path.join(SAVE_DIR, "scorer.keras")
+    tokenizer_path = os.path.join(SAVE_DIR, "tokenizer.pkl")
+
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(
+            f"{model_path} not found — run train_scorer.py first."
+        )
+
+    if _model is None:
+        _model = load_model(model_path)
+
+    if _tokenizer is None:
+        _tokenizer = joblib.load(tokenizer_path)
 
 def score(story_text: str, prompt_text: str) -> dict:
     """

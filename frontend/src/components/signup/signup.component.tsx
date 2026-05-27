@@ -163,7 +163,6 @@ const SignUpComponent = () => {
             ?.message ||
           "Failed to send OTP. Check backend .env email credentials.";
         toast.error(message);
-        console.log("error: ", error);
       } finally {
         setIsBusy(false);
       }
@@ -210,7 +209,6 @@ const SignUpComponent = () => {
         (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
         "OTP verification failed. Please check the code and try again.";
       toast.error(message);
-      console.log("error: ", err);
     } finally {
       setIsBusy(false);
     }
@@ -241,7 +239,6 @@ const SignUpComponent = () => {
         (error as { data?: Array<{ message?: string }> })?.data?.[0]
           ?.message || "Failed to resend OTP. Please try again.";
       toast.error(message);
-      console.log("resend error: ", error);
     } finally {
       setIsBusy(false);
     }
