@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useGetPostListsQuery } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
 import { Topic } from "../../../models/post";
@@ -17,6 +17,10 @@ const PostListsComponent: React.FC = () => {
     searchQuery: searchTerm,
     daley: 600,
   });
+
+  useEffect(() => {
+    setPage(1);
+  }, [debounceTerm]);
 
   if (debounceTerm) {
     query["searchTerm"] = debounceTerm;
@@ -47,8 +51,8 @@ const PostListsComponent: React.FC = () => {
       <span
         key={topic._id}
         className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shadow-sm border"
-        style={{ 
-          backgroundColor: `${topic.color}15`, 
+        style={{
+          backgroundColor: `${topic.color}15`,
           color: topic.color,
           borderColor: `${topic.color}30`
         }}
@@ -61,11 +65,10 @@ const PostListsComponent: React.FC = () => {
   const getStatusBadge = (isPublished: boolean) => {
     return (
       <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all ${
-          isPublished
-            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
-            : "bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
-        }`}
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all ${isPublished
+          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
+          : "bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+          }`}
       >
         {isPublished ? "Published" : "Draft"}
       </span>
@@ -187,10 +190,10 @@ const PostListsComponent: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-slate-900">
+                    <div className="text-sm text-gray-200">
                       {post.author?.name || 'Unknown User'}
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-gray-400">
                       {post.author?.email || 'N/A'}
                     </div>
                   </td>
