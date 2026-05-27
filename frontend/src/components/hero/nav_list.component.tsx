@@ -36,9 +36,10 @@ const NavListComponent: React.FC = () => {
   const user = getUserInfo();
   const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
 
-  const handelLogout = () => {
-    removeUserInfo();
-    setIsLogin(false);
+  const handleLogout = () => {
+    const handleLogout = () => {
+      removeUserInfo();
+      setIsLogin(false);
   };
 
   useEffect(() => {
@@ -182,7 +183,9 @@ const NavListComponent: React.FC = () => {
                 <i className="fas fa-circle-question"></i>
               </button>
               {isLogin ? (
-                <button onClick={handelLogout} className="text-slate-600 dark:text-slate-400 px-3 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
+                <button onClick={handleLogout} className="text-slate-600 dark:text-slate-400 px-3 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
+                  <button onClick={handleLogout} className="text-slate-600 dark:text-slate-400 px-3 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
+                  <button onClick={handleLogout} className="text-slate-600 dark:text-slate-400 px-3 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
                   LOGOUT
                 </button>
               ) : (
@@ -315,7 +318,7 @@ const NavListComponent: React.FC = () => {
             </button>
             {
               isLogin ? (
-                <button onClick={handelLogout} className="text-left text-slate-600 dark:text-slate-400 py-2">
+                <button onClick={handleLogout} className="text-left text-slate-600 dark:text-slate-400 py-2">
                   LOGOUT
                 </button>
               ) : (
