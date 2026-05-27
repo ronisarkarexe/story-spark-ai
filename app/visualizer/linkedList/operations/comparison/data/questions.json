@@ -1,0 +1,112 @@
+[
+  {
+    "question": "What is the primary goal when comparing two linked lists?",
+    "options": [
+      "To merge them into one list",
+      "To determine if they are structurally and value-wise identical",
+      "To reverse both lists",
+      "To delete duplicate nodes"
+    ],
+    "correctAnswer": 1,
+    "explanation": "The comparison aims to check whether the two linked lists have the same sequence of values in the same order."
+  },
+  {
+    "question": "What condition indicates that two linked lists are not equal?",
+    "options": [
+      "Both have the same head node",
+      "One list is longer than the other",
+      "Both lists have the same length",
+      "Both are empty"
+    ],
+    "correctAnswer": 1,
+    "explanation": "If one list ends before the other, they differ in length and are not equal."
+  },
+  {
+    "question": "What approach is commonly used to compare two linked lists?",
+    "options": [
+      "Recursive traversal",
+      "Simultaneous traversal using two pointers",
+      "Storing values in a hash map",
+      "Binary search"
+    ],
+    "correctAnswer": 1,
+    "explanation": "The most common method is using two pointers to traverse both lists node by node and compare their values."
+  },
+  {
+    "question": "What should be checked at each step during linked list comparison?",
+    "options": [
+      "If node values are equal",
+      "If both nodes are at the tail",
+      "If the next pointers match",
+      "If memory addresses are the same"
+    ],
+    "correctAnswer": 0,
+    "explanation": "At each step, the values of corresponding nodes should be compared to determine equality."
+  },
+  {
+    "question": "What does it mean if both pointers reach null at the same time during comparison?",
+    "options": [
+      "The lists are not equal",
+      "An error occurred",
+      "Both lists are equal",
+      "One list is circular"
+    ],
+    "correctAnswer": 2,
+    "explanation": "If both lists end simultaneously without any mismatches, they are equal."
+  },
+  {
+    "question": "What is the time complexity of comparing two linked lists with n nodes each?",
+    "options": [
+      "O(n^2)",
+      "O(log n)",
+      "O(n)",
+      "O(1)"
+    ],
+    "correctAnswer": 2,
+    "explanation": "Each node is visited once during comparison, resulting in linear time complexity O(n)."
+  },
+  {
+    "question": "Which case is a valid edge case in linked list comparison?",
+    "options": [
+      "One list is empty",
+      "Both lists contain the same object references",
+      "Both lists are infinite",
+      "Both lists are sorted"
+    ],
+    "correctAnswer": 0,
+    "explanation": "An important edge case is when one list is empty and the other is not."
+  },
+  {
+    "question": "How should object nodes with same values but different references be treated in comparison?",
+    "options": [
+      "As equal if their values match",
+      "As unequal always",
+      "Only compare memory addresses",
+      "Skip such nodes"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Linked list comparison typically checks for value equality, not memory address equality."
+  },
+  {
+    "question": "Why is it important to compare both length and values when comparing two linked lists?",
+    "options": [
+      "Length indicates memory usage",
+      "Lists must be sorted first",
+      "To ensure complete equality",
+      "To avoid stack overflow"
+    ],
+    "correctAnswer": 2,
+    "explanation": "Even if values match in part, differing lengths imply inequality. Full comparison ensures both length and value match."
+  },
+  {
+    "question": "What will the comparison function return if the lists differ at any node?",
+    "options": [
+      "True",
+      "Null",
+      "False",
+      "0"
+    ],
+    "correctAnswer": 2,
+    "explanation": "The comparison function returns false as soon as a mismatch is detected."
+  }
+]

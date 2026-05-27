@@ -1,0 +1,134 @@
+[
+    {
+        "question": "What is the time complexity of inserting a node at the head of a linked list?",
+        "options": [
+            "O(1)",
+            "O(n)",
+            "O(log n)",
+            "O(n²)"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Head insertion is O(1) as it only requires updating the head pointer and the new node's next pointer."
+    },
+    {
+        "question": "Which pointer modifications are needed for inserting a new node at the head?",
+        "options": [
+            "New node's next points to current head, then update head",
+            "Traverse to end first",
+            "Update tail pointer only",
+            "Modify all existing nodes' pointers"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Head insertion requires: (1) new node's next = current head, (2) head = new node."
+    },
+    {
+        "question": "What is the time complexity of inserting at the tail without a tail pointer?",
+        "options": [
+            "O(1)",
+            "O(n)",
+            "O(log n)",
+            "Depends on list size"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Without a tail pointer, you must traverse the entire list (O(n)) to reach the end before inserting."
+    },
+    {
+        "question": "When inserting at position in a linked list, what is the worst-case time complexity?",
+        "options": [
+            "O(1)",
+            "O(n)",
+            "O(log n)",
+            "O(n log n)"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Position insertion is O(n) in the worst case when inserting near the end of the list."
+    },
+    {
+        "question": "What special case must be handled when inserting into an empty linked list?",
+        "options": [
+            "Update both head and tail pointers",
+            "Only update head pointer",
+            "Create a circular reference",
+            "No special handling needed"
+        ],
+        "correctAnswer": 0,
+        "explanation": "For an empty list, both head and tail pointers should point to the new node."
+    },
+    {
+        "question": "What is the correct sequence for inserting a node after a given reference node?",
+        "options": [
+            "newNode.next = refNode.next; refNode.next = newNode",
+            "refNode.next = newNode; newNode.next = refNode.next",
+            "Only set refNode.next = newNode",
+            "Traverse the entire list first"
+        ],
+        "correctAnswer": 0,
+        "explanation": "First set newNode's next to refNode's next, then update refNode's next to point to newNode."
+    },
+    {
+        "question": "Which of these is NOT an advantage of linked list insertion over array insertion?",
+        "options": [
+            "No need to shift existing elements",
+            "Dynamic size growth",
+            "Better cache locality",
+            "No reallocation needed"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Linked lists generally have worse cache locality than arrays due to non-contiguous memory allocation."
+    },
+    {
+        "question": "What should you do when inserting at a position that's greater than the list length?",
+        "options": [
+            "Insert at head",
+            "Insert at tail",
+            "Throw an error or handle gracefully",
+            "Create multiple empty nodes"
+        ],
+        "correctAnswer": 2,
+        "explanation": "The implementation should either throw an error or handle the out-of-bounds case gracefully."
+    },
+    {
+        "question": "Why is maintaining a tail pointer beneficial for linked list insertion?",
+        "options": [
+            "Enables O(1) tail insertion",
+            "Allows random access to elements",
+            "Reduces memory usage",
+            "Simplifies middle insertions"
+        ],
+        "correctAnswer": 0,
+        "explanation": "A tail pointer allows O(1) insertion at the tail by eliminating the need for traversal."
+    },
+    {
+        "question": "What happens if you incorrectly order pointer assignments during insertion?",
+        "options": [
+            "Memory leak",
+            "Lost nodes or broken list",
+            "Compiler error",
+            "Automatic garbage collection"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Incorrect pointer assignment order can lead to lost nodes or a broken list structure."
+    },
+    {
+        "question": "Which insertion scenario requires traversing approximately half the list on average?",
+        "options": [
+            "Head insertion",
+            "Tail insertion with tail pointer",
+            "Middle insertion at random position",
+            "Insertion after given node reference"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Random middle insertions require traversal that averages n/2 operations (O(n))."
+    },
+    {
+        "question": "What is the space complexity for a single insertion operation in a linked list?",
+        "options": [
+            "O(1)",
+            "O(n)",
+            "O(log n)",
+            "Depends on position"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Each insertion only requires space for one new node, regardless of list size (O(1))."
+    }
+]

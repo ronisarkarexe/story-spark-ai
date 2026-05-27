@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://algobuddy.vercel.app
+
+# Sitemaps
+Sitemap: https://algobuddy.vercel.app/sitemap.xml

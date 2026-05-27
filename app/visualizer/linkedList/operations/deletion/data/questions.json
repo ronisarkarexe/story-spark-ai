@@ -1,0 +1,156 @@
+[
+    {
+        "question": "What is the time complexity of deleting the head node in a linked list?",
+        "options": [
+            "O(1)",
+            "O(n)",
+            "O(log n)",
+            "O(n²)"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Head deletion is O(1) as it only requires updating the head pointer."
+    },
+    {
+        "question": "What special case must be handled when deleting the last node in a linked list?",
+        "options": [
+            "Update both head and tail pointers to null",
+            "Only update the head pointer",
+            "Create a circular reference",
+            "No special handling needed"
+        ],
+        "correctAnswer": 0,
+        "explanation": "When deleting the last node, both head and tail pointers must be set to null as the list becomes empty."
+    },
+    {
+        "question": "What is the time complexity of deleting a node by value in the worst case?",
+        "options": [
+            "O(1)",
+            "O(n)",
+            "O(log n)",
+            "O(n log n)"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Deleting by value is O(n) in the worst case as it may require traversing the entire list."
+    },
+    {
+        "question": "Which pointer modifications are needed when deleting a middle node?",
+        "options": [
+            "Update the previous node's next to skip the deleted node",
+            "Set the deleted node's next to null",
+            "Update the head pointer",
+            "Both A and B"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Middle deletion requires: (1) bypassing the deleted node in the list, and (2) cleaning up the deleted node's pointers."
+    },
+    {
+        "question": "What is the main advantage of linked list deletion over array deletion?",
+        "options": [
+            "No need to shift remaining elements",
+            "Better cache locality",
+            "Lower memory usage overall",
+            "Built-in sorting after deletion"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Linked lists don't require shifting elements during deletion, unlike arrays."
+    },
+    {
+        "question": "What critical step is needed when deleting nodes in languages without garbage collection?",
+        "options": [
+            "Manually free the deleted node's memory",
+            "Update all other nodes' data",
+            "Create a new tail pointer",
+            "Nothing special is needed"
+        ],
+        "correctAnswer": 0,
+        "explanation": "In non-GC languages, you must manually free the memory of deleted nodes to prevent leaks."
+    },
+    {
+        "question": "When deleting at position in a linked list, what case requires O(1) time?",
+        "options": [
+            "Position 0 (head)",
+            "Middle positions",
+            "Last position without tail pointer",
+            "All positions"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Only head deletion (position 0) is O(1); others may require traversal."
+    },
+    {
+        "question": "What happens if you forget to update the tail pointer when deleting the last node?",
+        "options": [
+            "The tail pointer becomes dangling",
+            "Automatic garbage collection fixes it",
+            "No issues occur",
+            "The list becomes circular"
+        ],
+        "correctAnswer": 0,
+        "explanation": "The tail pointer would point to deallocated memory, creating a dangerous dangling pointer."
+    },
+    {
+        "question": "Which deletion scenario requires traversing approximately half the list on average?",
+        "options": [
+            "Head deletion",
+            "Tail deletion with tail pointer",
+            "Random middle position deletion",
+            "Deleting by value at head"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Random middle deletions average n/2 traversal operations (O(n))."
+    },
+    {
+        "question": "What should be your first step in any deletion operation?",
+        "options": [
+            "Check if the list is empty",
+            "Update the head pointer",
+            "Free all memory",
+            "Traverse the entire list"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Always first check for empty list to avoid null pointer exceptions."
+    },
+    {
+        "question": "Why is tail deletion O(n) in a singly linked list without a tail pointer?",
+        "options": [
+            "Need to traverse to find the new tail",
+            "Requires sorting after deletion",
+            "Must update all node values",
+            "Memory allocation is slow"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Without a tail pointer, you must traverse from head to find the penultimate node to update."
+    },
+    {
+        "question": "What is the space complexity of deletion operations in a linked list?",
+        "options": [
+            "O(1)",
+            "O(n)",
+            "O(log n)",
+            "Depends on the position"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Deletion uses constant space regardless of list size, only needing a few temporary pointers."
+    },
+    {
+        "question": "When deleting by value, what happens if the value appears multiple times?",
+        "options": [
+            "Only the first occurrence is deleted",
+            "All occurrences are deleted",
+            "Random occurrence is deleted",
+            "Implementation determines behavior"
+        ],
+        "correctAnswer": 3,
+        "explanation": "The behavior depends on implementation - some delete first match, some delete all."
+    },
+    {
+        "question": "What optimization allows O(1) tail deletion?",
+        "options": [
+            "Maintaining a tail pointer in doubly linked list",
+            "Using a circular list",
+            "Keeping a size counter",
+            "Storing all node addresses in an array"
+        ],
+        "correctAnswer": 0,
+        "explanation": "A doubly linked list with tail pointer enables O(1) tail deletion via the previous pointers."
+    }
+]

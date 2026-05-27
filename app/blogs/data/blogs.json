@@ -1,0 +1,46 @@
+[
+    {
+      "id": 1,
+      "title": "Is Data Structures and Algorithms Important for Web Developers?",
+      "excerpt": "Explore why understanding data structures and algorithms can help web developers write efficient, scalable, and maintainable code.",
+      "date": "May 17, 2025",
+      "readTime": "8 min read",
+      "slug": "/blogs/Content/dsaWebDev",
+      "category": "Web Development",
+      "tags": ["DSA", "Web Development", "Algorithms"],
+      "image": "/blog/dsaWebDev.png"
+    },
+    {
+      "id": 2,
+      "title": "Are Data Structures and Algorithms Different for Different Languages?",
+      "excerpt": "Explore the differences in data structures and algorithms across various programming languages and how it impacts implementation.",
+      "date": "May 19, 2025",
+      "readTime": "5 min read",
+      "slug": "/blogs/Content/dsaDifferent",
+      "category": "Programming Languages",
+      "tags": ["DSA", "Programming Languages", "Algorithms"],
+      "image": "/blog/dsaDifferent.png"
+    },
+    {
+      "id": 3,
+      "title": "What Are Data Structures? A Beginner-Friendly Guide",
+      "excerpt": "Confused by terms like arrays, stacks, or linked lists? This guide breaks down data structures in a simple, relatable way. Understand what they are, why they matter, and how they form the backbone of every efficient program.",
+      "date": "May 23, 2025",
+      "readTime": "10 min read",
+      "slug": "/blogs/Content/whatIsDS",
+      "category": "Computer Science Fundamentals ",
+      "tags": ["Data Structures", "DSA", "Algorithms", "Beginner Programming"],
+      "image": "/blog/whatIsDS.png"
+    },
+    {
+      "id": 4,
+      "title": "Time Required to Learn and Master DSA",
+      "excerpt": "Find out how long it takes to learn and master DSA for web development. Explore realistic timelines, learning strategies, and tips for success.",
+      "date": "Jun 20, 2025",
+      "readTime": "10 min read",
+      "slug": "/blogs/Content/timeRequired",
+      "category": "DSA",
+      "tags": ["Data Structures", "DSA", "Algorithms", "Beginner Programming"],
+      "image": "/blog/timeRequired.png"
+    }
+  ]

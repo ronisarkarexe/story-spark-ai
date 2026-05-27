@@ -1,0 +1,96 @@
+name: Conditional Auto Approve
+
+on:
+  # जब भी किसी पीआर पर चेक्स (Status/Check Suite) पूरे हों
+  check_suite:
+    types: [completed]
+  status:
+
+jobs:
+  check-and-approve:
+    runs-on: ubuntu-latest
+    if: github.repository == 'PankajSingh34/AlgoBuddy'
+    steps:
+      - name: Check Statuses and Approve
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            
+            // 1. इस इवेंट से जुड़े Pull Requests की लिस्ट निकालें
+            let pullRequests = [];
+            if (context.eventName === 'check_suite') {
+              pullRequests = context.payload.check_suite.pull_requests;
+            } else {
+              // status इवेंट के लिए SHA के ज़रिए PR ढूंढें
+              const sha = context.payload.sha;
+              const prs = await github.rest.pulls.list({ owner, repo, state: 'open' });
+              pullRequests = prs.data.filter(pr => pr.head.sha === sha);
+            }
+
+            if (pullRequests.length === 0) {
+              console.log("No open pull request found for this event.");
+              return;
+            }
+
+            const prNumber = pullRequests[0].number;
+            const prRef = pullRequests[0].head.sha;
+
+            // 2. इस Commit SHA के सारे कंबाइंड चेक्स/स्टेटस गेट करें
+            const statuses = await github.rest.repos.getCombinedStatusForRef({
+              owner,
+              repo,
+              ref: prRef,
+            });
+
+            const checkRuns = await github.rest.checks.listForRef({
+              owner,
+              repo,
+              ref: prRef,
+            });
+
+            // 3. फ़िल्टर लॉजिक: वर्सेल (Vercel) को छोड़कर बाकी चेक्स की जांच
+            let allOthersPassed = true;
+            let evaluatedChecksCount = 0;
+
+            // स्टेटस चेक करें (पुराने गिटहब स्टेटस के लिए)
+            for (const status of statuses.data.statuses) {
+              if (status.context.toLowerCase().includes('vercel')) {
+                continue; // Vercel को छोड़ दो
+              }
+              evaluatedChecksCount++;
+              if (status.state !== 'success') {
+                allOthersPassed = false;
+              }
+            }
+
+            // चेक रन्स देखें (GitHub Actions आदि के लिए)
+            for (const run of checkRuns.data.check_runs) {
+              if (run.name.toLowerCase().includes('vercel') || run.app?.slug?.toLowerCase().includes('vercel')) {
+                continue; // Vercel को छोड़ दो
+              }
+              // अगर कोई चेक अभी चल रहा है या पास नहीं हुआ है
+              if (run.status !== 'completed') {
+                allOthersPassed = false;
+              } else if (run.conclusion !== 'success' && run.conclusion !== 'neutral') {
+                allOthersPassed = false;
+              }
+              evaluatedChecksCount++;
+            }
+
+            console.log(`Evaluated ${evaluatedChecksCount} non-Vercel checks. Status: ${allOthersPassed}`);
+
+            // 4. अगर वर्सेल के अलावा बाकी सारे चेक्स पास हैं, तो APPROVE कर दो
+            if (allOthersPassed && evaluatedChecksCount > 0) {
+              await github.rest.pulls.createReview({
+                owner,
+                repo,
+                pull_number: prNumber,
+                event: 'APPROVE',
+                body: 'code looks good',
+              });
+              console.log(`PR #${prNumber} has been automatically approved with 'code looks good'!`);
+            } else {
+              console.log("Some non-Vercel checks are either pending or failed. Skipping auto-approval.");
+            }
