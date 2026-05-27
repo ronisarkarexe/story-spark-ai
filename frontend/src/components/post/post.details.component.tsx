@@ -210,9 +210,16 @@ const PostDetailsComponent = () => {
               </div>
             </div>
 
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-gray-300 mb-6">
+            <h1 className={`text-4xl font-bold text-slate-900 dark:text-gray-300 ${post?.language ? "mb-2" : "mb-6"}`}>
               {post?.title}
             </h1>
+            {post?.language && (
+              <div className="flex gap-2 mb-6">
+                <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
+                  🌐 {post.language}
+                </span>
+              </div>
+            )}
 
             <div className="mb-12">
               <img

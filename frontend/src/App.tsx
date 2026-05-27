@@ -38,6 +38,7 @@ import ProfileComponent from "./components/dashboard/profile/profile.component";
 import PaymentComponent from "./components/home/pricing/payment.component";
 import Contact from "./components/contactus/contactus";
 import HelpCenterComponent from "./components/help_center/help_center.component";
+import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import AboutUsComponent from "./components/footer/about-us.tsx";
 import CareerComponent from "./components/footer/career.tsx";
 // import ContactUsComponent from "./components/footer/contact-us.tsx";
@@ -140,6 +141,21 @@ function App() {
           />
 
           <Route
+            path="analytics"
+            element={
+              <ProtectedRoute
+                element={<AnalyticsPage />}
+                allowedRoles={[
+                  USER_ROLE.USER,
+                  USER_ROLE.ADMIN,
+                  USER_ROLE.SUPER_ADMIN,
+                  USER_ROLE.WRITER,
+                ]}
+              />
+            }
+          />
+
+          <Route
             path="post-lists"
             element={
               <ProtectedRoute
@@ -153,6 +169,7 @@ function App() {
               />
             }
           />
+
 
           <Route
             path="settings"

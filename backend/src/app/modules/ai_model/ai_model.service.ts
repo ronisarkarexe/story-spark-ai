@@ -28,12 +28,12 @@ const FREE_ALTERNATE_ENDING_FAILED_MESSAGE =
   "Alternate ending generation failed. Your free generation quota has been restored.";
 
 const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
-  const { prompt, wordLength, numStories } = payload;
+  const { prompt, wordLength, numStories, language } = payload;
 
   try {
     const result = await raceGenerationWithTimeout(
       (signal) =>
-        generateWithGeminiStories(prompt, wordLength, numStories, signal),
+        generateWithGeminiStories(prompt, wordLength, numStories, language, signal),
       AUTHENTICATED_GENERATION_TIMEOUT_MS
     );
     assertSuccessfulGeneration(result, GENERATION_FAILED_MESSAGE);
@@ -50,11 +50,11 @@ const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel) => {
-  const { prompt } = payload;
+  const { prompt, language } = payload;
 
   try {
     const result = await raceGenerationWithTimeout(
-      (signal) => generateWithGeminiStories(prompt, 150, 2, signal),
+      (signal) => generateWithGeminiStories(prompt, 150, 2, language, signal),
       FREE_GENERATION_TIMEOUT_MS
     );
     assertSuccessfulGeneration(result, FREE_GENERATION_FAILED_MESSAGE);
@@ -74,11 +74,11 @@ const aiModelAlternateEndings = async (
   payload: IAlternateEndingPayload,
   _token: ITokenPayload
 ) => {
-  const { title, content, tag } = payload;
+  const { title, content, tag, language } = payload;
 
   try {
     const result = await raceGenerationWithTimeout(
-      () => generateAlternateEndingsWithGemini(title, content, tag),
+      () => generateAlternateEndingsWithGemini(title, content, tag, language),
       AUTHENTICATED_GENERATION_TIMEOUT_MS
     );
     assertSuccessfulGeneration(result, ALTERNATE_ENDING_FAILED_MESSAGE);
@@ -97,11 +97,11 @@ const aiModelAlternateEndings = async (
 const aiFreeModelAlternateEndings = async (
   payload: IAlternateEndingPayload
 ) => {
-  const { title, content, tag } = payload;
+  const { title, content, tag, language } = payload;
 
   try {
     const result = await raceGenerationWithTimeout(
-      () => generateAlternateEndingsWithGemini(title, content, tag),
+      () => generateAlternateEndingsWithGemini(title, content, tag, language),
       AUTHENTICATED_GENERATION_TIMEOUT_MS
     );
     assertSuccessfulGeneration(result, FREE_ALTERNATE_ENDING_FAILED_MESSAGE);

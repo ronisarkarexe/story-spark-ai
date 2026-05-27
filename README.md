@@ -94,6 +94,23 @@
    npm run start:frontend   # serves built static app (preview)
    ```
 
+### Deploying on Vercel
+
+Use **two** Vercel projects from this monorepo:
+
+| Project | Root directory | Example domain |
+|---------|----------------|----------------|
+| Frontend | `frontend` | `storysparkai.vercel.app` |
+| Backend API | `backend` | `apistorysparkai.vercel.app` |
+
+**Frontend environment variables** (redeploy after changing):
+
+- `VITE_BASE_URL` = `https://<your-api>.vercel.app/api/v1`
+- `VITE_SOCKET_URL` = `https://notification-socket-io.onrender.com` (or your own persistent Node host)
+- Do **not** point `VITE_SOCKET_URL` at your Vercel API URL — Vercel serverless cannot run Socket.IO, which causes endless `/socket.io/` **404** logs.
+
+**Backend environment variables:** set `DATABASE_URL`, JWT secrets, AI keys, and `CORS_ORIGINS` including `https://storysparkai.vercel.app`.
+
 **Git:** Use a **single** repository root (one `.git` folder). Do not nest another `.git` inside `frontend/` or `backend/`.
 
 <a id="environment-variables"></a>

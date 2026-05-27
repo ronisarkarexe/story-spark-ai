@@ -18,6 +18,7 @@ export interface IStories {
   content: string;
   tag: string;
   imageURL: string;
+  language?: string;
 }
 
 interface IPost extends IStories {
@@ -79,6 +80,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
         title: selectedStory.title,
         content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
         tag: selectedStory.tag,
+
+        language: selectedStory.language || "English",
+
       };
       
       const generationRequest = isLogin
@@ -567,9 +571,17 @@ if (isLoading) {
         <div className="col-span-1 lg:col-span-8 flex flex-col">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
-              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400 mb-2">
                 {selectedStory?.title}
               </h1>
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center rounded-full bg-purple-900/60 text-purple-300 border border-purple-700/50 py-1 px-3 text-xs font-semibold">
+                  🎭 {selectedStory.tag}
+                </span>
+                <span className="inline-flex items-center rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
+                  🌐 {selectedStory.language || "English"}
+                </span>
+              </div>
             </div>
             <div className="flex justify-start sm:justify-end">
               <div className="flex -space-x-5">
@@ -871,6 +883,9 @@ if (isLoading) {
                   <div className="flex items-center gap-2">
                     <div className="inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
                       {selectedStory.tag.toUpperCase()}
+                    </div>
+                    <div className="inline-flex items-center rounded-full bg-indigo-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
+                      🌐 {(selectedStory.language || "English").toUpperCase()}
                     </div>
                     <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
                       ⏱️ {calculateReadingTime(selectedStory.content)} min read

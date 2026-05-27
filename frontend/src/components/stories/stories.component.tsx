@@ -20,6 +20,20 @@ type Inputs = {
 const MAX_PROMPT_LENGTH = 2000;
 const WARN_THRESHOLD = 0.85;
 
+const LANGUAGES = [
+  { code: "en", name: "English" },
+  { code: "hi", name: "Hindi" },
+  { code: "es", name: "Spanish" },
+  { code: "fr", name: "French" },
+  { code: "de", name: "German" },
+  { code: "ja", name: "Japanese" },
+  { code: "ko", name: "Korean" },
+  { code: "bn", name: "Bengali" },
+  { code: "ta", name: "Tamil" },
+  { code: "te", name: "Telugu" },
+  { code: "mr", name: "Marathi" }
+];
+
 const StoriesComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -37,7 +51,10 @@ const StoriesComponent = () => {
   const [selectedLength, setSelectedLength] = useState<string>("medium");
   const [textareaValue, setTextareaValue] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const languageDropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
   const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
@@ -57,11 +74,18 @@ const StoriesComponent = () => {
       ) {
         setIsDropdownOpen(false);
       }
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLanguageDropdownOpen(false);
+      }
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsDropdownOpen(false);
+        setIsLanguageDropdownOpen(false);
       }
     };
 
@@ -122,6 +146,7 @@ const StoriesComponent = () => {
           selectedLength === "short" ? 150
           : selectedLength === "long" ? 500
           : 250,
+        language: selectedLanguage,
       };
       const generationRequest = login
         ? generateModel(payload)
@@ -290,23 +315,63 @@ const StoriesComponent = () => {
       ))}
     </div>
 
-    <div className="flex items-center gap-2 mb-3">
-      <span className="text-xs text-gray-400 mr-1">📏 Length:</span>
+    <div className="flex flex-wrap items-center gap-4 mb-3">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-400 mr-1">📏 Length:</span>
 
-      {(["short", "medium", "long"] as const).map((length) => (
-        <button
-          key={length}
-          type="button"
-          onClick={() => setSelectedLength(length)}
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-            selectedLength === length
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-          }`}
-        >
-          {length.charAt(0).toUpperCase() + length.slice(1)}
-        </button>
-      ))}
+        {(["short", "medium", "long"] as const).map((length) => (
+          <button
+            key={length}
+            type="button"
+            onClick={() => setSelectedLength(length)}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+              selectedLength === length
+                ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+                : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+            }`}
+          >
+            {length.charAt(0).toUpperCase() + length.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2 ml-0 sm:ml-auto">
+        <span className="text-xs text-gray-400 mr-1">🌐 Language:</span>
+        <div className="relative" ref={languageDropdownRef}>
+          <button
+            key="lang-selector-btn"
+            type="button"
+            onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+            className="flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 cursor-pointer"
+          >
+            <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
+            <span className="text-gray-400 text-[10px]">▼</span>
+          </button>
+
+          {isLanguageDropdownOpen && (
+            <ul className="absolute right-0 z-20 mt-1 max-h-48 w-36 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
+              {LANGUAGES.map((lang) => (
+                <li key={lang.code}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedLanguage(lang.name);
+                      setIsLanguageDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-xs transition-colors duration-150 cursor-pointer ${
+                      selectedLanguage === lang.name
+                        ? "bg-indigo-600 text-white font-bold"
+                        : "text-gray-400 hover:bg-indigo-600/50 hover:text-white"
+                    }`}
+                  >
+                    {lang.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
 
     <div className="relative">

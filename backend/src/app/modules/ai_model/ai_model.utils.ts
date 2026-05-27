@@ -41,6 +41,7 @@ interface Story {
   content: string;
   tag: string;
   imageURL?: string;
+  language?: string;
 }
 
 const throwIfAborted = (signal?: AbortSignal): void => {
@@ -53,6 +54,7 @@ export async function generateWithGeminiStories(
   prompt: string,
   wordLength: number = 250,
   numStories: number = 2,
+  language: string = "English",
   signal?: AbortSignal
 ): Promise<Story[]> {
   throwIfAborted(signal);
@@ -66,8 +68,10 @@ export async function generateWithGeminiStories(
 
     const response = await chatSession.sendMessage(
       `Generate ${numStories} different short stories based on the following prompt: "${prompt}".
+        The stories MUST be written entirely in the ${language} language.
         Each story should be in JSON format with fields: "title", "content", and "tag".
         Ensure each story is approximately ${wordLength} words long.
+        The "tag" field should contain a 1-2 word genre or theme in English (e.g., "drama", "comedy", "fantasy") so it can be used for image lookup, while the "title" and "content" MUST be written in the ${language} language.
         Return the output as a JSON array.`
     );
 
@@ -104,6 +108,7 @@ export async function generateWithGeminiStories(
 
     return stories.map((story, index) => ({
       ...story,
+      language,
       imageURL: imageResults[index].imageUrl,
       uuid: uuidv4(),
     }));
@@ -122,7 +127,12 @@ export async function generateWithGeminiStories(
 export async function generateAlternateEndingsWithGemini(
   title: string,
   content: string,
-  tag: string
+
+  tag: string,
+  language: string = "English"
+
+ 
+
 ): Promise<IAlternateEnding[]> {
   try {
     const chatSession = model.startChat({
@@ -131,7 +141,10 @@ export async function generateAlternateEndingsWithGemini(
       history: [],
     });
     const response = await chatSession.sendMessage(
-      `You are a professional narrative editor. Analyze the following story (Title: "${title}", Genre/Tag: "${tag}"):
+
+      `You are a professional narrative editor. Analyze the following story (Title: "${title}", Genre/Tag: "${tag}", Language: "${language}"):
+
+      
       
       Story Content:
       "${content}"
@@ -143,6 +156,7 @@ export async function generateAlternateEndingsWithGemini(
       4. "Open Ending"
       5. "Cliffhanger Ending"
       
+      The generated alternate endings and the rewritten stories MUST be written entirely in the ${language} language.
       For each alternate ending, provide:
       - "style": The style name exactly as listed above.
       - "ending": A short paragraph or two describing the alternate ending scene itself.

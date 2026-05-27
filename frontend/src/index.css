@@ -560,10 +560,15 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
   scroll-behavior: smooth;
 }
 
@@ -729,5 +734,10 @@ html.dark .scroll-fab-btn:active {
   .magic-cursor-glow,
   .magic-cursor-sparkle {
     transform: none;
+  }
+  .magic-cursor-sparkle,
+  .magic-cursor-dot,
+  .magic-cursor-glow {
+    display: none;
   }
 }
