@@ -12,13 +12,13 @@ const NavListComponent: React.FC = () => {
   const navigate = useNavigate();
 
   const getLinkClass = (isActive: boolean) =>
-    `flex items-center px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 border ${isActive
+    `flex items-center px-3 py-1.5 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 border ${isActive
       ? "bg-custom/10 text-slate-900 dark:text-white border-custom/35 shadow-[0_0_15px_rgba(59,130,246,0.25)]"
       : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-custom"
     }`;
 
   const getMobileLinkClass = (isActive: boolean) =>
-    `flex items-center px-4 py-2.5 rounded-xl text-base font-semibold transition-all duration-300 border ${isActive
+    `flex items-center px-3 py-2.5 rounded-xl text-base font-semibold transition-all duration-300 border ${isActive
       ? "bg-custom/15 text-slate-900 dark:text-white border-custom/40 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
       : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
     }`;
@@ -65,7 +65,7 @@ const NavListComponent: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-[#0B1120]/80 backdrop-blur-md border-b border-slate-200/70 dark:border-white/10 transition-colors duration-300">
-      <div className="relative z-10 mx-auto max-w-8xl px-5 py-4">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between w-full">
           {/* Logo */}
           <div className="flex items-center shrink-0">
@@ -75,7 +75,7 @@ const NavListComponent: React.FC = () => {
           </div>
 
           {/* Navigation Links */}
-          <div className="hidden lg:flex flex-1 items-center justify-center space-x-1.5 xl:space-x-3 px-4">
+          <div className="hidden lg:flex flex-1 items-center justify-center space-x-1.5 xl:space-x-3">
             <NavLink to="/" end className={({ isActive }) => getLinkClass(isActive)}>
                 {({ isActive }) => (
                   <>
@@ -182,18 +182,18 @@ const NavListComponent: React.FC = () => {
                 <i className="fas fa-circle-question"></i>
               </button>
               {isLogin ? (
-                <button onClick={handelLogout} className="text-slate-600 dark:text-slate-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
+                <button onClick={handelLogout} className="text-slate-600 dark:text-slate-400 px-3 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
                   LOGOUT
                 </button>
               ) : (
                 <>
                   <Link to="/login">
-                    <button className="text-slate-600 dark:text-slate-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
+                    <button className="text-slate-600 dark:text-slate-400 px-3 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
                       LOGIN
                     </button>
                   </Link>
                   <Link to="/signup">
-                    <button className="text-slate-600 dark:text-slate-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
+                    <button className="text-slate-600 dark:text-slate-400 px-3 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
                       SIGN UP
                     </button>
                   </Link>
@@ -237,7 +237,7 @@ const NavListComponent: React.FC = () => {
         />
 
         {menuOpen && (
-          <div className="md:hidden px-5 pb-4 flex flex-col gap-3 border-t border-slate-200/70 dark:border-white/10 mt-2">
+          <div className="md:hidden px-4 pb-4 flex flex-col gap-3 border-t border-slate-200/70 dark:border-white/10 mt-2">
             <NavLink to="/" end className={({ isActive }) => getMobileLinkClass(isActive)}>
               {({ isActive }) => (
                 <>

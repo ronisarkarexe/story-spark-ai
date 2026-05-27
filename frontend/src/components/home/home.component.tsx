@@ -14,7 +14,7 @@ const HomeComponent = () => {
   const isLogin = isLoggedIn();
   return (
     <>
-      <div className="grid grid-cols-12 items-start gap-8 px-5 mb-10 pt-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-12 items-start gap-8 mb-10 pt-10">
         <div className="col-span-12 lg:col-span-8 min-w-0">
           <FeatureComponent />
           <LatestPostsComponent />
