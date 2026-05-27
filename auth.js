@@ -6,7 +6,9 @@
 let currentMode = 'signin';
 
 // ── Google Identity Services (GIS) Client ID ──
-const GOOGLE_CLIENT_ID = 'const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'';
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+
+let isSubmitting = false;
 
 /* ── DOM Init & Global Handler Registrations ── */
 document.addEventListener('DOMContentLoaded', () => {
@@ -29,9 +31,165 @@ document.addEventListener('DOMContentLoaded', () => {
         authForm.addEventListener('submit', handleFormSubmit);
     }
 
+    // 4b. Input enhancements (inline validation + strength meter)
+    initInlineValidation();
+
     // 5. Initialize Google Identity Services
     setTimeout(initGoogleAuth, 500);
 });
+
+function initInlineValidation() {
+    const nameField = document.getElementById('name-field');
+    const emailField = document.getElementById('email-field');
+    const passwordField = document.getElementById('password-field');
+
+    if (nameField) {
+        nameField.addEventListener('blur', () => validateName(true));
+        nameField.addEventListener('input', () => {
+            if (nameField.getAttribute('aria-invalid') === 'true') validateName(true);
+        });
+    }
+
+    if (emailField) {
+        emailField.addEventListener('blur', () => validateEmail(true));
+        emailField.addEventListener('input', () => {
+            if (emailField.getAttribute('aria-invalid') === 'true') validateEmail(true);
+        });
+    }
+
+    if (passwordField) {
+        passwordField.addEventListener('blur', () => validatePassword(true));
+        passwordField.addEventListener('input', () => {
+            updatePasswordStrengthUI(passwordField.value || '');
+            if (passwordField.getAttribute('aria-invalid') === 'true') validatePassword(true);
+        });
+        updatePasswordStrengthUI(passwordField.value || '');
+    }
+}
+
+function setAlert(variant, message) {
+    const alertEl = document.getElementById('form-alert');
+    if (!alertEl) return;
+
+    if (!message) {
+        alertEl.classList.add('hidden');
+        alertEl.removeAttribute('data-variant');
+        alertEl.textContent = '';
+        return;
+    }
+
+    const icon = variant === 'success' ? 'check_circle' : variant === 'error' ? 'error' : 'info';
+    alertEl.setAttribute('data-variant', variant);
+    alertEl.innerHTML = `
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1; margin-top: 1px;">${icon}</span>
+        <div class="text-[13px] leading-relaxed">${message}</div>
+    `;
+    alertEl.classList.remove('hidden');
+}
+
+function setFieldError(fieldId, errorId, message) {
+    const field = document.getElementById(fieldId);
+    const errorEl = document.getElementById(errorId);
+    if (field) field.setAttribute('aria-invalid', message ? 'true' : 'false');
+    if (!errorEl) return;
+
+    if (!message) {
+        errorEl.textContent = '';
+        errorEl.classList.remove('is-visible');
+        return;
+    }
+    errorEl.textContent = message;
+    errorEl.classList.add('is-visible');
+}
+
+function validateName(showInline) {
+    const nameField = document.getElementById('name-field');
+    if (!nameField || currentMode !== 'signup') return true;
+
+    const value = (nameField.value || '').trim();
+    let message = '';
+    if (!value) message = 'Please enter your name.';
+    else if (value.length < 2) message = 'Name must be at least 2 characters.';
+
+    if (showInline) setFieldError('name-field', 'name-error', message);
+    return !message;
+}
+
+function validateEmail(showInline) {
+    const emailField = document.getElementById('email-field');
+    if (!emailField) return true;
+
+    const value = (emailField.value || '').trim();
+    let message = '';
+    if (!value) message = 'Please enter your email address.';
+    else if (!emailField.checkValidity()) message = 'Enter a valid email address (e.g., name@example.com).';
+
+    if (showInline) setFieldError('email-field', 'email-error', message);
+    return !message;
+}
+
+function getPasswordScore(password) {
+    const value = password || '';
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
+    if (/\d/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+    return Math.min(score, 4);
+}
+
+function updatePasswordStrengthUI(password) {
+    const bar = document.getElementById('password-meter-bar');
+    const strength = document.getElementById('password-strength');
+    if (!bar && !strength) return;
+
+    const score = getPasswordScore(password);
+    const pct = Math.round((score / 4) * 100);
+    if (bar) bar.style.width = `${pct}%`;
+
+    if (strength) {
+        if (!password) {
+            strength.textContent = '';
+        } else if (score <= 1) {
+            strength.textContent = 'Strength: weak';
+        } else if (score === 2) {
+            strength.textContent = 'Strength: fair';
+        } else if (score === 3) {
+            strength.textContent = 'Strength: good';
+        } else {
+            strength.textContent = 'Strength: strong';
+        }
+    }
+}
+
+function validatePassword(showInline) {
+    const passwordField = document.getElementById('password-field');
+    if (!passwordField) return true;
+
+    const value = passwordField.value || '';
+    let message = '';
+    if (!value) message = 'Please enter your password.';
+    else if (value.length < 8) message = 'Password must be at least 8 characters.';
+    else if (!/[A-Za-z]/.test(value) || !/\d/.test(value)) message = 'Use a mix of letters and numbers.';
+
+    if (showInline) setFieldError('password-field', 'password-error', message);
+    return !message;
+}
+
+function setSubmitting(submitting) {
+    isSubmitting = submitting;
+    const submitBtn = document.getElementById('submit-btn');
+    const spinner = document.getElementById('submit-btn-spinner');
+    const emailField = document.getElementById('email-field');
+    const nameField = document.getElementById('name-field');
+    const passwordField = document.getElementById('password-field');
+
+    if (submitBtn) submitBtn.disabled = submitting;
+    if (spinner) spinner.classList.toggle('hidden', !submitting);
+    if (emailField) emailField.disabled = submitting;
+    if (nameField) nameField.disabled = submitting;
+    if (passwordField) passwordField.disabled = submitting;
+}
 
 /* ── Advanced Particle System (Canvas + Mouse Interactions) ── */
 function initParticleSystem() {
@@ -148,6 +306,7 @@ function toggleAuthMode(mode) {
         const signupFields = document.getElementById('signup-fields');
         const nameField = document.getElementById('name-field');
         const submitBtn = document.getElementById('submit-btn');
+        const submitBtnText = document.getElementById('submit-btn-text');
         const tabSignin = document.getElementById('tab-signin');
         const tabSignup = document.getElementById('tab-signup');
         const forgotPass = document.getElementById('forgot-password-link') || document.querySelector('a[href="#"]');
@@ -158,7 +317,8 @@ function toggleAuthMode(mode) {
             if (signupFields) signupFields.classList.remove('hidden');
             if (nameField) nameField.required = true;
             if (forgotPass) forgotPass.classList.add('invisible');
-            if (submitBtn) submitBtn.innerText = 'Create Account';
+            if (submitBtnText) submitBtnText.innerText = 'Create Account';
+            else if (submitBtn) submitBtn.innerText = 'Create Account';
             if (googleBtnText) googleBtnText.innerText = 'sign in with Google';
             
             // Tabs styling
@@ -176,7 +336,8 @@ function toggleAuthMode(mode) {
             if (signupFields) signupFields.classList.add('hidden');
             if (nameField) nameField.required = false;
             if (forgotPass) forgotPass.classList.remove('invisible');
-            if (submitBtn) submitBtn.innerText = 'Log In to Story Spark';
+            if (submitBtnText) submitBtnText.innerText = 'Log In to Story Spark';
+            else if (submitBtn) submitBtn.innerText = 'Log In to Story Spark';
             if (googleBtnText) googleBtnText.innerText = 'Sign in with Google';
             
             // Tabs styling
@@ -191,6 +352,12 @@ function toggleAuthMode(mode) {
             // Push address bar quietly without reload
             window.history.replaceState(null, '', 'login.html');
         }
+
+        setAlert('', '');
+        setFieldError('name-field', 'name-error', '');
+        setFieldError('email-field', 'email-error', '');
+        setFieldError('password-field', 'password-error', '');
+        setSubmitting(false);
 
         form.classList.remove('form-transitioning');
     }, 380);
@@ -255,18 +422,54 @@ function togglePasswordVisibility() {
 /* ── Form Submission handling ── */
 function handleFormSubmit(e) {
     e.preventDefault();
+    if (isSubmitting) return;
+
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
+    const passwordField = document.getElementById('password-field');
     if (!emailField) return;
 
-    const email = emailField.value;
-    if (currentMode === 'signin') {
-        alert('Welcome back! Successfully logged in as ' + email);
-    } else {
-        const name = nameField ? nameField.value : '';
-        alert('Welcome ' + name + '! Account created successfully for ' + email);
-        toggleAuthMode('signin');
+    setAlert('', '');
+
+    const okName = validateName(true);
+    const okEmail = validateEmail(true);
+    const okPassword = validatePassword(true);
+
+    const isValid = currentMode === 'signup' ? (okName && okEmail && okPassword) : (okEmail && okPassword);
+    if (!isValid) {
+        setAlert('error', 'Please fix the highlighted fields and try again.');
+        const firstInvalid =
+            document.querySelector('[aria-invalid="true"]') ||
+            document.querySelector('#auth-form input:invalid');
+        if (firstInvalid && typeof firstInvalid.focus === 'function') firstInvalid.focus();
+        return;
     }
+
+    const email = (emailField.value || '').trim();
+    const name = (nameField && nameField.value ? nameField.value.trim() : '');
+
+    setSubmitting(true);
+    setAlert('info', currentMode === 'signup' ? 'Creating your account…' : 'Signing you in…');
+
+    window.setTimeout(() => {
+        setSubmitting(false);
+        if (currentMode === 'signin') {
+            setAlert('success', `Signed in as <span class="font-semibold">${escapeHtml(email)}</span>.`);
+        } else {
+            const greeting = name ? `Welcome, <span class="font-semibold">${escapeHtml(name)}</span>!` : 'Welcome!';
+            setAlert('success', `${greeting} Your account is ready. Redirecting to sign in…`);
+            window.setTimeout(() => toggleAuthMode('signin'), 900);
+        }
+    }, 900);
+}
+
+function escapeHtml(text) {
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 /* ── Google Identity Services (GIS) Sign-In Flows ── */

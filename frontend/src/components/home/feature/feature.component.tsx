@@ -5,13 +5,15 @@ import LoadingAnimation from "../../loading/loading.component";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
 import { useNavigate } from "react-router-dom";
 import BookmarkButton from "../../BookmarkButton";
+import React, { useState } from "react";
 
-import { FaLinkedin, FaEnvelope } from "react-icons/fa";
+import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 
 const FeatureComponent = () => {
-  const { data, isLoading } = useGetFeaturedListsQuery(undefined);
+  const { data, isLoading, isError } = useGetFeaturedListsQuery(undefined);
   const navigate = useNavigate();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Dynamic reading calculation logic
   const calculateReadingTime = (content: string): number => {
@@ -22,8 +24,27 @@ const FeatureComponent = () => {
     return Math.max(1, Math.ceil(words / 200));
   };
 
+  const handleCopyLink = (e: React.MouseEvent, postId: string, postUrl: string) => {
+  e.stopPropagation();
+  navigator.clipboard.writeText(postUrl).then(() => {
+    setCopiedId(postId);
+    setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
+
   if (isLoading) {
     return <LoadingAnimation />;
+  }
+
+  if (isError) {
+    return (
+      <div className="mb-12 text-slate-900 dark:text-slate-100">
+        <h2 className="text-2xl font-bold mb-6">Featured Posts</h2>
+        <div className="rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-900/20 px-4 py-5 text-red-700 dark:text-red-400">
+          Failed to load featured posts. Please try again later.
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -157,6 +178,19 @@ const FeatureComponent = () => {
                       >
                         <FaEnvelope size={16} />
                       </a>
+                      <button
+                          onClick={(e) => handleCopyLink(e, post._id, postUrl)}
+                          title={copiedId === post._id ? "Link copied!" : "Copy link"}
+                          aria-label="Copy post link"
+                          className={`transition-colors duration-200 ${
+                            copiedId === post._id
+                              ? "text-green-400"
+                              : "hover:text-blue-400"
+                          }`}
+
+                        >
+                          <FaLink size={16} />
+                        </button>
                     </div>
                   </div>
                 </div>

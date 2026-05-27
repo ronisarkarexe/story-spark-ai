@@ -72,6 +72,21 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                 <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-md border border-gray-200 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg dark:bg-slate-900/80 dark:border-slate-600 dark:text-blue-300">
                   {story.tag}
                 </span>
+                {/* Deep Gradient Wash */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#03050C] via-[#03050C]/20 to-transparent opacity-90" />
+                
+                {/* Floating Tags - Premium Styling */}
+                <div className="absolute top-6 left-6 flex gap-2">
+                  <span className="px-5 py-2 bg-blue-600/20 backdrop-blur-2xl border border-blue-500/30 text-blue-400 text-[10px] font-black uppercase tracking-[0.25em] rounded-full shadow-2xl">
+                    {story.tag}
+                  </span>
+                  <span className="px-5 py-2 bg-indigo-600/20 backdrop-blur-2xl border border-indigo-500/30 text-indigo-400 text-[10px] font-black uppercase tracking-[0.25em] rounded-full shadow-2xl">
+                    🌐 {story.language || "English"}
+                  </span>
+                </div>
+
+                {/* Subtle Resting Border Glow */}
+                <div className="absolute inset-0 border border-white/5 rounded-[2.5rem] pointer-events-none" />
               </div>
 
               <div className="p-6 flex-1 flex flex-col">

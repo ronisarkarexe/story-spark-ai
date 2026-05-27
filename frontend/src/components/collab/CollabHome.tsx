@@ -1,50 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
-
-const BACKEND_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000";
+// Socket.IO collab disabled (see CollabRoom). Previous: io, Socket, resolveSocketUrl, BACKEND_URL.
 
 export default function CollabHome() {
   const navigate = useNavigate();
   const [joinRoomId, setJoinRoomId] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState("");
 
-  const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
-  const userId = userInfo?._id || userInfo?.id || "guest";
-  const username = userInfo?.name || userInfo?.username || "Anonymous";
-  const token = localStorage.getItem("token") || "";
-
   const createRoom = () => {
+    setError(
+      "Real-time collaboration is turned off. Socket.IO has been disabled in the frontend."
+    );
+    /* Previous Socket.IO flow:
     setIsCreating(true);
-    setError("");
-
-    const socket = io(`${BACKEND_URL}/collab`, {
-      auth: { token },
-      transports: ["websocket"],
-    });
-
-    socket.on("connect", () => {
-      socket.emit("collab:create_room", { userId, username });
-    });
-
-    socket.on("collab:room_created", ({ roomId }) => {
-      socket.disconnect();
-      navigate(`/collab/${roomId}`);
-    });
-
-    socket.on("connect_error", () => {
-      setError("Could not connect to server. Make sure backend is running.");
-      setIsCreating(false);
-    });
-
-    setTimeout(() => {
-      if (isCreating) {
-        setError("Connection timed out. Please try again.");
-        setIsCreating(false);
-        socket.disconnect();
-      }
-    }, 5000);
+    window.__storySparkCollabSocket?.disconnect();
+    const socket = io(`${BACKEND_URL}/collab`, { auth: { token }, transports: ["websocket"] });
+    ...
+    */
   };
 
   const joinRoom = () => {
@@ -80,10 +52,9 @@ export default function CollabHome() {
           {/* Create Room */}
           <button
             onClick={createRoom}
-            disabled={isCreating}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 text-white font-semibold text-lg transition-all shadow-lg shadow-indigo-500/20"
           >
-            {isCreating ? "Creating Room..." : "✨ Create a New Story Room"}
+            ✨ Create a New Story Room
           </button>
 
           <div className="flex items-center gap-3">

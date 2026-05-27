@@ -13,7 +13,7 @@ const getAllUsers = async (): Promise<IUser[]> => {
 };
 
 const getUser = async (payload: string): Promise<IUser | null> => {
-  const result = await User.findOne({ _id: payload });
+  const result = await User.findOne({ _id: payload }).select("-password");
   return result;
 };
 

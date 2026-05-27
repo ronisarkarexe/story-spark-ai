@@ -12,6 +12,7 @@ export interface IPostPayload {
   tag: string;
   imageURL: string;
   topic: ITopic[];
+  language?: string;
 }
 
 export interface IPost extends IPostPayload {

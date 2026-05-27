@@ -108,10 +108,10 @@ export default function Contact() {
     } catch (err: unknown) {
       console.error("Contact Form Error:", err);
 
-    const message =
-  err instanceof Error
-    ? err.message
-    : "✕ Failed to send message. Please check your connection.";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "✕ Failed to send message. Please check your connection.";
 
       setError(message);
     } finally {
@@ -138,9 +138,9 @@ export default function Contact() {
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.15),transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.18),transparent_30%)]" />
 
-      <div className="absolute top-20 left-20 h-72 w-72 rounded-full bg-blue-500/10 blur-[120px]" />
+      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 blur-[120px] rounded-full" />
 
-      <div className="absolute bottom-10 right-10 h-80 w-80 rounded-full bg-purple-500/10 blur-[140px]" />
+      <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-500/10 blur-[130px] rounded-full" />
 
       <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2">
         {/* Left Content */}
@@ -223,21 +223,9 @@ export default function Contact() {
           "
           />
 
-          <form
-            onSubmit={submitHandler}
-            className="
-            relative
-            rounded-[2rem]
-            border
-            border-white/10
-            bg-white/[0.04]
-            p-6
-            backdrop-blur-2xl
-            sm:p-8
-            lg:p-10
-          "
-          >
-            <div className="space-y-6">
+          {/* Form Container */}
+          <div className="relative rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-2xl sm:p-8 lg:p-10">
+            <form onSubmit={submitHandler} className="space-y-6">
               {/* Name */}
               <div className="relative">
                 <User
@@ -441,11 +429,10 @@ export default function Contact() {
                 {loading ? (
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                 ) : (
-                <>
-  <Sparkles className="h-5 w-5" />
-
-  <span>Send Message</span>
-</>
+                  <>
+                    <Sparkles className="h-5 w-5" />
+                    <span>Send Message</span>
+                  </>
                 )}
               </button>
 
@@ -466,8 +453,8 @@ export default function Contact() {
                   </p>
                 </div>
               )}
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </section>
