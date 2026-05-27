@@ -40,19 +40,57 @@ export const UNSELECTED_TOPIC_CLASSES = "bg-slate-700 text-slate-300";
 
 export interface ITopicData {
   title: string;
+  color: string;
   className: string;
   selected: boolean;
 }
 
-export const topicsData: ITopicData[] = [
-  { title: "#AIWriting", className: SELECTED_TOPIC_CLASSES, selected: true },
-  { title: "#StoryGeneration", className: SELECTED_TOPIC_CLASSES, selected: true },
-  { title: "#Writing", className: UNSELECTED_TOPIC_CLASSES, selected: false },
-  { title: "#Creativity", className: UNSELECTED_TOPIC_CLASSES, selected: false },
-  { title: "#DigitalMarketing", className: UNSELECTED_TOPIC_CLASSES, selected: false },
-  { title: "#Storytelling", className: UNSELECTED_TOPIC_CLASSES, selected: false },
-  { title: "#Productivity", className: UNSELECTED_TOPIC_CLASSES, selected: false },
+export const TOPICS: ITopicData[] = [
+  {
+    title: "#StoryIdeas",
+    color: "bg-indigo-100 text-indigo-800",
+    className: "bg-indigo-100 text-indigo-800",
+    selected: true,
+  },
+  {
+    title: "#StoryGeneration",
+    color: "bg-purple-100 text-purple-800",
+    className: "bg-purple-100 text-purple-800",
+    selected: true,
+  },
+  {
+    title: "#Writing",
+    color: "bg-blue-100 text-blue-800",
+    className: "bg-blue-100 text-blue-800",
+    selected: false,
+  },
+  {
+    title: "#Creativity",
+    color: "bg-slate-700 text-slate-300",
+    className: "bg-slate-700 text-slate-300",
+    selected: false,
+  },
+  {
+    title: "#DigitalMarketing",
+    color: "bg-slate-700 text-slate-300",
+    className: "bg-slate-700 text-slate-300",
+    selected: false,
+  },
+  {
+    title: "#Storytelling",
+    color: "bg-slate-700 text-slate-300",
+    className: "bg-slate-700 text-slate-300",
+    selected: false,
+  },
+  {
+    title: "#Productivity",
+    color: "bg-slate-700 text-slate-300",
+    className: "bg-slate-700 text-slate-300",
+    selected: false,
+  },
 ];
+
+export const topicsData: ITopicData[] = TOPICS;
 
 export const getWordCount = (str: string) => {
   if (typeof str !== "string" || !str.trim()) {
@@ -92,7 +130,8 @@ export const prompts = [
   },
   {
     id: 6,
-    prompt: "Tell the story of a robot who desperately wants to become human.",
+    prompt:
+      "Tell the story of a robot who desperately wants to become human.",
   },
   {
     id: 7,

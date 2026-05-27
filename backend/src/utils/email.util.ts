@@ -46,3 +46,48 @@ export const sendVerificationEmail = async (to: string, token: string) => {
     // The user record will still be created and they can request another verification if needed.
   }
 };
+
+export const sendContactEmail = async (data: {
+  fullname: string;
+  email: string;
+  subject: string;
+  message: string;
+}) => {
+  if (!config.verify_email || !config.verify_password) {
+    console.warn("Email configuration missing. Contact email not sent.");
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: config.verify_email,
+      pass: config.verify_password,
+    },
+  });
+
+  const mailOptions = {
+    from: `"${data.fullname}" <${data.email}>`,
+    to: config.verify_email,
+    subject: `Contact Form: ${data.subject}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+        <h2>New Contact Form Submission</h2>
+        <p><strong>From:</strong> ${data.fullname} (${data.email})</p>
+        <p><strong>Subject:</strong> ${data.subject}</p>
+        <hr style="border: none; border-top: 1px solid #eaeaea; margin: 20px 0;" />
+        <p><strong>Message:</strong></p>
+        <p style="white-space: pre-wrap;">${data.message}</p>
+        <hr style="border: none; border-top: 1px solid #eaeaea; margin: 20px 0;" />
+        <p style="color: #888; font-size: 12px;">This email was sent from the Story Spark AI Contact Form.</p>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending contact email:", error);
+    throw new Error("Failed to send email. Please try again later.");
+  }
+};

@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 
 const Terms = () => {
   return (
-    <div className="min-h-screen bg-black text-white px-4 sm:px-6 py-10 flex items-center">
-      <div className="max-w-4xl mx-auto w-full text-center mt-10 lg:mt-0">
+    <div className="min-h-screen bg-black text-white px-4 sm:px-6 py-24 pt-28 sm:pt-32 flex items-start">
+      <div className="max-w-4xl mx-auto w-full text-center lg:text-left">
         {/* Logo */}
         <Link to="/" className="inline-block">
           <img

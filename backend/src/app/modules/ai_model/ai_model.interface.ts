@@ -10,3 +10,16 @@ export interface IStory {
   tag: string;
   imageURL?: string;
 }
+
+export interface IAlternateEnding {
+  style: string;
+  ending: string;
+  fullStory: string;
+}
+
+export interface IAlternateEndingPayload {
+  title: string;
+  content: string;
+  tag: string;
+}
+

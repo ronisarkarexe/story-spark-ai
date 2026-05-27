@@ -94,21 +94,25 @@ const HeroSectionComponent = () => {
             Create, edit, and generate engaging multiple story variations from a single prompt.
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
           </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/stories" className="w-full sm:w-auto">
-              <button className="motion-cta w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_34px_rgba(37,99,235,0.52)] flex items-center justify-center gap-2 group">
-                Start Writing for Free
-                <svg className="motion-icon w-5 h-5 group-hover:translate-x-1 group-hover:rotate-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </button>
-            </Link>
-            <Link to="/explore" className="w-full sm:w-auto">
-              <button className="motion-cta w-full sm:w-auto px-8 py-4 bg-white/85 dark:bg-slate-800/60 backdrop-blur-md border border-slate-300 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:border-blue-400/30 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-[0_0_24px_rgba(59,130,246,0.14)] transition-all duration-300">
-                Explore Stories
-              </button>
-            </Link>
+          <div className="flex-grow flex flex-col items-center justify-center">
+            <div className="relative max-w-3xl w-full before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-purple-500/20 before:via-indigo-500/20 before:to-blue-500/20 before:blur-xl before:animate-pulse">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <i className="fas fa-sparkles text-gray-400"></i>
+                </div>
+                <Link to="/stories">
+                  <button className="relative !rounded-button bg-gradient-to-ber from-blue-900 via-emerald-800 to-blue-500 text-white font-medium px-6 py-2 mr-2 border border-white/20 transition-all duration-300 before:absolute before:inset-0 before:bg-gradient-to-r before:from-blue-500 before:via-blue-900 before:to-emerald-800 before:animate-border-gradient before:rounded-xl before:-z-10 before:blur-sm cursor-pointer">
+                    <i className="fa fa-wand-magic-sparkles mr-2"></i>Get
+                    Started
+                  </button>
+                </Link>
+                <Link to="/collab">
+                  <button className="relative !rounded-button bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium px-6 py-2 border border-white/20 transition-all duration-300 rounded-xl cursor-pointer">
+                    ✍️ Collab Mode
+                  </button>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
 

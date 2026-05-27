@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import emailjs from "@emailjs/browser";
+import { instance as axios } from "../../helpers/axios/axionInstance";
+import { getBaseUrl } from "../../helpers/config";
 
 type FormData = {
   fullname: string;
@@ -18,15 +19,12 @@ const INITIAL_FORM_DATA: FormData = {
   message: "",
 };
 
-const SERVICE_KEY = import.meta.env.VITE_SERVICE_KEY ?? "";
-const TEMPLATE_KEY = import.meta.env.VITE_TEMPLATE_KEY ?? "";
-const PUBLIC_KEY = import.meta.env.VITE_PUBLIC_KEY ?? "";
-
 export default function Contact() {
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const isSubmittingRef = useRef(false);
 
   const changeHandler = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -71,41 +69,45 @@ export default function Contact() {
     e: FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-    if (loading) return;
 
-    setError("");
-    setSuccess(false);
-
-    const isValid = validateForm();
-    if (!isValid) return;
-
-    if (!SERVICE_KEY || !TEMPLATE_KEY || !PUBLIC_KEY) {
-      setError("Email service is currently unavailable. Please try again later.");
-      return;
-    }
-
-    setLoading(true);
+    // 1. TRUE synchronous lock: absolute first priority to block rapid clicks/spam
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
 
     try {
-      await emailjs.send(
-        SERVICE_KEY,
-        TEMPLATE_KEY,
-        {
-          fullname: formData.fullname.trim(),
-          email: formData.email.trim(),
-          subject: formData.subject.trim(),
-          message: formData.message.trim(),
-        },
-        PUBLIC_KEY,
-      );
+      // 2. Clear state BEFORE any async gaps to prevent stale UI
+      setError("");
+      setSuccess(false);
 
-      setSuccess(true);
-      setFormData(INITIAL_FORM_DATA);
+      if (!validateForm()) return;
+
+      setLoading(true);
+
+      const response = await axios.post(`${getBaseUrl()}/contact`, {
+        fullname: formData.fullname.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject.trim(),
+        message: formData.message.trim(),
+      });
+
+      // 3. Backend response validation
+      if (response && response.data?.success) {
+        setSuccess(true);
+        setFormData(INITIAL_FORM_DATA);
+      } else {
+        setError("✕ Failed to send message. Please try again.");
+      }
     } catch (err: unknown) {
-      console.error("EmailJS Error:", err);
-      setError("✕ Failed to send message. Please check your connection.");
+      console.error("Contact Form Error:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : "✕ Failed to send message. Please check your connection.";
+      setError(message);
     } finally {
+      // 4. Release BOTH the lock and the loading state in all scenarios
       setLoading(false);
+      isSubmittingRef.current = false;
     }
   };
 
@@ -135,7 +137,7 @@ export default function Contact() {
         </div>
 
         {/* Form Container */}
-        <div className="w-full max-w-lg group relative">
+          <div className="w-full max-w-xl mx-auto group relative">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[1.5rem] blur opacity-10 group-hover:opacity-15 transition duration-1000"></div>
 
           <form
@@ -179,12 +181,9 @@ export default function Contact() {
               text-slate-900
               placeholder:text-slate-400
               outline-none
-              transition-all
+              transition-[border-color,box-shadow]
               duration-300
-              dark:bg-white/10
-              dark:border-white/10
-              dark:text-white
-              dark:placeholder:text-slate-400
+              hover:border-white/30
               focus:border-yellow-400
               focus:ring-2
               focus:ring-yellow-400/30
@@ -212,12 +211,9 @@ export default function Contact() {
               text-slate-900
               placeholder:text-slate-400
               outline-none
-              transition-all
+              transition-[border-color,box-shadow]
               duration-300
-              dark:bg-white/10
-              dark:border-white/10
-              dark:text-white
-              dark:placeholder:text-slate-400
+              hover:border-white/30
               focus:border-yellow-400
               focus:ring-2
               focus:ring-yellow-400/30
@@ -245,12 +241,9 @@ export default function Contact() {
               text-slate-900
               placeholder:text-slate-400
               outline-none
-              transition-all
+              transition-[border-color,box-shadow]
               duration-300
-              dark:bg-white/10
-              dark:border-white/10
-              dark:text-white
-              dark:placeholder:text-slate-400
+              hover:border-white/30
               focus:border-yellow-400
               focus:ring-2
               focus:ring-yellow-400/30
@@ -279,12 +272,9 @@ export default function Contact() {
               placeholder:text-slate-400
               outline-none
               resize-none
-              transition-all
+              transition-[border-color,box-shadow]
               duration-300
-              dark:bg-white/10
-              dark:border-white/10
-              dark:text-white
-              dark:placeholder:text-slate-400
+              hover:border-white/30
               focus:border-yellow-400
               focus:ring-2
               focus:ring-yellow-400/30
@@ -297,24 +287,24 @@ export default function Contact() {
               type="submit"
               disabled={loading}
               className="
-              w-full
-              py-4
-              rounded-2xl
-              bg-slate-900
-              text-white
-              font-bold
-              text-sm
-              sm:text-base
-              transition-all
-              duration-300
-              hover:scale-[1.01]
-              hover:bg-slate-800
-              dark:bg-gray-100
-              dark:text-slate-900
-              dark:hover:bg-white
-              disabled:opacity-50
-              disabled:cursor-not-allowed
-            "
+              relative
+overflow-hidden
+group/btn
+w-full
+py-4
+rounded-2xl
+bg-gray-400
+text-black
+font-bold
+text-sm
+sm:text-base
+transition-[background-color,transform]
+duration-300
+hover:scale-[1.01]
+hover:bg-white
+disabled:opacity-50
+disabled:cursor-not-allowed
+          "
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 {loading ? (

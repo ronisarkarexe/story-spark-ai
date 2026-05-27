@@ -16,7 +16,7 @@ const toggleReaction = async (
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-  const post = await Post.findOne({ _id: postId });
+  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }

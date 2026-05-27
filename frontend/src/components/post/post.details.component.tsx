@@ -1,33 +1,53 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+
 import {
+  useDeletePostMutation,
   useGetPostByIdQuery,
   useGetPostByTagQuery,
 } from "../../redux/apis/post.api";
+
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
-import { useNavigate } from "react-router-dom";
+
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
+import BookmarkButton from "../BookmarkButton";
+
 import { formatDateShort } from "../../utils/time-formate";
 import { getUserInfo } from "../../services/auth.service";
+
 import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
-import { toast } from "react-hot-toast";
-import BookmarkButton from "../BookmarkButton";
+
 import {
   useToggleFollowMutation,
   useGetFollowStatusQuery,
 } from "../../redux/apis/user.api";
 
+import { toast } from "react-hot-toast";
+
+import { FaXTwitter } from "react-icons/fa6";
+
 const PostDetailsComponent = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+
   const { data: post, isLoading } = useGetPostByIdQuery(id || "");
+
   const tag = post?.tag;
-    const { data: relatedPost } = useGetPostByTagQuery({ tag: tag || "", excludeId: post?._id || "" });
+  const { data: relatedPost } = useGetPostByTagQuery({
+    tag: tag || "",
+    excludeId: post?._id || "",
+  });
+
   const [toggleReaction] = useToggleReactionMutation();
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
   const currentUser = getUserInfo();
+
   const authorId = post?.author?._id;
+  const isOwner = Boolean(
+    currentUser?.email && post?.author?.email === currentUser.email
+  );
 
   const { data: followData } = useGetFollowStatusQuery(authorId || "", {
     skip: !authorId || !currentUser,
@@ -42,7 +62,9 @@ const PostDetailsComponent = () => {
       toast.error("You need to login to follow this author");
       return;
     }
+
     if (!authorId) return;
+
     try {
       await toggleFollow(authorId).unwrap();
     } catch {
@@ -52,6 +74,7 @@ const PostDetailsComponent = () => {
 
   const handleLike = async () => {
     if (!id) return;
+
     try {
       await toggleReaction({ postId: id }).unwrap();
     } catch (error) {
@@ -62,31 +85,66 @@ const PostDetailsComponent = () => {
 
   const hasUserReacted = post?.reactions?.some((r) => {
     const userId = r.userId;
+
     const email =
-      typeof userId === "object" && userId !== null && "email" in userId
+      typeof userId === "object" &&
+      userId !== null &&
+      "email" in userId
         ? userId.email
         : undefined;
+
     return email === currentUser?.email;
   });
 
   const shareUrl = window.location.href;
+
   const shareTitle = post?.title || "Check out this story!";
 
   const handleTwitterShare = () => {
-    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`;
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+      shareUrl
+    )}&text=${encodeURIComponent(shareTitle)}`;
+
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleLinkedInShare = () => {
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+      shareUrl
+    )}`;
+
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleEmailShare = () => {
     const subject = `Story Spark AI - ${shareTitle}`;
+
     const body = `Check out this interesting story on Story Spark AI: "${shareTitle}"\n\nRead it here: ${shareUrl}`;
-    const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    const url = `mailto:?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+
     window.location.href = url;
+  };
+
+  const handleDelete = async () => {
+    if (
+      !id ||
+      !window.confirm(
+        "Remove this story from public view? It will remain available for reporting."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await deletePost(id).unwrap();
+      toast.success("Story removed successfully.");
+      navigate("/explore");
+    } catch {
+      toast.error("Unable to remove this story. Please try again.");
+    }
   };
 
   if (isLoading) {
@@ -103,8 +161,10 @@ const PostDetailsComponent = () => {
           >
             <i className="fa-solid fa-left-long"></i> BACK
           </div>
-          <div className=""></div>
+
+          <div></div>
         </div>
+
         <div className="rounded-lg shadow-sm bg-gray-50 border border-gray-200 text-slate-900 mb-10 dark:bg-blue-500/10 dark:border-transparent dark:text-white">
           <div className="p-8">
             <div className="flex justify-between">
@@ -113,17 +173,29 @@ const PostDetailsComponent = () => {
                   name={post?.author?.name || "Unknown User"}
                   size="h-12 w-12"
                 />
+
                 <div>
                   <h3 className="font-medium text-slate-700 dark:text-gray-400">
                     {post?.author?.name || "Unknown User"}
                   </h3>
+
                   <div className="flex items-center text-sm text-slate-500 dark:text-gray-500">
                     <span>{formatDateShort(post ? post?.createdAt : "")}</span>
                   </div>
                 </div>
               </div>
-              <div className="">
-                {currentUser && authorId !== currentUser?.userId && (
+              <div>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="mt-2 mr-3 rounded border border-red-500/40 px-4 py-1 text-sm text-red-300 transition-all hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isDeleting ? "Removing..." : "Remove Story"}
+                  </button>
+                )}
+                {currentUser && !isOwner && (
                   <button
                     onClick={handleFollow}
                     className={`mt-2 rounded px-4 py-1 text-sm cursor-pointer transition-all ${
@@ -165,12 +237,12 @@ const PostDetailsComponent = () => {
                   }`}
                 >
                   <i
-                    className={`${
-                      hasUserReacted ? "fas" : "far"
-                    } fa-heart`}
+                    className={`${hasUserReacted ? "fas" : "far"} fa-heart`}
                   ></i>
+
                   <span>{post?.likesCount}</span>
                 </button>
+
                 {post && (
                   <BookmarkButton
                     storyId={post._id}
@@ -179,16 +251,21 @@ const PostDetailsComponent = () => {
                   />
                 )}
               </div>
+
               <div className="flex items-center space-x-3 bg-slate-800/40 backdrop-blur-md px-4 py-2 rounded-full border border-slate-700/50 shadow-sm">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1 select-none">Share:</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1 select-none">
+                  Share:
+                </span>
+
                 <button
                   id="share-twitter-btn"
                   onClick={handleTwitterShare}
                   className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 hover:border-blue-400 hover:bg-blue-500/10 text-slate-400 hover:text-blue-400 flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
-                  aria-label="Share on Twitter"
+                  aria-label="Share on X"
                 >
-                  <i className="fab fa-twitter text-sm"></i>
+                  <FaXTwitter className="text-sm" />
                 </button>
+
                 <button
                   id="share-linkedin-btn"
                   onClick={handleLinkedInShare}
@@ -197,6 +274,7 @@ const PostDetailsComponent = () => {
                 >
                   <i className="fab fa-linkedin text-sm"></i>
                 </button>
+
                 <button
                   id="share-email-btn"
                   onClick={handleEmailShare}
@@ -218,11 +296,16 @@ const PostDetailsComponent = () => {
               <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
                 Related Stories
               </h3>
-              <RelatedStoriesComponent posts={relatedPost || []} currentPostId={post?._id || ""} />
+
+              <RelatedStoriesComponent
+                posts={relatedPost || []}
+                currentPostId={post?._id || ""}
+              />
             </div>
           </div>
         </div>
       </div>
+
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
     </div>
   );

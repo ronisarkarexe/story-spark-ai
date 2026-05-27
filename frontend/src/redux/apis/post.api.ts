@@ -111,10 +111,7 @@ const postApi = baseApi.injectEndpoints({
         method: "GET",
       }),
 
-      transformResponse: (response: {
-        data: Post;
-        message: string;
-      }) => {
+      transformResponse: (response: { data: Post; message: string }) => {
         return response.data;
       },
 
@@ -136,10 +133,7 @@ const postApi = baseApi.injectEndpoints({
         params: arg.excludeId ? { excludeId: arg.excludeId } : {},
       }),
 
-      transformResponse: (response: {
-        data: Post[];
-        message: string;
-      }) => {
+      transformResponse: (response: { data: Post[]; message: string }) => {
         return response.data;
       },
 
@@ -152,6 +146,19 @@ const postApi = baseApi.injectEndpoints({
 
       providesTags: [tagTypes.post],
     }),
+
+    deletePost: build.mutation({
+      query: (id: string) => ({
+        url: `/${POST_URL}/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [
+        tagTypes.post,
+        tagTypes.user,
+        tagTypes.comment,
+        tagTypes.bookmark,
+      ],
+    }),
   }),
 });
 
@@ -162,4 +169,5 @@ export const {
   useGetFeaturedListsQuery,
   useGetPostByIdQuery,
   useGetPostByTagQuery,
+  useDeletePostMutation,
 } = postApi;

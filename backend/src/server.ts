@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import { JwtHalers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import { setNotificationSocket } from "./socket/notification.socket";
+import { setupCollabSocket } from "./socket/collab.socket";
 import logger from "./utils/logger.util";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
@@ -31,6 +32,7 @@ async function main() {
     });
 
     setNotificationSocket(io);
+    setupCollabSocket(io);
 
     io.use((socket, next) => {
       try {

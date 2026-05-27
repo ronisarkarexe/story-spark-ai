@@ -20,8 +20,8 @@ const StoryInspirationComponent: React.FC = () => {
       story.title.toLowerCase().includes(searchLower) ||
       story.author.toLowerCase().includes(searchLower) ||
       story.summary.toLowerCase().includes(searchLower) ||
+      story.genre.toLowerCase().includes(searchLower) ||
       story.themes.some((theme) => theme.toLowerCase().includes(searchLower));
-
     return matchesGenre && matchesSearch;
   });
 
