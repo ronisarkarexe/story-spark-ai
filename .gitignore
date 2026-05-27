@@ -1,60 +1,45 @@
-# Dependencies
-node_modules/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+.env
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Build output
-dist-ssr/
-build/
-*.tsbuildinfo
+# testing
+/coverage
 
-# Logs
-logs/
-*.log
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+# AppleDouble metadata files (resource forks) — keep scoped to `app/` to avoid
+# ignoring intentionally-named dot-underscore files (e.g. `._config.js`).
+app/**/._*
+*.pem
+
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+.pnpm-debug.log*
 
-# Environment (never commit secrets)
-.env
-.env.*
-!.env.example
-!.env*.example
-.env .example
-# OS
-.DS_Store
-Thumbs.db
-Desktop.ini
+# env files (can opt-in for committing if needed)
+.env*
 
-# IDE / editor
-.idea/
-.vscode/*
-!.vscode/extensions.json
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# vercel
+.vercel
 
-# Local / misc
-*.local
-.cache/
-.turbo/
-.vercel/
-*.pem
-
-# Test / coverage
-coverage/
-.nyc_output/
-
-# Optional tooling
-.eslintcache
-backend/ml/__pycache__/
-backend/ml/my_tuner/
-backend/ml/saved/
-*.pyc
-.env
-node_modules/
-
-dist/
-
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+public/tutorials/*.mp4

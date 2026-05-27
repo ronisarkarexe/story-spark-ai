@@ -1,0 +1,22 @@
+gssoc:approved:
+  - title: ".*"
+  - body: ".*"
+
+mentor:PankajSingh34:
+  - title: ".*"
+
+level:beginner:
+  - title: ".*beginner.*"
+  - body: ".*beginner.*"
+
+type:bug:
+  - title: ".*bug.*"
+  - body: ".*bug.*"
+
+type:feature:
+  - title: ".*feature.*"
+  - body: ".*feature.*"
+
+type:docs:
+  - title: ".*docs.*"
+  - body: ".*docs.*"

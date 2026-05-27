@@ -1,0 +1,112 @@
+[
+  {
+    "question": "What is the main purpose of linked list traversal?",
+    "options": [
+      "To modify the structure of the list",
+      "To search, display or process each node",
+      "To reverse the list",
+      "To insert nodes efficiently"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Traversal allows visiting each node for operations like searching, displaying, or processing."
+  },
+  {
+    "question": "What is the time complexity of traversing a singly linked list with 'n' nodes?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correctAnswer": 2,
+    "explanation": "Each of the n nodes is visited once, so the time complexity is O(n)."
+  },
+  {
+    "question": "What happens if a linked list has a cycle and you traverse it without detection?",
+    "options": [
+      "Traversal ends normally",
+      "Compiler throws an error",
+      "Traversal goes into infinite loop",
+      "Nodes are skipped"
+    ],
+    "correctAnswer": 2,
+    "explanation": "A cycle in the list causes infinite traversal unless cycle detection is implemented."
+  },
+  {
+    "question": "Which traversal method uses the call stack and can risk stack overflow?",
+    "options": [
+      "Iterative traversal",
+      "Recursive traversal",
+      "Tail traversal",
+      "Breadth-first traversal"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Recursive traversal uses the call stack and may overflow for large lists."
+  },
+  {
+    "question": "Which pointer is used to move through a singly linked list during traversal?",
+    "options": [
+      "prev",
+      "head",
+      "tail",
+      "current"
+    ],
+    "correctAnswer": 3,
+    "explanation": "A 'current' pointer is typically used to walk through the nodes starting from head."
+  },
+  {
+    "question": "When does a traversal loop stop in a properly structured singly linked list?",
+    "options": [
+      "When current equals head",
+      "When current becomes null",
+      "When current reaches tail",
+      "After n iterations"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Traversal ends when the current pointer reaches null."
+  },
+  {
+    "question": "Which of the following is NOT an edge case in traversal?",
+    "options": [
+      "Empty list",
+      "List with a cycle",
+      "List with one node",
+      "Head insertion"
+    ],
+    "correctAnswer": 3,
+    "explanation": "Head insertion is not a traversal case; it's an insertion case."
+  },
+  {
+    "question": "Why is it recommended to use iteration over recursion for large lists?",
+    "options": [
+      "Recursion is slower",
+      "Iteration uses less memory",
+      "Recursion doesn’t work with linked lists",
+      "Iteration is more readable"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Iteration avoids the overhead of recursive call stacks and prevents stack overflow."
+  },
+  {
+    "question": "What is a key insight for safe traversal?",
+    "options": [
+      "Skip null checks to save time",
+      "Pre-allocate nodes for speed",
+      "Ensure there are no cycles",
+      "Avoid using a current pointer"
+    ],
+    "correctAnswer": 2,
+    "explanation": "Cycle detection (like Floyd’s algorithm) is important to avoid infinite loops."
+  },
+  {
+    "question": "How many times is each node visited during traversal?",
+    "options": [
+      "Only first and last nodes",
+      "Only once",
+      "Depends on data",
+      "Until tail is updated"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Each node is visited once in a standard traversal operation."
+  }
+]

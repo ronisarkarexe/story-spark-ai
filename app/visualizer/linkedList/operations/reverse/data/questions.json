@@ -1,0 +1,112 @@
+[
+  {
+    "question": "What is the primary purpose of reversing a linked list?",
+    "options": [
+      "To traverse the list in reverse order",
+      "To sort the list",
+      "To delete all nodes",
+      "To merge two lists"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Reversing a linked list allows you to traverse the list from tail to head, which is not directly possible in a singly linked list."
+  },
+  {
+    "question": "Which pointers are typically used during the reversal process?",
+    "options": [
+      "Current, Previous, Next",
+      "Head, Tail, Middle",
+      "Left, Right, Mid",
+      "Start, End, Temp"
+    ],
+    "correctAnswer": 0,
+    "explanation": "The reversal process commonly uses three pointers: current (the node being processed), previous (the node before current), and next (the node after current)."
+  },
+  {
+    "question": "What is the time complexity of reversing a singly linked list iteratively?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": 2,
+    "explanation": "Each node is visited once, so the time complexity is O(n)."
+  },
+  {
+    "question": "What happens to the original head after a successful reversal?",
+    "options": [
+      "It becomes the new tail",
+      "It is deleted",
+      "It remains the head",
+      "It points to itself"
+    ],
+    "correctAnswer": 0,
+    "explanation": "After reversal, the original head node becomes the new tail of the linked list."
+  },
+  {
+    "question": "What is the space complexity of the iterative reversal approach?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(log n)",
+      "O(n^2)"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Iterative reversal only uses a few pointers, so it has O(1) auxiliary space complexity."
+  },
+  {
+    "question": "What is the final value of the `.next` field of the new tail node after reversal?",
+    "options": [
+      "Points to the old head",
+      "Points to itself",
+      "Is null",
+      "Points to the new head"
+    ],
+    "correctAnswer": 2,
+    "explanation": "The new tail node's `.next` should be set to null, indicating the end of the list."
+  },
+  {
+    "question": "What happens if you reverse an empty linked list?",
+    "options": [
+      "It throws an error",
+      "The result is still an empty list",
+      "It becomes a circular list",
+      "It creates a new node"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Reversing an empty linked list results in an empty list (null head)."
+  },
+  {
+    "question": "How can you visually confirm that the list has been reversed?",
+    "options": [
+      "By checking if the order of nodes is flipped",
+      "By checking if the length has changed",
+      "By checking memory addresses",
+      "By checking if all values are zero"
+    ],
+    "correctAnswer": 0,
+    "explanation": "The order of nodes should be the exact reverse of the original list."
+  },
+  {
+    "question": "What should be done before changing the `.next` pointer of a node?",
+    "options": [
+      "Save the next node in a temporary variable",
+      "Delete the node",
+      "Set the node's value to zero",
+      "Move the head pointer"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Always save the next node in a temporary variable before changing `.next`, or you may lose access to the rest of the list."
+  },
+  {
+    "question": "Which approach is safer in terms of memory usage for large lists?",
+    "options": [
+      "Recursive reversal",
+      "Iterative reversal",
+      "Merging",
+      "Sorting"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Iterative reversal is safer for large lists because it uses constant space, whereas recursion can cause stack overflow."
+  }
+]

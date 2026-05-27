@@ -1,0 +1,24 @@
+name: Smart Issue Labeler
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  label-issues:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo        # ← ADD THIS
+        uses: actions/checkout@v4
+
+      - name: Label issues
+        uses: github/issue-labeler@v3.4
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/labeler.yml
+          enable-versioned-regex: 0

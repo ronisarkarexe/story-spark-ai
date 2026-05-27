@@ -1,0 +1,112 @@
+[
+  {
+    "question": "What is the primary purpose of using a dummy node when merging two linked lists?",
+    "options": [
+      "To simplify pointer management and avoid edge cases",
+      "To increase performance",
+      "To store the tail node",
+      "To sort the input lists"
+    ],
+    "correctAnswer": 0,
+    "explanation": "A dummy node acts as a placeholder to simplify the logic and avoid handling head assignment edge cases separately."
+  },
+  {
+    "question": "Which approach is commonly used to merge two sorted linked lists?",
+    "options": [
+      "Two-pointer technique",
+      "Recursive backtracking",
+      "Binary search",
+      "Breadth-first traversal"
+    ],
+    "correctAnswer": 0,
+    "explanation": "The two-pointer technique is used to traverse both lists and compare current nodes to build the merged list."
+  },
+  {
+    "question": "What is the time complexity of merging two sorted linked lists with a total of n nodes?",
+    "options": [
+      "O(log n)",
+      "O(n)",
+      "O(n log n)",
+      "O(n²)"
+    ],
+   "correctAnswer": 1,
+    "explanation": "Each node is visited once during the merge, leading to O(n) time complexity."
+  },
+  {
+    "question": "What happens when one of the two input lists is empty during merging?",
+    "options": [
+      "The result is empty",
+      "Only dummy node is returned",
+      "The non-empty list is directly attached to the merged list",
+      "The algorithm throws an error"
+    ],
+   "correctAnswer": 2,
+    "explanation": "If one list is empty, the other list is appended as-is to the end of the merged list."
+  },
+  {
+    "question": "Which of these is NOT necessary before merging two linked lists?",
+    "options": [
+      "Sorting both input lists",
+      "Creating a dummy node",
+      "Tracking the current node in merged list",
+      "Comparing node values from both lists"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Sorting is not required if the input lists are already sorted."
+  },
+  {
+    "question": "When merging lists, how do you decide which node to attach next?",
+    "options": [
+      "Attach the node with greater value",
+      "Alternate nodes from each list",
+      "Attach the node with smaller value",
+      "Attach the last node from each list first"
+    ],
+    "correctAnswer": 2,
+    "explanation": "The smaller value node is chosen to maintain sorted order."
+  },
+  {
+    "question": "What pointer is updated after attaching a node to the merged list?",
+    "options": [
+      "Tail of second list",
+      "Current pointer of merged list",
+      "Dummy pointer",
+      "Original head pointer"
+    ],
+    "correctAnswer": 1,
+    "explanation": "After attaching a node, the current pointer in the merged list is updated to point to the newly added node."
+  },
+  {
+    "question": "What is the space complexity of merging two linked lists iteratively?",
+    "options": [
+      "O(n)",
+      "O(1)",
+      "O(log n)",
+      "O(n²)"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Iterative merging does not require extra space beyond a few pointers (O(1) auxiliary space)."
+  },
+  {
+    "question": "What advantage does recursion offer in list merging?",
+    "options": [
+      "Faster execution",
+      "Less memory usage",
+      "Simplified code",
+      "Always better performance"
+    ],
+    "correctAnswer": 2,
+    "explanation": "Recursion simplifies the logic but can use more stack space."
+  },
+  {
+    "question": "What kind of input lists produce a sorted merged output?",
+    "options": [
+      "Unsorted lists",
+      "Randomly linked nodes",
+      "Already sorted lists",
+      "Lists with circular references"
+    ],
+    "correctAnswer": 2,
+    "explanation": "Merging produces a sorted result only when both input lists are sorted."
+  }
+]

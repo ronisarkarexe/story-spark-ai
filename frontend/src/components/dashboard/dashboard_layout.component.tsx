@@ -172,7 +172,7 @@
 
 // export default DashboardLayout;
 import React, { useState } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo } from "../../services/auth.service";
 
@@ -182,16 +182,19 @@ const DashboardLayout: React.FC = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-
   const user = getUserInfo();
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   const currentPage = menuItems
     .flatMap((item) => (item.subRoutes ? [item, ...item.subRoutes] : [item]))
-    .find(
+    .filter(
       (item) =>
         location.pathname === item.path ||
         location.pathname.startsWith(item.path + "/"),
-    );
+    )
+    .sort((a, b) => b.path.length - a.path.length)[0];
 
   const pageTitle = currentPage?.name || "Dashboard";
 
@@ -251,9 +254,8 @@ const DashboardLayout: React.FC = () => {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside
-          className={`bg-gray-50 border-r border-gray-200 transition-all duration-300 dark:bg-[#0a1020] dark:border-white/[0.06] ${
-            isSidebarCollapsed ? "w-20" : "w-64"
-          }`}
+          className={`bg-[#0a1020] border-r border-white/[0.06] transition-all duration-300 ${isSidebarCollapsed ? "w-20" : "w-64"
+            }`}
         >
           <nav className="p-4 space-y-2 overflow-y-auto h-full">
             {accessibleMenuItems.map((item) => {
@@ -265,11 +267,10 @@ const DashboardLayout: React.FC = () => {
                 <div key={item.name}>
                   <div
                     onClick={() => handleNavigation(item)}
-                    className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition ${
-                      isActive
-                        ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                        : "hover:bg-slate-100 text-slate-700 dark:hover:bg-white/[0.05] dark:text-slate-300"
-                    }`}
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition ${isActive
+                      ? "bg-blue-500/20 text-blue-400"
+                      : "hover:bg-white/[0.05] text-slate-300"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <i className={item.icon}></i>
@@ -279,9 +280,8 @@ const DashboardLayout: React.FC = () => {
 
                     {item.subRoutes && !isSidebarCollapsed && (
                       <i
-                        className={`fas fa-chevron-down text-xs transition-transform ${
-                          expanded[item.name] ? "rotate-180" : ""
-                        }`}
+                        className={`fas fa-chevron-down text-xs transition-transform ${expanded[item.name] ? "rotate-180" : ""
+                          }`}
                       ></i>
                     )}
                   </div>
@@ -294,11 +294,10 @@ const DashboardLayout: React.FC = () => {
                           <Link
                             key={subItem.name}
                             to={subItem.path}
-                            className={`block px-3 py-2 rounded-md text-sm transition ${
-                              location.pathname === subItem.path
-                                ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                                : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.05]"
-                            }`}
+                            className={`block px-3 py-2 rounded-md text-sm transition ${location.pathname === subItem.path
+                              ? "bg-blue-500/20 text-blue-400"
+                              : "text-slate-400 hover:bg-white/[0.05]"
+                              }`}
                           >
                             {subItem.name}
                           </Link>
@@ -317,9 +316,8 @@ const DashboardLayout: React.FC = () => {
               className="w-full px-3 py-2 rounded-lg bg-white hover:bg-slate-100 transition text-sm text-slate-900 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] dark:text-white"
             >
               <i
-                className={`fas ${
-                  isSidebarCollapsed ? "fa-chevron-right" : "fa-chevron-left"
-                }`}
+                className={`fas ${isSidebarCollapsed ? "fa-chevron-right" : "fa-chevron-left"
+                  }`}
               ></i>
 
               {!isSidebarCollapsed && (

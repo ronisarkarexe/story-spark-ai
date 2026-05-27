@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background circle -->
+  <rect width="64" height="64" rx="16" fill="#a435f0"/>
+  <!-- Graph/tree nodes connected — represents DSA -->
+  <circle cx="32" cy="14" r="4" fill="#fff"/>
+  <circle cx="18" cy="32" r="4" fill="#fff" opacity="0.85"/>
+  <circle cx="46" cy="32" r="4" fill="#fff" opacity="0.85"/>
+  <circle cx="24" cy="48" r="3.5" fill="#fff" opacity="0.7"/>
+  <circle cx="40" cy="48" r="3.5" fill="#fff" opacity="0.7"/>
+  <!-- Edges -->
+  <line x1="32" y1="18" x2="18" y2="28" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="32" y1="18" x2="46" y2="28" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="18" y1="36" x2="24" y2="44.5" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+  <line x1="46" y1="36" x2="40" y2="44.5" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+  <line x1="18" y1="36" x2="40" y2="44.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+</svg>
