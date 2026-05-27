@@ -38,9 +38,30 @@ const resetPassword = z.object({
   }),
 });
 
+const updateUser = z.object({
+  body: z.object({
+    name: z.string().optional(),
+    profile: z
+      .object({
+        avatar: z.string().optional(),
+        bio: z.string().optional(),
+        social: z
+          .object({
+            facebook: z.string().optional(),
+            twitter: z.string().optional(),
+            linkedin: z.string().optional(),
+            instagram: z.string().optional(),
+          })
+          .optional(),
+      })
+      .optional(),
+  }).strict(),
+});
+
 export const UserValidator = {
   register,
   login,
   forgotPassword,
   resetPassword,
+  updateUser,
 };
