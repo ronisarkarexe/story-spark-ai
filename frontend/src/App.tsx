@@ -52,9 +52,9 @@ import ContributorsComponent from "./components/footer/contributors";
 import BranchingStory from "./components/stories/BranchingStory";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
+import Chat from "./pages/Chat";
 import StoryWorkspace from "./components/story/StoryWorkspace";
 import StoriesComponent from "./components/stories/stories.component";
-
 // =========================================================================
 // PROTECTED ROUTE — supports both wrapper pattern (element prop) and
 // layout-gate pattern (Outlet, no element prop)
@@ -117,6 +117,7 @@ const router = createBrowserRouter([
       { path: "guidelines", element: <GuidelinesComponent /> },
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "report-bug", element: <ReportBug /> },
+      { path: "chat", element: <Chat /> },
 
       // Protected Sub-Tree running under the RootLayout context
       {
