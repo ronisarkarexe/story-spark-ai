@@ -78,10 +78,10 @@ function setAlert(variant, message) {
         return;
     }
 
-    const icon = variant === 'success' ? 'check_circle' : variant === 'error' ? 'error' : 'info';
+    const iconClass = variant === 'success' ? 'fi fi-rr-check-circle text-green-400' : variant === 'error' ? 'fi fi-rr-cross-circle text-rose-400' : 'fi fi-rr-info text-blue-400';
     alertEl.setAttribute('data-variant', variant);
     alertEl.innerHTML = `
-        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1; margin-top: 1px;">${icon}</span>
+        <i class="${iconClass} text-[15px]" style="margin-top: 2px;"></i>
         <div class="text-[13px] leading-relaxed">${message}</div>
     `;
     alertEl.classList.remove('hidden');
@@ -412,10 +412,10 @@ function togglePasswordVisibility() {
 
     if (field.type === 'password') {
         field.type = 'text';
-        icon.innerText = 'visibility_off';
+        icon.className = 'fi fi-rr-eye text-[16px]';
     } else {
         field.type = 'password';
-        icon.innerText = 'visibility';
+        icon.className = 'fi fi-rr-eye-crossed text-[16px]';
     }
 }
 

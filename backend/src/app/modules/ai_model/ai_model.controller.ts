@@ -4,6 +4,7 @@ import ApiError from "../../../errors/api_error";
 import catchAsync from "../../../shared/catch_async";
 import sendResponse from "../../../shared/send_response";
 import { AiModelService } from "./ai_model.service";
+import { IRemixPayload, ITranslatePayload } from "./ai_model.interface";
 import { getToken } from "../../middleware/token";
 import { reserveGuestQuota } from "./quota.service";
 import {
@@ -103,10 +104,60 @@ const aiFreeModelAlternateEndings = catchAsync(
   }
 );
 
+const aiModelRemix = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body as IRemixPayload;
+  const token = await getToken(req);
+  const result = await AiModelService.aiModelRemix(payload, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Story remixed successfully!",
+    data: result,
+  });
+});
+
+const aiFreeModelRemix = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body as IRemixPayload;
+  const result = await AiModelService.aiFreeModelRemix(payload);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Story remixed successfully!",
+    data: result,
+  });
+});
+
+const aiModelTranslate = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body as ITranslatePayload;
+  const token = await getToken(req);
+  const result = await AiModelService.aiModelTranslate(payload, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Story translated successfully!",
+    data: result,
+  });
+});
+
+const aiFreeModelTranslate = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body as ITranslatePayload;
+  const result = await AiModelService.aiFreeModelTranslate(payload);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Story translated successfully!",
+    data: result,
+  });
+});
+
 export const AiModelController = {
   aiModelGenerate,
   aiFreeModelGenerate,
   aiModelAlternateEndings,
   aiFreeModelAlternateEndings,
+  aiModelRemix,
+  aiFreeModelRemix,
+  aiModelTranslate,
+  aiFreeModelTranslate,
 };
 

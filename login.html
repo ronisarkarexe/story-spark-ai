@@ -2,16 +2,16 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
     <title>Login | Story Spark AI</title>
     <meta name="description" content="Sign in or create an account for Story Spark AI — turn your imagination into fully illustrated multi-variation AI stories."/>
     
     <!-- Tailwind CSS (w/ Form & Container plugins) -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     
-    <!-- Google Fonts & Material Symbols Icons -->
+    <!-- Google Fonts & Flaticon Uicons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css" rel="stylesheet"/>
     
     <!-- Google Identity Services (GIS) library for Google Auth -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -107,7 +107,7 @@
                 <!-- Brand mark -->
                 <div class="flex items-center gap-2 mb-6">
                     <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/30">
-                        <span class="material-symbols-outlined text-white text-[18px]" style="font-variation-settings:'FILL' 1">auto_awesome</span>
+                        <span class="fi fi-rr-sparkles text-white text-[14px]"></span>
                     </div>
                     <span class="text-sm font-bold tracking-widest text-primary uppercase opacity-80">Story Spark AI</span>
                 </div>
@@ -123,15 +123,15 @@
             <!-- Feature pills -->
             <div class="flex flex-wrap gap-2 mt-6 hidden md:flex">
                 <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
-                    <span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1">auto_stories</span>
+                    <span class="fi fi-rr-book-open-cover text-[12px] mr-1"></span>
                     AI Story Generation
                 </span>
                 <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/10 border border-secondary/20 text-xs font-semibold text-secondary">
-                    <span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1">image</span>
+                    <span class="fi fi-rr-image text-[12px] mr-1"></span>
                     Illustrated Worlds
                 </span>
                 <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-tertiary/10 border border-tertiary/20 text-xs font-semibold text-tertiary">
-                    <span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1">share</span>
+                    <span class="fi fi-rr-share text-[12px] mr-1"></span>
                     Share & Explore
                 </span>
             </div>
@@ -181,7 +181,7 @@
                     <div class="text-sm font-semibold text-on-surface truncate" id="google-user-name"></div>
                     <div class="text-xs text-on-surface-variant truncate" id="google-user-email"></div>
                 </div>
-                <span class="material-symbols-outlined text-green-400 text-lg" style="font-variation-settings:'FILL' 1">check_circle</span>
+                <i class="fi fi-rr-check-circle text-green-400 text-lg"></i>
             </div>
             
             <!-- Divider -->
@@ -198,8 +198,8 @@
                 <div class="hidden animate-in fade-in duration-500" id="signup-fields">
                     <label class="field-label" for="name-field">Full Name</label>
                     <div class="input-icon-wrapper">
-                        <span class="material-symbols-outlined input-icon">person</span>
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all" placeholder="Alex Spark" type="text" id="name-field" autocomplete="name"/>
+                        <i class="fi fi-rr-user input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
+                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="Alex Spark" type="text" id="name-field" autocomplete="name"/>
                     </div>
                     <span class="field-error-msg" id="name-error">Please enter your full name.</span>
                 </div>
@@ -208,8 +208,8 @@
                 <div>
                     <label class="field-label" for="email-field">Email Address</label>
                     <div class="input-icon-wrapper">
-                        <span class="material-symbols-outlined input-icon">mail</span>
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all" placeholder="name@storyspark.ai" type="email" id="email-field" required autocomplete="email"/>
+                        <i class="fi fi-rr-envelope input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
+                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" required autocomplete="email" value="admin@gmail.com"/>
                     </div>
                     <span class="field-error-msg" id="email-error">Please enter a valid email address.</span>
                 </div>
@@ -221,10 +221,10 @@
                         <a class="text-[12px] text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" id="forgot-password-link">Forgot password?</a>
                     </div>
                     <div class="input-icon-wrapper">
-                        <span class="material-symbols-outlined input-icon">lock</span>
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all" id="password-field" placeholder="••••••••" type="password" required autocomplete="current-password"/>
+                        <i class="fi fi-rr-lock input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
+                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••" type="password" required autocomplete="current-password" value="admin@123"/>
                         <button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors p-1 rounded" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
-                            <span class="material-symbols-outlined text-[20px]" id="eye-icon">visibility</span>
+                            <i class="fi fi-rr-eye-crossed text-[16px]" id="eye-icon"></i>
                         </button>
                     </div>
                     <span class="field-error-msg" id="password-error">Password must be at least 8 characters.</span>
@@ -237,14 +237,16 @@
                 </div>
 
                 <!-- Submit button -->
-                <button class="ds-btn-submit mt-2" id="submit-btn" type="submit">
+                <button class="ds-btn-submit mt-2" id="submit-btn" type="submit" hover:scale-105 transition-all duration-300 rounded-xl>
+
+                </button>
                     <span class="btn-spinner" id="btn-spinner"></span>
                     <span class="btn-label" id="btn-label">Log In to Story Spark</span>
                 </button>
             </form>
             
             <p class="text-center mt-4 text-[12px] text-on-surface-variant leading-relaxed">
-                By continuing, you agree to our 
+                By continuing, you agreeee to our 
                 <a class="underline hover:text-primary transition-colors cursor-pointer" onclick="openLegalModal('terms')">Terms of Service</a> and 
                 <a class="underline hover:text-primary transition-colors cursor-pointer" onclick="openLegalModal('privacy')">Privacy Policy</a>.
             </p>
@@ -260,8 +262,8 @@
 <!-- Legal Content Modal -->
 <div id="legal-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
     <div class="glass-panel w-full max-w-lg p-6 md:p-8 rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(208,188,255,0.15)] relative scale-95 transition-all duration-300" id="legal-modal-content">
-        <button onclick="closeLegalModal()" class="absolute right-6 top-6 text-on-surface-variant hover:text-primary transition-colors" aria-label="Close modal">
-            <span class="material-symbols-outlined">close</span>
+        <button onclick="closeLegalModal()" class="absolute right-6 top-6 text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-8 h-8" aria-label="Close modal">
+            <i class="fi fi-rr-cross-small text-[18px]"></i>
         </button>
         <h3 class="text-xl font-semibold text-primary mb-4" id="legal-modal-title">Terms of Service</h3>
         <div class="text-[14px] text-on-surface-variant space-y-4 max-h-[300px] overflow-y-auto pr-2" id="legal-modal-text"></div>

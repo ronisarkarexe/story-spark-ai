@@ -23,8 +23,8 @@ const ContactUs = () => {
                         <li>- Open-source collaboration welcome</li>
                     </ul>
                 </div>
-
-                <div className="mt-6">
+                <div>
+                    <br></br>
                     <Link
                         to="/"
                         className="px-6 py-3 bg-blue-500 text-white font-semibold text-lg rounded-full shadow-md hover:bg-blue-600 transition"

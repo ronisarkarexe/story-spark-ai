@@ -5,11 +5,16 @@ import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/p
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
 import StoryWorldMap from "../story-map/StoryWorldMap";
+import StoryRemix from "../remix/StoryRemix";
+import StoryTranslator from "../translate/StoryTranslator";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setStory } from "../../redux/slices/storySlice";
+import ContinueStoryButton from "../story/ContinueStoryButton";
 
 import {
   useGenerateAlternateEndingsMutation,
@@ -22,10 +27,14 @@ export interface IStories {
   tag: string;
   imageURL: string;
   language?: string;
+  emotions?: string[];
+  genre?: string;
+  enhancedPrompt?: string;
 }
 
 interface IPost extends IStories {
   topic: ITopicData[];
+  isPublished?: boolean;
 }
 
 interface StoriesComponentProps {
@@ -85,6 +94,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 }) => {
   const location = useLocation();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const dispatch = useDispatch();
 
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
@@ -94,6 +104,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
+  const [showRemix, setShowRemix] = useState<boolean>(false);
+  const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -212,16 +224,32 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
   // Sync state instantly whenever a new template is submitted or selected
   useEffect(() => {
-    if (stories && stories.length > 0) {
-      setSelectedStory(stories[0]);
-    } else {
-      setSelectedStory(null);
-    }
-    // Reset auto-save status for new story session
-    lastSavedContentRef.current = "";
-    hasSavedSessionRef.current = false;
-    savedPostIdRef.current = null;
-  }, [stories]);
+  if (stories && stories.length > 0) {
+    setSelectedStory(stories[0]);
+
+    // Save story into Redux for continuation engine
+    dispatch(
+      setStory({
+        id: stories[0].uuid,
+        title: stories[0].title,
+        chapters: [
+          {
+            id: 1,
+            title: "Chapter 1",
+            content: stories[0].content,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      })
+    );
+  } else {
+    setSelectedStory(null);
+  }
+
+  lastSavedContentRef.current = "";
+  hasSavedSessionRef.current = false;
+  savedPostIdRef.current = null;
+}, [stories, dispatch]);
 
   useEffect(() => {
     const autoSaveStory = async () => {
@@ -246,6 +274,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       const post: IPost = {
         ...selectedStory,
         topic: selectTopics,
+        isPublished: false,
       };
 
       try {
@@ -623,6 +652,7 @@ ${content}
     const post: IPost = {
       ...selectedStory,
       topic: selectTopics,
+      isPublished: true,
     };
     setLoading(true);
     try {
@@ -654,13 +684,13 @@ ${content}
 
   const isNarrationActive = narrationState !== "idle";
 
-if (isLoading) {
-  return (
-    <div className="flex items-center justify-center py-20">
-      <StoryGeneratingAnimation />
-    </div>
-  );
-}
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <StoryGeneratingAnimation />
+      </div>
+    );
+  }
   if (!selectedStory) {
     return null;
   }
@@ -692,6 +722,11 @@ if (isLoading) {
                 <span className="inline-flex items-center rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
                   🌐 {selectedStory.language || "English"}
                 </span>
+                {selectedStory.emotions && selectedStory.emotions.length > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 py-1 px-3 text-xs font-semibold">
+                    😊 {selectedStory.emotions.join(", ")}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex justify-start sm:justify-end">
@@ -762,6 +797,22 @@ if (isLoading) {
                 </button>
                 <button
                   type="button"
+                  className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowRemix(true)}
+                  disabled={!selectedStory}
+                >
+                  🔀 Remix
+                </button>
+                <button
+                  type="button"
+                  className="rounded-lg px-4 py-2 bg-emerald-700 text-slate-200 font-semibold cursor-pointer hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowTranslator(true)}
+                  disabled={!selectedStory}
+                >
+                  🌍 Translate
+                </button>
+                <button
+                  type="button"
                   id="publish-story-btn"
                   className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                     loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
@@ -773,10 +824,22 @@ if (isLoading) {
                 </button>
               </div>
             </div>
+
+            {selectedStory.enhancedPrompt && (
+              <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
+                <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
+                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
+                </h4>
+                <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">
+                  {selectedStory.enhancedPrompt}
+                </p>
+              </div>
+            )}
+
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
               <p className="break-words whitespace-pre-wrap">
                 {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment) => {
+                  sentenceSegments.map((segment: StorySentenceSegment) => {
                     const isActiveSentence =
                       isNarrationActive &&
                       narrationWordIndex >= segment.startWordIndex &&
@@ -809,6 +872,10 @@ if (isLoading) {
                 onWordIndexChange={setNarrationWordIndex}
                 onPlaybackStateChange={setNarrationState}
               />
+            </div>
+            {/* Story Continuation Engine */}
+            <div className="mt-6">
+              <ContinueStoryButton />
             </div>
           </div>
           <div className="mt-7">
@@ -1059,6 +1126,25 @@ if (isLoading) {
           </div>
         </div>
       </div>
+      {showTranslator && selectedStory && (
+        <StoryTranslator
+          story={selectedStory}
+          isLogin={isLogin}
+          onClose={() => setShowTranslator(false)}
+        />
+      )}
+      {showRemix && selectedStory && (
+        <StoryRemix
+          story={selectedStory}
+          isLogin={isLogin}
+          onRemixComplete={(remixedStory) => {
+            setStories([remixedStory, ...stories]);
+            setSelectedStory(remixedStory);
+            setShowRemix(false);
+          }}
+          onClose={() => setShowRemix(false)}
+        />
+      )}
       {showWorldMap && selectedStory && (
         <StoryWorldMap
           story={selectedStory.content}

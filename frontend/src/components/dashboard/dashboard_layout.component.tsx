@@ -172,7 +172,7 @@
 
 // export default DashboardLayout;
 import React, { useState } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo } from "../../services/auth.service";
 
@@ -184,6 +184,9 @@ const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
 
   const user = getUserInfo();
+  if (!user) {
+  return <Navigate to="/login" replace />;
+}
 
   const currentPage = menuItems
     .flatMap((item) => (item.subRoutes ? [item, ...item.subRoutes] : [item]))
@@ -226,7 +229,6 @@ const DashboardLayout: React.FC = () => {
           </Link>
 
           <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Dashboard</p>
             <h1 className="text-lg font-semibold">{pageTitle}</h1>
           </div>
         </div>
