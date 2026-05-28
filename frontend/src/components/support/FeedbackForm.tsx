@@ -35,6 +35,7 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
   const successMessageRef = useRef<HTMLParagraphElement | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
+  const onCloseRef = useRef<Props["onClose"]>(onClose);
   const openerRef = useRef<Element | null>(null);
 
   const getValidationError = (): ValidationError | null => {
@@ -147,19 +148,18 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
   }, []);
 
   useEffect(() => {
-    if (status === "error" && errorMsg) {
-      errorMessageRef.current?.focus();
-    }
-
-    if (status === "success" && successMessage) {
-      successMessageRef.current?.focus();
-    }
-  }, [errorMsg, status, successMessage]);
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose();
+        if (requestControllerRef.current) {
+          try {
+            requestControllerRef.current.abort();
+          } catch {}
+        }
+        onCloseRef.current?.();
         return;
       }
 
@@ -173,7 +173,15 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
             dialogElement.querySelectorAll<HTMLElement>(
               'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
             )
-          ).filter((element) => element.offsetParent !== null)
+          ).filter((element) => {
+            try {
+              const anyEl = element as unknown as { checkVisibility?: () => boolean };
+              if (typeof anyEl.checkVisibility === "function") return anyEl.checkVisibility();
+              return element.getClientRects().length > 0;
+            } catch {
+              return true;
+            }
+          })
         : [];
 
       if (focusableElements.length === 0) {
@@ -236,7 +244,14 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
               aria-invalid={status === "error" && errorField === "fullname"}
               aria-describedby={status === "error" && errorField === "fullname" ? errorMessageId : undefined}
               value={fullname}
-              onChange={(e) => setFullname(e.target.value)}
+              onChange={(e) => {
+                setFullname(e.target.value);
+                if (errorField === "fullname") {
+                  setErrorField(null);
+                  setErrorMsg("");
+                  setStatus("idle");
+                }
+              }}
               placeholder="Full name"
               className="col-span-2 sm:col-span-1 w-full rounded-md bg-[#0d1630]/60 border border-white/[0.06] px-3 py-2 text-white placeholder-slate-500"
             />
@@ -250,7 +265,14 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
               aria-invalid={status === "error" && errorField === "email"}
               aria-describedby={status === "error" && errorField === "email" ? errorMessageId : undefined}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errorField === "email") {
+                  setErrorField(null);
+                  setErrorMsg("");
+                  setStatus("idle");
+                }
+              }}
               placeholder="you@example.com"
               className="col-span-2 sm:col-span-1 w-full rounded-md bg-[#0d1630]/60 border border-white/[0.06] px-3 py-2 text-white placeholder-slate-500"
             />
@@ -261,7 +283,9 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
             <select
               id={feedbackTypeId}
               value={feedbackType}
-              onChange={(e) => setFeedbackType(e.target.value)}
+              onChange={(e) => {
+                setFeedbackType(e.target.value);
+              }}
               aria-required="true"
               className="rounded-md bg-[#0d1630]/60 border border-white/[0.06] px-2 py-1 text-white"
             >
@@ -279,7 +303,14 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
             aria-invalid={status === "error" && errorField === "subject"}
             aria-describedby={status === "error" && errorField === "subject" ? errorMessageId : undefined}
             value={subject}
-            onChange={(e) => setSubject(e.target.value)}
+            onChange={(e) => {
+              setSubject(e.target.value);
+              if (errorField === "subject") {
+                setErrorField(null);
+                setErrorMsg("");
+                setStatus("idle");
+              }
+            }}
             placeholder="Subject"
             autoComplete="off"
             className="w-full rounded-md bg-[#0d1630]/60 border border-white/[0.06] px-3 py-2 text-white placeholder-slate-500"
@@ -293,7 +324,14 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
             aria-invalid={status === "error" && errorField === "message"}
             aria-describedby={status === "error" && errorField === "message" ? errorMessageId : undefined}
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              if (errorField === "message") {
+                setErrorField(null);
+                setErrorMsg("");
+                setStatus("idle");
+              }
+            }}
             placeholder="Describe the issue or feedback"
             rows={5}
             className="w-full resize-y rounded-md bg-[#0d1630]/60 border border-white/[0.06] px-3 py-2 text-white placeholder-slate-500"
