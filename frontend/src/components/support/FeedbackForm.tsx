@@ -131,19 +131,23 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
   };
 
   useEffect(() => {
-    openerRef.current = document.activeElement;
-    firstFieldRef.current?.focus();
+    const opener = document.activeElement;
+    const firstField = firstFieldRef.current;
+
+    firstField?.focus();
 
     return () => {
       if (closeTimeoutRef.current !== null) {
         window.clearTimeout(closeTimeoutRef.current);
       }
-      if (openerRef.current instanceof HTMLElement) {
-        openerRef.current.focus();
-      }
       if (requestControllerRef.current) {
         requestControllerRef.current.abort();
       }
+      queueMicrotask(() => {
+        if (!firstField?.isConnected && opener instanceof HTMLElement) {
+          opener.focus();
+        }
+      });
     };
   }, []);
 
