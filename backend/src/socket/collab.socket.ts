@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { Secret } from "jsonwebtoken";
+import type { Secret } from "jsonwebtoken";
 import logger from "../utils/logger.util";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import config from "../config";
@@ -203,6 +203,10 @@ export const setupCollabSocket = (io: Server) => {
 
     // Typing indicator
     socket.on("collab:typing", ({ roomId, username }: { roomId: string; username?: string }) => {
+      const room = rooms.get(roomId);
+      if (!room) return;
+      const isParticipant = room.participants.some(p => p.userId === authUserId);
+      if (!isParticipant) return;
       socket.to(roomId).emit("collab:user_typing", {
         userId: authUserId,
         username: username || authUsername,
@@ -210,6 +214,10 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     socket.on("collab:stop_typing", ({ roomId }: { roomId: string }) => {
+      const room = rooms.get(roomId);
+      if (!room) return;
+      const isParticipant = room.participants.some(p => p.userId === authUserId);
+      if (!isParticipant) return;
       socket.to(roomId).emit("collab:user_stop_typing", { userId: authUserId });
     });
 
@@ -218,6 +226,13 @@ export const setupCollabSocket = (io: Server) => {
       const room = rooms.get(roomId);
       if (!room) {
         socket.emit("collab:error", { message: "Room not found" });
+        return;
+      }
+      // Only participants of a room can read its details to avoid leaking
+      // story content and participant identities to other authenticated users.
+      const isParticipant = room.participants.some(p => p.userId === authUserId);
+      if (!isParticipant) {
+        socket.emit("collab:error", { message: "You are not a participant of this room" });
         return;
       }
       socket.emit("collab:room_info", { room });
