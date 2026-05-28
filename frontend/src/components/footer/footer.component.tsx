@@ -180,6 +180,7 @@ const FooterComponent = () => {
               ))}
               <li>
                 <button
+                  type="button"
                   onClick={() => setShowFeedback(true)}
                   className="group relative inline-flex text-[14px] leading-none text-slate-300/85 transition-colors duration-200 hover:text-blue-300"
                 >

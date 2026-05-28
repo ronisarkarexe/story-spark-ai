@@ -24,9 +24,17 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
   const dialogTitleId = useId();
   const errorMessageId = useId();
   const successMessageId = useId();
+  const fullnameId = useId();
+  const emailId = useId();
+  const feedbackTypeId = useId();
+  const subjectId = useId();
+  const messageId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const firstFieldRef = useRef<HTMLInputElement | null>(null);
+  const errorMessageRef = useRef<HTMLParagraphElement | null>(null);
+  const successMessageRef = useRef<HTMLParagraphElement | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
+  const requestControllerRef = useRef<AbortController | null>(null);
   const openerRef = useRef<Element | null>(null);
 
   const getValidationError = (): ValidationError | null => {
@@ -39,7 +47,8 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
     return null;
   };
 
-  const baseUrl = import.meta.env.VITE_BASE_URL?.trim();
+  const baseUrlValue = import.meta.env.VITE_BASE_URL?.trim();
+  const baseUrl = baseUrlValue ? baseUrlValue.replace(/\/+$/, "") : "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,9 +58,6 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
       setErrorField(validationError.field);
       setSuccessMessage("");
       setStatus("error");
-      requestAnimationFrame(() => {
-        document.getElementById(errorMessageId)?.focus();
-      });
       return;
     }
 
@@ -60,9 +66,6 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
       setErrorField(null);
       setSuccessMessage("");
       setStatus("error");
-      requestAnimationFrame(() => {
-        document.getElementById(errorMessageId)?.focus();
-      });
       return;
     }
 
@@ -70,11 +73,20 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
     setErrorMsg("");
     setSuccessMessage("");
     setErrorField(null);
+
+    if (requestControllerRef.current) {
+      requestControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+
     try {
       const res = await fetch(`${baseUrl}/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullname, email, subject: `${feedbackType.toUpperCase()}: ${subject}`, message }),
+        signal: controller.signal,
       });
       const responseText = await res.text();
       let data: { message?: string } | null = null;
@@ -88,6 +100,9 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
       }
 
       if (res.ok) {
+        if (!requestControllerRef.current || requestControllerRef.current.signal.aborted) {
+          return;
+        }
         setStatus("success");
         setSuccessMessage("Thanks — we received your feedback.");
         setFullname("");
@@ -98,22 +113,19 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
           window.clearTimeout(closeTimeoutRef.current);
         }
         closeTimeoutRef.current = window.setTimeout(onClose, 1200);
-        requestAnimationFrame(() => {
-          document.getElementById(successMessageId)?.focus();
-        });
       } else {
+        if (!requestControllerRef.current || requestControllerRef.current.signal.aborted) {
+          return;
+        }
         setStatus("error");
         setErrorMsg(data?.message || "Failed to send feedback");
-        requestAnimationFrame(() => {
-          document.getElementById(errorMessageId)?.focus();
-        });
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
       setStatus("error");
       setErrorMsg("Network error. Please try again.");
-      requestAnimationFrame(() => {
-        document.getElementById(errorMessageId)?.focus();
-      });
     }
   };
 
@@ -128,8 +140,21 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
       if (openerRef.current instanceof HTMLElement) {
         openerRef.current.focus();
       }
+      if (requestControllerRef.current) {
+        requestControllerRef.current.abort();
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (status === "error" && errorMsg) {
+      errorMessageRef.current?.focus();
+    }
+
+    if (status === "success" && successMessage) {
+      successMessageRef.current?.focus();
+    }
+  }, [errorMsg, status, successMessage]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -200,9 +225,9 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <label className="sr-only" htmlFor="feedback-fullname">Full name</label>
+            <label className="sr-only" htmlFor={fullnameId}>Full name</label>
             <input
-              id="feedback-fullname"
+              id={fullnameId}
               ref={firstFieldRef}
               type="text"
               autoComplete="name"
@@ -215,9 +240,9 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
               placeholder="Full name"
               className="col-span-2 sm:col-span-1 w-full rounded-md bg-[#0d1630]/60 border border-white/[0.06] px-3 py-2 text-white placeholder-slate-500"
             />
-            <label className="sr-only" htmlFor="feedback-email">Email address</label>
+            <label className="sr-only" htmlFor={emailId}>Email address</label>
             <input
-              id="feedback-email"
+              id={emailId}
               type="email"
               autoComplete="email"
               required
@@ -232,9 +257,9 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
           </div>
 
           <div className="flex gap-2 items-center">
-            <label className="text-sm text-slate-300" htmlFor="feedback-type">Type:</label>
+            <label className="text-sm text-slate-300" htmlFor={feedbackTypeId}>Type:</label>
             <select
-              id="feedback-type"
+              id={feedbackTypeId}
               value={feedbackType}
               onChange={(e) => setFeedbackType(e.target.value)}
               aria-required="true"
@@ -246,9 +271,9 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
             </select>
           </div>
 
-          <label className="sr-only" htmlFor="feedback-subject">Subject</label>
+          <label className="sr-only" htmlFor={subjectId}>Subject</label>
           <input
-            id="feedback-subject"
+            id={subjectId}
             required
             aria-required="true"
             aria-invalid={status === "error" && errorField === "subject"}
@@ -260,9 +285,9 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
             className="w-full rounded-md bg-[#0d1630]/60 border border-white/[0.06] px-3 py-2 text-white placeholder-slate-500"
           />
 
-          <label className="sr-only" htmlFor="feedback-message">Message</label>
+          <label className="sr-only" htmlFor={messageId}>Message</label>
           <textarea
-            id="feedback-message"
+            id={messageId}
             required
             aria-required="true"
             aria-invalid={status === "error" && errorField === "message"}
@@ -275,12 +300,12 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
           />
 
           {status === "error" && errorMsg && (
-            <p id={errorMessageId} role="alert" tabIndex={-1} className="text-sm text-red-400 outline-none">
+            <p ref={errorMessageRef} id={errorMessageId} role="alert" tabIndex={-1} className="text-sm text-red-400 outline-none">
               {errorMsg}
             </p>
           )}
           {status === "success" && (
-            <p id={successMessageId} role="status" aria-live="polite" tabIndex={-1} className="text-sm text-green-400 outline-none">
+            <p ref={successMessageRef} id={successMessageId} role="status" aria-live="polite" tabIndex={-1} className="text-sm text-green-400 outline-none">
               {successMessage}
             </p>
           )}
