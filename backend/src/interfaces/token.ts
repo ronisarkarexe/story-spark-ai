@@ -6,4 +6,5 @@ export interface ITokenPayload {
   name: string;
   subscriptionType: string;
   postsCount: number;
+  tokenVersion?: number;
 }

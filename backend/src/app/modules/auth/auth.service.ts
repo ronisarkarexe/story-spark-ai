@@ -29,14 +29,14 @@ const login = async (payload: AuthModel) => {
   if (!match) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Password is not valid!");
   }
-  const { _id, email, role, subscriptionType, name, postsCount } = isExistUser;
+  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } = isExistUser;
   const accessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
   const refreshToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
@@ -92,14 +92,14 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
   // Clean up OTP record after successful registration
   await OTPModel.deleteOne({ email: userEmail });
   
-  const { _id, email, role, subscriptionType, name, postsCount } = result;
+  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } = result;
   const accessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
   const refreshToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
@@ -120,14 +120,19 @@ const refreshToken = async (token: string) => {
     throw new ApiError(httpStatus.FORBIDDEN, "Invalid refresh token");
   }
 
-  const { email: userEmail } = verifiedToken;
+  const { email: userEmail, tokenVersion: tokenVersionInToken } = verifiedToken;
   const user = await User.findOne({ email: userEmail });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
-  const { _id, email, role, subscriptionType, name, postsCount } = user;
+
+  if (tokenVersionInToken === undefined || tokenVersionInToken !== user.tokenVersion) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Session expired, please login again");
+  }
+
+  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } = user;
   const newAccessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
@@ -178,14 +183,14 @@ const googleLogin = async (payload: { token: string }) => {
       user = await User.create(newUser);
     }
 
-    const { _id, role, subscriptionType, postsCount, name } = user;
+    const { _id, role, subscriptionType, postsCount, name, tokenVersion } = user;
     const accessToken = JwtHalers.createToken(
-      { _id, email, role, subscriptionType, name, postsCount },
+      { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
       config.jwt.secret as Secret,
       config.jwt.expires_in as string
     );
     const refreshTokenData = JwtHalers.createToken(
-      { _id, email, role, subscriptionType, name, postsCount },
+      { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
       config.jwt.refresh_secret as Secret,
       config.jwt.refresh_expires_in as string
     );
@@ -286,20 +291,21 @@ const resetPassword = async (payload: {
 
   // Update user password. Pre-save hook hashes it.
   user.password = password;
+  user.tokenVersion = (user.tokenVersion || 0) + 1;
   await user.save();
 
   // Clean up OTP record
   await OTPModel.deleteOne({ email });
 
   // Generate JWT tokens for auto-login
-  const { _id, role, subscriptionType, name, postsCount } = user;
+  const { _id, role, subscriptionType, name, postsCount, tokenVersion } = user;
   const accessToken = JwtHalers.createToken(
-    { _id, email: user.email, role, subscriptionType, name, postsCount },
+    { _id, email: user.email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
   const refreshToken = JwtHalers.createToken(
-    { _id, email: user.email, role, subscriptionType, name, postsCount },
+    { _id, email: user.email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );

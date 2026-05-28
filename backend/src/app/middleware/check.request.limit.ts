@@ -6,6 +6,7 @@ import config from "../../config";
 import { Secret } from "jsonwebtoken";
 import { reserveUserQuota } from "../modules/ai_model/quota.service";
 import { createUserQuotaGuard } from "../modules/ai_model/quota.lifecycle";
+import { User } from "../modules/user/user.model";
 
 // Note: Actual quota/limit enforcement was moved to the ai_model.service layer 
 // to allow for atomic MongoDB operations and rollback on failure.
@@ -24,7 +25,19 @@ const checkRequestLimit =
         token,
         config.jwt.secret as Secret
       );
-      const { email: userEmail } = verifiedUser;
+
+      // Validate JWT tokenVersion against DB
+      const user = await User.findById(verifiedUser._id);
+      if (!user) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+      }
+
+      if (verifiedUser.tokenVersion === undefined || verifiedUser.tokenVersion !== user.tokenVersion) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Session expired, please login again"
+        );
+      }
 
       next();
     } catch (err) {

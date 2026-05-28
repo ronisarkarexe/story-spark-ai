@@ -4,6 +4,7 @@ import config from "../../config";
 import { Secret } from "jsonwebtoken";
 import ApiError from "../../errors/api_error";
 import { JwtHalers } from "../../utils/jwt.helper";
+import { User } from "../modules/user/user.model";
 
 const auth =
   (...requiredRole: string[]) =>
@@ -22,6 +23,20 @@ const auth =
         token,
         config.jwt.secret as Secret
       );
+
+      // Validate JWT tokenVersion against DB
+      const user = await User.findById(verifiedUser._id);
+      if (!user) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+      }
+
+      if (verifiedUser.tokenVersion === undefined || verifiedUser.tokenVersion !== user.tokenVersion) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Session expired, please login again"
+        );
+      }
+
       if (requiredRole.length && !requiredRole.includes(verifiedUser.role)) {
         throw new ApiError(httpStatus.FORBIDDEN, "Forbidden");
       }

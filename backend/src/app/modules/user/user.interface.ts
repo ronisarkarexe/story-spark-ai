@@ -25,6 +25,7 @@ export interface IUser {
   lastRequestDate: Date;
   posts: Types.ObjectId[];
   isApplyForWriter: boolean;
+  tokenVersion: number;
 }
 
 export type UserModel = Model<IUser, object>;
