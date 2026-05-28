@@ -1,6 +1,7 @@
 import { Post } from "../post/post.model";
 import { Types } from "mongoose";
 import { ITokenPayload } from "../../../interfaces/token";
+import { performance } from "perf_hooks";
 
 const STOP_WORDS = new Set([
   "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
@@ -14,8 +15,36 @@ const STOP_WORDS = new Set([
   "same", "so", "than", "too", "very", "just", "as", "up", "out", "if",
 ]);
 
-const getOverview = async (token: ITokenPayload | null) => {
+const SERVER_TIME_ZONE =
+  Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
+const runMeasuredAnalytics = async <T>(
+  label: string,
+  operation: () => Promise<T>
+): Promise<T> => {
+  if (process.env.ANALYTICS_BENCHMARK !== "1") {
+    return operation();
+  }
+
+  const start = performance.now();
+  const heapBefore = process.memoryUsage().heapUsed;
+
+  try {
+    return await operation();
+  } finally {
+    const durationMs = performance.now() - start;
+    const heapAfter = process.memoryUsage().heapUsed;
+    const heapDeltaKb = (heapAfter - heapBefore) / 1024;
+
+    console.info(
+      `[analytics:benchmark] ${label} duration=${durationMs.toFixed(
+        2
+      )}ms heapDelta=${heapDeltaKb.toFixed(2)}KB`
+    );
+  }
+};
+
+const getOverview = async (token: ITokenPayload | null) => {
   if (!token?._id) {
     return {
       totalStories: 0,
@@ -96,20 +125,40 @@ const getHeatmap = async (token: ITokenPayload | null) => {
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-  const posts = await Post.find({
-    author: userObjectId,
-    publishedAt: { $gte: oneYearAgo },
-  }).lean() as Array<Record<string, any>>;
-
-  const heatmap: Record<string, number> = {};
-  posts.forEach((p) => {
-    const date = new Date(p.publishedAt || p.createdAt)
-      .toISOString()
-      .split("T")[0];
-    heatmap[date] = (heatmap[date] || 0) + 1;
-  });
-
-  return Object.entries(heatmap).map(([date, count]) => ({ date, count }));
+  return runMeasuredAnalytics("heatmap", async () =>
+    Post.aggregate([
+      {
+        $match: {
+          author: userObjectId,
+          publishedAt: { $gte: oneYearAgo },
+        },
+      },
+      {
+        $project: {
+          date: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: { $ifNull: ["$publishedAt", "$createdAt"] },
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$date",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          date: "$_id",
+          count: 1,
+        },
+      },
+      { $sort: { date: 1 } },
+    ])
+  );
 };
 
 const getGenreDistribution = async (token: ITokenPayload | null) => {
@@ -158,20 +207,48 @@ const getWordCloud = async (token: ITokenPayload | null) => {
 
 const getProductiveHours = async (token: ITokenPayload) => {
   const userObjectId = new Types.ObjectId(token._id);
-  const posts = await Post.find({ author: userObjectId }).lean() as Array<Record<string, any>>;
 
-  const hourCount: Record<number, number> = {};
-  for (let i = 0; i < 24; i++) hourCount[i] = 0;
+  return runMeasuredAnalytics("productive-hours", async () => {
+    const rows = await Post.aggregate([
+      { $match: { author: userObjectId } },
+      {
+        $project: {
+          hour: {
+            $hour: {
+              date: { $ifNull: ["$publishedAt", "$createdAt"] },
+              timezone: SERVER_TIME_ZONE,
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$hour",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          hour: "$_id",
+          count: 1,
+        },
+      },
+      { $sort: { hour: 1 } },
+    ]);
 
-  posts.forEach((p) => {
-    const hour = new Date(p.publishedAt || p.createdAt).getHours();
-    hourCount[hour]++;
+    const countByHour = new Map<number, number>(
+      rows.map((row: { hour: number; count: number }) => [
+        row.hour,
+        row.count,
+      ])
+    );
+
+    return Array.from({ length: 24 }, (_, hour) => ({
+      hour,
+      count: countByHour.get(hour) ?? 0,
+    }));
   });
-
-  return Object.entries(hourCount).map(([hour, count]) => ({
-    hour: parseInt(hour),
-    count,
-  }));
 };
 
 const getEmotionDistribution = async (token: ITokenPayload) => {
@@ -192,30 +269,71 @@ const getMoodTimeline = async (token: ITokenPayload) => {
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-  const posts = await Post.find({
-    author: userObjectId,
-    publishedAt: { $gte: sixMonthsAgo },
-  }).lean() as Array<Record<string, any>>;
-
-  const timeline: Record<string, Record<string, number>> = {};
-  
-  posts.forEach((p) => {
-    const month = new Date(p.publishedAt || p.createdAt).toISOString().slice(0, 7); // YYYY-MM
-    if (!timeline[month]) {
-      timeline[month] = {};
-    }
-    
-    if (p.emotions && Array.isArray(p.emotions)) {
-      p.emotions.forEach((emotion: string) => {
-        timeline[month][emotion] = (timeline[month][emotion] || 0) + 1;
-      });
-    }
-  });
-
-  return Object.entries(timeline).map(([month, emotions]) => ({
-    month,
-    emotions,
-  })).sort((a, b) => a.month.localeCompare(b.month));
+  return runMeasuredAnalytics("mood-timeline", async () =>
+    Post.aggregate([
+      {
+        $match: {
+          author: userObjectId,
+          publishedAt: { $gte: sixMonthsAgo },
+        },
+      },
+      {
+        $project: {
+          month: {
+            $dateToString: {
+              format: "%Y-%m",
+              date: { $ifNull: ["$publishedAt", "$createdAt"] },
+            },
+          },
+          emotions: {
+            $cond: [{ $isArray: "$emotions" }, "$emotions", []],
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$emotions",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: {
+            month: "$month",
+            emotion: { $ifNull: ["$emotions", null] },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.month",
+          emotionPairs: {
+            $push: {
+              k: "$_id.emotion",
+              v: "$count",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: "$_id",
+          emotions: {
+            $arrayToObject: {
+              $filter: {
+                input: "$emotionPairs",
+                as: "pair",
+                cond: { $ne: ["$$pair.k", null] },
+              },
+            },
+          },
+        },
+      },
+      { $sort: { month: 1 } },
+    ])
+  );
 };
 
 export const AnalyticsService = {
