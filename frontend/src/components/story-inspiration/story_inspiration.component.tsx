@@ -246,7 +246,7 @@ const StoryInspirationComponent: React.FC = () => {
               {
                 value: "∞",
                 label: "Writing Possibilities",
-                icon: "fa-sparkle",
+                icon: "fa-sparkles",
               },
             ].map((item, index) => (
               <motion.div
