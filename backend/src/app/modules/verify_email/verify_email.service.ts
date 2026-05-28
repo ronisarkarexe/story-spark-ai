@@ -17,13 +17,6 @@ const transporter = nodemailer.createTransport({
 
 const VerifyEmail = async (payload: IEmailBody) => {
   try {
-    if (!config.verify_email || !config.verify_password) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "Email verification credentials are missing. Set VERIFY_EMAIL and VERIFY_PASSWORD in backend/.env."
-      );
-    }
-
     const { email, name } = payload;
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
@@ -89,7 +82,12 @@ const VerifyEmail = async (payload: IEmailBody) => {
       </html>
       `,
     };
-    await transporter.sendMail(mailOptions);
+    
+    if (!config.verify_email || !config.verify_password) {
+      console.log(`\n=========================================\n[DEV MODE] OTP for ${email} is: ${otp}\n=========================================\n`);
+    } else {
+      await transporter.sendMail(mailOptions);
+    }
 
     return {
       expiresAt,

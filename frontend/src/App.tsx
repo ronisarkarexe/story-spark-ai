@@ -1,8 +1,9 @@
+import React from "react";
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
-import AnalyticsDashboard from "./components/analytics/AnalyticsDashboard";
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -27,7 +28,6 @@ import ExploreComponent from "./components/post/post.component";
 import PostDetailsComponent from "./components/post/post.details.component";
 import BookmarksComponent from "./components/post/bookmarks.component";
 import { getUserInfo } from "./services/auth.service";
-import UserListComponent from "./components/dashboard/users/user.list.component";
 import NotFoundComponent from "./components/not-found.component";
 import EmailValidationComponent from "./components/email_validation/email.validation.component";
 import { USER_ROLE } from "./constants/role";
@@ -50,28 +50,31 @@ import MagicCursorComponent from "./components/magic-cursor/magic_cursor.compone
 import ContributorsComponent from "./components/footer/contributors";
 import BranchingStory from "./components/stories/BranchingStory";
 import ReportBug from "./components/report-bug/ReportBug";
-import StoriesComponent from "./components/stories/stories.component";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
+import StoryWorkspace from "./components/story/StoryWorkspace";
 
 // =========================================================================
-// 1. REFACTORED PROTECTED ROUTE LAYER (Acts as a Layout Gate using <Outlet />)
+// PROTECTED ROUTE — supports both wrapper pattern (element prop) and
+// layout-gate pattern (Outlet, no element prop)
 // =========================================================================
-const ProtectedRoute = ({
-  allowedRoles,
-}: {
+type ProtectedRouteProps = {
   allowedRoles: string[];
-}) => {
+  element?: React.ReactElement;
+};
+
+const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
   const user = getUserInfo();
-  
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
   if (!allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;
   }
-  
-  // Dynamically renders the active nested matching sub-child route
-  return <Outlet />;
+
+  // If an element was passed, render it directly (wrapper pattern)
+  // Otherwise render <Outlet /> for nested route layout-gate pattern
+  return element ? element : <Outlet />;
 };
 // =========================================================================
 // 2. CENTRAL ROUTER MATRIX (Initialized exactly once in the global scope)
@@ -84,7 +87,6 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <>
-        <MagicCursorComponent />
         <ScrollToTop />
         <RootLayout>
           <Outlet />
@@ -97,9 +99,9 @@ const router = createBrowserRouter([
       { path: "writing-assistant", element: <WritingAssistantComponent /> },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
       { path: "stories", element: <StoriesComponent /> },
+      { path: "story-workspace", element: <StoryWorkspace /> },
       { path: "login", element: <LoginComponent /> },
       { path: "signup", element: <SignUpComponent /> },
-      { path: "forgot-password", element: <ForgotPasswordComponent /> },
       { path: "pricing", element: <PricingComponent /> },
       { path: "post/:id", element: <PostDetailsComponent /> },
       { path: "help", element: <HelpCenterComponent /> },
@@ -112,7 +114,6 @@ const router = createBrowserRouter([
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
       { path: "contributors", element: <ContributorsComponent /> },
-      { path: "branching-story", element: <BranchingStory /> },
       { path: "report-bug", element: <ReportBug /> },
 
       // Protected Sub-Tree running under the RootLayout context
@@ -133,7 +134,7 @@ const router = createBrowserRouter([
   // Isolated layout branches (Bypassing public navigation headers entirely)
   { path: "/auth/email-validation", element: <EmailValidationComponent /> },
   { path: "/payment", element: <PaymentComponent /> },
-  { path: "/analytics", element: <AnalyticsDashboard /> },
+
   { path: "/collab", element: <CollabHome /> },
   { path: "/collab/:roomId", element: <CollabRoom /> },
 
@@ -146,32 +147,37 @@ const router = createBrowserRouter([
         element: <DashboardLayout />, 
         children: [
           { index: true, element: <DashboardComponent /> },
-          { path: "analytics", element: <AnalyticsPage /> },
-          { path: "post-lists", element: <PostListsComponent /> },
           { path: "profile", element: <ProfileComponent /> },
           { path: "writers", element: <WriterApplicationComponent /> },
+          { path: "users", element: <UserComponent /> },
           {
-            path: "users",
-            children: [
-              { index: true, element: <UserComponent /> },
-              { path: "list", element: <UserListComponent /> },
-            ],
-          },
-          // Independent structural guard layer checking high-tier Admin roles
-          {
-            element: <ProtectedRoute allowedRoles={ELEVATED_ADMIN_ROLES} />,
+            element: <ProtectedRoute allowedRoles={[USER_ROLE.USER, USER_ROLE.WRITER]} />,
             children: [{ path: "settings", element: <SettingComponent /> }],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={[USER_ROLE.WRITER]} />,
+            children: [{ path: "analytics", element: <AnalyticsPage /> }],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER]} />,
+            children: [{ path: "post-lists", element: <PostListsComponent /> }],
           },
         ],
       },
     ],
   },
 ]);
+
 // =========================================================================
-// 3. TARGET RUNTIME PROVIDER ENGINES
+// APP
 // =========================================================================
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <MagicCursorComponent />
+      <RouterProvider router={router} />
+    </>
+  );
 }
 
 export default App;

@@ -393,14 +393,14 @@ const PostDetailsComponent = () => {
               </div>
 
               <div className="flex items-center space-x-3 bg-slate-800/40 backdrop-blur-md px-4 py-2 rounded-full border border-slate-700/50 shadow-sm">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1 select-none">
-                  Share:
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 mr-1 select-none">
+                Share:
                 </span>
 
                 <button
                   id="share-twitter-btn"
                   onClick={handleTwitterShare}
-                  className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 hover:border-blue-400 hover:bg-blue-500/10 text-slate-400 hover:text-blue-400 flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
                   aria-label="Share on X"
                 >
                   <FaXTwitter className="text-sm" />
@@ -409,7 +409,7 @@ const PostDetailsComponent = () => {
                 <button
                   id="share-linkedin-btn"
                   onClick={handleLinkedInShare}
-                  className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 hover:border-indigo-400 hover:bg-indigo-500/10 text-slate-400 hover:text-indigo-400 flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
                   aria-label="Share on LinkedIn"
                 >
                   <i className="fab fa-linkedin text-sm"></i>
@@ -418,7 +418,7 @@ const PostDetailsComponent = () => {
                 <button
                   id="share-email-btn"
                   onClick={handleEmailShare}
-                  className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 hover:border-purple-400 hover:bg-purple-500/10 text-slate-400 hover:text-purple-400 flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
                   aria-label="Share via Email"
                 >
                   <i className="far fa-envelope text-sm"></i>

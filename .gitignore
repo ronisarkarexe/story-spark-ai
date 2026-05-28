@@ -57,4 +57,5 @@ backend/ml/saved/
 node_modules/
 
 dist/
-
+.claude
+.refact

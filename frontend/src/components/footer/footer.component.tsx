@@ -53,7 +53,7 @@ const FooterComponent = () => {
     { label: "Community",    to: "/community"   },
     { label: "Guidelines",   to: "/guidelines"  },
     { label: "Contributors", to: "/contributors"},
-    { label: "Report Bug",   to: import.meta.env.VITE_GITHUB_REPO_ISSUES_URL },
+    { label: "Report Bug",   to: "https://gssoc.girlscript.org/projects/ronisarkarexe%2Fstory-spark-ai" },
   ];
 
 

@@ -3,7 +3,15 @@ import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { IUser } from "./user.interface";
 import { User } from "./user.model";
+import { Post } from "../post/post.model";
 import httpStatus from "http-status";
+import { Post } from "../post/post.model";
+import { Comment } from "../comment/comment.model";
+import { Reaction } from "../reaction/reaction.model";
+import { Bookmark } from "../bookmark/bookmark.model";
+import { Notification } from "../notification/notification.model";
+import { StoryVersion } from "../story_version/story_version.model";
+import { Report } from "../report/report.model";
 
 const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram"] as const;
 
@@ -13,7 +21,7 @@ const getAllUsers = async (): Promise<IUser[]> => {
 };
 
 const getUser = async (payload: string): Promise<IUser | null> => {
-  const result = await User.findOne({ _id: payload }).select("-password");
+  const result = await User.findOne({ _id: payload });
   return result;
 };
 
@@ -64,6 +72,47 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
 };
 
 const deleteUser = async (id: string): Promise<void> => {
+  // Get all posts authored by this user
+  const userPosts = await Post.find({ author: id }).select("_id").lean();
+  const postIds = userPosts.map((p) => p._id);
+
+  // Delete story versions for user's posts
+  await StoryVersion.deleteMany({ storyId: { $in: postIds } });
+
+  // Delete reactions on user's posts
+  await Reaction.deleteMany({ postId: { $in: postIds } });
+
+  // Delete comments on user's posts
+  await Comment.deleteMany({ postId: { $in: postIds } });
+
+  // Delete bookmarks pointing to user's posts
+  await Bookmark.deleteMany({ storyId: { $in: postIds } });
+
+  // Remove user's posts from other users' Post.bookmarks arrays
+  await Post.updateMany(
+    { bookmarks: id },
+    { $pull: { bookmarks: id } }
+  );
+
+  // Delete user's own bookmarks
+  await Bookmark.deleteMany({ userId: id });
+
+  // Delete user's own reactions
+  await Reaction.deleteMany({ userId: id });
+
+  // Delete user's own comments
+  await Comment.deleteMany({ userId: id });
+
+  // Delete reports made by or about the user
+  await Report.deleteMany({ reportedBy: id });
+
+  // Delete notifications for the user
+  await Notification.deleteMany({ userId: id });
+
+  // Delete user's posts
+  await Post.deleteMany({ author: id });
+
+  // Finally delete the user
   await User.deleteOne({ _id: id });
 };
 
@@ -147,6 +196,18 @@ const getProfileInfo = async (token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
+
+  const publishedPostsCount = await Post.countDocuments({
+    author: user._id,
+    isPublished: true,
+    isDeleted: { $ne: true },
+  });
+
+  if (user.postsCount !== publishedPostsCount) {
+    user.postsCount = publishedPostsCount;
+    await user.save();
+  }
+
   return user;
 };
 

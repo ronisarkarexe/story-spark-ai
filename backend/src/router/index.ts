@@ -11,12 +11,14 @@ import { ReviewRouter } from "../app/modules/review/review.router";
 import { ReactionRouter } from "../app/modules/reaction/reaction.router";
 import { ContactRoutes } from "../app/modules/contact/contact.route";
 import { StoriesRouter } from "../routes/stories";
+import storyRoutes from "../routes/story.routes";
 
 import { ReportRouter } from "../app/modules/report/report.router";
 import { NewsletterRouter } from "../app/modules/newsletter/newsletter.route";
 import { BookmarkRouter } from "../app/modules/bookmark/bookmark.router";
 import { StoryVersionRouter } from "../app/modules/story_version/story_version.router";
 import { AnalyticsRouter } from "../app/modules/analytics/analytics.router";
+import { WriterApplicationRoutes } from "../app/modules/writer_application/writer_application.route";
 
 const router = express.Router();
 
@@ -82,12 +84,20 @@ const modules = [
     router: StoriesRouter,
   },
   {
+    path: "/story-continuation",
+    router: storyRoutes,
+  },
+  {
     path: "/contact",
     router: ContactRoutes,
   },
   {
     path: "/reports",
     router: ReportRouter,
+  },
+  {
+    path: "/writer-applications",
+    router: WriterApplicationRoutes,
   },
 ];
 modules.forEach((route) => router.use(route.path, route.router));

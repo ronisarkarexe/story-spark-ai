@@ -126,7 +126,7 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="relative min-h-screen overflow-hidden bg-[#020617] px-4 py-20 text-white sm:px-6 lg:px-16"
+      className="relative min-h-screen overflow-hidden bg-white text-[#020617] dark:bg-[#020617] px-4 py-20 dark:text-white sm:px-6 lg:px-16"
     >
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.15),transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.18),transparent_30%)]" />
@@ -147,7 +147,7 @@ export default function Contact() {
           </h2>
           <div className="mt-6 h-1 w-28 rounded-full bg-yellow-400" />
 
-          <p className="mt-8 max-w-xl text-lg leading-9 text-slate-300">
+          <p className="mt-8 max-w-xl text-lg leading-9 text:[#020617] dark:text-slate-300">
             Have a story idea, suggestion, or just want to say hello? We’d love to
             hear from you.
           </p>
@@ -168,7 +168,10 @@ export default function Contact() {
 
           <form
             onSubmit={submitHandler}
-            className="relative space-y-6 rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-2xl sm:p-8 lg:p-10"
+            className="relative space-y-6 rounded-[2rem] border border-slate-200
+bg-white
+dark:border-white/10
+dark:bg-white/[0.04] p-6 backdrop-blur-2xl sm:p-8 lg:p-10"
           >
             <div className="relative">
               <User className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-purple-300" />
@@ -179,7 +182,7 @@ export default function Contact() {
                 value={formData.fullname}
                 onChange={changeHandler}
                 required
-                className="h-16 w-full rounded-2xl border border-white/10 bg-[#0b1120]/80 pl-14 pr-5 text-base text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30"
+                className="h-16 w-full rounded-2xl border bg-white/[0.05] border-gray-400 dark:border-white/10 dark:bg-[#0b1120]/80 pl-14 pr-5 text-base text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30"
               />
             </div>
 
@@ -192,7 +195,7 @@ export default function Contact() {
                 value={formData.email}
                 onChange={changeHandler}
                 required
-                className="h-16 w-full rounded-2xl border border-white/10 bg-[#0b1120]/80 pl-14 pr-5 text-base text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30"
+                className="h-16 w-full rounded-2xl border  bg-white/[0.05] border-gray-400 dark:border-white/10 dark:bg-[#0b1120]/80 pl-14 pr-5 text-base text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30"
               />
             </div>
 
@@ -205,7 +208,7 @@ export default function Contact() {
                 value={formData.subject}
                 onChange={changeHandler}
                 required
-                className="h-16 w-full rounded-2xl border border-white/10 bg-[#0b1120]/80 pl-14 pr-5 text-base text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30"
+                className="h-16 w-full rounded-2xl border  bg-white/[0.05] border-gray-400 dark:border-white/10 dark:bg-[#0b1120]/80 pl-14 pr-5 text-base text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30"
               />
             </div>
 
@@ -218,7 +221,7 @@ export default function Contact() {
                 value={formData.message}
                 onChange={changeHandler}
                 required
-                className="w-full resize-none rounded-2xl border border-white/10 bg-[#0b1120]/80 pl-14 pr-5 pt-6 text-base text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30"
+                className="w-full resize-none rounded-2xl border  bg-white/[0.05] border-gray-400 dark:border-white/10 dark:bg-[#0b1120]/80 pl-14 pr-5 pt-6 text-base text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30"
               />
             </div>
 

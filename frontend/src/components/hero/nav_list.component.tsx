@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
+import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { USER_ROLE } from "../../constants/role";
 import logo from "../../assets/logoNew.png";
 import NotificationComponent from "../notification/notification.component";
 import { useNotifications } from "../../hooks/useNotifications";
@@ -17,13 +16,11 @@ import {
   Globe, 
   Bookmark, 
   LayoutDashboard, 
-  Search, 
   HelpCircle,
   Bell, 
   LogOut, 
   LogIn, 
   UserPlus, 
-  Menu, 
   X 
 } from "lucide-react";
 
@@ -154,8 +151,7 @@ const NavListComponent: React.FC = () => {
     markAsRead,
   } = useNotifications();
 
-  const user = getUserInfo();
-  const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
+
 
   const handelLogout = () => {
     removeUserInfo();

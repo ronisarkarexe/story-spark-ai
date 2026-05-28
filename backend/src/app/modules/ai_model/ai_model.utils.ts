@@ -110,7 +110,7 @@ export async function generateWithGeminiStories(
 
     const text = response.response.text();
     const parsed = JSON.parse(sanitizeJsonText(text));
-    const stories = Array.isArray(parsed) ? parsed : parsed?.stories;
+    const stories: Story[] = Array.isArray(parsed) ? parsed : parsed?.stories;
 
     if (!Array.isArray(stories) || stories.length === 0) {
       throw new ApiError(
@@ -119,14 +119,22 @@ export async function generateWithGeminiStories(
       );
     }
 
-    const imageResults = await Promise.all(
-      stories.map((story) => fetchImageURL(String(story?.tag ?? "")))
-    );
+    // Fetch images for stories concurrently
+    const imagePromises = stories.map(async (story) => {
+      try {
+        const imageResponse = await fetchImageURL(String(story?.tag ?? story?.title ?? ""));
+        return imageResponse?.imageUrl || "";
+      } catch (e) {
+        return "";
+      }
+    });
+    
+    const imageUrls = await Promise.all(imagePromises);
 
     return stories.map((story, index) => ({
       ...story,
       language,
-      imageURL: imageResults[index].imageUrl,
+      imageURL: imageUrls[index],
       uuid: uuidv4(),
     }));
   } catch (error: unknown) {
@@ -249,6 +257,69 @@ export async function generateAlternateEndingsWithGemini(
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
       `AI generation of alternate endings failed: ${errorMsg}`
+    );
+  }
+}
+
+export async function generateRemixWithGemini(
+  title: string,
+  content: string,
+  tag: string,
+  remixType: string,
+  remixOption: string,
+  language: string = "English"
+): Promise<{ title: string; content: string; tag: string }> {
+  const remixPrompts: Record<string, string> = {
+    setting: `Rewrite this story keeping the same plot and characters but change the setting to: ${remixOption}. Keep the same story structure.`,
+    perspective: `Rewrite this story from the perspective of: ${remixOption}. Keep the same events but show them from this character's point of view.`,
+    time_period: `Rewrite this story keeping the same plot but set it in: ${remixOption}. Adjust all details to fit the time period.`,
+    tone: `Rewrite this story keeping the same plot but change the tone to: ${remixOption}. Adjust the writing style accordingly.`,
+    gender_swap: `Rewrite this story with all characters gender-swapped. Keep the same plot and events.`,
+  };
+
+  const remixInstruction = remixPrompts[remixType] || remixPrompts.tone;
+
+  const prompt = `You are a creative writing assistant. Here is a story:
+
+Title: ${title}
+Content: ${content}
+Genre: ${tag}
+
+Task: ${remixInstruction}
+
+Write the remixed story in ${language}. Return a JSON object with this exact structure:
+{
+  "title": "remixed story title",
+  "content": "full remixed story content",
+  "tag": "${tag}"
+}`;
+
+  try {
+    const chatSession = model.startChat({
+      generationConfig: {
+        ...generationConfig,
+        maxOutputTokens: 4096,
+      },
+      safetySettings,
+      history: [],
+    });
+
+    const result = await chatSession.sendMessage(prompt);
+    const rawText = result.response.text();
+    const cleanText = sanitizeJsonText(rawText);
+    const parsed = JSON.parse(cleanText);
+
+    if (!parsed.title || !parsed.content) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid remix response from AI.");
+    }
+
+    return parsed;
+  } catch (error: unknown) {
+    if (error instanceof ApiError) throw error;
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `AI remix generation failed: ${errorMsg}`
     );
   }
 }

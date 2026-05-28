@@ -99,35 +99,37 @@ def _load_artifacts() -> None:
 
 def score(story_text: str, prompt_text: str) -> dict:
     """
-    Load saved model + tokenizer and score one story.
-    Returns { coherence, creativity, relevance } as floats.
+    Score one story using cached model and tokenizer artifacts.
+
+    Returns { coherence, creativity, relevance, overall } as floats.
     """
-    model_path     = os.path.join(SAVE_DIR, "scorer.keras")
-    tokenizer_path = os.path.join(SAVE_DIR, "tokenizer.pkl")
+    if not isinstance(story_text, str) or not story_text.strip():
+        raise ValueError("story_text must be a non-empty string")
 
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(
-            f"{model_path} not found — run train_scorer.py first."
-        )
+    if not isinstance(prompt_text, str) or not prompt_text.strip():
+        raise ValueError("prompt_text must be a non-empty string")
 
-    model     = load_model(model_path)
-    tokenizer = joblib.load(tokenizer_path)
+    _load_artifacts()
 
     def encode(text: str):
-        seq = tokenizer.texts_to_sequences([text])
+        seq = _tokenizer.texts_to_sequences([text])
         return pad_sequences(seq, maxlen=MAX_LEN, padding="post", truncating="post")
 
-    story_seq  = encode(story_text)
+    story_seq = encode(story_text)
     prompt_seq = encode(prompt_text)
 
-    coh, cre, rel = model.predict(
-        {"story": story_seq, "prompt": prompt_seq}, verbose=0
+    coh, cre, rel = _model.predict(
+        {"story": story_seq, "prompt": prompt_seq},
+        verbose=0
     )
 
+    coherence = float(coh[0][0])
+    creativity = float(cre[0][0])
+    relevance = float(rel[0][0])
+
     return {
-        "coherence":  round(float(coh[0][0]), 3),
-        "creativity": round(float(cre[0][0]), 3),
-        "relevance":  round(float(rel[0][0]), 3),
-        "overall":    round(float((coh[0][0] + cre[0][0] + rel[0][0]) / 3), 3),
+        "coherence": round(coherence, 3),
+        "creativity": round(creativity, 3),
+        "relevance": round(relevance, 3),
+        "overall": round((coherence + creativity + relevance) / 3, 3),
     }
-    

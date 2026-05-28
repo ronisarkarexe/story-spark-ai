@@ -21,7 +21,11 @@ const LoginComponent = () => {
   const [loginUser] = useLoginUserMutation();
   const [googleLogin] = useGoogleLoginMutation();
 
-  const { register, handleSubmit } = useForm<Inputs>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Inputs>({ mode: "onChange" });
 
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -147,6 +151,8 @@ const LoginComponent = () => {
               required={true}
               icon="fas fa-envelope"
               register={register}
+              validation={{ required: "Email is required" }}
+              error={errors.email}
             />
 
             <SSInput
@@ -157,6 +163,8 @@ const LoginComponent = () => {
               required={true}
               icon="fas fa-lock"
               register={register}
+              validation={{ required: "Password is required" }}
+              error={errors.password}
             />
 
             <div className="flex justify-end -mt-2">

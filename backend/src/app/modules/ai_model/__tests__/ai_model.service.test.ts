@@ -45,6 +45,23 @@ describe("AiModelService", () => {
     expect(result).toHaveLength(1);
   });
 
+  it("passes the selected language through to story generation", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiModelGenerate(
+      { prompt: "test", wordLength: 100, numStories: 1, language: "Spanish" },
+      { email: "user@example.com" } as never
+    );
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      100,
+      1,
+      "Spanish",
+      expect.anything()
+    );
+  });
+
   it("throws BAD_GATEWAY when generation returns empty stories", async () => {
     mockedGenerate.mockResolvedValue([]);
 

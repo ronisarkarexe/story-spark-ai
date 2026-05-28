@@ -19,6 +19,17 @@ export interface IAlternateEnding {
   fullStory: string;
 }
 
+export type RemixType = "setting" | "perspective" | "time_period" | "tone" | "gender_swap";
+
+export interface IRemixPayload {
+  title: string;
+  content: string;
+  tag: string;
+  remixType: RemixType;
+  remixOption?: string;
+  language?: string;
+}
+
 export interface IAlternateEndingPayload {
   title: string;
   content: string;

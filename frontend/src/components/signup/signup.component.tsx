@@ -313,6 +313,13 @@ const SignUpComponent = () => {
                 required={true}
                 icon="fas fa-envelope"
                 register={register}
+                validation={{
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Please enter a valid email address",
+                  },
+                }}
                 error={errors.email}
               />
 
@@ -324,9 +331,17 @@ const SignUpComponent = () => {
                 required={true}
                 icon="fas fa-lock"
                 register={register}
+                validation={{
+                  required: "Password is required",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters",
+                  },
+                }}
                 error={errors.password}
               />
 
+              {password?.length > 0 && (
               <div className="space-y-3 -mt-2">
                 <div
                   className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
@@ -364,6 +379,7 @@ const SignUpComponent = () => {
                   })}
                 </ul>
               </div>
+)}
 
               <SSInput
                 label="Confirm Password"
@@ -373,6 +389,11 @@ const SignUpComponent = () => {
                 required={true}
                 icon="fas fa-eye"
                 register={register}
+                validation={{
+                  required: "Please confirm your password",
+                  validate: (value: string) =>
+                    value === password || "Passwords do not match",
+                }}
                 error={errors.confirmPassword}
               />
 
@@ -387,6 +408,22 @@ const SignUpComponent = () => {
                 required={true}
                 icon="fas fa-key"
                 register={register}
+                validation={{
+                  required: "Please enter OTP",
+                  minLength: {
+                    value: 6,
+                    message: "OTP must be 6 digits",
+                  },
+                  maxLength: {
+                    value: 6,
+                    message: "OTP must be 6 digits",
+                  },
+                  pattern: {
+                    value: /^[0-9]{6}$/,
+                    message: "OTP must contain only numbers",
+                  },
+                }}
+                error={errors.otp}
               />
 
               <SSButton
