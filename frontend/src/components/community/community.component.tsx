@@ -1,9 +1,4 @@
-import React  from 'react';
-import { Link } from 'react-router-dom';
-import GenreCard from './genre_card.component';
-import { isLoggedIn } from '../../services/auth.service';
-import { genres, featuredWriters, resources, stats } from './community.data';
-import GithubcontributorsComponent from './Githubcontributors.component';
+import React from "react";
 
 export default function CommunityCardsPreview() {
   const genres = [

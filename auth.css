@@ -18,6 +18,10 @@
     --ds-card-max-width: 420px;
 }
 
+html, body {
+    touch-action: pan-x pan-y;
+}
+
 body {
     min-height: 100vh;
     background-image:

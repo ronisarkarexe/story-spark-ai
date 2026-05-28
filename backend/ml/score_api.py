@@ -9,7 +9,8 @@ Place at: backend/ml/score_api.py
 
 import logging
 from flask import Blueprint, request, jsonify
-from scorer import score as score_story
+from scorer import batch_score
+
 
 score_bp = Blueprint("score", __name__)
 logger = logging.getLogger(__name__)
@@ -83,27 +84,38 @@ def score_route():
     if len(stories) > MAX_STORIES:
         return jsonify({"error": f"Too many stories. Maximum allowed is {MAX_STORIES}"}), 413
 
-    results = []
+    # ── pre-validate each story before hitting the model ─────────────────
+    pre_errors = {}
+    valid_stories = []
 
     for story in stories:
         uuid = story.get("uuid", "unknown")
-
-        # Validate story fields before scoring
         error_msg = _validate_story(story)
         if error_msg:
             logger.warning("Validation failed for uuid=%s: %s", uuid, error_msg)
-            results.append({"uuid": uuid, "error": error_msg})
-            continue
+            pre_errors[uuid] = error_msg
+        else:
+            valid_stories.append(story)
 
+    # ── run batch scoring in one forward pass ─────────────────────────────
+    scored = []
+    if valid_stories:
         try:
-            scores = score_story(story["content"], prompt)
-            results.append({"uuid": uuid, **scores})
+            scored = batch_score(valid_stories, prompt)
         except FileNotFoundError as e:
-            logger.error("Scorer model missing for uuid=%s: %s", uuid, e)
-            results.append({"uuid": uuid, "error": "Scorer model unavailable", "error_code": "MODEL_UNAVAILABLE"})
+            logger.error("Scorer model missing: %s", e)
+            return jsonify({
+                "error": "Scorer model unavailable",
+                "error_code": "MODEL_UNAVAILABLE"
+            }), 503
         except Exception as e:
-            logger.exception("Unexpected scoring error for uuid=%s", uuid)
-            results.append({"uuid": uuid, "error": str(e)})
+            logger.exception("Unexpected error during batch scoring")
+            return jsonify({"error": str(e)}), 500
+
+    # ── merge validation errors back into results ─────────────────────────
+    results = scored + [
+        {"uuid": uuid, "error": msg} for uuid, msg in pre_errors.items()
+    ]
 
     return jsonify({
         "scores": results,

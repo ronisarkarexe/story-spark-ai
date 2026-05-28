@@ -245,7 +245,7 @@ const SignUpComponent = () => {
   };
 
   return (
-    <div className="min-h-[calc(100dvh-4.5rem)] bg-slate-900 text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8">
+    <div className="min-h-[calc(100dvh-4.5rem)] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8">
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
@@ -257,13 +257,13 @@ const SignUpComponent = () => {
           </h2>
         </div>
 
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
-          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200">
+        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
+          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
 
           {!showOtpField && (
-            <p className="mt-2 mb-6 text-center text-sm text-slate-400">
+            <p className="mt-2 mb-6 text-center text-sm text-slate-500 dark:text-slate-400">
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
@@ -274,7 +274,7 @@ const SignUpComponent = () => {
                 <div className="w-full border-t border-slate-700/50"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-slate-800/60 text-slate-400 font-semibold">
+                <span className="bg-white dark:bg-slate-800/60 text-slate-800 dark:text-slate-400 font-semibold">
                   SIGN UP WITH EMAIL
                 </span>
               </div>
@@ -288,8 +288,9 @@ const SignUpComponent = () => {
                 name="name"
                 placeholder="Enter your name"
                 required={true}
-                icon="fas fa-user"
+                icon="fi fi-rr-user"
                 register={register}
+                autoComplete="name"
                 validation={{
                   required: "Name is required",
                 minLength: {
@@ -311,15 +312,9 @@ const SignUpComponent = () => {
                 type="email"
                 placeholder="Enter your email"
                 required={true}
-                icon="fas fa-envelope"
+                icon="fi fi-rr-envelope"
                 register={register}
-                validation={{
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Please enter a valid email address",
-                  },
-                }}
+                autoComplete="email"
                 error={errors.email}
               />
 
@@ -329,15 +324,9 @@ const SignUpComponent = () => {
                 type="password"
                 placeholder="Enter your password"
                 required={true}
-                icon="fas fa-lock"
+                icon="fi fi-rr-lock"
                 register={register}
-                validation={{
-                  required: "Password is required",
-                  minLength: {
-                    value: 8,
-                    message: "Password must be at least 8 characters",
-                  },
-                }}
+                autoComplete="new-password"
                 error={errors.password}
               />
 
@@ -387,13 +376,9 @@ const SignUpComponent = () => {
                 type="password"
                 placeholder="Confirm your password"
                 required={true}
-                icon="fas fa-eye"
+                icon="fi fi-rr-eye"
                 register={register}
-                validation={{
-                  required: "Please confirm your password",
-                  validate: (value: string) =>
-                    value === password || "Passwords do not match",
-                }}
+                autoComplete="new-password"
                 error={errors.confirmPassword}
               />
 
@@ -406,7 +391,7 @@ const SignUpComponent = () => {
                 name="otp"
                 placeholder="Enter your OTP"
                 required={true}
-                icon="fas fa-key"
+                icon="fi fi-rr-key"
                 register={register}
                 validation={{
                   required: "Please enter OTP",

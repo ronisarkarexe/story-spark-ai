@@ -108,7 +108,10 @@ export default function StoryRemix({ story, isLogin, onRemixComplete, onClose }:
             {REMIX_OPTIONS.map((remix) => (
               <button
                 key={remix.type}
-                onClick={() => { setSelectedType(remix.type); setSelectedOption(null); }}
+                onClick={() => {
+                  setSelectedType(remix.type);
+                  setSelectedOption(remix.type === "gender_swap" ? "Gender Swap" : null);
+                }}
                 className={`text-left p-4 rounded-xl border transition-all ${
                   selectedType === remix.type
                     ? "border-purple-500 bg-purple-500/15"
@@ -142,8 +145,6 @@ export default function StoryRemix({ story, isLogin, onRemixComplete, onClose }:
               </div>
             </div>
           )}
-
-          {selectedRemix?.type === "gender_swap" && !selectedOption && setSelectedOption("Gender Swap") && null}
 
           {error && (
             <p className="text-red-400 text-sm mb-4">{error}</p>

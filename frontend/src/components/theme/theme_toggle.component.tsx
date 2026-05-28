@@ -5,6 +5,10 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { flushSync } from "react-dom";
 
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (updateCallback: () => void) => { ready: Promise<void> };
+};
+
 const ThemeToggle: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const iconRef = useRef<HTMLDivElement>(null);
@@ -30,7 +34,7 @@ const ThemeToggle: React.FC = () => {
   }, [isDark]);
 
   const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const doc = document as any;
+    const doc = document as ViewTransitionDocument;
     
     // Check if the browser supports View Transitions API and user respects motion
     if (!doc.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

@@ -18,6 +18,7 @@ const HelpHero: FC<HelpHeroProps> = ({
     <section
       id="help-hero"
       className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950"
+      className="relative overflow-hidden border-b border-slate-200 dark:border-white/10"
       aria-labelledby="help-center-title"
     >
       {/* Background Effects */}
@@ -54,6 +55,13 @@ const HelpHero: FC<HelpHeroProps> = ({
             </div>
           </Link>
         </motion.div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Link to="/" className="inline-block mb-8">
+          <div className="bg-white hover:bg-slate-50 text-slate-700 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded-lg border border-slate-200 shadow-sm dark:bg-gradient-to-r dark:from-white/20 dark:to-white/10 dark:hover:from-white/30 dark:hover:to-white/20 dark:text-gray-300 dark:border-white/10">
+            <i className="fa-solid fa-left-long" aria-hidden="true"></i>
+            BACK
+          </div>
+        </Link>
 
         {/* Main Content */}
         <motion.div
@@ -75,6 +83,10 @@ const HelpHero: FC<HelpHeroProps> = ({
             ></i>
             <span className="text-sm font-semibold tracking-wide uppercase">
               Support & Guidance
+          <div className="inline-flex items-center justify-center mx-auto px-4 py-1.5 mb-6 rounded-full border border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-white/20 dark:bg-blue-500/20 dark:text-white">
+            <span className="text-sm font-medium">SUPPORT &amp; GUIDANCE</span>
+            <span className="ml-2 text-sm">
+              <i className="fa-solid fa-circle-question" aria-hidden="true"></i>
             </span>
           </motion.div>
 
@@ -125,6 +137,7 @@ const HelpHero: FC<HelpHeroProps> = ({
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.65 }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-950 via-blue-700 to-indigo-700 mb-6 tracking-tight dark:from-gray-200 dark:via-blue-400 dark:to-indigo-400"
           >
             <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-xl">
               <h3 className="text-3xl font-bold text-white mb-1">24/7</h3>
@@ -139,6 +152,10 @@ const HelpHero: FC<HelpHeroProps> = ({
                 Help Articles
               </p>
             </div>
+          <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed dark:text-gray-400">
+            Find answers, troubleshoot issues, and get started with StorySparkAI.
+            Search our guides or browse topics below.
+          </p>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-xl">
               <h3 className="text-3xl font-bold text-white mb-1">AI</h3>

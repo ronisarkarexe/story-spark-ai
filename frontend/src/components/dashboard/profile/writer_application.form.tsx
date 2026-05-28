@@ -43,8 +43,9 @@ export const WriterApplicationForm = ({ user }: Props) => {
     try {
       await submitApplication(formData).unwrap();
       toast.success("Application submitted successfully!");
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to submit application");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to submit application";
+      toast.error(message);
     }
   };
 

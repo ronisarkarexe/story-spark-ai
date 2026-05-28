@@ -6,6 +6,7 @@ import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
 import StoryWorldMap from "../story-map/StoryWorldMap";
 import StoryRemix from "../remix/StoryRemix";
+import StoryTranslator from "../translate/StoryTranslator";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
@@ -26,6 +27,9 @@ export interface IStories {
   tag: string;
   imageURL: string;
   language?: string;
+  emotions?: string[];
+  genre?: string;
+  enhancedPrompt?: string;
 }
 
 interface IPost extends IStories {
@@ -101,6 +105,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
+  const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -679,13 +684,13 @@ ${content}
 
   const isNarrationActive = narrationState !== "idle";
 
-if (isLoading) {
-  return (
-    <div className="flex items-center justify-center py-20">
-      <StoryGeneratingAnimation />
-    </div>
-  );
-}
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <StoryGeneratingAnimation />
+      </div>
+    );
+  }
   if (!selectedStory) {
     return null;
   }
@@ -717,6 +722,11 @@ if (isLoading) {
                 <span className="inline-flex items-center rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
                   🌐 {selectedStory.language || "English"}
                 </span>
+                {selectedStory.emotions && selectedStory.emotions.length > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 py-1 px-3 text-xs font-semibold">
+                    😊 {selectedStory.emotions.join(", ")}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex justify-start sm:justify-end">
@@ -795,6 +805,14 @@ if (isLoading) {
                 </button>
                 <button
                   type="button"
+                  className="rounded-lg px-4 py-2 bg-emerald-700 text-slate-200 font-semibold cursor-pointer hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowTranslator(true)}
+                  disabled={!selectedStory}
+                >
+                  🌍 Translate
+                </button>
+                <button
+                  type="button"
                   id="publish-story-btn"
                   className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                     loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
@@ -806,6 +824,18 @@ if (isLoading) {
                 </button>
               </div>
             </div>
+
+            {selectedStory.enhancedPrompt && (
+              <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
+                <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
+                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
+                </h4>
+                <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">
+                  {selectedStory.enhancedPrompt}
+                </p>
+              </div>
+            )}
+
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
               <p className="break-words whitespace-pre-wrap">
                 {sentenceSegments.length > 0 ? (
@@ -1096,6 +1126,13 @@ if (isLoading) {
           </div>
         </div>
       </div>
+      {showTranslator && selectedStory && (
+        <StoryTranslator
+          story={selectedStory}
+          isLogin={isLogin}
+          onClose={() => setShowTranslator(false)}
+        />
+      )}
       {showRemix && selectedStory && (
         <StoryRemix
           story={selectedStory}

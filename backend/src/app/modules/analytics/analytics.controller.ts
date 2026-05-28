@@ -60,10 +60,34 @@ const getProductiveHours = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getEmotionDistribution = catchAsync(async (req: Request, res: Response) => {
+  const token = await getToken(req);
+  const result = await AnalyticsService.getEmotionDistribution(token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Emotion distribution fetched successfully!",
+    data: result,
+  });
+});
+
+const getMoodTimeline = catchAsync(async (req: Request, res: Response) => {
+  const token = await getToken(req);
+  const result = await AnalyticsService.getMoodTimeline(token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Mood timeline fetched successfully!",
+    data: result,
+  });
+});
+
 export const AnalyticsController = {
   getAnalyticsOverview,
   getHeatmap,
   getGenreDistribution,
   getWordCloud,
   getProductiveHours,
+  getEmotionDistribution,
+  getMoodTimeline,
 };

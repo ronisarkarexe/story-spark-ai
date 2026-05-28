@@ -45,85 +45,23 @@ const SupportLinks: FC<SupportLinksProps> = ({ links }) => {
             href={link.href}
             target={link.external ? "_blank" : undefined}
             rel={link.external ? "noopener noreferrer" : undefined}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{
-              duration: 0.45,
-              delay: index * 0.08,
-            }}
-            className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 dark:border-white/10 dark:bg-slate-900/70 dark:hover:border-indigo-500/30"
+            className="group flex items-start gap-5 bg-white hover:bg-indigo-50/80 border border-slate-200 hover:border-indigo-300 p-6 rounded-xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:border-white/5 dark:hover:border-indigo-500/30"
           >
-            {/* Background Glow */}
-            <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-              <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl" />
-              <div className="absolute -bottom-16 -left-16 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
+            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 group-hover:text-indigo-800 transition-colors dark:bg-indigo-500/20 dark:text-indigo-400 dark:group-hover:text-indigo-300">
+              <i className={`${link.icon} text-xl`} aria-hidden="true"></i>
             </div>
-
-            <div className="relative z-10 flex items-start gap-5">
-              {/* Icon */}
-              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-600 shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:bg-indigo-500/20 dark:text-indigo-300">
-                <i className={`${link.icon} text-2xl`} aria-hidden="true"></i>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-300">
-                    {link.title}
-                  </h3>
-
-                  {link.external && (
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all duration-300 group-hover:bg-indigo-500/10 group-hover:text-indigo-500 dark:bg-white/5 dark:text-slate-400">
-                      <i
-                        className="fa-solid fa-arrow-up-right-from-square text-[10px]"
-                        aria-hidden="true"
-                      ></i>
-                    </span>
-                  )}
-                </div>
-
-                <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                  {link.description}
-                </p>
-
-                {/* CTA */}
-                <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 transition-all duration-300 group-hover:gap-3 dark:text-indigo-300">
-                  Explore Resource
-                  <i className="fa-solid fa-arrow-right text-xs"></i>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Accent */}
-            <div className="relative z-10 mt-6 h-1 w-20 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 opacity-70 transition-all duration-300 group-hover:w-32" />
-          </motion.a>
-        ))}
-      </div>
-
-      {/* Bottom Info Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.1 }}
-        viewport={{ once: true }}
-        className="mt-12 overflow-hidden rounded-3xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-blue-50 p-6 shadow-sm dark:border-indigo-500/20 dark:from-indigo-950/40 dark:via-slate-900 dark:to-blue-950/30"
-      >
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-300">
-              <i className="fa-solid fa-users"></i>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                Open Source Community
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold text-slate-900 group-hover:text-indigo-950 transition-colors flex items-center gap-2 dark:text-gray-300 dark:group-hover:text-white">
+                {link.title}
+                {link.external && (
+                  <i
+                    className="fas fa-external-link-alt text-xs text-slate-500 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-indigo-400"
+                    aria-hidden="true"
+                  ></i>
+                )}
               </h3>
-
-              <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                StorySparkAI is powered by contributors worldwide. Join the
-                community, submit improvements, and help shape the future of
-                AI storytelling.
+              <p className="text-slate-600 text-sm mt-1 leading-relaxed dark:text-gray-500">
+                {link.description}
               </p>
             </div>
           </div>

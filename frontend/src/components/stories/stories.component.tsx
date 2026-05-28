@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
@@ -296,7 +296,18 @@ const StoriesComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
-  const [stories, setStories] = useState<IStories[]>([]);
+  const draft = useMemo(() => {
+    try {
+      const saved = localStorage.getItem("story_spark_draft");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const [stories, setStories] = useState<IStories[]>(
+    draft?.stories?.length ? draft.stories : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
+  );
   const [loading, setLoading] = useState<boolean>(false);
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
@@ -305,16 +316,11 @@ const StoriesComponent = () => {
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string>("");
-  const [selectedLength, setSelectedLength] = useState<string>("medium");
-  const [textareaValue, setTextareaValue] = useState<string>("");
+  const [selectedGenre, setSelectedGenre] = useState<string>(draft?.genre || "");
+  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
+  const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
-    const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    return LANGUAGES.some((language) => language.name === storedLanguage)
-      ? storedLanguage as string
-      : "English";
-  });
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(draft?.language || "English");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
@@ -331,6 +337,21 @@ const StoriesComponent = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  // Autosave Draft
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const draftData = {
+        prompt: textareaValue,
+        genre: selectedGenre,
+        length: selectedLength,
+        language: selectedLanguage,
+        stories: stories,
+      };
+      localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, stories]);
 
   useEffect(() => {
     const selectedLocale =
@@ -398,10 +419,11 @@ const StoriesComponent = () => {
       return;
     }
 
-    if (data.prompt === "") {
+    if (!data.prompt.trim()) {
       toast.error("Please enter a prompt to generate a story.");
       return;
     }
+
     if (getWordCount(data.prompt) < 10) {
       toast.error(
         "Please enter a prompt with at least 10 words to generate a story.",

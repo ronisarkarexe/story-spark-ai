@@ -6,6 +6,19 @@ import {
 import LoadingAnimation from "../../loading/loading.component";
 import toast, { Toaster } from "react-hot-toast";
 
+type WriterApplication = {
+  _id: string;
+  status: "pending" | "approved" | "rejected";
+  portfolioLink: string;
+  reason: string;
+  createdAt: string;
+  user?: {
+    name?: string;
+    email?: string;
+    profile?: { avatar?: string };
+  };
+};
+
 const WriterApplicationComponent = () => {
   const { data, isLoading, refetch } = useGetAllWriterApplicationsQuery(undefined);
   const [updateStatus, { isLoading: isUpdating }] = useUpdateWriterApplicationStatusMutation();
@@ -21,15 +34,17 @@ const WriterApplicationComponent = () => {
       await updateStatus({ id, status }).unwrap();
       toast.success(`Application ${status} successfully.`);
       refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to update application status");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update application status";
+      toast.error(message);
     } finally {
       setProcessingId(null);
     }
   };
 
-  const pendingApps = data?.data?.filter((app: any) => app.status === "pending") || [];
-  const processedApps = data?.data?.filter((app: any) => app.status !== "pending") || [];
+  const applications = (data?.data ?? []) as WriterApplication[];
+  const pendingApps = applications.filter((app) => app.status === "pending");
+  const processedApps = applications.filter((app) => app.status !== "pending");
 
   return (
     <div className="space-y-8">
@@ -58,7 +73,7 @@ const WriterApplicationComponent = () => {
           </div>
         ) : (
           <div className="divide-y divide-slate-200 dark:divide-white/[0.06]">
-            {pendingApps.map((app: any) => (
+            {pendingApps.map((app) => (
               <div key={app._id} className="p-6 transition hover:bg-slate-100/50 dark:hover:bg-white/[0.02] flex flex-col md:flex-row gap-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -138,7 +153,7 @@ const WriterApplicationComponent = () => {
                 </tr>
               </thead>
               <tbody>
-                {processedApps.map((app: any) => (
+                {processedApps.map((app) => (
                   <tr key={app._id} className="border-b border-slate-200 dark:border-white/[0.06] bg-transparent hover:bg-slate-100/50 dark:hover:bg-white/[0.02]">
                     <td className="px-6 py-4 font-medium text-slate-800 dark:text-white whitespace-nowrap">
                       <div className="flex items-center gap-3">
