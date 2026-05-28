@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/logoNew.png";
+import FeedbackForm from "../support/FeedbackForm";
 
 const FooterComponent = () => {
   const [email, setEmail] = useState("");
+  const [showFeedback, setShowFeedback] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
@@ -170,6 +172,15 @@ const FooterComponent = () => {
                   )}
                 </li>
               ))}
+              <li>
+                <button
+                  onClick={() => setShowFeedback(true)}
+                  className="group relative inline-flex text-[14px] leading-none text-slate-300/85 transition-colors duration-200 hover:text-blue-300"
+                >
+                  Send Feedback
+                  <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" />
+                </button>
+              </li>
             </ul>
           </div>
           {/* Follow Us */}
@@ -269,6 +280,9 @@ const FooterComponent = () => {
         </div>
 
       </div>
+      {showFeedback && (
+        <FeedbackForm onClose={() => setShowFeedback(false)} />
+      )}
     </footer>
   );
 };
