@@ -1,8 +1,3 @@
-interface NotificationPayload {
-  title: string;
-  body: string;
-}
-
 export interface NotificationItem {
   _id: string;
   createdAt: string;

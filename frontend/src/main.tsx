@@ -5,17 +5,16 @@ import App from "./App.tsx";
 import { Provider } from "react-redux";
 import { store } from "./redux/store.ts";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { SocketProvider } from "./socket/SocketProvider.tsx";
+main
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={googleClientId}>
       <Provider store={store}>
-        <SocketProvider>
-          <App />
-        </SocketProvider>
+main
       </Provider>
     </GoogleOAuthProvider>
   </StrictMode>

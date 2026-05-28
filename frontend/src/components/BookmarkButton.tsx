@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { getUserInfo } from "../services/auth.service";
 import { useToggleBookmarkMutation } from "../redux/apis/bookmark.api";
+import { Post } from "../models/post";
 
 interface BookmarkButtonProps {
   storyId: string;
-  bookmarks?: any[];
+  bookmarks?: Post["bookmarks"];
   className?: string;
 }
 
@@ -22,7 +23,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
 
   // Determine if currently bookmarked by logged in user
   const isCurrentlyBookmarked = bookmarks.some(
-    (b: any) => b.email === currentUser?.email
+    (b) => b.email === currentUser?.email
   );
 
   const handleBookmark = async (e: React.MouseEvent) => {
@@ -40,9 +41,12 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
       if (response.success) {
         toast.success(response.message);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to toggle bookmark", error);
-      toast.error(error?.data?.message || "Something went wrong. Please try again.");
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ||
+        "Something went wrong. Please try again.";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

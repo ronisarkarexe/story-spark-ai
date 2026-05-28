@@ -3,17 +3,19 @@ import { Post } from "../../models/post";
 import { useNavigate } from "react-router-dom";
 
 interface IRelatedStoriesComponentProps {
-  posts: Post[];
+  posts: Post[],
+  currentPostId: string;
 }
 
 const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
-  posts,
+  posts,currentPostId,
 }) => {
   const navigate = useNavigate();
+  const filteredPosts=posts.filter((post)=>post._id!==currentPostId)
   return (
     <div className="grid grid-cols-2 gap-6">
-      {posts.length > 0 ? (
-        posts.map((post: Post) => (
+      {filteredPosts.length > 0 ? (
+        filteredPosts.map((post: Post) => (
           <div
             onClick={() => navigate(`/post/${post._id}`)}
             key={post._id}

@@ -1,22 +1,26 @@
 import React from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 import {
   useApproveReviewMutation,
   useGetPendingReviewsQuery,
 } from "../../redux/apis/review.api";
+import { Review } from "../../models/review";
 
 const ReviewApprovalComponent = () => {
   const { data: reviews = [], isLoading } =
     useGetPendingReviewsQuery({});
 
-  const [approveReview] = useApproveReviewMutation();
+  const [approveReview, { isLoading: isApproving }] =
+    useApproveReviewMutation();
 
   const handleApprove = async (id: string) => {
     try {
-      await approveReview(id);
+      await approveReview(id).unwrap();
 
-      alert("Review approved successfully!");
+      toast.success("Review approved successfully!");
     } catch (error) {
+      toast.error("Failed to approve review. Please try again.");
       console.error(error);
     }
   };
@@ -31,12 +35,14 @@ const ReviewApprovalComponent = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4">
+      <Toaster position="top-right" reverseOrder={false} />
+
       <h2 className="text-3xl font-bold mb-8 text-center">
         Pending Reviews
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {reviews.map((review: any) => (
+        {reviews.map((review: Review) => (
           <div
             key={review._id}
             className="border rounded-xl p-5 shadow-md"
@@ -65,6 +71,7 @@ const ReviewApprovalComponent = () => {
 
             <button
               onClick={() => handleApprove(review._id)}
+              disabled={isApproving}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
             >
               Approve

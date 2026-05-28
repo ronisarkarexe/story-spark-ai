@@ -22,7 +22,7 @@ interface Comment {
 
 interface Reaction {
   postId: string;
-  userId: { email: string } | string | any;
+  userId: { email: string } | string;
   type: "like" | "love" | "laugh" | "angry" | "sad";
   _id: string;
 }
@@ -39,12 +39,16 @@ export interface Post {
   tag: string;
   imageURL: string;
   topic: Topic[];
+  language?: string;
+  emotions?: string[];
   author: Author;
   likesCount: number;
   commentsCount: number;
   viewsCount: number;
   isPublished: boolean;
   isFeaturedPost: boolean;
+  isDeleted?: boolean;
+  deletedAt?: string;
   publishedAt: string;
   updatedBy: string;
   attachments: string[];

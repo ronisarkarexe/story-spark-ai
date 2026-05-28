@@ -8,6 +8,7 @@ import handleCastError from "../../errors/handle_cast_error";
 import handleZodError from "../../errors/handle_zod_error";
 import handleDuplicateError from "../../errors/handle_duplicate_error";
 import ApiError from "../../errors/api_error";
+import logger from "../../utils/logger.util";
 
 const globalErrorHandler: ErrorRequestHandler = (
   err,
@@ -16,9 +17,9 @@ const globalErrorHandler: ErrorRequestHandler = (
   next: NextFunction
 ) => {
   if (config.env === "development") {
-    console.log("Global Error Handler:", err instanceof Error ? err.message : "Unknown error");
+    logger.info(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
   } else {
-    console.error("Global Error Handler:", err instanceof Error ? err.message : "Unknown error");
+    logger.error(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
   }
 
   let statusCode = 500;

@@ -79,7 +79,8 @@ const getSinglePost = catchAsync(async (req: Request, res: Response) => {
 
 const getPostsByTag = catchAsync(async (req: Request, res: Response) => {
   const tag = routeParam(req.params.tag);
-  const result = await PostService.getPostsByTag(tag);
+  const excludeId = req.query.excludeId as string | undefined;
+  const result = await PostService.getPostsByTag(tag, excludeId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -100,6 +101,31 @@ const toggleBookmark = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updatePost = catchAsync(async (req: Request, res: Response) => {
+  const id = routeParam(req.params.id);
+  const postData = req.body;
+  const token = await getToken(req);
+  const result = await PostService.updatePost(id, postData, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Post updated successfully!",
+    data: result,
+  });
+});
+
+const deletePost = catchAsync(async (req: Request, res: Response) => {
+  const id = routeParam(req.params.id);
+  const token = await getToken(req);
+  const result = await PostService.deletePost(id, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Story removed successfully!",
+    data: result,
+  });
+});
+
 export const PostController = {
   createPost,
   getPosts,
@@ -109,4 +135,7 @@ export const PostController = {
   getSinglePost,
   getPostsByTag,
   toggleBookmark,
+  updatePost,
+  deletePost,
 };
+

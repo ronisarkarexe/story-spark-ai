@@ -6,6 +6,8 @@ on:
 
 jobs:
   notify-assignee:
+    # Skip when Issue Assignment Bot already posted (assigner is Actions bot)
+    if: github.event.assigner.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       issues: write

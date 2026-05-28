@@ -1,14 +1,17 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import { Secret } from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { AuthModel } from "./auth.interface";
 import { User } from "../user/user.model";
 import { JwtHalers } from "../../../utils/jwt.helper";
+import logger from "../../../utils/logger.util";
 import config from "../../../config";
 import ApiError from "../../../errors/api_error";
 import { IUser } from "../user/user.interface";
 import { OTPModel } from "../verify_email/otp.model";
+import { VerifyEmailService } from "../verify_email/verify_email.service";
+import { GamificationService } from "../gamification/gamification.service";
 
 const googleClient = new OAuth2Client(config.google_client_id);
 
@@ -39,6 +42,9 @@ const login = async (payload: AuthModel) => {
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
+
+  GamificationService.updateDailyStreak(String(_id)).catch(console.error);
+
   return {
     accessToken,
     refreshToken,
@@ -83,7 +89,7 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
 
   const isExistUser = await User.findOne({ email: userEmail });
   if (isExistUser) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User already exist!");
+    throw new ApiError(httpStatus.CONFLICT, "User already exists!");
   }
   
   const result = await User.create(payload);
@@ -189,12 +195,15 @@ const googleLogin = async (payload: { token: string }) => {
       config.jwt.refresh_expires_in as string
     );
 
+    GamificationService.updateDailyStreak(String(_id)).catch(console.error);
+
     return {
       accessToken,
       refreshToken: refreshTokenData,
     };
   } catch (error: any) {
-    console.log("Google login error:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`Google login error: ${errorMessage}`);
     
     // If it's already an ApiError, re-throw it
     if (error instanceof ApiError) {
@@ -208,9 +217,112 @@ const googleLogin = async (payload: { token: string }) => {
   }
 };
 
+const forgotPassword = async (email: string) => {
+  if (!email) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email is required!");
+  }
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
+  
+  // Send OTP using VerifyEmailService
+  const result = await VerifyEmailService.VerifyEmail({
+    email: user.email,
+    name: user.name || "User",
+  });
+  
+  return result;
+};
+
+const resetPassword = async (payload: {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  verificationToken: string;
+}) => {
+  const { email, password, confirmPassword, verificationToken } = payload;
+  if (!email || !password || !confirmPassword || !verificationToken) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "All fields are required!");
+  }
+  if (password !== confirmPassword) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
+  }
+  
+  // Validate password strength using Zod schema's rules manually to return user-friendly errors
+  const getPasswordError = (pwd: string) => {
+    if (pwd.length < 8) return "Password must be at least 8 characters long";
+    if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
+    if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter";
+    if (!/[0-9]/.test(pwd)) return "Password must contain at least one number";
+    if (!/[^A-Za-z0-9]/.test(pwd)) return "Password must contain at least one special character";
+    return "";
+  };
+  const passwordError = getPasswordError(password);
+  if (passwordError) {
+    throw new ApiError(httpStatus.BAD_REQUEST, passwordError);
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
+  // Verify token against OTPModel
+  const otpRecord = await OTPModel.findOne({
+    email,
+    isVerified: true,
+    verificationToken,
+  });
+
+  if (!otpRecord) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Invalid or expired verification token. Please verify your email again."
+    );
+  }
+
+  if (
+    !otpRecord.verificationTokenExpires ||
+    new Date() > otpRecord.verificationTokenExpires
+  ) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Verification token has expired. Please verify your email again."
+    );
+  }
+
+  // Update user password. Pre-save hook hashes it.
+  user.password = password;
+  await user.save();
+
+  // Clean up OTP record
+  await OTPModel.deleteOne({ email });
+
+  // Generate JWT tokens for auto-login
+  const { _id, role, subscriptionType, name, postsCount } = user;
+  const accessToken = JwtHalers.createToken(
+    { _id, email: user.email, role, subscriptionType, name, postsCount },
+    config.jwt.secret as Secret,
+    config.jwt.expires_in as string
+  );
+  const refreshToken = JwtHalers.createToken(
+    { _id, email: user.email, role, subscriptionType, name, postsCount },
+    config.jwt.refresh_secret as Secret,
+    config.jwt.refresh_expires_in as string
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
 export const AuthService = {
   login,
   register,
   refreshToken,
   googleLogin,
+  forgotPassword,
+  resetPassword,
 };

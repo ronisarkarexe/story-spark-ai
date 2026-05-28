@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IUser, UserModel } from "./user.interface";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import config from "../../../config";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
@@ -53,6 +53,28 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
     lastRequestDate: { type: Date, default: null },
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     isApplyForWriter: { type: Boolean, default: false },
+    gamification: {
+      xp: { type: Number, default: 0 },
+      level: { type: Number, default: 1 },
+      streak: { type: Number, default: 0 },
+      lastActiveDate: { type: Date, default: null },
+      badges: [{ type: String }],
+    },
+    readingPreferences: {
+      favoriteGenres: [
+        {
+          name: { type: String },
+          count: { type: Number, default: 0 },
+        },
+      ],
+      favoriteEmotions: [
+        {
+          name: { type: String },
+          count: { type: Number, default: 0 },
+        },
+      ],
+    },
+    readingHistory: [{ type: Schema.Types.ObjectId, ref: "Post" }],
   },
   {
     timestamps: true,
@@ -61,10 +83,13 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
 
 UserSchema.pre("save", async function (next) {
   const user = this;
+  if (!user.isModified("password")) {
+    return next();
+  }
   
-  // Only hash password if it exists and is not empty (for password-based auth)
+  // Only hash password if it exists, is not empty, and has been modified (for password-based auth)
   // Skip for Google OAuth users who don't have passwords
-  if (user.password && user.password.trim() !== "") {
+  if (user.isModified("password") && user.password && user.password.trim() !== "") {
     user.password = await bcrypt.hash(
       user.password,
       Number(config.bcrypt_salt_rounds)

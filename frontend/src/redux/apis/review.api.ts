@@ -1,4 +1,5 @@
 import baseApi from "../base_api/base.api";
+import { Review } from "../../models/review";
 
 const reviewApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -9,7 +10,7 @@ const reviewApi = baseApi.injectEndpoints({
       }),
 
       transformResponse: (response: {
-        data: any;
+        data: Review[];
         message: string;
       }) => response.data,
     }),
@@ -21,7 +22,7 @@ const reviewApi = baseApi.injectEndpoints({
       }),
 
       transformResponse: (response: {
-        data: any;
+        data: Review[];
         message: string;
       }) => response.data,
     }),
@@ -32,6 +33,14 @@ const reviewApi = baseApi.injectEndpoints({
         method: "PATCH",
       }),
     }),
+    
+    createReview: build.mutation({
+      query: (body: { name: string; role: string; feedback: string; rating: number }) => ({
+        url: "/review/create",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -39,4 +48,5 @@ export const {
   useGetReviewsQuery,
   useGetPendingReviewsQuery,
   useApproveReviewMutation,
+  useCreateReviewMutation,
 } = reviewApi;

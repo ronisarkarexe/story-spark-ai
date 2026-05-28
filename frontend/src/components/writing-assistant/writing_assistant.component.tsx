@@ -208,10 +208,11 @@ export default function AIWritingAssistant() {
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
           <button
+            onClick={() => window.location.href = "/stories"}
             style={{
               background: "linear-gradient(135deg, #7C5DFA 0%, #4F8EF7 100%)",
               border: "none",
-              borderRadius: "8px",
+              borderRadius: "50px",
               color: "#fff",
               fontSize: "0.92rem",
               padding: "0.85rem 2rem",
@@ -223,10 +224,12 @@ export default function AIWritingAssistant() {
             Start Writing →
           </button>
           <button
+            onClick={() => window.location.href = "/story-inspiration"}
+
             style={{
               background: "transparent",
               border: "1px solid rgba(255,255,255,0.14)",
-              borderRadius: "8px",
+              borderRadius: "50px",
               color: "#9A97B0",
               fontSize: "0.92rem",
               padding: "0.85rem 2rem",
@@ -238,7 +241,6 @@ export default function AIWritingAssistant() {
           </button>
         </div>
       </section>
-
       <section style={{ padding: "5rem 2.5rem", maxWidth: 1100, margin: "0 auto" }}>
         <p style={{ fontSize: "0.72rem", letterSpacing: "0.12em", color: "#5A577A", textTransform: "uppercase", textAlign: "center", marginBottom: "0.8rem" }}>What the assistant does</p>
         <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 600, textAlign: "center", marginBottom: "3.5rem", color: "#E8E6F0" }}>
@@ -331,7 +333,38 @@ export default function AIWritingAssistant() {
           Join thousands of writers already using StorySpark to push past limits and find their story.
         </p>
         <button
-          style={{ background: "linear-gradient(135deg, #7C5DFA 0%, #4F8EF7 100%)", border: "none", borderRadius: "8px", color: "#fff", fontSize: "1rem", padding: "1rem 2.5rem", cursor: "pointer", fontFamily: "'Georgia', serif", letterSpacing: "0.02em" }}
+          onClick={() => window.location.href = "/stories"}
+          style={{
+            background: "linear-gradient(135deg, #7C5DFA 0%, #4F8EF7 100%)",
+            border: "none",
+            borderRadius: "50px",
+            color: "#fff",
+            fontSize: "1rem",
+            padding: "1rem 2.5rem",
+            cursor: "pointer",
+            fontFamily: "'Georgia', serif",
+            letterSpacing: "0.02em",
+            transition: "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)",
+            boxShadow: "0 4px 14px rgba(124, 93, 250, 0.2)",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-3px)";
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 24px rgba(124, 93, 250, 0.4)";
+            (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1.1)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 14px rgba(124, 93, 250, 0.2)";
+            (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1)";
+          }}
+          onMouseDown={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(1px)";
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 8px rgba(124, 93, 250, 0.3)";
+          }}
+          onMouseUp={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-3px)";
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 24px rgba(124, 93, 250, 0.4)";
+          }}
         >
           Try the Assistant — It's Free →
         </button>

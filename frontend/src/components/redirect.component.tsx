@@ -13,7 +13,7 @@ const RedirectComponent = ({ defaultPath = "/" }: RedirectComponentProps) => {
     const redirectPath = location.state && location.state.from ? location.state.from : defaultPath;
     
     if (redirectPath !== location.pathname) {
-      navigate(redirectPath, { replace: true });
+      navigate(redirectPath);
     }
   }, [location, navigate, defaultPath]);
 

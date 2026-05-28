@@ -6,10 +6,11 @@ import {
   useLoginUserMutation,
   useGoogleLoginMutation,
 } from "../../redux/apis/auth.api";
-import { storeUserInfo } from "../../services/auth.service";
+import { storeUserInfo, getUserInfo } from "../../services/auth.service";
+import { USER_ROLE } from "../../constants/role";
 import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 
 type Inputs = {
   email: string;
@@ -19,7 +20,12 @@ type Inputs = {
 const LoginComponent = () => {
   const [loginUser] = useLoginUserMutation();
   const [googleLogin] = useGoogleLoginMutation();
-  const { register, handleSubmit } = useForm<Inputs>();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Inputs>({ mode: "onChange" });
 
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -32,19 +38,24 @@ const LoginComponent = () => {
 
       if (res.data.accessToken) {
         toast.success("User logged in successfully!");
-        storeUserInfo({ accessToken: res.data.accessToken });
+
+        storeUserInfo({
+          accessToken: res.data.accessToken,
+        });
+
         setIsLoggedIn(true);
       }
-    } catch (err: unknown) {
-      console.log("error: ", err);
-      toast.error("Login failed. Please check your credentials.");
+    } catch {
+      toast.error(
+        "Login failed. Please check your credentials."
+      );
     } finally {
       setIsBusy(false);
     }
   };
 
   const handleGoogleLoginSuccess = async (
-    credentialResponse: any
+    credentialResponse: CredentialResponse
   ) => {
     setIsBusy(true);
 
@@ -54,42 +65,76 @@ const LoginComponent = () => {
       }).unwrap();
 
       if (res.data.accessToken) {
-        toast.success("User logged in successfully with Google!");
-        storeUserInfo({ accessToken: res.data.accessToken });
+        toast.success(
+          "User logged in successfully with Google!"
+        );
+
+        storeUserInfo({
+          accessToken: res.data.accessToken,
+        });
+
         setIsLoggedIn(true);
       }
-    } catch (err: unknown) {
-      console.log("Google login error: ", err);
-      toast.error("Failed to login with Google. Please try again.");
+    } catch {
+      toast.error(
+        "Failed to login with Google. Please try again."
+      );
     } finally {
       setIsBusy(false);
     }
   };
 
   const handleGoogleLoginError = () => {
-    console.log("Login Failed");
-    toast.error("Google login failed. Please try again.");
+    toast.error(
+      "Google login failed. Please try again."
+    );
   };
 
+  // Role-based redirect fix
   if (isLoggedIn) {
-    return <RedirectComponent defaultPath="/dashboard" />;
+    const userInfo = getUserInfo();
+
+    const isDashboardUser =
+      userInfo?.role === USER_ROLE.ADMIN ||
+      userInfo?.role === USER_ROLE.SUPER_ADMIN;
+
+    return (
+      <RedirectComponent
+        defaultPath={
+          isDashboardUser
+            ? "/dashboard"
+            : "/explore"
+        }
+      />
+    );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center relative overflow-hidden px-4">
-      {/* Ambient background glows */}
+    <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4">
+
+      {/* Background Glow */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10">
+
         <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
           <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
         </div>
 
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
-          <h3 className="mb-6 text-center text-2xl font-bold tracking-tight text-slate-200">
+        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
+
+            <button
+            onClick={() => window.location.href = "/"}
+            className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2"
+                      >
+            ← Back to Home
+            </button>
+
+          <h3 className="mb-6 text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-200">
             Welcome Back
           </h3>
 
@@ -97,14 +142,17 @@ const LoginComponent = () => {
             className="space-y-5"
             onSubmit={handleSubmit(onSubmit)}
           >
+
             <SSInput
               label="Email address"
               name="email"
               type="email"
               placeholder="Enter your email"
               required={true}
-              icon="fas fa-envelope"
+              icon="fi fi-rr-envelope"
               register={register}
+              validation={{ required: "Email is required" }}
+              error={errors.email}
             />
 
             <SSInput
@@ -113,49 +161,72 @@ const LoginComponent = () => {
               type="password"
               placeholder="Enter your password"
               required={true}
-              icon="fas fa-lock"
+              icon="fi fi-rr-lock"
               register={register}
+              validation={{ required: "Password is required" }}
+              error={errors.password}
             />
+
+            <div className="flex justify-end -mt-2">
+              <a
+                href="/forgot-password"
+                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+              >
+                Forgot Password?
+              </a>
+            </div>
 
             <SSButton
               text="Sign In"
               type="submit"
               isLoading={isBusy}
             />
+
           </form>
 
           <div className="mt-6 relative">
+
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-700/50"></div>
+              <div className="w-full border-t border-slate-200"></div>
             </div>
 
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-800 text-slate-400">
+              <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                 OR
               </span>
             </div>
+
           </div>
 
-          <div className="mt-6 flex justify-center">
+          {/* Explicitly added list-none to prevent stray bullet point artifact on production build */}
+          <div className="mt-6 flex justify-center list-none">
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}
             />
           </div>
 
-          <p className="mt-8 text-center text-sm text-slate-400">
+          <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+
             Don't have an account?{" "}
+
             <a
               href="/signup"
               className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
             >
               Sign up for free
             </a>
+
           </p>
+
         </div>
       </div>
 
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+      />
+
     </div>
   );
 };

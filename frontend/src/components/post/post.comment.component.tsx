@@ -89,6 +89,13 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
     }
   };
 
+  const isCommentLiked = (likes: string[] | undefined) =>
+    (likes as unknown[])?.some((u) =>
+      typeof u === "string"
+        ? u === currentUser?.userId
+        : (u as { email?: string })?.email === currentUser?.email
+    ) ?? false;
+
   const handleLike = async (commentId: string) => {
     if (!isLogin) {
       toast.error("Please login to like a comment.");
@@ -106,95 +113,58 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
       <form className="mb-8" onSubmit={handleSubmit(onSubmit)}>
         <textarea
           {...register("comment")}
-<<<<<<< HEAD
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none placeholder:text-slate-500 transition-all shadow-inner"
-=======
-          className="w-full border border-gray-600 rounded-lg p-4 bg-transparent text-gray-200 placeholder-gray-400 focus:ring-custom focus:border-custom"
->>>>>>> upstream/main
+          className="w-full bg-gray-100/80 border border-gray-200 rounded-xl p-4 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none placeholder:text-slate-400 transition-all shadow-inner dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-200 dark:placeholder:text-slate-500"
           rows={3}
           placeholder="Share your thoughts on this story..."
         ></textarea>
         <button
           type="submit"
-          className={`!rounded-button mt-3 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md ${
+          className={`!rounded-button mt-3 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md ${
             isBusy
-<<<<<<< HEAD
-              ? "bg-slate-700 text-slate-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-500 active:scale-95 cursor-pointer"
-=======
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-700 cursor-pointer hover:bg-blue-600"
->>>>>>> upstream/main
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400"
+              : "bg-blue-600 text-white hover:bg-blue-500 active:scale-95 cursor-pointer"
           }`}
           disabled={isBusy}
         >
           {isBusy ? "Posting..." : "Post Comment"}
         </button>
       </form>
-<<<<<<< HEAD
-      <h3 className="text-2xl font-bold mb-8 text-slate-200 tracking-tight border-t border-slate-700/50 pt-8">
-        Comments ({commentList?.totalComments})
-      </h3>
-      <div className="space-y-6">
-        {commentList?.comments.map((comment) => (
-          <div className="flex space-x-4">
-            <SSProfile name={comment?.userId.name as string} size="w-10 h-10" />
-            <div className="flex-1">
-              <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-5 shadow-sm hover:border-slate-600 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-blue-400 text-lg">
-                    {comment.userId.name}
-                  </h4>
-                  <span className="text-sm text-slate-500 font-medium">
-                    {timeAgo(comment.createdAt)}
-                  </span>
-                </div>
-                <p className="text-slate-300 leading-relaxed mt-2">{comment.comment}</p>
-              </div>
-              <div className="flex items-center mt-3 pl-2 space-x-4 text-sm text-slate-500 font-medium">
-                <button className="hover:text-red-400 transition-colors flex items-center gap-1">
-                  <i className="far fa-heart mr-1"></i> {comment.likes.length}
-                </button>
-                {/* <button className="hover:text-custom">
-                  <i className="far fa-comment mr-1"></i> Reply
-                </button> */}
-=======
-      <h3 className="text-xl font-semibold mb-6 text-gray-300">
+      <h3 className="text-2xl font-bold mb-8 text-slate-900 tracking-tight border-t border-gray-200 pt-8 dark:text-slate-200 dark:border-slate-700/50">
         Comments ({commentList?.totalComments || 0})
       </h3>
       <div className="space-y-6">
         {commentList?.comments.map((comment) => (
           <div key={comment._id} className="flex flex-col space-y-4">
             <div className="flex space-x-4">
-              <SSProfile name={comment?.userId?.name || 'Unknown User'} size="w-10 h-10" />
+              <SSProfile name={comment?.userId?.name || "Unknown User"} size="w-10 h-10" />
               <div className="flex-1">
-                <div className=" rounded-lg p-4 border border-gray-600 bg-gray-800/30">
+                <div className="bg-gray-50 backdrop-blur-sm border border-gray-200 rounded-2xl p-5 shadow-sm hover:border-slate-600 transition-colors dark:bg-slate-800/40 dark:border-slate-700/50">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-blue-400">
-                      {comment?.userId?.name || 'Unknown User'}
+                    <h4 className="font-semibold text-blue-600 text-lg dark:text-blue-400">
+                      {comment?.userId?.name || "Unknown User"}
                     </h4>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-sm text-slate-500 font-medium dark:text-slate-500">
                       {timeAgo(comment.createdAt)}
                     </span>
                   </div>
-                  <p className="text-gray-300 text-sm leading-relaxed">{comment.comment}</p>
+                  <p className="text-slate-600 leading-relaxed mt-2 dark:text-slate-300">{comment.comment}</p>
                 </div>
-                <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500">
-                  <button 
+                <div className="flex items-center mt-3 pl-2 space-x-4 text-sm text-slate-500 font-medium dark:text-slate-500">
+                  <button
                     onClick={() => handleLike(comment._id)}
-                    className={`cursor-pointer hover:text-red-400 transition-colors ${comment.likes?.some((u: any) => u?.email === currentUser?.email) ? 'text-red-500' : ''}`}
+                    className={`hover:text-red-400 transition-colors flex items-center gap-1 ${isCommentLiked(comment.likes) ? "text-red-400" : ""}`}
                   >
-                    <i className={`${comment.likes?.some((u: any) => u?.email === currentUser?.email) ? 'fas' : 'far'} fa-heart mr-1`}></i> {comment.likes?.length || 0}
+                    <i className={`${isCommentLiked(comment.likes) ? "fas" : "far"} fa-heart mr-1`}></i>
+                    {comment.likes?.length || 0}
                   </button>
-                  <button 
+                  <button
                     onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
-                    className="cursor-pointer hover:text-blue-400 transition-colors"
+                    className="hover:text-blue-400 transition-colors"
                   >
                     <i className="far fa-comment mr-1"></i> Reply
                   </button>
                 </div>
 
-                {/* Reply Form */}
                 {replyingTo === comment._id && (
                   <form className="mt-4 flex space-x-3" onSubmit={(e) => onReplySubmit(e, comment._id)}>
                     <input
@@ -202,7 +172,7 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                       value={replyForms[comment._id] || ""}
                       onChange={(e) => setReplyForms({ ...replyForms, [comment._id]: e.target.value })}
                       placeholder="Write a reply..."
-                      className="flex-1 bg-transparent border border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-blue-500"
+                      className="flex-1 bg-gray-100/80 border border-gray-200 rounded-lg px-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-200"
                     />
                     <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition-colors">
                       Reply
@@ -210,30 +180,30 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                   </form>
                 )}
 
-                {/* Replies */}
                 {comment.replies && comment.replies.length > 0 && (
-                  <div className="mt-4 space-y-4 border-l-2 border-gray-700 pl-4 ml-2">
+                  <div className="mt-4 space-y-4 border-l-2 border-gray-200 pl-4 ml-2 dark:border-slate-700">
                     {comment.replies.map((reply) => (
                       <div key={reply._id} className="flex space-x-3">
-                        <SSProfile name={reply?.userId?.name || 'Unknown User'} size="w-8 h-8" />
+                        <SSProfile name={reply?.userId?.name || "Unknown User"} size="w-8 h-8" />
                         <div className="flex-1">
-                          <div className="rounded-lg p-3 border border-gray-700 bg-gray-800/20">
+                          <div className="rounded-lg p-3 border border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/20">
                             <div className="flex items-center justify-between mb-1">
-                              <h4 className="font-medium text-sm text-blue-400">
-                                {reply?.userId?.name || 'Unknown User'}
+                              <h4 className="font-medium text-sm text-blue-600 dark:text-blue-400">
+                                {reply?.userId?.name || "Unknown User"}
                               </h4>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-slate-500 dark:text-slate-500">
                                 {timeAgo(reply.createdAt)}
                               </span>
                             </div>
-                            <p className="text-gray-300 text-sm">{reply.comment}</p>
+                            <p className="text-slate-600 text-sm dark:text-slate-300">{reply.comment}</p>
                           </div>
-                          <div className="flex items-center mt-1 space-x-4 text-xs text-gray-500">
-                            <button 
+                          <div className="flex items-center mt-1 space-x-4 text-xs text-slate-500">
+                            <button
                               onClick={() => handleLike(reply._id)}
-                              className={`cursor-pointer hover:text-red-400 transition-colors ${reply.likes?.some((u: any) => u?.email === currentUser?.email) ? 'text-red-500' : ''}`}
+                              className={`hover:text-red-400 transition-colors ${isCommentLiked(reply.likes) ? "text-red-400" : ""}`}
                             >
-                              <i className={`${reply.likes?.some((u: any) => u?.email === currentUser?.email) ? 'fas' : 'far'} fa-heart mr-1`}></i> {reply.likes?.length || 0}
+                              <i className={`${isCommentLiked(reply.likes) ? "fas" : "far"} fa-heart mr-1`}></i>
+                              {reply.likes?.length || 0}
                             </button>
                           </div>
                         </div>
@@ -241,7 +211,6 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                     ))}
                   </div>
                 )}
->>>>>>> upstream/main
               </div>
             </div>
           </div>

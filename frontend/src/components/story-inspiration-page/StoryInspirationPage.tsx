@@ -20,8 +20,8 @@ const StoryInspirationPage: React.FC = () => {
       if (!response.ok) throw new Error('Failed to fetch ideas');
       const data = await response.json();
       setIdeas(data.ideas || []);
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }

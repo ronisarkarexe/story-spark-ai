@@ -9,21 +9,17 @@ const PHASES = [
   "Polishing every word…",
 ];
 
-const StoryGeneratingAnimation = () => {
+type StoryGeneratingAnimationProps = {
+  onCancel?: () => void;
+};
+
+const StoryGeneratingAnimation = ({ onCancel }: StoryGeneratingAnimationProps) => {
   const [phaseIndex, setPhaseIndex] = useState(0);
-  const [progress, setProgress] = useState(20);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setPhaseIndex((prev) => (prev + 1) % PHASES.length);
     }, 2800);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 88 ? 20 : prev + 0.4));
-    }, 60);
     return () => clearInterval(interval);
   }, []);
 
@@ -94,11 +90,21 @@ const StoryGeneratingAnimation = () => {
       <div className="w-72 h-1.5 rounded-full bg-white/10 overflow-hidden">
         <motion.div
           className="h-full rounded-full bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400"
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.25, ease: "linear" }}
+          initial={{ width: "18%" }}
+          animate={{ width: ["18%", "88%", "18%"] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
-      <p className="text-gray-500 text-xs mt-3">Crafting your story with AI magic…</p>
+      <p className="text-gray-500 text-xs mt-3">Crafting your story with AI magic...</p>
+      {onCancel && (
+        <button
+          type="button"
+          onClick={onCancel}
+          className="mt-5 rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-gray-300 transition-colors duration-200 hover:bg-white/10 hover:text-white"
+        >
+          Cancel generation
+        </button>
+      )}
     </div>
   );
 };

@@ -1,0 +1,84 @@
+name: 👋 PR Welcome Bot
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: pr-welcome-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post welcome comment
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const number = pr.number;
+            const author = pr.user.login;
+
+            if (pr.user.type === 'Bot') return;
+
+            const MARKER = '<!-- pr-welcome-story-spark-ai-v1 -->';
+            const { data: existing } = await github.rest.issues.listComments({
+              owner, repo, issue_number: number, per_page: 100
+            });
+            if (existing.some(c => c.body.includes(MARKER))) return;
+
+            const body = pr.body || '';
+            const isGssoc = body.toLowerCase().includes('gssoc') ||
+              (pr.head.ref || '').toLowerCase().includes('gssoc');
+
+            const comment = [
+              MARKER,
+              `## 👋 Thanks for your PR, @${author}!`,
+              ``,
+              `Welcome to **Story Spark AI** — an open-source platform for AI-powered story generation and creative writing ✨`,
+              ``,
+              `${isGssoc ? '> 🟠 **GSSoC\'26 PR detected** — thanks for contributing under GirlScript Summer of Code 2026!' : ''}`,
+              ``,
+              `### What happens next`,
+              ``,
+              `1. 🤖 **Automated checks** — lint, typecheck, and build will run on this PR`,
+              `2. 👀 **Code review** — a maintainer will review your changes`,
+              `3. 🚀 **Merge** — once approved, your PR will be merged!`,
+              ``,
+              `### Quick checklist`,
+              ``,
+              `- [ ] PR title follows [Conventional Commits](https://www.conventionalcommits.org/) (e.g. \`feat: add story bookmark export\`)`,
+              `- [ ] Linked the issue this PR closes (e.g. \`Closes #123\`)`,
+              `- [ ] Tested locally (\`npm run dev\` after setting up \`.env\` files)`,
+              `- [ ] Build passes (\`npm run build\`)`,
+              ``,
+              `### Useful links`,
+              ``,
+              `- 📖 [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md)`,
+              `- 🐛 [Open Issues](https://github.com/${owner}/${repo}/issues)`,
+              `- ⭐ [Star the repo](https://github.com/${owner}/${repo}) to support the project!`,
+              ``,
+              `Happy coding! 🎉`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: number, body: comment
+            });
+
+            if (isGssoc) {
+              try {
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: number, labels: ["gssoc'26"]
+                });
+              } catch (e) {
+                core.warning(`Failed adding gssoc label: ${e?.message}`);
+              }
+            }

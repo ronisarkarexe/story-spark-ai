@@ -1,0 +1,472 @@
+name: Issue Assignment Bot
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+  schedule:
+    - cron: '0 */6 * * *'
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  handle-issue-opened:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: issue-assignment-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Auto-assign when "I want to work on this issue" is checked
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            if (issue.pull_request || issue.user.type === 'Bot') return;
+
+            const body = issue.body || '';
+            const wantsToWork = /- \[x\]\s*I want to work on this issue/i.test(body);
+            if (!wantsToWork) {
+              core.info('Issue opened without "I want to work on this issue" checked. Skipping auto-assign.');
+              return;
+            }
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issueNumber = issue.number;
+            const requester = issue.user.login;
+
+            const { data: freshIssue } = await github.rest.issues.get({
+              owner, repo, issue_number: issueNumber
+            });
+            const currentAssignees = (freshIssue.assignees || []).map(a => a.login);
+
+            const postComment = text =>
+              github.rest.issues.createComment({ owner, repo, issue_number: issueNumber, body: text });
+
+            // Contributor tiers: 0–1 merged → max 2 open | 2–9 merged → max 1 | 10+ → no auto-assign
+            const MERGED_VETERAN = 2;
+            const MERGED_BLOCKED = 10;
+
+            const countMergedPRs = async username => {
+              const { data } = await github.rest.search.issuesAndPullRequests({
+                q: `repo:${owner}/${repo} is:pr is:merged author:${username}`,
+                per_page: 1
+              });
+              return data.total_count;
+            };
+
+            const countOpenAssignedIssues = async username => {
+              let count = 0;
+              let page = 1;
+              while (true) {
+                const { data } = await github.rest.issues.listForRepo({
+                  owner, repo, state: 'open', assignee: username, per_page: 100, page
+                });
+                count += data.filter(i => !i.pull_request).length;
+                if (data.length < 100) break;
+                page++;
+              }
+              return count;
+            };
+
+            const maxOpenForMergedCount = mergedCount => {
+              if (mergedCount >= MERGED_BLOCKED) return 0;
+              if (mergedCount >= MERGED_VETERAN) return 1;
+              return 2;
+            };
+
+            const evaluateEligibility = async (username, viaCheckbox = false) => {
+              const [mergedCount, openCount] = await Promise.all([
+                countMergedPRs(username),
+                countOpenAssignedIssues(username)
+              ]);
+              const maxOpen = maxOpenForMergedCount(mergedCount);
+              const prefix = viaCheckbox
+                ? `You checked **I want to work on this issue**, but `
+                : '';
+
+              if (maxOpen === 0) {
+                return {
+                  allowed: false,
+                  body: `Hey @${username}, ${prefix}thank you for everything you've contributed here! 🙏\n\nWe couldn't auto-assign this issue right now. Please ask a **maintainer** to assign you if you'd like to work on it, or pick an [open unassigned issue](https://github.com/${owner}/${repo}/issues?q=is%3Aissue+is%3Aopen+no%3Aassignee).\n\nYou can still **open new issues** anytime to report bugs, docs gaps, or ideas.`
+                };
+              }
+
+              if (openCount >= maxOpen) {
+                return {
+                  allowed: false,
+                  body: `Hey @${username}, ${prefix}you already have **${openCount}** open issue(s) assigned. Please finish one or comment \`/unassign\` on an issue you're not working on, then comment \`/assign\` here to claim this one. 🙏`
+                };
+              }
+
+              return { allowed: true, mergedCount, openCount, maxOpen };
+            };
+
+            if (currentAssignees.length > 0) {
+              await postComment(
+                `Hey @${requester}, thanks for offering to work on this! This issue is already assigned to @${currentAssignees[0]}. Please pick another [unassigned issue](https://github.com/${owner}/${repo}/issues?q=is%3Aissue+is%3Aopen+no%3Aassignee).`
+              );
+              return;
+            }
+
+            const eligibility = await evaluateEligibility(requester, true);
+            if (!eligibility.allowed) {
+              await postComment(eligibility.body);
+              return;
+            }
+
+            await github.rest.issues.addAssignees({
+              owner, repo, issue_number: issueNumber, assignees: [requester]
+            });
+
+            const isGssoc = body.toLowerCase().includes('gssoc');
+            if (isGssoc) {
+              try {
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: issueNumber, labels: ["gssoc'26"]
+                });
+              } catch (e) {
+                core.warning(`Failed adding gssoc label: ${e?.message}`);
+              }
+            }
+
+            await postComment(
+              `Hey @${requester}, this issue has been assigned to you because you selected **I want to work on this issue** when creating it! 🎉 Please make progress within 5 days or it will be automatically unassigned due to inactivity.${isGssoc ? "\n\n> 🟠 GSSoC'26 contributor — thanks for contributing under GirlScript Summer of Code 2026!" : ''}`
+            );
+
+  handle-assignment:
+    if: github.event_name == 'issue_comment' && github.event.issue.pull_request == null
+    runs-on: ubuntu-latest
+    concurrency:
+      group: issue-assignment-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Handle assignment and unassignment requests
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const commentBody = context.payload.comment.body.trim();
+            const commentLower = commentBody.toLowerCase();
+            const issueNumber = context.payload.issue.number;
+            const commenter = context.payload.comment.user.login;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // ── Detect intent ────────────────────────────────────────────────
+
+            // /unassign @username  (maintainer targeted unassign)
+            const maintainerUnassignMatch = commentBody.match(
+              /^\/unassign\s+@([A-Za-z0-9\-]+)/i
+            );
+
+            // /unassign  (self-unassign, no username)
+            const selfUnassign =
+              !maintainerUnassignMatch &&
+              /^\/unassign\s*$/i.test(commentBody);
+
+            // /assign, template checkbox phrasing, GSSoC assignment requests
+            const assignmentTriggers = [
+              '/assign',
+              'assign me',
+              'i want to work on this',
+              'can i work on this',
+              'can i be assigned',
+              'contributing under gssoc',
+              'contribute under gssoc',
+              'assign under gssoc',
+              'under gssoc',
+              'gssoc26',
+              "gssoc'26"
+            ];
+            const gssocAssignPattern =
+              /(?:assign|work\s+on|pick\s+up|take).{0,40}gssoc|gssoc.{0,40}(?:assign|work\s+on)/i;
+            const isAssignRequest =
+              !maintainerUnassignMatch &&
+              !selfUnassign &&
+              (assignmentTriggers.some(t => commentLower.includes(t)) ||
+                gssocAssignPattern.test(commentBody));
+
+            if (!maintainerUnassignMatch && !selfUnassign && !isAssignRequest) {
+              core.info('Comment does not match any handled command. Skipping.');
+              return;
+            }
+
+            // ── Fetch current issue state ────────────────────────────────────
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number: issueNumber
+            });
+            const currentAssignees = (issue.assignees || []).map(a => a.login);
+            const issueBody = issue.body || '';
+
+            // ── Helper ───────────────────────────────────────────────────────
+            const postComment = body =>
+              github.rest.issues.createComment({ owner, repo, issue_number: issueNumber, body });
+
+            const addGssocLabelIfNeeded = async () => {
+              const mentionsGssoc =
+                commentLower.includes('gssoc') || issueBody.toLowerCase().includes('gssoc');
+              if (!mentionsGssoc) return;
+              try {
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: issueNumber, labels: ["gssoc'26"]
+                });
+              } catch (e) {
+                core.warning(`Failed adding gssoc label: ${e?.message}`);
+              }
+            };
+
+            // ════════════════════════════════════════════════════════════════
+            // CASE 1 — Maintainer: /unassign @username
+            // ════════════════════════════════════════════════════════════════
+            if (maintainerUnassignMatch) {
+              const targetUser = maintainerUnassignMatch[1];
+
+              if (currentAssignees.length > 1) {
+                await github.rest.issues.removeAssignees({
+                  owner, repo, issue_number: issueNumber,
+                  assignees: currentAssignees
+                });
+                await postComment(
+                  `All assignees have been removed from this issue. It is now open for anyone — comment \`/assign\` to claim it!`
+                );
+              } else {
+                await github.rest.issues.removeAssignees({
+                  owner, repo, issue_number: issueNumber,
+                  assignees: [targetUser]
+                });
+                await postComment(
+                  `Hey @${targetUser}, you have been unassigned from this issue by a maintainer. It is now open for others to pick up — comment \`/assign\` to claim it! 👋`
+                );
+              }
+              return;
+            }
+
+            // ════════════════════════════════════════════════════════════════
+            // CASE 2 — Self-unassign: /unassign
+            // ════════════════════════════════════════════════════════════════
+            if (selfUnassign) {
+              if (!currentAssignees.includes(commenter)) {
+                await postComment(
+                  `Hey @${commenter}, you are not currently assigned to this issue. 😅`
+                );
+                return;
+              }
+
+              await github.rest.issues.removeAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                assignees: [commenter]
+              });
+              await postComment(
+                `Hey @${commenter}, you have been unassigned from this issue. It is now open for anyone to pick up — comment \`/assign\` to claim it! 👋`
+              );
+              return;
+            }
+
+            // ════════════════════════════════════════════════════════════════
+            // CASE 3 — Assign request
+            // ════════════════════════════════════════════════════════════════
+
+            // Enforce single assignee: reject if anyone is already assigned
+            if (currentAssignees.length > 0) {
+              await postComment(
+                `Hey @${commenter}, this issue is already assigned to @${currentAssignees[0]}. Please pick another issue or wait for it to become available. You can browse open unassigned issues here: https://github.com/${owner}/${repo}/issues?q=is%3Aissue+is%3Aopen+no%3Aassignee`
+              );
+              return;
+            }
+
+            // Contributor tiers: 0–1 merged → max 2 open | 2–9 merged → max 1 | 10+ → no auto-assign
+            const MERGED_VETERAN = 2;
+            const MERGED_BLOCKED = 10;
+
+            const countMergedPRs = async username => {
+              const { data } = await github.rest.search.issuesAndPullRequests({
+                q: `repo:${owner}/${repo} is:pr is:merged author:${username}`,
+                per_page: 1
+              });
+              return data.total_count;
+            };
+
+            const countOpenAssignedIssues = async username => {
+              let count = 0;
+              let page = 1;
+              while (true) {
+                const { data } = await github.rest.issues.listForRepo({
+                  owner, repo, state: 'open', assignee: username, per_page: 100, page
+                });
+                count += data.filter(i => !i.pull_request).length;
+                if (data.length < 100) break;
+                page++;
+              }
+              return count;
+            };
+
+            const maxOpenForMergedCount = mergedCount => {
+              if (mergedCount >= MERGED_BLOCKED) return 0;
+              if (mergedCount >= MERGED_VETERAN) return 1;
+              return 2;
+            };
+
+            const evaluateEligibility = async username => {
+              const [mergedCount, openCount] = await Promise.all([
+                countMergedPRs(username),
+                countOpenAssignedIssues(username)
+              ]);
+              const maxOpen = maxOpenForMergedCount(mergedCount);
+
+              if (maxOpen === 0) {
+                return {
+                  allowed: false,
+                  body: `Hey @${username}, thank you for everything you've contributed to this project! 🙏\n\nWe couldn't auto-assign this issue right now. Please ask a **maintainer** to assign you if you'd like to work on it, or browse [open unassigned issues](https://github.com/${owner}/${repo}/issues?q=is%3Aissue+is%3Aopen+no%3Aassignee).\n\nYou can still **open new issues** anytime to report bugs, docs gaps, or ideas.`
+                };
+              }
+
+              if (openCount >= maxOpen) {
+                return {
+                  allowed: false,
+                  body: `Hey @${username}, you already have **${openCount}** open issue(s) assigned. Please finish one or comment \`/unassign\` on an issue you're not working on, then comment \`/assign\` here to claim this one. 🙏`
+                };
+              }
+
+              return { allowed: true, mergedCount, openCount, maxOpen };
+            };
+
+            const eligibility = await evaluateEligibility(commenter);
+            if (!eligibility.allowed) {
+              await postComment(eligibility.body);
+              return;
+            }
+
+            await github.rest.issues.addAssignees({
+              owner, repo, issue_number: issueNumber,
+              assignees: [commenter]
+            });
+            await addGssocLabelIfNeeded();
+
+            const isGssoc =
+              commentLower.includes('gssoc') || issueBody.toLowerCase().includes('gssoc');
+            await postComment(
+              `Hey @${commenter}, this issue has been assigned to you! 🎉 Please make progress within 5 days or it will be automatically unassigned due to inactivity.${isGssoc ? "\n\n> 🟠 GSSoC'26 contributor — thanks for contributing under GirlScript Summer of Code 2026!" : ''}`
+            );
+
+  inactivity-check:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for inactive assigned issues
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const now = Date.now();
+            const DAY_MS = 24 * 60 * 60 * 1000;
+
+            // Fetch all open issues that have at least one assignee
+            let page = 1;
+            const assignedIssues = [];
+            while (true) {
+              const response = await github.rest.issues.listForRepo({
+                owner,
+                repo,
+                state: 'open',
+                per_page: 100,
+                page
+              });
+
+              const filtered = response.data.filter(
+                i => !i.pull_request && i.assignees && i.assignees.length > 0
+              );
+              assignedIssues.push(...filtered);
+
+              if (response.data.length < 100) break;
+              page++;
+            }
+
+            core.info(`Found ${assignedIssues.length} open assigned issues to check.`);
+
+            for (const issue of assignedIssues) {
+              const assignee = issue.assignees[0].login;
+              const issueNumber = issue.number;
+
+              const commentsResponse = await github.rest.issues.listComments({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                per_page: 100
+              });
+
+              let lastActivityTimestamp = new Date(issue.updated_at).getTime();
+              if (commentsResponse.data.length > 0) {
+                const lastComment = commentsResponse.data[commentsResponse.data.length - 1];
+                const lastCommentTime = new Date(lastComment.created_at).getTime();
+                if (lastCommentTime > lastActivityTimestamp) {
+                  lastActivityTimestamp = lastCommentTime;
+                }
+              }
+
+              const daysSinceActivity = (now - lastActivityTimestamp) / DAY_MS;
+              core.info(`Issue #${issueNumber} (@${assignee}): ${daysSinceActivity.toFixed(2)} days since last activity.`);
+
+              const botComments = commentsResponse.data.filter(
+                c => c.user.login === 'github-actions[bot]'
+              );
+              const commentBodies = botComments.map(c => c.body);
+
+              if (daysSinceActivity >= 5) {
+                await github.rest.issues.removeAssignees({
+                  owner,
+                  repo,
+                  issue_number: issueNumber,
+                  assignees: [assignee]
+                });
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issueNumber,
+                  body: `This issue has been unassigned from @${assignee} due to 5 days of inactivity and is open for anyone to pick up — comment \`/assign\` to claim it!`
+                });
+
+              } else if (daysSinceActivity >= 4) {
+                const alreadyWarned = commentBodies.some(b =>
+                  b.includes('final warning') && b.includes('4 days')
+                );
+                if (!alreadyWarned) {
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: issueNumber,
+                    body: `Hey @${assignee}, final warning! ⚠️ This issue has had no activity for 4 days and will be automatically unassigned in 24 hours if there is no update.`
+                  });
+                }
+
+              } else if (daysSinceActivity >= 2) {
+                const alreadyWarned = commentBodies.some(b =>
+                  b.includes('2 days') && b.includes('no activity')
+                );
+                if (!alreadyWarned) {
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: issueNumber,
+                    body: `Hey @${assignee}, just a friendly reminder that this issue has had no activity for 2 days. Please leave an update or let us know if you need help! ⏰`
+                  });
+                }
+              }
+            }

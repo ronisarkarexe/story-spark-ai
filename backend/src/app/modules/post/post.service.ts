@@ -4,6 +4,7 @@ import { User } from "../user/user.model";
 import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
 import { Post } from "./post.model";
+import { StoryVersionService } from "../story_version/story_version.service";
 import {
   IGenericResponse,
   IPaginationOptions,
@@ -11,6 +12,7 @@ import {
 import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
 import { SortOrder } from "mongoose";
+import { GamificationService } from "../gamification/gamification.service";
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
   const { email, role } = token;
@@ -22,15 +24,22 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
   try {
+    const isPublished = payload.isPublished ?? true;
     const res = await Post.create({
       ...payload,
+      isPublished,
+      publishedAt: isPublished ? new Date() : null,
       author: user._id,
       updatedBy: user._id,
     });
-    if (res) {
-      user.postsCount += 1;
-      await user.save();
-    }
+      if (res && res.isPublished) {
+        user.postsCount += 1;
+        await user.save();
+        GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
+        if (user.postsCount === 1) {
+          GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
+        }
+      }
     return res;
   } catch (error) {
     throw new ApiError(
@@ -47,7 +56,9 @@ const getPosts = async (
   const { page, limit, skip, sortBy, orderBy } = paginationHelper(pagination);
   const { searchTerm, trendingTopic, sortFilter, genres, ...filterData } =
     filters;
-  const andCondition = [];
+  const andCondition: Record<string, unknown>[] = [
+    { isDeleted: { $ne: true } },
+  ];
 
   if (searchTerm) {
     andCondition.push({
@@ -66,9 +77,22 @@ const getPosts = async (
     });
   }
 
-  if (genres && genres.length > 0) {
+  const genreList = Array.isArray(genres)
+    ? genres
+    : typeof genres === "string"
+      ? genres.split(",").map((g) => g.trim()).filter(Boolean)
+      : [];
+
+  if (genreList.length > 0) {
     andCondition.push({
-      tag: { $in: genres },
+      $or: genreList.map((genre) => ({
+        tag: {
+          $regex: new RegExp(
+            `^${genre.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+            "i",
+          ),
+        },
+      })),
     });
   }
 
@@ -115,9 +139,9 @@ const getPosts = async (
 
 const getLatestPosts = async () => {
   try {
-    const res = await Post.find()
+    const res = await Post.find({ isDeleted: { $ne: true } })
       .sort({ createdAt: -1 })
-      .limit(2)
+      .limit(50)
       .populate("author", "name email createdAt")
       .populate({
         path: "reactions",
@@ -135,9 +159,12 @@ const getLatestPosts = async () => {
 
 const getFeaturedPosts = async () => {
   try {
-    const res = await Post.find({ isFeaturedPost: true })
+    const res = await Post.find({
+      isFeaturedPost: true,
+      isDeleted: { $ne: true },
+    })
       .sort({ createdAt: -1, updatedBy: -1 })
-      .limit(2)
+      .limit(10)
       .populate("author", "name email createdAt")
       .populate({
         path: "reactions",
@@ -155,8 +182,8 @@ const getFeaturedPosts = async () => {
 
 const doFeaturedPosts = async (postId: string) => {
   try {
-    const res = await Post.findByIdAndUpdate(
-      postId,
+    const res = await Post.findOneAndUpdate(
+      { _id: postId, isDeleted: { $ne: true } },
       { isFeaturedPost: true },
       { new: true }
     );
@@ -170,7 +197,7 @@ const doFeaturedPosts = async (postId: string) => {
 };
 
 const getSinglePost = async (id: string) => {
-  const postById = await Post.findOne({ _id: id })
+  const postById = await Post.findOne({ _id: id, isDeleted: { $ne: true } })
     .populate("author", "name email createdAt")
     .populate({
       path: "reactions",
@@ -183,8 +210,12 @@ const getSinglePost = async (id: string) => {
   return postById;
 };
 
-const getPostsByTag = async (tag: string) => {
-  const result = await Post.find({ tag })
+const getPostsByTag = async (tag: string, excludeId?: string) => {
+  const query: any = { tag, isDeleted: { $ne: true } };
+  if (excludeId) {
+    query._id = { $ne: excludeId };
+  }
+  const result = await Post.find(query)
     .limit(2)
     .populate("author", "name email createdAt")
     .populate({
@@ -201,9 +232,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-
-  const postExists = await Post.exists({ _id: postId });
-  if (!postExists) {
+ main
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
@@ -227,6 +256,85 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   }
 };
 
+const updatePost = async (
+  postId: string,
+  payload: Partial<IPostPayload> & { prompt?: string; generationType?: string },
+  token: ITokenPayload
+) => {
+  const { email } = token;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  const post = await Post.findById(postId);
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+  }
+
+  // Enforce ownership
+  if (
+    post.author.toString() !== user._id.toString() &&
+    user.role !== "admin" &&
+    user.role !== "super_admin"
+  ) {
+    throw new ApiError(httpStatus.FORBIDDEN, "You do not have permission to edit this story!");
+  }
+
+  // Automatically create version snapshot of the current state BEFORE overwriting
+  await StoryVersionService.createVersionSnapshot(
+    postId,
+    user._id.toString(),
+    payload.prompt || "",
+    payload.generationType || "edited"
+  );
+
+  // Overwrite post content
+  if (payload.title !== undefined) post.title = payload.title;
+  if (payload.content !== undefined) post.content = payload.content;
+  if (payload.tag !== undefined) post.tag = payload.tag;
+  if (payload.topic !== undefined) post.topic = payload.topic;
+
+  post.updatedBy = user._id;
+  await post.save();
+
+  return post;
+};
+
+const deletePost = async (postId: string, token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  const post = await Post.findOne({
+    _id: postId,
+    isDeleted: { $ne: true },
+  });
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+  }
+
+  if (!post.author || post.author.toString() !== user._id.toString()) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You can only delete your own story!"
+    );
+  }
+
+  post.isDeleted = true;
+  post.deletedAt = new Date();
+  post.deletedBy = user._id;
+  await post.save();
+
+  if (post.isPublished && user.postsCount > 0) {
+    user.postsCount -= 1;
+    await user.save();
+  }
+
+  return post;
+};
+
 export const PostService = {
   createPost,
   getPosts,
@@ -236,4 +344,7 @@ export const PostService = {
   getSinglePost,
   getPostsByTag,
   toggleBookmark,
+  updatePost,
+  deletePost,
 };
+

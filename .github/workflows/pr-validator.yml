@@ -1,0 +1,80 @@
+name: 🔍 PR Validator
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: pr-validator-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR format
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const number = pr.number;
+            const body = pr.body || '';
+            const title = pr.title || '';
+            const username = pr.user.login;
+
+            if (pr.user.type === 'Bot') return;
+
+            const warnings = [];
+
+            // Check if targeting main (warn, don't block)
+            if (pr.base.ref !== 'main') {
+              warnings.push(`⚠️ Your PR targets \`${pr.base.ref}\` instead of \`main\`. Please check your base branch.`);
+            }
+
+            const MARKER = '<!-- pr-validator-story-spark-ai-v1 -->';
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: number, per_page: 100
+            });
+            const existingComment = comments.find(c => c.body.includes(MARKER));
+
+            let commentBody;
+            if (warnings.length > 0) {
+              commentBody = [
+                MARKER,
+                `## ⚠️ PR Format Issues — @${username}`,
+                ``,
+                `Please fix the following before your PR can be reviewed:`,
+                ``,
+                ...warnings.map(w => `- ${w}`),
+                ``,
+                `Push new commits after fixing — this comment will update automatically.`,
+                ``,
+                `📖 [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md)`,
+              ].join('\n');
+            } else {
+              commentBody = [
+                MARKER,
+                `## ✅ PR Format Check Passed — @${username}`,
+                ``,
+                `Basic format checks passed. A maintainer will review your code changes.`,
+                ``,
+                `_This does not mean the PR is approved — it just means the format is correct._`,
+              ].join('\n');
+            }
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: existingComment.id, body: commentBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: number, body: commentBody
+              });
+            }

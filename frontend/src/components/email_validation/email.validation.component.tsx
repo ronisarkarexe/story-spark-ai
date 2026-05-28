@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
-import toast, { Toaster } from "react-hot-toast";
+import React from "react";
+import { useForm } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 
@@ -9,8 +8,7 @@ interface Inputs {
 }
 
 const EmailValidationComponent = () => {
-  const [isBusy, setIsBusy] = useState<boolean>(false);
-  const { register, handleSubmit, watch } = useForm<Inputs>();
+  const { register } = useForm<Inputs>();
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center relative overflow-hidden px-4">

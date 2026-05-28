@@ -12,10 +12,23 @@
     --ds-space-6: 24px;
     --ds-space-8: 32px;
     --ds-space-16: 64px;
-    --ds-input-height: 44px;
-    --ds-btn-height: 44px;
-    --ds-btn-max-width: 350px;
-    --ds-card-max-width: 380px;
+    --ds-input-height: 50px;
+    --ds-btn-height: 48px;
+    --ds-btn-max-width: 360px;
+    --ds-card-max-width: 420px;
+}
+
+html, body {
+    touch-action: pan-x pan-y;
+}
+
+body {
+    min-height: 100vh;
+    background-image:
+        radial-gradient(circle at top left, rgba(208, 188, 255, 0.16), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(255, 182, 106, 0.12), transparent 20%),
+        linear-gradient(180deg, #090b12 0%, #0d111b 100%);
+    background-color: #090b12;
 }
 
 /* ── Keyframe Animations ── */
@@ -71,22 +84,19 @@
 }
 
 /* ── Gradients & Glassmorphic Utilities ── */
-.hero-gradient {
-    background: linear-gradient(135deg, #d0bcff 0%, #fbabff 50%, #ec6a06 100%);
-}
-
+.hero-gradient,
 .spark-gradient-text {
-    background: linear-gradient(135deg, #d0bcff 0%, #fbabff 50%, #ec6a06 100%);
+    background: linear-gradient(135deg, #7c3aed 0%, #ec4899 45%, #f97316 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 .glass-panel {
-    backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.025);
+    backdrop-filter: blur(24px);
+    background: rgba(11, 14, 25, 0.82);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
 }
 
 .auth-tab-active {
@@ -99,9 +109,15 @@
 .left-pane-radial {
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at 30% 40%, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
+    background: radial-gradient(ellipse at 25% 35%, rgba(124, 58, 237, 0.16) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 70%, rgba(251, 171, 255, 0.08) 0%, transparent 52%),
+                radial-gradient(ellipse at 60% 20%, rgba(249, 115, 22, 0.08) 0%, transparent 45%);
     z-index: 1;
     pointer-events: none;
+}
+
+.left-pane-mobile {
+    min-height: 260px;
 }
 
 /* ── Design System: Form Input Custom Fields ── */
@@ -110,16 +126,62 @@ input[type="email"],
 input[type="password"] {
     height: var(--ds-input-height);
     font-size: 15px;
-    padding: 0 14px;
-    border-radius: 10px;
+    padding: 0 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #e1e2ea;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     box-sizing: border-box;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.ds-input-group {
+    position: relative;
+}
+
+.ds-input-group .ds-input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(203, 195, 215, 0.8);
+    font-size: 18px;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.ds-input-group.has-action .ds-input {
+    padding-right: 44px;
+}
+
+.ds-input-group .ds-input-action {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: rgba(203, 195, 215, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+.ds-input-group .ds-input-action:hover {
+    color: #d0bcff;
+}
+
+input::placeholder {
+    color: rgba(203, 195, 215, 0.7);
 }
 
 input:focus {
-    border-color: #d0bcff;
-    box-shadow: 0 0 0 3px rgba(208, 188, 255, 0.15), 0 0 20px rgba(208, 188, 255, 0.1);
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16), 0 0 16px rgba(124, 58, 237, 0.08);
     outline: none;
+    transform: translateY(-1px);
 }
 
 /* ── Design System: Submit Buttons ── */
@@ -133,31 +195,38 @@ input:focus {
     justify-content: center;
     margin-left: auto;
     margin-right: auto;
-    background: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
+    background: linear-gradient(135deg, #7c3aed 0%, #f97316 100%);
     color: #ffffff;
-    box-shadow: 0 0 24px rgba(124, 58, 237, 0.35), 0 4px 12px rgba(0, 0, 0, 0.3);
-    border-radius: 12px;
-    transition: box-shadow 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 0 32px rgba(0, 97, 182, 0.32), 0 8px 22px rgba(0, 0, 0, 0.24);
+    border-radius: 14px;
+    transition: box-shadow 0.3s ease, transform 0.2s ease, opacity 0.2s ease;
     cursor: pointer;
     border: none;
 }
 
 .ds-btn-submit:hover {
-    box-shadow: 0 0 32px rgba(6, 182, 212, 0.4), 0 6px 16px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 42px rgba(249, 115, 22, 0.35), 0 10px 26px rgba(0, 0, 0, 0.3);
     transform: translateY(-1px);
 }
 
 .ds-btn-submit:active {
-    transform: scale(0.97);
+    transform: scale(0.985);
 }
 
 /* ── Design System: Google Buttons ── */
 .ds-btn-google {
-    height: 42px;
+    height: 44px;
     max-width: var(--ds-btn-max-width);
-    border-radius: 10px;
+    border-radius: 14px;
     margin-left: auto;
     margin-right: auto;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f8fafc;
+}
+
+.ds-btn-google:hover {
+    background: rgba(255, 255, 255, 0.14);
 }
 
 .material-symbols-outlined {
@@ -177,7 +246,127 @@ input:focus {
         max-width: 100%;
     }
     .left-pane-mobile {
-        height: 200px;
-        min-height: 200px;
+        height: 260px;
+        min-height: 260px;
     }
+}
+
+/* ── Field Helpers, Errors, Alerts ── */
+.ds-help {
+    margin-top: 8px;
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: rgba(203, 195, 215, 0.8);
+}
+
+.ds-error {
+    margin-top: 8px;
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: #ffb4ab;
+    display: none;
+}
+
+.ds-error.is-visible {
+    display: block;
+}
+
+.ds-alert {
+    margin-bottom: 14px;
+    padding: 12px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.04);
+    color: #e1e2ea;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.ds-alert.hidden {
+    display: none;
+}
+
+.ds-alert[data-variant="error"] {
+    border-color: rgba(255, 180, 171, 0.28);
+    background: rgba(147, 0, 10, 0.22);
+}
+
+.ds-alert[data-variant="success"] {
+    border-color: rgba(110, 231, 183, 0.26);
+    background: rgba(16, 185, 129, 0.12);
+}
+
+/* ── Input State Styling (used by JS via aria-invalid/disabled) ── */
+.ds-input {
+    width: 100%;
+}
+
+.ds-input.with-icon {
+    padding-left: 44px;
+}
+
+.ds-input[aria-invalid="true"] {
+    border-color: rgba(255, 180, 171, 0.55) !important;
+    box-shadow: 0 0 0 3px rgba(255, 180, 171, 0.12) !important;
+}
+
+input:disabled,
+button:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+}
+
+/* ── Password Strength Meter ── */
+.ds-meter {
+    margin-top: 10px;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+
+.ds-meter-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(255, 180, 171, 0.9) 0%, rgba(208, 188, 255, 0.9) 55%, rgba(255, 182, 144, 0.95) 100%);
+    transition: width 240ms ease;
+}
+
+/* ── Button Loading Spinner ── */
+.ds-btn-submit {
+    gap: 10px;
+}
+
+.ds-spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: rgba(255, 255, 255, 0.95);
+    animation: ds-spin 0.8s linear infinite;
+}
+
+.ds-spinner.hidden {
+    display: none;
+}
+
+@keyframes ds-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; }
+    #auth-form,
+    .ds-btn-submit,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    .ds-meter-bar {
+        transition: none !important;
+    }
+    .ds-spinner { animation: none !important; }
 }

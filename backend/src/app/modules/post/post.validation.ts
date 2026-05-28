@@ -22,7 +22,8 @@ const createPost = z.object({
       .url("Invalid image URL format"),
     topic: z
       .array(TopicSchema)
-      .nonempty({ message: "At least one topic is required!" }),
+      .min(2, { message: "At least two topics are required!" }),
+    language: z.string().optional(),
   }),
 });
 

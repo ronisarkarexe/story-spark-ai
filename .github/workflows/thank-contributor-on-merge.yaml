@@ -18,7 +18,7 @@ jobs:
             const body = [
               `Congratulations, @${author}! 🎉`,
               '',
-              'Your pull request has been merged into **Story-Spark-AI**. Thank you for your contribution — it helps our open-source community grow.',
+              'Your pull request has been merged into **Story Spark AI**. Thank you for your contribution — it helps our open-source storytelling community grow.',
               '',
               'We appreciate your effort and hope to see you contribute again soon. Should you have any questions, feel free to ask.',
             ].join('\n');

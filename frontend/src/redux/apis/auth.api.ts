@@ -38,7 +38,31 @@ const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: [tagTypes.user],
     }),
+    forgotPassword: build.mutation({
+      query: (data) => ({
+        url: `/${AUTH_URL}/forgot-password`,
+        method: "POST",
+        data: data,
+      }),
+    }),
+    resetPassword: build.mutation({
+      query: (data) => ({
+        url: `/${AUTH_URL}/reset-password`,
+        method: "POST",
+        data: data,
+      }),
+      transformResponse: (response: { data: AccessToken }) => {
+        return { data: response.data };
+      },
+      invalidatesTags: [tagTypes.user],
+    }),
   }),
 });
 
-export const { useLoginUserMutation, useGoogleLoginMutation, useRegisterUserMutation } = authApi;
+export const {
+  useLoginUserMutation,
+  useGoogleLoginMutation,
+  useRegisterUserMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+} = authApi;

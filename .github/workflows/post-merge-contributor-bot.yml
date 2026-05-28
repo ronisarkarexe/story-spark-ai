@@ -1,0 +1,74 @@
+name: 🚀 Post-Merge Contributor Bot
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  pull-requests: read
+  issues: write
+
+jobs:
+  get-started-request:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    concurrency:
+      group: post-merge-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Ask contributor to keep going after merge
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const number = pr.number;
+            const author = pr.user.login;
+
+            if (pr.user.type === 'Bot') return;
+
+            const MARKER = '<!-- post-merge-get-started-story-spark-ai-v1 -->';
+            const { data: existing } = await github.rest.issues.listComments({
+              owner, repo, issue_number: number, per_page: 100
+            });
+            if (existing.some(c => c.body.includes(MARKER))) return;
+
+            const prBody = (pr.body || '').toLowerCase();
+            const isGssoc =
+              prBody.includes('gssoc') ||
+              (pr.head.ref || '').toLowerCase().includes('gssoc');
+
+            const comment = [
+              MARKER,
+              `## 🎉 Merged — great work, @${author}!`,
+              ``,
+              `Your pull request has been merged into **Story Spark AI**. Thank you for helping improve the project! ✨`,
+              ``,
+              isGssoc
+                ? `> 🟠 **GSSoC'26** — this counts toward your open-source journey. Keep the momentum going!`
+                : '',
+              ``,
+              `### Ready for your next contribution?`,
+              ``,
+              `We'd love to see you stay involved:`,
+              ``,
+              `1. **Pick another issue** — browse [open unassigned issues](https://github.com/${owner}/${repo}/issues?q=is%3Aissue+is%3Aopen+no%3Aassignee) or create one from our templates`,
+              `2. **Get assigned** — check **"I want to work on this issue"** when filing, or comment \`/assign\` (GSSoC folks: mention *contributing under GSSoC'26*)`,
+              `3. **Set up locally** — \`npm install\`, copy \`backend/.env.example\` and \`frontend/.env.example\`, then \`npm run dev\``,
+              `4. **Star the repo** ⭐ — it helps more contributors discover [${owner}/${repo}](https://github.com/${owner}/${repo})`,
+              ``,
+              `### Helpful links`,
+              ``,
+              `- 📖 [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md)`,
+              `- 🐛 [All issues](https://github.com/${owner}/${repo}/issues)`,
+              ``,
+              `Happy coding — see you on the next PR! 🚀`,
+            ]
+              .filter(line => line !== '')
+              .join('\n');
+
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: number, body: comment
+            });

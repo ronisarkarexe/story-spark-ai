@@ -13,6 +13,9 @@ const register = z.object({
     email: z.string({ required_error: "Email is required" }),
     name: z.string({ required_error: "Name is required" }),
     password: passwordSchema,
+    verificationToken: z
+      .string({ required_error: "Verification token is required" })
+      .min(1, "Verification token is required"),
   }),
 });
 
@@ -23,7 +26,49 @@ const login = z.object({
   }),
 });
 
+const forgotPassword = z.object({
+  body: z.object({
+    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+  }),
+});
+
+const resetPassword = z.object({
+  body: z.object({
+    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+    password: passwordSchema,
+    confirmPassword: z.string({ required_error: "Confirm password is required" }),
+    verificationToken: z.string({ required_error: "Verification token is required" }),
+  }),
+});
+
+const updateUser = z.object({
+  body: z
+    .object({
+      name: z.string().optional(),
+      profile: z
+        .object({
+          avatar: z.string().optional(),
+          bio: z.string().optional(),
+          social: z
+            .object({
+              facebook: z.string().optional(),
+              twitter: z.string().optional(),
+              linkedin: z.string().optional(),
+              instagram: z.string().optional(),
+            })
+            .partial()
+            .optional(),
+        })
+        .partial()
+        .optional(),
+    })
+    .partial(),
+});
+
 export const UserValidator = {
   register,
   login,
+  forgotPassword,
+  resetPassword,
+  updateUser,
 };
