@@ -8,7 +8,7 @@ import { useNotifications } from "../../hooks/useNotifications";
 import ThemeToggle from "../theme/theme_toggle.component";
 
 const NavListComponent: React.FC = () => {
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const [menuOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const getLinkClass = (isActive: boolean) =>
@@ -22,17 +22,6 @@ const NavListComponent: React.FC = () => {
       ? "bg-custom/15 text-slate-900 dark:text-white border-custom/40 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
       : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
     }`;
-
-  const renderNavContent = (label: string, isActive: boolean) => (
-    <>
-      {isActive && (
-        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-custom animate-pulse shadow-[0_0_8px_#3b82f6]" />
-      )}
-      <span className="block max-w-[6.75rem] whitespace-normal text-center leading-tight">
-        {label}
-      </span>
-    </>
-  );
 
   const renderMobileNavContent = (label: string, isActive: boolean) => (
     <>

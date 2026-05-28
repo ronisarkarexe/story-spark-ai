@@ -1,6 +1,15 @@
 import { Link } from "react-router-dom";
 import { useGetPersonalizedRecommendationsQuery } from "../../../redux/apis/recommendation.api";
-import { Post } from "../../../models/post";
+
+interface RecommendedPost {
+  _id: string;
+  title: string;
+  imageURL: string;
+  author?: {
+    name?: string;
+  };
+  emotions?: string[];
+}
 
 const PersonalizedRecommendationsComponent = () => {
   const { data: posts, isLoading } = useGetPersonalizedRecommendationsQuery(undefined);
@@ -33,7 +42,7 @@ const PersonalizedRecommendationsComponent = () => {
       </div>
 
       <div className="space-y-4">
-        {posts.slice(0, 5).map((post: any) => (
+        {posts.slice(0, 5).map((post: RecommendedPost) => (
           <Link
             to={`/post/${post._id}`}
             key={post._id}

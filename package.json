@@ -33,7 +33,7 @@
     "dev": "npx concurrently -n backend,frontend -c blue,green \"npm run dev -w story-spark-ai-backend\" \"npm run dev -w story-spark-ai-frontend\"",
     "dev:backend": "npm run dev -w story-spark-ai-backend",
     "dev:frontend": "npm run dev -w story-spark-ai-frontend",
-    "build": "tsc -b || echo 'Bypassing backend errors' && npm run build -w story-spark-ai-frontend",
+    "build": "npm run build -w story-spark-ai-backend && npm run build -w story-spark-ai-frontend",
     "build:backend": "npm run build -w story-spark-ai-backend",
     "build:frontend": "npm run build -w story-spark-ai-frontend",
     "start:backend": "npm run start -w story-spark-ai-backend",
