@@ -37,26 +37,53 @@ const createComment = async (
 };
 
 const getCommentsByPostId = async (postId: string) => {
-  const comments = await Comment.find({ postId, parentCommentId: null })
+  const comments = await Comment.find({ postId })
     .populate("userId", "name email")
-    .populate({
-      path: "likes",
-    })
-    .sort({ createdAt: -1 });
-  const commentsWithReplies = await Promise.all(
-    comments.map(async (comment) => {
-      const replies = await Comment.find({ parentCommentId: comment._id })
-        .populate("userId", "name email")
-        .populate({ path: "likes" })
-        .sort({ createdAt: 1 });
-      return {
-        ...comment.toObject(),
-        replies,
-      };
-    })
+    .populate({ path: "likes" });
+
+  const commentNodes = new Map<string, (IComment & { replies: IComment[] })>();
+  const topLevel: (IComment & { replies: IComment[] })[] = [];
+
+  for (const comment of comments) {
+    const commentObject = comment.toObject() as IComment & { replies: IComment[] };
+    commentObject.replies = [];
+    commentNodes.set(comment._id.toString(), commentObject);
+  }
+
+  for (const comment of comments) {
+    const node = commentNodes.get(comment._id.toString());
+    if (!node) {
+      continue;
+    }
+
+    if (comment.parentCommentId) {
+      const parentNode = commentNodes.get(comment.parentCommentId.toString());
+      if (parentNode) {
+        parentNode.replies.push(node);
+        continue;
+      }
+    }
+
+    topLevel.push(node);
+  }
+
+  for (const node of commentNodes.values()) {
+    if (node.replies.length > 1) {
+      node.replies.sort(
+        (a, b) =>
+          new Date(a.createdAt ?? 0).getTime() -
+          new Date(b.createdAt ?? 0).getTime()
+      );
+    }
+  }
+
+  topLevel.sort(
+    (a, b) =>
+      new Date(b.createdAt ?? 0).getTime() -
+      new Date(a.createdAt ?? 0).getTime()
   );
-  const totalComments = await Comment.countDocuments({ postId });
-  return { comments: commentsWithReplies, totalComments };
+
+  return { comments: topLevel, totalComments: comments.length };
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
