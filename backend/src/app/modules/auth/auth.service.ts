@@ -4,7 +4,7 @@ import { Secret } from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { AuthModel } from "./auth.interface";
 import { User } from "../user/user.model";
-import { JwtHalers } from "../../../utils/jwt.helper";
+import { JwtHelpers } from "../../../utils/jwt.helper";
 import logger from "../../../utils/logger.util";
 import config from "../../../config";
 import ApiError from "../../../errors/api_error";
@@ -46,12 +46,12 @@ const login = async (payload: AuthModel) => {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Password is not valid!");
   }
   const { _id, email, role, subscriptionType, name, postsCount } = isExistUser;
-  const accessToken = JwtHalers.createToken(
+  const accessToken = JwtHelpers.createToken(
     { _id, email, role, subscriptionType, name, postsCount },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
-  const refreshToken = JwtHalers.createToken(
+  const refreshToken = JwtHelpers.createToken(
     { _id, email, role, subscriptionType, name, postsCount },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
@@ -109,12 +109,12 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
   await OTPModel.deleteOne({ email: userEmail });
   
   const { _id, email, role, subscriptionType, name, postsCount } = result;
-  const accessToken = JwtHalers.createToken(
+  const accessToken = JwtHelpers.createToken(
     { _id, email, role, subscriptionType, name, postsCount },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
-  const refreshToken = JwtHalers.createToken(
+  const refreshToken = JwtHelpers.createToken(
     { _id, email, role, subscriptionType, name, postsCount },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
@@ -128,7 +128,7 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
 const refreshToken = async (token: string) => {
   let verifiedToken = null;
   try {
-    verifiedToken = JwtHalers.verifyToken(
+    verifiedToken = JwtHelpers.verifyToken(
       token,
       config.jwt.refresh_secret as Secret
     );
@@ -142,7 +142,7 @@ const refreshToken = async (token: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
   const { _id, email, role, subscriptionType, name, postsCount } = user;
-  const newAccessToken = JwtHalers.createToken(
+  const newAccessToken = JwtHelpers.createToken(
     { _id, email, role, subscriptionType, name, postsCount },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
@@ -195,12 +195,12 @@ const googleLogin = async (payload: { token: string }) => {
     }
 
     const { _id, role, subscriptionType, postsCount, name } = user;
-    const accessToken = JwtHalers.createToken(
+    const accessToken = JwtHelpers.createToken(
       { _id, email, role, subscriptionType, name, postsCount },
       config.jwt.secret as Secret,
       config.jwt.expires_in as string
     );
-    const refreshTokenData = JwtHalers.createToken(
+    const refreshTokenData = JwtHelpers.createToken(
       { _id, email, role, subscriptionType, name, postsCount },
       config.jwt.refresh_secret as Secret,
       config.jwt.refresh_expires_in as string
@@ -310,12 +310,12 @@ const resetPassword = async (payload: {
 
   // Generate JWT tokens for auto-login
   const { _id, role, subscriptionType, name, postsCount } = user;
-  const accessToken = JwtHalers.createToken(
+  const accessToken = JwtHelpers.createToken(
     { _id, email: user.email, role, subscriptionType, name, postsCount },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
-  const refreshToken = JwtHalers.createToken(
+  const refreshToken = JwtHelpers.createToken(
     { _id, email: user.email, role, subscriptionType, name, postsCount },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
