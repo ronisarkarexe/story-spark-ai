@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/logoNew.png";
 
@@ -8,6 +8,9 @@ const FooterComponent = () => {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  const ReportBug = React.lazy(() => import("../report-bug/ReportBug"));
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,8 +165,18 @@ const FooterComponent = () => {
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Resources</h3>
             <ul className="flex flex-col gap-[12.5px]">
               {resourceLinks.map(({ label, to }) => (
-                <li key={to}>
-                  {to && to.startsWith("http") ? (
+                <li key={label}>
+                  {label === "Report Bug" ? (
+                    // open in-app modal instead of external link
+                    <button
+                      type="button"
+                      onClick={() => setShowReportModal(true)}
+                      className="group relative inline-flex text-[14px] leading-none text-slate-300/85 transition-colors duration-200 hover:text-blue-300"
+                    >
+                      {label}
+                      <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" />
+                    </button>
+                  ) : to && to.startsWith("http") ? (
                     <a href={to} target="_blank" rel="noopener noreferrer" className="group relative inline-flex text-[14px] leading-none text-slate-300/85 transition-colors duration-200 hover:text-blue-300">
                       {label}
                       <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" />
@@ -242,6 +255,26 @@ const FooterComponent = () => {
           </div>
 
         </div>
+        {/* Report Bug Modal (lazy-loaded) */}
+        {showReportModal && (
+          <div className="fixed inset-0 z-50 flex items-start justify-center p-6">
+            <div className="absolute inset-0 bg-black/60" onClick={() => setShowReportModal(false)} />
+            <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-auto rounded-2xl">
+              <div className="flex justify-end p-3">
+                <button
+                  aria-label="Close feedback form"
+                  onClick={() => setShowReportModal(false)}
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20"
+                >
+                  ✕
+                </button>
+              </div>
+              <Suspense fallback={<div className="w-full p-8 text-center text-white">Loading…</div>}>
+                <ReportBug />
+              </Suspense>
+            </div>
+          </div>
+        )}
 
         <div
           className="my-8"
