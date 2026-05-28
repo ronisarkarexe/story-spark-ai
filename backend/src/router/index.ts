@@ -10,6 +10,7 @@ import { AnalysisRouter } from "../app/modules/analysis/analysis.router";
 import { ReviewRouter } from "../app/modules/review/review.router";
 import { ReactionRouter } from "../app/modules/reaction/reaction.router";
 import { ContactRoutes } from "../app/modules/contact/contact.route";
+import { FeedbackRoutes } from "../app/modules/feedback/feedback.route";
 import { StoriesRouter } from "../routes/stories";
 import storyRoutes from "../routes/story.routes";
 
@@ -91,6 +92,10 @@ const modules = [
   {
     path: "/contact",
     router: ContactRoutes,
+  },
+  {
+    path: "/feedback",
+    router: FeedbackRoutes,
   },
   {
     path: "/reports",
