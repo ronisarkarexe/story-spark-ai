@@ -153,10 +153,56 @@ const getProductiveHours = async (token: ITokenPayload) => {
   }));
 };
 
+const getEmotionDistribution = async (token: ITokenPayload) => {
+  const userObjectId = new Types.ObjectId(token._id);
+
+  const result = await Post.aggregate([
+    { $match: { author: userObjectId } },
+    { $unwind: "$emotions" },
+    { $group: { _id: "$emotions", count: { $sum: 1 } } },
+    { $sort: { count: -1 } },
+  ]);
+
+  return result.map((r) => ({ emotion: r._id, count: r.count }));
+};
+
+const getMoodTimeline = async (token: ITokenPayload) => {
+  const userObjectId = new Types.ObjectId(token._id);
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const posts = await Post.find({
+    author: userObjectId,
+    publishedAt: { $gte: sixMonthsAgo },
+  }).lean() as Array<Record<string, any>>;
+
+  const timeline: Record<string, Record<string, number>> = {};
+  
+  posts.forEach((p) => {
+    const month = new Date(p.publishedAt || p.createdAt).toISOString().slice(0, 7); // YYYY-MM
+    if (!timeline[month]) {
+      timeline[month] = {};
+    }
+    
+    if (p.emotions && Array.isArray(p.emotions)) {
+      p.emotions.forEach((emotion: string) => {
+        timeline[month][emotion] = (timeline[month][emotion] || 0) + 1;
+      });
+    }
+  });
+
+  return Object.entries(timeline).map(([month, emotions]) => ({
+    month,
+    emotions,
+  })).sort((a, b) => a.month.localeCompare(b.month));
+};
+
 export const AnalyticsService = {
   getOverview,
   getHeatmap,
   getGenreDistribution,
   getWordCloud,
   getProductiveHours,
+  getEmotionDistribution,
+  getMoodTimeline,
 };

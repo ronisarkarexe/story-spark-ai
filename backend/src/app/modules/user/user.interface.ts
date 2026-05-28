@@ -26,6 +26,11 @@ export interface IUser {
   posts: Types.ObjectId[];
   isApplyForWriter: boolean;
   tokenVersion: number;
+  readingPreferences?: {
+    favoriteGenres: { name: string; count: number }[];
+    favoriteEmotions: { name: string; count: number }[];
+  };
+  readingHistory?: Types.ObjectId[];
 }
 
 export type UserModel = Model<IUser, object>;

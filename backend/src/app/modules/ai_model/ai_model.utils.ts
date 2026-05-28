@@ -11,7 +11,10 @@ import { IAlternateEnding } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 
-const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
+const geminiApiKey = config.gemini_api_key?.trim() ?? "";
+const genAI = new GoogleGenerativeAI(geminiApiKey);
+const MISSING_GEMINI_API_KEY_MESSAGE =
+  "Gemini API key is not configured. Set GEMINI_API_KEY before using Gemini generation features.";
 
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
@@ -36,11 +39,25 @@ const safetySettings = [
   },
 ];
 
+const assertGeminiApiKeyConfigured = (): void => {
+  if (!geminiApiKey) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      MISSING_GEMINI_API_KEY_MESSAGE
+    );
+  }
+};
+
 interface Story {
+  uuid?: string;
   title: string;
   content: string;
   tag: string;
   imageURL?: string;
+  language?: string;
+  emotions?: string[];
+  genre?: string;
+  enhancedPrompt?: string;
 }
 
 const throwIfAborted = (signal?: AbortSignal): void => {
@@ -49,13 +66,28 @@ const throwIfAborted = (signal?: AbortSignal): void => {
   }
 };
 
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) {
+    return trimmed;
+  }
+
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
+
 export async function generateWithGeminiStories(
   prompt: string,
   wordLength: number = 250,
   numStories: number = 2,
+  language: string = "English",
   signal?: AbortSignal
 ): Promise<Story[]> {
   throwIfAborted(signal);
+
+  assertGeminiApiKeyConfigured();
 
   try {
     const chatSession = model.startChat({
@@ -65,56 +97,56 @@ export async function generateWithGeminiStories(
     });
 
     const response = await chatSession.sendMessage(
-      `Generate ${numStories} different short stories based on the following prompt: "${prompt}".
-        Each story should be in JSON format with fields: "title", "content", and "tag".
+      `You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+        First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
+        Then, generate ${numStories} different short stories based on this ENHANCED prompt.
+        The stories MUST be written entirely in the ${language} language.
+        For each story, also analyze and detect the primary emotional tones (e.g., ["Joy", "Suspense", "Motivation"]) and the specific genre.
+        Each story should be in JSON format with fields: "title", "content", "tag" (the main topic), "emotions" (an array of strings), "genre" (a string), and "enhancedPrompt" (the improved prompt used).
         Ensure each story is approximately ${wordLength} words long.
-        Return the output as a JSON array.`
+        Return only valid JSON array output.`
     );
 
     throwIfAborted(signal);
 
     const text = response.response.text();
-    let stories: Story[];
-
-    try {
-      stories = JSON.parse(text);
-    } catch (parseError: unknown) {
-      const parseErrorMsg = parseError instanceof Error ? parseError.message : String(parseError);
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        `Gemini returned invalid JSON for story generation: ${parseErrorMsg}`
-      );
-    }
+    const parsed = JSON.parse(sanitizeJsonText(text));
+    const stories: Story[] = Array.isArray(parsed) ? parsed : parsed?.stories;
 
     if (!Array.isArray(stories) || stories.length === 0) {
       throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        "Gemini returned no stories or invalid story structure"
+        httpStatus.BAD_GATEWAY,
+        "Invalid AI response: Expected a non-empty story array."
       );
     }
 
-    const imageResults = await Promise.all(
-      stories.map(async (story) => {
-        throwIfAborted(signal);
-        return fetchImageURL(story.tag);
-      })
-    );
-
-    throwIfAborted(signal);
+    // Fetch images for stories concurrently
+    const imagePromises = stories.map(async (story) => {
+      try {
+        const imageResponse = await fetchImageURL(String(story?.tag ?? story?.title ?? ""));
+        return imageResponse?.imageUrl || "";
+      } catch (e) {
+        return "";
+      }
+    });
+    
+    const imageUrls = await Promise.all(imagePromises);
 
     return stories.map((story, index) => ({
       ...story,
-      imageURL: imageResults[index].imageUrl,
+      language,
+      imageURL: imageUrls[index],
       uuid: uuidv4(),
     }));
   } catch (error: unknown) {
     if (error instanceof ApiError || error instanceof GenerationAbortedError) {
       throw error;
     }
+
     const errorMsg = error instanceof Error ? error.message : String(error);
     throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      `AI generation failed: ${errorMsg}`
+      httpStatus.BAD_GATEWAY,
+      `AI story generation failed: ${errorMsg}`
     );
   }
 }
@@ -122,8 +154,11 @@ export async function generateWithGeminiStories(
 export async function generateAlternateEndingsWithGemini(
   title: string,
   content: string,
-  tag: string
+  tag: string,
+  language: string = "English"
 ): Promise<IAlternateEnding[]> {
+  assertGeminiApiKeyConfigured();
+
   try {
     const chatSession = model.startChat({
       generationConfig,
@@ -131,8 +166,7 @@ export async function generateAlternateEndingsWithGemini(
       history: [],
     });
     const response = await chatSession.sendMessage(
-      `You are a professional narrative editor. Analyze the following story (Title: "${title}", Genre/Tag: "${tag}"):
-      
+      `You are a professional narrative editor. Analyze the following story (Title: "${title}", Genre/Tag: "${tag}", Language: "${language}"):
       Story Content:
       "${content}"
       
@@ -143,6 +177,7 @@ export async function generateAlternateEndingsWithGemini(
       4. "Open Ending"
       5. "Cliffhanger Ending"
       
+      The generated alternate endings and the rewritten stories MUST be written entirely in the ${language} language.
       For each alternate ending, provide:
       - "style": The style name exactly as listed above.
       - "ending": A short paragraph or two describing the alternate ending scene itself.
@@ -154,7 +189,7 @@ export async function generateAlternateEndingsWithGemini(
     
     let parsed: any;
     try {
-      parsed = JSON.parse(text);
+      parsed = JSON.parse(sanitizeJsonText(text));
     } catch (parseError: unknown) {
       const parseErrorMsg = parseError instanceof Error ? parseError.message : String(parseError);
       throw new ApiError(
@@ -195,6 +230,69 @@ export async function generateAlternateEndingsWithGemini(
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
       `AI generation of alternate endings failed: ${errorMsg}`
+    );
+  }
+}
+
+export async function generateRemixWithGemini(
+  title: string,
+  content: string,
+  tag: string,
+  remixType: string,
+  remixOption: string,
+  language: string = "English"
+): Promise<{ title: string; content: string; tag: string }> {
+  const remixPrompts: Record<string, string> = {
+    setting: `Rewrite this story keeping the same plot and characters but change the setting to: ${remixOption}. Keep the same story structure.`,
+    perspective: `Rewrite this story from the perspective of: ${remixOption}. Keep the same events but show them from this character's point of view.`,
+    time_period: `Rewrite this story keeping the same plot but set it in: ${remixOption}. Adjust all details to fit the time period.`,
+    tone: `Rewrite this story keeping the same plot but change the tone to: ${remixOption}. Adjust the writing style accordingly.`,
+    gender_swap: `Rewrite this story with all characters gender-swapped. Keep the same plot and events.`,
+  };
+
+  const remixInstruction = remixPrompts[remixType] || remixPrompts.tone;
+
+  const prompt = `You are a creative writing assistant. Here is a story:
+
+Title: ${title}
+Content: ${content}
+Genre: ${tag}
+
+Task: ${remixInstruction}
+
+Write the remixed story in ${language}. Return a JSON object with this exact structure:
+{
+  "title": "remixed story title",
+  "content": "full remixed story content",
+  "tag": "${tag}"
+}`;
+
+  try {
+    const chatSession = model.startChat({
+      generationConfig: {
+        ...generationConfig,
+        maxOutputTokens: 4096,
+      },
+      safetySettings,
+      history: [],
+    });
+
+    const result = await chatSession.sendMessage(prompt);
+    const rawText = result.response.text();
+    const cleanText = sanitizeJsonText(rawText);
+    const parsed = JSON.parse(cleanText);
+
+    if (!parsed.title || !parsed.content) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid remix response from AI.");
+    }
+
+    return parsed;
+  } catch (error: unknown) {
+    if (error instanceof ApiError) throw error;
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `AI remix generation failed: ${errorMsg}`
     );
   }
 }

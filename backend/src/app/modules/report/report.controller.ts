@@ -1,0 +1,19 @@
+import { Request, Response } from "express";
+import catchAsync from "../../../shared/catch_async";
+import sendResponse from "../../../shared/send_response";
+import { ReportService } from "./report.service";
+import { ReportTargetType } from "../../../enums/report.enum";
+
+const createReport = catchAsync(async (req: Request, res: Response) => {
+  const reportedBy = req.user?.userId;
+  const payload = { ...req.body, reportedBy };
+  const result = await ReportService.createReport(payload);
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "Report submitted successfully",
+    data: result,
+  });
+});
+
+export const ReportController = { createReport };

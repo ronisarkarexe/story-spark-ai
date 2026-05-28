@@ -4,6 +4,13 @@
   "version": "1.0.0",
   "description": "Story Spark AI",
   "license": "MIT",
+  "contributors": [
+    {
+      "name": "Charan Balaji",
+      "email": "neelamapallicharanbalaji14@gmail.com",
+      "url": "https://github.com/charanbalaji2005"
+    }
+  ],
   "engines": {
     "node": "20.x"
   },

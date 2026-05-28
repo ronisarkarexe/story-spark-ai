@@ -163,7 +163,6 @@ const SignUpComponent = () => {
             ?.message ||
           "Failed to send OTP. Check backend .env email credentials.";
         toast.error(message);
-        console.log("error: ", error);
       } finally {
         setIsBusy(false);
       }
@@ -210,7 +209,6 @@ const SignUpComponent = () => {
         (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
         "OTP verification failed. Please check the code and try again.";
       toast.error(message);
-      console.log("error: ", err);
     } finally {
       setIsBusy(false);
     }
@@ -241,7 +239,6 @@ const SignUpComponent = () => {
         (error as { data?: Array<{ message?: string }> })?.data?.[0]
           ?.message || "Failed to resend OTP. Please try again.";
       toast.error(message);
-      console.log("resend error: ", error);
     } finally {
       setIsBusy(false);
     }
@@ -291,8 +288,9 @@ const SignUpComponent = () => {
                 name="name"
                 placeholder="Enter your name"
                 required={true}
-                icon="fas fa-user"
+                icon="fi fi-rr-user"
                 register={register}
+                autoComplete="name"
                 validation={{
                   required: "Name is required",
                 minLength: {
@@ -314,8 +312,9 @@ const SignUpComponent = () => {
                 type="email"
                 placeholder="Enter your email"
                 required={true}
-                icon="fas fa-envelope"
+                icon="fi fi-rr-envelope"
                 register={register}
+                autoComplete="email"
                 error={errors.email}
               />
 
@@ -325,11 +324,13 @@ const SignUpComponent = () => {
                 type="password"
                 placeholder="Enter your password"
                 required={true}
-                icon="fas fa-lock"
+                icon="fi fi-rr-lock"
                 register={register}
+                autoComplete="new-password"
                 error={errors.password}
               />
 
+              {password?.length > 0 && (
               <div className="space-y-3 -mt-2">
                 <div
                   className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
@@ -367,6 +368,7 @@ const SignUpComponent = () => {
                   })}
                 </ul>
               </div>
+)}
 
               <SSInput
                 label="Confirm Password"
@@ -374,8 +376,9 @@ const SignUpComponent = () => {
                 type="password"
                 placeholder="Confirm your password"
                 required={true}
-                icon="fas fa-eye"
+                icon="fi fi-rr-eye"
                 register={register}
+                autoComplete="new-password"
                 error={errors.confirmPassword}
               />
 
@@ -388,8 +391,24 @@ const SignUpComponent = () => {
                 name="otp"
                 placeholder="Enter your OTP"
                 required={true}
-                icon="fas fa-key"
+                icon="fi fi-rr-key"
                 register={register}
+                validation={{
+                  required: "Please enter OTP",
+                  minLength: {
+                    value: 6,
+                    message: "OTP must be 6 digits",
+                  },
+                  maxLength: {
+                    value: 6,
+                    message: "OTP must be 6 digits",
+                  },
+                  pattern: {
+                    value: /^[0-9]{6}$/,
+                    message: "OTP must contain only numbers",
+                  },
+                }}
+                error={errors.otp}
               />
 
               <SSButton

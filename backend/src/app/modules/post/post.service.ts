@@ -4,6 +4,7 @@ import { User } from "../user/user.model";
 import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
 import { Post } from "./post.model";
+import { StoryVersionService } from "../story_version/story_version.service";
 import {
   IGenericResponse,
   IPaginationOptions,
@@ -22,12 +23,15 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
   try {
+    const isPublished = payload.isPublished ?? true;
     const res = await Post.create({
       ...payload,
+      isPublished,
+      publishedAt: isPublished ? new Date() : null,
       author: user._id,
       updatedBy: user._id,
     });
-    if (res) {
+    if (res && res.isPublished) {
       user.postsCount += 1;
       await user.save();
     }
@@ -132,7 +136,7 @@ const getLatestPosts = async () => {
   try {
     const res = await Post.find({ isDeleted: { $ne: true } })
       .sort({ createdAt: -1 })
-      .limit(2)
+      .limit(50)
       .populate("author", "name email createdAt")
       .populate({
         path: "reactions",
@@ -155,7 +159,7 @@ const getFeaturedPosts = async () => {
       isDeleted: { $ne: true },
     })
       .sort({ createdAt: -1, updatedBy: -1 })
-      .limit(2)
+      .limit(10)
       .populate("author", "name email createdAt")
       .populate({
         path: "reactions",
@@ -246,6 +250,51 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   }
 };
 
+const updatePost = async (
+  postId: string,
+  payload: Partial<IPostPayload> & { prompt?: string; generationType?: string },
+  token: ITokenPayload
+) => {
+  const { email } = token;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  const post = await Post.findById(postId);
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+  }
+
+  // Enforce ownership
+  if (
+    post.author.toString() !== user._id.toString() &&
+    user.role !== "admin" &&
+    user.role !== "super_admin"
+  ) {
+    throw new ApiError(httpStatus.FORBIDDEN, "You do not have permission to edit this story!");
+  }
+
+  // Automatically create version snapshot of the current state BEFORE overwriting
+  await StoryVersionService.createVersionSnapshot(
+    postId,
+    user._id.toString(),
+    payload.prompt || "",
+    payload.generationType || "edited"
+  );
+
+  // Overwrite post content
+  if (payload.title !== undefined) post.title = payload.title;
+  if (payload.content !== undefined) post.content = payload.content;
+  if (payload.tag !== undefined) post.tag = payload.tag;
+  if (payload.topic !== undefined) post.topic = payload.topic;
+
+  post.updatedBy = user._id;
+  await post.save();
+
+  return post;
+};
+
 const deletePost = async (postId: string, token: ITokenPayload) => {
   const user = await User.findOne({ email: token.email });
   if (!user) {
@@ -272,6 +321,11 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
   post.deletedBy = user._id;
   await post.save();
 
+  if (post.isPublished && user.postsCount > 0) {
+    user.postsCount -= 1;
+    await user.save();
+  }
+
   return post;
 };
 
@@ -284,5 +338,7 @@ export const PostService = {
   getSinglePost,
   getPostsByTag,
   toggleBookmark,
+  updatePost,
   deletePost,
 };
+

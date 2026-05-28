@@ -28,6 +28,9 @@ EMBED_DIM  = 64
 LSTM_UNITS = 64
 SAVE_DIR   = os.path.join(os.path.dirname(__file__), "saved_scorer")
 
+# Module-level cache — model and tokenizer loaded once on first call
+_model     = None
+_tokenizer = None
 
 def build_model() -> Model:
     """
@@ -72,12 +75,14 @@ def build_model() -> Model:
     )
     return model
 
+def _load_artifacts() -> None:
+    """
+    Load model and tokenizer from disk into module-level cache.
+    Called once on the first score() invocation — subsequent calls
+    reuse the already-loaded objects, avoiding repeated disk I/O.
+    """
+    global _model, _tokenizer
 
-def score(story_text: str, prompt_text: str) -> dict:
-    """
-    Load saved model + tokenizer and score one story.
-    Returns { coherence, creativity, relevance } as floats.
-    """
     model_path     = os.path.join(SAVE_DIR, "scorer.keras")
     tokenizer_path = os.path.join(SAVE_DIR, "tokenizer.pkl")
 
@@ -86,24 +91,121 @@ def score(story_text: str, prompt_text: str) -> dict:
             f"{model_path} not found — run train_scorer.py first."
         )
 
-    model     = load_model(model_path)
-    tokenizer = joblib.load(tokenizer_path)
+    if _model is None:
+        _model = load_model(model_path)
+
+    if _tokenizer is None:
+        _tokenizer = joblib.load(tokenizer_path)
+
+def score(story_text: str, prompt_text: str) -> dict:
+    """
+    Score one story using cached model and tokenizer artifacts.
+
+    Returns { coherence, creativity, relevance, overall } as floats.
+    """
+    if not isinstance(story_text, str) or not story_text.strip():
+        raise ValueError("story_text must be a non-empty string")
+
+    if not isinstance(prompt_text, str) or not prompt_text.strip():
+        raise ValueError("prompt_text must be a non-empty string")
+
+    _load_artifacts()
 
     def encode(text: str):
-        seq = tokenizer.texts_to_sequences([text])
+        seq = _tokenizer.texts_to_sequences([text])
         return pad_sequences(seq, maxlen=MAX_LEN, padding="post", truncating="post")
 
-    story_seq  = encode(story_text)
+    story_seq = encode(story_text)
     prompt_seq = encode(prompt_text)
 
-    coh, cre, rel = model.predict(
-        {"story": story_seq, "prompt": prompt_seq}, verbose=0
+    coh, cre, rel = _model.predict(
+        {"story": story_seq, "prompt": prompt_seq},
+        verbose=0
     )
 
+    coherence = float(coh[0][0])
+    creativity = float(cre[0][0])
+    relevance = float(rel[0][0])
+
     return {
-        "coherence":  round(float(coh[0][0]), 3),
-        "creativity": round(float(cre[0][0]), 3),
-        "relevance":  round(float(rel[0][0]), 3),
-        "overall":    round(float((coh[0][0] + cre[0][0] + rel[0][0]) / 3), 3),
+        "coherence": round(coherence, 3),
+        "creativity": round(creativity, 3),
+        "relevance": round(relevance, 3),
+        "overall": round((coherence + creativity + relevance) / 3, 3),
     }
     
+def batch_score(stories: list[dict], prompt_text: str) -> list[dict]:
+    """
+    Score multiple stories in a single model forward pass.
+    Much faster than calling score() in a loop for large batches.
+
+    Args:
+        stories   : list of { "uuid": str, "content": str }
+        prompt_text: the shared prompt string
+
+    Returns:
+        list of { uuid, coherence, creativity, relevance, overall }
+
+    Raises:
+        ValueError        : if prompt_text is empty or stories is empty
+        FileNotFoundError : if model artifacts are missing
+    """
+    if not isinstance(prompt_text, str) or not prompt_text.strip():
+        raise ValueError("prompt_text must be a non-empty string")
+
+    if not stories:
+        raise ValueError("stories list must not be empty")
+
+    _load_artifacts()  # load once for the whole batch
+
+    valid   = []
+    skipped = []
+
+    for s in stories:
+        content = s.get("content", "")
+        if not isinstance(content, str) or not content.strip():
+            skipped.append({"uuid": s.get("uuid", "unknown"),
+                            "error": "Empty or missing content"})
+        else:
+            valid.append(s)
+
+    results = list(skipped)  # start with pre-filled errors
+
+    if not valid:
+        return results
+
+    # ── encode all valid stories in one shot ──────────────────────────────
+    story_seqs = _tokenizer.texts_to_sequences(
+        [s["content"] for s in valid]
+    )
+    story_pad = pad_sequences(
+        story_seqs, maxlen=MAX_LEN, padding="post", truncating="post"
+    )
+
+    # prompt is the same for every story — tile it to match batch size
+    prompt_seq = _tokenizer.texts_to_sequences([prompt_text])
+    prompt_pad = pad_sequences(
+        prompt_seq, maxlen=MAX_LEN, padding="post", truncating="post"
+    )
+    prompt_tiled = np.tile(prompt_pad, (len(valid), 1))
+
+    # ── single forward pass ───────────────────────────────────────────────
+    coh_arr, cre_arr, rel_arr = _model.predict(
+        {"story": story_pad, "prompt": prompt_tiled},
+        verbose=0,
+        batch_size=32,
+    )
+
+    for i, story in enumerate(valid):
+        coh = float(coh_arr[i][0])
+        cre = float(cre_arr[i][0])
+        rel = float(rel_arr[i][0])
+        results.append({
+            "uuid":       story["uuid"],
+            "coherence":  round(coh, 3),
+            "creativity": round(cre, 3),
+            "relevance":  round(rel, 3),
+            "overall":    round((coh + cre + rel) / 3, 3),
+        })
+
+    return results

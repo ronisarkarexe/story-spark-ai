@@ -1,5 +1,5 @@
 export interface DashboardAnalysis {
-  users: {
+  users?: {
     total: number;
     active: number;
     inactive: number;
@@ -7,16 +7,26 @@ export interface DashboardAnalysis {
     writers: number;
     applyForWriter: number;
   };
-  subscriptionTypes: {
+  subscriptionTypes?: {
     free: number;
     pro: number;
     premium: number;
   };
-  posts: {
-    total: number;
-    published: number;
-    featured: number;
+  posts?: {
+    total?: number;
+    published?: number;
+    featured?: number;
     perMonth: Record<string, number>;
     topics: Record<string, number>;
+  };
+  writerStats?: {
+    totalReaders: number;
+    totalPosts: number;
+    subscriptionStatus: string;
+    applicationStatus: string;
+  };
+  userStats?: {
+    subscriptionStatus: string;
+    applicationStatus: string;
   };
 }

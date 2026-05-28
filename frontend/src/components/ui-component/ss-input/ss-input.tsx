@@ -15,8 +15,10 @@ interface SSInputProps<T extends FieldValues> {
   required?: boolean;
   icon?: string;
   register: UseFormRegister<T>;
-validation?: RegisterOptions<T>;
-error?: FieldError;}
+  validation?: RegisterOptions<T>;
+  error?: FieldError;
+  autoComplete?: string;
+}
 
 const SSInput = <T extends FieldValues>({
   label,
@@ -27,6 +29,7 @@ const SSInput = <T extends FieldValues>({
   register,
   validation,
   error,
+  autoComplete,
 }: SSInputProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -55,6 +58,7 @@ const inputType =
           ? "border-red-500 outline-red-500"
           : "border-gray-300 outline-gray-300 focus:outline-indigo-600"
           }`}          placeholder={placeholder}
+          autoComplete={autoComplete}
           {...register(name, validation)}
         />
         {type === "password" && (
@@ -63,7 +67,7 @@ const inputType =
     onClick={() => setShowPassword(!showPassword)}
     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
   >
-    <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
+    <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
   </button>
 )}
       </div>

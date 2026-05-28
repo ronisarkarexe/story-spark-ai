@@ -49,6 +49,28 @@ const aiModelApi = baseApi.injectEndpoints({
       },
       invalidatesTags: [tagTypes.model, tagTypes.user],
     }),
+    remixStory: build.mutation({
+      query: (data) => ({
+        url: `/${AI_MODEL_URL}/remix`,
+        method: "POST",
+        data: data,
+      }),
+      transformResponse: (response: { data: { title: string; content: string; tag: string }; message: string }) => {
+        return { data: response.data, message: response.message };
+      },
+      invalidatesTags: [tagTypes.model, tagTypes.user],
+    }),
+    remixFreeStory: build.mutation({
+      query: (data) => ({
+        url: `/${AI_MODEL_URL}/remix-free`,
+        method: "POST",
+        data: data,
+      }),
+      transformResponse: (response: { data: { title: string; content: string; tag: string }; message: string }) => {
+        return { data: response.data, message: response.message };
+      },
+      invalidatesTags: [tagTypes.model],
+    }),
   }),
 });
 
@@ -57,5 +79,7 @@ export const {
   useGenerateFreeModelMutation,
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
+  useRemixStoryMutation,
+  useRemixFreeStoryMutation,
 } = aiModelApi;
 

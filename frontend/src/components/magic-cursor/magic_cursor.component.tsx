@@ -71,8 +71,39 @@ const MagicCursorComponent = () => {
       sparkleTimers.current.push(timerId);
     };
 
+    let isAnimating = false;
+
+    const startAnimation = () => {
+      if (!isAnimating) {
+        isAnimating = true;
+        frameId.current = window.requestAnimationFrame(tick);
+      }
+    };
+
+    const tick = () => {
+      const dx = target.current.x - current.current.x;
+      const dy = target.current.y - current.current.y;
+
+      if (Math.abs(dx) < 0.05 && Math.abs(dy) < 0.05) {
+        current.current = { ...target.current };
+        const transformStr = `translate3d(${current.current.x}px, ${current.current.y}px, 0) translate(-50%, -50%)`;
+        if (cursorRef.current) cursorRef.current.style.transform = transformStr;
+        if (glowRef.current) glowRef.current.style.transform = transformStr;
+        isAnimating = false;
+        frameId.current = null;
+      } else {
+        current.current.x += dx * 0.22;
+        current.current.y += dy * 0.22;
+        const transformStr = `translate3d(${current.current.x}px, ${current.current.y}px, 0) translate(-50%, -50%)`;
+        if (cursorRef.current) cursorRef.current.style.transform = transformStr;
+        if (glowRef.current) glowRef.current.style.transform = transformStr;
+        frameId.current = window.requestAnimationFrame(tick);
+      }
+    };
+
     const handlePointerMove = (event: PointerEvent) => {
       target.current = { x: event.clientX, y: event.clientY };
+      startAnimation();
 
       const dx = event.clientX - lastSparkle.current.x;
       const dy = event.clientY - lastSparkle.current.y;
@@ -86,28 +117,14 @@ const MagicCursorComponent = () => {
     };
 
     const handlePointerDown = (event: PointerEvent) => {
+      startAnimation();
       addSparkle(event.clientX - 8, event.clientY + 4);
       addSparkle(event.clientX + 7, event.clientY - 6);
     };
 
-    const animateCursor = () => {
-      current.current.x += (target.current.x - current.current.x) * 0.22;
-      current.current.y += (target.current.y - current.current.y) * 0.22;
-
-      const x = `${current.current.x}px`;
-      const y = `${current.current.y}px`;
-
-      cursorRef.current?.style.setProperty("--cursor-x", x);
-      cursorRef.current?.style.setProperty("--cursor-y", y);
-      glowRef.current?.style.setProperty("--cursor-x", x);
-      glowRef.current?.style.setProperty("--cursor-y", y);
-
-      frameId.current = window.requestAnimationFrame(animateCursor);
-    };
-
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerdown", handlePointerDown, { passive: true });
-    frameId.current = window.requestAnimationFrame(animateCursor);
+    startAnimation();
 
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);

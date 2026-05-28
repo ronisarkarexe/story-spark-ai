@@ -60,6 +60,19 @@ const ForgotPasswordComponent = () => {
   const [expiredAt, setExpiredAt] = useState<number>(0);
 
   const password = watch("password") || "";
+  const getApiErrorMessage = (error: unknown, fallback: string): string => {
+    if (!error || typeof error !== "object") return fallback;
+    const data = (error as { data?: unknown }).data;
+    if (!data) return fallback;
+
+    if (Array.isArray(data)) {
+      const maybeMessage = (data[0] as { message?: unknown } | undefined)?.message;
+      return typeof maybeMessage === "string" ? maybeMessage : fallback;
+    }
+
+    const maybeMessage = (data as { message?: unknown }).message;
+    return typeof maybeMessage === "string" ? maybeMessage : fallback;
+  };
 
   const passwordChecks = {
     length: password.length >= 8,
@@ -112,14 +125,13 @@ const ForgotPasswordComponent = () => {
         setCooldown(60);
         setStep(2);
       }
-    } catch (error) {
-      const err = error as {
-        data?: Array<{ message?: string }> | { message?: string };
-      };
-      const message =
-        (Array.isArray(err?.data) ? err?.data?.[0]?.message : err?.data?.message) ||
-        "Failed to request OTP. Please ensure email is registered.";
-      toast.error(message);
+    } catch (error: unknown) {
+      toast.error(
+        getApiErrorMessage(
+          error,
+          "Failed to request OTP. Please ensure email is registered.",
+        ),
+      );
       console.log("error: ", error);
     } finally {
       setIsBusy(false);
@@ -150,14 +162,13 @@ const ForgotPasswordComponent = () => {
       } else {
         throw new Error("Verification token missing in response");
       }
-    } catch (error) {
-      const err = error as {
-        data?: Array<{ message?: string }> | { message?: string };
-      };
-      const message =
-        (Array.isArray(err?.data) ? err?.data?.[0]?.message : err?.data?.message) ||
-        "OTP verification failed. Please check the code and try again.";
-      toast.error(message);
+    } catch (error: unknown) {
+      toast.error(
+        getApiErrorMessage(
+          error,
+          "OTP verification failed. Please check the code and try again.",
+        ),
+      );
       console.log("error: ", error);
     } finally {
       setIsBusy(false);
@@ -192,14 +203,10 @@ const ForgotPasswordComponent = () => {
         storeUserInfo({ accessToken: res.data.accessToken });
         navigate("/");
       }
-    } catch (error) {
-      const err = error as {
-        data?: Array<{ message?: string }> | { message?: string };
-      };
-      const message =
-        (Array.isArray(err?.data) ? err?.data?.[0]?.message : err?.data?.message) ||
-        "Password reset failed. Please restart the process.";
-      toast.error(message);
+    } catch (error: unknown) {
+      toast.error(
+        getApiErrorMessage(error, "Password reset failed. Please restart the process."),
+      );
       console.log("error: ", error);
     } finally {
       setIsBusy(false);
@@ -218,14 +225,8 @@ const ForgotPasswordComponent = () => {
         setValue("otp", "");
         setCooldown(60);
       }
-    } catch (error) {
-      const err = error as {
-        data?: Array<{ message?: string }> | { message?: string };
-      };
-      const message =
-        (Array.isArray(err?.data) ? err?.data?.[0]?.message : err?.data?.message) ||
-        "Failed to resend OTP. Please try again.";
-      toast.error(message);
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to resend OTP. Please try again."));
       console.log("resend error: ", error);
     } finally {
       setIsBusy(false);

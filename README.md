@@ -221,6 +221,15 @@ Thanks to everyone who has helped build **Story Spark AI**. This section updates
     <td align="center">
       <sub><b>P. Harshini Padmavathi</b></sub>
     </td>
+    <td align="center">
+      <a href="https://github.com/charanbalaji2005">
+        <img src="https://github.com/charanbalaji2005.png" width="100" alt="charanbalaji2005" />
+        <br />
+        <sub><b>Charan Balaji</b></sub>
+      </a>
+      <br />
+      <sub>Contributor (ScrollFAB, Mobile Navigation, UI Components)</sub>
+    </td>
   </tr>
 </table>
 
