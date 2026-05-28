@@ -12,13 +12,13 @@ const NavListComponent: React.FC = () => {
   const navigate = useNavigate();
 
   const getLinkClass = (isActive: boolean) =>
-    `inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-3 py-2 text-center text-sm font-semibold leading-tight tracking-wide transition-all duration-300 ${isActive
+    `inline-flex min-h-9 items-center justify-center gap-1 rounded-full border px-2 py-1.5 text-center text-xs sm:text-sm font-semibold leading-tight tracking-wide transition-all duration-300 ${isActive
       ? "bg-custom/10 text-slate-900 dark:text-white border-custom/35 shadow-[0_0_15px_rgba(59,130,246,0.25)]"
       : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-custom"
     }`;
 
   const getMobileLinkClass = (isActive: boolean) =>
-    `flex min-h-12 items-center justify-start gap-2 rounded-xl border px-4 py-2.5 text-base font-semibold leading-tight transition-all duration-300 ${isActive
+    `flex min-h-12 items-center justify-start gap-2 rounded-xl border px-3 py-2 text-sm sm:px-4 sm:py-2.5 text-base font-semibold leading-tight transition-all duration-300 ${isActive
       ? "bg-custom/15 text-slate-900 dark:text-white border-custom/40 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
       : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
     }`;
@@ -95,7 +95,7 @@ const NavListComponent: React.FC = () => {
           </div>
 
           {/* Navigation Links */}
-          <div className="hidden lg:flex items-center justify-center space-x-2 xl:space-x-4 px-4 mx-auto">
+          <div className="hidden lg:flex flex-1 items-center justify-center space-x-2 xl:space-x-4 px-4">
             <NavLink to="/" end className={({ isActive }) => getLinkClass(isActive)}>
                 {({ isActive }) => (
                   <>

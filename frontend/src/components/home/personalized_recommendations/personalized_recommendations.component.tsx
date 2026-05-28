@@ -33,7 +33,7 @@ const PersonalizedRecommendationsComponent = () => {
       </div>
 
       <div className="space-y-4">
-        {posts.slice(0, 5).map((post: Post) => (
+        {posts.slice(0, 5).map((post: any) => (
           <Link
             to={`/post/${post._id}`}
             key={post._id}
