@@ -16,6 +16,7 @@ const parseCorsOrigins = (
 export default {
   env: process.env.NODE_ENV,
   port: process.env.PORT || "5000",
+  disable_logs: process.env.DISABLE_LOGS === "true" || process.env.VERCEL === "1",
   database_url: process.env.DATABASE_URL?.trim() || undefined,
   cors_origins: parseCorsOrigins(process.env.CORS_ORIGINS),
   bcrypt_salt_rounds: process.env.SALT_ROUNDS,
