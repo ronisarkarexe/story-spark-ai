@@ -31,6 +31,15 @@ export default function CollabHome() {
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300">
       <div className="max-w-lg w-full">
         {/* Header */}
+        <div className="mb-4">
+          <button
+            onClick={() => navigate("/")}
+            className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-slate-700 hover:text-slate-900 hover:bg-gray-100 hover:border-indigo-500/30 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0)] hover:shadow-[0_0_15px_rgba(99,102,241,0.12)] dark:bg-white/5 dark:border-white/10 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 dark:hover:border-indigo-500/30"
+          >
+            <i className="fas fa-arrow-left text-sm transform group-hover:-translate-x-1 transition-transform"></i>
+            <span className="text-sm font-semibold tracking-wide">Back to Home</span>
+          </button>
+        </div>
         <div className="text-center mb-12">
           <div className="text-6xl mb-4">✍️</div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-3">

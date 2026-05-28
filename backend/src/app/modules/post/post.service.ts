@@ -12,6 +12,7 @@ import {
 import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
 import { SortOrder } from "mongoose";
+import { GamificationService } from "../gamification/gamification.service";
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
   const { email, role } = token;
@@ -31,10 +32,14 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       author: user._id,
       updatedBy: user._id,
     });
-    if (res && res.isPublished) {
-      user.postsCount += 1;
-      await user.save();
-    }
+      if (res && res.isPublished) {
+        user.postsCount += 1;
+        await user.save();
+        GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
+        if (user.postsCount === 1) {
+          GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
+        }
+      }
     return res;
   } catch (error) {
     throw new ApiError(

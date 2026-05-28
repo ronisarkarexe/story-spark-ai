@@ -165,35 +165,31 @@ const PostDetailsComponent = () => {
     return email === currentUser?.email;
   });
 
-  const shareUrl = window.location.href;
-
-  const shareTitle = post?.title || "Check out this story!";
-
   const handleTwitterShare = () => {
+    const currentUrl = window.location.href;
+    const currentTitle = post?.title || "Check out this story!";
     const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-      shareUrl
-    )}&text=${encodeURIComponent(shareTitle)}`;
-
+      currentUrl
+    )}&text=${encodeURIComponent(currentTitle)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleLinkedInShare = () => {
+    const currentUrl = window.location.href;
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-      shareUrl
+      currentUrl
     )}`;
-
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleEmailShare = () => {
-    const subject = `Story Spark AI - ${shareTitle}`;
-
-    const body = `Check out this interesting story on Story Spark AI: "${shareTitle}"\n\nRead it here: ${shareUrl}`;
-
+    const currentUrl = window.location.href;
+    const currentTitle = post?.title || "Check out this story!";
+    const subject = `Story Spark AI - ${currentTitle}`;
+    const body = `Check out this interesting story on Story Spark AI: "${currentTitle}"\n\nRead it here: ${currentUrl}`;
     const url = `mailto:?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
-
     window.location.href = url;
   };
 

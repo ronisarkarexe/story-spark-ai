@@ -16,7 +16,7 @@ const parseCorsOrigins = (
 export default {
   env: process.env.NODE_ENV,
   port: process.env.PORT || "5000",
-  database_url: process.env.DATABASE_URL || "mongodb+srv://university_system:Y4K8t26J0a894hke@cluster0.v4fkr.mongodb.net/ai_storie_books?retryWrites=true&w=majority",
+  database_url: process.env.DATABASE_URL?.trim() || undefined,
   cors_origins: parseCorsOrigins(process.env.CORS_ORIGINS),
   bcrypt_salt_rounds: process.env.SALT_ROUNDS,
   jwt: {

@@ -44,6 +44,7 @@
     "concurrently": "^9.1.2"
   },
   "dependencies": {
+    "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
     "socket.io": "^4.8.3"
   }

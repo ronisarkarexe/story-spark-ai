@@ -46,5 +46,16 @@ router.post(
   "/remix-free",
   AiModelController.aiFreeModelRemix
 );
+// Translate Story
+router.post(
+  "/translate",
+  checkRequestLimit(),
+  AiModelController.aiModelTranslate
+);
+// Translate Story Free
+router.post(
+  "/translate-free",
+  AiModelController.aiFreeModelTranslate
+);
 export const AIModelRouter = router;
 

@@ -1,5 +1,9 @@
 import { Server, Socket } from "socket.io";
 import logger from "../utils/logger.util";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import config from "../config";
+
+const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
 
 const COLORS = [
   "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4",
@@ -109,17 +113,30 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // AI continues the story
-    socket.on("collab:ai_continue", ({ roomId }) => {
+    socket.on("collab:ai_continue", async ({ roomId }) => {
       const room = rooms.get(roomId);
       if (!room) return;
 
       collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
 
+      let aiText = "";
+      try {
+        const fullContext = room.story.map(chunk => chunk.text).join(" ");
+        const prompt = `Continue the following story naturally and creatively in 2-3 sentences:\n\n${fullContext}`;
+
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const result = await model.generateContent(prompt);
+        aiText = result.response.text();
+      } catch (error) {
+        logger.error("AI collaboration generation failed", error);
+        aiText = "...the AI lost its train of thought. Please try again.";
+      }
+
       const aiChunk: IStoryChunk = {
         authorId: "ai",
         authorName: "✨ AI",
         color: "#d4af37",
-        text: "...the story continues with AI magic here...",
+        text: aiText,
         isAI: true,
         timestamp: new Date(),
       };

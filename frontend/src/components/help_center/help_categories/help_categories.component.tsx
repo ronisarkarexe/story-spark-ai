@@ -23,11 +23,11 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
       <div className="text-center mb-10">
         <h2
           id="categories-heading"
-          className="text-3xl font-bold text-gray-300"
+          className="text-3xl font-bold text-slate-900 dark:text-gray-300"
         >
           Quick Help Categories
         </h2>
-        <p className="mt-3 text-gray-400 max-w-2xl mx-auto">
+        <p className="mt-3 text-slate-600 dark:text-gray-400 max-w-2xl mx-auto">
           Jump into the topic you need — from your first story to contributing code.
         </p>
       </div>

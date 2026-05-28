@@ -19,29 +19,34 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
         {[...Array(8)].map((_, i) => (
           <div
             key={i}
-            className="animate-pulse bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full"
+            className="animate-pulse bg-[#f8fafc]/90 border border-slate-200/60 shadow-lg rounded-[2.5rem] overflow-hidden flex flex-col h-[520px] dark:bg-slate-900/40 dark:border-white/5 dark:shadow-2xl"
           >
             {/* Image Placeholder */}
-            <div className="relative h-48 bg-slate-700/50">
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 pointer-events-none"></div>
+            <div className="relative aspect-video bg-slate-200/80 dark:bg-slate-800/50">
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-100 to-transparent dark:from-[#03050C] opacity-60"></div>
               {/* Tag Badges Skeleton */}
-              <div className="absolute top-4 left-4 h-6 w-20 bg-slate-600/50 rounded-full" />
+              <div className="absolute top-6 left-6 h-7 w-20 bg-slate-300/50 rounded-full border border-slate-300/30 dark:bg-blue-500/10 dark:border-blue-500/10" />
             </div>
 
             {/* Body Content Placeholder */}
             <div className="p-6 flex-1 flex flex-col">
               {/* Title Line */}
-              <div className="h-6 bg-slate-700/50 rounded-md w-3/4 mb-3" />
+              <div className="h-6 bg-slate-300/60 rounded-lg w-3/4 mb-4 dark:bg-slate-800/60" />
 
               {/* Excerpt Lines */}
-              <div className="space-y-2 mb-6 flex-1">
-                <div className="h-4 bg-slate-700/50 rounded-md w-full" />
-                <div className="h-4 bg-slate-700/50 rounded-md w-5/6" />
+              <div className="space-y-3 mb-8 flex-1">
+                <div className="h-3.5 bg-slate-200/70 rounded-lg w-full dark:bg-slate-800/40" />
+                <div className="h-3.5 bg-slate-200/70 rounded-lg w-full dark:bg-slate-800/40" />
+                <div className="h-3.5 bg-slate-200/70 rounded-lg w-5/6 dark:bg-slate-800/40" />
               </div>
 
               {/* Footer Metadata */}
-              <div className="border-t border-slate-700/50 pt-4 mt-auto">
-                <div className="h-4 bg-slate-700/50 rounded-md w-1/3" />
+              <div className="border-t border-slate-200 dark:border-white/5 pt-6 mt-auto flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-slate-300/50 dark:bg-slate-800/60" />
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-3 bg-slate-300/60 rounded-md w-1/3 dark:bg-slate-800/60" />
+                  <div className="h-2 bg-slate-200/50 rounded-md w-1/4 dark:bg-slate-800/30" />
+                </div>
               </div>
             </div>
           </div>

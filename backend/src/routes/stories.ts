@@ -2,6 +2,8 @@ import express from "express";
 import { z } from "zod";
 import validateRequest from "../app/middleware/validate.request";
 import { StoryBranchingController } from "../controllers/storyBranchingController";
+import auth from "../app/middleware/auth.middleware";
+import { ENUM_USER_ROLE } from "../enums/user";
 
 const router = express.Router();
 
@@ -15,6 +17,12 @@ const branchingStorySchema = z.object({
 
 router.post(
   "/branching",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   validateRequest(branchingStorySchema),
   StoryBranchingController.createBranchingStory
 );
