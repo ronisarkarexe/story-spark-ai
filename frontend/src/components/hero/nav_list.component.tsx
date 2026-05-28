@@ -22,7 +22,6 @@ import {
   X,
   Bell,
   ChevronDown,
-  User,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
