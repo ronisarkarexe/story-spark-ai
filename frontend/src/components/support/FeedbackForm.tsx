@@ -142,25 +142,33 @@ const FeedbackForm: React.FC<Props> = ({ onClose }) => {
         return;
       }
 
-      const focusableElements = dialogRef.current
+      const dialogElement = dialogRef.current;
+      const focusableElements = dialogElement
         ? Array.from(
-            dialogRef.current.querySelectorAll<HTMLElement>(
+            dialogElement.querySelectorAll<HTMLElement>(
               'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
             )
           ).filter((element) => element.offsetParent !== null)
         : [];
 
-      if (!focusableElements || focusableElements.length === 0) {
+      if (focusableElements.length === 0) {
         return;
       }
 
       const firstFocusable = focusableElements[0];
       const lastFocusable = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
 
-      if (event.shiftKey && document.activeElement === firstFocusable) {
+      if (!dialogElement?.contains(activeElement)) {
+        event.preventDefault();
+        firstFocusable.focus();
+        return;
+      }
+
+      if (event.shiftKey && activeElement === firstFocusable) {
         event.preventDefault();
         lastFocusable.focus();
-      } else if (!event.shiftKey && document.activeElement === lastFocusable) {
+      } else if (!event.shiftKey && activeElement === lastFocusable) {
         event.preventDefault();
         firstFocusable.focus();
       }
