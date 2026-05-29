@@ -5,6 +5,7 @@ import {
   GenerationTimeoutError,
   raceGenerationWithTimeout,
 } from "../../../../utils/generation_timeout";
+import { User } from "../../user/user.model";
 
 jest.mock("../ai_model.utils", () => ({
   generateWithGeminiStories: jest.fn(),
@@ -13,6 +14,20 @@ jest.mock("../ai_model.utils", () => ({
 jest.mock("../../../../utils/generation_timeout", () => ({
   ...jest.requireActual("../../../../utils/generation_timeout"),
   raceGenerationWithTimeout: jest.fn(),
+}));
+
+jest.mock("../../user/user.model", () => ({
+  User: {
+    findOne: jest.fn().mockImplementation(() => ({
+      lastRequestDate: null,
+      subscriptionType: "free",
+    })),
+    updateOne: jest.fn(),
+    findOneAndUpdate: jest.fn().mockImplementation(() => ({
+      email: "user@example.com",
+      requestsThisMonth: 1,
+    })),
+  },
 }));
 
 const mockedGenerate = generateWithGeminiStories as jest.MockedFunction<

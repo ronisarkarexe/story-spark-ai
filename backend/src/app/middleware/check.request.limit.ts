@@ -26,6 +26,7 @@ const checkRequestLimit =
         token,
         config.jwt.secret as Secret
       );
+      const { email: userEmail } = verifiedUser;
 
       // Validate JWT tokenVersion against DB
       const user = await User.findById(verifiedUser._id);

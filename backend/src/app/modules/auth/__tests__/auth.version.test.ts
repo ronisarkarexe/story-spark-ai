@@ -25,7 +25,7 @@ jest.mock("google-auth-library", () => {
   };
 });
 
-jest.mock("bcrypt", () => ({
+jest.mock("bcryptjs", () => ({
   compare: jest.fn().mockResolvedValue(true),
   hash: jest.fn().mockResolvedValue("hashed_password"),
 }));
@@ -300,8 +300,16 @@ describe("Auth Token Versioning Integration Tests", () => {
       mockReq = {
         headers: {},
       };
-      mockRes = {};
+      mockRes = {
+        locals: {},
+      };
       mockNext = jest.fn();
+      mockedUser.findOneAndUpdate.mockResolvedValue({
+        email: "test@example.com",
+        requestsThisMonth: 1,
+        subscriptionType: "free",
+      } as any);
+      mockedUser.exists.mockResolvedValue({ _id: "user123" } as any);
     });
 
     it("should allow request if tokenVersion is valid", async () => {
