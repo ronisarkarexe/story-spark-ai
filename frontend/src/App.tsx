@@ -10,6 +10,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
+import { Toaster } from "react-hot-toast"; // <-- Added for global notifications
 
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
@@ -53,30 +54,35 @@ import ReportBug from "./components/report-bug/ReportBug";
 import StoriesComponent from "./components/stories/stories.component";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 
+// --- ADDED: Offline Banner Import ---
+import { OfflineBanner } from "./components/OfflineBanner";
+
 // =========================================================================
 // 1. REFACTORED PROTECTED ROUTE LAYER (Acts as a Layout Gate using <Outlet />)
 // =========================================================================
-const ProtectedRoute = ({
-  allowedRoles,
-}: {
-  allowedRoles: string[];
-}) => {
+const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
   const user = getUserInfo();
-  
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
   if (!allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;
   }
-  
+
   // Dynamically renders the active nested matching sub-child route
   return <Outlet />;
 };
+
 // =========================================================================
 // 2. CENTRAL ROUTER MATRIX (Initialized exactly once in the global scope)
 // =========================================================================
-const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
+const ALL_ROLES = [
+  USER_ROLE.ADMIN,
+  USER_ROLE.SUPER_ADMIN,
+  USER_ROLE.WRITER,
+  USER_ROLE.USER,
+];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
 
 const router = createBrowserRouter([
@@ -92,7 +98,15 @@ const router = createBrowserRouter([
       </>
     ),
     children: [
-      { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
+      {
+        index: true,
+        element: (
+          <>
+            <HeroSectionComponent />
+            <HomeComponent />
+          </>
+        ),
+      },
       { path: "templates", element: <TemplatesComponent /> },
       { path: "writing-assistant", element: <WritingAssistantComponent /> },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
@@ -123,13 +137,16 @@ const router = createBrowserRouter([
           { path: "bookmarks", element: <BookmarksComponent /> },
           { path: "community", element: <CommunityComponent /> },
           { path: "resources", element: <ResourcesListComponent /> },
-          { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
+          {
+            path: "resources/:resourceName",
+            element: <ResourceDetailComponent />,
+          },
         ],
       },
       { path: "*", element: <NotFoundComponent /> },
     ],
   },
-  
+
   // Isolated layout branches (Bypassing public navigation headers entirely)
   { path: "/auth/email-validation", element: <EmailValidationComponent /> },
   { path: "/payment", element: <PaymentComponent /> },
@@ -140,10 +157,10 @@ const router = createBrowserRouter([
   // Administrative Dashboard Infrastructure Tree
   {
     path: "/dashboard",
-    element: <ProtectedRoute allowedRoles={ALL_ROLES} />, 
+    element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
     children: [
       {
-        element: <DashboardLayout />, 
+        element: <DashboardLayout />,
         children: [
           { index: true, element: <DashboardComponent /> },
           { path: "analytics", element: <AnalyticsPage /> },
@@ -167,11 +184,18 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
 // =========================================================================
 // 3. TARGET RUNTIME PROVIDER ENGINES
 // =========================================================================
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <OfflineBanner />
+      <Toaster position="top-center" reverseOrder={false} />
+      <RouterProvider router={router} />
+    </>
+  );
 }
 
 export default App;

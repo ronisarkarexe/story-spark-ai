@@ -1,5 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
+import {
+  isLoggedIn,
+  removeUserInfo,
+  getUserInfo,
+} from "../../services/auth.service";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { USER_ROLE } from "../../constants/role";
 import logo from "../../assets/logoNew.png";
@@ -7,34 +11,46 @@ import NotificationComponent from "../notification/notification.component";
 import { useNotifications } from "../../hooks/useNotifications";
 import ThemeToggle from "../theme/theme_toggle.component";
 
+// 1. Define the BeforeInstallPromptEvent interface for TypeScript
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 const NavListComponent: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  // 2. Add a state to store the install prompt event
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
+
   const getLinkClass = (isActive: boolean) =>
-    `flex items-center px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 border ${isActive
-      ? "bg-custom/10 text-slate-900 dark:text-white border-custom/35 shadow-[0_0_15px_rgba(59,130,246,0.25)]"
-      : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-custom"
+    `flex items-center px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 border ${
+      isActive
+        ? "bg-custom/10 text-slate-900 dark:text-white border-custom/35 shadow-[0_0_15px_rgba(59,130,246,0.25)]"
+        : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-custom"
     }`;
 
   const getMobileLinkClass = (isActive: boolean) =>
-    `flex items-center px-4 py-2.5 rounded-xl text-base font-semibold transition-all duration-300 border ${isActive
-      ? "bg-custom/15 text-slate-900 dark:text-white border-custom/40 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
-      : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+    `flex items-center px-4 py-2.5 rounded-xl text-base font-semibold transition-all duration-300 border ${
+      isActive
+        ? "bg-custom/15 text-slate-900 dark:text-white border-custom/40 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+        : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
     }`;
+
   const [isLogin, setIsLogin] = useState<boolean>(isLoggedIn());
   const notificationMenuRef = useRef<HTMLDivElement | null>(null);
-  const {
-    notifications,
-    unreadCount,
-    isOpen,
-    toggle,
-    close,
-    markAsRead,
-  } = useNotifications();
+  const { notifications, unreadCount, isOpen, toggle, close, markAsRead } =
+    useNotifications();
 
   const user = getUserInfo();
-  const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
+  const isAdmin =
+    user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
 
   const handelLogout = () => {
     removeUserInfo();
@@ -44,6 +60,41 @@ const NavListComponent: React.FC = () => {
   useEffect(() => {
     setIsLogin(isLoggedIn());
   }, []);
+
+  // 3. Listen for the beforeinstallprompt event
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
+    };
+  }, []);
+
+  // 4. Handle the install button click
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    // Show the install prompt
+    deferredPrompt.prompt();
+
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+
+    // If the user accepts, we clear the prompt so the button disappears
+    if (outcome === "accepted") {
+      setDeferredPrompt(null);
+    }
+  };
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -70,109 +121,151 @@ const NavListComponent: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center shrink-0">
             <Link to="/">
-              <img src={logo} alt="logo" className="h-10 w-auto object-contain" />
+              <img
+                src={logo}
+                alt="logo"
+                className="h-10 w-auto object-contain"
+              />
             </Link>
           </div>
 
           {/* Navigation Links */}
           <div className="hidden lg:flex flex-1 items-center justify-center space-x-1.5 xl:space-x-3 px-4">
-            <NavLink to="/" end className={({ isActive }) => getLinkClass(isActive)}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                    )}
-                    HOME
-                  </>
-                )}
-              </NavLink>
-              <NavLink to="/explore" className={({ isActive }) => getLinkClass(isActive)}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                    )}
-                    EXPLORE
-                  </>
-                )}
-              </NavLink>
-              <NavLink to="/story-inspiration" className={({ isActive }) => getLinkClass(isActive)}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                    )}
-                    INSPIRING STORIES
-                  </>
-                )}
-              </NavLink>
-              <NavLink to="/analytics" className={({ isActive }) => getLinkClass(isActive)}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                    )}
-                    📊 ANALYTICS
-                  </>
-                )}
-              </NavLink>
-              <NavLink to="/collab" className={({ isActive }) => getLinkClass(isActive)}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                    )}
-                    ✍️ COLLAB
-                  </>
-                )}
-              </NavLink>
-              <NavLink to="/contact-us" className={({ isActive }) => getLinkClass(isActive)}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                    )}
-                    CONTACT US
-                  </>
-                )}
-              </NavLink>
-              <NavLink to="/community" className={({ isActive }) => getLinkClass(isActive)}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                    )}
-                    COMMUNITY
-                  </>
-                )}
-              </NavLink>
-              {isLogin && (
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) => getLinkClass(isActive)}
+            >
+              {({ isActive }) => (
                 <>
-                  <NavLink to="/bookmarks" className={({ isActive }) => getLinkClass(isActive)}>
-                    {({ isActive }) => (
-                      <>
-                        {isActive && (
-                          <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                        )}
-                        SAVED STORIES
-                      </>
-                    )}
-                  </NavLink>
-                  <NavLink to="/dashboard" className={({ isActive }) => getLinkClass(isActive)}>
-                    {({ isActive }) => (
-                      <>
-                        {isActive && (
-                          <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                        )}
-                        DASHBOARD
-                      </>
-                    )}
-                  </NavLink>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
+                  HOME
                 </>
               )}
+            </NavLink>
+            <NavLink
+              to="/explore"
+              className={({ isActive }) => getLinkClass(isActive)}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
+                  EXPLORE
+                </>
+              )}
+            </NavLink>
+            <NavLink
+              to="/story-inspiration"
+              className={({ isActive }) => getLinkClass(isActive)}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
+                  INSPIRING STORIES
+                </>
+              )}
+            </NavLink>
+            <NavLink
+              to="/analytics"
+              className={({ isActive }) => getLinkClass(isActive)}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
+                  📊 ANALYTICS
+                </>
+              )}
+            </NavLink>
+            <NavLink
+              to="/collab"
+              className={({ isActive }) => getLinkClass(isActive)}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
+                  ✍️ COLLAB
+                </>
+              )}
+            </NavLink>
+            <NavLink
+              to="/contact-us"
+              className={({ isActive }) => getLinkClass(isActive)}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
+                  CONTACT US
+                </>
+              )}
+            </NavLink>
+            <NavLink
+              to="/community"
+              className={({ isActive }) => getLinkClass(isActive)}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
+                  COMMUNITY
+                </>
+              )}
+            </NavLink>
+            {isLogin && (
+              <>
+                <NavLink
+                  to="/bookmarks"
+                  className={({ isActive }) => getLinkClass(isActive)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                      )}
+                      SAVED STORIES
+                    </>
+                  )}
+                </NavLink>
+                <NavLink
+                  to="/dashboard"
+                  className={({ isActive }) => getLinkClass(isActive)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                      )}
+                      DASHBOARD
+                    </>
+                  )}
+                </NavLink>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden md:flex items-center gap-3">
+              {/* 5. Desktop PWA Install Button (renders only if PWA is installable) */}
+              {deferredPrompt && (
+                <button
+                  onClick={handleInstallClick}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-all duration-300 shadow-md hover:shadow-blue-500/30"
+                >
+                  <i className="fas fa-download"></i> INSTALL APP
+                </button>
+              )}
+
               <button
                 type="button"
                 aria-label="Open Help Center"
@@ -182,7 +275,10 @@ const NavListComponent: React.FC = () => {
                 <i className="fas fa-circle-question"></i>
               </button>
               {isLogin ? (
-                <button onClick={handelLogout} className="text-slate-600 dark:text-slate-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300">
+                <button
+                  onClick={handelLogout}
+                  className="text-slate-600 dark:text-slate-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-300"
+                >
                   LOGOUT
                 </button>
               ) : (
@@ -222,8 +318,11 @@ const NavListComponent: React.FC = () => {
               type="button"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               className="md:hidden text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300 p-2 transition-all duration-300"
-              onClick={() => setMenuOpen((prev) => !prev)}>
-              <i className={`fas ${menuOpen ? "fa-xmark" : "fa-bars"} text-xl`} />
+              onClick={() => setMenuOpen((prev) => !prev)}
+            >
+              <i
+                className={`fas ${menuOpen ? "fa-xmark" : "fa-bars"} text-xl`}
+              />
             </button>
           </div>
         </div>
@@ -237,8 +336,22 @@ const NavListComponent: React.FC = () => {
         />
 
         {menuOpen && (
-          <div className="md:hidden px-5 pb-4 flex flex-col gap-3 border-t border-slate-200/70 dark:border-white/10 mt-2">
-            <NavLink to="/" end className={({ isActive }) => getMobileLinkClass(isActive)}>
+          <div className="md:hidden px-5 pb-4 flex flex-col gap-3 border-t border-slate-200/70 dark:border-white/10 mt-2 pt-4">
+            {/* 6. Mobile PWA Install Button */}
+            {deferredPrompt && (
+              <button
+                onClick={handleInstallClick}
+                className="text-left text-blue-600 dark:text-blue-400 py-2 font-semibold flex items-center"
+              >
+                <i className="fas fa-download mr-2"></i> INSTALL APP
+              </button>
+            )}
+
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) => getMobileLinkClass(isActive)}
+            >
               {({ isActive }) => (
                 <>
                   {isActive && (
@@ -248,7 +361,10 @@ const NavListComponent: React.FC = () => {
                 </>
               )}
             </NavLink>
-            <NavLink to="/explore" className={({ isActive }) => getMobileLinkClass(isActive)}>
+            <NavLink
+              to="/explore"
+              className={({ isActive }) => getMobileLinkClass(isActive)}
+            >
               {({ isActive }) => (
                 <>
                   {isActive && (
@@ -258,23 +374,36 @@ const NavListComponent: React.FC = () => {
                 </>
               )}
             </NavLink>
-            <NavLink to="/analytics" className={({ isActive }) => getMobileLinkClass(isActive)}>
+            <NavLink
+              to="/analytics"
+              className={({ isActive }) => getMobileLinkClass(isActive)}
+            >
               {({ isActive }) => (
                 <>
-                  {isActive && <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />}
+                  {isActive && (
+                    <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
                   📊 ANALYTICS
                 </>
               )}
             </NavLink>
-            <NavLink to="/collab" className={({ isActive }) => getMobileLinkClass(isActive)}>
+            <NavLink
+              to="/collab"
+              className={({ isActive }) => getMobileLinkClass(isActive)}
+            >
               {({ isActive }) => (
                 <>
-                  {isActive && <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />}
+                  {isActive && (
+                    <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                  )}
                   ✍️ COLLAB
                 </>
               )}
             </NavLink>
-            <NavLink to="/community" className={({ isActive }) => getMobileLinkClass(isActive)}>
+            <NavLink
+              to="/community"
+              className={({ isActive }) => getMobileLinkClass(isActive)}
+            >
               {({ isActive }) => (
                 <>
                   {isActive && (
@@ -286,7 +415,10 @@ const NavListComponent: React.FC = () => {
             </NavLink>
             {isLogin && (
               <>
-                <NavLink to="/bookmarks" className={({ isActive }) => getMobileLinkClass(isActive)}>
+                <NavLink
+                  to="/bookmarks"
+                  className={({ isActive }) => getMobileLinkClass(isActive)}
+                >
                   {({ isActive }) => (
                     <>
                       {isActive && (
@@ -297,7 +429,10 @@ const NavListComponent: React.FC = () => {
                   )}
                 </NavLink>
                 {isAdmin && (
-                  <NavLink to="/dashboard" className={({ isActive }) => getMobileLinkClass(isActive)}>
+                  <NavLink
+                    to="/dashboard"
+                    className={({ isActive }) => getMobileLinkClass(isActive)}
+                  >
                     {({ isActive }) => (
                       <>
                         {isActive && (
@@ -310,21 +445,37 @@ const NavListComponent: React.FC = () => {
                 )}
               </>
             )}
-            <button type="button" className="text-left text-slate-600 dark:text-slate-400 py-2" data-notification-trigger="true" onClick={toggle}>
+            <button
+              type="button"
+              className="text-left text-slate-600 dark:text-slate-400 py-2"
+              data-notification-trigger="true"
+              onClick={toggle}
+            >
               NOTIFICATIONS {unreadCount > 0 && `(${unreadCount})`}
             </button>
-            {
-              isLogin ? (
-                <button onClick={handelLogout} className="text-left text-slate-600 dark:text-slate-400 py-2">
-                  LOGOUT
-                </button>
-              ) : (
-                <>
-                  <Link to="/login" className="text-slate-600 dark:text-slate-400 block px-3 py-2 rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white">LOGIN</Link>
-                  <Link to="/signup" className="text-slate-600 dark:text-slate-400 block px-3 py-2 rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white">SIGN UP</Link>
-                </>
-              )
-            }
+            {isLogin ? (
+              <button
+                onClick={handelLogout}
+                className="text-left text-slate-600 dark:text-slate-400 py-2"
+              >
+                LOGOUT
+              </button>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-slate-600 dark:text-slate-400 block px-3 py-2 rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+                >
+                  LOGIN
+                </Link>
+                <Link
+                  to="/signup"
+                  className="text-slate-600 dark:text-slate-400 block px-3 py-2 rounded-md hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+                >
+                  SIGN UP
+                </Link>
+              </>
+            )}
           </div>
         )}
       </div>
