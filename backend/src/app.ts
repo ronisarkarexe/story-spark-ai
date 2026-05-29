@@ -1,4 +1,4 @@
-import express, { Application, NextFunction, Request, Response } from "express";
+import express, { Application } from "express";
 import cors from "cors";
 import httpStatus from "http-status";
 import cron from "node-cron";
@@ -7,8 +7,8 @@ import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import { User } from "./app/modules/user/user.model";
-import { NewsletterSubscriber } from "./app/modules/newsletter/newsletter.model";
 import storyRoutes from "./routes/story.routes";
+
 const app: Application = express();
 
 app.set("trust proxy", 1); // Trust first proxy to securely read req.ip
@@ -24,7 +24,7 @@ const corsOrigins =
     ? config.cors_origins
     : defaultCorsOrigins;
 
-// ── FIXED CORS MIDDLEWARE ENGINE (WITH CORRECTED SYNTAX BRACKETS) ──
+// FIXED CORS MIDDLEWARE ENGINE
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -32,23 +32,24 @@ app.use(
         callback(null, true);
       } else {
         callback(new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy"));
-      } // <-- Safely closed the else statement block here
-    },  // <-- Safely closed the origin function assignment here
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Cookie"], 
   })
 );
+
 app.use("/review", storyRoutes);
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Keeps your extended payload parsing enabled
+app.use(express.urlencoded({ extended: true })); 
 app.use(cookieParser());
 
 // Routes
 app.use("/api/v1", Routers);
 
-// Global 404 Fallback Handler
-app.use((req: Request, res: Response, next: NextFunction) => {
+// Global 404 Fallback Handler (Type inferred implicitly to prevent CI overload errors)
+app.use((req, res, next) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
     message: "Not Found",
@@ -63,7 +64,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use(globalErrorHandler);
 
-// Cron job to reset request counts at the beginning of each month (skip on Vercel serverless)
+// Cron job to reset request counts at the beginning of each month
 if (!process.env.VERCEL) {
   cron.schedule("0 0 1 * *", async () => {
     try {
