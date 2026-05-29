@@ -51,7 +51,8 @@ export default function CollabRoom() {
       }
 
       // Connect to collab namespace
-      const collabSocket = socket.of("/collab");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const collabSocket = (socket.io as any).of("/collab");
 
       // Request room info
       collabSocket.emit("collab:get_room", { roomId }, (response: { room?: Room }) => {
@@ -100,7 +101,9 @@ export default function CollabRoom() {
 
     const socket = getSocketIo();
     if (socket) {
-      socket.io.of("/collab").emit("collab:add_text", {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const collabSocket = (socket.io as any).of("/collab");
+      collabSocket.emit("collab:add_text", {
         roomId,
         userId: user.userId,
         text: newText,
@@ -112,7 +115,9 @@ export default function CollabRoom() {
   const handleAIContinue = () => {
     const socket = getSocketIo();
     if (socket) {
-      socket.io.of("/collab").emit("collab:ai_continue", { roomId });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const collabSocket = (socket.io as any).of("/collab");
+      collabSocket.emit("collab:ai_continue", { roomId });
     }
   };
 

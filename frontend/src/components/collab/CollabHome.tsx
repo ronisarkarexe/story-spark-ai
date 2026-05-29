@@ -26,7 +26,8 @@ export default function CollabHome() {
         return;
       }
 
-      const collabSocket = socket.of("/collab");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const collabSocket = (socket.io as any).of("/collab");
 
       collabSocket.emit(
         "collab:create_room",
