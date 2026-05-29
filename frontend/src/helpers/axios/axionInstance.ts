@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { getFromLocalStorage } from "../../utils/local-storage";
+import { getFromLocalStorage, removeFromLocalStorage } from "../../utils/local-storage";
 import { AUTH_KEY } from "../../constants/storage-key";
 import { IMeta, ResponseErrorType } from "../../types";
 
@@ -44,8 +44,15 @@ instance.interceptors.response.use(
         ],
       };
     } else if (error.response) {
+      if (error.response.status === 401 || error.response.data?.statusCode === 401) {
+        removeFromLocalStorage(AUTH_KEY);
+        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      }
+
       errorObject = {
-        statusCode: error.response.data?.statusCode || 500,
+        statusCode: error.response.data?.statusCode || error.response.status || 500,
         message: error.response.data?.message || "Something went wrong!",
         errorMessages: error.response.data?.errorMessage || [],
       };

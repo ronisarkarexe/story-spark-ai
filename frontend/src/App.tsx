@@ -26,7 +26,8 @@ import PricingComponent from "./components/pricing/pricing.component";
 import ExploreComponent from "./components/post/post.component";
 import PostDetailsComponent from "./components/post/post.details.component";
 import BookmarksComponent from "./components/post/bookmarks.component";
-import { getUserInfo } from "./services/auth.service";
+import { getUserInfo, getToken } from "./services/auth.service";
+import { decodedToken } from "./utils/jwt";
 import UserListComponent from "./components/dashboard/users/user.list.component";
 import NotFoundComponent from "./components/not-found.component";
 import EmailValidationComponent from "./components/email_validation/email.validation.component";
@@ -56,14 +57,25 @@ import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 // =========================================================================
 // 1. REFACTORED PROTECTED ROUTE LAYER (Acts as a Layout Gate using <Outlet />)
 // =========================================================================
+const isTokenExpired = (token: string | null) => {
+  if (!token) return true;
+  try {
+    const decoded = decodedToken(token);
+    return decoded.exp ? decoded.exp * 1000 < Date.now() : true;
+  } catch (error) {
+    return true;
+  }
+};
+
 const ProtectedRoute = ({
   allowedRoles,
 }: {
   allowedRoles: string[];
 }) => {
   const user = getUserInfo();
+  const token = getToken();
   
-  if (!user) {
+  if (!user || isTokenExpired(token as string)) {
     return <Navigate to="/login" replace />;
   }
   if (!allowedRoles.includes(user.role)) {
