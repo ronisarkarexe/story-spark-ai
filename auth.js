@@ -78,10 +78,10 @@ function setAlert(variant, message) {
         return;
     }
 
-    const icon = variant === 'success' ? 'check_circle' : variant === 'error' ? 'error' : 'info';
+    const iconClass = variant === 'success' ? 'fi fi-rr-check-circle text-green-400' : variant === 'error' ? 'fi fi-rr-cross-circle text-rose-400' : 'fi fi-rr-info text-blue-400';
     alertEl.setAttribute('data-variant', variant);
     alertEl.innerHTML = `
-        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1; margin-top: 1px;">${icon}</span>
+        <i class="${iconClass} text-[15px]" style="margin-top: 2px;"></i>
         <div class="text-[13px] leading-relaxed">${message}</div>
     `;
     alertEl.classList.remove('hidden');
@@ -412,10 +412,10 @@ function togglePasswordVisibility() {
 
     if (field.type === 'password') {
         field.type = 'text';
-        icon.innerText = 'visibility_off';
+        icon.className = 'fi fi-rr-eye text-[16px]';
     } else {
         field.type = 'password';
-        icon.innerText = 'visibility';
+        icon.className = 'fi fi-rr-eye-crossed text-[16px]';
     }
 }
 
@@ -497,23 +497,29 @@ function decodeJwt(token) {
     }
 }
 
-function handleGoogleCredentialResponse(response) {
-    const user = decodeJwt(response.credential);
-    if (user) {
-        const status = document.getElementById('google-auth-status');
-        const avatar = document.getElementById('google-user-avatar');
-        const name = document.getElementById('google-user-name');
-        const email = document.getElementById('google-user-email');
-        const googleBtnText = document.getElementById('google-btn-text');
+async function handleGoogleCredentialResponse(response) {
+    try {
+        const res = await fetch('/api/auth/google-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: response.credential }),
+        });
 
-        if (avatar) avatar.src = user.picture || '';
-        if (name) name.innerText = user.name || 'Google User';
-        if (email) email.innerText = user.email || '';
-        if (status) status.classList.remove('hidden');
+        const data = await res.json();
 
-        if (googleBtnText) {
-            googleBtnText.innerText = `Signed in as ${user.given_name || user.name}`;
+        if (!res.ok) {
+            setAlert('error', data.message || 'Google login failed. Please try again.');
+            return;
         }
+
+        localStorage.setItem('accessToken', data.data.accessToken);
+        setAlert('success', 'Signed in with Google successfully! Redirecting…');
+        setTimeout(() => {
+            window.location.href = '/dashboard';
+        }, 1000);
+
+    } catch (err) {
+        setAlert('error', 'Something went wrong with Google Sign-In. Please try again.');
     }
 }
 

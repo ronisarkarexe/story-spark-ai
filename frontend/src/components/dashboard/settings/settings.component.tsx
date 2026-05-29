@@ -58,30 +58,31 @@ const SettingComponent = () => {
 
     setTimeout(() => {
       setSaving(false);
+      const isDark = document.documentElement.classList.contains("dark");
       toast.success("Preferences updated successfully! ✨", {
         style: {
-          background: "#1e293b",
-          color: "#fff",
-          border: "1px solid rgba(255,255,255,0.1)",
+          background: isDark ? "#1e293b" : "#fff",
+          color: isDark ? "#fff" : "#1e293b",
+          border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
         },
       });
     }, 800);
   };
 
-  const cardClass = "bg-slate-900/60 border border-slate-700/30 rounded-xl p-6 shadow-xl backdrop-blur-md transition-all duration-300 hover:border-indigo-500/30 flex flex-col justify-between";
-  const labelClass = "block text-sm font-semibold text-gray-300 mb-2";
-  const selectClass = "w-full px-4 py-2 bg-slate-800/80 border border-slate-700/50 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all";
+  const cardClass = "bg-slate-50 border border-slate-200 dark:bg-slate-900/60 dark:border-slate-700/30 rounded-xl p-6 shadow-xl backdrop-blur-md transition-all duration-300 hover:border-indigo-500/30 flex flex-col justify-between";
+  const labelClass = "block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2";
+  const selectClass = "w-full px-4 py-2 bg-white border border-slate-300 dark:bg-slate-800/80 dark:border-slate-700/50 rounded-lg text-slate-850 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all";
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8 min-h-screen text-gray-200">
+    <div className="py-8 px-4 sm:px-6 lg:px-8 min-h-screen text-slate-700 dark:text-gray-200">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex justify-between items-center border-b border-slate-700/30 pb-5">
+        <div className="mb-8 flex justify-between items-center border-b border-slate-200 dark:border-slate-700/30 pb-5">
           <div>
-            <h1 className="text-3xl font-extrabold text-white flex items-center gap-3">
+            <h1 className="text-3xl font-extrabold text-slate-800 dark:text-white flex items-center gap-3">
               <i className="fas fa-sliders text-indigo-400"></i> Settings & Preferences
             </h1>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-slate-600 dark:text-gray-400 mt-1">
               Customize your creative workspace and AI assistant behavior.
             </p>
           </div>
@@ -108,7 +109,7 @@ const SettingComponent = () => {
           {/* AI Settings Card */}
           <div className={cardClass}>
             <div>
-              <h2 className="text-lg font-bold text-white mb-5 flex items-center gap-2 border-b border-slate-800 pb-3">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-5 flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
                 <i className="fas fa-brain text-purple-400"></i> AI Preferences
               </h2>
               <div className="space-y-5">
@@ -120,8 +121,8 @@ const SettingComponent = () => {
                       onClick={() => handleSelect("aiProvider", "gemini")}
                       className={`py-3 px-4 rounded-lg border text-sm font-semibold flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
                         preferences.aiProvider === "gemini"
-                          ? "bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/10"
-                          : "bg-slate-800/40 border-slate-700/50 text-gray-400 hover:bg-slate-800/80 hover:text-gray-200"
+                          ? "bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-600/20 dark:border-indigo-500 dark:text-indigo-300 shadow-md dark:shadow-indigo-500/10"
+                          : "bg-white border-slate-250 text-slate-500 hover:bg-slate-50 hover:text-slate-850 dark:bg-slate-800/40 dark:border-slate-700/50 dark:text-gray-400 dark:hover:bg-slate-800/80 dark:hover:text-gray-200"
                       }`}
                     >
                       <i className="fas fa-sparkles text-lg"></i>
@@ -132,8 +133,8 @@ const SettingComponent = () => {
                       onClick={() => handleSelect("aiProvider", "openai")}
                       className={`py-3 px-4 rounded-lg border text-sm font-semibold flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
                         preferences.aiProvider === "openai"
-                          ? "bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/10"
-                          : "bg-slate-800/40 border-slate-700/50 text-gray-400 hover:bg-slate-800/80 hover:text-gray-200"
+                          ? "bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-600/20 dark:border-indigo-500 dark:text-indigo-300 shadow-md dark:shadow-indigo-500/10"
+                          : "bg-white border-slate-250 text-slate-500 hover:bg-slate-50 hover:text-slate-850 dark:bg-slate-800/40 dark:border-slate-700/50 dark:text-gray-400 dark:hover:bg-slate-800/80 dark:hover:text-gray-200"
                       }`}
                     >
                       <i className="fas fa-bolt text-lg"></i>
@@ -150,7 +151,7 @@ const SettingComponent = () => {
                     className={selectClass}
                   >
                     {genres.map((g) => (
-                      <option key={g} value={g} className="bg-slate-900 text-gray-300">
+                      <option key={g} value={g} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-gray-300">
                         {g}
                       </option>
                     ))}
@@ -167,8 +168,8 @@ const SettingComponent = () => {
                         onClick={() => handleSelect("targetLength", length)}
                         className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all duration-200 ${
                           preferences.targetLength === length
-                            ? "bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/10"
-                            : "bg-slate-800/40 border-slate-700/50 text-gray-400 hover:bg-slate-800/80 hover:text-gray-200"
+                            ? "bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-600/20 dark:border-indigo-500 dark:text-indigo-300 shadow-md dark:shadow-indigo-500/10"
+                            : "bg-white border-slate-250 text-slate-500 hover:bg-slate-50 hover:text-slate-850 dark:bg-slate-800/40 dark:border-slate-700/50 dark:text-gray-400 dark:hover:bg-slate-800/80 dark:hover:text-gray-200"
                         }`}
                       >
                         {length}
@@ -183,20 +184,20 @@ const SettingComponent = () => {
           {/* Workspace & Notification Settings Card */}
           <div className={cardClass}>
             <div>
-              <h2 className="text-lg font-bold text-white mb-5 flex items-center gap-2 border-b border-slate-800 pb-3">
-                <i className="fas fa-sliders text-blue-400"></i> App & Notification Preferences
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-5 flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+                <i className="fas fa-sliders text-blue-450 text-indigo-550 dark:text-blue-400"></i> App & Notification Preferences
               </h2>
               <div className="space-y-6">
-                <div className="flex items-center justify-between bg-slate-800/30 p-4 rounded-lg border border-slate-700/10">
+                <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-slate-200 dark:bg-slate-800/30 dark:border-slate-700/10">
                   <div>
-                    <h4 className="font-semibold text-sm text-gray-200">Auto-Save Drafts</h4>
-                    <p className="text-xs text-gray-500 mt-0.5">Automatically save story progress in background</p>
+                    <h4 className="font-semibold text-sm text-slate-800 dark:text-gray-200">Auto-Save Drafts</h4>
+                    <p className="text-xs text-slate-500 mt-0.5">Automatically save story progress in background</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleToggle("autoSave")}
                     className={`w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none flex items-center p-0.5 relative ${
-                      preferences.autoSave ? "bg-indigo-500" : "bg-slate-700"
+                      preferences.autoSave ? "bg-indigo-500" : "bg-slate-300 dark:bg-slate-700"
                     }`}
                   >
                     <span
@@ -207,16 +208,16 @@ const SettingComponent = () => {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between bg-slate-800/30 p-4 rounded-lg border border-slate-700/10">
+                <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-slate-200 dark:bg-slate-800/30 dark:border-slate-700/10">
                   <div>
-                    <h4 className="font-semibold text-sm text-gray-200">Email Notifications</h4>
-                    <p className="text-xs text-gray-500 mt-0.5">Receive account activity and creative trend alerts</p>
+                    <h4 className="font-semibold text-sm text-slate-800 dark:text-gray-200">Email Notifications</h4>
+                    <p className="text-xs text-slate-500 mt-0.5">Receive account activity and creative trend alerts</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleToggle("emailNotifications")}
                     className={`w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none flex items-center p-0.5 relative ${
-                      preferences.emailNotifications ? "bg-indigo-500" : "bg-slate-700"
+                      preferences.emailNotifications ? "bg-indigo-500" : "bg-slate-300 dark:bg-slate-700"
                     }`}
                   >
                     <span

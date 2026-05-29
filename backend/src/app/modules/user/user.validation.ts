@@ -13,6 +13,9 @@ const register = z.object({
     email: z.string({ required_error: "Email is required" }),
     name: z.string({ required_error: "Name is required" }),
     password: passwordSchema,
+    verificationToken: z
+      .string({ required_error: "Verification token is required" })
+      .min(1, "Verification token is required"),
   }),
 });
 

@@ -14,4 +14,7 @@ const reportSchema = new Schema<IReport>(
   { timestamps: true }
 );
 
+// Prevent the same user from reporting the same content more than once
+reportSchema.index({ reportedBy: 1, targetId: 1, targetType: 1 }, { unique: true });
+
 export const Report = mongoose.model<IReport>("Report", reportSchema);

@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import { Secret } from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
@@ -11,6 +11,7 @@ import ApiError from "../../../errors/api_error";
 import { IUser } from "../user/user.interface";
 import { OTPModel } from "../verify_email/otp.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
+import { GamificationService } from "../gamification/gamification.service";
 
 const googleClient = new OAuth2Client(config.google_client_id);
 
@@ -41,6 +42,9 @@ const login = async (payload: AuthModel) => {
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
+
+  GamificationService.updateDailyStreak(String(_id)).catch(console.error);
+
   return {
     accessToken,
     refreshToken,
@@ -88,7 +92,8 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
     throw new ApiError(httpStatus.CONFLICT, "User already exists!");
   }
   
-  const result = await User.create(payload);
+  const { verificationToken: _, ...userPayload } = payload;
+  const result = await User.create(userPayload);
   
   // Clean up OTP record after successful registration
   await OTPModel.deleteOne({ email: userEmail });
@@ -190,6 +195,8 @@ const googleLogin = async (payload: { token: string }) => {
       config.jwt.refresh_secret as Secret,
       config.jwt.refresh_expires_in as string
     );
+
+    GamificationService.updateDailyStreak(String(_id)).catch(console.error);
 
     return {
       accessToken,

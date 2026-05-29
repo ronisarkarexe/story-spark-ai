@@ -7,15 +7,24 @@ import http from "http";
 import { Server } from "socket.io";
 import { JwtHalers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
-import { setNotificationSocket } from "./socket/notification.socket";
-import { setupCollabSocket } from "./socket/collab.socket";
 import logger from "./utils/logger.util";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
+if (config.disable_logs) {
+  const noop = () => undefined;
+  console.log = noop;
+  console.info = noop;
+  console.debug = noop;
+  console.warn = noop;
+  console.error = noop;
+}
+
 async function connectDB() {
   if (mongoose.connection.readyState === 1) return;
-  await mongoose.connect(config.database_url as string);
+  // config.database_url is guaranteed non-empty by config/index.ts — it throws at
+  // module load time if DATABASE_URL is missing, so no runtime guard is needed here.
+  await mongoose.connect(config.database_url);
 }
 
 async function main() {
@@ -30,6 +39,11 @@ async function main() {
         credentials: true,
       },
     });
+
+    const [{ setNotificationSocket }, { setupCollabSocket }] = await Promise.all([
+      import("./socket/notification.socket"),
+      import("./socket/collab.socket"),
+    ]);
 
     setNotificationSocket(io);
     setupCollabSocket(io);

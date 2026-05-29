@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IUser, UserModel } from "./user.interface";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import config from "../../../config";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
@@ -53,6 +53,28 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
     lastRequestDate: { type: Date, default: null },
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     isApplyForWriter: { type: Boolean, default: false },
+    gamification: {
+      xp: { type: Number, default: 0 },
+      level: { type: Number, default: 1 },
+      streak: { type: Number, default: 0 },
+      lastActiveDate: { type: Date, default: null },
+      badges: [{ type: String }],
+    },
+    readingPreferences: {
+      favoriteGenres: [
+        {
+          name: { type: String },
+          count: { type: Number, default: 0 },
+        },
+      ],
+      favoriteEmotions: [
+        {
+          name: { type: String },
+          count: { type: Number, default: 0 },
+        },
+      ],
+    },
+    readingHistory: [{ type: Schema.Types.ObjectId, ref: "Post" }],
   },
   {
     timestamps: true,

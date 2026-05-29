@@ -20,7 +20,7 @@ router.post(
 );
 
 // Get comments by postId
-router.get("/get-comments/postId=:postId", CommentController.getCommentsByPostId);
+router.get("/get-comments/:postId", CommentController.getCommentsByPostId);
 
 // Toggle like on a comment
 router.patch(

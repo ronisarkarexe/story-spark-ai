@@ -3,6 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, CartesianGrid,
 } from "recharts";
+import { Link } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_BASE_URL || "http://localhost:5000/api/v1";
 
@@ -80,13 +81,24 @@ export default function AnalyticsDashboard() {
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-            📊 Story Analytics
-          </h1>
-          <p className="text-white/40 mt-2">Your personal writing insights and patterns</p>
-        </div>
+        {/* Header */}
+<div className="flex items-center justify-between mb-10">
+  <div>
+    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+      📊 Story Analytics
+    </h1>
+    <p className="text-white/40 mt-2">
+      Your personal writing insights and patterns
+    </p>
+  </div>
 
+  <Link
+   to="/"
+    className="px-4 py-2 rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/30 transition"
+  >
+    ← Back to Home
+  </Link>
+</div>
         {/* Overview Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
           {[

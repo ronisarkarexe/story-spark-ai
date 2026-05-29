@@ -14,8 +14,13 @@ Place at: story-spark-ai/ml/app.py
 """
 
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "ml"))
+from pathlib import Path
+
+APP_DIR = Path(__file__).resolve().parent
+ML_DIR = APP_DIR / "ml"
+SAVED_DIR = ML_DIR / "saved"
+
+sys.path.insert(0, str(ML_DIR))
 from ml.score_api import score_bp
 import json
 import random
@@ -120,17 +125,22 @@ st.markdown("""
 @st.cache_resource(show_spinner="Loading model…")
 def load_artifacts():
     """Returns (model, scaler, threshold) or raises if train.py hasn't been run."""
-    import os, joblib
+    import joblib
     from tensorflow.keras.models import load_model as keras_load
 
-    missing = [p for p in ("ml/saved/model.keras", "ml/saved/scaler.pkl", "ml/saved/threshold.json")
-               if not os.path.exists(p)]
+    artifact_paths = {
+        "model": SAVED_DIR / "model.keras",
+        "scaler": SAVED_DIR / "scaler.pkl",
+        "threshold": SAVED_DIR / "threshold.json",
+    }
+    missing = [str(path) for path in artifact_paths.values() if not path.exists()]
     if missing:
         raise FileNotFoundError(missing)
 
-    model     = keras_load("ml/saved/model.keras")
-    scaler    = joblib.load("ml/saved/scaler.pkl")
-    threshold = json.load(open("ml/saved/threshold.json"))["threshold"]
+    model     = keras_load(artifact_paths["model"])
+    scaler    = joblib.load(artifact_paths["scaler"])
+    with artifact_paths["threshold"].open() as fh:
+        threshold = json.load(fh)["threshold"]
     return model, scaler, threshold
 
 

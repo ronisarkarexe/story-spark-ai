@@ -18,6 +18,17 @@ type AuthUserInfo = {
   iat: number;
 };
 
+const buildUserInfo = (decodedData: AuthUserInfo): AuthUserInfo => ({
+  email: decodedData.email || "",
+  userId: decodedData.userId || "",
+  name: decodedData.name || "",
+  postsCount: decodedData.postsCount || 0,
+  role: decodedData.role || "guest",
+  subscriptionType: decodedData.subscriptionType || "free",
+  exp: decodedData.exp || 0,
+  iat: decodedData.iat || 0,
+});
+
 const getValidDecodedToken = () => {
   const authToken = getFromLocalStorage(AUTH_KEY);
 
@@ -31,17 +42,7 @@ const getValidDecodedToken = () => {
       removeFromLocalStorage(AUTH_KEY);
       return null;
     }
-      const userInfo = {
-        email: decodedData.email || "",
-        userId: decodedData.userId || "",
-        name: decodedData.name || "",
-        postsCount: decodedData.postsCount || 0,
-        role: decodedData.role || "guest",
-        subscriptionType: decodedData.subscriptionType || "free",
-        exp: decodedData.exp || 0,
-        iat: decodedData.iat || 0,
-      };
-      return userInfo;
+      return buildUserInfo(decodedData);
     } catch (error) {
       console.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);
@@ -56,22 +57,7 @@ export const storeUserInfo = ({ accessToken }: AccessToken) => {
 };
 
 export const getUserInfo = (): AuthUserInfo | null => {
-  const decodedData = getValidDecodedToken();
-
-  if (!decodedData) {
-    return null;
-  }
-
-  return {
-    email: decodedData.email || "",
-    userId: decodedData.userId || "",
-    name: decodedData.name || "",
-    postsCount: decodedData.postsCount || 0,
-    role: decodedData.role || "guest",
-    subscriptionType: decodedData.subscriptionType || "free",
-    exp: decodedData.exp || 0,
-    iat: decodedData.iat || 0,
-  };
+  return getValidDecodedToken();
 };
 export const isLoggedIn = () => {
   return !!getValidDecodedToken();

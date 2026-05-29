@@ -4,19 +4,15 @@
   "version": "1.0.0",
   "description": "Story Spark AI",
   "license": "MIT",
+  "contributors": [
+    {
+      "name": "Charan Balaji",
+      "email": "neelamapallicharanbalaji14@gmail.com",
+      "url": "https://github.com/charanbalaji2005"
+    }
+  ],
   "engines": {
     "node": "20.x"
-  },
-  "overrides": {
-    "vite": {
-      "rollup": "npm:@rollup/wasm-node"
-    }
-  },
-  "optionalDependencies": {
-    "@esbuild/win32-x64": "0.25.12",
-    "@rollup/rollup-win32-x64-msvc": "4.60.4",
-    "@tailwindcss/oxide-win32-x64-msvc": "4.3.0",
-    "lightningcss-win32-x64-msvc": "1.32.0"
   },
   "workspaces": [
     "frontend",
@@ -33,10 +29,13 @@
     "start:frontend": "npm run start -w story-spark-ai-frontend",
     "lint": "npm run lint -w story-spark-ai-frontend"
   },
+  "packageManager": "pnpm@9.15.9",
   "devDependencies": {
     "concurrently": "^9.1.2"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
     "socket.io": "^4.8.3"
   }
