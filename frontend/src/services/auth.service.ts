@@ -36,7 +36,7 @@ const getValidDecodedToken = () => {
 
   if (authToken) {
     try {
-      const decodedData = decodedToken(authToken);
+      const decodedData = decodedToken(authToken) as AuthUserInfo;
           if (
       typeof decodedData.exp === "number" &&
       decodedData.exp <= Math.floor(Date.now() / 1000)

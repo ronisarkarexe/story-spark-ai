@@ -51,7 +51,7 @@ export default function CollabRoom() {
       }
 
       // Connect to collab namespace
-      const collabSocket = socket.io.of("/collab");
+      const collabSocket = socket.of("/collab");
 
       // Request room info
       collabSocket.emit("collab:get_room", { roomId }, (response: { room?: Room }) => {
@@ -72,8 +72,8 @@ export default function CollabRoom() {
       };
 
       const handleStoryUpdated = (data: { story?: StoryChunk[] }) => {
-        if (data && data.story) {
-          setRoom((prev) => (prev ? { ...prev, story: data.story } : null));
+        if (data) {
+          setRoom((prev) => (prev ? { ...prev, story: data.story || [] } : null));
         }
       };
 
