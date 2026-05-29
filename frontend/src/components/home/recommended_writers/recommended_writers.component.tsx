@@ -22,7 +22,7 @@ const RecommendedWritersComponent = () => {
 
   return (
     <>
-      <section className="story-panel rounded-lg p-5 sm:p-6">
+      <section className="story-panel rounded-lg p-5 sm:p-6 ml-12">
         <h3 className="mb-5 text-lg font-bold tracking-tight text-slate-100">Recommended Writers</h3>
         <div className="space-y-3">
           {writers.map((writer, index) => (
