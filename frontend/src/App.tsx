@@ -1,20 +1,18 @@
 import React from "react";
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
-import StoriesComponent from "./components/stories/stories.component";
-
 import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
   Outlet,
 } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
+import { Toaster } from "react-hot-toast";
 
+import ScrollToTop from "./components/ScrollToTop";
+import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
+import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import CollabHome from "./components/collab/CollabHome";
+import CollabRoom from "./components/collab/CollabRoom";
+import StoriesComponent from "./components/stories/stories.component";
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import LoginComponent from "./components/login/login.component";
@@ -53,7 +51,7 @@ import ContributorsComponent from "./components/footer/contributors";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import StoryWorkspace from "./components/story/StoryWorkspace";
-import StoriesComponent from "./components/stories/stories.component";
+import { OfflineBanner } from "./components/OfflineBanner";
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
@@ -62,12 +60,23 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
   const user = getUserInfo();
-  if (!user) return <Navigate to="/login" replace />;
-  if (!allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
   return element ?? <Outlet />;
 };
 
-const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
+const ALL_ROLES = [
+  USER_ROLE.ADMIN,
+  USER_ROLE.SUPER_ADMIN,
+  USER_ROLE.WRITER,
+  USER_ROLE.USER,
+];
 
 const router = createBrowserRouter([
   {
@@ -81,7 +90,15 @@ const router = createBrowserRouter([
       </>
     ),
     children: [
-      { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
+      {
+        index: true,
+        element: (
+          <>
+            <HeroSectionComponent />
+            <HomeComponent />
+          </>
+        ),
+      },
       { path: "templates", element: <TemplatesComponent /> },
       { path: "writing-assistant", element: <WritingAssistantComponent /> },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
@@ -110,7 +127,10 @@ const router = createBrowserRouter([
           { path: "bookmarks", element: <BookmarksComponent /> },
           { path: "community", element: <CommunityComponent /> },
           { path: "resources", element: <ResourcesListComponent /> },
-          { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
+          {
+            path: "resources/:resourceName",
+            element: <ResourceDetailComponent />,
+          },
         ],
       },
       { path: "*", element: <NotFoundComponent /> },
@@ -150,7 +170,13 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <OfflineBanner />
+      <Toaster position="top-center" reverseOrder={false} />
+      <RouterProvider router={router} />
+    </>
+  );
 }
 
 export default App;

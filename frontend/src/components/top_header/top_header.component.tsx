@@ -1,8 +1,11 @@
 import { useState } from "react";
 import logo from "../../assets/logo.png";
+// IMPORTANT: Make sure this path is correct based on where you saved InstallPwaButton.tsx!
+import InstallPwaButton from "../InstallPwaButton";
 
 const TopHeaderComponent = () => {
   const [, setShowNotification] = useState<boolean>(false);
+
   return (
     <div className="sticky top-0 z-50">
       <div className="relative z-10 mx-auto max-w-8xl px-6 py-4 gradient-bg">
@@ -29,7 +32,12 @@ const TopHeaderComponent = () => {
               </a>
             </div>
           </div>
+
           <div className="flex items-center space-x-4">
+            {/* === ADDED INSTALL BUTTON HERE === */}
+            <InstallPwaButton />
+            {/* ================================= */}
+
             <button className="!rounded-button bg-blue hover:bg-blue text-white px-6 py-2 font-medium transition-all">
               JOIN
             </button>

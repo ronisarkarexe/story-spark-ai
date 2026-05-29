@@ -7,8 +7,14 @@ import { store } from "./redux/store.ts";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ThemeProvider } from "./components/theme/theme.context";
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+// --- PWA Service Worker Registration ---
+import { registerSW } from "virtual:pwa-register";
 
+// This automatically registers the service worker and updates it when needed
+// allowing your app to cache data and work offline.
+registerSW({ immediate: true });
+
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -19,5 +25,5 @@ createRoot(document.getElementById("root")!).render(
         </ThemeProvider>
       </Provider>
     </GoogleOAuthProvider>
-  </StrictMode>
+  </StrictMode>,
 );
