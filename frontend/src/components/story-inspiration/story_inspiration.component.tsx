@@ -164,9 +164,9 @@ const StoryInspirationComponent: React.FC = () => {
             <span className="
               block text-transparent bg-clip-text
               bg-gradient-to-r
-              from-indigo-600
-              via-blue-600
-              to-purple-600
+              from-indigo-700
+              via-violet-700
+              to-blue-700
               dark:from-indigo-300
               dark:via-blue-300
               dark:to-purple-300

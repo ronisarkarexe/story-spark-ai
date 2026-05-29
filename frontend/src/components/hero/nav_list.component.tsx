@@ -1,4 +1,61 @@
-return (
+import React, { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
+import { USER_ROLE } from "../../constants/role";
+import logo from "../../assets/logoNew.png";
+import NotificationComponent from "../notification/notification.component";
+import { useNotifications } from "../../hooks/useNotifications";
+
+const getLinkClass = (isActive: boolean) =>
+  `relative flex items-center gap-1.5 rounded-md px-3 py-2 text-[11px] font-bold tracking-widest transition-all duration-200 ${
+    isActive
+      ? "text-custom bg-custom/10"
+      : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+  }`;
+
+const getMobileLinkClass = (isActive: boolean) =>
+  `flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold tracking-wide transition-all duration-200 ${
+    isActive
+      ? "text-custom bg-custom/10"
+      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+  }`;
+
+const renderMobileNavContent = (label: string, isActive: boolean) => (
+  <>
+    {isActive && (
+      <span className="w-1.5 h-1.5 bg-custom rounded-full animate-pulse shadow-[0_0_8px_#3b82f6]" />
+    )}
+    {label}
+  </>
+);
+
+const NavListComponent: React.FC = () => {
+  const [isLogin, setIsLogin] = useState<boolean>(isLoggedIn());
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const notificationMenuRef = useRef<HTMLDivElement>(null);
+  const { notifications, unreadCount, markAsRead, isOpen, toggle, close } =
+    useNotifications();
+
+  const handelLogout = () => {
+    removeUserInfo();
+    setIsLogin(false);
+    setIsAdmin(false);
+  };
+
+  useEffect(() => {
+    const loggedIn = isLoggedIn();
+    setIsLogin(loggedIn);
+    if (loggedIn) {
+      const user = getUserInfo();
+      setIsAdmin(
+        user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN
+      );
+    }
+  }, []);
+
+  return (
   <header className="sticky top-0 z-50 w-full bg-white/90 supports-[backdrop-filter]:bg-white/75 dark:bg-[#0B1120]/80 dark:supports-[backdrop-filter]:bg-[#0B1120]/70 backdrop-blur-md border-b border-slate-200/70 dark:border-white/10 transition-colors duration-300 transform-gpu">
     <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
       <div className="flex items-center justify-between w-full gap-2">
@@ -165,7 +222,7 @@ return (
               </>
             )}
 
-            <ThemeToggle />
+
 
             <div className="relative inline-flex" ref={notificationMenuRef}>
               <button
@@ -188,7 +245,7 @@ return (
 
           {/* Mobile Actions */}
           <div className="flex xl:hidden items-center gap-1.5">
-            <ThemeToggle />
+
 
             <button
               type="button"
@@ -236,4 +293,7 @@ return (
       )}
     </div>
   </header>
-);
+  );
+};
+
+export default NavListComponent;
