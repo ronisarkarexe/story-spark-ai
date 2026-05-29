@@ -74,10 +74,7 @@ const ProtectedRoute = ({
   allowedRoles,
 }: {
   allowedRoles: string[];
-  element?: React.ReactElement;
-};
-
-const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
+}) => {
   const user = getUserInfo();
   const token = getToken();
   
