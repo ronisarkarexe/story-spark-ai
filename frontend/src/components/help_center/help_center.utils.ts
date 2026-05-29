@@ -139,7 +139,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     id: "notifications-work",
     question: "How do notifications work?",
     answer:
-      "StorySparkAI uses Socket.IO for real-time push notifications. When events occur (e.g., new activity), the server emits pushNotification events to connected clients. Set VITE_SOCKET_URL in frontend/.env to match your Socket.IO server. Notifications appear in the bell icon on the home page when logged in.",
+      "StorySparkAI uses Socket.IO for real-time push notifications. The backend emits pushNotification and notification:new events to connected clients. Set VITE_SOCKET_URL in frontend/.env to your backend URL (e.g., http://localhost:5000 for local dev). Notifications appear in the bell icon on the home page when logged in. The system falls back to REST polling if Socket.IO is unavailable.",
     keywords: ["notification", "socket", "realtime", "bell", "push"],
   },
   {
@@ -181,10 +181,10 @@ export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
     id: "socketio",
     icon: "fas fa-plug",
     title: "Socket.IO Connection Failures",
-    symptoms: "Real-time notifications do not appear; console shows WebSocket errors.",
+    symptoms: "Real-time notifications do not appear; console shows WebSocket errors or connection timeouts.",
     solution:
-      "Set VITE_SOCKET_URL in frontend/.env to your backend URL (e.g. http://localhost:5000). Ensure CORS_ORIGINS in backend/.env includes your frontend origin. Check that the backend Socket.IO server is running on the same port.",
-    keywords: ["socket", "websocket", "notification", "cors"],
+      "Ensure VITE_SOCKET_URL in frontend/.env is set to your backend URL (e.g. http://localhost:5000 for local dev). Verify the backend Socket.IO server is running on the same port and that CORS_ORIGINS in backend/.env includes your frontend origin. Check browser console for specific errors and ensure both backend and frontend are running.",
+    keywords: ["socket", "websocket", "notification", "cors", "realtime"],
   },
   {
     id: "jwt",

@@ -2,16 +2,16 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
     <title>Create Account | Story Spark AI</title>
     <meta name="description" content="Sign in or create an account for Story Spark AI — turn your imagination into fully illustrated multi-variation AI stories."/>
 
     <!-- Tailwind CSS (w/ Form & Container plugins) -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
-    <!-- Google Fonts & Material Symbols Icons -->
+    <!-- Google Fonts & Flaticon Uicons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css" rel="stylesheet"/>
 
     <!-- Google Identity Services (GIS) library for Google Auth -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -158,7 +158,7 @@
                     <div class="text-sm font-semibold text-on-surface truncate" id="google-user-name"></div>
                     <div class="text-xs text-on-surface-variant truncate" id="google-user-email"></div>
                 </div>
-                <span class="material-symbols-outlined text-green-400 text-lg">check_circle</span>
+                <i class="fi fi-rr-check-circle text-green-400 text-lg"></i>
             </div>
 
             <div class="flex items-center gap-3 mb-4">
@@ -174,8 +174,8 @@
                 <div class="animate-in fade-in duration-500 ds-field" id="signup-fields">
                     <label class="block text-label-caps text-on-surface-variant mb-2" for="name-field">FULL NAME</label>
                     <div class="ds-input-group">
-                        <span class="material-symbols-outlined ds-input-icon" aria-hidden="true">person</span>
-                        <input class="w-full ds-input with-icon" placeholder="Alex Spark" type="text" id="name-field" name="name" autocomplete="name" required aria-describedby="name-help name-error" aria-invalid="false"/>
+                        <i class="fi fi-rr-user ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
+                        <input class="w-full ds-input with-icon pl-11" placeholder="Alex Spark" type="text" id="name-field" name="name" autocomplete="name" required aria-describedby="name-help name-error" aria-invalid="false"/>
                     </div>
                     <p class="ds-help" id="name-help">This will be shown on your profile.</p>
                     <p class="ds-error" id="name-error" role="alert" aria-live="polite"></p>
@@ -183,8 +183,8 @@
                 <div class="ds-field">
                     <label class="block text-label-caps text-on-surface-variant mb-2" for="email-field">EMAIL ADDRESS</label>
                     <div class="ds-input-group">
-                        <span class="material-symbols-outlined ds-input-icon" aria-hidden="true">mail</span>
-                        <input class="w-full ds-input with-icon" placeholder="name@storyspark.ai" type="email" id="email-field" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required aria-describedby="email-help email-error" aria-invalid="false"/>
+                        <i class="fi fi-rr-envelope ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
+                        <input class="w-full ds-input with-icon pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required aria-describedby="email-help email-error" aria-invalid="false"/>
                     </div>
                     <p class="ds-help" id="email-help">We’ll send account updates to this address.</p>
                     <p class="ds-error" id="email-error" role="alert" aria-live="polite"></p>
@@ -195,10 +195,10 @@
                         <a class="text-[13px] text-primary hover:text-secondary transition-colors font-semibold invisible" href="#" id="forgot-password-link">Forgot Password?</a>
                     </div>
                     <div class="ds-input-group has-action">
-                        <span class="material-symbols-outlined ds-input-icon" aria-hidden="true">lock</span>
-                        <input class="w-full ds-input with-icon" id="password-field" name="password" autocomplete="new-password" placeholder="At least 8 characters" type="password" required aria-describedby="password-help password-error password-strength" aria-invalid="false"/>
-                        <button class="ds-input-action" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
-                            <span class="material-symbols-outlined" id="eye-icon">visibility</span>
+                        <i class="fi fi-rr-lock ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
+                        <input class="w-full ds-input with-icon pl-11 pr-11" id="password-field" name="password" autocomplete="new-password" placeholder="At least 8 characters" type="password" required aria-describedby="password-help password-error password-strength" aria-invalid="false"/>
+                        <button class="ds-input-action flex items-center justify-center" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
+                            <i class="fi fi-rr-eye-crossed text-[16px]" id="eye-icon"></i>
                         </button>
                     </div>
                     <div class="ds-meter" aria-hidden="true"><div class="ds-meter-bar" id="password-meter-bar"></div></div>
@@ -217,7 +217,7 @@
             </form>
 
             <p class="text-center mt-4 text-[13px] text-on-surface-variant">
-                By continuing, you agree to our
+                By continuing, you agreeeee to our
                 <a class="underline hover:text-primary transition-colors cursor-pointer" onclick="openLegalModal('terms')">Terms of Service</a> and
                 <a class="underline hover:text-primary transition-colors cursor-pointer" onclick="openLegalModal('privacy')">Privacy Policy</a>.
             </p>
@@ -233,8 +233,8 @@
 <!-- Legal Content Modal -->
 <div id="legal-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
     <div class="glass-panel w-full max-w-lg p-6 md:p-8 rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(208,188,255,0.15)] relative scale-95 transition-all duration-300" id="legal-modal-content">
-        <button onclick="closeLegalModal()" class="absolute right-6 top-6 text-on-surface-variant hover:text-primary transition-colors">
-            <span class="material-symbols-outlined">close</span>
+        <button onclick="closeLegalModal()" class="absolute right-6 top-6 text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-8 h-8">
+            <i class="fi fi-rr-cross-small text-[18px]"></i>
         </button>
         <h3 class="text-xl font-semibold text-primary mb-4" id="legal-modal-title">Terms of Service</h3>
         <div class="text-[14px] text-on-surface-variant space-y-4 max-h-[300px] overflow-y-auto pr-2" id="legal-modal-text"></div>

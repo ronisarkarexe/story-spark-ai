@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useDeletePostMutation,
@@ -165,37 +165,102 @@ const PostDetailsComponent = () => {
     return email === currentUser?.email;
   });
 
-  const shareUrl = window.location.href;
-
-  const shareTitle = post?.title || "Check out this story!";
-
   const handleTwitterShare = () => {
+    const currentUrl = window.location.href;
+    const currentTitle = post?.title || "Check out this story!";
     const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-      shareUrl
-    )}&text=${encodeURIComponent(shareTitle)}`;
-
+      currentUrl
+    )}&text=${encodeURIComponent(currentTitle)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleLinkedInShare = () => {
+    const currentUrl = window.location.href;
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-      shareUrl
+      currentUrl
     )}`;
-
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleEmailShare = () => {
-    const subject = `Story Spark AI - ${shareTitle}`;
-
-    const body = `Check out this interesting story on Story Spark AI: "${shareTitle}"\n\nRead it here: ${shareUrl}`;
-
+    const currentUrl = window.location.href;
+    const currentTitle = post?.title || "Check out this story!";
+    const subject = `Story Spark AI - ${currentTitle}`;
+    const body = `Check out this interesting story on Story Spark AI: "${currentTitle}"\n\nRead it here: ${currentUrl}`;
     const url = `mailto:?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
-
     window.location.href = url;
   };
+
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [isPausedAudio, setIsPausedAudio] = useState(false);
+
+  const handleTextToSpeech = () => {
+    if (!post?.content) return;
+
+    if (!("speechSynthesis" in window)) {
+      toast.error("Text-to-speech is not supported in this browser.");
+      return;
+    }
+
+    if (isPlayingAudio) {
+      if (isPausedAudio) {
+        window.speechSynthesis.resume();
+        setIsPausedAudio(false);
+        toast.success("Resumed reading story");
+      } else {
+        window.speechSynthesis.pause();
+        setIsPausedAudio(true);
+        toast.success("Paused reading story");
+      }
+    } else {
+      window.speechSynthesis.cancel();
+      const cleanContent = post.content.replace(/<[^>]*>/g, "");
+      const utterance = new SpeechSynthesisUtterance(cleanContent);
+      
+      utterance.onend = () => {
+        setIsPlayingAudio(false);
+        setIsPausedAudio(false);
+      };
+
+      utterance.onerror = (e) => {
+        console.error("SpeechSynthesis error:", e);
+        setIsPlayingAudio(false);
+        setIsPausedAudio(false);
+      };
+
+      const voices = window.speechSynthesis.getVoices();
+      const englishVoice = voices.find(
+        (v) => v.lang.startsWith("en-") && v.name.includes("Google")
+      ) || voices.find((v) => v.lang.startsWith("en-"));
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+      }
+
+      window.speechSynthesis.speak(utterance);
+      setIsPlayingAudio(true);
+      setIsPausedAudio(false);
+      toast.success("Playing story audio");
+    }
+  };
+
+  const handleStopAudio = () => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsPlayingAudio(false);
+    setIsPausedAudio(false);
+    toast.success("Stopped audio playback");
+  };
+
+  useEffect(() => {
+    return () => {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   const handleDelete = async () => {
     if (
@@ -215,7 +280,6 @@ const PostDetailsComponent = () => {
       toast.error("Unable to remove this story. Please try again.");
     }
   };
-
   if (isLoading) {
     return <LoadingAnimation />;
   }
@@ -389,6 +453,34 @@ const PostDetailsComponent = () => {
                     bookmarks={post.bookmarks}
                     className="!border-none !px-0 bg-transparent hover:bg-transparent"
                   />
+                )}
+                <button
+                  onClick={handleTextToSpeech}
+                  className={`flex items-center space-x-2 transition-colors cursor-pointer ${
+                    isPlayingAudio
+                      ? isPausedAudio
+                        ? "text-amber-500 hover:text-amber-400"
+                        : "text-green-500 hover:text-green-400"
+                      : "text-gray-600 hover:text-gray-400"
+                  }`}
+                  title={isPlayingAudio ? (isPausedAudio ? "Resume Story" : "Pause Story") : "Listen to Story"}
+                >
+                  <i
+                    className={`fas ${
+                      isPlayingAudio ? (isPausedAudio ? "fa-circle-play" : "fa-circle-pause") : "fa-volume-high"
+                    }`}
+                  ></i>
+                  <span>{isPlayingAudio ? (isPausedAudio ? "Resume" : "Pause") : "Listen"}</span>
+                </button>
+                {isPlayingAudio && (
+                  <button
+                    onClick={handleStopAudio}
+                    className="flex items-center space-x-2 text-red-500 hover:text-red-400 transition-colors cursor-pointer"
+                    title="Stop Audio"
+                  >
+                    <i className="fas fa-circle-stop"></i>
+                    <span>Stop</span>
+                  </button>
                 )}
               </div>
 

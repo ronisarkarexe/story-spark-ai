@@ -32,6 +32,13 @@ const VerifyEmail = async (payload: IEmailBody) => {
       failedAttempts: 0,
       isVerified: false,
     });
+
+    if (!config.verify_email || !config.verify_password) {
+      console.log(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
+      return {
+        expiresAt,
+      };
+    }
     
     const mailOptions = {
       from: config.verify_email,

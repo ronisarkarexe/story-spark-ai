@@ -21,6 +21,12 @@ export interface IAlternateEnding {
 
 export type RemixType = "setting" | "perspective" | "time_period" | "tone" | "gender_swap";
 
+export interface ITranslatePayload {
+  title: string;
+  content: string;
+  targetLanguage: string;
+}
+
 export interface IRemixPayload {
   title: string;
   content: string;

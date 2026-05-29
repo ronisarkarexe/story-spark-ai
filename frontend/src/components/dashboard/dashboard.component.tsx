@@ -6,6 +6,7 @@ import UsersPieChart from "../chart/dashboard/pai_chart";
 import LoadingAnimation from "../loading/loading.component";
 import { getUserInfo } from "../../services/auth.service";
 import { USER_ROLE } from "../../constants/role";
+import GamificationCard from "./gamification_card.component";
 
 const DashboardComponent = () => {
   const { data, isLoading } = useGetDashboardAnalysisQuery(undefined);
@@ -250,22 +251,22 @@ const DashboardComponent = () => {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               <div className="rounded-2xl border border-blue-100 bg-slate-50/50 p-6 dark:border-blue-500/15 dark:bg-white/[0.02]">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Users Distribution</h2>
-                <UsersPieChart data={data.users} />
+                <UsersPieChart data={data.users!} />
               </div>
 
               <div className="rounded-2xl border border-emerald-100 bg-slate-50/50 p-6 dark:border-emerald-500/15 dark:bg-white/[0.02]">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Subscription Overview</h2>
-                <SubscriptionChart data={data.subscriptionTypes} />
+                <SubscriptionChart data={data.subscriptionTypes!} />
               </div>
 
               <div className="rounded-2xl border border-violet-100 bg-slate-50/50 p-6 dark:border-violet-500/15 dark:bg-white/[0.02]">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Monthly Posts</h2>
-                <PostsPerMonthChart perMonth={data.posts?.perMonth} />
+                <PostsPerMonthChart perMonth={data.posts!.perMonth} />
               </div>
 
               <div className="rounded-2xl border border-amber-100 bg-slate-50/50 p-6 dark:border-amber-500/15 dark:bg-white/[0.02]">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Topics Analytics</h2>
-                <TopicsChart topics={data.posts?.topics} />
+                <TopicsChart topics={data.posts!.topics} />
               </div>
             </div>
           )}
@@ -273,6 +274,11 @@ const DashboardComponent = () => {
           {/* Writer Layout */}
           {role === USER_ROLE.WRITER && (
             <div className="space-y-6">
+              {/* Gamification Banner */}
+              <div className="mb-6">
+                <GamificationCard data={data.writerStats?.gamification} />
+              </div>
+              
               {/* Writer Charts */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <div className="rounded-2xl border border-violet-100 bg-slate-50/50 p-6 dark:border-violet-500/15 dark:bg-white/[0.02]">
@@ -323,7 +329,13 @@ const DashboardComponent = () => {
 
           {/* Normal User Layout */}
           {role === USER_ROLE.USER && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              {/* Gamification Banner */}
+              <div className="mb-6">
+                <GamificationCard data={data.userStats?.gamification} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Creator Card */}
               <div className="rounded-2xl border border-amber-100 bg-slate-50/50 p-8 dark:border-amber-500/10 dark:bg-white/[0.02] flex flex-col justify-between">
                 <div>
@@ -361,6 +373,7 @@ const DashboardComponent = () => {
                   <i className="fas fa-shopping-cart"></i> View Premium Plans
                 </a>
               </div>
+            </div>
             </div>
           )}
         </div>

@@ -71,6 +71,28 @@ const aiModelApi = baseApi.injectEndpoints({
       },
       invalidatesTags: [tagTypes.model],
     }),
+    translateStory: build.mutation({
+      query: (data) => ({
+        url: `/${AI_MODEL_URL}/translate`,
+        method: "POST",
+        data: data,
+      }),
+      transformResponse: (response: { data: { title: string; content: string }; message: string }) => {
+        return { data: response.data, message: response.message };
+      },
+      invalidatesTags: [tagTypes.model],
+    }),
+    translateFreeStory: build.mutation({
+      query: (data) => ({
+        url: `/${AI_MODEL_URL}/translate-free`,
+        method: "POST",
+        data: data,
+      }),
+      transformResponse: (response: { data: { title: string; content: string }; message: string }) => {
+        return { data: response.data, message: response.message };
+      },
+      invalidatesTags: [tagTypes.model],
+    }),
   }),
 });
 
@@ -81,5 +103,7 @@ export const {
   useGenerateFreeAlternateEndingsMutation,
   useRemixStoryMutation,
   useRemixFreeStoryMutation,
+  useTranslateStoryMutation,
+  useTranslateFreeStoryMutation,
 } = aiModelApi;
 
