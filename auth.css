@@ -18,6 +18,64 @@
     --ds-card-max-width: 420px;
 }
 
+/* ── Auth Form Card & Field Utilities ── */
+.auth-form-card {
+    width: 100%;
+    max-width: var(--ds-card-max-width);
+}
+
+.input-icon-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input-icon-wrapper input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(225, 226, 234, 0.85);
+    margin-bottom: 6px;
+}
+
+.field-error-msg {
+    display: none;
+    margin-top: 6px;
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: #ffb4ab;
+}
+
+.field-error-msg.is-visible {
+    display: block;
+}
+
+/* ── Auth Divider ("or use email") ── */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.auth-divider-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-divider-text {
+    font-size: 12px;
+    color: rgba(203, 195, 215, 0.7);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
 html, body {
     touch-action: pan-x pan-y;
 }
@@ -187,14 +245,12 @@ input:focus {
 /* ── Design System: Submit Buttons ── */
 .ds-btn-submit {
     height: var(--ds-btn-height);
-    max-width: var(--ds-btn-max-width);
+    width: 100%;
     font-size: 15px;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: auto;
-    margin-right: auto;
     background: linear-gradient(135deg, #7c3aed 0%, #f97316 100%);
     color: #ffffff;
     box-shadow: 0 0 32px rgba(0, 97, 182, 0.32), 0 8px 22px rgba(0, 0, 0, 0.24);
@@ -216,10 +272,8 @@ input:focus {
 /* ── Design System: Google Buttons ── */
 .ds-btn-google {
     height: 44px;
-    max-width: var(--ds-btn-max-width);
+    width: 100%;
     border-radius: 14px;
-    margin-left: auto;
-    margin-right: auto;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: #f8fafc;
