@@ -581,10 +581,18 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       </div>
     );
   }
+
+  if (!stories || !stories.length) {
+    return (
+      <div className="text-center text-gray-400 py-10">
+        No stories generated yet. Start by entering a prompt ✨
+      </div>
+    );
+  }
+
   if (!selectedStory) {
     return null;
   }
-  if (!selectedStory) return null;
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
