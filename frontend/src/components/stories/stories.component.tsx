@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import RecentPromptsPanel from "./RecentPromptsPanel";
+import DraftRestoredBanner from "./DraftRestoredBanner";
+import AutoSaveIndicator from "./AutoSaveIndicator";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 import { getRequestLimit, getWordCount, prompts } from "./stories.utils";
@@ -14,6 +16,7 @@ import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import { getErrorMessage } from "../../error/error.message";
 import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import { useRecentPrompts } from "../../hooks/useRecentPrompts";
+import { useAutoSaveDraft } from "../../hooks/useAutoSaveDraft";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 const soundtrackMap: Record<string, string> = {
   "🧙 Fantasy": "/audio/fantasy.mp3",
@@ -313,14 +316,14 @@ const StoriesComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
-  const draft = useMemo(() => {
+  const draft = (() => {
     try {
       const saved = localStorage.getItem("story_spark_draft");
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
-  }, []);
+  })();
 
   const [stories, setStories] = useState<IStories[]>(
     draft?.stories?.length ? draft.stories : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
@@ -374,24 +377,43 @@ const StoriesComponent = () => {
   const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
   const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
 
+  // ── Auto-save draft hook ────────────────────────────────────────────
+  const {
+    saveStatus,
+    restoredDraft,
+    showRestoredBanner,
+    clearDraft,
+    dismissRestoredBanner,
+  } = useAutoSaveDraft({
+    prompt: textareaValue,
+    genre: selectedGenre,
+    length: selectedLength,
+    language: selectedLanguage,
+    stories,
+  });
+
+  // ── Restore draft values into form fields ───────────────────────────
+  const handleRestoreDraft = useCallback(() => {
+    if (restoredDraft) {
+      setTextareaValue(restoredDraft.prompt);
+      setValue("prompt", restoredDraft.prompt);
+      if (restoredDraft.genre) setSelectedGenre(restoredDraft.genre);
+      if (restoredDraft.length) setSelectedLength(restoredDraft.length);
+      if (restoredDraft.language) setSelectedLanguage(restoredDraft.language);
+      if (restoredDraft.stories?.length) setStories(restoredDraft.stories as IStories[]);
+      dismissRestoredBanner();
+    }
+  }, [restoredDraft, setValue, dismissRestoredBanner]);
+
+  const handleDiscardDraft = useCallback(() => {
+    clearDraft();
+  }, [clearDraft]);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  // Autosave Draft
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const draftData = {
-        prompt: textareaValue,
-        genre: selectedGenre,
-        length: selectedLength,
-        language: selectedLanguage,
-        stories: stories,
-      };
-      localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, stories]);
+  // Auto-save is now handled by the useAutoSaveDraft hook above
 
   useEffect(() => {
     const selectedLocale =
@@ -497,6 +519,7 @@ const StoriesComponent = () => {
         setTextareaValue("");
         setSelectedPrompt("");
         setValue("prompt", "");
+        clearDraft();
         // audio last — it's non-critical
         if (selectedGenre) {
           playSoundtrack(selectedGenre);
@@ -542,6 +565,7 @@ const StoriesComponent = () => {
     setSelectedPrompt("");
     setValue("prompt", "");
     reset();
+    clearDraft();
   };
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
@@ -629,6 +653,16 @@ const StoriesComponent = () => {
 
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
             <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white">
+
+{/* ── Draft Restored Banner ─────────────────────────────────── */}
+{showRestoredBanner && restoredDraft && (
+  <DraftRestoredBanner
+    savedAt={restoredDraft.savedAt}
+    onDismiss={handleRestoreDraft}
+    onDiscard={handleDiscardDraft}
+  />
+)}
+
 <div className="relative">
   <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
     <div className="flex flex-wrap gap-2 mb-3">
@@ -804,7 +838,7 @@ const StoriesComponent = () => {
             {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
           </p>
         ) : (
-          <span />
+          <AutoSaveIndicator status={saveStatus} />
         )}
 
         <span
