@@ -21,28 +21,36 @@ const toggleReaction = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
+  // Check if reaction already exists
   const existingReaction = await Reaction.findOne({
-    postId: new Types.ObjectId(postId),
-    userId: user._id,
-  });
-
-  if (existingReaction) {
-    if (existingReaction.type === type) {
-      await Reaction.findByIdAndDelete(existingReaction._id);
-      return { message: "Reaction removed" };
-    } else {
-      existingReaction.type = type;
-      await existingReaction.save();
-      return { message: "Reaction updated", reaction: existingReaction };
-    }
-  }
-
-  const newReaction = await Reaction.create({
-    postId: new Types.ObjectId(postId),
+    postId: postId,
     userId: user._id,
     type: type,
   });
-  return { message: "Reaction added", reaction: newReaction };
+
+  if (existingReaction) {
+    // Remove reaction
+    await Reaction.findByIdAndDelete(existingReaction._id);
+    post.likesCount = Math.max(0, post.likesCount - 1);
+    post.reactions = post.reactions || [];
+    post.reactions = post.reactions.filter(
+      (rId) => rId.toString() !== existingReaction._id.toString()
+    );
+    await post.save();
+    return { message: "Reaction removed", likesCount: post.likesCount };
+  } else {
+    // Add reaction
+    const newReaction = await Reaction.create({
+      postId: new Types.ObjectId(postId),
+      userId: user._id,
+      type: type,
+    });
+    post.likesCount = post.likesCount + 1;
+    post.reactions = post.reactions || [];
+    post.reactions.push(newReaction._id);
+    await post.save();
+    return { message: "Reaction added", likesCount: post.likesCount };
+  }
 };
 
 export const ReactionService = {
