@@ -44,7 +44,7 @@ const register = catchAsync(async (req: Request, res: Response) => {
 });
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
-  const token = req.headers.authorization;
+  const token = req.cookies.refreshToken || req.headers.authorization;
   const result = await AuthService.refreshToken(token as string);
   const { accessToken } = result;
   sendResponse(res, {

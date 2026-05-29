@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { getFromLocalStorage } from "../../utils/local-storage";
+import { getMemoryToken } from "../../services/auth.service";
 import { AUTH_KEY } from "../../constants/storage-key";
 import { IMeta, ResponseErrorType } from "../../types";
 
@@ -7,6 +7,7 @@ const instance = axios.create();
 instance.defaults.headers.post["Content-Type"] = "application/json";
 instance.defaults.headers["Accept"] = "application/json";
 instance.defaults.timeout = 60000;
+instance.defaults.withCredentials = true;
 
 export interface ApiResponseData<T = unknown> {
   data: T;
@@ -15,7 +16,7 @@ export interface ApiResponseData<T = unknown> {
 
 instance.interceptors.request.use(
   function (config) {
-    const accessToken = getFromLocalStorage(AUTH_KEY);
+    const accessToken = getMemoryToken();
     if (accessToken) {
       config.headers.Authorization = accessToken;
     }

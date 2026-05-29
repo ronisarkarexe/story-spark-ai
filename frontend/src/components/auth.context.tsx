@@ -21,23 +21,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [accessToken, setAccessToken] = useState<string | null>(
-    localStorage.getItem("accessToken")
-  );
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
   const logout = useCallback(() => {
     setAccessToken(null);
     setUser(null);
-    localStorage.removeItem("accessToken");
     removeUserInfo();
     navigate("/login");
   }, [navigate]);
 
   const login = async (token: string) => {
     setAccessToken(token);
-    localStorage.setItem("accessToken", token);
     storeUserInfo({ accessToken: token });
     
     const userInfo = getUserInfo();

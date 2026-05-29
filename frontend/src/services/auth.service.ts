@@ -1,11 +1,14 @@
 import { AUTH_KEY } from "../constants/storage-key";
 import { AccessToken } from "../models/login";
 import { decodedToken } from "../utils/jwt";
-import {
-  getFromLocalStorage,
-  removeFromLocalStorage,
-  setToLocalStorage,
-} from "../utils/local-storage";
+
+let memoryToken: string | null = null;
+
+export const setMemoryToken = (token: string | null) => {
+  memoryToken = token;
+};
+
+export const getMemoryToken = () => memoryToken;
 
 type AuthUserInfo = {
   email: string;
@@ -30,7 +33,7 @@ const buildUserInfo = (decodedData: AuthUserInfo): AuthUserInfo => ({
 });
 
 const getValidDecodedToken = () => {
-  const authToken = getFromLocalStorage(AUTH_KEY);
+  const authToken = getMemoryToken();
 
   if (authToken) {
     try {
@@ -39,13 +42,13 @@ const getValidDecodedToken = () => {
       typeof decodedData.exp === "number" &&
       decodedData.exp <= Math.floor(Date.now() / 1000)
     ) {
-      removeFromLocalStorage(AUTH_KEY);
+      setMemoryToken(null);
       return null;
     }
       return buildUserInfo(decodedData);
     } catch (error) {
       console.error("Invalid auth token:", error);
-      removeFromLocalStorage(AUTH_KEY);
+      setMemoryToken(null);
       return null;
     }
   }
@@ -53,7 +56,7 @@ const getValidDecodedToken = () => {
 };
 
 export const storeUserInfo = ({ accessToken }: AccessToken) => {
-  return setToLocalStorage(AUTH_KEY, accessToken);
+  setMemoryToken(accessToken);
 };
 
 export const getUserInfo = (): AuthUserInfo | null => {
@@ -64,7 +67,7 @@ export const isLoggedIn = () => {
 };
 
 export const removeUserInfo = () => {
-  return removeFromLocalStorage(AUTH_KEY);
+  setMemoryToken(null);
 };
 
-export const getToken = () => getFromLocalStorage(AUTH_KEY);
+export const getToken = () => getMemoryToken();

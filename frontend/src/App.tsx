@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { setMemoryToken } from "./services/auth.service";
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
@@ -150,6 +152,32 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  const [isAppReady, setIsAppReady] = useState(false);
+
+  useEffect(() => {
+    const silentRefresh = async () => {
+      try {
+        const res = await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/auth/refresh-token`,
+          {},
+          { withCredentials: true }
+        );
+        if (res.data?.data?.accessToken) {
+          setMemoryToken(res.data.data.accessToken);
+        }
+      } catch (error) {
+        // Silent fail - user will need to log in
+      } finally {
+        setIsAppReady(true);
+      }
+    };
+    silentRefresh();
+  }, []);
+
+  if (!isAppReady) {
+    return null; // Don't render router until memory state is hydrated
+  }
+
   return <RouterProvider router={router} />;
 }
 
