@@ -7,13 +7,7 @@ import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
 import StoriesComponent from "./components/stories/stories.component";
 
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
+
 
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
@@ -29,7 +23,9 @@ import PricingComponent from "./components/pricing/pricing.component";
 import ExploreComponent from "./components/post/post.component";
 import PostDetailsComponent from "./components/post/post.details.component";
 import BookmarksComponent from "./components/post/bookmarks.component";
-import { getUserInfo } from "./services/auth.service";
+import { getUserInfo, getToken } from "./services/auth.service";
+import { decodedToken } from "./utils/jwt";
+import UserListComponent from "./components/dashboard/users/user.list.component";
 import NotFoundComponent from "./components/not-found.component";
 import EmailValidationComponent from "./components/email_validation/email.validation.component";
 import { USER_ROLE } from "./constants/role";
@@ -53,18 +49,38 @@ import ContributorsComponent from "./components/footer/contributors";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import StoryWorkspace from "./components/story/StoryWorkspace";
-import StoriesComponent from "./components/stories/stories.component";
 
-type ProtectedRouteProps = {
-  allowedRoles: string[];
-  element?: React.ReactElement;
+
+// =========================================================================
+// 1. REFACTORED PROTECTED ROUTE LAYER (Acts as a Layout Gate using <Outlet />)
+// =========================================================================
+const isTokenExpired = (token: string | null) => {
+  if (!token) return true;
+  try {
+    const decoded = decodedToken(token);
+    return decoded.exp ? decoded.exp * 1000 < Date.now() : true;
+  } catch (error) {
+    return true;
+  }
 };
 
-const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
+const ProtectedRoute = ({
+  allowedRoles,
+}: {
+  allowedRoles: string[];
+}) => {
   const user = getUserInfo();
-  if (!user) return <Navigate to="/login" replace />;
-  if (!allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
-  return element ?? <Outlet />;
+  const token = getToken();
+  
+  if (!user || isTokenExpired(token as string)) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+  
+  // Dynamically renders the active nested matching sub-child route
+  return <Outlet />;
 };
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];

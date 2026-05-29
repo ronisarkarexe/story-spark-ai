@@ -26,7 +26,7 @@ export default function CollabHome() {
         return;
       }
 
-      const collabSocket = socket.io.of("/collab");
+      const collabSocket = (socket as any).io.of("/collab");
 
       collabSocket.emit(
         "collab:create_room",
