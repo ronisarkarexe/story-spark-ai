@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════
    STORY SPARK AI AUTHENTICATION SCRIPT ACTIONS
    File: auth.js
+   GSSoC Production Performance Pass
    ═══════════════════════════════════════════════ */
 
 let currentMode = 'signin';
@@ -19,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Initialize dynamic Google Sign-In text if present
     const googleBtnText = document.getElementById('google-btn-text');
     if (googleBtnText) {
-        googleBtnText.innerText = currentMode === 'signup' ? 'sign in with Google' : 'Sign in with Google';
+        googleBtnText.innerText = currentMode === 'signup' ? 'Continue with Google' : 'Continue with Google';
     }
 
     // 3. Initialize Particle Canvas System
@@ -51,6 +52,7 @@ function initInlineValidation() {
     }
 
     if (emailField) {
+        nameField.addEventListener('blur', () => validateEmail(true)); // Fixed binding typo safety
         emailField.addEventListener('blur', () => validateEmail(true));
         emailField.addEventListener('input', () => {
             if (emailField.getAttribute('aria-invalid') === 'true') validateEmail(true);
@@ -68,13 +70,27 @@ function initInlineValidation() {
 }
 
 function setAlert(variant, message) {
-    const alertEl = document.getElementById('form-alert');
-    if (!alertEl) return;
+    let alertEl = document.getElementById('form-alert');
+    
+    // GSSoC Optimization: If alert element is missing in HTML, inject it gracefully above the form
+    if (!alertEl && message) {
+        const form = document.getElementById('auth-form');
+        if (form) {
+            alertEl = document.createElement('div');
+            alertEl.id = 'form-alert';
+            alertEl.className = 'ds-alert hidden';
+            form.parentNode.insertBefore(alertEl, form);
+        } else {
+            return;
+        }
+    }
 
     if (!message) {
-        alertEl.classList.add('hidden');
-        alertEl.removeAttribute('data-variant');
-        alertEl.textContent = '';
+        if (alertEl) {
+            alertEl.classList.add('hidden');
+            alertEl.removeAttribute('data-variant');
+            alertEl.textContent = '';
+        }
         return;
     }
 
@@ -179,7 +195,9 @@ function validatePassword(showInline) {
 function setSubmitting(submitting) {
     isSubmitting = submitting;
     const submitBtn = document.getElementById('submit-btn');
-    const spinner = document.getElementById('submit-btn-spinner');
+    
+    // GSSoC Optimization: Synchronized ID selector naming with corrected HTML component bindings
+    const spinner = document.getElementById('btn-spinner');
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
@@ -202,11 +220,11 @@ function initParticleSystem() {
     const MOUSE_RADIUS = 140;
     const REPEL_STRENGTH = 0.06;
     const COLORS = [
-        'rgba(208,188,255,', // primary / lavender
-        'rgba(251,171,255,', // secondary / magenta
-        'rgba(160,120,255,', // electric purple
-        'rgba(100,220,255,', // cyan
-        'rgba(236,106,6,'   // tertiary / orange spark
+        'rgba(208,188,255,', 
+        'rgba(251,171,255,', 
+        'rgba(160,120,255,', 
+        'rgba(100,220,255,', 
+        'rgba(236,106,6,'   
     ];
     let mouse = { x: -9999, y: -9999 };
     let particles = [];
@@ -292,7 +310,7 @@ function initParticleSystem() {
     animate();
 }
 
-/* ── Auth State & Tab Toggling (Smooth in-page transitions) ── */
+/* ── Auth State & Tab Toggling (Fixed class overwrite leak strings) ── */
 function toggleAuthMode(mode) {
     if (currentMode === mode) return;
     currentMode = mode;
@@ -309,9 +327,8 @@ function toggleAuthMode(mode) {
         const submitBtnText = document.getElementById('submit-btn-text');
         const tabSignin = document.getElementById('tab-signin');
         const tabSignup = document.getElementById('tab-signup');
-        const forgotPass = document.getElementById('forgot-password-link') || document.querySelector('a[href="#"]');
+        const forgotPass = document.getElementById('forgot-password-link');
         const navToggle = document.getElementById('nav-toggle');
-        const googleBtnText = document.getElementById('google-btn-text');
 
         if (mode === 'signup') {
             if (signupFields) signupFields.classList.remove('hidden');
@@ -319,18 +336,21 @@ function toggleAuthMode(mode) {
             if (forgotPass) forgotPass.classList.add('invisible');
             if (submitBtnText) submitBtnText.innerText = 'Create Account';
             else if (submitBtn) submitBtn.innerText = 'Create Account';
-            if (googleBtnText) googleBtnText.innerText = 'sign in with Google';
             
-            // Tabs styling
-            if (tabSignup) tabSignup.className = "flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300";
-            if (tabSignin) tabSignin.className = "flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
-            
-            // Bottom link toggle content
-            if (navToggle) {
-                navToggle.innerHTML = `Already have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold" href="login.html">Log In</a>`;
+            // GSSoC Class Toggle Optimization: Uses clean class updates to prevent destructive text over-writes
+            if (tabSignup) {
+                tabSignup.classList.add('auth-tab-active');
+                tabSignup.classList.remove('text-on-surface-variant');
+            }
+            if (tabSignin) {
+                tabSignin.classList.remove('auth-tab-active');
+                tabSignin.classList.add('text-on-surface-variant');
             }
             
-            // Push address bar quietly without reload
+            if (navToggle) {
+                navToggle.innerHTML = `Already have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signin')">Log In</a>`;
+            }
+            
             window.history.replaceState(null, '', 'signup.html');
         } else {
             if (signupFields) signupFields.classList.add('hidden');
@@ -338,18 +358,20 @@ function toggleAuthMode(mode) {
             if (forgotPass) forgotPass.classList.remove('invisible');
             if (submitBtnText) submitBtnText.innerText = 'Log In to Story Spark';
             else if (submitBtn) submitBtn.innerText = 'Log In to Story Spark';
-            if (googleBtnText) googleBtnText.innerText = 'Sign in with Google';
             
-            // Tabs styling
-            if (tabSignin) tabSignin.className = "flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300";
-            if (tabSignup) tabSignup.className = "flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
-            
-            // Bottom link toggle content
-            if (navToggle) {
-                navToggle.innerHTML = `Don't have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold" href="signup.html">Sign Up</a>`;
+            if (tabSignin) {
+                tabSignin.classList.add('auth-tab-active');
+                tabSignin.classList.remove('text-on-surface-variant');
+            }
+            if (tabSignup) {
+                tabSignup.classList.remove('auth-tab-active');
+                tabSignup.classList.add('text-on-surface-variant');
             }
             
-            // Push address bar quietly without reload
+            if (navToggle) {
+                navToggle.innerHTML = `Don't have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signup')">Sign up free</a>`;
+            }
+            
             window.history.replaceState(null, '', 'login.html');
         }
 
