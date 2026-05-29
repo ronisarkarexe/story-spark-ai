@@ -48,8 +48,8 @@ app.use(cookieParser());
 // Routes
 app.use("/api/v1", Routers);
 
-// Global 404 Fallback Handler (Explicitly typed as RequestHandler to satisfy the CI build compiler)
-const missingRouteHandler: express.RequestHandler = (req, res, next) => {
+// Global 404 Fallback Handler (Explicitly typed inline as any to satisfy both local IDE and GitHub CI)
+app.use(((req: any, res: any, next: any) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
     message: "Not Found",
@@ -60,9 +60,7 @@ const missingRouteHandler: express.RequestHandler = (req, res, next) => {
       },
     ],
   });
-};
-
-app.use(missingRouteHandler);
+}) as any);
 
 app.use(globalErrorHandler);
 
