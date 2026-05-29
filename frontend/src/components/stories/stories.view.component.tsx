@@ -284,6 +284,10 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
   const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
   const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+  const [userRating, setUserRating] = useState<number>(0);
+  const [userReview, setUserReview] = useState<string>("");
+  const [showRatingModal, setShowRatingModal] = useState<boolean>(false);
+  const [storyRatings, setStoryRatings] = useState<{ [uuid: string]: { rating: number; reviews: { user: string; text: string; date: string }[] } }>({});
 
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
@@ -459,6 +463,32 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     }
     
     window.open(shareUrl, "_blank", "width=600,height=400");
+  };
+
+  const handleRatingSubmit = () => {
+    if (!selectedStory || userRating === 0) {
+      toast.error("Please select a rating before submitting.");
+      return;
+    }
+
+    const newReview = {
+      user: "Anonymous",
+      text: userReview,
+      date: new Date().toISOString(),
+    };
+
+    setStoryRatings((prev) => ({
+      ...prev,
+      [selectedStory.uuid]: {
+        rating: userRating,
+        reviews: [...(prev[selectedStory.uuid]?.reviews || []), newReview],
+      },
+    }));
+
+    toast.success("Rating and review submitted successfully!");
+    setUserRating(0);
+    setUserReview("");
+    setShowRatingModal(false);
   };
 
   const handleExportPDF = async () => {
@@ -693,6 +723,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                 <button type="button" className="rounded-lg px-4 py-2 bg-pink-600 text-slate-200 font-semibold cursor-pointer hover:bg-pink-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => handleShareStory("twitter")} disabled={!selectedStory}>
                   🐦 Share
                 </button>
+                <button type="button" className="rounded-lg px-4 py-2 bg-amber-600 text-slate-200 font-semibold cursor-pointer hover:bg-amber-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowRatingModal(true)} disabled={!selectedStory}>
+                  ⭐ Rate
+                </button>
                 <button type="button" className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowWorldMap(true)} disabled={!selectedStory}>
                   🗺️ World Map
                 </button>
@@ -925,6 +958,68 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       {showWorldMap && selectedStory && (
         <StoryWorldMap story={selectedStory.content} title={selectedStory.title} onClose={() => setShowWorldMap(false)} />
       )}
+
+      {showRatingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.15)] max-w-md w-full p-6 transform transition-all text-slate-900 dark:bg-[#0f172a] dark:border-white/10 dark:text-white dark:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+            <h2 className="text-xl font-bold mb-4">Rate This Story</h2>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Your Rating</label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setUserRating(star)}
+                    className={`text-3xl transition-transform hover:scale-110 ${star <= userRating ? 'text-yellow-400' : 'text-gray-300'}`}
+                  >
+                    ⭐
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Your Review (Optional)</label>
+              <textarea
+                value={userReview}
+                onChange={(e) => setUserReview(e.target.value)}
+                placeholder="Share your thoughts about this story..."
+                className="w-full px-4 py-2 bg-slate-100 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                rows={3}
+              />
+            </div>
+
+            {selectedStory && storyRatings[selectedStory.uuid] && (
+              <div className="mb-4 p-3 bg-slate-100 rounded-lg dark:bg-slate-700">
+                <p className="text-sm font-medium mb-2">Current Rating: {storyRatings[selectedStory.uuid].rating}/5 ⭐</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {storyRatings[selectedStory.uuid].reviews.length} review{storyRatings[selectedStory.uuid].reviews.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowRatingModal(false)}
+                className="flex-1 px-4 py-2 bg-slate-200 text-slate-900 rounded-lg hover:bg-slate-300 transition-colors dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleRatingSubmit}
+                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
