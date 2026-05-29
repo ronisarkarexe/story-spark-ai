@@ -4,7 +4,8 @@ import {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
 } from "../redux/apis/notification.api";
-import { connectSocket, disconnectSocket, getSocketIo } from "../socket/socket.oi";
+import { connectSocket, disconnectSocket } from "../socket/socket.oi";
+import { NotificationItem } from "../models/notification";
 
 /**
  * Notification bell: REST + Socket.IO real-time updates.
@@ -13,7 +14,7 @@ import { connectSocket, disconnectSocket, getSocketIo } from "../socket/socket.o
  */
 export const useNotifications = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [realtimeNotifications, setRealtimeNotifications] = useState<any[]>([]);
+  const [realtimeNotifications, setRealtimeNotifications] = useState<NotificationItem[]>([]);
   const isAuthed = isLoggedIn();
 
   const { data, isFetching, refetch } = useGetNotificationsQuery(undefined, {
@@ -26,7 +27,7 @@ export const useNotifications = () => {
     const baseNotifications = data ?? [];
     // Add real-time notifications that aren't already in the list
     const newRealtime = realtimeNotifications.filter(
-      (rt) => !baseNotifications.some((n: any) => n._id === rt._id)
+      (rt) => !baseNotifications.some((n: NotificationItem) => n._id === rt._id)
     );
     return [...newRealtime, ...baseNotifications];
   }, [data, realtimeNotifications]);
@@ -60,7 +61,7 @@ export const useNotifications = () => {
       }
 
       // Listen for real-time notifications
-      const handleNewNotification = (notification: any) => {
+      const handleNewNotification = (notification: NotificationItem) => {
         console.log("[Story Spark] Received notification:", notification);
         setRealtimeNotifications((prev) => [notification, ...prev]);
         // Refetch to keep in sync with backend

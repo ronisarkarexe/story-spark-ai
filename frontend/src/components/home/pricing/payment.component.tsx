@@ -54,7 +54,7 @@ const PaymentComponent = () => {
         description: `${planName} Subscription`,
         order_id: data.order.id,
 
-        handler: async (response: any) => {
+        handler: async (response: Record<string, string>) => {
           try {
             // Verify payment
             const verifyRes = await fetch("/api/v1/payment/verify", {
@@ -89,9 +89,9 @@ const PaymentComponent = () => {
         },
       };
 
-      const paymentObject = new (window as any).Razorpay(options);
+      const paymentObject = new ((window as unknown as Record<string, unknown>).Razorpay as new (options: Record<string, unknown>) => { on: (event: string, cb: (resp: { error?: Record<string, unknown> }) => void) => void; open: () => void })(options);
 
-      paymentObject.on("payment.failed", function (response: any) {
+      paymentObject.on("payment.failed", function (response: { error?: Record<string, unknown> }) {
         console.error(response.error);
         alert("Payment failed.");
       });
