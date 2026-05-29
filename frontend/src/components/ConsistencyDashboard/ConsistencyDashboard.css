@@ -1,0 +1,113 @@
+.consistency-dashboard {
+  background-color: #1a1a2e;
+  color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #2a2a4a;
+  padding-bottom: 16px;
+}
+
+.score-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.score-badge.high { background-color: #4caf50; }
+.score-badge.medium { background-color: #ff9800; }
+.score-badge.low { background-color: #f44336; }
+
+.refresh-btn, .consistency-dashboard button {
+  background: linear-gradient(135deg, #6e8efb, #a777e3);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s;
+}
+
+.refresh-btn:hover, .consistency-dashboard button:hover {
+  transform: translateY(-2px);
+}
+
+.dashboard-section {
+  margin-bottom: 24px;
+}
+
+.dashboard-section h3 {
+  margin-bottom: 16px;
+  color: #a777e3;
+  font-size: 1.1rem;
+}
+
+.contradictions .contradiction-item {
+  background: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid #f44336;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+}
+
+.type-badge {
+  background: #f44336;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.character-card {
+  background: #2a2a4a;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.character-card h4 {
+  margin-top: 0;
+  color: #6e8efb;
+}
+
+.timeline-list {
+  list-style: none;
+  padding: 0;
+}
+
+.timeline-list li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 12px;
+  border-left: 2px solid #6e8efb;
+}
+
+.timeline-list li::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  background: #a777e3;
+  border-radius: 50%;
+}

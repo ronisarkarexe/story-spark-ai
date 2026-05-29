@@ -20,6 +20,7 @@ import { StoryVersionRouter } from "../app/modules/story_version/story_version.r
 import { AnalyticsRouter } from "../app/modules/analytics/analytics.router";
 import { RecommendationRouter } from "../app/modules/recommendation/recommendation.router";
 import { WriterApplicationRoutes } from "../app/modules/writer_application/writer_application.route";
+import { ConsistencyRoutes } from "../app/modules/consistency/consistency.router";
 
 const router = express.Router();
 
@@ -103,6 +104,10 @@ const modules = [
   {
     path: "/writer-applications",
     router: WriterApplicationRoutes,
+  },
+  {
+    path: "/consistency",
+    router: ConsistencyRoutes,
   },
 ];
 modules.forEach((route) => router.use(route.path, route.router));
