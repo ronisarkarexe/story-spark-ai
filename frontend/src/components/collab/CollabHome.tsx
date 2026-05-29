@@ -1,22 +1,50 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// Socket.IO collab disabled (see CollabRoom). Previous: io, Socket, resolveSocketUrl, BACKEND_URL.
+import { connectSocket, getSocketIo } from "../../socket/socket.oi";
+import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 export default function CollabHome() {
   const navigate = useNavigate();
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const user = getUserInfo();
 
   const createRoom = () => {
-    setError(
-      "Real-time collaboration is turned off. Socket.IO has been disabled in the frontend."
-    );
-    /* Previous Socket.IO flow:
-    setIsCreating(true);
-    window.__storySparkCollabSocket?.disconnect();
-    const socket = io(`${BACKEND_URL}/collab`, { auth: { token }, transports: ["websocket"] });
-    ...
-    */
+    if (!isLoggedIn()) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      const socket = connectSocket();
+      if (!socket) {
+        setError(
+          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
+        );
+        return;
+      }
+
+      const collabSocket = socket.io.of("/collab");
+
+      collabSocket.emit(
+        "collab:create_room",
+        { userId: user?.userId, username: user?.name },
+        (response: any) => {
+          if (response && response.roomId) {
+            navigate(`/collab/${response.roomId}`);
+          } else {
+            setError("Failed to create room. Please try again.");
+          }
+          setIsCreating(false);
+        }
+      );
+    } catch (err) {
+      console.error("Create room error:", err);
+      setError("Error creating room. Please try again.");
+      setIsCreating(false);
+    }
   };
 
   const joinRoom = () => {
@@ -61,9 +89,10 @@ export default function CollabHome() {
           {/* Create Room */}
           <button
             onClick={createRoom}
+            disabled={isCreating}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 text-white font-semibold text-lg transition-all shadow-lg shadow-indigo-500/20"
           >
-            ✨ Create a New Story Room
+            {isCreating ? "Creating room..." : "✨ Create a New Story Room"}
           </button>
 
           <div className="flex items-center gap-3">

@@ -296,3 +296,51 @@ Write the remixed story in ${language}. Return a JSON object with this exact str
     );
   }
 }
+
+export async function translateStoryWithGemini(
+  title: string,
+  content: string,
+  targetLanguage: string
+): Promise<{ title: string; content: string }> {
+  const prompt = `You are a professional translator. Translate the following story into ${targetLanguage}.
+
+Title: ${title}
+Content: ${content}
+
+Return a JSON object with this exact structure:
+{
+  "title": "translated title in ${targetLanguage}",
+  "content": "translated content in ${targetLanguage}"
+}
+
+Preserve the story's tone, style and meaning. Only translate — do not modify the story.`;
+
+  try {
+    const chatSession = model.startChat({
+      generationConfig: {
+        ...generationConfig,
+        maxOutputTokens: 4096,
+      },
+      safetySettings,
+      history: [],
+    });
+
+    const result = await chatSession.sendMessage(prompt);
+    const rawText = result.response.text();
+    const cleanText = sanitizeJsonText(rawText);
+    const parsed = JSON.parse(cleanText);
+
+    if (!parsed.title || !parsed.content) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid translation response from AI.");
+    }
+
+    return parsed;
+  } catch (error: unknown) {
+    if (error instanceof ApiError) throw error;
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `AI translation failed: ${errorMsg}`
+    );
+  }
+}

@@ -1,8 +1,11 @@
 import React from "react";
+import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
+import StoriesComponent from "./components/stories/stories.component";
 
 import {
   createBrowserRouter,
@@ -16,7 +19,6 @@ import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import LoginComponent from "./components/login/login.component";
 import SignUpComponent from "./components/signup/signup.component";
-import ForgotPasswordComponent from "./components/login/forgot_password.component";
 import DashboardComponent from "./components/dashboard/dashboard.component";
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
@@ -43,23 +45,16 @@ import PrivacyPolicy from "./components/footer/Privacy.tsx";
 import CookiePolicy from "./components/footer/cookie-policy.tsx";
 import Terms from "./components/footer/terms.tsx";
 import GuidelinesComponent from "./components/footer/guidelines.tsx";
-import TermsAndConditions from "./components/footer/terms.tsx";
 import TemplatesComponent from "./components/templates/templates.component";
 import CommunityComponent from "./components/community/community.component";
 import ResourcesListComponent from "./components/community/resources_list.component";
 import ResourceDetailComponent from "./components/community/resource_detail.component";
-import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import ContributorsComponent from "./components/footer/contributors";
-import BranchingStory from "./components/stories/BranchingStory";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import StoryWorkspace from "./components/story/StoryWorkspace";
 import StoriesComponent from "./components/stories/stories.component";
 
-// =========================================================================
-// PROTECTED ROUTE — supports both wrapper pattern (element prop) and
-// layout-gate pattern (Outlet, no element prop)
-// =========================================================================
 type ProtectedRouteProps = {
   allowedRoles: string[];
   element?: React.ReactElement;
@@ -67,23 +62,12 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
   const user = getUserInfo();
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  if (!allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
-  }
-
-  // If an element was passed, render it directly (wrapper pattern)
-  // Otherwise render <Outlet /> for nested route layout-gate pattern
-  return element ? element : <Outlet />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (!allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
+  return element ?? <Outlet />;
 };
-// =========================================================================
-// 2. CENTRAL ROUTER MATRIX (Initialized exactly once in the global scope)
-// =========================================================================
+
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
-const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
 
 const router = createBrowserRouter([
   {
@@ -119,8 +103,6 @@ const router = createBrowserRouter([
       { path: "guidelines", element: <GuidelinesComponent /> },
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "report-bug", element: <ReportBug /> },
-
-      // Protected Sub-Tree running under the RootLayout context
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
@@ -134,21 +116,16 @@ const router = createBrowserRouter([
       { path: "*", element: <NotFoundComponent /> },
     ],
   },
-  
-  // Isolated layout branches (Bypassing public navigation headers entirely)
   { path: "/auth/email-validation", element: <EmailValidationComponent /> },
   { path: "/payment", element: <PaymentComponent /> },
-
   { path: "/collab", element: <CollabHome /> },
   { path: "/collab/:roomId", element: <CollabRoom /> },
-
-  // Administrative Dashboard Infrastructure Tree
   {
     path: "/dashboard",
-    element: <ProtectedRoute allowedRoles={ALL_ROLES} />, 
+    element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
     children: [
       {
-        element: <DashboardLayout />, 
+        element: <DashboardLayout />,
         children: [
           { index: true, element: <DashboardComponent /> },
           { path: "profile", element: <ProfileComponent /> },
@@ -172,548 +149,8 @@ const router = createBrowserRouter([
   },
 ]);
 
-// =========================================================================
-// APP
-// =========================================================================
-const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
-const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: (
-      <>
-        <MagicCursorComponent />
-        <ScrollToTop />
-        <RootLayout>
-          <Outlet />
-        </RootLayout>
-      </>
-    ),
-    children: [
-      { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
-      { path: "templates", element: <TemplatesComponent /> },
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
-      { path: "story-inspiration", element: <StoryInspirationWrapper /> },
-      { path: "stories", element: <StoriesComponent /> },
-      { path: "login", element: <LoginComponent /> },
-      { path: "signup", element: <SignUpComponent /> },
-      { path: "pricing", element: <PricingComponent /> },
-      { path: "post/:id", element: <PostDetailsComponent /> },
-      { path: "help", element: <HelpCenterComponent /> },
-      // moved to protected routes below
-      { path: "about-us", element: <AboutUsComponent /> },
-      { path: "career", element: <CareerComponent /> },
-      { path: "blog", element: <BlogComponent /> },
-      { path: "privacy-policy", element: <PrivacyPolicy /> },
-      { path: "terms", element: <Terms /> },
-      { path: "help-center", element: <HelpCenterComponent /> },
-      { path: "guidelines", element: <GuidelinesComponent /> },
-      { path: "contributors", element: <ContributorsComponent /> },
-
-      // Protected Sub-Tree running under the RootLayout context
-      {
-        element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-        children: [
-          { path: "explore", element: <ExploreComponent /> },
-          { path: "bookmarks", element: <BookmarksComponent /> },
-          { path: "community", element: <CommunityComponent /> },
-          { path: "resources", element: <ResourcesListComponent /> },
-          { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
-          { path: "contact-us", element: <Contact /> },
-        ],
-      },
-      { path: "*", element: <NotFoundComponent /> },
-    ],
-  },
-  
-  // Isolated layout branches (Bypassing public navigation headers entirely)
-  { path: "/auth/email-validation", element: <EmailValidationComponent /> },
-  { path: "/payment", element: <PaymentComponent /> },
-  { path: "/analytics", element: <AnalyticsDashboard /> },
-  { path: "/collab", element: <CollabHome /> },
-  { path: "/collab/:roomId", element: <CollabRoom /> },
-
-  // Administrative Dashboard Infrastructure Tree
-  {
-    path: "/dashboard",
-    element: <ProtectedRoute allowedRoles={ALL_ROLES} />, 
-    children: [
-      {
-        element: <DashboardLayout />, 
-        children: [
-          { index: true, element: <DashboardComponent /> },
-          { path: "analytics", element: <AnalyticsPage /> },
-          { path: "post-lists", element: <PostListsComponent /> },
-          { path: "profile", element: <ProfileComponent /> },
-          { path: "writers", element: <WriterApplicationComponent /> },
-          {
-            path: "users",
-            children: [
-              { index: true, element: <UserComponent /> },
-              { path: "list", element: <UserListComponent /> },
-            ],
-          },
-          // Independent structural guard layer checking high-tier Admin roles
-          {
-            element: <ProtectedRoute allowedRoles={ELEVATED_ADMIN_ROLES} />,
-            children: [{ path: "settings", element: <SettingComponent /> }],
-          },
-        ],
-      },
-    ],
-  },
-]);
-
-            <Route
-              path="list"
-              element={
-                <ProtectedRoute
-                  element={<UserListComponent />}
-                  allowedRoles={[
-                    USER_ROLE.USER,
-                    USER_ROLE.ADMIN,
-                    USER_ROLE.SUPER_ADMIN,
-                    USER_ROLE.WRITER,
-                  ]}
-                />
-              }
-            />
-          </Route>
-
-          <Route
-            path="writers"
-            element={
-              <ProtectedRoute
-                element={<WriterApplicationComponent />}
-                allowedRoles={[
-                  USER_ROLE.WRITER,
-                  USER_ROLE.ADMIN,
-                  USER_ROLE.SUPER_ADMIN,
-                  USER_ROLE.USER,
-                ]}
-              />
-            }
-          />
-
-      <Routes>
-        {/* Public routes */}
-        <Route
-          path="/"
-          element={
-            <RootLayout>
-              <HeroSectionComponent />
-              <HomeComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/templates"
-          element={
-            <RootLayout>
-              <TemplatesComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/writing-assistant"
-          element={
-            <RootLayout>
-              <WritingAssistantComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/story-inspiration"
-          element={
-            <RootLayout>
-              <StoryInspirationWrapper />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/stories"
-          element={
-            <RootLayout>
-              <BranchingStory />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <RootLayout>
-              <LoginComponent />
-            </RootLayout>
-          }
-        />
-        <Route path="/auth/email-validation" element={<EmailValidationComponent />} />
-        <Route path="/payment" element={<PaymentComponent />} />
-        <Route
-          path="/signup"
-          element={
-            <RootLayout>
-              <SignUpComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/pricing"
-          element={
-            <RootLayout>
-              <PricingComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/help"
-          element={
-            <RootLayout>
-              <HelpCenterComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/help-center"
-          element={
-            <RootLayout>
-              <HelpCenterComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/post/:id"
-          element={
-            <RootLayout>
-              <PostDetailsComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/about-us"
-          element={
-            <RootLayout>
-              <AboutUsComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/career"
-          element={
-            <RootLayout>
-              <CareerComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/blog"
-          element={
-            <RootLayout>
-              <BlogComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/privacy-policy"
-          element={
-            <RootLayout>
-              <PrivacyPolicy />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/terms"
-          element={
-            <RootLayout>
-              <Terms />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/guidelines"
-          element={
-            <RootLayout>
-              <GuidelinesComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/contributors"
-          element={
-            <RootLayout>
-              <ContributorsComponent />
-            </RootLayout>
-          }
-        />
-        <Route
-          path="/report-bug"
-          element={
-            <RootLayout>
-              <ReportBug />
-            </RootLayout>
-          }
-        />
-
-        {/* Protected public routes */}
-        <Route
-          path="/explore"
-          element={
-            <ProtectedRoute
-              element={
-                <RootLayout>
-                  <ExploreComponent />
-                </RootLayout>
-              }
-              allowedRoles={[
-                USER_ROLE.USER,
-                USER_ROLE.WRITER,
-                USER_ROLE.ADMIN,
-                USER_ROLE.SUPER_ADMIN,
-              ]}
-            />
-          }
-        />
-        <Route
-          path="/bookmarks"
-          element={
-            <ProtectedRoute
-              element={
-                <RootLayout>
-                  <BookmarksComponent />
-                </RootLayout>
-              }
-              allowedRoles={[
-                USER_ROLE.USER,
-                USER_ROLE.WRITER,
-                USER_ROLE.ADMIN,
-                USER_ROLE.SUPER_ADMIN,
-              ]}
-            />
-          }
-        />
-        <Route
-          path="/contact-us"
-          element={
-            <ProtectedRoute
-              element={
-                <RootLayout>
-                  <Contact />
-                </RootLayout>
-              }
-              allowedRoles={[
-                USER_ROLE.USER,
-                USER_ROLE.WRITER,
-                USER_ROLE.ADMIN,
-                USER_ROLE.SUPER_ADMIN,
-              ]}
-            />
-          }
-        />
-        <Route
-          path="/community"
-          element={
-            <ProtectedRoute
-              element={
-                <RootLayout>
-                  <CommunityComponent />
-                </RootLayout>
-              }
-              allowedRoles={[
-                USER_ROLE.USER,
-                USER_ROLE.WRITER,
-                USER_ROLE.ADMIN,
-                USER_ROLE.SUPER_ADMIN,
-              ]}
-            />
-          }
-        />
-        <Route
-          path="/resources"
-          element={
-            <ProtectedRoute
-              element={
-                <RootLayout>
-                  <ResourcesListComponent />
-                </RootLayout>
-              }
-              allowedRoles={[
-                USER_ROLE.USER,
-                USER_ROLE.WRITER,
-                USER_ROLE.ADMIN,
-                USER_ROLE.SUPER_ADMIN,
-              ]}
-            />
-          }
-        />
-        <Route
-          path="/resources/:resourceName"
-          element={
-            <ProtectedRoute
-              element={
-                <RootLayout>
-                  <ResourceDetailComponent />
-                </RootLayout>
-              }
-              allowedRoles={[
-                USER_ROLE.USER,
-                USER_ROLE.WRITER,
-                USER_ROLE.ADMIN,
-                USER_ROLE.SUPER_ADMIN,
-              ]}
-            />
-          }
-        />
-
-        {/* Standalone pages (no RootLayout nav) */}
-        <Route path="/analytics" element={<AnalyticsDashboard />} />
-        <Route path="/collab" element={<CollabHome />} />
-        <Route path="/collab/:roomId" element={<CollabRoom />} />
-
-        {/* Dashboard — protected, nested under DashboardLayout */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute
-              element={<DashboardLayout />}
-              allowedRoles={[
-                USER_ROLE.ADMIN,
-                USER_ROLE.SUPER_ADMIN,
-                USER_ROLE.WRITER,
-                USER_ROLE.USER,
-              ]}
-            />
-          }
-        >
-          <Route
-            index
-            element={
-              <ProtectedRoute
-                element={<DashboardComponent />}
-                allowedRoles={[
-                  USER_ROLE.ADMIN,
-                  USER_ROLE.SUPER_ADMIN,
-                  USER_ROLE.WRITER,
-                  USER_ROLE.USER,
-                ]}
-              />
-            }
-          />
-
-          {/* ✅ FIX: /dashboard/analytics route — was missing, causing the crash */}
-          <Route
-            path="analytics"
-            element={
-              <ProtectedRoute
-                element={<AnalyticsPage />}
-                allowedRoles={[
-                  USER_ROLE.USER,
-                  USER_ROLE.ADMIN,
-                  USER_ROLE.SUPER_ADMIN,
-                  USER_ROLE.WRITER,
-                ]}
-              />
-            }
-          />
-
-          <Route
-            path="post-lists"
-            element={
-              <ProtectedRoute
-                element={<PostListsComponent />}
-                allowedRoles={[
-                  USER_ROLE.USER,
-                  USER_ROLE.ADMIN,
-                  USER_ROLE.SUPER_ADMIN,
-                  USER_ROLE.WRITER,
-                ]}
-              />
-            }
-          />
-
-          <Route
-            path="settings"
-            element={
-              <ProtectedRoute
-                element={<SettingComponent />}
-                allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN]}
-              />
-            }
-          />
-
-          <Route
-            path="profile"
-            element={
-              <ProtectedRoute
-                element={<ProfileComponent />}
-                allowedRoles={[
-                  USER_ROLE.USER,
-                  USER_ROLE.ADMIN,
-                  USER_ROLE.SUPER_ADMIN,
-                  USER_ROLE.WRITER,
-                ]}
-              />
-            }
-          />
-
-          <Route path="users">
-            <Route
-              index
-              element={
-                <ProtectedRoute
-                  element={<UserComponent />}
-                  allowedRoles={[
-                    USER_ROLE.USER,
-                    USER_ROLE.ADMIN,
-                    USER_ROLE.SUPER_ADMIN,
-                    USER_ROLE.WRITER,
-                  ]}
-                />
-              }
-            />
-            <Route
-              path="list"
-              element={
-                <ProtectedRoute
-                  element={<UserListComponent />}
-                  allowedRoles={[
-                    USER_ROLE.USER,
-                    USER_ROLE.ADMIN,
-                    USER_ROLE.SUPER_ADMIN,
-                    USER_ROLE.WRITER,
-                  ]}
-                />
-              }
-            />
-          </Route>
-
-          <Route
-            path="writers"
-            element={
-              <ProtectedRoute
-                element={<WriterApplicationComponent />}
-                allowedRoles={[
-                  USER_ROLE.WRITER,
-                  USER_ROLE.ADMIN,
-                  USER_ROLE.SUPER_ADMIN,
-                  USER_ROLE.USER,
-                ]}
-              />
-            }
-          />
-        </Route>
-
-        {/* 404 */}
-        <Route
-          path="*"
-          element={
-            <RootLayout>
-              <NotFoundComponent />
-            </RootLayout>
-          }
-        />
-      </Routes>
-    </Router>
-  );
+function App() {
+  return <RouterProvider router={router} />;
 }
 
 export default App;

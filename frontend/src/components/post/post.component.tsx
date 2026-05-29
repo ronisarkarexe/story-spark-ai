@@ -38,16 +38,7 @@ const ExploreComponent = () => {
 
   const { data, isLoading } = useGetPostListsQuery({ ...query });
 
-  const filteredPosts =
-    selectedTags.length === 0
-      ? data?.posts || []
-      : (data?.posts || []).filter((post: Post) =>
-          selectedTags.some(
-            (selectedTag) =>
-              post.tag?.toLowerCase().trim() ===
-              selectedTag.toLowerCase().replace("#", "").trim(),
-          ),
-        );
+  const filteredPosts = data?.posts || [];
 
   const resetAllStates = () => {
     setSortBy("createdAt");

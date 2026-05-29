@@ -12,6 +12,7 @@ import {
 import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
 import { SortOrder } from "mongoose";
+import { GamificationService } from "../gamification/gamification.service";
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
   const { email, role } = token;
@@ -31,10 +32,14 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       author: user._id,
       updatedBy: user._id,
     });
-    if (res && res.isPublished) {
-      user.postsCount += 1;
-      await user.save();
-    }
+      if (res && res.isPublished) {
+        user.postsCount += 1;
+        await user.save();
+        GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
+        if (user.postsCount === 1) {
+          GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
+        }
+      }
     return res;
   } catch (error) {
     throw new ApiError(
@@ -227,28 +232,29 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+ const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
-
-  post.bookmarks = post.bookmarks || [];
-  const isBookmarked = post.bookmarks.some(
-    (uId) => uId && uId.toString() === user._id.toString()
-  );
+  // Check bookmark status atomically via a DB query instead of loading the full document
+  const isBookmarked = await Post.exists({ _id: postId, bookmarks: user._id });
 
   if (isBookmarked) {
-    post.bookmarks = post.bookmarks.filter(
-      (uId) => uId && uId.toString() !== user._id.toString()
+    // Remove bookmark atomically
+    await Post.updateOne(
+      { _id: postId },
+      { $pull: { bookmarks: user._id } }
     );
-    await post.save();
     return { message: "Bookmark removed", bookmarked: false };
   } else {
-    post.bookmarks.push(user._id);
-    await post.save();
+    // Add bookmark atomically — $addToSet prevents duplicates
+    await Post.updateOne(
+      { _id: postId },
+      { $addToSet: { bookmarks: user._id } }
+    );
     return { message: "Bookmark added", bookmarked: true };
   }
-};
+}
 
 const updatePost = async (
   postId: string,

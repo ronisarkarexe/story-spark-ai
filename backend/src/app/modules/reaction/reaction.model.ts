@@ -14,6 +14,8 @@ const ReactionSchema: Schema<IReaction> = new Schema<IReaction, ReactionModel>(
   { timestamps: true }
 );
 
+ReactionSchema.index({ postId: 1, userId: 1, type: 1 }, { unique: true });
+
 export const Reaction = model<IReaction, ReactionModel>(
   "Reaction",
   ReactionSchema

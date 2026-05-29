@@ -11,11 +11,13 @@ import {
   IAIModel,
   IAlternateEndingPayload,
   IRemixPayload,
+  ITranslatePayload,
 } from "./ai_model.interface";
 import {
   generateAlternateEndingsWithGemini,
   generateWithGeminiStories,
   generateRemixWithGemini,
+  translateStoryWithGemini,
 } from "./ai_model.utils";
 import { assertSuccessfulGeneration } from "./quota.lifecycle";
 
@@ -205,6 +207,32 @@ const aiFreeModelRemix = async (payload: IRemixPayload) => {
   }
 };
 
+const aiModelTranslate = async (payload: ITranslatePayload, _token: ITokenPayload) => {
+  const { title, content, targetLanguage } = payload;
+  try {
+    const result = await raceGenerationWithTimeout(
+      () => translateStoryWithGemini(title, content, targetLanguage),
+      AUTHENTICATED_GENERATION_TIMEOUT_MS
+    );
+    return result;
+  } catch (error) {
+    mapGenerationError(error, "Translation failed.");
+  }
+};
+
+const aiFreeModelTranslate = async (payload: ITranslatePayload) => {
+  const { title, content, targetLanguage } = payload;
+  try {
+    const result = await raceGenerationWithTimeout(
+      () => translateStoryWithGemini(title, content, targetLanguage),
+      FREE_GENERATION_TIMEOUT_MS
+    );
+    return result;
+  } catch (error) {
+    mapGenerationError(error, "Translation failed.");
+  }
+};
+
 export const AiModelService = {
   aiModelGenerate,
   aiFreeModelGenerate,
@@ -212,4 +240,6 @@ export const AiModelService = {
   aiFreeModelAlternateEndings,
   aiModelRemix,
   aiFreeModelRemix,
+  aiModelTranslate,
+  aiFreeModelTranslate,
 };

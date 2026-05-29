@@ -24,7 +24,7 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
       </label>
       <div className="relative before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-purple-500/20 before:via-indigo-500/20 before:to-blue-500/20 before:blur-xl before:rounded-2xl">
         <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-          <i className="fas fa-search text-gray-400 dark:text-gray-400" aria-hidden="true"></i>
+          <i className="fas fa-search text-gray-400 dark:text-gray-300" aria-hidden="true"></i>
         </div>
         <input
           id="help-search"
@@ -39,7 +39,7 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
           <button
             type="button"
             onClick={() => onChange("")}
-            className="absolute inset-y-0 right-0 pr-5 flex items-center text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
+            className="absolute inset-y-0 right-0 pr-5 flex items-center text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white transition-colors"
             aria-label="Clear search"
           >
             <i className="fas fa-times" aria-hidden="true"></i>

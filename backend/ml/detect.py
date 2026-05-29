@@ -121,24 +121,41 @@ SUGGESTIONS = {
 }
 
 
-def _get_suggestion(session_raw: np.ndarray) -> str:
-    """
-    Pick the most anomalous feature and return a targeted suggestion.
-    session_raw shape: (SEQ_LEN, 8) — unscaled values.
-    """
+def _dominant_feature(session_raw: np.ndarray) -> str:
+    """Return the most anomalous feature name for a raw session array."""
     avg = session_raw.mean(axis=0)
-
     scores = {
-        "prompt_length": 1 / (avg[0] + 1),
+        "prompt_length":      1 / (avg[0] + 1),
         "regeneration_count": avg[2] / 40,
-        "backspace_ratio": avg[4] / 100,
-        "pause_duration": avg[5] / 90,
-        "confidence_score": 1 / (avg[6] + 1),
+        "backspace_ratio":    avg[4] / 100,
+        "pause_duration":     avg[5] / 90,
+        "confidence_score":   1 / (avg[6] + 1),
         "blocked_word_count": avg[7] / 15,
     }
+    return max(scores, key=scores.get)
 
-    worst_feature = max(scores, key=scores.get)
-    return random.choice(SUGGESTIONS.get(worst_feature, SUGGESTIONS["general"]))
+
+# ── Suggestion history — avoid repeating the same tip ────────────────────────
+
+_suggestion_history: list[str] = []
+MAX_HISTORY = 6
+
+
+def _get_unique_suggestion(feature: str) -> str:
+    """
+    Pick a suggestion for the given feature that hasn't been shown recently.
+    Falls back to any suggestion if all have been shown.
+    """
+    pool = SUGGESTIONS.get(feature, SUGGESTIONS["general"])
+    unseen = [s for s in pool if s not in _suggestion_history]
+
+    chosen = random.choice(unseen) if unseen else random.choice(pool)
+
+    _suggestion_history.append(chosen)
+    if len(_suggestion_history) > MAX_HISTORY:
+        _suggestion_history.pop(0)
+
+    return chosen
 
 
 # ── Core detect function ──────────────────────────────────────────────────────
@@ -198,7 +215,7 @@ def detect(session: list) -> dict:
         "confidence": confidence,
         "anomaly_score": round(anomaly_score, 6),
         "threshold": round(threshold, 6),
-        "suggestion": _get_suggestion(session_raw) if is_stuck else "",
+        "suggestion": _get_unique_suggestion(_dominant_feature(session_raw)) if is_stuck else "",
     }
 
 
@@ -213,13 +230,13 @@ def _get_int(prompt: str) -> int:
 
 
 PROMPTS = {
-    "prompt_length": "    prompt_length       (words typed)            : ",
-    "time_to_submit": "    time_to_submit      (seconds before submit)  : ",
+    "prompt_length":      "    prompt_length       (words typed)            : ",
+    "time_to_submit":     "    time_to_submit      (seconds before submit)  : ",
     "regeneration_count": "    regeneration_count  (times regenerated)      : ",
-    "session_duration": "    session_duration    (seconds in session)     : ",
-    "backspace_ratio": "    backspace_ratio     (0–100, % of backspaces) : ",
-    "pause_duration": "    pause_duration      (longest pause, seconds) : ",
-    "confidence_score": "    confidence_score    (1–10)                   : ",
+    "session_duration":   "    session_duration    (seconds in session)     : ",
+    "backspace_ratio":    "    backspace_ratio     (0–100, % of backspaces) : ",
+    "pause_duration":     "    pause_duration      (longest pause, seconds) : ",
+    "confidence_score":   "    confidence_score    (1–10)                   : ",
     "blocked_word_count": "    blocked_word_count  (frustration words seen) : ",
 }
 
@@ -260,6 +277,84 @@ def _interactive():
     again = input("  Run again? (y/n): ").strip().lower()
     if again == "y":
         _interactive()
+
+
+# ── Batch detect ──────────────────────────────────────────────────────────────
+
+def batch_detect(sessions: list[list]) -> list[dict]:
+    """
+    Run writer's block detection on multiple sessions in one call.
+    Loads ML assets once and reuses them across all sessions.
+
+    Parameters
+    ----------
+    sessions : list of sessions
+        Each session is a list[dict] or list[list] with at least SEQ_LEN entries.
+
+    Returns
+    -------
+    list[dict] : one result per session, each with keys:
+        index, is_stuck, confidence, anomaly_score, threshold, suggestion, error
+    """
+    if not sessions:
+        raise ValueError("sessions list must not be empty")
+
+    assets = load_ml_assets_into_cache()  # load once for all sessions
+    model     = assets["model"]
+    scaler    = assets["scaler"]
+    threshold = assets["threshold"]
+
+    results = []
+
+    for idx, session in enumerate(sessions):
+        try:
+            window = session[-SEQ_LEN:]
+
+            if isinstance(window[0], dict):
+                session_raw = np.array(
+                    [[s[k] for k in FEATURE_KEYS] for s in window],
+                    dtype=np.float32,
+                )
+            else:
+                session_raw = np.array(window, dtype=np.float32)
+
+            if session_raw.shape != (SEQ_LEN, N_FEATURES):
+                raise ValueError(
+                    f"Expected shape ({SEQ_LEN}, {N_FEATURES}), "
+                    f"got {session_raw.shape}"
+                )
+
+            seq_scaled    = scaler.transform(session_raw).reshape(1, SEQ_LEN, N_FEATURES)
+            reconstructed = model.predict(seq_scaled, verbose=0)
+            anomaly_score = float(np.mean((seq_scaled - reconstructed) ** 2))
+
+            is_stuck = anomaly_score > threshold
+            ratio    = anomaly_score / threshold
+
+            if not is_stuck:
+                confidence = "N/A"
+            elif ratio > 2.0:
+                confidence = "High"
+            elif ratio > 1.2:
+                confidence = "Medium"
+            else:
+                confidence = "Low"
+
+            results.append({
+                "index":         idx,
+                "is_stuck":      is_stuck,
+                "confidence":    confidence,
+                "anomaly_score": round(anomaly_score, 6),
+                "threshold":     round(threshold, 6),
+                "suggestion":    _get_unique_suggestion(
+                                     _dominant_feature(session_raw)
+                                 ) if is_stuck else "",
+            })
+
+        except Exception as e:
+            results.append({"index": idx, "error": str(e)})
+
+    return results
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────

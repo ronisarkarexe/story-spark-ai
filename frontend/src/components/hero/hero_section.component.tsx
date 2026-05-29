@@ -295,6 +295,7 @@ const HeroSectionComponent = () => {
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
           </p>
           <div className="flex-grow flex flex-col items-center justify-center">
+ fix/ui-layout-improvements
             <div className="relative max-w-3xl w-full before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-purple-500/20 before:via-indigo-500/20 before:to-blue-500/20 before:blur-xl before:animate-pulse">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -305,7 +306,20 @@ const HeroSectionComponent = () => {
                 </Link>
                 <Link to="/collab">
                   <button className="relative !rounded-button bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium px-8 py-3.5 border border-white/20 transition-all duration-300 rounded-xl cursor-pointer">
-                    ✍️ Collab Mode
+                    Collab Mode
+            <div className="relative max-w-3xl w-full">
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                <Link to="/stories">
+                  <button className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-md shadow-blue-500/15 dark:shadow-indigo-500/10 hover:shadow-lg hover:shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
+                    <i className="fa fa-wand-magic-sparkles"></i>
+                    <span>Get Started</span>
+                  </button>
+                </Link>
+                <Link to="/collab">
+                  <button className="relative px-8 py-3.5 rounded-xl bg-white/80 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white font-semibold shadow-md hover:bg-slate-50 dark:hover:bg-white/10 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
+                    <span></span>
+                    <span>Collab Mode</span>
+                 main
                   </button>
                 </Link>
               </div>

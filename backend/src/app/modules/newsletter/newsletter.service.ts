@@ -66,6 +66,20 @@ export const verifyNewsletter = async (token: string) => {
   return { message: "Email verified successfully.", subscriber };
 };
 
+export const generateUnsubscribeToken = async (email: string) => {
+  const normalizedEmail = email.trim().toLowerCase();
+  const subscriber = await NewsletterSubscriber.findOne({ email: normalizedEmail });
+  if (!subscriber) throw new Error("Subscriber not found.");
+  if (subscriber.status === "unsubscribed") {
+    return { message: "Already unsubscribed." };
+  }
+  const token = crypto.randomBytes(32).toString("hex");
+  subscriber.verificationToken = token;
+  subscriber.verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  await subscriber.save();
+  return { token };
+};
+
 export const unsubscribeNewsletter = async (email: string) => {
   const normalizedEmail = email.trim().toLowerCase();
   const subscriber = await NewsletterSubscriber.findOne({ email: normalizedEmail });
@@ -76,5 +90,19 @@ export const unsubscribeNewsletter = async (email: string) => {
   subscriber.unsubscribedAt = new Date();
   await subscriber.save();
 
+  return { message: "Unsubscribed successfully." };
+};
+
+export const unsubscribeByToken = async (token: string) => {
+  const subscriber = await NewsletterSubscriber.findOne({
+    verificationToken: token,
+    verificationTokenExpires: { $gt: new Date() },
+  });
+  if (!subscriber) throw new Error("Invalid or expired unsubscribe token.");
+  subscriber.status = "unsubscribed";
+  subscriber.unsubscribedAt = new Date();
+  subscriber.verificationToken = undefined;
+  subscriber.verificationTokenExpires = undefined;
+  await subscriber.save();
   return { message: "Unsubscribed successfully." };
 };
