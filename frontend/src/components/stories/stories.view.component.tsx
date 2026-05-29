@@ -889,6 +889,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       {showWorldMap && selectedStory && (
         <StoryWorldMap story={selectedStory.content} title={selectedStory.title} onClose={() => setShowWorldMap(false)} />
       )}
+      {showTranslator && selectedStory && (
+        <StoryTranslator story={selectedStory} onClose={() => setShowTranslator(false)} />
+      )}
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

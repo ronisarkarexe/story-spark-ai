@@ -9,6 +9,19 @@ import {
 
 import { loadRazorpayScript } from "../../../utils/loadRazorpay";
 
+interface RazorpayResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayError {
+  error?: {
+    code?: string;
+    description?: string;
+  };
+}
+
 const PaymentComponent = () => {
   // Read selected plan from pricing page
   const [searchParams] = useSearchParams();
@@ -54,7 +67,7 @@ const PaymentComponent = () => {
         description: `${planName} Subscription`,
         order_id: data.order.id,
 
-        handler: async (response: any) => {
+        handler: async (response: RazorpayResponse) => {
           try {
             // Verify payment
             const verifyRes = await fetch("/api/v1/payment/verify", {
@@ -89,9 +102,10 @@ const PaymentComponent = () => {
         },
       };
 
-      const paymentObject = new (window as any).Razorpay(options);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const paymentObject = new (window as { Razorpay?: any }).Razorpay(options);
 
-      paymentObject.on("payment.failed", function (response: any) {
+      paymentObject.on("payment.failed", function (response: RazorpayError) {
         console.error(response.error);
         alert("Payment failed.");
       });

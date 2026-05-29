@@ -1,6 +1,6 @@
 import express from "express";
 import { ConsistencyController } from "./consistency.controller";
-import auth from "../../middleware/auth"; // Assuming auth middleware exists
+import auth from "../../middleware/auth.middleware";
 import { ENUM_USER_ROLE } from "../../../enums/user"; // Need to check if this exists or just use a string
 
 const router = express.Router();

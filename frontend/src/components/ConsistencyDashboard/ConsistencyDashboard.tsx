@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./ConsistencyDashboard.css";
 import { IConsistencyReport } from "../../types/consistency.types";
 
@@ -11,7 +11,7 @@ const ConsistencyDashboard: React.FC<ConsistencyDashboardProps> = ({ postId }) =
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -27,12 +27,13 @@ const ConsistencyDashboard: React.FC<ConsistencyDashboardProps> = ({ postId }) =
       } else {
         setError(data.message || "Failed to fetch report.");
       }
-    } catch (err: any) {
-      setError(err.message || "Error fetching report");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Error fetching report";
+      setError(errorMessage || "Error fetching report");
     } finally {
       setLoading(false);
     }
-  };
+  }, [postId]);
 
   const generateReport = async () => {
     try {
@@ -51,8 +52,9 @@ const ConsistencyDashboard: React.FC<ConsistencyDashboardProps> = ({ postId }) =
       } else {
         setError(data.message || "Failed to generate report.");
       }
-    } catch (err: any) {
-      setError(err.message || "Error generating report");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Error generating report";
+      setError(errorMessage || "Error generating report");
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ const ConsistencyDashboard: React.FC<ConsistencyDashboardProps> = ({ postId }) =
     if (postId) {
       fetchReport();
     }
-  }, [postId]);
+  }, [postId, fetchReport]);
 
   if (loading) {
     return <div className="consistency-dashboard loading">Analyzing Consistency...</div>;

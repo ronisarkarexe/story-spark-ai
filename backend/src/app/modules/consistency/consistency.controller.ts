@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import catchAsync from "../../../shared/catchAsync";
-import sendResponse from "../../../shared/sendResponse";
+import catchAsync from "../../../shared/catch_async";
+import sendResponse from "../../../shared/send_response";
 import httpStatus from "http-status";
 import { ConsistencyService } from "./consistency.service";
 
