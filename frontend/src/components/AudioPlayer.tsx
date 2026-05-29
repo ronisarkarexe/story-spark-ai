@@ -89,8 +89,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     }
 
     return (
-      <section className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <section className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur overflow-hidden dark:border-slate-800 dark:bg-slate-900/80">        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
               <Volume2 className="h-5 w-5 text-indigo-500" aria-hidden="true" />
@@ -183,8 +182,8 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
               </button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_180px] md:items-end">
-              <div className="space-y-2">
+                <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_180px] md:items-end">             
+                <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>Progress</span>
                   <span aria-live="polite">
@@ -220,7 +219,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     role="combobox"
                     value={speech.rate}
                     onChange={(event) => speech.setRate(Number(event.target.value))}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                    className="w-32 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                   >
                     {SPEED_OPTIONS.map((option) => (
                       <option key={option} value={option}>
