@@ -42,7 +42,7 @@ const getValidDecodedToken = () => {
       removeFromLocalStorage(AUTH_KEY);
       return null;
     }
-      return buildUserInfo(decodedData);
+      return buildUserInfo(decodedData as any);
     } catch (error) {
       console.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);
