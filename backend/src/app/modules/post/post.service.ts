@@ -232,10 +232,10 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
- main
+ const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
-
   // Check bookmark status atomically via a DB query instead of loading the full document
   const isBookmarked = await Post.exists({ _id: postId, bookmarks: user._id });
 
@@ -254,7 +254,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
     );
     return { message: "Bookmark added", bookmarked: true };
   }
-};
+}
 
 const updatePost = async (
   postId: string,
