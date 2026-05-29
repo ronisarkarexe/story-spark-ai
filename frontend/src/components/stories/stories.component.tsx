@@ -58,6 +58,81 @@ const GENRES = [
   { value: "🌟 Adventure", icon: "🌟", name: "Adventure" },
 ] as const;
 
+const STORY_TEMPLATES = [
+  {
+    id: "fantasy-hero",
+    genre: "Fantasy",
+    title: "Hero's Journey",
+    description: "A classic fantasy adventure following a hero's quest",
+    prompt: "Write a fantasy story about a young hero who discovers they have magical powers and must embark on a dangerous quest to save their kingdom from an ancient evil. Include a wise mentor, magical creatures, and a final confrontation.",
+    characterArchetypes: ["The Chosen One", "The Wise Mentor", "The Dark Lord"],
+    plotStructure: ["Call to Adventure", "Mentor's Guidance", "Trials and Challenges", "Final Battle"]
+  },
+  {
+    id: "scifi-dystopia",
+    genre: "Sci-Fi",
+    title: "Dystopian Future",
+    description: "A story set in a futuristic society with advanced technology",
+    prompt: "Write a sci-fi story set in a dystopian future where technology controls every aspect of life. A protagonist discovers a secret that could change everything and must decide whether to reveal it or keep it hidden.",
+    characterArchetypes: ["The Rebel", "The System Enforcer", "The Hacker"],
+    plotStructure: ["World Building", "Discovery", "Conflict", "Resolution"]
+  },
+  {
+    id: "romance-second-chance",
+    genre: "Romance",
+    title: "Second Chance Love",
+    description: "A romantic story about rekindling a past relationship",
+    prompt: "Write a romance story about two people who were once in love but separated by circumstances. Years later, they meet again and must decide if they're willing to give their relationship another chance.",
+    characterArchetypes: ["The Hopeless Romantic", "The Cynic", "The Supportive Friend"],
+    plotStructure: ["Past Relationship", "Reunion", "Conflict", "Reconciliation"]
+  },
+  {
+    id: "mystery-detective",
+    genre: "Mystery",
+    title: "Classic Detective",
+    description: "A mystery story following a detective solving a complex case",
+    prompt: "Write a mystery story about a brilliant detective who must solve a complex murder case. Include red herrings, clues, and a surprising twist ending.",
+    characterArchetypes: ["The Detective", "The Suspect", "The Victim"],
+    plotStructure: ["Crime Discovery", "Investigation", "False Leads", "Revelation"]
+  },
+  {
+    id: "horror-psychological",
+    genre: "Horror",
+    title: "Psychological Horror",
+    description: "A horror story focusing on psychological tension and fear",
+    prompt: "Write a psychological horror story about a person who begins to question their sanity as strange events unfold around them. Build tension through atmosphere and psychological manipulation.",
+    characterArchetypes: ["The Protagonist", "The Antagonist", "The Skeptic"],
+    plotStructure: ["Normal Life", "Strange Events", "Escalation", "Climax"]
+  },
+  {
+    id: "adventure-quest",
+    genre: "Adventure",
+    title: "Epic Quest",
+    description: "An adventure story about a journey to achieve a great goal",
+    prompt: "Write an adventure story about a group of adventurers who embark on a dangerous quest to find a legendary treasure. Face obstacles, form alliances, and discover the true meaning of their journey.",
+    characterArchetypes: ["The Leader", "The Warrior", "The Rogue", "The Healer"],
+    plotStructure: ["The Call", "Gathering Allies", "The Journey", "The Treasure"]
+  },
+  {
+    id: "drama-family",
+    genre: "Drama",
+    title: "Family Dynamics",
+    description: "A drama exploring complex family relationships",
+    prompt: "Write a drama story about a family gathering that brings long-buried secrets and tensions to the surface. Explore themes of forgiveness, redemption, and the complexity of family bonds.",
+    characterArchetypes: ["The Patriarch/Matriarch", "The Black Sheep", "The Peacemaker"],
+    plotStructure: ["Gathering", "Conflict", "Revelation", "Resolution"]
+  },
+  {
+    id: "comedy-sitcom",
+    genre: "Comedy",
+    title: "Situation Comedy",
+    description: "A humorous story with comedic situations and misunderstandings",
+    prompt: "Write a comedy story about a series of misunderstandings and mishaps that occur during a seemingly simple event. Use witty dialogue, physical comedy, and relatable situations.",
+    characterArchetypes: ["The Straight Man", "The Comic Relief", "The Chaos Agent"],
+    plotStructure: ["Setup", "Complication", "Escalation", "Resolution"]
+  }
+];
+
 type GenreName = (typeof GENRES)[number]["name"];
 
 const GENRE_LABELS: Record<string, Record<GenreName, string>> = {
@@ -328,6 +403,7 @@ const StoriesComponent = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
+  const [showTemplateModal, setShowTemplateModal] = useState<boolean>(false);
 
   const filteredStories = useMemo(() => {
     if (!searchQuery.trim()) return stories;
@@ -475,6 +551,17 @@ const StoriesComponent = () => {
       activeGenerationRef.current?.abort();
     };
   }, []);
+
+  const handleSelectTemplate = (template: typeof STORY_TEMPLATES[0]) => {
+    setValue("prompt", template.prompt);
+    setTextareaValue(template.prompt);
+    const genre = GENRES.find(g => g.name === template.genre);
+    if (genre) {
+      setSelectedGenre(genre.value);
+    }
+    setShowTemplateModal(false);
+    toast.success(`Template "${template.title}" selected!`);
+  };
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (isGenerationInProgressRef.current) {
@@ -864,7 +951,15 @@ const StoriesComponent = () => {
       {text.forNewLine}
     </p>
 
-    <div className="flex justify-end mt-2 w-full">
+    <div className="flex justify-end mt-2 w-full gap-2">
+      <button
+        type="button"
+        onClick={() => setShowTemplateModal(true)}
+        className="rounded-lg bg-gradient-to-r from-purple-400 to-pink-500 text-gray-200 px-4 py-3 font-semibold cursor-pointer hover:shadow-lg hover:shadow-purple-500/50 hover:scale-105 transition-all duration-300 transform flex items-center space-x-2 group"
+      >
+        <i className="fas fa-book-open text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
+        Templates
+      </button>
       <button
         type="submit"
         disabled={loading || isOverLimit}
@@ -976,6 +1071,49 @@ const StoriesComponent = () => {
             >
               {text.close}
             </button>
+          </div>
+        </div>
+      )}
+
+      {showTemplateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.15)] max-w-4xl w-full max-h-[90vh] overflow-hidden transform transition-all text-slate-900 dark:bg-[#0f172a] dark:border-white/10 dark:text-white dark:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+            <div className="p-6 border-b border-gray-200 dark:border-slate-700">
+              <h2 className="text-2xl font-bold mb-2">Story Templates</h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Choose a template to get started with your story</p>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {STORY_TEMPLATES.map((template) => (
+                  <div
+                    key={template.id}
+                    onClick={() => handleSelectTemplate(template)}
+                    className="p-4 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 hover:border-indigo-500 transition-all dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:border-indigo-500"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-bold text-lg">{template.title}</h3>
+                      <span className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full dark:bg-indigo-900 dark:text-indigo-300">
+                        {template.genre}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{template.description}</p>
+                    <div className="text-xs text-slate-500 dark:text-slate-500">
+                      <strong>Character Archetypes:</strong> {template.characterArchetypes.join(", ")}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 dark:border-slate-700">
+              <button
+                onClick={() => setShowTemplateModal(false)}
+                className="w-full px-4 py-2 bg-slate-200 text-slate-900 rounded-lg hover:bg-slate-300 transition-colors dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
