@@ -28,8 +28,11 @@ body {
         radial-gradient(circle at top left, rgba(208, 188, 255, 0.16), transparent 18%),
         radial-gradient(circle at bottom right, rgba(255, 182, 106, 0.12), transparent 20%),
         linear-gradient(180deg, #090b12 0%, #0d111b 100%);
-    background-color: #090b12;
+   background-color: #090b12;
+    color: #e1e2ea; /* Forces all standard unstyled text inside body to be visibly light */
 }
+
+
 
 /* ── Keyframe Animations ── */
 @keyframes float {
@@ -99,11 +102,38 @@ body {
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
 }
 
-.auth-tab-active {
-    color: #d0bcff;
-    border-bottom: 2px solid #d0bcff;
+/* ── Fix: Tab Navigation Container & Buttons ── */
+.auth-tabs-container {
+    display: flex;
+    gap: var(--ds-space-4);
+    margin-bottom: var(--ds-space-6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: var(--ds-space-2);
 }
 
+.auth-tab-btn {
+    background: transparent !important; /* Forces the browser to strip the white box */
+    border: none;
+    color: rgba(203, 195, 215, 0.6);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: var(--ds-space-2) var(--ds-space-4);
+    cursor: pointer;
+    transition: color 0.2s ease;
+    text-transform: uppercase;
+}
+
+.auth-tab-btn:hover {
+    color: #ffffff;
+}
+
+.auth-tab-btn.auth-tab-active {
+    color: #d0bcff;
+    border-bottom: 2px solid #d0bcff;
+    border-radius: 0;
+    margin-bottom: -10px; /* Perfectly aligns with active bottom border line */
+}
 /* ── Left Pane Radial Overlays ── */
 .left-pane-overlay,
 .left-pane-radial {
@@ -134,9 +164,51 @@ input[type="password"] {
     box-sizing: border-box;
     transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
 }
+/* ── Fix: High-Contrast Typography Labels ── */
+.ds-label, 
+label {
+    display: block;
+    color: #f1f2fa !important; /* Vivid off-white to contrast against deep purple backgrounds */
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: var(--ds-space-2);
+}
 
+.ds-subtext, 
+p {
+    color: rgba(248, 250, 252, 0.85) !important; /* Brings out muted labels and structural text instructions */
+    font-size: 14px;
+    margin-bottom: var(--ds-space-4);
+}
+
+/* ── Fix: Flex Container to Stop Text Overlapping ── */
+.ds-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: var(--ds-space-2);
+}
+
+.ds-label-row .ds-label {
+    margin-bottom: 0; 
+}
+
+.ds-link {
+    color: #d0bcff;
+    font-size: 13px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.ds-link:hover {
+    color: #ec4899;
+    text-decoration: underline;
+}
 .ds-input-group {
     position: relative;
+    margin-bottom: var(--ds-space-4); /* Spacing baseline between groups */
+    width: 100%;
 }
 
 .ds-input-group .ds-input-icon {
@@ -148,6 +220,11 @@ input[type="password"] {
     font-size: 18px;
     pointer-events: none;
     transition: color 0.2s ease;
+}
+
+/* Increases standard padding so 'Alex Spark' doesn't hit the icon */
+.ds-input.with-icon {
+    padding-left: 48px !important; 
 }
 
 .ds-input-group.has-action .ds-input {
@@ -216,6 +293,7 @@ input:focus {
 /* ── Design System: Google Buttons ── */
 .ds-btn-google {
     height: 44px;
+    width: 100%;
     max-width: var(--ds-btn-max-width);
     border-radius: 14px;
     margin-left: auto;
@@ -223,6 +301,15 @@ input:focus {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: #f8fafc;
+    display: flex; /* Centers text and Google icon horizontally */
+    align-items: center;
+    justify-content: center;
+    gap: var(--ds-space-2);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    margin-bottom: var(--ds-space-6);
 }
 
 .ds-btn-google:hover {
@@ -254,9 +341,9 @@ input:focus {
 /* ── Field Helpers, Errors, Alerts ── */
 .ds-help {
     margin-top: 8px;
-    font-size: 12.5px;
+    font-size: 13px;
     line-height: 1.35;
-    color: rgba(203, 195, 215, 0.8);
+    color: #cbd5e1 !important; /* Brighter slate value to keep messages clear and accessible */
 }
 
 .ds-error {
