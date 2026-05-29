@@ -1,5 +1,5 @@
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, RepeatVector, TimeDistributed, Input
+from tensorflow.keras.layers import LSTM, Dense, RepeatVector, TimeDistributed, Input, Dropout
 
 SEQ_LEN = 10
 N_FEATURES = 8
@@ -10,7 +10,6 @@ def build_model(units=32):
         LSTM(
             units,
             activation="tanh",
-            dropout=0.2,
             return_sequences=False,
             name="encoder"
         ),
@@ -21,7 +20,7 @@ def build_model(units=32):
             return_sequences=True,
             name="decoder"
         ),
-        TimeDistributed(Dense(N_FEATURES), name="output")
+        TimeDistributed(Dense(N_FEATURES, activation="linear"), name="output")
     ])
 
     model.compile(optimizer="adam", loss="mse")

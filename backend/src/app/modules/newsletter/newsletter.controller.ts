@@ -61,3 +61,27 @@ export const unsubscribe = async (req: Request, res: Response) => {
     });
   }
 };
+// Generate unsubscribe token (to be sent via email link)
+export const generateUnsubscribeToken = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+    const result = await newsletterService.generateUnsubscribeToken(email);
+    res.status(200).json(result);
+  } catch (err: any) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+// Unsubscribe via signed token — safe, no unauthenticated email enumeration
+export const unsubscribeByToken = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+    const result = await newsletterService.unsubscribeByToken(token);
+    res.status(200).json(result);
+  } catch (err: any) {
+    res.status(400).json({ message: err.message });
+  }
+};

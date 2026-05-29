@@ -22,4 +22,17 @@ const CommentSchema: Schema<IComment> = new Schema<IComment, CommentModel>(
   { timestamps: true }
 );
 
+// Supports checking replies under a specific parent comment
+CommentSchema.index({
+  postId: 1,
+  parentCommentId: 1,
+  createdAt: -1
+});
+
+// Supports fetching all comments for a post ordered by createdAt
+CommentSchema.index({
+  postId: 1,
+  createdAt: -1
+});
+
 export const Comment = model<IComment, CommentModel>("Comment", CommentSchema);

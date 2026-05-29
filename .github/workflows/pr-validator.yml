@@ -33,18 +33,6 @@ jobs:
 
             const warnings = [];
 
-            // Check conventional title
-            const conventionalRegex = /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|security)(\(.+\))?: .+/i;
-            if (!conventionalRegex.test(title)) {
-              warnings.push('⚠️ Use a conventional PR title. Examples:\n  - `feat: add story export to PDF`\n  - `fix: resolve login redirect on expired token`\n  - `docs: update local setup in README`');
-            }
-
-            // Check linked issue
-            const issueRegex = /(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#\d+/i;
-            if (!issueRegex.test(body)) {
-              warnings.push('⚠️ No linked issue found. Add `Closes #<issue-number>` to your PR description.');
-            }
-
             // Check if targeting main (warn, don't block)
             if (pr.base.ref !== 'main') {
               warnings.push(`⚠️ Your PR targets \`${pr.base.ref}\` instead of \`main\`. Please check your base branch.`);

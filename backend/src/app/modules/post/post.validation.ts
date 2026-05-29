@@ -23,6 +23,7 @@ const createPost = z.object({
     topic: z
       .array(TopicSchema)
       .min(2, { message: "At least two topics are required!" }),
+    language: z.string().optional(),
   }),
 });
 

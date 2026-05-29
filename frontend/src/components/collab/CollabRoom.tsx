@@ -1,8 +1,16 @@
-import { useState, useEffect, useRef } from "react";
-import { io, Socket } from "socket.io-client";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getSocketIo, connectSocket } from "../../socket/socket.oi";
+import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 
-interface IStoryChunk {
+interface Participant {
+  userId: string;
+  username: string;
+  color: string;
+  socketId: string;
+}
+
+interface StoryChunk {
   authorId: string;
   authorName: string;
   color: string;
@@ -11,229 +19,207 @@ interface IStoryChunk {
   timestamp: Date;
 }
 
-interface IParticipant {
-  userId: string;
-  username: string;
-  color: string;
-  socketId: string;
-}
-
-interface IRoom {
+interface Room {
   roomId: string;
-  participants: IParticipant[];
-  story: IStoryChunk[];
+  createdBy: string;
+  participants: Participant[];
+  story: StoryChunk[];
+  createdAt: Date;
 }
-
-const BACKEND_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000";
 
 export default function CollabRoom() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [room, setRoom] = useState<IRoom | null>(null);
-  const [inputText, setInputText] = useState("");
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const [isAIThinking, setIsAIThinking] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [error, setError] = useState("");
-  const storyEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
-  const userId = userInfo?._id || userInfo?.id || "guest";
-  const username = userInfo?.name || userInfo?.username || "Anonymous";
-  const token = localStorage.getItem("token") || "";
+  const [room, setRoom] = useState<Room | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [newText, setNewText] = useState("");
+  const user = getUserInfo();
 
   useEffect(() => {
-    const newSocket = io(`${BACKEND_URL}/collab`, {
-      auth: { token },
-      transports: ["websocket"],
-    });
+    if (!isLoggedIn()) {
+      navigate("/login");
+      return;
+    }
 
-    newSocket.on("connect", () => {
-      if (roomId) {
-        newSocket.emit("collab:join_room", { roomId, userId, username });
+    try {
+      const socket = connectSocket();
+      if (!socket) {
+        setError("Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env");
+        setLoading(false);
+        return;
       }
-    });
 
-    newSocket.on("collab:joined", ({ room }) => setRoom(room));
-    newSocket.on("collab:room_created", ({ room }) => setRoom(room));
-    newSocket.on("collab:room_updated", ({ room }) => setRoom(room));
-    newSocket.on("collab:story_updated", ({ story }) =>
-      setRoom((prev) => prev ? { ...prev, story } : prev)
-    );
-    newSocket.on("collab:ai_thinking", () => setIsAIThinking(true));
-    newSocket.on("collab:user_typing", ({ username: u }) => {
-      setTypingUsers((prev) => [...new Set([...prev, u])]);
-    });
-    newSocket.on("collab:user_stop_typing", ({ userId: uid }) => {
-      setTypingUsers((prev) => prev.filter((u) => u !== uid));
-      setIsAIThinking(false);
-    });
-    newSocket.on("collab:error", ({ message }) => setError(message));
+      // Connect to collab namespace
+      const collabSocket = socket.io.of("/collab");
 
-    setSocket(newSocket);
-    return () => { newSocket.disconnect(); };
-  }, [roomId, token, userId, username]);
+      // Request room info
+      collabSocket.emit("collab:get_room", { roomId }, (response: any) => {
+        if (response && response.room) {
+          setRoom(response.room);
+          setError(null);
+        } else {
+          setError("Room not found");
+        }
+        setLoading(false);
+      });
 
-  useEffect(() => {
-    storyEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [room?.story]);
+      // Listen for room updates
+      const handleRoomUpdated = (data: any) => {
+        if (data && data.room) {
+          setRoom(data.room);
+        }
+      };
+
+      const handleStoryUpdated = (data: any) => {
+        if (data && data.story) {
+          setRoom((prev) => (prev ? { ...prev, story: data.story } : null));
+        }
+      };
+
+      collabSocket.on("collab:room_updated", handleRoomUpdated);
+      collabSocket.on("collab:story_updated", handleStoryUpdated);
+      collabSocket.on("collab:error", (data: any) => {
+        setError(data.message);
+        setLoading(false);
+      });
+
+      return () => {
+        collabSocket.off("collab:room_updated", handleRoomUpdated);
+        collabSocket.off("collab:story_updated", handleStoryUpdated);
+      };
+    } catch (err) {
+      console.error("Collab error:", err);
+      setError("Failed to initialize collaboration");
+      setLoading(false);
+    }
+  }, [roomId, navigate]);
 
   const handleAddText = () => {
-    if (!inputText.trim() || !socket) return;
-    socket.emit("collab:add_text", { roomId, userId, text: inputText.trim() });
-    setInputText("");
-    socket.emit("collab:stop_typing", { roomId, userId });
+    if (!newText.trim() || !user) return;
+
+    const socket = getSocketIo();
+    if (socket) {
+      socket.io.of("/collab").emit("collab:add_text", {
+        roomId,
+        userId: user.userId,
+        text: newText,
+      });
+      setNewText("");
+    }
   };
 
   const handleAIContinue = () => {
-    if (!socket) return;
-    setIsAIThinking(true);
-    socket.emit("collab:ai_continue", { roomId });
+    const socket = getSocketIo();
+    if (socket) {
+      socket.io.of("/collab").emit("collab:ai_continue", { roomId });
+    }
   };
 
-  const handleTyping = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputText(e.target.value);
-    if (!socket) return;
-    socket.emit("collab:typing", { roomId, userId, username });
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit("collab:stop_typing", { roomId, userId });
-    }, 2000);
-  };
-
-  const copyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  if (error) return (
-    <div className="min-h-screen bg-[#0d0d14] flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-red-400 text-xl mb-4">{error}</p>
-        <button onClick={() => navigate("/collab")} className="text-indigo-400 underline">
-          Go back
-        </button>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-[#0d0d14] text-white flex flex-col">
-      {/* Header */}
-      <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/30 backdrop-blur">
-        <div>
-          <h1 className="text-xl font-bold text-indigo-400">✍️ Story Collab Room</h1>
-          <p className="text-xs text-white/40">Room: {roomId}</p>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Loading collaboration room...</p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Participants */}
-          <div className="flex items-center gap-1">
-            {room?.participants.map((p) => (
-              <div
-                key={p.userId}
-                title={p.username}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2"
-                style={{ backgroundColor: p.color + "33", borderColor: p.color, color: p.color }}
-              >
-                {p.username[0].toUpperCase()}
-              </div>
-            ))}
-          </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300">
+        <div className="text-center max-w-md">
+          <p className="text-red-500 dark:text-red-400 text-lg mb-2">Error</p>
+          <p className="text-slate-600 dark:text-white/60 text-sm mb-6">{error}</p>
           <button
-            onClick={copyLink}
-            className="px-3 py-1.5 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 text-sm hover:bg-indigo-500/30 transition"
+            type="button"
+            onClick={() => navigate("/collab")}
+            className="text-indigo-600 dark:text-indigo-400 underline"
           >
-            {copied ? "✅ Copied!" : "🔗 Share Link"}
+            Back to collab home
           </button>
         </div>
       </div>
+    );
+  }
 
-      {/* Story Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 max-w-4xl mx-auto w-full">
-        {room?.story.length === 0 && (
-          <div className="text-center text-white/30 py-20">
-            <p className="text-4xl mb-4">✍️</p>
-            <p className="text-lg">The story begins here...</p>
-            <p className="text-sm mt-2">Add your first paragraph below!</p>
-          </div>
-        )}
-        {room?.story.map((chunk, i) => (
-          <div key={i} className={`flex gap-3 ${chunk.isAI ? "justify-center" : ""}`}>
-            {!chunk.isAI && (
-              <div
-                className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold mt-1"
-                style={{ backgroundColor: chunk.color + "33", color: chunk.color }}
-              >
-                {chunk.authorName[0].toUpperCase()}
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white p-4 transition-colors duration-300">
+      <div className="max-w-4xl mx-auto">
+        <button
+          type="button"
+          onClick={() => navigate("/collab")}
+          className="mb-6 px-4 py-2 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 transition-colors"
+        >
+          ← Back
+        </button>
+
+        <div className="grid grid-cols-3 gap-6">
+          {/* Story Content */}
+          <div className="col-span-2">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6 mb-6">
+              <h1 className="text-2xl font-bold mb-4">Room: {roomId}</h1>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 min-h-64 max-h-96 overflow-y-auto mb-4">
+                {room?.story && room.story.length > 0 ? (
+                  <div className="space-y-3">
+                    {room.story.map((chunk, idx) => (
+                      <div key={idx} className="text-sm">
+                        <span style={{ color: chunk.color }} className="font-semibold">
+                          {chunk.authorName}:
+                        </span>{" "}
+                        <span className="text-slate-600 dark:text-slate-300">{chunk.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-slate-400">Story is empty. Start writing!</p>
+                )}
               </div>
-            )}
-            <div className={`${chunk.isAI ? "w-full max-w-2xl" : "flex-1"}`}>
-              {!chunk.isAI && (
-                <p className="text-xs mb-1" style={{ color: chunk.color }}>
-                  {chunk.authorName}
-                </p>
-              )}
-              <div
-                className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                  chunk.isAI
-                    ? "bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 text-yellow-100 text-center italic"
-                    : "bg-white/5 border border-white/10 text-white/85"
-                }`}
-                style={!chunk.isAI ? { borderColor: chunk.color + "33" } : {}}
-              >
-                {chunk.isAI && <span className="text-yellow-400 mr-2">✨ AI</span>}
-                {chunk.text}
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newText}
+                  onChange={(e) => setNewText(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleAddText()}
+                  placeholder="Add your story text..."
+                  className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-white/10 rounded-lg focus:outline-none focus:border-indigo-500"
+                />
+                <button
+                  onClick={handleAddText}
+                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Add
+                </button>
+                <button
+                  onClick={handleAIContinue}
+                  className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  AI ✨
+                </button>
               </div>
             </div>
           </div>
-        ))}
-        {isAIThinking && (
-          <div className="text-center py-4">
-            <span className="text-yellow-400 animate-pulse">✨ AI is writing...</span>
-          </div>
-        )}
-        {typingUsers.length > 0 && (
-          <p className="text-xs text-white/40 italic">
-            {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing...
-          </p>
-        )}
-        <div ref={storyEndRef} />
-      </div>
 
-      {/* Input Area */}
-      <div className="border-t border-white/10 bg-black/30 backdrop-blur px-6 py-4">
-        <div className="max-w-4xl mx-auto flex gap-3">
-          <textarea
-            value={inputText}
-            onChange={handleTyping}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleAddText();
-              }
-            }}
-            placeholder="Continue the story... (Enter to submit)"
-            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-indigo-500/50 resize-none"
-            rows={2}
-          />
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={handleAddText}
-              disabled={!inputText.trim()}
-              className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white text-sm font-medium transition"
-            >
-              Add ✍️
-            </button>
-            <button
-              onClick={handleAIContinue}
-              disabled={isAIThinking}
-              className="px-4 py-2 rounded-xl bg-yellow-500/20 border border-yellow-500/30 hover:bg-yellow-500/30 disabled:opacity-40 text-yellow-400 text-sm font-medium transition"
-            >
-              {isAIThinking ? "..." : "AI ✨"}
-            </button>
+          {/* Participants Sidebar */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6">
+            <h2 className="text-lg font-bold mb-4">Participants ({room?.participants.length})</h2>
+            <div className="space-y-2">
+              {room?.participants.map((p) => (
+                <div
+                  key={p.userId}
+                  className="px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center gap-2"
+                >
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: p.color }}
+                  ></div>
+                  <span className="text-sm">{p.username}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

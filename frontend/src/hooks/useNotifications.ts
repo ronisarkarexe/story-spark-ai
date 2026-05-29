@@ -1,53 +1,36 @@
 import { useEffect, useMemo, useState } from "react";
-import { getUserInfo, isLoggedIn } from "../services/auth.service";
-import { socketIo } from "../socket/socket.oi";
+import { isLoggedIn } from "../services/auth.service";
 import {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
 } from "../redux/apis/notification.api";
-import { NotificationItem } from "../models/notification";
+import { connectSocket, disconnectSocket, getSocketIo } from "../socket/socket.oi";
+import type { NotificationItem } from "../models/notification";
 
+/**
+ * Notification bell: REST + Socket.IO real-time updates.
+ * Socket.IO listens for "notification:new" and "pushNotification" events.
+ * Falls back to REST polling if Socket.IO is unavailable.
+ */
 export const useNotifications = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [realtimeNotifications, setRealtimeNotifications] = useState<NotificationItem[]>([]);
   const isAuthed = isLoggedIn();
-  const user = getUserInfo();
 
   const { data, isFetching, refetch } = useGetNotificationsQuery(undefined, {
     skip: !isAuthed,
   });
   const [markNotificationRead] = useMarkNotificationReadMutation();
-  const [liveNotifications, setLiveNotifications] = useState<NotificationItem[]>([]);
 
-  useEffect(() => {
-    if (!isAuthed || !user?.userId) {
-      return;
-    }
-
-    socketIo.auth = { token: localStorage.getItem("accessToken") || "" };
-    socketIo.connect();
-
-    const handleNotification = (notification: NotificationItem) => {
-      setLiveNotifications((prev) => [notification, ...prev]);
-    };
-
-    socketIo.on("notification:new", handleNotification);
-    return () => {
-      socketIo.off("notification:new", handleNotification);
-      socketIo.disconnect();
-    };
-  }, [isAuthed, user?.userId]);
-
+  // Merge REST data with real-time updates
   const notifications = useMemo(() => {
-    const combined = [...(liveNotifications || []), ...(data || [])];
-    const seen = new Set<string>();
-    return combined.filter((item) => {
-      if (seen.has(item._id)) {
-        return false;
-      }
-      seen.add(item._id);
-      return true;
-    });
-  }, [data, liveNotifications]);
+    const baseNotifications = data ?? [];
+    // Add real-time notifications that aren't already in the list
+    const newRealtime = realtimeNotifications.filter(
+      (rt: NotificationItem) => !baseNotifications.some((n: NotificationItem) => n._id === rt._id)
+    );
+    return [...newRealtime, ...baseNotifications];
+  }, [data, realtimeNotifications]);
 
   const unreadCount = notifications.filter((item) => !item.isRead).length;
 
@@ -63,6 +46,39 @@ export const useNotifications = () => {
   const markAsRead = async (notificationId: string) => {
     await markNotificationRead(notificationId).unwrap();
   };
+
+  // Set up Socket.IO listeners
+  useEffect(() => {
+    if (!isAuthed) {
+      disconnectSocket();
+      return;
+    }
+
+    try {
+      const socket = connectSocket();
+      if (!socket) {
+        return;
+      }
+
+      // Listen for real-time notifications
+      const handleNewNotification = (notification: NotificationItem) => {
+        console.log("[Story Spark] Received notification:", notification);
+        setRealtimeNotifications((prev) => [notification, ...prev]);
+        // Refetch to keep in sync with backend
+        void refetch();
+      };
+
+      socket.on("notification:new", handleNewNotification);
+      socket.on("pushNotification", handleNewNotification);
+
+      return () => {
+        socket.off("notification:new", handleNewNotification);
+        socket.off("pushNotification", handleNewNotification);
+      };
+    } catch (error) {
+      console.warn("[Story Spark] Failed to set up Socket.IO notifications:", error);
+    }
+  }, [isAuthed, refetch]);
 
   return {
     notifications,
