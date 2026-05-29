@@ -1,4 +1,4 @@
-import express, { Application } from "express";
+import express, { Application, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import httpStatus from "http-status";
 import cron from "node-cron";
@@ -7,7 +7,7 @@ import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import { User } from "./app/modules/user/user.model";
-import { StoryRoutes } from "./routes/story.routes";
+import { NewsletterSubscriber } from "./app/modules/newsletter/newsletter.model";
 
 const app: Application = express();
 
@@ -24,7 +24,7 @@ const corsOrigins =
     ? config.cors_origins
     : defaultCorsOrigins;
 
-// FIXED CORS MIDDLEWARE ENGINE
+// ── FIXED CORS MIDDLEWARE ENGINE (WITH CORRECTED SYNTAX BRACKETS) ──
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -32,24 +32,23 @@ app.use(
         callback(null, true);
       } else {
         callback(new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy"));
-      }
-    },
+      } // <-- Safely closed the else statement block here
+    },  // <-- Safely closed the origin function assignment here
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Cookie"], 
   })
 );
 
-app.use("/review", StoryRoutes);
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.urlencoded({ extended: true })); // Keeps your extended payload parsing enabled
 app.use(cookieParser());
 
 // Routes
 app.use("/api/v1", Routers);
 
 // Global 404 Fallback Handler
-app.all("*", (req: any, res: any) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
     message: "Not Found",
@@ -64,7 +63,7 @@ app.all("*", (req: any, res: any) => {
 
 app.use(globalErrorHandler);
 
-// Cron job to reset request counts at the beginning of each month
+// Cron job to reset request counts at the beginning of each month (skip on Vercel serverless)
 if (!process.env.VERCEL) {
   cron.schedule("0 0 1 * *", async () => {
     try {

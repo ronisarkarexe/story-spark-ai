@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { connectSocket, getSocketIo } from "../../socket/socket.oi";
+import { connectSocket } from "../../socket/socket.oi";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 export default function CollabHome() {
@@ -26,14 +26,33 @@ export default function CollabHome() {
         return;
       }
 
-      const collabSocket = socket.io.of("/collab");
+      const manager = (socket as unknown as {
+        io?: {
+          of?: (namespace: string) => {
+            emit: (event: string, ...args: unknown[]) => void;
+          };
+        };
+      }).io;
+      const collabSocket = manager?.of?.("/collab");
+      if (!collabSocket) {
+        setError(
+          "Socket.IO namespace connection failed. Please check VITE_SOCKET_URL in frontend/.env"
+        );
+        setIsCreating(false);
+        return;
+      }
 
       collabSocket.emit(
         "collab:create_room",
         { userId: user?.userId, username: user?.name },
-        (response: any) => {
-          if (response && response.roomId) {
-            navigate(`/collab/${response.roomId}`);
+        (response: unknown) => {
+          if (
+            typeof response === "object" &&
+            response !== null &&
+            "roomId" in response &&
+            typeof (response as { roomId?: string }).roomId === "string"
+          ) {
+            navigate(`/collab/${(response as { roomId: string }).roomId}`);
           } else {
             setError("Failed to create room. Please try again.");
           }
