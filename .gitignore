@@ -5,6 +5,8 @@ node_modules/
 dist-ssr/
 build/
 *.tsbuildinfo
+build_output.txt
+*_output.txt
 
 # Logs
 logs/
@@ -57,4 +59,5 @@ backend/ml/saved/
 node_modules/
 
 dist/
-
+.claude
+.refact

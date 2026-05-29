@@ -1,6 +1,6 @@
 {
-  "installCommand": "cd .. && npm ci",
-  "buildCommand": "npm run build",
+  "installCommand": "cd .. && corepack enable && pnpm install",
+  "buildCommand": "pnpm --filter story-spark-ai-frontend run build",
   "outputDirectory": "dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/" }]
 }

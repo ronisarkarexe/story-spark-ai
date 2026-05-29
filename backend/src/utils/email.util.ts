@@ -67,7 +67,8 @@ export const sendContactEmail = async (data: {
   });
 
   const mailOptions = {
-    from: `"${data.fullname}" <${data.email}>`,
+    from: `"${data.fullname}" <${config.verify_email}>`,
+    replyTo: data.email,
     to: config.verify_email,
     subject: `Contact Form: ${data.subject}`,
     html: `

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
+import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
 import { 
   Bug, 
   Send, 
@@ -45,7 +46,7 @@ const SEVERITIES = [
 ];
 
 const ReportBug = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitBugReport, { isLoading: isSubmitting }] = useSubmitBugReportMutation();
   const [isSuccess, setIsSuccess] = useState(false);
 
   const {
@@ -56,12 +57,8 @@ const ReportBug = () => {
   } = useForm<ReportBugFormData>();
 
   const onSubmit = async (data: ReportBugFormData) => {
-    setIsSubmitting(true);
-    
-    // Simulate API call
     try {
-      console.log("Submitting bug report:", data);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await submitBugReport(data).unwrap();
       
       setIsSuccess(true);
       toast.success("Bug report submitted successfully!");
@@ -71,8 +68,6 @@ const ReportBug = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
       toast.error("Failed to submit report. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
