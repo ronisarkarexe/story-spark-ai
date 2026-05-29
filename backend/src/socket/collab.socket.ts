@@ -1,4 +1,11 @@
 import { Server, Socket } from "socket.io";
+import { User } from "../app/modules/user/user.model";
+import { REQUEST_LIMITS } from "../interfaces/ai_model_request_limit";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import config from "../config";
+
+const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 const COLORS = [
   "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4",
@@ -108,26 +115,120 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // AI continues the story
-    socket.on("collab:ai_continue", ({ roomId }) => {
+    socket.on("collab:ai_continue", async ({ roomId }) => {
       const room = rooms.get(roomId);
       if (!room) return;
 
-      collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
+      const userId = socket.data.userId;
+      if (!userId) {
+        socket.emit("collab:error", { message: "Unauthorized" });
+        return;
+      }
 
-      const aiChunk: IStoryChunk = {
-        authorId: "ai",
-        authorName: "✨ AI",
-        color: "#d4af37",
-        text: "...the story continues with AI magic here...",
-        isAI: true,
-        timestamp: new Date(),
-      };
+      // 1. Participant Authorization Check
+      const participant = room.participants.find(p => p.userId === userId);
+      if (!participant) {
+        socket.emit("collab:error", { message: "You are not a participant of this room" });
+        return;
+      }
 
-      room.story.push(aiChunk);
-      collabNamespace.to(roomId).emit("collab:story_updated", {
-        story: room.story,
-        newChunk: aiChunk
-      });
+      // Check if user exists in the DB
+      const user = await User.findById(userId);
+      if (!user) {
+        socket.emit("collab:error", { message: "User not found!" });
+        return;
+      }
+
+      const currentDate = new Date();
+      const firstDayOfMonth = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        1
+      );
+
+      try {
+        // 2. Idempotent monthly reset
+        if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
+          await User.updateOne(
+            { email: user.email, lastRequestDate: { $lt: firstDayOfMonth } },
+            { $set: { requestsThisMonth: 0, lastRequestDate: currentDate } }
+          );
+        }
+
+        const requestLimit =
+          REQUEST_LIMITS[user.subscriptionType as keyof typeof REQUEST_LIMITS] || REQUEST_LIMITS.free;
+
+        // 3. Atomic Quota Reservation to protect against concurrency race conditions
+        const updatedUser = await User.findOneAndUpdate(
+          {
+            email: user.email,
+            requestsThisMonth: { $lt: requestLimit },
+          },
+          {
+            $inc: { requestsThisMonth: 1 },
+            $set: { lastRequestDate: currentDate },
+          },
+          { new: true }
+        );
+
+        if (!updatedUser) {
+          socket.emit("collab:error", { message: "Monthly request limit exceeded!" });
+          return;
+        }
+
+        // 4. Emit AI Thinking ONLY after quota check succeeds to prevent infinite loading state spams
+        collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
+
+        let aiText = "";
+        try {
+          const fullContext = room.story.map(chunk => chunk.text).join("\n");
+          const prompt = `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${fullContext}\n\nContinuation:`;
+
+          const result = await model.generateContent(prompt);
+          aiText = result.response.text().trim();
+          
+          if (!aiText) {
+            throw new Error("Empty response from AI");
+          }
+        } catch (error) {
+          // Rollback quota on failure
+          await User.updateOne(
+            { email: user.email, requestsThisMonth: { $gt: 0 } },
+            { $inc: { requestsThisMonth: -1 } }
+          );
+          
+          // Clear loading spinner on all screens
+          collabNamespace.to(roomId).emit("collab:user_stop_typing", { userId: "ai" });
+          
+          socket.emit("collab:error", { message: "AI continuation failed" });
+          return;
+        }
+
+        const aiChunk: IStoryChunk = {
+          authorId: "ai",
+          authorName: "✨ AI",
+          color: "#d4af37",
+          text: aiText,
+          isAI: true,
+          timestamp: new Date(),
+        };
+
+        room.story.push(aiChunk);
+        
+        // Broadcast the update to the entire room
+        collabNamespace.to(roomId).emit("collab:story_updated", {
+          story: room.story,
+          newChunk: aiChunk
+        });
+        
+        // Stop the thinking indicator on all screens
+        collabNamespace.to(roomId).emit("collab:user_stop_typing", { userId: "ai" });
+
+      } catch (err) {
+        // Clear loading spinner on all screens
+        collabNamespace.to(roomId).emit("collab:user_stop_typing", { userId: "ai" });
+        socket.emit("collab:error", { message: "AI continuation failed" });
+      }
     });
 
     // Typing indicator
