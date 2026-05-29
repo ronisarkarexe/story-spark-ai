@@ -319,7 +319,7 @@ export default function Contact() {
                           onChange={changeHandler}
                           required
                           autoComplete={autoComplete}
-                          className="contact-input h-12 w-full rounded-xl pl-10 pr-4 text-sm text-white placeholder:text-slate-600 sm:h-[3.125rem] sm:text-base"
+                          className="contact-input h-12 w-full rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-slate-600 sm:h-[3.125rem] sm:text-base"
                         />
                       </div>
                     </div>
