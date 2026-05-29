@@ -11,7 +11,7 @@ import { ReviewRouter } from "../app/modules/review/review.router";
 import { ReactionRouter } from "../app/modules/reaction/reaction.router";
 import { ContactRoutes } from "../app/modules/contact/contact.route";
 import { StoriesRouter } from "../routes/stories";
-import storyRoutes from "../routes/story.routes";
+import { StoryRoutes } from "../routes/story.routes";
 
 import { ReportRouter } from "../app/modules/report/report.router";
 import { NewsletterRouter } from "../app/modules/newsletter/newsletter.route";
@@ -26,95 +26,30 @@ import { WriterApplicationRoutes } from "../app/modules/writer_application/write
 const router = express.Router();
 
 const modules = [
-  {
-    path: "/auth",
-    router: AuthRouter,
-  },
-  {
-    path: "/user",
-    router: UserRouter,
-  },
-  {
-    path: "/review",
-    router: ReviewRouter,
-  },
-  {
-    path: "/ai_model",
-    router: AIModelRouter,
-  },
-  {
-    path: "/otp_validation",
-    router: VerifyEmailRouter,
-  },
-  {
-    path: "/post",
-    router: PostRouter,
-  },
-  {
-    path: "/notifications",
-    router: NotificationRouter,
-  },
-  {
-    path: "/comment",
-    router: CommentRouter,
-  },
-  {
-    path: "/analysis",
-    router: AnalysisRouter,
-  },
-  {
-    path: "/reaction",
-    router: ReactionRouter,
-  },
-  {
-    path: "/newsletter",
-    router: NewsletterRouter,
-  },
-  {
-    path: "/bookmarks",
-    router: BookmarkRouter,
-  },
-  {
-    path: "/payment",
-    router: paymentRouter,
-  },
-  {
-    path: "/story",
-    router: StoryVersionRouter,
-  },
-  {
-    path: "/analytics",
-    router: AnalyticsRouter,
-  },
-  {
-    path: "/stories",
-    router: StoriesRouter,
-  },
-  {
-    path: "/story-continuation",
-    router: storyRoutes,
-  },
-  {
-    path: "/contact",
-    router: ContactRoutes,
-  },
-  {
-    path: "/reports",
-    router: ReportRouter,
-  },
-  {
-    path: "/bug-reports",
-    router: BugReportRouter,
-  },
-  {
-    path: "/recommendations",
-    router: RecommendationRouter,
-  },
-  {
-    path: "/writer-applications",
-    router: WriterApplicationRoutes,
-  },
+  { path: "/auth", router: AuthRouter },
+  { path: "/user", router: UserRouter },
+  { path: "/review", router: ReviewRouter },
+  { path: "/ai_model", router: AIModelRouter },
+  { path: "/otp_validation", router: VerifyEmailRouter },
+  { path: "/post", router: PostRouter },
+  { path: "/notifications", router: NotificationRouter },
+  { path: "/comment", router: CommentRouter },
+  { path: "/analysis", router: AnalysisRouter },
+  { path: "/reaction", router: ReactionRouter },
+  { path: "/newsletter", router: NewsletterRouter },
+  { path: "/bookmarks", router: BookmarkRouter },
+  { path: "/payment", router: paymentRouter },
+  { path: "/story", router: StoryVersionRouter },
+  { path: "/analytics", router: AnalyticsRouter },
+  { path: "/stories", router: StoriesRouter },
+  { path: "/story-continuation", router: StoryRoutes },
+  { path: "/contact", router: ContactRoutes },
+  { path: "/reports", router: ReportRouter },
+  { path: "/bug-reports", router: BugReportRouter },
+  { path: "/recommendations", router: RecommendationRouter },
+  { path: "/writer-applications", router: WriterApplicationRoutes },
 ];
+
 modules.forEach((route) => router.use(route.path, route.router));
 
 export const Routers = router;

@@ -7,7 +7,7 @@ import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import { User } from "./app/modules/user/user.model";
-import storyRoutes from "./routes/story.routes";
+import { StoryRoutes } from "./routes/story.routes";
 
 const app: Application = express();
 
@@ -40,7 +40,7 @@ app.use(
   })
 );
 
-app.use("/review", storyRoutes);
+app.use("/review", StoryRoutes);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use(cookieParser());
@@ -48,7 +48,7 @@ app.use(cookieParser());
 // Routes
 app.use("/api/v1", Routers);
 
-// Global 404 Fallback Handler (Switched to app.all to bypass the strict app.use routing overload bug)
+// Global 404 Fallback Handler
 app.all("*", (req: any, res: any) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
