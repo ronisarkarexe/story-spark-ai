@@ -41,7 +41,7 @@ const inputType =
     : type;
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-400">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-600 dark:text-gray-400">
         {label}
       </label>
       <div className="relative mt-2">
@@ -53,7 +53,7 @@ const inputType =
         <input
           type={inputType}
           id={name}
-          className={`w-full pl-8 pr-10 py-1.5 text-base text-gray-200 border rounded-md sm:text-sm ${
+          className={`w-full pl-8 pr-10 py-1.5 ttext-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border rounded-md sm:text-sm ${
           error
           ? "border-red-500 outline-red-500"
           : "border-gray-300 outline-gray-300 focus:outline-indigo-600"

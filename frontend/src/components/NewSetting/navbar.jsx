@@ -20,8 +20,8 @@ function Navbar() {
         {/* Interactive Notification Bell */}
         <button
           className="nav-bell-btn"
-          aria-label="Notifications"
-          onClick={handleBellClick}
+          aria-label="Notifications"    
+          onClick={() => setHasNotification(false)}
         >
           <span className="bell-emoji">🔔</span>
 

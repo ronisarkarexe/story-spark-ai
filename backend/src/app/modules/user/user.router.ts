@@ -16,7 +16,7 @@ router.get("/profile", UserController.getProfileInfo);
 // Apply for Writer
 router.get(
   "/writer-application-list",
-  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.WRITER),
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
   UserController.getAllWriterApplicationUsers
 );
 
@@ -62,7 +62,7 @@ router.post(
 // Apply for Writer
 router.post(
   "/approve-writer-application",
-  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.WRITER),
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
   UserController.approveWriterApplication
 );
 

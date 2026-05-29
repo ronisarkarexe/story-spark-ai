@@ -1,8 +1,11 @@
 import React from "react";
+import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
+import StoriesComponent from "./components/stories/stories.component";
 
 import {
   createBrowserRouter,
@@ -16,7 +19,6 @@ import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import LoginComponent from "./components/login/login.component";
 import SignUpComponent from "./components/signup/signup.component";
-import ForgotPasswordComponent from "./components/login/forgot_password.component";
 import DashboardComponent from "./components/dashboard/dashboard.component";
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
@@ -40,25 +42,19 @@ import AboutUsComponent from "./components/footer/about-us.tsx";
 import CareerComponent from "./components/footer/career.tsx";
 import BlogComponent from "./components/footer/blog.tsx";
 import PrivacyPolicy from "./components/footer/Privacy.tsx";
+import CookiePolicy from "./components/footer/cookie-policy.tsx";
 import Terms from "./components/footer/terms.tsx";
 import GuidelinesComponent from "./components/footer/guidelines.tsx";
-import TermsAndConditions from "./components/footer/terms.tsx";
 import TemplatesComponent from "./components/templates/templates.component";
 import CommunityComponent from "./components/community/community.component";
 import ResourcesListComponent from "./components/community/resources_list.component";
 import ResourceDetailComponent from "./components/community/resource_detail.component";
-import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import ContributorsComponent from "./components/footer/contributors";
-import BranchingStory from "./components/stories/BranchingStory";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import StoryWorkspace from "./components/story/StoryWorkspace";
 import StoriesComponent from "./components/stories/stories.component";
 
-// =========================================================================
-// PROTECTED ROUTE — supports both wrapper pattern (element prop) and
-// layout-gate pattern (Outlet, no element prop)
-// =========================================================================
 type ProtectedRouteProps = {
   allowedRoles: string[];
   element?: React.ReactElement;
@@ -66,23 +62,12 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
   const user = getUserInfo();
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  if (!allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
-  }
-
-  // If an element was passed, render it directly (wrapper pattern)
-  // Otherwise render <Outlet /> for nested route layout-gate pattern
-  return element ? element : <Outlet />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (!allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
+  return element ?? <Outlet />;
 };
-// =========================================================================
-// 2. CENTRAL ROUTER MATRIX (Initialized exactly once in the global scope)
-// =========================================================================
+
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
-const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
 
 const router = createBrowserRouter([
   {
@@ -112,13 +97,12 @@ const router = createBrowserRouter([
       { path: "career", element: <CareerComponent /> },
       { path: "blog", element: <BlogComponent /> },
       { path: "privacy-policy", element: <PrivacyPolicy /> },
+      { path: "cookie-policy", element: <CookiePolicy /> },
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "report-bug", element: <ReportBug /> },
-
-      // Protected Sub-Tree running under the RootLayout context
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
@@ -132,21 +116,16 @@ const router = createBrowserRouter([
       { path: "*", element: <NotFoundComponent /> },
     ],
   },
-  
-  // Isolated layout branches (Bypassing public navigation headers entirely)
   { path: "/auth/email-validation", element: <EmailValidationComponent /> },
   { path: "/payment", element: <PaymentComponent /> },
-
   { path: "/collab", element: <CollabHome /> },
   { path: "/collab/:roomId", element: <CollabRoom /> },
-
-  // Administrative Dashboard Infrastructure Tree
   {
     path: "/dashboard",
-    element: <ProtectedRoute allowedRoles={ALL_ROLES} />, 
+    element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
     children: [
       {
-        element: <DashboardLayout />, 
+        element: <DashboardLayout />,
         children: [
           { index: true, element: <DashboardComponent /> },
           { path: "profile", element: <ProfileComponent /> },
@@ -170,16 +149,8 @@ const router = createBrowserRouter([
   },
 ]);
 
-// =========================================================================
-// APP
-// =========================================================================
 function App() {
-  return (
-    <>
-      <MagicCursorComponent />
-      <RouterProvider router={router} />
-    </>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

@@ -11,26 +11,12 @@ import ApiError from "../../../errors/api_error";
 import { IUser } from "../user/user.interface";
 import { OTPModel } from "../verify_email/otp.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
+import { GamificationService } from "../gamification/gamification.service";
 
 const googleClient = new OAuth2Client(config.google_client_id);
 
 const login = async (payload: AuthModel) => {
   const { email: userEmail, password } = payload;
-  
-  if (userEmail === "admin@gmail.com" && password === "admin@123") {
-    const adminUser = await User.findOne({ email: "admin@gmail.com" });
-    if (!adminUser) {
-      await User.create({
-        email: "admin@gmail.com",
-        name: "Administrator",
-        password: "admin@123",
-        role: "admin",
-        subscriptionType: "premium",
-        status: "active",
-      });
-    }
-  }
-
   const isExistUser = await User.findOne({ email: userEmail });
   if (!isExistUser) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
@@ -56,6 +42,9 @@ const login = async (payload: AuthModel) => {
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
+
+  GamificationService.updateDailyStreak(String(_id)).catch(console.error);
+
   return {
     accessToken,
     refreshToken,
@@ -103,7 +92,8 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
     throw new ApiError(httpStatus.CONFLICT, "User already exists!");
   }
   
-  const result = await User.create(payload);
+  const { verificationToken: _, ...userPayload } = payload;
+  const result = await User.create(userPayload);
   
   // Clean up OTP record after successful registration
   await OTPModel.deleteOne({ email: userEmail });
@@ -205,6 +195,8 @@ const googleLogin = async (payload: { token: string }) => {
       config.jwt.refresh_secret as Secret,
       config.jwt.refresh_expires_in as string
     );
+
+    GamificationService.updateDailyStreak(String(_id)).catch(console.error);
 
     return {
       accessToken,

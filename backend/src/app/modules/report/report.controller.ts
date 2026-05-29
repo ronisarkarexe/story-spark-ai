@@ -16,4 +16,13 @@ const createReport = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const ReportController = { createReport };
+const getAllReports = catchAsync(async (req: Request, res: Response) => {
+  const result = await ReportService.getAllReports();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Reports fetched successfully",
+    data: result,
+  });
+});
+export const ReportController = { createReport, getAllReports };

@@ -19,5 +19,15 @@ router.post("/continue", async (req, res) => {
     });
   }
 });
+// Add this new route to handle reviews
+// Since app.ts already adds "/review", the full path becomes "/review/create"
+router.post("/create", async (req, res) => {
+    try {
+        console.log("Data received:", req.body);
+        res.status(201).json({ message: "Review submitted successfully!" });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to save" });
+    }
+});
 
 export default router;

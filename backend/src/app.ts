@@ -8,7 +8,7 @@ import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import { User } from "./app/modules/user/user.model";
 import { NewsletterSubscriber } from "./app/modules/newsletter/newsletter.model";
-
+import storyRoutes from "./routes/story.routes";
 const app: Application = express();
 
 app.set("trust proxy", 1); // Trust first proxy to securely read req.ip
@@ -39,7 +39,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Cookie"], 
   })
 );
-
+app.use("/review", storyRoutes);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Keeps your extended payload parsing enabled
 app.use(cookieParser());

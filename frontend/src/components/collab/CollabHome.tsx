@@ -1,22 +1,50 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// Socket.IO collab disabled (see CollabRoom). Previous: io, Socket, resolveSocketUrl, BACKEND_URL.
+import { connectSocket, getSocketIo } from "../../socket/socket.oi";
+import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 export default function CollabHome() {
   const navigate = useNavigate();
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const user = getUserInfo();
 
   const createRoom = () => {
-    setError(
-      "Real-time collaboration is turned off. Socket.IO has been disabled in the frontend."
-    );
-    /* Previous Socket.IO flow:
-    setIsCreating(true);
-    window.__storySparkCollabSocket?.disconnect();
-    const socket = io(`${BACKEND_URL}/collab`, { auth: { token }, transports: ["websocket"] });
-    ...
-    */
+    if (!isLoggedIn()) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      const socket = connectSocket();
+      if (!socket) {
+        setError(
+          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
+        );
+        return;
+      }
+
+      const collabSocket = socket.io.of("/collab");
+
+      collabSocket.emit(
+        "collab:create_room",
+        { userId: user?.userId, username: user?.name },
+        (response: any) => {
+          if (response && response.roomId) {
+            navigate(`/collab/${response.roomId}`);
+          } else {
+            setError("Failed to create room. Please try again.");
+          }
+          setIsCreating(false);
+        }
+      );
+    } catch (err) {
+      console.error("Create room error:", err);
+      setError("Error creating room. Please try again.");
+      setIsCreating(false);
+    }
   };
 
   const joinRoom = () => {
@@ -31,6 +59,15 @@ export default function CollabHome() {
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300">
       <div className="max-w-lg w-full">
         {/* Header */}
+        <div className="mb-4">
+          <button
+            onClick={() => navigate("/")}
+            className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-slate-700 hover:text-slate-900 hover:bg-gray-100 hover:border-indigo-500/30 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0)] hover:shadow-[0_0_15px_rgba(99,102,241,0.12)] dark:bg-white/5 dark:border-white/10 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 dark:hover:border-indigo-500/30"
+          >
+            <i className="fas fa-arrow-left text-sm transform group-hover:-translate-x-1 transition-transform"></i>
+            <span className="text-sm font-semibold tracking-wide">Back to Home</span>
+          </button>
+        </div>
         <div className="text-center mb-12">
           <div className="text-6xl mb-4">✍️</div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-3">
@@ -52,9 +89,10 @@ export default function CollabHome() {
           {/* Create Room */}
           <button
             onClick={createRoom}
+            disabled={isCreating}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 text-white font-semibold text-lg transition-all shadow-lg shadow-indigo-500/20"
           >
-            ✨ Create a New Story Room
+            {isCreating ? "Creating room..." : "✨ Create a New Story Room"}
           </button>
 
           <div className="flex items-center gap-3">

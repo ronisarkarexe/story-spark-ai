@@ -46,7 +46,6 @@ const FooterComponent = () => {
     { label: "About Us", to: "/about-us" },
     { label: "Careers",  to: "/career"   },
     { label: "Contact",  to: "/contact-us"},
-    { label: "Terms", to: "/terms" },
   ];
 
   const githubIssuesUrl =
@@ -56,7 +55,6 @@ const FooterComponent = () => {
     { label: "Blog",         to: "/blog"        },
     { label: "Help Center",  to: "/help"        },
     { label: "Community",    to: "/community"   },
-    { label: "Guidelines",   to: "/guidelines"  },
     { label: "Contributors", to: "/contributors"},
     { label: "Report Bug",   to: githubIssuesUrl },
   ];
@@ -64,6 +62,7 @@ const FooterComponent = () => {
 
   const legalLinks = [
     { label: "Privacy", to: "/privacy-policy" },
+    { label: "Cookie Policy", to: "/cookie-policy" },
     { label: "Terms", to: "/terms" },
     { label: "Guidelines", to: "/guidelines" },
   ];
@@ -120,11 +119,11 @@ const FooterComponent = () => {
         }}
       />
 
-      <div className="relative z-10 max-w-[1450px] mx-auto px-8 lg:px-10 pt-14 pb-16 lg:pb-20">
-        <div className="grid grid-cols-12 gap-x-6 gap-y-10 items-start">
+      <div className="relative z-10 max-w-[1450px] mx-auto px-8 lg:px-10 pt-10 pb-10">
+        <div className="grid grid-cols-12 gap-x-6 gap-y-6 items-start">
 
           {/* Brand */}
-          <div className="col-span-12 md:col-span-5 flex flex-col gap-5">
+          <div className="col-span-12 md:col-span-4 flex flex-col gap-5">
             <Link to="/" className="group inline-block w-fit">
               <img
                 src={logo}
@@ -203,7 +202,7 @@ const FooterComponent = () => {
           </div>
 
           {/* Newsletter */}
-          <div className="col-span-12 md:col-span-3 flex flex-col gap-3.5">
+          <div className="col-span-12 md:col-span-2 flex flex-col gap-3">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Stay Updated</h3>
             <p className="text-[13.5px] leading-[1.65] text-slate-300/80 max-w-[270px]">
               Writing tips, product updates, and stories straight to your inbox.
@@ -243,14 +242,14 @@ const FooterComponent = () => {
         </div>
 
         <div
-          className="mt-12"
+          className="my-8"
           style={{
             height: "1px",
             background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 30%, rgba(255,255,255,0.07) 70%, transparent 100%)",
           }}
         />
 
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-slate-400/80">
+        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-slate-400/80">
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2.5 gap-y-1">
             <span className="text-slate-400/80">&copy; {currentYear} StorySparkAI. All rights reserved.</span>
             <span className="hidden sm:inline text-white/[0.12]">|</span>

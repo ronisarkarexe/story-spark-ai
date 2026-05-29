@@ -6,8 +6,14 @@ import httpStatus from "http-status";
 import { AnalyticsService } from "./analytics.service";
 
 const getAnalyticsOverview = catchAsync(async (req: Request, res: Response) => {
-  const token = await getToken(req);
-  const result = await AnalyticsService.getOverview(token);
+let token = null;
+
+try {
+  token = getToken(req);
+} catch (error) {
+  token = null;
+} 
+ const result = await AnalyticsService.getOverview(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -17,7 +23,13 @@ const getAnalyticsOverview = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getHeatmap = catchAsync(async (req: Request, res: Response) => {
-  const token = await getToken(req);
+let token = null;
+
+try {
+  token = getToken(req);
+} catch (error) {
+  token = null;
+}
   const result = await AnalyticsService.getHeatmap(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -28,7 +40,13 @@ const getHeatmap = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getGenreDistribution = catchAsync(async (req: Request, res: Response) => {
-  const token = await getToken(req);
+let token = null;
+
+try {
+  token = getToken(req);
+} catch (error) {
+  token = null;
+}
   const result = await AnalyticsService.getGenreDistribution(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -39,7 +57,13 @@ const getGenreDistribution = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getWordCloud = catchAsync(async (req: Request, res: Response) => {
-  const token = await getToken(req);
+let token = null;
+
+try {
+  token = getToken(req);
+} catch (error) {
+  token = null;
+}
   const result = await AnalyticsService.getWordCloud(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -50,7 +74,7 @@ const getWordCloud = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getProductiveHours = catchAsync(async (req: Request, res: Response) => {
-  const token = await getToken(req);
+const token = getToken(req);
   const result = await AnalyticsService.getProductiveHours(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -61,7 +85,7 @@ const getProductiveHours = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getEmotionDistribution = catchAsync(async (req: Request, res: Response) => {
-  const token = await getToken(req);
+const token = getToken(req);
   const result = await AnalyticsService.getEmotionDistribution(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -72,7 +96,7 @@ const getEmotionDistribution = catchAsync(async (req: Request, res: Response) =>
 });
 
 const getMoodTimeline = catchAsync(async (req: Request, res: Response) => {
-  const token = await getToken(req);
+const token = getToken(req);
   const result = await AnalyticsService.getMoodTimeline(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
