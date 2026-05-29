@@ -54,6 +54,7 @@ const PaymentComponent = () => {
         description: `${planName} Subscription`,
         order_id: data.order.id,
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         handler: async (response: any) => {
           try {
             // Verify payment
@@ -89,8 +90,10 @@ const PaymentComponent = () => {
         },
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const paymentObject = new (window as any).Razorpay(options);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       paymentObject.on("payment.failed", function (response: any) {
         console.error(response.error);
         alert("Payment failed.");

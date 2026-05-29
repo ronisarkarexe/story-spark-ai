@@ -16,13 +16,13 @@ export const connectSocket = (): Socket => {
   const socketUrl = resolveSocketUrl();
   if (!socketUrl) {
     console.warn("[Story Spark] Socket.IO URL not configured. Real-time notifications disabled.");
-    return null as any;
+    return null as unknown as Socket;
   }
 
   const token = getMemoryToken();
   if (!token) {
     console.warn("[Story Spark] User not authenticated. Cannot connect to Socket.IO.");
-    return null as any;
+    return null as unknown as Socket;
   }
 
   socketIoInstance = io(socketUrl, {

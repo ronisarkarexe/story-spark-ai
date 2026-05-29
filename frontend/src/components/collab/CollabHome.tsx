@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { connectSocket, getSocketIo } from "../../socket/socket.oi";
+import { connectSocket } from "../../socket/socket.oi";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 export default function CollabHome() {
@@ -31,7 +31,7 @@ export default function CollabHome() {
       collabSocket.emit(
         "collab:create_room",
         { userId: user?.userId, username: user?.name },
-        (response: any) => {
+        (response: { roomId?: string }) => {
           if (response && response.roomId) {
             navigate(`/collab/${response.roomId}`);
           } else {
