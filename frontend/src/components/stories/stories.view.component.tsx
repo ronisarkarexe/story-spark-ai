@@ -7,6 +7,7 @@ import jsPDF from "jspdf";
 import StoryWorldMap from "../story-map/StoryWorldMap";
 import StoryRemix from "../remix/StoryRemix";
 import StoryTranslator from "../translate/StoryTranslator";
+import StoryTradingCard from "../cards/StoryTradingCard";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
@@ -269,6 +270,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
   const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [showTradingCard, setShowTradingCard] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -673,6 +675,14 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                 </button>
                 <button
                   type="button"
+                  className="rounded-lg px-4 py-2 bg-amber-700 text-slate-200 font-semibold cursor-pointer hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowTradingCard(true)}
+                  disabled={!selectedStory}
+                >
+                  🃏 Get Card
+                </button>
+                <button
+                  type="button"
                   id="publish-story-btn"
                   className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"}`}
                   onClick={handelPublishStory}
@@ -884,6 +894,22 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           isLogin={isLogin}
           onRemixComplete={(remixedStory) => { setStories([remixedStory, ...stories]); setSelectedStory(remixedStory); setShowRemix(false); }}
           onClose={() => setShowRemix(false)}
+        />
+      )}
+      {showTradingCard && selectedStory && (
+        <StoryTradingCard
+          title={selectedStory.title}
+          content={selectedStory.content}
+          tag={selectedStory.tag}
+          uuid={selectedStory.uuid}
+          onClose={() => setShowTradingCard(false)}
+        />
+      )}
+      {showTranslator && selectedStory && (
+        <StoryTranslator
+          story={selectedStory}
+          isLogin={isLogin}
+          onClose={() => setShowTranslator(false)}
         />
       )}
       {showWorldMap && selectedStory && (
