@@ -10,6 +10,17 @@ const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
 
 let isSubmitting = false;
 
+// ── API Configuration ──
+// Detect local vs production environment
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5000/api/v1'
+    : (window.location.hostname.includes('storyspark.ai')
+        ? 'https://api.storyspark.ai/api/v1'
+        : `${window.location.origin}/api/v1`);
+
+let signupData = null; // Stores { name, email, password }
+let isOtpMode = false;
+
 /* ── DOM Init & Global Handler Registrations ── */
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Detect initial auth page mode based on filename
@@ -179,16 +190,20 @@ function validatePassword(showInline) {
 function setSubmitting(submitting) {
     isSubmitting = submitting;
     const submitBtn = document.getElementById('submit-btn');
-    const spinner = document.getElementById('submit-btn-spinner');
+    const spinner = document.getElementById('submit-btn-spinner') || document.getElementById('btn-spinner');
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
+    const otpField = document.getElementById('otp-field');
+    const remember = document.getElementById('remember');
 
     if (submitBtn) submitBtn.disabled = submitting;
     if (spinner) spinner.classList.toggle('hidden', !submitting);
     if (emailField) emailField.disabled = submitting;
     if (nameField) nameField.disabled = submitting;
     if (passwordField) passwordField.disabled = submitting;
+    if (otpField) otpField.disabled = submitting;
+    if (remember) remember.disabled = submitting;
 }
 
 /* ── Advanced Particle System (Canvas + Mouse Interactions) ── */
@@ -294,6 +309,9 @@ function initParticleSystem() {
 
 /* ── Auth State & Tab Toggling (Smooth in-page transitions) ── */
 function toggleAuthMode(mode) {
+    if (isOtpMode) {
+        exitOtpMode();
+    }
     if (currentMode === mode) return;
     currentMode = mode;
 
@@ -420,16 +438,238 @@ function togglePasswordVisibility() {
 }
 
 /* ── Form Submission handling ── */
-function handleFormSubmit(e) {
+function toggleFormFieldsVisibility(visible) {
+    const form = document.getElementById('auth-form');
+    if (!form) return;
+    
+    // Hide/show the standard inputs and buttons inside the form
+    const children = form.children;
+    for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        if (child.id === 'otp-container' || child.id === 'submit-btn') {
+            continue;
+        }
+        if (visible) {
+            child.classList.remove('hidden');
+        } else {
+            child.classList.add('hidden');
+        }
+    }
+
+    // Hide/show Google button and divider
+    const googleBtn = document.getElementById('google-btn');
+    const googleAuthStatus = document.getElementById('google-auth-status');
+    const divider = document.querySelector('.auth-divider') || 
+                    (document.querySelector('.auth-divider-text') ? document.querySelector('.auth-divider-text').parentElement : null) || 
+                    (document.querySelector('.h-\\[1px\\]') ? document.querySelector('.h-\\[1px\\]').parentElement : null);
+    const rememberParent = document.getElementById('remember') ? document.getElementById('remember').parentElement : null;
+
+    if (googleBtn) {
+        if (visible) googleBtn.classList.remove('hidden');
+        else googleBtn.classList.add('hidden');
+    }
+    if (googleAuthStatus) {
+        if (visible) googleAuthStatus.classList.remove('hidden');
+        else googleAuthStatus.classList.add('hidden');
+    }
+    if (divider) {
+        if (visible) divider.classList.remove('hidden');
+        else divider.classList.add('hidden');
+    }
+    if (rememberParent) {
+        if (visible) rememberParent.classList.remove('hidden');
+        else rememberParent.classList.add('hidden');
+    }
+}
+
+function enterOtpMode() {
+    isOtpMode = true;
+    toggleFormFieldsVisibility(false);
+    
+    const form = document.getElementById('auth-form');
+    if (!form) return;
+
+    // Remove any existing OTP container first
+    let otpContainer = document.getElementById('otp-container');
+    if (otpContainer) otpContainer.remove();
+
+    // Create the beautiful OTP input container matching the premium styling
+    otpContainer = document.createElement('div');
+    otpContainer.id = 'otp-container';
+    otpContainer.className = 'space-y-4 animate-in fade-in duration-500';
+    otpContainer.innerHTML = `
+        <div>
+            <label class="field-label block text-label-caps text-on-surface-variant mb-2 font-semibold text-[11px] uppercase tracking-wider" for="otp-field">ENTER 6-DIGIT OTP</label>
+            <div class="input-icon-wrapper relative ds-input-group">
+                <i class="fi fi-rr-key input-icon ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
+                <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 ds-input with-icon py-3 rounded-xl" placeholder="123456" type="text" id="otp-field" required maxlength="6" pattern="[0-9]{6}" inputmode="numeric"/>
+            </div>
+            <p class="text-[13px] text-on-surface-variant mt-2">A one-time password has been sent to <span class="font-semibold text-primary">${escapeHtml(signupData.email)}</span>.</p>
+            <span class="field-error-msg ds-error text-xs text-red-400 mt-1 block" id="otp-error"></span>
+        </div>
+        <div class="mt-4 flex flex-col items-center gap-2">
+            <button type="button" id="resend-otp-btn" class="text-sm font-semibold text-primary hover:text-secondary hover:underline transition-colors bg-transparent border-none cursor-pointer">Resend OTP</button>
+            <button type="button" id="cancel-otp-btn" class="text-xs text-on-surface-variant hover:text-on-surface hover:underline transition-colors bg-transparent border-none cursor-pointer mt-1">Cancel & Start Over</button>
+        </div>
+    `;
+
+    // Insert it before the submit button
+    const submitBtn = document.getElementById('submit-btn');
+    form.insertBefore(otpContainer, submitBtn);
+
+    // Update submit button labels
+    const submitBtnText = document.getElementById('submit-btn-text') || document.getElementById('btn-label');
+    if (submitBtnText) {
+        submitBtnText.innerText = 'Verify & Create Account';
+    } else if (submitBtn) {
+        submitBtn.innerText = 'Verify & Create Account';
+    }
+
+    // Set up click listener for Resend and Cancel buttons
+    document.getElementById('resend-otp-btn').addEventListener('click', handleResendOtp);
+    document.getElementById('cancel-otp-btn').addEventListener('click', exitOtpMode);
+
+    // Auto-focus OTP field
+    setTimeout(() => {
+        const otpField = document.getElementById('otp-field');
+        if (otpField) otpField.focus();
+    }, 100);
+}
+
+function exitOtpMode() {
+    isOtpMode = false;
+    signupData = null;
+    
+    const otpContainer = document.getElementById('otp-container');
+    if (otpContainer) otpContainer.remove();
+    
+    toggleFormFieldsVisibility(true);
+    
+    // Restore submit button labels
+    const submitBtn = document.getElementById('submit-btn');
+    const submitBtnText = document.getElementById('submit-btn-text') || document.getElementById('btn-label');
+    if (submitBtnText) {
+        submitBtnText.innerText = currentMode === 'signup' ? 'Create Account' : 'Log In to Story Spark';
+    } else if (submitBtn) {
+        submitBtn.innerText = currentMode === 'signup' ? 'Create Account' : 'Log In to Story Spark';
+    }
+    
+    setAlert('', '');
+}
+
+async function handleResendOtp() {
+    if (!signupData) return;
+    
+    setAlert('', '');
+    const otpError = document.getElementById('otp-error');
+    if (otpError) {
+        otpError.innerText = '';
+    }
+
+    setSubmitting(true);
+    setAlert('info', 'Resending verification code...');
+    
+    try {
+        const res = await fetch(`${API_BASE_URL}/otp_validation/verify-email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: signupData.name, email: signupData.email })
+        });
+        const data = await res.json();
+        setSubmitting(false);
+        if (!res.ok) {
+            setAlert('error', data.message || 'Failed to resend OTP. Please try again.');
+            return;
+        }
+        setAlert('success', 'OTP resent successfully!');
+    } catch (err) {
+        setSubmitting(false);
+        setAlert('error', 'Network error. Failed to resend OTP.');
+    }
+}
+
+async function handleFormSubmit(e) {
     e.preventDefault();
     if (isSubmitting) return;
 
+    setAlert('', '');
+
+    if (isOtpMode) {
+        // Handle OTP verification & Registration
+        const otpField = document.getElementById('otp-field');
+        const otpError = document.getElementById('otp-error');
+        if (!otpField) return;
+
+        const otp = (otpField.value || '').trim();
+        if (!otp || otp.length !== 6 || !/^\d+$/.test(otp)) {
+            if (otpError) {
+                otpError.innerText = 'Please enter a valid 6-digit OTP code.';
+            }
+            return;
+        }
+
+        setSubmitting(true);
+        setAlert('info', 'Verifying OTP code...');
+
+        try {
+            // 1. Verify OTP
+            const otpRes = await fetch(`${API_BASE_URL}/otp_validation/verify-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: signupData.email, otp })
+            });
+
+            const otpData = await otpRes.json();
+            if (!otpRes.ok) {
+                setSubmitting(false);
+                setAlert('error', otpData.message || 'Invalid or expired OTP. Please try again.');
+                if (otpError) {
+                    otpError.innerText = otpData.message || 'Invalid OTP.';
+                }
+                return;
+            }
+
+            // 2. We got the verificationToken, now complete registration
+            setAlert('info', 'Creating your account...');
+            const regRes = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: signupData.name,
+                    email: signupData.email,
+                    password: signupData.password,
+                    verificationToken: otpData.data.verificationToken
+                })
+            });
+
+            const regData = await regRes.json();
+            setSubmitting(false);
+
+            if (!regRes.ok) {
+                setAlert('error', regData.message || 'Registration failed. Please try again.');
+                return;
+            }
+
+            // Success! Store the token and redirect
+            localStorage.setItem('accessToken', regData.data.accessToken);
+            setAlert('success', `Welcome, <span class="font-semibold">${escapeHtml(signupData.name)}</span>! Your account is ready. Redirecting…`);
+            
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1000);
+
+        } catch (err) {
+            setSubmitting(false);
+            setAlert('error', 'Something went wrong. Please check your connection and try again.');
+        }
+        return;
+    }
+
+    // Standard Login / Signup validation
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
     if (!emailField) return;
-
-    setAlert('', '');
 
     const okName = validateName(true);
     const okEmail = validateEmail(true);
@@ -446,21 +686,67 @@ function handleFormSubmit(e) {
     }
 
     const email = (emailField.value || '').trim();
+    const password = passwordField ? passwordField.value : '';
     const name = (nameField && nameField.value ? nameField.value.trim() : '');
 
     setSubmitting(true);
-    setAlert('info', currentMode === 'signup' ? 'Creating your account…' : 'Signing you in…');
+    setAlert('info', currentMode === 'signup' ? 'Sending verification code to your email...' : 'Signing you in…');
 
-    window.setTimeout(() => {
-        setSubmitting(false);
-        if (currentMode === 'signin') {
-            setAlert('success', `Signed in as <span class="font-semibold">${escapeHtml(email)}</span>.`);
-        } else {
-            const greeting = name ? `Welcome, <span class="font-semibold">${escapeHtml(name)}</span>!` : 'Welcome!';
-            setAlert('success', `${greeting} Your account is ready. Redirecting to sign in…`);
-            window.setTimeout(() => toggleAuthMode('signin'), 900);
+    if (currentMode === 'signin') {
+        // Standard Sign In (Login)
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+            setSubmitting(false);
+
+            if (!res.ok) {
+                setAlert('error', data.message || 'Invalid email or password. Please try again.');
+                return;
+            }
+
+            localStorage.setItem('accessToken', data.data.accessToken);
+            setAlert('success', `Signed in successfully! Redirecting…`);
+            
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1000);
+
+        } catch (err) {
+            setSubmitting(false);
+            setAlert('error', 'Failed to connect to the server. Please check if the backend is running.');
         }
-    }, 900);
+    } else {
+        // Standard Sign Up (Register email OTP request)
+        try {
+            const res = await fetch(`${API_BASE_URL}/otp_validation/verify-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email })
+            });
+
+            const data = await res.json();
+            setSubmitting(false);
+
+            if (!res.ok) {
+                setAlert('error', data.message || 'Failed to send OTP code. Please try again.');
+                return;
+            }
+
+            // OTP successfully sent! Save state and switch to OTP mode
+            signupData = { name, email, password };
+            enterOtpMode();
+            setAlert('success', 'A verification code has been sent to your email.');
+
+        } catch (err) {
+            setSubmitting(false);
+            setAlert('error', 'Failed to connect to the server. Please check if the backend is running.');
+        }
+    }
 }
 
 function escapeHtml(text) {
@@ -499,7 +785,7 @@ function decodeJwt(token) {
 
 async function handleGoogleCredentialResponse(response) {
     try {
-        const res = await fetch('/api/auth/google-login', {
+        const res = await fetch(`${API_BASE_URL}/auth/google-login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: response.credential }),
