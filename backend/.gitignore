@@ -5,3 +5,4 @@ ml/saved_scorer/
 ml/scorer_venv/
 ml/__pycache__/
 dist/
+.vercel

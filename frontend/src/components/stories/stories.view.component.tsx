@@ -6,6 +6,7 @@ import { useCreatePostMutation } from "../../redux/apis/post.api";
 import { ITopicData, topicsData } from "./stories.utils";
 import StoryAnimationWrapper from "../story-effects/StoryAnimationWrapper";
 import { detectStoryMood } from "../story-effects/StoryMoodDetector";
+import StoryCinematicPlayer from "../story/StoryCinematicPlayer";
 
 export interface IStories {
   uuid: string;
@@ -42,6 +43,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
+  const [isCinematicMode, setIsCinematicMode] = useState<boolean>(false);
 
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
@@ -49,6 +51,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
   useEffect(() => {
     setSelectedStory(stories[0] ?? null);
+    if (stories.length > 0) {
+      setIsCinematicMode(true);
+    }
   }, [stories]);
 
   const mood = useMemo(
@@ -238,7 +243,30 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
               content={selectedStory.content}
               mood={mood}
             >
-              <div className="space-y-6">
+                <div className="flex justify-end mb-4">
+                  <button
+                    type="button"
+                    className={`rounded-full border px-5 py-2.5 text-sm font-semibold transition shadow-lg flex items-center gap-2 ${
+                      isCinematicMode 
+                      ? 'bg-indigo-600 border-indigo-400 text-white shadow-indigo-500/30 hover:bg-indigo-500' 
+                      : 'bg-white/5 border-white/10 text-slate-200 hover:bg-white/10'
+                    }`}
+                    onClick={() => setIsCinematicMode(!isCinematicMode)}
+                  >
+                    <i className="fas fa-video"></i> {isCinematicMode ? 'Disable Cinematic Mode' : 'Enable Cinematic Mode'}
+                  </button>
+                </div>
+
+                {isCinematicMode ? (
+                  <StoryCinematicPlayer 
+                    content={selectedStory.content}
+                    title={selectedStory.title}
+                    genre={selectedGenre || 'fantasy'}
+                    mood={mood}
+                    imageURL={selectedStory.imageURL}
+                  />
+                ) : (
+                  <div className="space-y-6">
                 <div className="overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/20 shadow-2xl backdrop-blur-md">
                   <div className="relative h-64 overflow-hidden sm:h-80">
                     <motion.img
@@ -308,6 +336,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                   </div>
                 </div>
               </div>
+            )}
             </StoryAnimationWrapper>
           )}
         </div>
