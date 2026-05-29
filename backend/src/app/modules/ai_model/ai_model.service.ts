@@ -1,8 +1,6 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
-import { User } from "../user/user.model";
-import { REQUEST_LIMITS } from "../../../interfaces/ai_model_request_limit";
 import {
   GenerationTimeoutError,
   raceGenerationWithTimeout,
@@ -56,8 +54,7 @@ const mapGenerationError = (error: unknown, message: string): never => {
   throw new ApiError(httpStatus.BAD_GATEWAY, `${message} (${errorMsg})`);
 };
 
-const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
-  const { email } = token;
+const aiModelGenerate = async (payload: IAIModel, _token: ITokenPayload) => {
   const { prompt, wordLength, numStories, language } = normalizeStoryPayload(payload);
 
   try {
@@ -103,9 +100,8 @@ const aiFreeModelGenerate = async (payload: IAIModel) => {
 
 const aiModelAlternateEndings = async (
   payload: IAlternateEndingPayload,
-  token: ITokenPayload
+  _token: ITokenPayload
 ) => {
-  const { email } = token;
   const { title, content, tag, language = "English" } = payload;
 
   try {
