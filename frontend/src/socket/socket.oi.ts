@@ -1,6 +1,5 @@
 import { io, Socket } from "socket.io-client";
 import { getMemoryToken } from "../services/auth.service";
-import { AUTH_KEY } from "../constants/storage-key";
 import { resolveSocketUrl } from "../helpers/socket-url";
 
 let socketIoInstance: Socket | null = null;

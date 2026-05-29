@@ -167,6 +167,7 @@ function App() {
         }
       } catch (error) {
         // Silent fail - user will need to log in
+        console.error("Silent refresh failed", error);
       } finally {
         setIsAppReady(true);
       }

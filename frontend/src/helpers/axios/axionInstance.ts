@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from "axios";
 import { getMemoryToken } from "../../services/auth.service";
-import { AUTH_KEY } from "../../constants/storage-key";
 import { IMeta, ResponseErrorType } from "../../types";
 
 const instance = axios.create();
