@@ -48,8 +48,8 @@ app.use(cookieParser());
 // Routes
 app.use("/api/v1", Routers);
 
-// Global 404 Fallback Handler (Type inferred implicitly to prevent CI overload errors)
-app.use((req, res, next) => {
+// Global 404 Fallback Handler (Explicitly typed as RequestHandler to satisfy the CI build compiler)
+const missingRouteHandler: express.RequestHandler = (req, res, next) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
     message: "Not Found",
@@ -60,7 +60,9 @@ app.use((req, res, next) => {
       },
     ],
   });
-});
+};
+
+app.use(missingRouteHandler);
 
 app.use(globalErrorHandler);
 
