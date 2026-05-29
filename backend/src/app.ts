@@ -48,8 +48,8 @@ app.use(cookieParser());
 // Routes
 app.use("/api/v1", Routers);
 
-// Global 404 Fallback Handler (Explicitly typed inline as any to satisfy both local IDE and GitHub CI)
-app.use(((req: any, res: any, next: any) => {
+// Global 404 Fallback Handler (Switched to app.all to bypass the strict app.use routing overload bug)
+app.all("*", (req: any, res: any) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
     message: "Not Found",
@@ -60,7 +60,7 @@ app.use(((req: any, res: any, next: any) => {
       },
     ],
   });
-}) as any);
+});
 
 app.use(globalErrorHandler);
 
