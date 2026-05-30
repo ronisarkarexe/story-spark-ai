@@ -14,6 +14,16 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   isLoading,
 }) => {
   const navigate = useNavigate();
+  const formatDate = (value?: string) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
+  };
 
   const calculateReadingTime = (content: string): number => {
     if (!content) return 1;
@@ -104,23 +114,28 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 
                 <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-auto">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                       <SSProfile name={story.author?.name || "Unknown"} size="h-8 w-8" />
                       <div className="flex flex-col">
                         <span className="text-sm font-semibold text-slate-900 dark:text-gray-200">
                           {story.author?.name || "Unknown"}
                         </span>
                         <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider dark:text-slate-400">
-                          {new Date(story.createdAt).toLocaleDateString()}
+                          {formatDate(story.publishedAt || story.createdAt)}
                         </span>
+                        {story.author?.profile?.bio ? (
+                          <span className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
+                            {story.author.profile.bio}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
-                    
+
                     <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400 px-2 py-1 rounded-md">
                       {calculateReadingTime(story.content)} MIN READ
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                     <div className="flex gap-4">
                       <span className="flex items-center gap-1.5 hover:text-red-500 transition-colors">

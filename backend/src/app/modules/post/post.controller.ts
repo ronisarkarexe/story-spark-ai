@@ -35,6 +35,27 @@ const getPosts = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getPublishedPostsByAuthor = catchAsync(
+  async (req: Request, res: Response) => {
+    const token = await getToken(req);
+    const filters = pick(req.query, ["searchTerm"]);
+    const pagination = pick(req.query, paginationFields);
+    const result = await PostService.getPublishedPostsByAuthor(
+      token,
+      filters,
+      pagination
+    );
+
+    sendResponse<IPost[]>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Published stories fetched successfully!",
+      data: result.data,
+      meta: result.meta,
+    });
+  }
+);
+
 const getLatestPosts = catchAsync(async (req: Request, res: Response) => {
   const result = await PostService.getLatestPosts();
   sendResponse(res, {
@@ -129,6 +150,7 @@ const deletePost = catchAsync(async (req: Request, res: Response) => {
 export const PostController = {
   createPost,
   getPosts,
+  getPublishedPostsByAuthor,
   getLatestPosts,
   getFeaturedPosts,
   doFeaturedPosts,
@@ -138,4 +160,3 @@ export const PostController = {
   updatePost,
   deletePost,
 };
-

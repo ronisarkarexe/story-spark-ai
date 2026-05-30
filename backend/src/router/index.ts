@@ -22,6 +22,7 @@ import { AnalyticsRouter } from "../app/modules/analytics/analytics.router";
 import { BugReportRouter } from "../app/modules/bug_report/bug_report.router";
 import { RecommendationRouter } from "../app/modules/recommendation/recommendation.router";
 import { WriterApplicationRoutes } from "../app/modules/writer_application/writer_application.route";
+import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_inspiration.router";
 
 const router = express.Router();
 
@@ -93,6 +94,10 @@ const modules = [
   {
     path: "/story-continuation",
     router: storyRoutes,
+  },
+  {
+    path: "/story-inspiration",
+    router: StoryInspirationRouter,
   },
   {
     path: "/contact",

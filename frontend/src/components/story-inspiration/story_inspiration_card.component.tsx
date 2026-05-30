@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -26,94 +25,76 @@ const genreConfig: {
   };
 } = {
   Fantasy: {
-    gradient:
-      "from-emerald-500 to-teal-600",
+    gradient: "from-emerald-500 to-teal-600",
     glow: "shadow-emerald-500/20",
     icon: "fas fa-wand-magic-sparkles",
   },
 
   Horror: {
-    gradient:
-      "from-red-500 to-rose-600",
+    gradient: "from-red-500 to-rose-600",
     glow: "shadow-red-500/20",
     icon: "fas fa-ghost",
   },
 
   "Sci-Fi": {
-    gradient:
-      "from-blue-500 to-cyan-600",
+    gradient: "from-blue-500 to-cyan-600",
     glow: "shadow-blue-500/20",
     icon: "fas fa-rocket",
   },
 
   Mystery: {
-    gradient:
-      "from-purple-500 to-indigo-600",
+    gradient: "from-purple-500 to-indigo-600",
     glow: "shadow-purple-500/20",
     icon: "fas fa-user-secret",
   },
 
   Adventure: {
-    gradient:
-      "from-amber-500 to-orange-600",
+    gradient: "from-amber-500 to-orange-600",
     glow: "shadow-amber-500/20",
     icon: "fas fa-compass",
   },
 
   Romance: {
-    gradient:
-      "from-pink-500 to-rose-500",
+    gradient: "from-pink-500 to-rose-500",
     glow: "shadow-pink-500/20",
     icon: "fas fa-heart",
   },
 };
 
-const StoryInspirationCard: React.FC<
-  StoryInspirationCardProps
-> = ({ story }) => {
+const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({
+  story,
+}) => {
   const navigate = useNavigate();
 
-  const [selectedPromptIdx, setSelectedPromptIdx] =
-    useState<number>(0);
+  const [selectedPromptIdx, setSelectedPromptIdx] = useState<number>(0);
 
-  const {
-    title,
-    author,
-    genre,
-    summary,
-    themes,
-    prompts,
-    image,
-  } = story;
+  const { title, author, genre, summary, themes, prompts, image } = story;
 
-  const config =
-    genreConfig[genre] || {
-      gradient:
-        "from-indigo-500 to-blue-600",
-      glow: "shadow-indigo-500/20",
-      icon: "fas fa-book",
-    };
-
-  const handleGenerateSimilar = () => {
-    const selectedPrompt =
-      prompts[selectedPromptIdx];
-
-    const finalPrompt = `
-      [Genre: ${genre}]
-      Write a creative story inspired by
-      '${title}' by ${author}.
-      Focus on themes:
-      ${themes.join(", ")}.
-      Premise:
-      ${selectedPrompt}
-    `;
-
-    navigate("/stories", {
-      state: { prompt: finalPrompt },
-    });
+  const config = genreConfig[genre] || {
+    gradient: "from-indigo-500 to-blue-600",
+    glow: "shadow-indigo-500/20",
+    icon: "fas fa-book",
   };
 
-  return (
+  const handleGenerateSimilar = () => {
+    const selectedPrompt = prompts[selectedPromptIdx];
+ const finalPrompt = `
+  Write a creative story inspired by
+  '${title}' by ${author}.
+  Focus on themes:
+  ${themes.join(", ")}.
+  Premise:
+  ${selectedPrompt}
+`;
+navigate("/stories", {
+  state: {
+    prompt: finalPrompt,
+    genre,
+  },
+});
+};
+
+return (
     <motion.div
       whileHover={{ y: -8 }}
       transition={{ duration: 0.35 }}
@@ -148,8 +129,7 @@ const StoryInspirationCard: React.FC<
             src={image}
             alt={title}
             onError={(e) => {
-              e.currentTarget.style.display =
-                "none";
+              e.currentTarget.style.display = "none";
             }}
             className="
               w-full h-full object-cover
@@ -211,7 +191,6 @@ const StoryInspirationCard: React.FC<
 
       {/* Content */}
       <div className="relative z-10 px-6 pb-6 pt-5">
-
         {/* Summary */}
         <p
           className="
@@ -273,15 +252,12 @@ const StoryInspirationCard: React.FC<
 
           <div className="space-y-3">
             {prompts.map((prompt, i) => {
-              const active =
-                selectedPromptIdx === i;
+              const active = selectedPromptIdx === i;
 
               return (
                 <button
                   key={i}
-                  onClick={() =>
-                    setSelectedPromptIdx(i)
-                  }
+                  onClick={() => setSelectedPromptIdx(i)}
                   className={`
                     group/prompt relative w-full
                     text-left rounded-2xl
@@ -358,9 +334,7 @@ const StoryInspirationCard: React.FC<
             flex items-center justify-center gap-3
           `}
         >
-          <span>
-            Generate Similar Story
-          </span>
+          <span>Generate Similar Story</span>
 
           <i
             className="
@@ -376,4 +350,3 @@ const StoryInspirationCard: React.FC<
 };
 
 export default StoryInspirationCard;
-

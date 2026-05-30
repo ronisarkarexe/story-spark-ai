@@ -14,6 +14,12 @@ import { postSearchFields } from "./post.constant";
 import { SortOrder } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 
+
+const MAX_SEARCH_TERM_LENGTH = 100;
+
+const escapeRegex = (value: string): string =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
   const { email, role } = token;
   const user = await User.findOne({
@@ -32,14 +38,14 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       author: user._id,
       updatedBy: user._id,
     });
-      if (res && res.isPublished) {
-        user.postsCount += 1;
-        await user.save();
-        GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
-        if (user.postsCount === 1) {
-          GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
-        }
+    if (res && res.isPublished) {
+      user.postsCount += 1;
+      await user.save();
+      GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
+      if (user.postsCount === 1) {
+        GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
       }
+    }
     return res;
   } catch (error) {
     throw new ApiError(
@@ -60,16 +66,22 @@ const getPosts = async (
     { isDeleted: { $ne: true } },
   ];
 
-  if (searchTerm) {
+ if (searchTerm) {
+  const safeSearchTerm = escapeRegex(
+    searchTerm.trim().slice(0, MAX_SEARCH_TERM_LENGTH)
+  );
+
+  if (safeSearchTerm) {
     andCondition.push({
       $or: postSearchFields.map((field) => ({
         [field]: {
-          $regex: searchTerm,
+          $regex: safeSearchTerm,
           $options: "i",
         },
       })),
     });
   }
+}
 
   if (trendingTopic) {
     andCondition.push({
@@ -120,7 +132,7 @@ const getPosts = async (
     .sort(sortCondition)
     .skip(skip)
     .limit(limit)
-    .populate("author", "name email createdAt")
+    .populate("author", "name email createdAt profile.bio")
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "email" },
@@ -137,12 +149,72 @@ const getPosts = async (
   };
 };
 
+const getPublishedPostsByAuthor = async (
+  token: ITokenPayload,
+  filters: Pick<IPostSearchFields, "searchTerm">,
+  pagination: IPaginationOptions
+): Promise<IGenericResponse<IPost[]>> => {
+  const { page, limit, skip, sortBy, orderBy } = paginationHelper(pagination);
+  const user = await User.findOne({ email: token.email, role: token.role });
+
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  const andCondition: Record<string, unknown>[] = [
+    { author: user._id },
+    { isPublished: true },
+    { isDeleted: { $ne: true } },
+  ];
+
+  if (filters.searchTerm) {
+    andCondition.push({
+      $or: postSearchFields.map((field) => ({
+        [field]: {
+          $regex: filters.searchTerm,
+          $options: "i",
+        },
+      })),
+    });
+  }
+
+  const sortCondition: { [key: string]: SortOrder } = {};
+  if (sortBy && orderBy) {
+    sortCondition[sortBy] = orderBy === "asc" ? 1 : -1;
+  } else {
+    sortCondition.publishedAt = -1;
+    sortCondition.createdAt = -1;
+  }
+
+  const whereCondition = { $and: andCondition };
+  const result = await Post.find(whereCondition)
+    .sort(sortCondition)
+    .skip(skip)
+    .limit(limit)
+    .populate("author", "name email createdAt")
+    .populate({
+      path: "reactions",
+      populate: { path: "userId", select: "email" },
+    })
+    .populate("bookmarks", "email");
+  const total = await Post.countDocuments(whereCondition);
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
+
 const getLatestPosts = async () => {
   try {
     const res = await Post.find({ isDeleted: { $ne: true } })
       .sort({ createdAt: -1 })
       .limit(50)
-      .populate("author", "name email createdAt")
+      .populate("author", "name email createdAt profile.bio")
       .populate({
         path: "reactions",
         populate: { path: "userId", select: "email" },
@@ -165,7 +237,7 @@ const getFeaturedPosts = async () => {
     })
       .sort({ createdAt: -1, updatedBy: -1 })
       .limit(10)
-      .populate("author", "name email createdAt")
+      .populate("author", "name email createdAt profile.bio")
       .populate({
         path: "reactions",
         populate: { path: "userId", select: "email" },
@@ -198,7 +270,7 @@ const doFeaturedPosts = async (postId: string) => {
 
 const getSinglePost = async (id: string) => {
   const postById = await Post.findOne({ _id: id, isDeleted: { $ne: true } })
-    .populate("author", "name email createdAt")
+    .populate("author", "name email createdAt profile.bio")
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "email" },
@@ -217,7 +289,7 @@ const getPostsByTag = async (tag: string, excludeId?: string) => {
   }
   const result = await Post.find(query)
     .limit(2)
-    .populate("author", "name email createdAt")
+    .populate("author", "name email createdAt profile.bio")
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "email" },
@@ -232,7 +304,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
- const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
@@ -338,6 +410,7 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
 export const PostService = {
   createPost,
   getPosts,
+  getPublishedPostsByAuthor,
   getLatestPosts,
   getFeaturedPosts,
   doFeaturedPosts,
@@ -347,4 +420,3 @@ export const PostService = {
   updatePost,
   deletePost,
 };
-

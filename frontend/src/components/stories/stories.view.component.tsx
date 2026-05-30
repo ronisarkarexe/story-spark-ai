@@ -15,6 +15,9 @@ import { useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setStory } from "../../redux/slices/storySlice";
 import ContinueStoryButton from "../story/ContinueStoryButton";
+import StoryTradingCard from "../cards/StoryTradingCard";
+import CardCollection from "../cards/CardCollection";
+
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
@@ -268,6 +271,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
+  const [showTradingCard, setShowTradingCard] = useState<boolean>(false);
   const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
@@ -657,6 +661,14 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                 <button type="button" className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleExportMarkdown} disabled={!selectedStory}>
                   ⬇️ Export Markdown
                 </button>
+                <button
+                  type="button"
+                  className="rounded-lg px-4 py-2 bg-emerald-700 text-slate-200 font-semibold cursor-pointer hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowTradingCard(true)}
+                  disabled={!selectedStory}
+                >
+                  Get Card
+                </button>
                 <button type="button" className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowWorldMap(true)} disabled={!selectedStory}>
                   🗺️ World Map
                 </button>
@@ -850,7 +862,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                 <StoryCoverImage
                   title={selectedStory.title}
                   tag={selectedStory.tag}
-                  className="transition-transform duration-500 group-hover:scale-105"
+                  className="transition-transform duration-500"
+                  
                   style={{ width: "100%", height: "100%", borderRadius: "0.75rem" }}
                 />
               </div>
@@ -875,9 +888,41 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
               </div>
             </div>
           </div>
+          <CardCollection
+            stories={stories}
+            selectedStoryId={selectedStory.uuid}
+            onSelectStory={handelStorySelection}
+          />
         </div>
       </div>
-
+      {showTradingCard && selectedStory && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-6 backdrop-blur-sm">
+          <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300">
+                  AI Story Trading Card
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-white">
+                  Collect Your Story
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTradingCard(false)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 text-slate-300 transition hover:bg-slate-800"
+                aria-label="Close trading card"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <StoryTradingCard
+              story={selectedStory}
+              onClose={() => setShowTradingCard(false)}
+            />
+          </div>
+        </div>
+      )}
       {showRemix && selectedStory && (
         <StoryRemix
           story={selectedStory}

@@ -22,6 +22,16 @@ router.post(
 // Get Posts
 
 router.get("/lists", PostController.getPosts);
+router.get(
+  "/my-published-stories",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  PostController.getPublishedPostsByAuthor
+);
 router.get("/latest-lists", PostController.getLatestPosts);
 router.get("/feature-lists", PostController.getFeaturedPosts);
 
@@ -69,4 +79,3 @@ router.delete(
 );
 
 export const PostRouter = router;
-

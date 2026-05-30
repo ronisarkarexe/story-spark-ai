@@ -73,6 +73,11 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const { oldPassword, newPassword } = req.body;
+
+  await AuthService.changePassword(user, { oldPassword, newPassword });
 const forgotPassword = catchAsync(async (req: Request, res: Response) => {
   const { email } = req.body;
   const result = await AuthService.forgotPassword(email);
@@ -102,6 +107,8 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
+    message:
+      "Password changed successfully. All previous sessions have been invalidated.",
     message: "Password reset successfully!",
     data: { accessToken },
   });
@@ -112,6 +119,7 @@ export const AuthController = {
   register,
   refreshToken,
   googleLogin,
+  changePassword,
   forgotPassword,
   resetPassword,
 };
