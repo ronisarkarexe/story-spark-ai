@@ -29,7 +29,7 @@ const HomeComponent = () => {
           </div>
         </div>
       </div>
-      <CommunitySpotlightComponent />
+      <CommunitySpotlightComponent /> 
       <ResourceComponent />
       <WriterFeedbackComponent />
       <PricingComponent />

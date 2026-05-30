@@ -28,7 +28,11 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
   const updateData: Record<string, unknown> = {};
 
   if (typeof payload.name === "string") {
-    updateData.name = payload.name;
+    const trimmedName = payload.name.trim();
+    if (!trimmedName) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Full Name cannot be empty!");
+    }
+    updateData.name = trimmedName;
   }
 
   if (payload.profile) {

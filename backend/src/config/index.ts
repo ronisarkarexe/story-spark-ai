@@ -19,11 +19,11 @@ export default {
   disable_logs: process.env.DISABLE_LOGS === "true" || process.env.VERCEL === "1",
   database_url: (() => {
     const url = process.env.DATABASE_URL?.trim();
-    if (!url) {
-      throw new Error(
-        "DATABASE_URL environment variable is required. See backend/.env.example for setup instructions."
-      );
-    }
+    // if (!url) {
+    //   throw new Error(
+    //     "DATABASE_URL environment variable is required. See backend/.env.example for setup instructions."
+    //   );
+    // }
     return url;
   })(),
   cors_origins: parseCorsOrigins(process.env.CORS_ORIGINS),

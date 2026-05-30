@@ -21,13 +21,48 @@ const toggleReaction = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
- main
+  const existingReaction = await Reaction.findOne({
+    userId: user._id,
+    postId: post._id,
+  });
+
+  if (existingReaction) {
+    // Remove reaction atomically
+    await Reaction.findByIdAndDelete(existingReaction._id);
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: postId },
+      {
+        $pull: { reactions: existingReaction._id },
+        $inc: { likesCount: -1 },
+      },
+      { new: true }
+    );
+    // Ensure likesCount never goes below 0
+    if (updatedPost && updatedPost.likesCount < 0) {
+      await Post.updateOne({ _id: postId }, { $set: { likesCount: 0 } });
+    }
+    return {
+      message: "Reaction removed",
+      likesCount: Math.max(0, updatedPost?.likesCount ?? 0),
+    };
+  } else {
+    // Add reaction atomically
     const newReaction = await Reaction.create({
       postId: new Types.ObjectId(postId),
       userId: user._id,
       type: type,
     });
- main
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: postId },
+      {
+        $addToSet: { reactions: newReaction._id },
+        $inc: { likesCount: 1 },
+      },
+      { new: true }
+    );
+    return {
+      message: "Reaction added",
+      likesCount: updatedPost?.likesCount ?? 0,
     };
   }
 };
