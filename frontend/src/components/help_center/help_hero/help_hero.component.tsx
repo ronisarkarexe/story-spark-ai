@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import HelpSearchBar from "../help_search_bar/help_search_bar.component";
 
 interface HelpHeroProps {
   searchQuery?: string;
@@ -8,7 +9,7 @@ interface HelpHeroProps {
   resultCount?: number;
 }
 
-const HelpHero: FC<HelpHeroProps> = () => {
+const HelpHero: FC<HelpHeroProps> = ({ searchQuery, onSearchChange, resultCount }) => {
   return (
     <section
       id="help-hero"
@@ -49,19 +50,6 @@ const HelpHero: FC<HelpHeroProps> = () => {
             </div>
           </Link>
         </motion.div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <Link to="/" className="inline-block mb-8">
-          <div className="bg-white dark:bg-gradient-to-r dark:from-white/20 dark:to-white/10 hover:bg-slate-100 dark:hover:from-white/30 dark:hover:to-white/20 text-slate-700 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded-lg border border-slate-200 dark:border-white/10 shadow-sm">
-            
-            <i
-              className="fa-solid fa-left-long"
-              aria-hidden="true"
-            ></i>
-
-            BACK
-          </div>
-        </Link>
 
         {/* Main Content */}
         <motion.div
@@ -70,20 +58,11 @@ const HelpHero: FC<HelpHeroProps> = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
         >
-          
           <div className="inline-flex items-center justify-center mx-auto px-4 py-1.5 mb-6 rounded-full border border-indigo-200 dark:border-white/20 bg-indigo-100 dark:bg-blue-500/20 text-indigo-700 dark:text-white shadow-sm">
-            
-            <span className="text-sm font-medium">
-              SUPPORT &amp; GUIDANCE
-            </span>
-
+            <span className="text-sm font-medium">SUPPORT &amp; GUIDANCE</span>
             <span className="ml-2 text-sm">
-              <i
-                className="fa-solid fa-circle-question"
-                aria-hidden="true"
-              ></i>
+              <i className="fa-solid fa-circle-question" aria-hidden="true"></i>
             </span>
-
           </div>
 
           <motion.h1
@@ -93,20 +72,16 @@ const HelpHero: FC<HelpHeroProps> = () => {
             How can we help you today?
           </motion.h1>
 
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
-
-
           <p className="text-lg text-slate-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
             Find answers, troubleshoot issues, and get started with StorySparkAI.
             Search our guides or browse topics below.
           </p>
 
           <HelpSearchBar
-            value={searchQuery}
-            onChange={onSearchChange}
+            value={searchQuery || ""}
+            onChange={onSearchChange || (() => {})}
             resultCount={searchQuery ? resultCount : undefined}
           />
-
         </motion.div>
       </div>
     </section>
