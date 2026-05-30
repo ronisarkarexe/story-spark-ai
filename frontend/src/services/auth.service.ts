@@ -34,15 +34,21 @@ const getValidDecodedToken = () => {
 
   if (authToken) {
     try {
-      const decodedData = decodedToken(authToken);
-          if (
-      typeof decodedData.exp === "number" &&
-      decodedData.exp <= Math.floor(Date.now() / 1000)
-    ) {
-      removeFromLocalStorage(AUTH_KEY);
-      return null;
-    }
-      return buildUserInfo(decodedData);
+     const decodedData = decodedToken(authToken);
+
+if (
+  typeof decodedData.exp === "number" &&
+  decodedData.exp <= Math.floor(Date.now() / 1000)
+) {
+  removeFromLocalStorage(AUTH_KEY);
+  return null;
+}
+
+if (!decodedData.email) {
+  return null;
+}
+
+return buildUserInfo(decodedData as AuthUserInfo);
     } catch (error) {
       console.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);
