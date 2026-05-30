@@ -15,21 +15,23 @@ const HomeComponent = () => {
   const isLogin = isLoggedIn();
   return (
     <>
-      <div className="story-page-shell grid grid-cols-12 items-start gap-6 py-12 sm:gap-8 lg:gap-10 lg:py-16">
-        <div className="col-span-12 lg:col-span-8 min-w-0">
-          <FeatureComponent />
-          <LatestPostsComponent />
-        </div>
-        <div className="col-span-12 lg:col-span-4 min-w-0">
-          <div className="space-y-6 lg:sticky lg:top-24">
-            {isLogin && <FeatureProfileComponent />}
-            {isLogin && <PersonalizedRecommendationsComponent />}
-            <TrendingTopicComponent />
-            <RecommendedWritersComponent />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 pb-10">
+        <div className="grid grid-cols-12 items-start gap-8 mb-10">
+          <div className="col-span-12 lg:col-span-8 min-w-0">
+            <FeatureComponent />
+            <LatestPostsComponent />
+          </div>
+          <div className="col-span-12 lg:col-span-4 min-w-0">
+            <div className="sticky top-24 space-y-6">
+              {isLogin && <FeatureProfileComponent />}
+              {isLogin && <PersonalizedRecommendationsComponent />}
+              <TrendingTopicComponent />
+              <RecommendedWritersComponent />
+            </div>
           </div>
         </div>
       </div>
-      <CommunitySpotlightComponent />
+      <CommunitySpotlightComponent /> 
       <ResourceComponent />
       <WriterFeedbackComponent />
       <PricingComponent />

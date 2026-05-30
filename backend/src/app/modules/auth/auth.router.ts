@@ -9,6 +9,7 @@ import ipRateLimiter, {
   forgotPasswordRateLimiter,
   resetPasswordRateLimiter,
 } from "../../middleware/ip.rate-limiter";
+
 const router = express.Router();
 
 // Login API route
@@ -62,4 +63,3 @@ router.post(
 );
 
 export const AuthRouter = router;
-

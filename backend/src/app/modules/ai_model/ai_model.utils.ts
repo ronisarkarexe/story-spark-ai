@@ -267,6 +267,67 @@ export async function generateAlternateEndingsWithGemini(
   }
 }
 
+export async function generateWithGeminiStoriesStream(
+  prompt: string,
+  wordLength: number = 250,
+  numStories: number = 2,
+  onChunk: (chunk: string) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  if (signal?.aborted) {
+    throw new GenerationAbortedError();
+  }
+
+  const streamingModel = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+  });
+
+  const streamingConfig = {
+    temperature: 1,
+    topP: 0.95,
+    topK: 64,
+    maxOutputTokens: 8192,
+  };
+
+  try {
+    const result = await streamingModel.generateContentStream({
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `Generate ${numStories} different short stories based on the following prompt: "${prompt}".
+              Each story should be in JSON format with fields: "title", "content", and "tag".
+              Ensure each story is approximately ${wordLength} words long.
+              Return the output as a JSON array.`,
+            },
+          ],
+        },
+      ],
+      generationConfig: streamingConfig,
+      safetySettings,
+    });
+
+    for await (const chunk of result.stream) {
+      if (signal?.aborted) {
+        throw new GenerationAbortedError();
+      }
+      const chunkText = chunk.text();
+      if (chunkText) {
+        onChunk(chunkText);
+      }
+    }
+  } catch (error: unknown) {
+    if (error instanceof ApiError || error instanceof GenerationAbortedError) {
+      throw error;
+    }
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `AI streaming generation failed: ${errorMsg}`
+    );
+  }
+}
 export async function generateRemixWithGemini(
   title: string,
   content: string,

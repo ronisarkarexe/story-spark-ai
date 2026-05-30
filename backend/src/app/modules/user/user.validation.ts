@@ -48,7 +48,7 @@ const resetPassword = z.object({
 const updateUser = z.object({
   body: z
     .object({
-      name: z.string().optional(),
+      name: z.string().trim().min(1, "Full Name cannot be empty.").optional(),
       profile: z
         .object({
           avatar: z.string().optional(),
