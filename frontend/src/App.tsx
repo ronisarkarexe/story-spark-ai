@@ -6,6 +6,7 @@ import WritingAssistantComponent from "./components/writing-assistant/writing_as
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
 import StoriesComponent from "./components/stories/stories.component";
+
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import LoginComponent from "./components/login/login.component";
@@ -43,7 +44,9 @@ import ResourceDetailComponent from "./components/community/resource_detail.comp
 import ContributorsComponent from "./components/footer/contributors";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
+import AnalyticsDashboard from "./components/analytics/AnalyticsDashboard";
 import StoryWorkspace from "./components/story/StoryWorkspace";
+
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
@@ -118,16 +121,17 @@ const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           { index: true, element: <DashboardComponent /> },
+          { path: "generate", element: <StoriesComponent /> },
           { path: "profile", element: <ProfileComponent /> },
           { path: "writers", element: <WriterApplicationComponent /> },
           { path: "users", element: <UserComponent /> },
           {
-            element: <ProtectedRoute allowedRoles={[USER_ROLE.USER, USER_ROLE.WRITER]} />,
+            element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
             children: [{ path: "settings", element: <SettingComponent /> }],
           },
           {
-            element: <ProtectedRoute allowedRoles={[USER_ROLE.WRITER]} />,
-            children: [{ path: "analytics", element: <AnalyticsPage /> }],
+            element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+            children: [{ path: "analytics", element: <AnalyticsDashboard /> }],
           },
           {
             element: <ProtectedRoute allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER]} />,
@@ -137,6 +141,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+  { path: "/analytics", element: <ProtectedRoute allowedRoles={ALL_ROLES} element={<AnalyticsDashboard />} /> },
 ]);
 
 function App() {

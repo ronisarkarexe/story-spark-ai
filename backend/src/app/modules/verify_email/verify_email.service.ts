@@ -93,7 +93,14 @@ const VerifyEmail = async (payload: IEmailBody) => {
     if (!config.verify_email || !config.verify_password) {
       console.log(`\n=========================================\n[DEV MODE] OTP for ${email} is: ${otp}\n=========================================\n`);
     } else {
-      await transporter.sendMail(mailOptions);
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (sendError) {
+        console.error(`[Email Service Error] Failed to send OTP to ${email}:`, sendError);
+        // Rollback OTP creation if email fails to send
+        await OTPModel.deleteOne({ email });
+        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to send OTP email. Please try again later.");
+      }
     }
 
     return {
@@ -103,8 +110,8 @@ const VerifyEmail = async (payload: IEmailBody) => {
     if (error instanceof ApiError) {
       throw error;
     }
-    console.error("Mail Error:", error);
-    throw new ApiError(500, "Failed to send email");
+    console.error("[Email Service Unexpected Error]:", error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred while processing your request");
   }
 };
 

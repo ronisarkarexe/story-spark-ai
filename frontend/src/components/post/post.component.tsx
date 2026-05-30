@@ -61,7 +61,7 @@ const ExploreComponent = () => {
   };
 
   const availableTags = Array.from(
-    new Set(
+    new Set<string>(
       (data?.posts || [])
         .map((post: Post) => post.tag)
         .filter(Boolean)
@@ -298,7 +298,7 @@ const ExploreComponent = () => {
                   <PaginationComponent
                     current={page}
                     pageSize={size}
-                    total={data.meta.total}
+                    total={data?.meta?.total ?? 0}
                     onChange={onPaginationChange}
                   />
                 </div>

@@ -170,7 +170,6 @@ const FloatingNavComponent: React.FC = () => {
                       <span className="font-medium">Saved Stories</span>
                     </Link>
 
-                    {isAdmin && (
                       <Link
                         to="/dashboard"
                         onClick={() => setIsMoreOpen(false)}
@@ -181,7 +180,6 @@ const FloatingNavComponent: React.FC = () => {
                         </div>
                         <span className="font-medium">Dashboard</span>
                       </Link>
-                    )}
 
                     <button
                       onClick={handleLogout}
@@ -226,11 +224,10 @@ const FloatingNavComponent: React.FC = () => {
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={`flex flex-col items-center justify-center gap-1 py-1.5 px-3.5 rounded-xl transition-all duration-300 relative z-10 ${
-                  isActive
+                className={`flex flex-col items-center justify-center gap-1 py-1.5 px-3.5 rounded-xl transition-all duration-300 relative z-10 ${isActive
                     ? "text-indigo-600 dark:text-blue-400 scale-105 font-bold"
                     : "hover:text-slate-800 dark:hover:text-white"
-                }`}
+                  }`}
               >
                 <IconComponent size={20} className={isActive ? "stroke-[2.5px]" : "stroke-[2px]"} />
                 <span className="text-[9px] tracking-wider font-semibold uppercase">{item.label}</span>
@@ -248,11 +245,10 @@ const FloatingNavComponent: React.FC = () => {
           {/* More Trigger */}
           <button
             onClick={() => setIsMoreOpen(!isMoreOpen)}
-            className={`flex flex-col items-center justify-center gap-1 py-1.5 px-3.5 rounded-xl transition-all duration-300 relative z-10 cursor-pointer ${
-              isMoreOpen
+            className={`flex flex-col items-center justify-center gap-1 py-1.5 px-3.5 rounded-xl transition-all duration-300 relative z-10 cursor-pointer ${isMoreOpen
                 ? "text-indigo-600 dark:text-blue-400 scale-105 font-bold"
                 : "hover:text-slate-800 dark:hover:text-white"
-            }`}
+              }`}
           >
             <div className="relative">
               <MoreHorizontal size={20} className={isMoreOpen ? "stroke-[2.5px]" : "stroke-[2px]"} />

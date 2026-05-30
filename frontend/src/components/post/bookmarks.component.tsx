@@ -137,7 +137,7 @@ const BookmarksComponent = () => {
                 <PaginationComponent
                   current={page}
                   pageSize={size}
-                  total={data.meta.total}
+                  total={data?.meta?.total ?? 0}
                   onChange={onPaginationChange}
                 />
               </div>

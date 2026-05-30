@@ -350,13 +350,17 @@ const PostDetailsComponent = () => {
 
                 <div className="mb-12">
                   <img
-                    src={post?.imageURL}
+                    src={post?.imageURL || "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=80"}
                     alt={post?.title}
-                    className="w-full h-[400px] object-cover rounded-lg shadow-md"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=80";
+                    }}
+                    className="w-full h-[400px] object-cover rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800"
                   />
                 </div>
 
-                <div className="prose max-w-none mb-12 text-slate-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-lg font-light">
+                <div className="prose max-w-3xl mx-auto mb-12 text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-loose text-lg font-normal tracking-wide">
                   <p>{post?.content}</p>
                 </div>
 

@@ -172,13 +172,13 @@ const DashboardAnalysisHeader: React.FC<{ data: DashboardAnalysis }> = ({ data }
               <div className="h-2 bg-yellow-500 rounded-full"
                 style={{
                   width: `${
-                    data.users?.total ? ((data.users.applyForWriter ?? 0) / data.users.total) * 100 : 0
+                    data.users?.total ? ((data.users?.applyForWriter ?? 0) / data.users.total) * 100 : 0
                   }%`,
                 }}>
               </div>
             </div>
             <p className="text-[10px] text-slate-500 dark:text-slate-600 mt-1">
-              {data.users?.total ? (((data.users.applyForWriter ?? 0) / data.users.total) * 100).toFixed(1) : 0}% of total users
+              {data.users?.total ? (((data.users?.applyForWriter ?? 0) / data.users.total) * 100).toFixed(1) : 0}% of total users
             </p>
           </div>
         </div>

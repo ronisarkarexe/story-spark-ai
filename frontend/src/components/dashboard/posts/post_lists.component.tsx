@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useGetPostListsQuery } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
-import { Topic } from "../../../models/post";
+import { Topic, Post } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
 
 const PostListsComponent: React.FC = () => {
@@ -213,7 +213,7 @@ const PostListsComponent: React.FC = () => {
                 </tr>
               ))
             ) : (
-              data?.posts?.map((post) => (
+              data?.posts?.map((post: Post) => (
                 <tr key={post._id} className="hover:bg-gray-800/30 transition-colors duration-200 group">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -307,7 +307,7 @@ const PostListsComponent: React.FC = () => {
             <PaginationComponent
               current={page}
               pageSize={size}
-              total={data.meta.total}
+              total={data?.meta?.total ?? 0}
               onChange={onPaginationChange}
             />
           </div>
