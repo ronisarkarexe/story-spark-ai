@@ -29,43 +29,27 @@ const toggleReaction = async (
   });
 
   if (existingReaction) {
-    // Remove reaction atomically
+    // Remove reaction
     await Reaction.findByIdAndDelete(existingReaction._id);
-    const updatedPost = await Post.findOneAndUpdate(
-      { _id: postId },
-      {
-        $pull: { reactions: existingReaction._id },
-        $inc: { likesCount: -1 },
-      },
-      { new: true }
+    post.likesCount = Math.max(0, post.likesCount - 1);
+    post.reactions = post.reactions || [];
+    post.reactions = post.reactions.filter(
+      (rId) => rId.toString() !== existingReaction._id.toString()
     );
-    // Ensure likesCount never goes below 0
-    if (updatedPost && updatedPost.likesCount < 0) {
-      await Post.updateOne({ _id: postId }, { $set: { likesCount: 0 } });
-    }
-    return {
-      message: "Reaction removed",
-      likesCount: Math.max(0, updatedPost?.likesCount ?? 0),
-    };
+    await post.save();
+    return { message: "Reaction removed", likesCount: post.likesCount };
   } else {
-    // Add reaction atomically
+    // Add reaction
     const newReaction = await Reaction.create({
       postId: new Types.ObjectId(postId),
       userId: user._id,
       type: type,
     });
-    const updatedPost = await Post.findOneAndUpdate(
-      { _id: postId },
-      {
-        $addToSet: { reactions: newReaction._id },
-        $inc: { likesCount: 1 },
-      },
-      { new: true }
-    );
-    return {
-      message: "Reaction added",
-      likesCount: updatedPost?.likesCount ?? 0,
-    };
+    post.likesCount = post.likesCount + 1;
+    post.reactions = post.reactions || [];
+    post.reactions.push(newReaction._id);
+    await post.save();
+    return { message: "Reaction added", likesCount: post.likesCount };
   }
 };
 

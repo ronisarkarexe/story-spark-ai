@@ -167,7 +167,7 @@ export default function Contact() {
       <div aria-hidden="true" className="contact-grid-overlay" />
 
       {/* ── Page content ── */}
-      <div className="contact-wrapper relative z-10 mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-18 lg:px-12 lg:py-20 xl:px-16">
+      <div className="contact-wrapper relative z-10 mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-24 lg:px-12 lg:py-28 xl:px-16">
 
         {/* Mobile badge */}
         <div className="mb-10 flex flex-col items-center text-center lg:hidden">
@@ -177,7 +177,7 @@ export default function Contact() {
           </span>
         </div>
 
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-14 xl:gap-20">
+        <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16 xl:gap-24">
 
           {/* ── LEFT COLUMN ── */}
           <div className="contact-col-left flex flex-col">
@@ -191,13 +191,13 @@ export default function Contact() {
             {/* Heading */}
             <h1
               id="contact-heading"
-              className="font-black leading-[0.9] tracking-tight"
+              className="font-black leading-[0.95] tracking-tight"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              <span className="block text-[clamp(2.75rem,6vw,4.5rem)] text-white">
+              <span className="block text-[clamp(3rem,7vw,4.75rem)] text-white">
                 Let's Start a
               </span>
-              <span className="contact-heading-gradient block text-[clamp(2.75rem,6vw,4.5rem)]">
+              <span className="contact-heading-gradient block text-[clamp(3rem,7vw,4.75rem)]">
                 Conversation
               </span>
             </h1>
@@ -281,11 +281,11 @@ export default function Contact() {
                 <div aria-hidden="true" className="contact-form-top-line" />
 
                 {/* Form header */}
-                <div className="mb-7">
-                  <h2 className="text-xl font-bold text-white sm:text-2xl">
+                <div className="mb-8 sm:mb-10">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white">
                     Send a Message
                   </h2>
-                  <p className="mt-1.5 text-sm text-slate-500">
+                  <p className="mt-2 text-sm sm:text-base text-slate-400">
                     We'll get back to you within 24 hours.
                   </p>
                 </div>
@@ -294,14 +294,14 @@ export default function Contact() {
                   onSubmit={submitHandler}
                   noValidate
                   aria-label="Contact form"
-                  className="space-y-4"
+                  className="space-y-5 sm:space-y-6"
                 >
                   {/* Text inputs */}
                   {FORM_FIELDS.map(({ id, name, type, label, placeholder, icon: Icon, autoComplete }) => (
                     <div key={id} className="contact-field group">
                       <label
                         htmlFor={id}
-                        className="mb-1.5 block text-[0.7rem] font-bold uppercase tracking-widest text-slate-500"
+                        className="mb-2.5 block text-[0.8rem] font-bold uppercase tracking-widest text-slate-300"
                       >
                         {label}
                       </label>
@@ -319,7 +319,7 @@ export default function Contact() {
                           onChange={changeHandler}
                           required
                           autoComplete={autoComplete}
-                          className="contact-input h-12 w-full rounded-xl pl-10 pr-4 text-sm text-white placeholder:text-slate-600 sm:h-[3.125rem] sm:text-base"
+                          className="contact-input h-14 w-full rounded-xl pl-12 pr-4 text-base text-white placeholder:text-slate-500 sm:h-16 sm:text-lg font-medium"
                         />
                       </div>
                     </div>
@@ -329,7 +329,7 @@ export default function Contact() {
                   <div className="contact-field group">
                     <label
                       htmlFor="contact-message"
-                      className="mb-1.5 block text-[0.7rem] font-bold uppercase tracking-widest text-slate-500"
+                      className="mb-2.5 block text-[0.8rem] font-bold uppercase tracking-widest text-slate-300"
                     >
                       Message
                     </label>
@@ -340,13 +340,13 @@ export default function Contact() {
                       />
                       <textarea
                         id="contact-message"
-                        rows={5}
+                        rows={6}
                         name="message"
                         placeholder="Tell us what's on your mind…"
                         value={formData.message}
                         onChange={changeHandler}
                         required
-                        className="contact-input w-full resize-none rounded-xl pb-4 pl-10 pr-4 pt-4 text-sm text-white placeholder:text-slate-600 sm:text-base"
+                        className="contact-input w-full resize-none rounded-xl pb-5 pl-12 pr-4 pt-4 text-base text-white placeholder:text-slate-500 sm:text-lg font-medium"
                       />
                     </div>
                   </div>
@@ -357,7 +357,7 @@ export default function Contact() {
                     disabled={loading}
                     aria-busy={loading}
                     aria-label={loading ? "Sending message…" : "Send message"}
-                    className="contact-submit-btn group relative mt-1 flex h-12 w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl text-sm font-bold text-white sm:h-[3.125rem] sm:text-base"
+                    className="contact-submit-btn group relative mt-2 flex h-14 w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl text-base font-bold text-white sm:h-16 sm:text-lg shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300"
                   >
                     <span aria-hidden="true" className="contact-btn-gradient absolute inset-0" />
                     <span

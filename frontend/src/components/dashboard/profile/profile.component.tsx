@@ -6,6 +6,7 @@ import {
 import { User } from "../../../models/user";
 import toast, { Toaster } from "react-hot-toast";
 import { ProfileSettingComponent } from "./profile.setting.component";
+import { ProfileSavedStoriesSection } from "./profile.saved_stories.component";
 import { WriterApplicationForm } from "./writer_application.form";
 
 const ProfileComponent = () => {
@@ -111,6 +112,7 @@ const ProfileComponent = () => {
             onSave={onSave}
             loading={loading}
           />
+          <ProfileSavedStoriesSection />
           <WriterApplicationForm user={data} />
         </>
       )}

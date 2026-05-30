@@ -4,10 +4,22 @@ import LoadingAnimation from "../../loading/loading.component";
 import { useNavigate } from "react-router-dom";
 
 const FeatureComponent = () => {
-  const { data, isLoading, isError } = useGetFeaturedListsQuery(undefined);
+  const { data, isLoading, isError, refetch } = useGetFeaturedListsQuery(undefined);
   const navigate = useNavigate();
   if (isLoading) return <LoadingAnimation />;
-  if (isError) return <div className="mb-12 text-red-400">Failed to load featured posts.</div>;
+  if (isError) {
+    return (
+      <div className="mb-12 rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-center text-red-200">
+        <p className="mb-3 font-semibold">Failed to load featured posts.</p>
+        <button
+          onClick={() => refetch()}
+          className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <section className="mb-12 text-slate-100">

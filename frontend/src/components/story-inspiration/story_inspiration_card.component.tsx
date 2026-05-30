@@ -1,7 +1,5 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 
 export interface StoryInspiration {
   id: string;
@@ -18,240 +16,126 @@ interface StoryInspirationCardProps {
   story: StoryInspiration;
 }
 
-const genreConfig: {
-  [key: string]: {
-    gradient: string;
-    glow: string;
-    icon: string;
-  };
-} = {
+const genreConfig: { [key: string]: { color: string; bg: string; border: string; icon: string } } = {
   Fantasy: {
-    gradient:
-      "from-emerald-500 to-teal-600",
-    glow: "shadow-emerald-500/20",
+    color: "text-emerald-300",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/30",
     icon: "fas fa-wand-magic-sparkles",
   },
-
   Horror: {
-    gradient:
-      "from-red-500 to-rose-600",
-    glow: "shadow-red-500/20",
+    color: "text-red-300",
+    bg: "bg-red-500/10",
+    border: "border-red-500/30",
     icon: "fas fa-ghost",
   },
-
   "Sci-Fi": {
-    gradient:
-      "from-blue-500 to-cyan-600",
-    glow: "shadow-blue-500/20",
+    color: "text-blue-300",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/30",
     icon: "fas fa-rocket",
   },
-
   Mystery: {
-    gradient:
-      "from-purple-500 to-indigo-600",
-    glow: "shadow-purple-500/20",
+    color: "text-purple-300",
+    bg: "bg-purple-500/10",
+    border: "border-purple-500/30",
     icon: "fas fa-user-secret",
   },
-
   Adventure: {
-    gradient:
-      "from-amber-500 to-orange-600",
-    glow: "shadow-amber-500/20",
+    color: "text-amber-300",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/30",
     icon: "fas fa-compass",
   },
-
   Romance: {
-    gradient:
-      "from-pink-500 to-rose-500",
-    glow: "shadow-pink-500/20",
+    color: "text-pink-300",
+    bg: "bg-pink-500/10",
+    border: "border-pink-500/30",
     icon: "fas fa-heart",
   },
 };
 
-const StoryInspirationCard: React.FC<
-  StoryInspirationCardProps
-> = ({ story }) => {
+const genreBadgeClasses: { [key: string]: string } = {
+  Fantasy: "dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-300",
+  Horror: "dark:bg-red-500/10 dark:border-red-500/30 dark:text-red-300",
+  "Sci-Fi": "dark:bg-blue-500/10 dark:border-blue-500/30 dark:text-blue-300",
+  Mystery: "dark:bg-purple-500/10 dark:border-purple-500/30 dark:text-purple-300",
+  Adventure: "dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-300",
+  Romance: "dark:bg-pink-500/10 dark:border-pink-500/30 dark:text-pink-300",
+};
+
+const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) => {
   const navigate = useNavigate();
+  const [selectedPromptIdx, setSelectedPromptIdx] = useState<number>(0);
 
-  const [selectedPromptIdx, setSelectedPromptIdx] =
-    useState<number>(0);
-
-  const {
-    title,
-    author,
-    genre,
-    summary,
-    themes,
-    prompts,
-    image,
-  } = story;
-
-  const config =
-    genreConfig[genre] || {
-      gradient:
-        "from-indigo-500 to-blue-600",
-      glow: "shadow-indigo-500/20",
-      icon: "fas fa-book",
-    };
+  const { title, author, genre, summary, themes, prompts, image } = story;
+  const config = genreConfig[genre] || {
+    color: "text-indigo-300",
+    bg: "bg-indigo-500/10",
+    border: "border-indigo-500/30",
+    icon: "fas fa-book",
+  };
 
   const handleGenerateSimilar = () => {
-    const selectedPrompt =
-      prompts[selectedPromptIdx];
+    // Construct a rich, descriptive prompt based on the classic story, selected inspiration angle, and themes
+    const selectedPrompt = prompts[selectedPromptIdx];
+    const finalPrompt = `[Genre: ${genre}] Write a creative story inspired by the classic work '${title}' by ${author}. Focus on the following themes: ${themes.join(
+      ", "
+    )}. Use this creative premise: ${selectedPrompt}`;
 
-    const finalPrompt = `
-      [Genre: ${genre}]
-      Write a creative story inspired by
-      '${title}' by ${author}.
-      Focus on themes:
-      ${themes.join(", ")}.
-      Premise:
-      ${selectedPrompt}
-    `;
-
-    navigate("/stories", {
-      state: { prompt: finalPrompt },
-    });
+    navigate("/stories", { state: { prompt: finalPrompt } });
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.35 }}
-      className="
-        group relative overflow-hidden
-        rounded-[32px]
-        bg-white
-        border border-slate-200/70
-        shadow-[0_10px_40px_rgba(0,0,0,0.06)]
-        hover:shadow-[0_25px_80px_rgba(99,102,241,0.15)]
-        transition-all duration-500
-        dark:bg-[#0F172A]/80
-        dark:border-white/10
-        backdrop-blur-xl
-      "
-    >
-      {/* Hover Glow */}
-      <div
-        className={`
-          absolute inset-0 opacity-0
-          group-hover:opacity-100
-          transition duration-700
-          bg-gradient-to-br ${config.gradient}
-          blur-3xl
-        `}
-      />
-
-      {/* Image Section */}
-      <div className="relative p-4 pb-0">
-        <div className="relative overflow-hidden rounded-[28px] h-60">
-          <img
-            src={image}
-            alt={title}
-            onError={(e) => {
-              e.currentTarget.style.display =
-                "none";
-            }}
-            className="
-              w-full h-full object-cover
-              transition-transform duration-700
-              group-hover:scale-105
-            "
-          />
-
-          {/* Overlay */}
-          <div
-            className="
-              absolute inset-0
-              bg-gradient-to-t
-              from-black/80
-              via-black/20
-              to-transparent
-            "
-          />
-
-          {/* Genre Badge */}
-          <div
-            className="
-              absolute top-5 left-5
-              px-4 py-2 rounded-full
-              bg-black/40 backdrop-blur-xl
-              border border-white/10
-              text-white text-xs font-semibold
-              flex items-center gap-2
-            "
-          >
-            <i className={config.icon}></i>
-            {genre}
-          </div>
-
-          {/* Bottom Text */}
-          <div className="absolute bottom-0 left-0 right-0 p-6">
-            <h2
-              className="
-                text-3xl font-black
-                text-white tracking-tight
-                leading-tight
-              "
-            >
-              {title}
-            </h2>
-
-            <div
-              className="
-                mt-2 flex items-center gap-2
-                text-white/70 text-sm
-              "
-            >
-              <i className="fas fa-feather-alt text-indigo-300"></i>
-              {author}
-            </div>
-          </div>
+    <div className="motion-card group relative bg-white border border-gray-100 hover:border-indigo-500/40 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full transition-colors duration-300 dark:bg-slate-900/50 dark:border-none dark:shadow-xl">
+      
+      {/* Zoom-in Card Cover Image */}
+      <div className="relative h-44 w-full overflow-hidden bg-gray-100 dark:bg-[#0A0E17]">
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-100 via-gray-100/50 to-transparent z-10 pointer-events-none dark:from-[#0B0F19] dark:via-[#0B0F19]/50 dark:to-transparent" />
+        <img
+          src={image}
+          alt={title}
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+          className="motion-image w-full h-full object-cover"
+        />
+        
+        {/* Genre tag */}
+        <div className={`absolute top-4 right-4 z-20 px-3.5 py-1.5 rounded-full backdrop-blur-md border bg-gray-100 text-slate-700 border-gray-200 text-[10px] font-bold tracking-widest uppercase shadow-md flex items-center gap-1.5 ${genreBadgeClasses[genre] || "dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300"}`}>
+          <i className={`${config.icon} text-xs`}></i>
+          {genre}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 px-6 pb-6 pt-5">
+      {/* Content Body */}
+      <div className="p-6 flex flex-col flex-grow relative z-20 -mt-8 bg-white dark:bg-transparent">
+        
+        {/* Title and Author */}
+        <div className="mb-3">
+          <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-500 transition-colors duration-300 tracking-tight leading-snug dark:text-white dark:group-hover:text-indigo-400">
+            {title}
+          </h3>
+          <span className="text-xs text-slate-500 flex items-center gap-1.5 font-medium mt-1 dark:text-slate-400">
+            <i className="fas fa-feather-alt text-indigo-400/70"></i> By {author}
+          </span>
+        </div>
 
-        {/* Summary */}
-        <p
-          className="
-            text-[15px] leading-7
-            text-slate-600
-            dark:text-slate-400
-          "
-        >
+        {/* Short Summary */}
+        <p className="text-slate-600 text-sm leading-relaxed mb-5 flex-grow font-light dark:text-slate-300">
           {summary}
         </p>
 
-        {/* Themes */}
-        <div className="mt-7">
-          <h3
-            className="
-              text-xs uppercase tracking-[0.25em]
-              font-bold mb-3
-              text-slate-500 dark:text-slate-500
-            "
-          >
-            Themes
-          </h3>
-
-          <div className="flex flex-wrap gap-2">
-            {themes.map((theme, index) => (
+        {/* Key Themes */}
+        <div className="mb-6">
+          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-2 font-mono dark:text-indigo-400">
+            Core Themes
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {themes.map((theme, i) => (
               <span
-                key={index}
-                className="
-                  px-3 py-1.5 rounded-full
-                  bg-slate-100
-                  text-slate-700
-                  text-xs font-medium
-                  transition-all duration-300
-                  hover:bg-indigo-100
-                  hover:text-indigo-700
-                  dark:bg-white/5
-                  dark:text-slate-300
-                  dark:hover:bg-indigo-500/10
-                  dark:hover:text-indigo-300
-                "
+                key={i}
+                className="text-[11px] px-2 py-0.5 rounded bg-gray-100 text-slate-700 border border-gray-200 font-medium hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-colors duration-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
               >
                 {theme}
               </span>
@@ -259,121 +143,47 @@ const StoryInspirationCard: React.FC<
           </div>
         </div>
 
-        {/* Inspiration Prompts */}
-        <div className="mt-8">
-          <h3
-            className="
-              text-xs uppercase tracking-[0.25em]
-              font-bold mb-4
-              text-slate-500 dark:text-slate-500
-            "
-          >
-            Inspiration Prompt
-          </h3>
-
-          <div className="space-y-3">
-            {prompts.map((prompt, i) => {
-              const active =
-                selectedPromptIdx === i;
-
-              return (
-                <button
-                  key={i}
-                  onClick={() =>
-                    setSelectedPromptIdx(i)
-                  }
-                  className={`
-                    group/prompt relative w-full
-                    text-left rounded-2xl
-                    p-4 transition-all duration-300
-                    ${
-                      active
-                        ? `
-                          bg-indigo-500/10
-                          border border-indigo-500/20
-                        `
-                        : `
-                          bg-slate-50
-                          hover:bg-slate-100
-                          dark:bg-white/[0.03]
-                          dark:hover:bg-white/[0.06]
-                        `
-                    }
-                  `}
-                >
-                  <div className="flex gap-4">
-                    <div
-                      className={`
-                        shrink-0 w-8 h-8 rounded-xl
-                        flex items-center justify-center
-                        text-xs font-bold
-                        ${
-                          active
-                            ? `
-                              bg-gradient-to-r ${config.gradient}
-                              text-white
-                            `
-                            : `
-                              bg-slate-200
-                              text-slate-700
-                              dark:bg-white/10
-                              dark:text-slate-400
-                            `
-                        }
-                      `}
-                    >
-                      {i + 1}
-                    </div>
-
-                    <p
-                      className={`
-                        text-sm leading-relaxed
-                        ${
-                          active
-                            ? "text-slate-900 dark:text-white"
-                            : "text-slate-600 dark:text-slate-400"
-                        }
-                      `}
-                    >
-                      {prompt}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
+        {/* Inspiration Prompts Selector */}
+        <div className="mb-6 border-t border-gray-200 pt-4 dark:border-white/5">
+          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-3 font-mono dark:text-indigo-400">
+            Choose an Inspiration Prompt
+          </span>
+          <div className="space-y-2">
+            {prompts.map((prompt, i) => (
+              <div
+                key={i}
+                onClick={() => setSelectedPromptIdx(i)}
+                className={`motion-card-subtle p-3 rounded-lg border text-xs leading-relaxed cursor-pointer ${
+                  selectedPromptIdx === i
+                    ? "bg-indigo-500/10 border-indigo-500/40 text-indigo-900 shadow-sm dark:text-indigo-200"
+                    : "bg-gray-50 border-gray-200 text-slate-600 hover:bg-gray-100 hover:text-slate-900 dark:bg-white/[0.01] dark:border-white/5 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-300"
+                }`}
+              >
+                <div className="flex gap-2.5 items-start">
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0 ${
+                    selectedPromptIdx === i ? "bg-indigo-500 text-white" : "bg-gray-200 text-slate-600 dark:bg-white/10 dark:text-gray-400"
+                  }`}>
+                    0{i + 1}
+                  </span>
+                  <p>{prompt}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* CTA */}
+        {/* Generate CTA Button */}
         <button
           onClick={handleGenerateSimilar}
-          className={`
-            mt-8 w-full
-            rounded-2xl py-4
-            bg-gradient-to-r ${config.gradient}
-            text-white font-semibold
-            transition-all duration-300
-            hover:scale-[1.02]
-            shadow-xl ${config.glow}
-            flex items-center justify-center gap-3
-          `}
+          className="motion-cta w-full mt-auto py-3.5 rounded-xl bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-100 hover:border-purple-300 font-semibold flex items-center justify-center gap-2 group/btn shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-lg hover:shadow-indigo-500/15 transition-colors duration-300 dark:bg-gradient-to-r dark:from-blue-600/80 dark:to-indigo-600/80 dark:text-white dark:border-white/10 dark:hover:from-blue-600 dark:hover:to-indigo-600 dark:hover:border-indigo-300/30 dark:shadow-[0_4px_12px_rgba(0,0,0,0.15)] dark:hover:shadow-indigo-500/25"
         >
-          <span>
-            Generate Similar Story
-          </span>
-
-          <i
-            className="
-              fas fa-arrow-right
-              transition-transform duration-300
-              group-hover:translate-x-1
-            "
-          />
+          <span>Generate Similar Story</span>
+          <i className="motion-icon fas fa-wand-magic-sparkles text-sm group-hover/btn:translate-x-0.5 group-hover/btn:rotate-12"></i>
         </button>
+
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 export default StoryInspirationCard;
-

@@ -1,8 +1,6 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
-import { User } from "../user/user.model";
-import { REQUEST_LIMITS } from "../../../interfaces/ai_model_request_limit";
 import {
   GenerationTimeoutError,
   raceGenerationWithTimeout,
@@ -38,6 +36,7 @@ const normalizeStoryPayload = (payload: IAIModel) => ({
   wordLength: payload.wordLength ?? 250,
   numStories: payload.numStories ?? 2,
   language: payload.language ?? "English",
+  tone: payload.tone ?? undefined,
 });
 
 const mapGenerationError = (error: unknown, message: string): never => {
@@ -56,32 +55,11 @@ const mapGenerationError = (error: unknown, message: string): never => {
   throw new ApiError(httpStatus.BAD_GATEWAY, `${message} (${errorMsg})`);
 };
 
-const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
-  const { email } = token;
-  const { prompt, wordLength, numStories, language } = normalizeStoryPayload(payload);
-
-  const currentDate = new Date();
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-
-  const user = await User.findOne({ email: email });
-  if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
-
-  if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
-    await User.updateOne(
-      { email: email, lastRequestDate: { $lt: firstDayOfMonth } },
-      { $set: { requestsThisMonth: 0, lastRequestDate: currentDate } }
-    );
-  }
-
-  const requestLimit = REQUEST_LIMITS[user.subscriptionType as keyof typeof REQUEST_LIMITS] || REQUEST_LIMITS.free;
-
-  const updatedUser = await User.findOneAndUpdate(
-    { email: email, requestsThisMonth: { $lt: requestLimit } },
-    { $inc: { requestsThisMonth: 1 }, $set: { lastRequestDate: currentDate } },
-    { new: true }
-  );
-
-  if (!updatedUser) throw new ApiError(httpStatus.CONFLICT, "Monthly request limit exceeded!");
+// Bug fix 1: quota.lifecycle owns rollback — no manual User.updateOne needed.
+// Bug fix 2: _token kept as unused param (quota handled upstream by middleware).
+const aiModelGenerate = async (payload: IAIModel, _token: ITokenPayload) => {
+  const { prompt, wordLength, numStories, language, tone } =
+    normalizeStoryPayload(payload);
 
   try {
     const result = await raceGenerationWithTimeout(
@@ -91,20 +69,21 @@ const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
           wordLength,
           numStories,
           language,
-          signal
+          signal,
+          tone,
         ),
       AUTHENTICATED_GENERATION_TIMEOUT_MS
     );
     assertSuccessfulGeneration(result, GENERATION_FAILED_MESSAGE);
     return result;
   } catch (error) {
-    await User.updateOne({ email: email, requestsThisMonth: { $gt: 0 } }, { $inc: { requestsThisMonth: -1 } });
     mapGenerationError(error, GENERATION_FAILED_MESSAGE);
   }
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel) => {
-  const { prompt, wordLength, numStories, language } = normalizeStoryPayload(payload);
+  const { prompt, wordLength, numStories, language, tone } =
+    normalizeStoryPayload(payload);
 
   try {
     const result = await raceGenerationWithTimeout(
@@ -114,7 +93,8 @@ const aiFreeModelGenerate = async (payload: IAIModel) => {
           wordLength,
           numStories,
           language,
-          signal
+          signal,
+          tone,
         ),
       FREE_GENERATION_TIMEOUT_MS
     );
@@ -125,33 +105,13 @@ const aiFreeModelGenerate = async (payload: IAIModel) => {
   }
 };
 
+// Bug fix 3: migrated from old inline quota pattern to quota.lifecycle,
+// consistent with aiModelGenerate and all other authenticated functions.
 const aiModelAlternateEndings = async (
   payload: IAlternateEndingPayload,
-  token: ITokenPayload
+  _token: ITokenPayload
 ) => {
-  const { email } = token;
   const { title, content, tag, language = "English" } = payload;
-
-  const currentDate = new Date();
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-  const user = await User.findOne({ email: email });
-  if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
-
-  if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
-    await User.updateOne(
-      { email: email, lastRequestDate: { $lt: firstDayOfMonth } },
-      { $set: { requestsThisMonth: 0, lastRequestDate: currentDate } }
-    );
-  }
-
-  const requestLimit = REQUEST_LIMITS[user.subscriptionType as keyof typeof REQUEST_LIMITS] || REQUEST_LIMITS.free;
-  const updatedUser = await User.findOneAndUpdate(
-    { email: email, requestsThisMonth: { $lt: requestLimit } },
-    { $inc: { requestsThisMonth: 1 }, $set: { lastRequestDate: currentDate } },
-    { new: true }
-  );
-
-  if (!updatedUser) throw new ApiError(httpStatus.CONFLICT, "Monthly request limit exceeded!");
 
   try {
     const result = await raceGenerationWithTimeout(
@@ -161,7 +121,6 @@ const aiModelAlternateEndings = async (
     assertSuccessfulGeneration(result, ALTERNATE_ENDING_FAILED_MESSAGE);
     return result;
   } catch (error) {
-    await User.updateOne({ email: email, requestsThisMonth: { $gt: 0 } }, { $inc: { requestsThisMonth: -1 } });
     mapGenerationError(error, ALTERNATE_ENDING_FAILED_MESSAGE);
   }
 };
