@@ -23,6 +23,7 @@ const NavListComponent = () => {
           <NavLink to="/" end className={linkClass}>Home</NavLink>
           <NavLink to="/explore" className={linkClass}>Explore</NavLink>
           <NavLink to="/story-inspiration" className={linkClass}>Stories</NavLink>
+          <NavLink to="/community" className={linkClass}>Community</NavLink>
           {loggedIn && <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>}
         </nav>
         <div className="flex items-center gap-2">
@@ -42,6 +43,7 @@ const NavListComponent = () => {
           <NavLink to="/" end className={linkClass}>Home</NavLink>
           <NavLink to="/explore" className={linkClass}>Explore</NavLink>
           <NavLink to="/story-inspiration" className={linkClass}>Stories</NavLink>
+          <NavLink to="/community" className={linkClass}>Community</NavLink>
         </div>
       )}
     </header>

@@ -18,80 +18,20 @@ import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
+import React from "react";
+import { Post } from "../../models/post";
+import { useNavigate } from "react-router-dom";
 
-// ─── StoryCoverImage ────────────────────────────────────────────────────────
-
-const GENRE_THEMES: Record<string, { gradient: string; accent: string; icon: string }> = {
-  fantasy:    { gradient: "135deg, #667eea 0%, #764ba2 50%, #f093fb 100%", accent: "#c084fc", icon: "✦" },
-  romance:    { gradient: "135deg, #f857a6 0%, #ff5858 50%, #ffb347 100%", accent: "#fb7185", icon: "♡" },
-  horror:     { gradient: "135deg, #0f0c29 0%, #302b63 50%, #24243e 100%", accent: "#a855f7", icon: "☽" },
-  thriller:   { gradient: "135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%", accent: "#38bdf8", icon: "◈" },
-  mystery:    { gradient: "135deg, #2c3e50 0%, #3498db 50%, #2980b9 100%", accent: "#60a5fa", icon: "◎" },
-  adventure:  { gradient: "135deg, #f7971e 0%, #ffd200 50%, #21d4fd 100%", accent: "#fbbf24", icon: "⊕" },
-  scifi:      { gradient: "135deg, #0f2027 0%, #203a43 50%, #2c5364 100%", accent: "#22d3ee", icon: "◇" },
-  "sci-fi":   { gradient: "135deg, #0f2027 0%, #203a43 50%, #2c5364 100%", accent: "#22d3ee", icon: "◇" },
-  comedy:     { gradient: "135deg, #fddb92 0%, #d1fdff 50%, #f5af19 100%", accent: "#f59e0b", icon: "◉" },
-  drama:      { gradient: "135deg, #8e2de2 0%, #4a00e0 50%, #3b82f6 100%", accent: "#a78bfa", icon: "✧" },
-  historical: { gradient: "135deg, #b79891 0%, #94716b 50%, #6b4226 100%", accent: "#d4a574", icon: "⬡" },
-  default:    { gradient: "135deg, #667eea 0%, #764ba2 50%, #4facfe 100%", accent: "#a78bfa", icon: "✦" },
-};
-
-function getGenreTheme(tag?: string) {
-  const key = (tag || "default").toLowerCase().trim();
-  return GENRE_THEMES[key] ?? GENRE_THEMES.default;
+interface IRelatedStoriesComponentProps {
+  posts: Post[],
+  currentPostId: string;
 }
 
-function getInitials(title?: string): string {
-  if (!title || !title.trim()) return "?";
-  const words = title.trim().split(/\s+/);
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return words.slice(0, 2).map((w) => w[0] ?? "").join("").toUpperCase();
-}
-
-interface StoryCoverImageProps {
-  title?: string;
-  tag?: string;
-  size?: "full" | "thumb";
-  className?: string;
-  style?: React.CSSProperties;
-}
-
-const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
-  title = "",
-  tag = "default",
-  size = "full",
-  className = "",
-  style = {},
+const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
+  posts,currentPostId,
 }) => {
-  const theme = getGenreTheme(tag);
-  const initials = getInitials(title);
-
-  if (size === "thumb") {
-    return (
-      <div
-        className={className}
-        style={{
-          width: "100%",
-          height: "100%",
-          borderRadius: "50%",
-          background: `linear-gradient(${theme.gradient})`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "1.1rem",
-          fontWeight: 700,
-          color: "#fff",
-          letterSpacing: "0.05em",
-          textShadow: "0 1px 4px rgba(0,0,0,0.4)",
-          userSelect: "none",
-          ...style,
-        }}
-      >
-        {initials}
-      </div>
-    );
-  }
-
+  const navigate = useNavigate();
+  const filteredPosts=posts.filter((post)=>post._id!==currentPostId)
   return (
     <div
       className={className}
@@ -671,217 +611,37 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                   {loading ? "Publishing..." : "Publish"}
                 </button>
               </div>
+    <div className="grid grid-cols-2 gap-6">
+      {filteredPosts.length > 0 ? (
+        filteredPosts.map((post: Post) => (
+          <div
+            onClick={() => navigate(`/post/${post._id}`)}
+            key={post._id}
+            className="cursor-pointer bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden group flex flex-col h-full"
+          >
+            <div className="relative overflow-hidden">
+              <img
+                src={post.imageURL}
+                alt="Related Story"
+                className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 pointer-events-none"></div>
             </div>
-
-            {selectedStory.enhancedPrompt && (
-              <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
-                <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
-                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
-                </h4>
-                <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">{selectedStory.enhancedPrompt}</p>
-              </div>
-            )}
-
-            <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
-              <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence = isNarrationActive && narrationWordIndex >= segment.startWordIndex && narrationWordIndex <= segment.endWordIndex;
-                    return (
-                      <span key={segment.id} className={isActiveSentence ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-100 ring-1 ring-indigo-400/30" : undefined}>
-                        {segment.text}
-                      </span>
-                    );
-                  })
-                ) : selectedStory.content}
+            <div className="p-5 flex flex-col flex-1">
+              <h4 className="font-bold text-lg mb-2 text-slate-100 group-hover:text-blue-400 transition-colors line-clamp-2">
+                {post.title}
+              </h4>
+              <p className="text-sm text-slate-400 line-clamp-3 leading-relaxed">
+                {post?.content.slice(0, 120)}...
               </p>
             </div>
-
-            <div className="relative z-10 mt-6">
-              <AudioPlayer ref={audioPlayerRef} text={selectedStory.content} title={selectedStory.title} onWordIndexChange={setNarrationWordIndex} onPlaybackStateChange={setNarrationState} />
-            </div>
-            <div className="mt-6"><ContinueStoryButton /></div>
           </div>
-
-          {/* Topics + Alternate Endings */}
-          <div className="mt-7">
-            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
-              <h3 className="text-lg font-bold text-slate-200 mb-4">Select Topics</h3>
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <input
-                  type="text"
-                  value={newTopicTitle}
-                  onChange={(event) => setNewTopicTitle(event.target.value)}
-                  onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); handleAddTopic(); } }}
-                  placeholder="Add related topic"
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                />
-                <button type="button" className="rounded-lg px-4 py-2 bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-500 transition-colors" onClick={handleAddTopic}>
-                  Add Topic
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedStory ? (
-                  topics.map((topic, index) => (
-                    <span key={index} className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}>
-                      <button type="button" className="cursor-pointer" onClick={() => handleTopicClick(index)}>
-                        {topic.selected ? <i className="fa-solid fa-check"></i> : <i className="fa-solid fa-plus"></i>}{" "}{topic.title}
-                      </button>
-                      <button type="button" className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40" onClick={() => handleRemoveTopic(index)} disabled={topics.length <= 2} aria-label={`Remove ${topic.title}`}>
-                        <i className="fa-solid fa-xmark"></i>
-                      </button>
-                    </span>
-                  ))
-                ) : (
-                  <p className="text-gray-400">No topics available. Please generate a story first.</p>
-                )}
-              </div>
-            </div>
-
-            {selectedStory && (
-              <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
-                <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-200">Alternate Endings</h3>
-                    <p className="text-xs text-slate-400 mt-1">Explore alternate narrative styles for your story context.</p>
-                  </div>
-                  {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
-                    <button type="button" onClick={handleResetEnding} className="rounded-lg px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-200 border border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5">
-                      <i className="fa-solid fa-rotate-left"></i> Reset to Original
-                    </button>
-                  )}
-                </div>
-
-                {isGeneratingEndings ? (
-                  <div className="flex flex-col items-center justify-center py-10">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-                    <p className="text-slate-300 text-sm font-medium animate-pulse">Generating alternate endings...</p>
-                  </div>
-                ) : endingsCache[selectedStory.uuid]?.length > 0 ? (
-                  <div>
-                    <div className="flex border-b border-slate-700/50 mb-6 overflow-x-auto whitespace-nowrap scrollbar-none">
-                      {["Happy Ending", "Dark Ending", "Plot Twist Ending", "Open Ending", "Cliffhanger Ending"].map((name) => {
-                        const endingData = (endingsCache[selectedStory.uuid] || []).find((e) => e.style === name);
-                        const isApplied = endingData && selectedStory.content === endingData.fullStory;
-                        return (
-                          <button key={name} type="button" onClick={() => setActiveEndingTab(name)}
-                            className={`px-5 py-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-all cursor-pointer ${activeEndingTab === name ? "border-purple-500 text-purple-400 bg-purple-500/5" : "border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700"}`}>
-                            <span>{name}</span>
-                            {isApplied && <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {(() => {
-                      const currentEndingData = (endingsCache[selectedStory.uuid] || []).find((e) => e.style === activeEndingTab);
-                      if (!currentEndingData) return null;
-                      const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
-                      return (
-                        <div className="bg-slate-900/40 rounded-xl p-6 border border-slate-700/30">
-                          <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-lg font-bold text-slate-200">{activeEndingTab} Suggestion</h4>
-                            <div>
-                              {isCurrentlyApplied ? (
-                                <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
-                                  <i className="fa-solid fa-check"></i> Applied to Story
-                                </span>
-                              ) : (
-                                <button type="button" onClick={() => handleApplyEnding(currentEndingData)} className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20">
-                                  Apply to Story
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                          <div className="space-y-4">
-                            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800 leading-relaxed text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap">
-                              <p>{currentEndingData.ending}</p>
-                            </div>
-                            <details className="group border border-slate-800 rounded-lg overflow-hidden bg-slate-950/20">
-                              <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none">
-                                <span>PREVIEW FULL STORY WITH THIS ENDING</span>
-                                <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
-                              </summary>
-                              <div className="p-4 border-t border-slate-800/80 text-xs text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
-                                {currentEndingData.fullStory}
-                              </div>
-                            </details>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8 bg-slate-900/20 border border-dashed border-slate-700/40 rounded-xl">
-                    <button type="button" onClick={handleGenerateAlternateEndings} className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer">
-                      Generate Alternate Endings
-                    </button>
-                    <p className="text-xs text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
-                      Uses the story context to produce 5 unique ending variations (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Right column: Preview ── */}
-        <div className="col-span-1 lg:col-span-4">
-          <div className="mb-5">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-              Preview
-            </h1>
-          </div>
-          <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
-            <div className="relative flex flex-col rounded-lg">
-              <div className="relative m-3 overflow-hidden text-white rounded-xl" style={{ height: "192px" }}>
-                {/* ── SPOT 2: Rectangular cover image ── */}
-                <StoryCoverImage
-                  title={selectedStory.title}
-                  tag={selectedStory.tag}
-                  className="transition-transform duration-500 group-hover:scale-105"
-                  style={{ width: "100%", height: "100%", borderRadius: "0.75rem" }}
-                />
-              </div>
-
-              <div className="px-3 py-1">
-                <div className="flex justify-between items-center mb-2 w-full">
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                      {selectedStory.tag.toUpperCase()}
-                    </div>
-                    <div className="inline-flex items-center rounded-full bg-indigo-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                      🌐 {(selectedStory.language || "English").toUpperCase()}
-                    </div>
-                    <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
-                      ⏱️ {calculateReadingTime(selectedStory.content)} min read
-                    </div>
-                  </div>
-                  <div><BookmarkButton storyId={selectedStory.uuid} /></div>
-                </div>
-                <h6 className="mb-1 text-gray-300 text-xl font-semibold">{selectedStory.title}</h6>
-                <p className="text-gray-400 font-light break-words text-sm sm:text-base">{getShortenedText(selectedStory.content)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {showRemix && selectedStory && (
-        <StoryRemix
-          story={selectedStory}
-          isLogin={isLogin}
-          onRemixComplete={(remixedStory) => { setStories([remixedStory, ...stories]); setSelectedStory(remixedStory); setShowRemix(false); }}
-          onClose={() => setShowRemix(false)}
-        />
+        ))
+      ) : (
+        <p className="text-center text-slate-500 col-span-2 py-8">No related stories found.</p>
       )}
-      {showWorldMap && selectedStory && (
-        <StoryWorldMap story={selectedStory.content} title={selectedStory.title} onClose={() => setShowWorldMap(false)} />
-      )}
-      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };
 
-export default StoriesViewComponent;
+export default RelatedStoriesComponent;

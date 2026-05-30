@@ -35,6 +35,10 @@ export default function CollabHome() {
         "collab:create_room",
         { userId: user?.userId, username: user?.name },
         (response: CreateRoomResponse) => {
+      socket.emit(
+        "collab:create_room",
+        { userId: user?.userId, username: user?.name },
+        (response: { roomId: string } | null) => {
           if (response && response.roomId) {
             navigate(`/collab/${response.roomId}`);
           } else {

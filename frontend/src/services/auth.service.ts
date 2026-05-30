@@ -49,6 +49,15 @@ if (!decodedData.email) {
 }
 
 return buildUserInfo(decodedData as AuthUserInfo);
+      const decodedData = decodedToken(authToken);
+          if (
+      typeof decodedData.exp === "number" &&
+      decodedData.exp <= Math.floor(Date.now() / 1000)
+    ) {
+      removeFromLocalStorage(AUTH_KEY);
+      return null;
+    }
+      return buildUserInfo(decodedData as unknown as AuthUserInfo);
     } catch (error) {
       console.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);

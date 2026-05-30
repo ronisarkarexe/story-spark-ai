@@ -25,6 +25,7 @@ export interface IUser {
   lastRequestDate: Date;
   posts: Types.ObjectId[];
   isApplyForWriter: boolean;
+  tokenVersion?: number;
   gamification: {
     xp: number;
     level: number;
