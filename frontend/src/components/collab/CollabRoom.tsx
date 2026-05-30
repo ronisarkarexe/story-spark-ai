@@ -50,10 +50,11 @@ export default function CollabRoom() {
         return;
       }
 
-
+      // Connect to collab namespace
+      const collabSocket = socket;
 
       // Request room info
-      socket.emit("collab:get_room", { roomId }, (response: { room?: Room }) => {
+      collabSocket.emit("collab:get_room", { roomId }, (response: { room?: Room } | null) => {
         if (response && response.room) {
           setRoom(response.room);
           setError(null);
@@ -64,28 +65,28 @@ export default function CollabRoom() {
       });
 
       // Listen for room updates
-      const handleRoomUpdated = (data: { room?: Room }) => {
+      const handleRoomUpdated = (data: { room?: Room } | null) => {
         if (data && data.room) {
           setRoom(data.room);
         }
       };
 
-      const handleStoryUpdated = (data: { story?: StoryChunk[] }) => {
+      const handleStoryUpdated = (data: { story?: StoryChunk[] } | null) => {
         if (data && data.story) {
-          setRoom((prev) => (prev ? { ...prev, story: data.story as StoryChunk[] } : null));
+          setRoom((prev) => (prev ? { ...prev, story: data.story! } : null));
         }
       };
 
-      socket.on("collab:room_updated", handleRoomUpdated);
-      socket.on("collab:story_updated", handleStoryUpdated);
-      socket.on("collab:error", (data: { message: string }) => {
-        setError(data.message);
+      collabSocket.on("collab:room_updated", handleRoomUpdated);
+      collabSocket.on("collab:story_updated", handleStoryUpdated);
+      collabSocket.on("collab:error", (data: { message?: string } | null) => {
+        setError(data?.message || "Unknown error");
         setLoading(false);
       });
 
       return () => {
-        socket.off("collab:room_updated", handleRoomUpdated);
-        socket.off("collab:story_updated", handleStoryUpdated);
+        collabSocket.off("collab:room_updated", handleRoomUpdated);
+        collabSocket.off("collab:story_updated", handleStoryUpdated);
       };
     } catch (err) {
       console.error("Collab error:", err);

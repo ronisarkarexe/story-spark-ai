@@ -670,11 +670,7 @@ body {
   min-width: 320px;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: inherit;
-}
+
 
 button,
 a {

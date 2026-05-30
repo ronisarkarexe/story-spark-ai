@@ -4,7 +4,6 @@ import validateRequest from "../../middleware/validate.request";
 import { UserValidator } from "../user/user.validation";
 import auth from "../../middleware/auth.middleware";
 import { ENUM_USER_ROLE } from "../../../enums/user";
-import ipRateLimiter from "../../middleware/ip.rate-limiter";
 import ipRateLimiter, {
   loginRateLimiter,
   forgotPasswordRateLimiter,
@@ -44,6 +43,8 @@ router.post(
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
   AuthController.changePassword
+);
+
 // Forgot Password API route
 router.post(
   "/forgot-password",

@@ -6,7 +6,6 @@ import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
 import StoryWorldMap from "../story-map/StoryWorldMap";
 import StoryRemix from "../remix/StoryRemix";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import StoryTranslator from "../translate/StoryTranslator";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
@@ -931,6 +930,13 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           isLogin={isLogin}
           onRemixComplete={(remixedStory) => { setStories([remixedStory, ...stories]); setSelectedStory(remixedStory); setShowRemix(false); }}
           onClose={() => setShowRemix(false)}
+        />
+      )}
+      {showTranslator && selectedStory && (
+        <StoryTranslator
+          story={selectedStory}
+          isLogin={isLogin}
+          onClose={() => setShowTranslator(false)}
         />
       )}
       {showWorldMap && selectedStory && (

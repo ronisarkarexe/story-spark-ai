@@ -56,7 +56,8 @@ const FooterComponent = () => {
     { label: "Help Center",  to: "/help"        },
     { label: "Community",    to: "/community"   },
     { label: "Contributors", to: "/contributors"},
-    { label: "Report Bug",   to: githubIssuesUrl },
+    { label: "Support / Feedback", to: "/contact-us" },
+    { label: "GitHub Issues", to: githubIssuesUrl },
   ];
 
 
