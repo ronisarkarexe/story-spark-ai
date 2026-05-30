@@ -10,6 +10,7 @@ const auth =
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const token = req.headers.authorization as string;
+
       if (!token) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
@@ -22,13 +23,24 @@ const auth =
         token,
         config.jwt.secret as Secret
       );
-      if (requiredRole.length && !requiredRole.includes(verifiedUser.role)) {
-        throw new ApiError(httpStatus.FORBIDDEN, "Forbidden");
+
+      if (
+        requiredRole.length &&
+        !requiredRole.includes(verifiedUser.role)
+      ) {
+        throw new ApiError(
+          httpStatus.FORBIDDEN,
+          "Forbidden"
+        );
       }
+
       req.user = verifiedUser;
+
       next();
     } catch (err) {
       next(err);
+      
     }
   };
+
 export default auth;
