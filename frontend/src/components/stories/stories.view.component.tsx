@@ -6,7 +6,6 @@ import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
 import StoryWorldMap from "../story-map/StoryWorldMap";
 import StoryRemix from "../remix/StoryRemix";
-import StoryTranslator from "../translate/StoryTranslator";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
@@ -268,7 +267,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
-  const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -662,14 +660,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                 </button>
                 <button type="button" className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowRemix(true)} disabled={!selectedStory}>
                   🔀 Remix
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-emerald-700 text-slate-200 font-semibold cursor-pointer hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowTranslator(true)}
-                  disabled={!selectedStory}
-                >
-                  🌍 Translate
                 </button>
                 <button
                   type="button"

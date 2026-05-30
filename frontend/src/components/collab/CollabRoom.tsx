@@ -27,6 +27,14 @@ interface Room {
   createdAt: Date;
 }
 
+type RoomUpdatedPayload = {
+  room?: Room;
+};
+
+type StoryUpdatedPayload = {
+  story?: StoryChunk[];
+};
+
 export default function CollabRoom() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -51,10 +59,10 @@ export default function CollabRoom() {
       }
 
       // Connect to collab namespace
-      const collabSocket = socket.io.of("/collab");
+     
 
       // Request room info
-      collabSocket.emit("collab:get_room", { roomId }, (response: any) => {
+      socket.emit("collab:get_room", { roomId }, (response: { room?: Room }) => {
         if (response && response.room) {
           setRoom(response.room);
           setError(null);
@@ -65,28 +73,29 @@ export default function CollabRoom() {
       });
 
       // Listen for room updates
-      const handleRoomUpdated = (data: any) => {
+     const handleRoomUpdated = (data: RoomUpdatedPayload) => {
         if (data && data.room) {
           setRoom(data.room);
         }
       };
 
-      const handleStoryUpdated = (data: any) => {
+     const handleStoryUpdated = (data: StoryUpdatedPayload) => {
         if (data && data.story) {
-          setRoom((prev) => (prev ? { ...prev, story: data.story } : null));
+         setRoom((prev) =>
+  prev && data.story ? { ...prev, story: data.story } : prev
+);
         }
       };
 
-      collabSocket.on("collab:room_updated", handleRoomUpdated);
-      collabSocket.on("collab:story_updated", handleStoryUpdated);
-      collabSocket.on("collab:error", (data: any) => {
-        setError(data.message);
-        setLoading(false);
-      });
-
+      socket.on("collab:room_updated", handleRoomUpdated);
+      socket.on("collab:story_updated", handleStoryUpdated);
+     socket.on("collab:error", (data: { message: string }) => {
+  setError(data.message);
+  setLoading(false);
+});
       return () => {
-        collabSocket.off("collab:room_updated", handleRoomUpdated);
-        collabSocket.off("collab:story_updated", handleStoryUpdated);
+       socket.off("collab:room_updated", handleRoomUpdated);
+        socket.off("collab:story_updated", handleStoryUpdated);
       };
     } catch (err) {
       console.error("Collab error:", err);
@@ -100,7 +109,7 @@ export default function CollabRoom() {
 
     const socket = getSocketIo();
     if (socket) {
-      socket.io.of("/collab").emit("collab:add_text", {
+      socket.emit("collab:add_text", {
         roomId,
         userId: user.userId,
         text: newText,
@@ -112,7 +121,7 @@ export default function CollabRoom() {
   const handleAIContinue = () => {
     const socket = getSocketIo();
     if (socket) {
-      socket.io.of("/collab").emit("collab:ai_continue", { roomId });
+      socket.emit("/collab").emit("collab:ai_continue", { roomId });
     }
   };
 

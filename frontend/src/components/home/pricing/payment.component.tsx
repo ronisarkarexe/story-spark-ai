@@ -8,6 +8,48 @@ import {
 } from "lucide-react";
 
 import { loadRazorpayScript } from "../../../utils/loadRazorpay";
+type RazorpayResponse = {
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
+  razorpay_signature?: string;
+};
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => Promise<void>;
+  prefill: {
+    name: string;
+    email: string;
+    contact: string;
+  };
+  theme: {
+    color: string;
+  };
+};
+
+type RazorpayInstance = {
+  open: () => void;
+  on: (
+    event: "payment.failed",
+    callback: (response: PaymentFailedResponse) => void
+  ) => void;
+};
+
+type RazorpayWindow = Window & {
+  Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+};
+
+type PaymentFailedResponse = {
+  error: {
+    code: string;
+    description: string;
+  };
+};
 
 const PaymentComponent = () => {
   // Read selected plan from pricing page
@@ -46,7 +88,7 @@ const PaymentComponent = () => {
       }
 
       // Razorpay options
-      const options = {
+      const options: RazorpayOptions = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: data.order.amount,
         currency: data.order.currency,
@@ -54,7 +96,7 @@ const PaymentComponent = () => {
         description: `${planName} Subscription`,
         order_id: data.order.id,
 
-        handler: async (response: any) => {
+      handler: async (response: RazorpayResponse) => {
           try {
             // Verify payment
             const verifyRes = await fetch("/api/v1/payment/verify", {
@@ -89,10 +131,10 @@ const PaymentComponent = () => {
         },
       };
 
-      const paymentObject = new (window as any).Razorpay(options);
-
-      paymentObject.on("payment.failed", function (response: any) {
-        console.error(response.error);
+    const paymentObject = new (window as unknown as RazorpayWindow).Razorpay(
+  options
+);
+     paymentObject.on("payment.failed", function () {
         alert("Payment failed.");
       });
 
