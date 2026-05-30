@@ -26,10 +26,7 @@ export default function CollabHome() {
         return;
       }
 
-      // @ts-ignore
-      const collabSocket = socket.io.of("/collab");
-
-      collabSocket.emit(
+      socket.emit(
         "collab:create_room",
         { userId: user?.userId, username: user?.name },
         (response: { roomId: string } | null) => {

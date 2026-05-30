@@ -22,7 +22,8 @@ const NavListComponent = () => {
         <nav className="hidden items-center gap-2 lg:flex">
           <NavLink to="/" end className={linkClass}>Home</NavLink>
           <NavLink to="/explore" className={linkClass}>Explore</NavLink>
-          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
+          <NavLink to="/story-inspiration" className={linkClass}>Stories</NavLink>
+          <NavLink to="/community" className={linkClass}>Community</NavLink>
           {loggedIn && <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>}
         </nav>
         <div className="flex items-center gap-2">
@@ -41,7 +42,8 @@ const NavListComponent = () => {
         <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 lg:hidden dark:border-white/10">
           <NavLink to="/" end className={linkClass}>Home</NavLink>
           <NavLink to="/explore" className={linkClass}>Explore</NavLink>
-          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
+          <NavLink to="/story-inspiration" className={linkClass}>Stories</NavLink>
+          <NavLink to="/community" className={linkClass}>Community</NavLink>
         </div>
       )}
     </header>

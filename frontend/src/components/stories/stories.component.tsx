@@ -20,10 +20,10 @@ const soundtrackMap: Record<string, string> = {
   "🧙 Fantasy": "/audio/fantasy.mp3",
   "😱 Horror": "/audio/horror.mp3",
   "💕 Romance": "/audio/romance.mp3",
-  "🎭 Drama": "/audio/drama.mp3", 
-  "😂 Comedy": "/audio/comedy.mp3", 
-  "🚀 Sci-Fi": "/audio/sci-fi.mp3", 
-  "🔍 Mystery": "/audio/mystery.mp3", 
+  "🎭 Drama": "/audio/drama.mp3",
+  "😂 Comedy": "/audio/comedy.mp3",
+  "🚀 Sci-Fi": "/audio/sci-fi.mp3",
+  "🔍 Mystery": "/audio/mystery.mp3",
   "🌟 Adventure": "/audio/adventure.mp3"
 };
 
@@ -409,9 +409,9 @@ const StoriesComponent = () => {
   }, []);
 
   const [stories, setStories] = useState<IStories[]>(
-    [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
+    [{ uuid: "test-1", title: "The Wizard's Journey", content: "Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.", tag: "Fantasy", imageURL: "https://via.placeholder.com/400x300" }]
   );
-  
+
   const [loading, setLoading] = useState<boolean>(false);
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
@@ -420,23 +420,23 @@ const StoriesComponent = () => {
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
- const [selectedGenre, setSelectedGenre] = useState<string>(
-  draft?.genre
-    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "")
-    : "",
-);
+  const [selectedGenre, setSelectedGenre] = useState<string>(
+    draft?.genre
+      ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "")
+      : "",
+  );
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
   const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "");
   const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(draft?.language || "English");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  
+
   const playSoundtrack = (genre: string) => {
     const soundtrack = soundtrackMap[genre];
 
@@ -535,24 +535,24 @@ const StoriesComponent = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-useEffect(() => {
-  if (location.state) {
-    if (location.state.prompt) {
-      setTextareaValue(location.state.prompt);
+  useEffect(() => {
+    if (location.state) {
+      if (location.state.prompt) {
+        setTextareaValue(location.state.prompt);
+      }
+
+      if (location.state.genre) {
+        const matchedGenre =
+          GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
+        setSelectedGenre(matchedGenre);
+      }
+
+      navigate(location.pathname, {
+        replace: true,
+        state: {},
+      });
     }
-
-    if (location.state.genre) {
-  const matchedGenre =
-    GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
-  setSelectedGenre(matchedGenre);
-}
-
-    navigate(location.pathname, {
-      replace: true,
-      state: {},
-    });
-  }
-}, [location, navigate]);
+  }, [location, navigate]);
 
   useEffect(() => {
     setValue("prompt", textareaValue);
@@ -597,8 +597,8 @@ useEffect(() => {
           selectedLength === "short"
             ? 150
             : selectedLength === "long"
-            ? 500
-            : 250,
+              ? 500
+              : 250,
         language: selectedLanguage,
         tone: selectedTone || undefined,
       };
@@ -746,7 +746,7 @@ useEffect(() => {
             <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white">
               <div className="relative">
                 <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-                  
+
                   {/* ── Genre chips ── */}
                   <div className="flex flex-wrap gap-2 mb-3">
                     {GENRES.map((genre) => (
@@ -763,11 +763,10 @@ useEffect(() => {
                             audioRef.current.currentTime = 0;
                           }
                         }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                          selectedGenre === genre.value
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedGenre === genre.value
                             ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
                             : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                        }`}
+                          }`}
                       >
                         {genre.icon} {genreLabels[genre.name]}
                       </button>
@@ -787,11 +786,10 @@ useEffect(() => {
                           key={length}
                           type="button"
                           onClick={() => setSelectedLength(length)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                            selectedLength === length
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedLength === length
                               ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
                               : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                          }`}
+                            }`}
                         >
                           {text[length]}
                         </button>
@@ -821,11 +819,10 @@ useEffect(() => {
                                     setSelectedLanguage(lang.name);
                                     setIsLanguageDropdownOpen(false);
                                   }}
-                                  className={`w-full text-left px-3 py-2 text-xs transition-colors duration-150 cursor-pointer ${
-                                    selectedLanguage === lang.name
+                                  className={`w-full text-left px-3 py-2 text-xs transition-colors duration-150 cursor-pointer ${selectedLanguage === lang.name
                                       ? "bg-indigo-600 text-white font-bold"
                                       : "text-gray-400 hover:bg-indigo-600/50 hover:text-white"
-                                  }`}
+                                    }`}
                                 >
                                   {lang.name}
                                 </button>
@@ -845,13 +842,12 @@ useEffect(() => {
                         register("prompt").ref(el);
                         inputRef.current = el;
                       }}
-                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-10 transition-colors duration-200 ${
-                        isOverLimit
+                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-10 transition-colors duration-200 ${isOverLimit
                           ? "ring-1 ring-red-500 rounded"
                           : isNearLimit
-                          ? "ring-1 ring-yellow-400 rounded"
-                          : ""
-                      }`}
+                            ? "ring-1 ring-yellow-400 rounded"
+                            : ""
+                        }`}
                       placeholder={text.promptPlaceholder}
                       value={textareaValue}
                       maxLength={MAX_PROMPT_LENGTH}
@@ -927,13 +923,12 @@ useEffect(() => {
                       )}
 
                       <span
-                        className={`text-xs tabular-nums ml-auto ${
-                          isOverLimit
+                        className={`text-xs tabular-nums ml-auto ${isOverLimit
                             ? "text-red-400 font-medium"
                             : isNearLimit
-                            ? "text-yellow-400"
-                            : "text-gray-500"
-                        }`}
+                              ? "text-yellow-400"
+                              : "text-gray-500"
+                          }`}
                       >
                         {textareaValue.length} / {MAX_PROMPT_LENGTH}
                       </span>
@@ -981,11 +976,10 @@ useEffect(() => {
                       disabled={loading || isOverLimit}
                       aria-busy={loading}
                       aria-disabled={loading || isOverLimit}
-                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-                        loading || isOverLimit
+                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${loading || isOverLimit
                           ? "opacity-50 cursor-not-allowed"
                           : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
-                      } transition-all duration-300 transform flex items-center space-x-2 group`}
+                        } transition-all duration-300 transform flex items-center space-x-2 group`}
                     >
                       <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
                       {loading ? text.generating : text.generate}
@@ -1011,9 +1005,8 @@ useEffect(() => {
                   </span>
 
                   <span
-                    className={`text-gray-300 transition-transform duration-200 ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`text-gray-300 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""
+                      }`}
                   >
                     ▼
                   </span>

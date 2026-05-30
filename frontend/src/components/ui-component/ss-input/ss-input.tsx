@@ -33,12 +33,12 @@ const SSInput = <T extends FieldValues>({
 }: SSInputProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
 
-  const inputType =
-    type === "password"
-      ? showPassword
-        ? "text"
-        : "password"
-      : type;
+const inputType =
+  type === "password"
+    ? showPassword
+      ? "text"
+      : "password"
+    : type;
   return (
     <div>
       <label htmlFor={name} className="block text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -46,37 +46,36 @@ const SSInput = <T extends FieldValues>({
       </label>
       <div className="relative mt-2">
         {icon && (
-          <span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
             <i className={icon}></i>
           </span>
         )}
         <input
           type={inputType}
           id={name}
-          className={`h-11 w-full pl-8 pr-10 py-0 text-base leading-[2.75rem] text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border rounded-md sm:text-sm ${
-            error
-              ? "border-red-500 outline-red-500"
-              : "border-gray-300 outline-gray-300 focus:outline-indigo-600"
-          }`}
-          placeholder={placeholder}
+          className={`w-full pl-10 pr-10 py-2 text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border rounded-md sm:text-sm transition-all focus:outline-none ${
+          error
+          ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 dark:border-red-500"
+          : "border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:focus:border-blue-500"
+          }`}          placeholder={placeholder}
           autoComplete={autoComplete}
           {...register(name, validation)}
         />
         {type === "password" && (
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
-          >
-            <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
-          </button>
-        )}
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+  >
+    <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
+  </button>
+)}
       </div>
       {error && (
         <p className="text-red-400 text-sm mt-1">
-          {error.message}
+        {error.message}
         </p>
-      )}
+    )}
     </div>
   );
 };

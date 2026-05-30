@@ -18,7 +18,7 @@ type AuthUserInfo = {
   iat: number;
 };
 
-const buildUserInfo = (decodedData: Partial<AuthUserInfo>): AuthUserInfo => ({
+const buildUserInfo = (decodedData: any): AuthUserInfo => ({
   email: decodedData.email || "",
   userId: decodedData.userId || "",
   name: decodedData.name || "",
@@ -35,13 +35,13 @@ const getValidDecodedToken = () => {
   if (authToken) {
     try {
       const decodedData = decodedToken(authToken);
-          if (
-      typeof decodedData.exp === "number" &&
-      decodedData.exp <= Math.floor(Date.now() / 1000)
-    ) {
-      removeFromLocalStorage(AUTH_KEY);
-      return null;
-    }
+      if (
+        typeof decodedData.exp === "number" &&
+        decodedData.exp <= Math.floor(Date.now() / 1000)
+      ) {
+        removeFromLocalStorage(AUTH_KEY);
+        return null;
+      }
       return buildUserInfo(decodedData);
     } catch (error) {
       console.error("Invalid auth token:", error);

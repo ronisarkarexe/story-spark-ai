@@ -65,18 +65,16 @@ export default {
         "headline-md": ["Inter"]
       },
       fontSize: {
-        "body-md": ["15px", {"lineHeight": "1.6", "fontWeight": "400"}],
-        "display-lg": ["36px", {"lineHeight": "1.15", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-        "display-lg-mobile": ["26px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-        "label-caps": ["11px", {"lineHeight": "1.0", "letterSpacing": "0.08em", "fontWeight": "600"}],
-        "headline-md": ["18px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+        "body-md": ["15px", { "lineHeight": "1.6", "fontWeight": "400" }],
+        "display-lg": ["36px", { "lineHeight": "1.15", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+        "display-lg-mobile": ["26px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+        "label-caps": ["11px", { "lineHeight": "1.0", "letterSpacing": "0.08em", "fontWeight": "600" }],
+        "headline-md": ["18px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "700" }]
       }
     }
   },
   plugins: [
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('@tailwindcss/forms'),
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('@tailwindcss/container-queries'),
   ],
 }

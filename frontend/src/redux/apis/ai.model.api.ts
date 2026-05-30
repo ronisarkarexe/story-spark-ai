@@ -1,4 +1,10 @@
-import { IStories } from "../../components/stories/stories.view.component";
+export interface IStories {
+  title: string;
+  content: string;
+  tag?: string;
+  language?: string;
+  uuid?: string;
+}
 import baseApi from "../base_api/base.api";
 import { AI_MODEL_URL } from "../base_api/base.endpoints";
 import { tagTypes } from "../tag-types";

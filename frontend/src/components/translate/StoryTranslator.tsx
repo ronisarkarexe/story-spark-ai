@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import { useTranslateStoryMutation, useTranslateFreeStoryMutation } from "../../redux/apis/ai.model.api";
-import { IStories } from "../stories/stories.view.component";
+import { useTranslateStoryMutation, useTranslateFreeStoryMutation, IStories } from "../../redux/apis/ai.model.api";
 
 interface Props {
   story: IStories;

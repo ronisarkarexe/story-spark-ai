@@ -63,7 +63,6 @@ const cleanText = (text: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const getStoryCardRarity = (content: string): StoryCardRarity => {
   const wordCount = getWordCount(content);
 
@@ -73,7 +72,6 @@ export const getStoryCardRarity = (content: string): StoryCardRarity => {
   return "Common";
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const getStoryCardId = (story: IStories) => {
   const source = `${story.uuid}-${story.title}-${story.tag}`;
   let hash = 0;
@@ -86,7 +84,6 @@ export const getStoryCardId = (story: IStories) => {
   return `SS-${Math.abs(hash).toString(36).toUpperCase().slice(0, 6)}`;
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const getStoryCardRank = (rarity: StoryCardRarity) =>
   rarityConfig[rarity].rank;
 

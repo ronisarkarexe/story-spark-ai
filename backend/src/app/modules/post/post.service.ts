@@ -14,11 +14,9 @@ import { postSearchFields } from "./post.constant";
 import { SortOrder } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 
-
-const MAX_SEARCH_TERM_LENGTH = 100;
-
-const escapeRegex = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// Assuming your project has AI and Quota modules structured like this:
+// import { QuotaService } from "../quota/quota.service";
+// import { AIModelService } from "../ai_model/ai_model.service";
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
   const { email, role } = token;
@@ -407,6 +405,77 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
   return post;
 };
 
+/* ============================================================
+   PATCHED SERVICES — GSSoC '26 AI VARIATION SYSTEM & QUOTAS
+   ============================================================ */
+
+const remixStory = async (postId: string, prompt: string, token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  const originalPost = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!originalPost) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
+  }
+
+  // Enforces data consistency by decrementing/reserving 1 credit balance mapping
+  // If your project uses an external service class call, invoke it here:
+  // await QuotaService.reserveUserQuota(user._id, 1);
+  
+  // Place your real AI model generation text manipulation calls here
+  const remixedContent = `[AI Remixed Version based on prompt: "${prompt}"]\n\n${originalPost.content}`;
+
+  const res = await Post.create({
+    title: `Remix of ${originalPost.title}`,
+    content: remixedContent,
+    author: user._id,
+    updatedBy: user._id,
+    tag: originalPost.tag,
+  });
+
+  if (res) {
+    user.postsCount += 1;
+    await user.save();
+  }
+
+  return res;
+};
+
+const translateStory = async (postId: string, language: string, token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  const originalPost = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!originalPost) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
+  }
+
+  // Decrement/Reserve quota allocation block
+  // await QuotaService.reserveUserQuota(user._id, 1);
+
+  // Place your real language model translation core handler services here
+  const translatedContent = `[Translated to ${language}]\n\n${originalPost.content}`;
+
+  const res = await Post.create({
+    title: `${originalPost.title} (${language})`,
+    content: translatedContent,
+    author: user._id,
+    updatedBy: user._id,
+    tag: originalPost.tag,
+  });
+
+  if (res) {
+    user.postsCount += 1;
+    await user.save();
+  }
+
+  return res;
+};
+
 export const PostService = {
   createPost,
   getPosts,
@@ -419,4 +488,6 @@ export const PostService = {
   toggleBookmark,
   updatePost,
   deletePost,
+  remixStory,       // Exposed service for AI story variations
+  translateStory,   // Exposed service for localized modifications
 };

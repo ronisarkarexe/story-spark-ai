@@ -31,13 +31,13 @@ import ProfileComponent from "./components/dashboard/profile/profile.component";
 import PaymentComponent from "./components/home/pricing/payment.component";
 import Contact from "./components/contactus/contactus";
 import HelpCenterComponent from "./components/help_center/help_center.component";
-import AboutUsComponent from "./components/footer/about-us.tsx";
-import CareerComponent from "./components/footer/career.tsx";
-import BlogComponent from "./components/footer/blog.tsx";
-import PrivacyPolicy from "./components/footer/Privacy.tsx";
-import CookiePolicy from "./components/footer/cookie-policy.tsx";
-import Terms from "./components/footer/terms.tsx";
-import GuidelinesComponent from "./components/footer/guidelines.tsx";
+import AboutUsComponent from "./components/footer/about-us";
+import CareerComponent from "./components/footer/career";
+import BlogComponent from "./components/footer/blog";
+import PrivacyPolicy from "./components/footer/Privacy";
+import CookiePolicy from "./components/footer/cookie-policy";
+import Terms from "./components/footer/terms";
+import GuidelinesComponent from "./components/footer/guidelines";
 import TemplatesComponent from "./components/templates/templates.component";
 import CommunityComponent from "./components/community/community.component";
 import ResourcesListComponent from "./components/community/resources_list.component";
@@ -46,8 +46,7 @@ import ContributorsComponent from "./components/footer/contributors";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import StoryWorkspace from "./components/story/StoryWorkspace";
-
-import Scrolltotopandscrolltobottom from "./components/Scrolltotopandscrolltobottom.tsx"
+import Scrolltotopandscrolltobottom from "./components/Scrolltotopandscrolltobottom"
 type ProtectedRouteProps = {
   allowedRoles: string[];
   element?: React.ReactElement;
@@ -68,7 +67,7 @@ const router = createBrowserRouter([
     element: (
       <>
         <ScrollToTop />
-        <Scrolltotopandscrolltobottom/>
+        <Scrolltotopandscrolltobottom />
         <RootLayout>
           <Outlet />
         </RootLayout>
