@@ -126,15 +126,13 @@ input[type="email"],
 input[type="password"] {
     height: var(--ds-input-height);
     font-size: 15px;
-    padding: 0 12px;
+    padding: 0 16px;
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.04);
     color: #e1e2ea;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-sizing: border-box !important;
+    box-sizing: border-box;
     transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
-    width: 100% !important;
-    max-width: 100% !important;
 }
 
 .ds-input-group {
@@ -242,24 +240,6 @@ input:focus {
     width: 100%;
 }
 
-/* ── Desktop Input Padding ── */
-@media (min-width: 768px) {
-    input[type="text"],
-    input[type="email"],
-    input[type="password"] {
-        padding: 0 16px !important;
-    }
-    .ds-input-group .ds-input-icon {
-        left: 16px !important;
-    }
-    .ds-input-group.has-action .ds-input {
-        padding-right: 44px !important;
-    }
-    .ds-input-group .ds-input-action {
-        right: 14px !important;
-    }
-}
-
 /* ── Mobile Layout Media Queries ── */
 @media (max-width: 767px) {
     .auth-container {
@@ -268,10 +248,6 @@ input:focus {
     .left-pane-mobile {
         height: 260px;
         min-height: 260px;
-    }
-    .auth-form-card {
-        width: 100% !important;
-        max-width: 100% !important;
     }
 }
 
@@ -381,7 +357,6 @@ button:disabled {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
-
 
 @media (prefers-reduced-motion: reduce) {
     * { scroll-behavior: auto !important; }
