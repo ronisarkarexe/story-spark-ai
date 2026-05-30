@@ -259,6 +259,8 @@ const changePassword = async (userPayload: any, payload: any) => {
   }
 
   await user.save();
+};
+
 const forgotPassword = async (email: string) => {
   if (!email) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email is required!");
