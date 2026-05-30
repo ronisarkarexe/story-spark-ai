@@ -34,7 +34,7 @@ const RecommendedWritersComponent = () => {
                   <p className="text-xs text-slate-500">{writer.role}</p>
                 </div>
               </div>
-              <button disabled={isLoading} onClick={() => toggleFollow(index, writer.id)} className="motion-cta rounded-full px-3 py-1.5 text-sm font-semibold disabled:opacity-50">
+              <button disabled={isLoading} onClick={() => toggleFollow(index, writer.id)} className="motion-cta rounded-full px-3 py-1.5 text-sm text-white font-semibold disabled:opacity-50">
                 {following.includes(index) ? "Following" : "Follow"}
               </button>
             </div>

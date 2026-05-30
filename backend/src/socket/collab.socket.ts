@@ -37,6 +37,7 @@ interface IRoom {
 }
 
 const rooms = new Map<string, IRoom>();
+const cleanupTimeouts = new Map<string, NodeJS.Timeout>();
 
 function generateRoomId(): string {
   return Math.random().toString(36).substring(2, 10);
@@ -93,6 +94,12 @@ export const setupCollabSocket = (io: Server) => {
 
     // Join an existing room
     socket.on("collab:join_room", ({ roomId }) => {
+      const pendingCleanup = cleanupTimeouts.get(roomId);
+      if (pendingCleanup) {
+        clearTimeout(pendingCleanup);
+        cleanupTimeouts.delete(roomId);
+      }
+
       const userId = socket.data.userId;
       const username = socket.data.username;
       const room = rooms.get(roomId);
@@ -203,6 +210,12 @@ export const setupCollabSocket = (io: Server) => {
 
     // Get room info
     socket.on("collab:get_room", ({ roomId }) => {
+      const pendingCleanup = cleanupTimeouts.get(roomId);
+      if (pendingCleanup) {
+        clearTimeout(pendingCleanup);
+        cleanupTimeouts.delete(roomId);
+      }
+
       const userId = socket.data.userId;
       const room = rooms.get(roomId);
       if (!room) {
@@ -223,7 +236,17 @@ export const setupCollabSocket = (io: Server) => {
           p => p.socketId !== socket.id
         );
         if (room.participants.length === 0) {
-          rooms.delete(room.roomId);
+          // Clear any existing cleanup timeout to prevent duplicate timer runs
+          const existingTimeout = cleanupTimeouts.get(room.roomId);
+          if (existingTimeout) clearTimeout(existingTimeout);
+
+          // Schedule permanent room eviction in 5 minutes (grace period)
+          const timeout = setTimeout(() => {
+            rooms.delete(room.roomId);
+            cleanupTimeouts.delete(room.roomId);
+          }, 5 * 60 * 1000);
+
+          cleanupTimeouts.set(room.roomId, timeout);
         } else {
           collabNamespace.to(room.roomId).emit("collab:room_updated", { room });
         }

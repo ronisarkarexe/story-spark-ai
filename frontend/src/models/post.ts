@@ -10,6 +10,9 @@ interface Author {
   email: string;
   name: string;
   createdAt: string;
+  profile?: {
+    bio?: string;
+  };
 }
 
 interface Comment {
@@ -41,6 +44,7 @@ export interface Post {
   topic: Topic[];
   language?: string;
   emotions?: string[];
+  genre?: string;
   author: Author;
   likesCount: number;
   commentsCount: number;
@@ -57,4 +61,5 @@ export interface Post {
   bookmarks?: Bookmark[];
   createdAt: string;
   updatedAt: string;
+  emotions?: string[];
 }

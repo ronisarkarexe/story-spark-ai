@@ -1,6 +1,10 @@
 # Covered by root .gitignore; kept for standalone tooling / clones of backend only
 node_modules/
 .env
+# .gitignore
+.env
+backend/.env
+frontend/.env
 ml/saved_scorer/
 ml/scorer_venv/
 ml/__pycache__/
