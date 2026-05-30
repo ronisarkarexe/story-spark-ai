@@ -46,7 +46,7 @@ import ContributorsComponent from "./components/footer/contributors";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import StoryWorkspace from "./components/story/StoryWorkspace";
-import StoriesComponent from "./components/stories/stories.component";
+
 import Scrolltotopandscrolltobottom from "./components/Scrolltotopandscrolltobottom.tsx"
 type ProtectedRouteProps = {
   allowedRoles: string[];

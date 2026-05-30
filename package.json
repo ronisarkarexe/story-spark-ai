@@ -31,6 +31,7 @@
   },
   "packageManager": "pnpm@9.15.9",
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "concurrently": "^9.1.2"
   },
   "dependencies": {
