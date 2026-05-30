@@ -5,15 +5,88 @@
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
     <title>Login | Story Spark AI</title>
     <meta name="description" content="Sign in or create an account for Story Spark AI — turn your imagination into fully illustrated multi-variation AI stories."/>
-    
+    <!-- Tailwind CSS (w/ Form & Container plugins) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css" rel="stylesheet"/>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <link href="auth.css" rel="stylesheet"/>
-    
-    <link rel="stylesheet" href="/src/index.css" />
+
+    <!-- Dynamic Tailwind config containing the app's style tokens -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#36003e",
+                        "tertiary-container": "#ec6a06",
+                        "surface-dim": "#101319",
+                        "outline-variant": "#494454",
+                        "on-primary-container": "#340080",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#36393f",
+                        "surface": "#101319",
+                        "on-primary-fixed-variant": "#5516be",
+                        "tertiary-fixed-dim": "#ffb690",
+                        "on-tertiary": "#552100",
+                        "on-error-container": "#ffdad6",
+                        "secondary-container": "#ae05c6",
+                        "primary-container": "#a078ff",
+                        "surface-container-lowest": "#0b0e13",
+                        "outline": "#958ea0",
+                        "surface-container-high": "#272a30",
+                        "on-secondary-fixed-variant": "#7c008e",
+                        "primary": "#d0bcff",
+                        "on-primary": "#3c0091",
+                        "on-secondary-container": "#ffd8fd",
+                        "on-tertiary-fixed": "#341100",
+                        "on-error": "#690005",
+                        "primary-fixed": "#e9ddff",
+                        "surface-variant": "#32353b",
+                        "tertiary-fixed": "#ffdbca",
+                        "on-tertiary-fixed-variant": "#783200",
+                        "on-surface-variant": "#cbc3d7",
+                        "background": "#101319",
+                        "on-secondary": "#580065",
+                        "inverse-surface": "#e1e2ea",
+                        "inverse-on-surface": "#2d3036",
+                        "on-tertiary-container": "#4a1c00",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#6d3bd7",
+                        "on-background": "#e1e2ea",
+                        "surface-tint": "#d0bcff",
+                        "surface-container-highest": "#32353b",
+                        "surface-container": "#1d2025",
+                        "on-primary-fixed": "#23005c",
+                        "secondary": "#fbabff",
+                        "tertiary": "#ffb690",
+                        "surface-container-low": "#191c21",
+                        "on-surface": "#e1e2ea",
+                        "primary-fixed-dim": "#d0bcff",
+                        "secondary-fixed-dim": "#fbabff",
+                        "secondary-fixed": "#ffd6fd"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["15px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "display-lg": ["36px", {"lineHeight": "1.15", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "display-lg-mobile": ["26px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "label-caps": ["11px", {"lineHeight": "1.0", "letterSpacing": "0.08em", "fontWeight": "600"}],
+                        "headline-md": ["18px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 <body class="bg-background text-on-surface font-body-md selection:bg-primary/30">
 <div class="min-h-screen flex items-center justify-center p-4 md:p-0">
@@ -110,7 +183,7 @@
                     <label class="field-label" for="name-field">Full Name</label>
                     <div class="input-icon-wrapper">
                         <i class="fi fi-rr-user input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="Alex Spark" type="text" id="name-field" autocomplete="name"/>
+                        <input class="w-full ds-input with-icon bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="Alex Spark" type="text" id="name-field" autocomplete="name"/>
                     </div>
                     <span class="field-error-msg" id="name-error">Please enter your full name.</span>
                 </div>
@@ -119,7 +192,7 @@
                     <label class="field-label" for="email-field">Email Address</label>
                     <div class="input-icon-wrapper">
                         <i class="fi fi-rr-envelope input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" required autocomplete="email" value="admin@gmail.com"/>
+                        <input class="w-full ds-input with-icon bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" required autocomplete="email" value="admin@gmail.com"/>
                     </div>
                     <span class="field-error-msg" id="email-error">Please enter a valid email address.</span>
                 </div>
@@ -131,7 +204,7 @@
                     </div>
                     <div class="input-icon-wrapper">
                         <i class="fi fi-rr-lock input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••" type="password" required autocomplete="current-password" value="admin@123"/>
+                        <input class="w-full ds-input with-icon bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••" type="password" required autocomplete="current-password" value="admin@123"/>
                         <button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors p-1 rounded" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
                             <i class="fi fi-rr-eye-crossed text-[16px]" id="eye-icon"></i>
                         </button>
