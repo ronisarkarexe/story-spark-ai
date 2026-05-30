@@ -8,15 +8,40 @@ export default function CollabHome() {
   const [error, setError] = useState("");
 
   const createRoom = () => {
-    setError(
-      "Real-time collaboration is turned off. Socket.IO has been disabled in the frontend."
-    );
-    /* Previous Socket.IO flow:
-    setIsCreating(true);
-    window.__storySparkCollabSocket?.disconnect();
-    const socket = io(`${BACKEND_URL}/collab`, { auth: { token }, transports: ["websocket"] });
-    ...
-    */
+    if (!isLoggedIn()) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      const socket = connectSocket();
+      if (!socket) {
+        setError(
+          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
+        );
+        return;
+      }
+
+      const collabSocket = socket;
+
+      collabSocket.emit(
+        "collab:create_room",
+        { userId: user?.userId, username: user?.name },
+        (response: { roomId: string } | null) => {
+          if (response && response.roomId) {
+            navigate(`/collab/${response.roomId}`);
+          } else {
+            setError("Failed to create room. Please try again.");
+          }
+          setIsCreating(false);
+        }
+      );
+    } catch (err) {
+      console.error("Create room error:", err);
+      setError("Error creating room. Please try again.");
+      setIsCreating(false);
+    }
   };
 
   const joinRoom = () => {

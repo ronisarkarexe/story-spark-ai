@@ -74,6 +74,7 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Password changed successfully. All previous sessions have been invalidated.",
+    data: null,
   });
 });
 
