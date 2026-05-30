@@ -7,6 +7,17 @@ import {
   setToLocalStorage,
 } from "../utils/local-storage";
 
+type CustomJwtPayload = {
+  email?: string;
+  userId?: string;
+  name?: string;
+  postsCount?: number;
+  role?: string;
+  subscriptionType?: string;
+  exp?: number;
+  iat?: number;
+};
+
 type AuthUserInfo = {
   email: string;
   userId: string;
@@ -18,15 +29,15 @@ type AuthUserInfo = {
   iat: number;
 };
 
-const buildUserInfo = (decodedData: AuthUserInfo): AuthUserInfo => ({
-  email: decodedData.email || "",
-  userId: decodedData.userId || "",
-  name: decodedData.name || "",
-  postsCount: decodedData.postsCount || 0,
-  role: decodedData.role || "guest",
-  subscriptionType: decodedData.subscriptionType || "free",
-  exp: decodedData.exp || 0,
-  iat: decodedData.iat || 0,
+const buildUserInfo = (decodedData: CustomJwtPayload): AuthUserInfo => ({
+  email: decodedData.email ?? "",
+  userId: decodedData.userId ?? "",
+  name: decodedData.name ?? "",
+  postsCount: decodedData.postsCount ?? 0,
+  role: decodedData.role ?? "guest",
+  subscriptionType: decodedData.subscriptionType ?? "free",
+  exp: decodedData.exp ?? 0,
+  iat: decodedData.iat ?? 0,
 });
 
 const getValidDecodedToken = () => {

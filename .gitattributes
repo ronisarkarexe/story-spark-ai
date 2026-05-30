@@ -1,0 +1,5 @@
+# Enforce consistent line endings (LF) across the repo
+* text=auto eol=lf
+
+# Ensure generated build artifacts are not normalized
+backend/dist/* -text

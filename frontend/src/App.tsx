@@ -1,19 +1,17 @@
 import React from "react";
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
+import {
+  createBrowserRouter,
+  Navigate,
+  Outlet,
+  RouterProvider,
+} from "react-router-dom";
+
+
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
 import StoriesComponent from "./components/stories/stories.component";
-
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
 
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
@@ -53,104 +51,221 @@ import ContributorsComponent from "./components/footer/contributors";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import StoryWorkspace from "./components/story/StoryWorkspace";
-import StoriesComponent from "./components/stories/stories.component";
 
-type ProtectedRouteProps = {
-  allowedRoles: string[];
-  element?: React.ReactElement;
+// Protected Route Component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const userInfo = getUserInfo();
+  return userInfo ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
-const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
-  const user = getUserInfo();
-  if (!user) return <Navigate to="/login" replace />;
-  if (!allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
-  return element ?? <Outlet />;
-};
-
-const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: (
-      <>
-        <ScrollToTop />
-        <RootLayout>
-          <Outlet />
-        </RootLayout>
-      </>
-    ),
-    children: [
-      { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
-      { path: "templates", element: <TemplatesComponent /> },
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
-      { path: "story-inspiration", element: <StoryInspirationWrapper /> },
-      { path: "stories", element: <StoriesComponent /> },
-      { path: "story-workspace", element: <StoryWorkspace /> },
-      { path: "login", element: <LoginComponent /> },
-      { path: "signup", element: <SignUpComponent /> },
-      { path: "pricing", element: <PricingComponent /> },
-      { path: "post/:id", element: <PostDetailsComponent /> },
-      { path: "help", element: <HelpCenterComponent /> },
-      { path: "contact-us", element: <Contact /> },
-      { path: "about-us", element: <AboutUsComponent /> },
-      { path: "career", element: <CareerComponent /> },
-      { path: "blog", element: <BlogComponent /> },
-      { path: "privacy-policy", element: <PrivacyPolicy /> },
-      { path: "cookie-policy", element: <CookiePolicy /> },
-      { path: "terms", element: <Terms /> },
-      { path: "help-center", element: <HelpCenterComponent /> },
-      { path: "guidelines", element: <GuidelinesComponent /> },
-      { path: "contributors", element: <ContributorsComponent /> },
-      { path: "report-bug", element: <ReportBug /> },
+// Router Configuration
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <RootLayout />,
+      errorElement: <NotFoundComponent />,
+      children: [
       {
-        element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+        index: true,
+        element: <HomeComponent />,
+      },
+      {
+        path: "hero",
+        element: <HeroSectionComponent />,
+      },
+      {
+        path: "login",
+        element: <LoginComponent />,
+      },
+      {
+        path: "signup",
+        element: <SignUpComponent />,
+      },
+      {
+        path: "email-validation",
+        element: <EmailValidationComponent />,
+      },
+      {
+        path: "pricing",
+        element: <PricingComponent />,
+      },
+      {
+        path: "contact",
+        element: <Contact />,
+      },
+      {
+        path: "contact-us",
+        element: <Contact />,
+      },
+      {
+        path: "help",
+        element: <HelpCenterComponent />,
+      },
+      {
+        path: "about-us",
+        element: <AboutUsComponent />,
+      },
+      {
+        path: "career",
+        element: <CareerComponent />,
+      },
+      {
+        path: "blog",
+        element: <BlogComponent />,
+      },
+      {
+        path: "privacy-policy",
+        element: <PrivacyPolicy />,
+      },
+      {
+        path: "cookie-policy",
+        element: <CookiePolicy />,
+      },
+      {
+        path: "terms",
+        element: <Terms />,
+      },
+      {
+        path: "guidelines",
+        element: <GuidelinesComponent />,
+      },
+      {
+        path: "contributors",
+        element: <ContributorsComponent />,
+      },
+      {
+        path: "explore",
+        element: <ExploreComponent />,
+      },
+      {
+        path: "post/:id",
+        element: <PostDetailsComponent />,
+      },
+      {
+        path: "bookmarks",
+        element: (
+          <ProtectedRoute>
+            <BookmarksComponent />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "community",
+        element: <CommunityComponent />,
         children: [
-          { path: "explore", element: <ExploreComponent /> },
-          { path: "bookmarks", element: <BookmarksComponent /> },
-          { path: "community", element: <CommunityComponent /> },
-          { path: "resources", element: <ResourcesListComponent /> },
-          { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
+          {
+            index: true,
+            element: <ResourcesListComponent />,
+          },
+          {
+            path: "resources/:id",
+            element: <ResourceDetailComponent />,
+          },
         ],
       },
-      { path: "*", element: <NotFoundComponent /> },
-    ],
-  },
-  { path: "/auth/email-validation", element: <EmailValidationComponent /> },
-  { path: "/payment", element: <PaymentComponent /> },
-  { path: "/collab", element: <CollabHome /> },
-  { path: "/collab/:roomId", element: <CollabRoom /> },
-  {
-    path: "/dashboard",
-    element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-    children: [
       {
-        element: <DashboardLayout />,
+        path: "dashboard",
+        element: (
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        ),
         children: [
-          { index: true, element: <DashboardComponent /> },
-          { path: "profile", element: <ProfileComponent /> },
-          { path: "writers", element: <WriterApplicationComponent /> },
-          { path: "users", element: <UserComponent /> },
           {
-            element: <ProtectedRoute allowedRoles={[USER_ROLE.USER, USER_ROLE.WRITER]} />,
-            children: [{ path: "settings", element: <SettingComponent /> }],
+            index: true,
+            element: <DashboardComponent />,
           },
           {
-            element: <ProtectedRoute allowedRoles={[USER_ROLE.WRITER]} />,
-            children: [{ path: "analytics", element: <AnalyticsPage /> }],
+            path: "stories",
+            element: <PostListsComponent />,
           },
           {
-            element: <ProtectedRoute allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER]} />,
-            children: [{ path: "post-lists", element: <PostListsComponent /> }],
+            path: "settings",
+            element: <SettingComponent />,
+          },
+          {
+            path: "profile",
+            element: <ProfileComponent />,
+          },
+          {
+            path: "writers",
+            element: <WriterApplicationComponent />,
+          },
+          {
+            path: "users",
+            element: <UserComponent />,
+          },
+          {
+            path: "analytics",
+            element: <AnalyticsPage />,
           },
         ],
       },
+      {
+        path: "templates",
+        element: <TemplatesComponent />,
+      },
+      {
+        path: "writing-assistant",
+        element: (
+          <ProtectedRoute>
+            <WritingAssistantComponent />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "collab",
+        element: <CollabHome />,
+      },
+      {
+        path: "collab/:roomId",
+        element: (
+          <ProtectedRoute>
+            <CollabRoom />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "stories",
+        element: <StoriesComponent />,
+      },
+      {
+        path: "workspace",
+        element: (
+          <ProtectedRoute>
+            <StoryWorkspace />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "story-inspiration",
+        element: <StoryInspirationWrapper />,
+      },
+      {
+        path: "payment",
+        element: (
+          <ProtectedRoute>
+            <PaymentComponent />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "report-bug",
+        element: <ReportBug />,
+      },
+      {
+        path: "*",
+        element: <NotFoundComponent />,
+      },
     ],
   },
-]);
+]
+);
 
-function App() {
+// Main App Component
+const App: React.FC = () => {
   return <RouterProvider router={router} />;
-}
+};
 
 export default App;

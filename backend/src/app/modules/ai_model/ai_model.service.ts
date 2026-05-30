@@ -1,4 +1,4 @@
-import httpStatus from "http-status";
+﻿import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { User } from "../user/user.model";
@@ -32,6 +32,10 @@ const ALTERNATE_ENDING_FAILED_MESSAGE =
   "Alternate ending generation failed. Your request quota has been restored.";
 const FREE_ALTERNATE_ENDING_FAILED_MESSAGE =
   "Alternate ending generation failed. Your free generation quota has been restored.";
+const TRANSLATION_FAILED_MESSAGE =
+  "Story translation failed. Your request quota has been restored.";
+const FREE_TRANSLATION_FAILED_MESSAGE =
+  "Story translation failed. Your free generation quota has been restored.";
 
 const normalizeStoryPayload = (payload: IAIModel) => ({
   prompt: payload.prompt,
@@ -56,73 +60,89 @@ const mapGenerationError = (error: unknown, message: string): never => {
   throw new ApiError(httpStatus.BAD_GATEWAY, `${message} (${errorMsg})`);
 };
 
-const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
-  const { email } = token;
-  const { prompt, wordLength, numStories, language } = normalizeStoryPayload(payload);
+const executeGeneration = async <T>(
+  generationFn: () => Promise<T>,
+  timeout: number,
+  errorMessage: string
+): Promise<T> => {
+  try {
+    return await raceGenerationWithTimeout(
+      () => generationFn(),
+      timeout
+    );
+  } catch (error) {
+    mapGenerationError(error, errorMessage);
+    throw error;
+  }
+};
 
+const generateWithQuota = async <T>(
+  quotaFn: () => Promise<unknown>,
+  generationFn: () => Promise<T>,
+  timeout: number,
+  errorMessage: string
+): Promise<T> => {
+  await quotaFn();
+  return executeGeneration(generationFn, timeout, errorMessage);
+};
+
+const noopQuota = async (): Promise<void> => {};
+
+const enforceMonthlyRequestLimit = async (email: string): Promise<any> => {
   const currentDate = new Date();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
 
-  const user = await User.findOne({ email: email });
+  const user = await User.findOne({ email });
   if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
 
   if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
     await User.updateOne(
-      { email: email, lastRequestDate: { $lt: firstDayOfMonth } },
+      { email, lastRequestDate: { $lt: firstDayOfMonth } },
       { $set: { requestsThisMonth: 0, lastRequestDate: currentDate } }
     );
   }
 
-  const requestLimit = REQUEST_LIMITS[user.subscriptionType as keyof typeof REQUEST_LIMITS] || REQUEST_LIMITS.free;
+  const requestLimit =
+    REQUEST_LIMITS[user.subscriptionType as keyof typeof REQUEST_LIMITS] || REQUEST_LIMITS.free;
 
   const updatedUser = await User.findOneAndUpdate(
-    { email: email, requestsThisMonth: { $lt: requestLimit } },
+    { email, requestsThisMonth: { $lt: requestLimit } },
     { $inc: { requestsThisMonth: 1 }, $set: { lastRequestDate: currentDate } },
     { new: true }
   );
 
   if (!updatedUser) throw new ApiError(httpStatus.CONFLICT, "Monthly request limit exceeded!");
 
-  try {
-    const result = await raceGenerationWithTimeout(
-      (signal) =>
-        generateWithGeminiStories(
-          prompt,
-          wordLength,
-          numStories,
-          language,
-          signal
-        ),
-      AUTHENTICATED_GENERATION_TIMEOUT_MS
-    );
-    assertSuccessfulGeneration(result, GENERATION_FAILED_MESSAGE);
-    return result;
-  } catch (error) {
-    await User.updateOne({ email: email, requestsThisMonth: { $gt: 0 } }, { $inc: { requestsThisMonth: -1 } });
-    mapGenerationError(error, GENERATION_FAILED_MESSAGE);
-  }
+  return updatedUser;
+};
+
+const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
+  const { prompt, wordLength, numStories, language } = normalizeStoryPayload(payload);
+  const { email } = token;
+
+  const stories = await generateWithQuota(
+    () => enforceMonthlyRequestLimit(email),
+    () => generateWithGeminiStories(prompt, wordLength, numStories, language),
+    AUTHENTICATED_GENERATION_TIMEOUT_MS,
+    GENERATION_FAILED_MESSAGE
+  );
+
+  assertSuccessfulGeneration(stories, GENERATION_FAILED_MESSAGE);
+  return stories;
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel) => {
   const { prompt, wordLength, numStories, language } = normalizeStoryPayload(payload);
 
-  try {
-    const result = await raceGenerationWithTimeout(
-      (signal) =>
-        generateWithGeminiStories(
-          prompt,
-          wordLength,
-          numStories,
-          language,
-          signal
-        ),
-      FREE_GENERATION_TIMEOUT_MS
-    );
-    assertSuccessfulGeneration(result, FREE_GENERATION_FAILED_MESSAGE);
-    return result;
-  } catch (error) {
-    mapGenerationError(error, FREE_GENERATION_FAILED_MESSAGE);
-  }
+  const stories = await generateWithQuota(
+    noopQuota,
+    () => generateWithGeminiStories(prompt, wordLength, numStories, language),
+    FREE_GENERATION_TIMEOUT_MS,
+    FREE_GENERATION_FAILED_MESSAGE
+  );
+
+  assertSuccessfulGeneration(stories, FREE_GENERATION_FAILED_MESSAGE);
+  return stories;
 };
 
 const aiModelAlternateEndings = async (
@@ -132,105 +152,100 @@ const aiModelAlternateEndings = async (
   const { email } = token;
   const { title, content, tag, language = "English" } = payload;
 
-  const currentDate = new Date();
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-  const user = await User.findOne({ email: email });
-  if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
-
-  if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
-    await User.updateOne(
-      { email: email, lastRequestDate: { $lt: firstDayOfMonth } },
-      { $set: { requestsThisMonth: 0, lastRequestDate: currentDate } }
-    );
-  }
-
-  const requestLimit = REQUEST_LIMITS[user.subscriptionType as keyof typeof REQUEST_LIMITS] || REQUEST_LIMITS.free;
-  const updatedUser = await User.findOneAndUpdate(
-    { email: email, requestsThisMonth: { $lt: requestLimit } },
-    { $inc: { requestsThisMonth: 1 }, $set: { lastRequestDate: currentDate } },
-    { new: true }
+  return generateWithQuota(
+    () => enforceMonthlyRequestLimit(email),
+    () => generateAlternateEndingsWithGemini(title, content, tag, language),
+    AUTHENTICATED_GENERATION_TIMEOUT_MS,
+    ALTERNATE_ENDING_FAILED_MESSAGE
   );
-
-  if (!updatedUser) throw new ApiError(httpStatus.CONFLICT, "Monthly request limit exceeded!");
-
-  try {
-    const result = await raceGenerationWithTimeout(
-      () => generateAlternateEndingsWithGemini(title, content, tag, language),
-      AUTHENTICATED_GENERATION_TIMEOUT_MS
-    );
-    assertSuccessfulGeneration(result, ALTERNATE_ENDING_FAILED_MESSAGE);
-    return result;
-  } catch (error) {
-    await User.updateOne({ email: email, requestsThisMonth: { $gt: 0 } }, { $inc: { requestsThisMonth: -1 } });
-    mapGenerationError(error, ALTERNATE_ENDING_FAILED_MESSAGE);
-  }
 };
 
 const aiFreeModelAlternateEndings = async (payload: IAlternateEndingPayload) => {
   const { title, content, tag, language = "English" } = payload;
 
-  try {
-    const result = await raceGenerationWithTimeout(
-      () => generateAlternateEndingsWithGemini(title, content, tag, language),
-      FREE_GENERATION_TIMEOUT_MS
-    );
-    assertSuccessfulGeneration(result, FREE_ALTERNATE_ENDING_FAILED_MESSAGE);
-    return result;
-  } catch (error) {
-    mapGenerationError(error, FREE_ALTERNATE_ENDING_FAILED_MESSAGE);
-  }
+  return generateWithQuota(
+    noopQuota,
+    () => generateAlternateEndingsWithGemini(title, content, tag, language),
+    FREE_GENERATION_TIMEOUT_MS,
+    FREE_ALTERNATE_ENDING_FAILED_MESSAGE
+  );
 };
 
-const aiModelRemix = async (payload: IRemixPayload, _token: ITokenPayload) => {
-  const { title, content, tag, remixType, remixOption = "", language = "English" } = payload;
-  try {
-    const result = await raceGenerationWithTimeout(
-      () => generateRemixWithGemini(title, content, tag, remixType, remixOption, language),
-      AUTHENTICATED_GENERATION_TIMEOUT_MS
-    );
-    return result;
-  } catch (error) {
-    mapGenerationError(error, "Remix generation failed.");
-  }
+const aiModelRemix = async (
+  payload: IRemixPayload,
+  _token: ITokenPayload
+) => {
+  const {
+    title,
+    content,
+    tag,
+    remixType,
+    remixOption = "",
+    language = "English",
+  } = payload;
+
+  return generateWithQuota(
+    noopQuota,
+    () =>
+      generateRemixWithGemini(
+        title,
+        content,
+        tag,
+        remixType,
+        remixOption,
+        language
+      ),
+    AUTHENTICATED_GENERATION_TIMEOUT_MS,
+    "Remix generation failed."
+  );
 };
 
 const aiFreeModelRemix = async (payload: IRemixPayload) => {
-  const { title, content, tag, remixType, remixOption = "", language = "English" } = payload;
-  try {
-    const result = await raceGenerationWithTimeout(
-      () => generateRemixWithGemini(title, content, tag, remixType, remixOption, language),
-      FREE_GENERATION_TIMEOUT_MS
-    );
-    return result;
-  } catch (error) {
-    mapGenerationError(error, "Remix generation failed.");
-  }
+  const {
+    title,
+    content,
+    tag,
+    remixType,
+    remixOption = "",
+    language = "English",
+  } = payload;
+
+  return generateWithQuota(
+    noopQuota,
+    () =>
+      generateRemixWithGemini(
+        title,
+        content,
+        tag,
+        remixType,
+        remixOption,
+        language
+      ),
+    FREE_GENERATION_TIMEOUT_MS,
+    "Remix generation failed."
+  );
 };
 
 const aiModelTranslate = async (payload: ITranslatePayload, _token: ITokenPayload) => {
   const { title, content, targetLanguage } = payload;
-  try {
-    const result = await raceGenerationWithTimeout(
-      () => translateStoryWithGemini(title, content, targetLanguage),
-      AUTHENTICATED_GENERATION_TIMEOUT_MS
-    );
-    return result;
-  } catch (error) {
-    mapGenerationError(error, "Translation failed.");
-  }
+
+  return generateWithQuota(
+    noopQuota,
+    () => translateStoryWithGemini(title, content, targetLanguage),
+    AUTHENTICATED_GENERATION_TIMEOUT_MS,
+    TRANSLATION_FAILED_MESSAGE
+  );
 };
 
 const aiFreeModelTranslate = async (payload: ITranslatePayload) => {
   const { title, content, targetLanguage } = payload;
-  try {
-    const result = await raceGenerationWithTimeout(
-      () => translateStoryWithGemini(title, content, targetLanguage),
-      FREE_GENERATION_TIMEOUT_MS
-    );
-    return result;
-  } catch (error) {
-    mapGenerationError(error, "Translation failed.");
-  }
+
+  return generateWithQuota(
+    noopQuota,
+    () => translateStoryWithGemini(title, content, targetLanguage),
+    FREE_GENERATION_TIMEOUT_MS,
+    FREE_TRANSLATION_FAILED_MESSAGE
+  );
 };
 
 export const AiModelService = {

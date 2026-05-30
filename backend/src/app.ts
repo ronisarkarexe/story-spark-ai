@@ -19,10 +19,12 @@ const defaultCorsOrigins = [
   "https://storysparkai.vercel.app",
 ];
 
-const corsOrigins =
-  config.cors_origins && config.cors_origins.length > 0
-    ? config.cors_origins
-    : defaultCorsOrigins;
+const corsOrigins = [
+  ...new Set([
+    ...(config.cors_origins?.length ? config.cors_origins : []),
+    ...defaultCorsOrigins,
+  ]),
+];
 
 // ── FIXED CORS MIDDLEWARE ENGINE (WITH CORRECTED SYNTAX BRACKETS) ──
 app.use(
@@ -42,7 +44,7 @@ app.use(
 app.use("/review", storyRoutes);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Keeps your extended payload parsing enabled
-app.use(cookieParser());
+app.use(cookieParser() as any);
 
 // Routes
 app.use("/api/v1", Routers);
