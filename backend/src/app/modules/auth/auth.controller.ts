@@ -78,19 +78,11 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   const { oldPassword, newPassword } = req.body;
 
   await AuthService.changePassword(user, { oldPassword, newPassword });
-<<<<<<< HEAD
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message:
-      "Password changed successfully. All previous sessions have been invalidated.",
-=======
-
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Password changed successfully. All previous sessions have been invalidated.",
->>>>>>> 526cfefa4bf99caf979eac548245d6e8bd37b65f
+    data: null,
   });
 });
 
