@@ -333,7 +333,11 @@ const StoriesComponent = () => {
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string>(draft?.genre || "");
+ const [selectedGenre, setSelectedGenre] = useState<string>(
+  draft?.genre
+    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "")
+    : "",
+);
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
   const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
@@ -431,13 +435,24 @@ const StoriesComponent = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-
-  useEffect(() => {
-    if (location.state && location.state.prompt) {
+useEffect(() => {
+  if (location.state) {
+    if (location.state.prompt) {
       setTextareaValue(location.state.prompt);
-      navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location, navigate]);
+
+    if (location.state.genre) {
+  const matchedGenre =
+    GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
+  setSelectedGenre(matchedGenre);
+}
+
+    navigate(location.pathname, {
+      replace: true,
+      state: {},
+    });
+  }
+}, [location, navigate]);
 
   useEffect(() => {
     setValue("prompt", textareaValue);

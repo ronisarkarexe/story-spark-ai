@@ -2,6 +2,17 @@ import { Request, Response } from "express";
 import crypto from "crypto";
 import razorpayInstance from "../config/razorpay";
 
+// Validate RAZORPAY_KEY_SECRET is present at startup so misconfigured
+// deployments fail loudly rather than silently passing undefined to
+// crypto.createHmac() and returning an opaque 500 during payment verification.
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+if (!RAZORPAY_KEY_SECRET) {
+  throw new Error(
+    "Missing required environment variable: RAZORPAY_KEY_SECRET. " +
+    "Payment verification cannot work without it."
+  );
+}
+
 // Creates a new Razorpay order and returns the order details to the frontend
 export const createOrder = async (req: Request, res: Response) => {
   try {
@@ -38,12 +49,18 @@ export const verifyPayment = async (req: Request, res: Response) => {
     // Razorpay signature verification: HMAC-SHA256 of "order_id|payment_id"
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET as string)
+      .createHmac("sha256", RAZORPAY_KEY_SECRET)
       .update(body)
       .digest("hex");
 
-    // Compare expected signature with the one sent by Razorpay
-    if (expectedSignature !== razorpay_signature) {
+    // Use timingSafeEqual to compare signatures and prevent timing-based attacks
+    const expectedBuffer = Buffer.from(expectedSignature, "hex");
+    const receivedBuffer = Buffer.from(razorpay_signature, "hex");
+    const signaturesMatch =
+      expectedBuffer.length === receivedBuffer.length &&
+      crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+
+    if (!signaturesMatch) {
       return res.status(400).json({ success: false, message: "Invalid signature" });
     }
 

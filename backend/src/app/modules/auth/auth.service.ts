@@ -92,7 +92,8 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
     throw new ApiError(httpStatus.CONFLICT, "User already exists!");
   }
   
-  const result = await User.create(payload);
+  const { verificationToken: _, ...userPayload } = payload;
+  const result = await User.create(userPayload);
   
   // Clean up OTP record after successful registration
   await OTPModel.deleteOne({ email: userEmail });
