@@ -146,7 +146,7 @@ cp frontend/.env.example frontend/.env
 | `SALT_ROUNDS` | Yes | Bcrypt cost factor (e.g. `10`) |
 | `JWT_SECRET` | Yes | Access token signing secret |
 | `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret |
-| `JWT_EXPIRES_IN` | Yes | Access token lifetime (e.g. `60d`) |
+| `JWT_EXPIRES_IN` | Yes | Access token lifetime, keep short (e.g. `15m`) |
 | `JWT_REFRESH_EXPIRES_IN` | Yes | Refresh token lifetime (e.g. `120d`) |
 | `DEFAULT_ADMIN_PASSWORD` | Yes | Initial admin password on seed |
 | `OPEN_AI_KEY` | For OpenAI | [OpenAI API key](https://platform.openai.com/api-keys) |

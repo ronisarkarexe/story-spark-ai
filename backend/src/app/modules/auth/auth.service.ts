@@ -28,11 +28,12 @@ const buildClaims = (user: any) => ({
   tokenVersion: user.tokenVersion ?? 0,
 });
 
+// Default to a short-lived access token; long sessions come from refresh rotation.
 const issueAccessToken = (user: any, expiresIn?: string): string =>
   JwtHalers.createToken(
     buildClaims(user),
     config.jwt.secret as Secret,
-    expiresIn ?? (config.jwt.expires_in as string)
+    expiresIn ?? (config.jwt.expires_in as string) ?? "15m"
   );
 
 // Issues a refresh token with a unique jti and records its session for rotation.
