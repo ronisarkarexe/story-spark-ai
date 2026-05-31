@@ -13,7 +13,7 @@ import { OTPModel } from "../verify_email/otp.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 import { GamificationService } from "../gamification/gamification.service";
 
-const googleClient = new OAuth2Client(config.google_client_id);
+const googleClient = new OAuth2Client(config.google.clientId);
 
 const login = async (payload: AuthModel) => {
   const { email: userEmail, password } = payload;
@@ -144,7 +144,7 @@ const refreshToken = async (token: string) => {
 
 const googleLogin = async (payload: { token: string }) => {
   try {
-    if (!config.google_client_id) {
+    if (!config.google.clientId) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
         "Google OAuth not configured"
@@ -153,7 +153,7 @@ const googleLogin = async (payload: { token: string }) => {
 
     const ticket = await googleClient.verifyIdToken({
       idToken: payload.token,
-      audience: config.google_client_id,
+      audience: config.google.clientId,
     });
 
     const payload_data = ticket.getPayload();

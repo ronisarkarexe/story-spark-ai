@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
     "socket.io": "^4.8.3"

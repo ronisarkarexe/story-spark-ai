@@ -75,7 +75,11 @@ const LoginComponent = () => {
 
         setIsLoggedIn(true);
       }
-    } catch {
+   } catch (error) {
+      // 1. Log the actual error to the console
+      console.error("GOOGLE LOGIN BUG:", error); 
+      
+      // 2. Keep the original toast for the UI
       toast.error(
         "Failed to login with Google. Please try again."
       );

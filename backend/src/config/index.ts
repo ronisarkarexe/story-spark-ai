@@ -41,7 +41,12 @@ export default {
   gemini_api_key: process.env.GEMINI_API_KEY,
   verify_email: process.env.VERIFY_EMAIL,
   verify_password: process.env.VERIFY_PASSWORD,
-  google_client_id: process.env.GOOGLE_CLIENT_ID,
+google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+    GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
+  },
   github: {
     token: process.env.GITHUB_TOKEN,
     repo: process.env.GITHUB_REPO || "Arpita2919/story-spark-ai",

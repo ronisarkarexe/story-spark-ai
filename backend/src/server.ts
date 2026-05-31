@@ -8,7 +8,9 @@ import { Server } from "socket.io";
 import { JwtHalers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
-
+console.log("Checking Google ID:", process.env.GOOGLE_CLIENT_ID);
+console.log("Checking Secret:", process.env.GOOGLE_CLIENT_SECRET);
+console.log("Checking Callback:", process.env.GOOGLE_CALLBACK_URL);
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 if (config.disable_logs) {
