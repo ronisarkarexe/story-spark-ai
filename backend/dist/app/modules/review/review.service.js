@@ -17,8 +17,8 @@ const review_model_1 = require("./review.model");
 const redis_client_1 = __importDefault(require("../../utils/redis.client"));
 const PUBLISHED_REVIEWS_KEY = "reviews:published:v1";
 const REVIEWS_CACHE_TTL = Number(process.env.REVIEWS_CACHE_TTL) || 300; // seconds
-const createReview = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield review_model_1.Review.create(payload);
+const createReview = (payload, token) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield review_model_1.Review.create(Object.assign(Object.assign({}, payload), { userId: token._id }));
     // Invalidate cache (best-effort)
     try {
         yield redis_client_1.default.del(PUBLISHED_REVIEWS_KEY);

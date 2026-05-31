@@ -40,11 +40,11 @@ export interface SupportLink {
 }
 
 export const HELP_SECTIONS = [
-  { id: "categories", label: "Quick Help" },
-  { id: "faq", label: "FAQ" },
-  { id: "troubleshooting", label: "Troubleshooting" },
-  { id: "developer-setup", label: "Developer Setup" },
-  { id: "support", label: "Support & Community" },
+  { id: "categories", label: "Quick Help", icon: "fa-layer-group" },
+  { id: "faq", label: "FAQ", icon: "fa-circle-question" },
+  { id: "troubleshooting", label: "Troubleshooting", icon: "fa-screwdriver-wrench" },
+  { id: "developer-setup", label: "Developer Setup", icon: "fa-laptop-code" },
+  { id: "support", label: "Support & Community", icon: "fa-users" },
 ] as const;
 
 export const HELP_CATEGORIES: HelpCategory[] = [

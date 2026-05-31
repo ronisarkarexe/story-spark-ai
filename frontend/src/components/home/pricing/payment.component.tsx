@@ -9,6 +9,7 @@ import {
   User,
 } from "lucide-react";
 import { getUserInfo } from "../../../services/auth.service";
+import { loadRazorpayScript } from "../../../utils/loadRazorpay";
 
 const PaymentComponent = () => {
   const navigate = useNavigate();
@@ -21,6 +22,46 @@ const PaymentComponent = () => {
 
   const planName = searchParams.get("plan") || "Pro";
   const planPrice = Number(searchParams.get("price") || "19.99");
+
+  // Form State
+  const [name, setName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const formatCardNumber = (value: string) => {
+    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || "";
+    const parts = [];
+
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+
+    if (parts.length > 0) {
+      return parts.join(" ");
+    } else {
+      return v;
+    }
+  };
+
+  const formatExpiry = (value: string) => {
+    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+    if (v.length >= 2) {
+      return `${v.slice(0, 2)}/${v.slice(2, 4)}`;
+    }
+    return v;
+  };
+
+  const isFormValid = name.trim() !== "" && cardNumber.replace(/\s/g, "").length === 16 && expiry.length === 5 && cvv.length === 3;
+
+  const handlePay = async () => {
+    setLoading(true);
+    await handlePayment();
+    setLoading(false);
+  };
 
   // Razorpay payment handler
   const handlePayment = async () => {

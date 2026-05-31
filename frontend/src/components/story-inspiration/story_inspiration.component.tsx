@@ -10,9 +10,6 @@ const StoryInspirationComponent: React.FC = () => {
   const [searchQuery, setSearchQuery] =
     useState<string>("");
 
-  const [selectedGenre, setSelectedGenre] =
-    useState<string>("All");
-
   const genres = [
     "All",
     "Fantasy",
@@ -22,6 +19,14 @@ const StoryInspirationComponent: React.FC = () => {
     "Adventure",
     "Romance",
   ];
+
+  const [selectedGenre, setSelectedGenre] = useState<string>(() => {
+    const savedGenre = localStorage.getItem("pref_defaultGenre");
+    if (!savedGenre) return "All";
+    const cleaned = savedGenre.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji}/gu, "").trim();
+    const matched = genres.find((g) => g.toLowerCase() === cleaned.toLowerCase());
+    return matched || "All";
+  });
 
   const filteredStories =
     inspirationData.filter((story) => {

@@ -3,6 +3,8 @@ import { PostController } from "./post.controller";
 import auth from "../../middleware/auth.middleware";
 import checkRequestLimit from "../../middleware/check.request.limit";
 import { ENUM_USER_ROLE } from "../../../enums/user";
+import validateRequest from "../../middleware/validate.request";
+import { PostValidator } from "./post.validation";
 
 const router = express.Router();
 
@@ -27,7 +29,17 @@ router.get(
 );
 
 router.get(
+  "/latest-lists",
+  PostController.getLatestPosts
+);
+
+router.get(
   "/featured-posts",
+  PostController.getFeaturedPosts
+);
+
+router.get(
+  "/feature-lists",
   PostController.getFeaturedPosts
 );
 

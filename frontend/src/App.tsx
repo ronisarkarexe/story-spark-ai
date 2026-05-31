@@ -45,6 +45,8 @@ import TemplatesComponent from "./components/templates/templates.component";
 import Terms from "./components/footer/terms.tsx";
 import UserComponent from "./components/dashboard/users/user.component";
 import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
+import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import ForgotPasswordComponent from "./components/forgot-password/forgot-password.component";
 
 // vi. Subcomponents
 import ScrollToTop from "./components/ScrollToTop";
@@ -175,13 +177,6 @@ function App() {
     </>
   );
 }
-
-
-
-export default App;
-
-
-export default App;
 
 
 export default App;
