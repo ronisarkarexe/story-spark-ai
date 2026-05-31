@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
@@ -22,94 +22,7 @@ const PaymentComponent = () => {
   const planName = searchParams.get("plan") || "Pro";
   const planPrice = Number(searchParams.get("price") || "19.99");
 
-  // Razorpay payment handler
-  const handlePayment = async () => {
-    // Load Razorpay SDK
-    const loaded = await loadRazorpayScript();
 
-    if (!loaded) {
-      alert("Failed to load Razorpay SDK.");
-      return;
-    }
-
-    try {
-      // Create order from backend
-      const res = await fetch("/api/v1/payment/create-order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: Math.round(planPrice * 100), // Convert to paisa
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        alert("Failed to create order.");
-        return;
-      }
-
-      // Razorpay options
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: data.order.amount,
-        currency: data.order.currency,
-        name: "StorySparkAI",
-        description: `${planName} Subscription`,
-        order_id: data.order.id,
-
-        handler: async (response: Record<string, unknown>) => {
-          try {
-            // Verify payment
-            const verifyRes = await fetch("/api/v1/payment/verify", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(response),
-            });
-
-            const verifyData = await verifyRes.json();
-
-            if (verifyData.success) {
-              alert("Payment successful!");
-            } else {
-              alert("Payment verification failed.");
-            }
-          } catch (error) {
-            console.error(error);
-            alert("Verification failed.");
-          }
-        },
-
-        prefill: {
-          name: "",
-          email: "",
-          contact: "",
-        },
-
-        theme: {
-          color: "#06b6d4",
-        },
-      };
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const paymentObject = new (window as any).Razorpay(options);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      paymentObject.on("payment.failed", function (response: any) {
-        console.error(response.error);
-        alert("Payment failed.");
-      });
-
-      paymentObject.open();
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong.");
-    }
-  };
 
   return (
     <div className="gradient-bg min-h-screen px-4 py-10 text-slate-100 sm:px-6 lg:px-8">

@@ -5,7 +5,7 @@ import LoadingAnimation from "../../loading/loading.component";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
 import { useNavigate } from "react-router-dom";
 import BookmarkButton from "../../BookmarkButton";
-import React, { useState } from "react";
+import React from "react";
 import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 

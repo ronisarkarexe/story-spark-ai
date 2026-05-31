@@ -1,4 +1,4 @@
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Link } from "react-router-dom";
 import {
     Handshake,
@@ -117,7 +117,7 @@ const workflowSteps = [
 ];
 
 const Guidelines = () => {
-
+  return null;
 };
 
 export default Guidelines;

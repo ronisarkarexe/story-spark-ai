@@ -25,7 +25,7 @@ type AuthUserInfo = {
   iat: number;
 };
 
-const buildUserInfo = (decodedData: any): AuthUserInfo => ({
+const buildUserInfo = (decodedData: unknown): AuthUserInfo => ({
   email: decodedData.email || "",
   userId: decodedData.userId || "",
   name: decodedData.name || "",
