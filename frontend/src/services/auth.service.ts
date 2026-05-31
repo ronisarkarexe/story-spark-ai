@@ -6,6 +6,7 @@ import {
   removeFromLocalStorage,
   setToLocalStorage,
 } from "../utils/local-storage";
+import { instance as apiClient } from "../helpers/axios/axionInstance";
 
 export type AuthUserInfo = {
 const AUTH_CHANGE_EVENT = "story-spark-auth-change";
@@ -103,6 +104,9 @@ export const isLoggedIn = () => {
 };
 
 export const removeUserInfo = () => {
+  apiClient.post("/auth/logout").catch((err) => {
+    console.error("Backend logout failed:", err);
+  });
   const result = removeFromLocalStorage(AUTH_KEY);
   emitAuthChange();
   return result;

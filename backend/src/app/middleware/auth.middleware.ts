@@ -5,6 +5,7 @@ import { Secret } from "jsonwebtoken";
 import ApiError from "../../errors/api_error";
 import { JwtHalers } from "../../utils/jwt.helper";
 import { User } from "../modules/user/user.model";
+import redis from "../utils/redis.client";
 
 const auth =
   (...requiredRole: string[]) =>
@@ -19,6 +20,19 @@ const auth =
           httpStatus.UNAUTHORIZED,
           "You are not authorized to access"
         );
+      }
+
+      // Check if token is in Redis blocklist
+      try {
+        const isBlocklisted = await redis.get(`blocklist:token:${token}`);
+        if (isBlocklisted) {
+          throw new ApiError(
+            httpStatus.UNAUTHORIZED,
+            "Token is invalid or expired"
+          );
+        }
+      } catch (redisError) {
+        // Fallback gracefully on Redis failure (DB tokenVersion will still catch it)
       }
 
       // verify token

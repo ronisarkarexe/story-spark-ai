@@ -14,6 +14,7 @@ import { OTPModel } from "../verify_email/otp.model";
 import { RefreshSession } from "./refresh_session.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 import { GamificationService } from "../gamification/gamification.service";
+import redis from "../../utils/redis.client";
 
 const googleClient = new OAuth2Client(config.google_client_id);
 
@@ -206,19 +207,48 @@ const refreshToken = async (token: string) => {
   };
 };
 
-const logout = async (token?: string) => {
-  if (!token) return;
-  try {
-    const verified = JwtHalers.verifyToken(
-      token,
-      config.jwt.refresh_secret as Secret
-    );
-    const jti = (verified as any).jti as string | undefined;
-    if (jti) {
-      await RefreshSession.updateOne({ jti }, { revoked: true });
+const logout = async (token?: string, accessToken?: string) => {
+  // 1. Revoke the refresh token
+  if (token) {
+    try {
+      const verified = JwtHalers.verifyToken(
+        token,
+        config.jwt.refresh_secret as Secret
+      );
+      const jti = (verified as any).jti as string | undefined;
+      if (jti) {
+        await RefreshSession.updateOne({ jti }, { revoked: true });
+      }
+    } catch (error) {
+      // Ignore invalid tokens on logout
     }
-  } catch (error) {
-    // Ignore invalid tokens on logout; the cookie is cleared either way.
+  }
+
+  // 2. Revoke the access token and increment user tokenVersion
+  if (accessToken) {
+    try {
+      const verified = JwtHalers.verifyToken(
+        accessToken,
+        config.jwt.secret as Secret
+      );
+      const userId = (verified as any)._id;
+
+      // Increment tokenVersion in DB (fallback / global revocation)
+      if (userId) {
+        await User.updateOne({ _id: userId }, { $inc: { tokenVersion: 1 } });
+      }
+
+      // Add to Redis blocklist (server-side blocklist)
+      const exp = (verified as any).exp;
+      if (exp) {
+        const remainingTime = exp - Math.floor(Date.now() / 1000);
+        if (remainingTime > 0) {
+          await redis.set(`blocklist:token:${accessToken}`, "revoked", "EX", remainingTime);
+        }
+      }
+    } catch (error) {
+      // Ignore invalid tokens on logout
+    }
   }
 };
 

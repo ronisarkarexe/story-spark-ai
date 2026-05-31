@@ -55,7 +55,12 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 
 const logout = catchAsync(async (req: Request, res: Response) => {
   const token = req.cookies?.refreshToken as string | undefined;
-  await AuthService.logout(token);
+  const authHeader = req.headers.authorization as string | undefined;
+  const accessToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7).trim()
+    : authHeader?.trim();
+
+  await AuthService.logout(token, accessToken);
   clearRefreshTokenCookie(res);
   sendResponse(res, {
     statusCode: httpStatus.OK,
