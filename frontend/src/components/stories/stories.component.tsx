@@ -682,10 +682,13 @@ useEffect(() => {
     hasStory: stories.length > 0,
   });
 
+  const isDashboard = location.pathname.startsWith("/dashboard");
+
   return (
-    <div className="min-h-screen bg-white text-slate-900 animate-gradient-slow transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
-        <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
+    <div className={isDashboard ? "animate-gradient-slow transition-colors duration-300 w-full" : "min-h-screen bg-white text-slate-900 animate-gradient-slow transition-colors duration-300 dark:bg-[#0b1329] dark:text-white"}>
+      <div className={`max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 ${isDashboard ? 'pt-4' : ''}`}>
+        {!isDashboard && (
+          <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
           <div className="pt-2 w-full md:w-auto flex justify-start">
             <Link to="/">
               <div className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
@@ -730,8 +733,9 @@ useEffect(() => {
               <br />
               <span>{text.totalPosts}: {login ? (data?.postsCount ?? 0) : 0}</span>
             </div>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mt-11">
           <h1 className="text-slate-900 dark:text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">

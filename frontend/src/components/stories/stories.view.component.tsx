@@ -11,7 +11,7 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
   posts,currentPostId,
 }) => {
   const navigate = useNavigate();
-  const filteredPosts=posts.filter((post)=>post._id!==currentPostId)
+  const filteredPosts = (posts || []).filter((post) => post._id !== currentPostId);
   return (
     <div className="grid grid-cols-2 gap-6">
       {filteredPosts.length > 0 ? (
