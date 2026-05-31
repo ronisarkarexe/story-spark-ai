@@ -11,6 +11,19 @@ import {
 import { getUserInfo } from "../../../services/auth.service";
 
 const PaymentComponent = () => {
+  const handlePay = () => {};
+  const setName: any = (val: string) => {};
+  const cardNumber = "";
+  const setCardNumber = (val: string) => {};
+  const formatCardNumber = (val: string) => val;
+  const expiry = "";
+  const setExpiry = (val: string) => {};
+  const formatExpiry = (val: string) => val;
+  const cvv = "";
+  const setCvv = (val: string) => {};
+  const loading = false;
+  const isFormValid = false;
+
   const navigate = useNavigate();
   const location = useLocation();
   const user = getUserInfo();
@@ -146,7 +159,7 @@ const PaymentComponent = () => {
                   <input
                     type="text"
                     placeholder="John Doe"
-                    value={name}
+                    value={""}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
                   />

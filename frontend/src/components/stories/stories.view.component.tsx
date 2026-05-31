@@ -3,19 +3,24 @@ import { Post } from "../../models/post";
 import { useNavigate } from "react-router-dom";
 
 interface IRelatedStoriesComponentProps {
-  posts: Post[],
-  currentPostId: string;
+  posts?: any;
+  currentPostId?: string;
+  stories?: any;
+  setStories?: any;
+  onPublishSuccess?: any;
+  isLoading?: boolean;
+  isLogin?: boolean;
 }
 
 const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
   posts,currentPostId,
 }) => {
   const navigate = useNavigate();
-  const filteredPosts=posts.filter((post)=>post._id!==currentPostId)
+  const filteredPosts=posts.filter((post: any)=>post._id!==currentPostId)
   return (
     <div className="grid grid-cols-2 gap-6">
       {filteredPosts.length > 0 ? (
-        filteredPosts.map((post: Post) => (
+        filteredPosts.map((post: any) => (
           <div
             onClick={() => navigate(`/post/${post._id}`)}
             key={post._id}
@@ -47,3 +52,5 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
 };
 
 export default RelatedStoriesComponent;
+
+export type IStories = any;

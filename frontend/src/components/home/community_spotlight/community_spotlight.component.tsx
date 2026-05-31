@@ -35,8 +35,9 @@ const rankStyles = [
 const formatMetric = (value: number) =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(value);
 
-const CommunitySpotlightComponent = () => {
-  const { isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
+const CommunitySpotlightComponent = ({ isLogin }: { isLogin?: boolean }) => {
+  const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
+  const topWriters: any[] = (data as any)?.posts || [];
   const navigate = useNavigate();
 
   if (isLoading) return <LoadingAnimation />;
@@ -82,7 +83,7 @@ const CommunitySpotlightComponent = () => {
 
       {topWriters.length > 0 ? (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {topWriters.map((writer, index) => {
+          {topWriters.map((writer: any, index: number) => {
             const rank = index + 1;
             const style = rankStyles[index];
 

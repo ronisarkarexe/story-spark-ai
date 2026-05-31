@@ -1,4 +1,6 @@
 import React from "react";
+import { Navigate, Outlet, createBrowserRouter, RouterProvider } from "react-router-dom";
+const ScrollToTop = () => null;
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 import CollabHome from "./components/collab/CollabHome";

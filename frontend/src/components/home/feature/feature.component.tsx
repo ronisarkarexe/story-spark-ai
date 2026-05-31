@@ -10,6 +10,10 @@ import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 
 const FeatureComponent = () => {
+  const calculateReadingTime = (text: string) => 5;
+  const handleCopyLink = (...args: any[]) => {};
+  const copiedId: string | null = null;
+
   const { data, isLoading, isError, refetch } = useGetFeaturedListsQuery(undefined);
   const navigate = useNavigate();
   if (isLoading) return <LoadingAnimation />;
