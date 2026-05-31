@@ -249,10 +249,7 @@ const TemplatesComponent = () => {
             >
               Start Writing <i className="fas fa-magic"></i>
             </button>
-            <a 
-              href="#categories"
-              className="px-8 py-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 font-bold text-lg hover:bg-white/10 transition-all duration-300 w-full sm:w-auto text-center backdrop-blur-sm"
-            >
+            <a href="#categories" className="px-8 py-4 rounded-xl border font-bold text-lg transition-all duration-300 backdrop-blur-sm w-full sm:w-auto text-center  bg-white text-slate-700 border-slate-300  hover:bg-slate-100 hover:border-indigo-500 hover:text-indigo-600 hover:-translate-y-1 hover:shadow-lg  dark:bg-white/5 dark:text-gray-200 dark:border-white/10 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300">
               Browse Templates
             </a>
           </div>

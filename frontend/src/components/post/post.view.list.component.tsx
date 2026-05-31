@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../models/post";
 import BookmarkButton from "../BookmarkButton";
@@ -14,6 +14,12 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   isLoading,
 }) => {
   const navigate = useNavigate();
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+
+  const handleImageError = (storyId: string) => {
+    setImageErrors((prev) => ({ ...prev, [storyId]: true }));
+  };
+
   const formatDate = (value?: string) => {
     if (!value) return "";
     const date = new Date(value);
@@ -74,12 +80,20 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
               onClick={() => navigate(`/post/${story._id}`)}
               className="cursor-pointer bg-gray-50 text-slate-900 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 overflow-hidden group flex flex-col h-full dark:bg-slate-900/60 dark:text-white dark:border-slate-800"
             >
-              <div className="relative overflow-hidden">
-                <img
-                  src={story.imageURL}
-                  alt={`Cover image for ${story.title}`}
-                  className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
-                />
+              <div className="relative overflow-hidden bg-slate-200 dark:bg-slate-800">
+                {!imageErrors[story._id] && story.imageURL ? (
+                  <img
+                    src={story.imageURL}
+                    alt={`Cover image for ${story.title}`}
+                    onError={() => handleImageError(story._id)}
+                    className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                  />
+                ) : (
+                  <div className="w-full h-52 bg-gradient-to-br from-indigo-500/25 via-purple-500/25 to-blue-500/25 flex items-center justify-center relative">
+                    <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" />
+                    <i className="fas fa-book-open text-4xl text-indigo-400/80 relative z-10 animate-pulse" />
+                  </div>
+                )}
 
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-transparent to-transparent opacity-100 pointer-events-none dark:from-slate-900/90 dark:via-transparent dark:to-transparent"></div>
 
@@ -92,11 +106,11 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                 </div>
 
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <span className="px-3 py-1 bg-indigo-600/80 backdrop-blur-md border border-indigo-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
+                  <span className="px-3 py-1 bg-indigo-600 border border-indigo-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
                     {story.tag}
                   </span>
                   {story.language && (
-                    <span className="px-3 py-1 bg-purple-600/80 backdrop-blur-md border border-purple-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
+                    <span className="px-3 py-1 bg-purple-600 border border-purple-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
                       {story.language}
                     </span>
                   )}

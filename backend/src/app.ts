@@ -1,4 +1,7 @@
 import express, { Application, NextFunction, Request, Response, Router } from "express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import express, { Application, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import httpStatus from "http-status";
 import cron from "node-cron";
@@ -10,8 +13,17 @@ import { User } from "./app/modules/user/user.model";
 import { NewsletterSubscriber } from "./app/modules/newsletter/newsletter.model";
 
 const app: Application = express();
-
 app.set("trust proxy", 1); // Trust first proxy to securely read req.ip
+app.use(helmet());
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests, please try again later."
+});
+
+app.use(limiter);
+
+
 
 const defaultCorsOrigins = [
   "http://localhost:4001",
@@ -43,6 +55,8 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Keeps your extended payload parsing enabled
 app.use(cookieParser() as unknown as express.RequestHandler);
+app.use(cookieParser() as any);
+app.use("/review", storyRoutes);
 
 // Routes
 app.use("/api/v1", Routers);

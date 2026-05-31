@@ -126,10 +126,37 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
           const isOpen = openIndex === index;
 
           return (
+
+
+            <article
+              key={item.id}
+              role="listitem"
+               onMouseLeave={() => setOpenId(null)}
+              className="bg-blue-500/10 border border-white/5 rounded-xl overflow-hidden transition-colors hover:border-indigo-500/20"
+            >
+              <h3>
+                <button
+                  id={buttonId}
+                  type="button"
+                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  onMouseEnter={() => toggleItem(item.id)}
+                  onKeyDown={(e) => handleKeyDown(e, item.id)}
+
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: index * 0.05 }}
+              className="group overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] backdrop-blur-xl shadow-sm hover:shadow-md transition-all duration-300"
+
             <article
               key={item.id}
               role="listitem"
               className="bg-white dark:bg-blue-500/10 border border-slate-200 dark:border-white/5 rounded-xl overflow-hidden shadow-sm transition-colors hover:border-indigo-500/30"
+
             >
               <button
                 onClick={() => toggleAccordion(index)}
@@ -143,6 +170,7 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
                     isOpen ? "rotate-180" : ""
                   }`}
                   aria-hidden="true"
+
                 >
                   <span className="text-slate-800 dark:text-gray-300 font-medium pr-4">
                     {item.question}

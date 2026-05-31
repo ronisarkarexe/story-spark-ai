@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { connectSocket } from "../../socket/socket.oi";
-import { getUserInfo, isLoggedIn } from "../../services/auth.service";
+// Socket.IO collab disabled (see CollabRoom). Previous: io, Socket, resolveSocketUrl, BACKEND_URL.
 
 type CreateRoomResponse = {
   roomId?: string;
@@ -11,8 +10,6 @@ export default function CollabHome() {
   const navigate = useNavigate();
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
-  const user = getUserInfo();
 
   const createRoom = () => {
     if (!isLoggedIn()) {
@@ -36,6 +33,9 @@ export default function CollabHome() {
         { userId: user?.userId, username: user?.name },
         (response: CreateRoomResponse) => {
       socket.emit(
+      const collabSocket = socket;
+
+      collabSocket.emit(
         "collab:create_room",
         { userId: user?.userId, username: user?.name },
         (response: { roomId: string } | null) => {
@@ -96,10 +96,9 @@ export default function CollabHome() {
           {/* Create Room */}
           <button
             onClick={createRoom}
-            disabled={isCreating}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 text-white font-semibold text-lg transition-all shadow-lg shadow-indigo-500/20"
           >
-            {isCreating ? "Creating room..." : "✨ Create a New Story Room"}
+            ✨ Create a New Story Room
           </button>
 
           <div className="flex items-center gap-3">
