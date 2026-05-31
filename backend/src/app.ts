@@ -1,6 +1,7 @@
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import express, { Application, NextFunction, Request, Response } from "express";
+import express, { Application, NextFunction, Request, Response, RequestHandler } from "express";
+import storyRoutes from "./routes/story.routes";
 import cors from "cors";
 import httpStatus from "http-status";
 import cron from "node-cron";
@@ -20,7 +21,7 @@ const limiter = rateLimit({
   message: "Too many requests, please try again later."
 });
 
-app.use(limiter);
+app.use(limiter as any);
 
 
 

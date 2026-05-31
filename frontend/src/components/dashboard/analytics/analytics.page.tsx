@@ -22,6 +22,8 @@ interface IHeatmapDay { date: string; count: number; }
 interface IGenre { genre: string; count: number; }
 interface IWordCloud { text: string; value: number; }
 interface IHour { hour: number; count: number; }
+interface IEmotion { emotion: string; count: number; }
+interface IMoodTimeline { month: string; emotions: Record<string, number>; }
 
 const HOUR_LABELS = ["12am","1am","2am","3am","4am","5am","6am","7am","8am","9am","10am","11am",
   "12pm","1pm","2pm","3pm","4pm","5pm","6pm","7pm","8pm","9pm","10pm","11pm"];
@@ -32,6 +34,8 @@ const AnalyticsPage = () => {
   const [genres, setGenres] = useState<IGenre[]>([]);
   const [wordCloud, setWordCloud] = useState<IWordCloud[]>([]);
   const [hours, setHours] = useState<IHour[]>([]);
+  const [emotions, setEmotions] = useState<IEmotion[]>([]);
+  const [timeline, setTimeline] = useState<IMoodTimeline[]>([]);
   const [loading, setLoading] = useState(true);
 
   const token = getToken() || "";
@@ -47,18 +51,22 @@ const AnalyticsPage = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [ov, hm, gn, wc, hr] = await Promise.all([
+        const [ov, hm, gn, wc, hr, em, tl] = await Promise.all([
           fetchData("overview"),
           fetchData("heatmap"),
           fetchData("genres"),
           fetchData("wordcloud"),
           fetchData("productive-hours"),
+          fetchData("emotion-distribution"),
+          fetchData("mood-timeline"),
         ]);
         setOverview(ov || null);
         setHeatmap(hm || []);
         setGenres(gn || []);
         setWordCloud(wc || []);
         setHours(hr || []);
+        setEmotions(em || []);
+        setTimeline(tl || []);
       } catch (e) {
         console.error(e);
       } finally {
@@ -135,6 +143,45 @@ const AnalyticsPage = () => {
               <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Emotion Distribution */}
+        <div className="bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06] rounded-2xl p-6 shadow-lg">
+          <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">🎭 Emotion Distribution</h2>
+          {emotions.length === 0 ? (
+            <p className="text-slate-500 text-center py-8">No emotion data yet</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie data={emotions} dataKey="count" nameKey="emotion" cx="50%" cy="50%" innerRadius={60} outerRadius={90} label={({ name }: { name?: string }) => name ?? ""}>
+                  {emotions.map((_, i) => <Cell key={i} fill={COLORS[(i + 3) % COLORS.length]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Mood Timeline */}
+        <div className="bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06] rounded-2xl p-6 shadow-lg">
+          <h2 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">📈 Mood Timeline</h2>
+          {timeline.length === 0 ? (
+            <p className="text-slate-500 text-center py-8">Not enough data for timeline</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={timeline}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="month" tick={{ fill: "#94a3b8", fontSize: 10 }} />
+                <YAxis tick={{ fill: "#94a3b8", fontSize: 10 }} />
+                <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} />
+                {Object.keys(timeline[0]?.emotions || {}).slice(0, 3).map((emotion, i) => (
+                  <Bar key={emotion} dataKey={`emotions.${emotion}`} name={emotion} stackId="a" fill={COLORS[(i + 5) % COLORS.length]} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 

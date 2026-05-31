@@ -1,13 +1,16 @@
-
+import React from "react";
 import { Link } from "react-router-dom";
 import {
-    Handshake,
-    Sparkles,
-    Smile,
-    Ban,
-    Lightbulb,
-    FileText,
-    ArrowLeft,
+  Sparkles,
+  MessageSquare,
+  GitFork,
+  Lightbulb,
+  Code2,
+  Accessibility,
+  Bug,
+  Handshake,
+  ArrowLeft,
+  LucideIcon
 } from "lucide-react";
 
 type GuidelineSection = {
@@ -33,7 +36,7 @@ const guidelineSections: GuidelineSection[] = [
     title: "Respectful Communication",
     description:
       "Keep every discussion constructive, patient, and professional across issues, pull requests, reviews, and community spaces.",
-    icon: MessageCircle,
+    icon: MessageSquare,
     points: [
       "Use empathetic language and respect different viewpoints.",
       "Offer actionable feedback without personal criticism.",
@@ -44,7 +47,7 @@ const guidelineSections: GuidelineSection[] = [
     title: "Contribution Workflow",
     description:
       "Follow the documented fork, branch, commit, and pull request process so maintainers can review changes smoothly.",
-    icon: GitPullRequestArrow,
+    icon: GitFork,
     points: [
       "Fork the repository, clone your fork, and add the upstream remote.",
       "Pull from upstream main before starting new work.",
@@ -99,7 +102,7 @@ const guidelineSections: GuidelineSection[] = [
     title: "Collaboration & Review Etiquette",
     description:
       "Reviews work best when contributors and maintainers treat them as shared problem-solving.",
-    icon: HeartHandshake,
+    icon: Handshake,
     points: [
       "Respond to feedback gracefully and ask clarifying questions when needed.",
       "Accept responsibility for mistakes and update the PR with care.",
@@ -117,8 +120,81 @@ const workflowSteps = [
 ];
 
 const Guidelines = () => {
+  return (
+    <div className="min-h-screen bg-slate-955 text-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-12 flex justify-between items-center">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Back to Home
+          </Link>
+        </div>
 
+        <div className="text-center mb-16">
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
+            Community & Contribution Guidelines
+          </h1>
+          <p className="max-w-3xl mx-auto text-lg text-slate-400 leading-relaxed">
+            Welcome to StorySparkAI! Please read these guidelines to help keep the community healthy, creative, and collaborative for everyone.
+          </p>
+        </div>
+
+        {/* Guideline Sections Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          {guidelineSections.map((section, idx) => {
+            const Icon = section.icon;
+            return (
+              <div
+                key={idx}
+                className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 hover:border-slate-700 transition-all duration-300 backdrop-blur-xl shadow-lg"
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                    <Icon size={24} />
+                  </div>
+                  <h2 className="text-xl font-bold text-white">{section.title}</h2>
+                </div>
+                <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                  {section.description}
+                </p>
+                <ul className="space-y-3">
+                  {section.points.map((point, pIdx) => (
+                    <li key={pIdx} className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 flex-shrink-0" />
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Workflow steps */}
+        <div className="bg-slate-905/40 border border-slate-800 rounded-3xl p-8 md:p-12 mb-12">
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            Standard Contribution Workflow
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            {workflowSteps.map((step, idx) => (
+              <div key={idx} className="relative flex flex-col items-center text-center">
+                <div className="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm mb-4 border border-indigo-500/30">
+                  {idx + 1}
+                </div>
+                <p className="text-sm text-slate-300 leading-relaxed px-2">
+                  {step}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Guidelines;
-

@@ -8,7 +8,7 @@ import { Post } from "../post/post.model";
 
 const toggleReaction = async (
   postId: string,
-  type: string = "like",
+  type: "like" | "love" | "laugh" | "angry" | "sad" = "like",
   token: ITokenPayload
 ) => {
   const { email } = token;
@@ -27,26 +27,51 @@ const toggleReaction = async (
   });
 
   if (existingReaction) {
-    // Remove reaction atomically
-    await Reaction.findByIdAndDelete(existingReaction._id);
-    const updatedPost = await Post.findOneAndUpdate(
-      { _id: postId },
-      {
-        $pull: { reactions: existingReaction._id },
-        $inc: { likesCount: -1 },
-      },
-      { new: true }
-    );
-    // Ensure likesCount never goes below 0
-    if (updatedPost && updatedPost.likesCount < 0) {
-      await Post.updateOne({ _id: postId }, { $set: { likesCount: 0 } });
+    if (existingReaction.type === type) {
+      await Reaction.deleteOne({ _id: existingReaction._id });
+      const updatedPost = await Post.findOneAndUpdate(
+        { _id: postId },
+        {
+          $pull: { reactions: existingReaction._id },
+          $inc: { likesCount: type === "like" ? -1 : 0 },
+        },
+        { new: true }
+      );
+      if (updatedPost && updatedPost.likesCount < 0) {
+        await Post.updateOne({ _id: postId }, { $set: { likesCount: 0 } });
+      }
+      return {
+        message: "Reaction removed",
+        likesCount: Math.max(0, updatedPost?.likesCount ?? 0),
+      };
+    } else {
+      const oldType = existingReaction.type;
+      existingReaction.type = type;
+      await existingReaction.save();
+
+      let likesInc = 0;
+      if (oldType === "like" && type !== "like") likesInc = -1;
+      else if (oldType !== "like" && type === "like") likesInc = 1;
+
+      let updatedPost = null;
+      if (likesInc !== 0) {
+        updatedPost = await Post.findOneAndUpdate(
+          { _id: postId },
+          { $inc: { likesCount: likesInc } },
+          { new: true }
+        );
+        if (updatedPost && updatedPost.likesCount < 0) {
+          await Post.updateOne({ _id: postId }, { $set: { likesCount: 0 } });
+        }
+      } else {
+        updatedPost = await Post.findById(postId);
+      }
+      return {
+        message: "Reaction updated",
+        likesCount: Math.max(0, updatedPost?.likesCount ?? 0),
+      };
     }
-    return {
-      message: "Reaction removed",
-      likesCount: Math.max(0, updatedPost?.likesCount ?? 0),
-    };
   } else {
-    // Add reaction atomically
     const newReaction = await Reaction.create({
       postId: new Types.ObjectId(postId),
       userId: user._id,
@@ -56,7 +81,7 @@ const toggleReaction = async (
       { _id: postId },
       {
         $addToSet: { reactions: newReaction._id },
-        $inc: { likesCount: 1 },
+        $inc: { likesCount: type === "like" ? 1 : 0 },
       },
       { new: true }
     );

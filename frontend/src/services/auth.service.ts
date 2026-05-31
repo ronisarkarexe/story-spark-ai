@@ -25,7 +25,18 @@ type AuthUserInfo = {
   iat: number;
 };
 
-const buildUserInfo = (decodedData: any): AuthUserInfo => ({
+interface DecodedData {
+  email?: string;
+  userId?: string;
+  name?: string;
+  postsCount?: number;
+  role?: string;
+  subscriptionType?: string;
+  exp?: number;
+  iat?: number;
+}
+
+const buildUserInfo = (decodedData: DecodedData): AuthUserInfo => ({
   email: decodedData.email || "",
   userId: decodedData.userId || "",
   name: decodedData.name || "",
@@ -41,7 +52,7 @@ const getValidDecodedToken = () => {
 
   if (authToken) {
     try {
-      const decodedData = decodedToken(authToken);
+      const decodedData = decodedToken(authToken) as DecodedData;
           if (
       typeof decodedData.exp === "number" &&
       decodedData.exp <= Math.floor(Date.now() / 1000)
@@ -49,7 +60,7 @@ const getValidDecodedToken = () => {
       removeFromLocalStorage(AUTH_KEY);
       return null;
     }
-      return buildUserInfo(decodedData as AuthUserInfo);
+      return buildUserInfo(decodedData);
     } catch (error) {
       console.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);

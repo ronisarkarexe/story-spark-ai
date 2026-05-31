@@ -1,7 +1,15 @@
 import express from "express";
 import { PostController } from "./post.controller";
-import { protect } from "../../middlewares/auth.middleware"; 
-import { checkRequestLimit } from "../../middlewares/quota.middleware"; 
+import { ENUM_USER_ROLE } from "../../../enums/user";
+import auth from "../../middleware/auth.middleware";
+import checkRequestLimit from "../../middleware/check.request.limit";
+
+const protect = auth(
+  ENUM_USER_ROLE.USER,
+  ENUM_USER_ROLE.WRITER,
+  ENUM_USER_ROLE.ADMIN,
+  ENUM_USER_ROLE.SUPER_ADMIN
+);
 
 const router = express.Router();
 

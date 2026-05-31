@@ -9,7 +9,7 @@ export const getSocketIo = (): Socket | null => {
   return socketIoInstance;
 };
 
-export const connectSocket = (): Socket => {
+export const connectSocket = (): Socket | null => {
   if (socketIoInstance && socketIoInstance.connected) {
     return socketIoInstance;
   }
@@ -17,13 +17,13 @@ export const connectSocket = (): Socket => {
   const socketUrl = resolveSocketUrl();
   if (!socketUrl) {
     console.warn("[Story Spark] Socket.IO URL not configured. Real-time notifications disabled.");
-    return null as unknown as Socket;
+    return null;
   }
 
   const token = getFromLocalStorage(AUTH_KEY);
   if (!token) {
     console.warn("[Story Spark] User not authenticated. Cannot connect to Socket.IO.");
-    return null as unknown as Socket;
+    return null;
   }
 
   socketIoInstance = io(socketUrl, {
