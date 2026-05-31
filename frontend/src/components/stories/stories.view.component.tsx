@@ -8,10 +8,11 @@ interface IRelatedStoriesComponentProps {
 }
 
 const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
-  posts,currentPostId,
+  posts, currentPostId,
 }) => {
   const navigate = useNavigate();
-  const filteredPosts=posts.filter((post)=>post._id!==currentPostId)
+  console.log("RelatedStories posts:", posts);
+  const filteredPosts = posts?.filter((post) => post._id !== currentPostId) ?? [];
   return (
     <div className="grid grid-cols-2 gap-6">
       {filteredPosts.length > 0 ? (
@@ -23,8 +24,11 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
           >
             <div className="relative overflow-hidden">
               <img
-                src={post.imageURL}
-                alt="Related Story"
+                src={post.imageURL ?? "/placeholder-story.png"}
+                alt={post.title || "Related Story"}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = "/placeholder-story.png";
+                }}
                 className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 pointer-events-none"></div>
