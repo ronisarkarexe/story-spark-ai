@@ -1,10 +1,7 @@
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
 import { Post } from "../../../models/post";
 import LoadingAnimation from "../../loading/loading.component";
-import SSProfile from "../../ui-component/ss-profile/ss-profile";
-import { formatDateShort } from "../../../utils/time-formate";
 import { useNavigate } from "react-router-dom";
-import BookmarkButton from "../../BookmarkButton";
 
 const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
@@ -44,7 +41,7 @@ const LatestPostsComponent = () => {
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 

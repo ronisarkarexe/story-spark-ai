@@ -25,6 +25,7 @@ type AuthUserInfo = {
   iat: number;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const buildUserInfo = (decodedData: any): AuthUserInfo => ({
   email: decodedData.email || "",
   userId: decodedData.userId || "",

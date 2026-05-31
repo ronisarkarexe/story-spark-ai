@@ -54,7 +54,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Keeps your extended payload parsing enabled
 app.use(cookieParser() as any);
-app.use("/review", storyRoutes);
+
 
 // Routes
 app.use("/api/v1", Routers);
