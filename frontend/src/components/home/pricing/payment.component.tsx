@@ -8,7 +8,7 @@ import {
   Lock,
   User,
 } from "lucide-react";
-import { getUserInfo } from "../../../services/auth.service";
+import { getUserInfo, getToken } from "../../../services/auth.service";
 
 const PaymentComponent = () => {
   const navigate = useNavigate();
@@ -16,42 +16,54 @@ const PaymentComponent = () => {
   const user = getUserInfo();
   const loggedIn = !!user;
 
-  // Read selected plan from pricing page
+  const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
 
   const planName = searchParams.get("plan") || "Pro";
   const planPrice = Number(searchParams.get("price") || "19.99");
 
-  // Razorpay payment handler
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handlePayment = async () => {
-    // Load Razorpay SDK
+    setLoading(true);
     const loaded = await loadRazorpayScript();
 
     if (!loaded) {
       alert("Failed to load Razorpay SDK.");
+      setLoading(false);
       return;
     }
 
     try {
-      // Create order from backend
+      const token = getToken();
+      
       const res = await fetch("/api/v1/payment/create-order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : "",
         },
         body: JSON.stringify({
-          amount: Math.round(planPrice * 100), // Convert to paisa
+          plan: planName.toLowerCase(),
         }),
       });
 
       const data = await res.json();
 
       if (!data.success) {
-        alert("Failed to create order.");
+        alert(data.message || "Failed to create order.");
+        setLoading(false);
         return;
       }
 
-      // Razorpay options
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: data.order.amount,
@@ -62,11 +74,11 @@ const PaymentComponent = () => {
 
         handler: async (response: Record<string, unknown>) => {
           try {
-            // Verify payment
             const verifyRes = await fetch("/api/v1/payment/verify", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                "Authorization": token ? `Bearer ${token}` : "",
               },
               body: JSON.stringify(response),
             });
@@ -74,22 +86,21 @@ const PaymentComponent = () => {
             const verifyData = await verifyRes.json();
 
             if (verifyData.success) {
-              alert("Payment successful!");
+              navigate("/dashboard");
+              window.location.reload();
             } else {
-              alert("Payment verification failed.");
+              alert(verifyData.message || "Payment verification failed.");
             }
           } catch (error) {
             console.error(error);
             alert("Verification failed.");
           }
         },
-
         prefill: {
-          name: "",
-          email: "",
+          name: user?.name || "",
+          email: user?.email || "",
           contact: "",
         },
-
         theme: {
           color: "#06b6d4",
         },
@@ -108,6 +119,8 @@ const PaymentComponent = () => {
     } catch (error) {
       console.error(error);
       alert("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -217,93 +230,16 @@ const PaymentComponent = () => {
                 </p>
               </div>
             ) : (
-              <form
-                className="space-y-5"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handlePay();
-                }}
-              >
-                {/* Cardholder Name */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
-                    Cardholder Name
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                  />
-                </div>
-
-                {/* Card Number */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
-                    Card Number
-                  </label>
-
-                  <div className="relative">
-                    <CreditCard
-                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      size={18}
-                    />
-
-                    <input
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      value={cardNumber}
-                      onChange={(e) =>
-                        setCardNumber(formatCardNumber(e.target.value))
-                      }
-                      className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 py-4 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                    />
-                  </div>
-                </div>
-
-                {/* Expiry + CVV */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-200">
-                      Expiry Date
-                    </label>
-
-                    <input
-                      type="text"
-                      placeholder="MM/YY"
-                      value={expiry}
-                      onChange={(e) =>
-                        setExpiry(formatExpiry(e.target.value))
-                      }
-                      className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-200">
-                      CVC
-                    </label>
-
-                    <input
-                      type="password"
-                      placeholder="123"
-                      value={cvv}
-                      onChange={(e) =>
-                        setCvv(
-                          e.target.value.replace(/\D/g, "").slice(0, 3)
-                        )
-                      }
-                      className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                    />
-                  </div>
-                </div>
-
+              <div className="space-y-5">
+                <p className="text-sm text-slate-300 mb-6">
+                  Click the button below to open the secure Razorpay payment gateway and complete your upgrade. 
+                  Your transaction is securely processed and payment details are never stored on our servers.
+                </p>
+                
                 {/* Pay Button */}
                 <button
-                  type="submit"
-                  disabled={loading || !isFormValid}
+                  onClick={handlePayment}
+                  disabled={loading}
                   className="motion-cta inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? (
@@ -334,16 +270,15 @@ const PaymentComponent = () => {
                   ) : (
                     <>
                       <ShieldCheck size={18} />
-                      Pay Now — ${planPrice}/mo
+                      Pay Now — ₹{planPrice}/mo
                     </>
                   )}
                 </button>
 
-                <p className="text-xs leading-5 text-slate-400">
-                  Your payment information is protected with encrypted processing
-                  and is never stored on our servers.
+                <p className="text-xs leading-5 text-slate-400 text-center">
+                  Your payment information is protected with encrypted processing.
                 </p>
-              </form>
+              </div>
             )}
 
             {/* Back Button */}

@@ -1,6 +1,15 @@
 import { Request, Response } from "express";
 import crypto from "crypto";
 import razorpayInstance from "../config/razorpay";
+import { Order } from "../app/modules/payment/order.model";
+import { User } from "../app/modules/user/user.model";
+import { SUBSCRIPTION_TYPE } from "../enums/subscription_type";
+
+// Plan pricing mapping in paisa (e.g. 19.99 INR => 1999 paise)
+const PLAN_PRICING: Record<string, number> = {
+  [SUBSCRIPTION_TYPE.PRO]: 1999,
+  [SUBSCRIPTION_TYPE.PREMIUM]: 4999,
+};
 
 // Validate RAZORPAY_KEY_SECRET is present at startup so misconfigured
 // deployments fail loudly rather than silently passing undefined to
@@ -16,22 +25,44 @@ if (!RAZORPAY_KEY_SECRET) {
 // Creates a new Razorpay order and returns the order details to the frontend
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { amount } = req.body;
+    const { plan } = req.body;
+    const userId = (req as any).user?._id;
 
-    // Validate that amount is provided and is a positive number
-    if (!amount || typeof amount !== "number" || amount <= 0) {
-      return res.status(400).json({ success: false, message: "Invalid amount" });
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
+    const normalizedPlan = plan?.toLowerCase() as SUBSCRIPTION_TYPE;
+    
+    // Validate the requested plan
+    if (!normalizedPlan || !PLAN_PRICING[normalizedPlan]) {
+      return res.status(400).json({ success: false, message: "Invalid or unsupported plan" });
+    }
+
+    const amount = PLAN_PRICING[normalizedPlan];
+
     const options = {
-      amount: amount * 100, // Razorpay accepts amount in paise (1 INR = 100 paise)
+      amount, // Razorpay accepts amount in paise
       currency: "INR",
       receipt: `receipt_${Date.now()}`, // Unique receipt ID using timestamp
     };
 
+    // Create the order on Razorpay
     const order = await razorpayInstance.orders.create(options);
+
+    // Persist order details
+    await Order.create({
+      userId,
+      razorpayOrderId: order.id,
+      plan: normalizedPlan,
+      amount,
+      currency: "INR",
+      status: "created"
+    });
+
     res.status(200).json({ success: true, order });
   } catch (error) {
+    console.error("Order creation failed", error);
     res.status(500).json({ success: false, message: "Order creation failed" });
   }
 };
@@ -64,8 +95,26 @@ export const verifyPayment = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "Invalid signature" });
     }
 
+    // Atomically claim the order to prevent replay attacks
+    const updatedOrder = await Order.findOneAndUpdate(
+      { razorpayOrderId: razorpay_order_id, status: "created" },
+      { $set: { status: "paid", razorpayPaymentId: razorpay_payment_id } },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      // Order might have already been processed, or not exist
+      return res.status(400).json({ success: false, message: "Order not found or already paid" });
+    }
+
+    // Upgrade the user's subscription
+    await User.findByIdAndUpdate(updatedOrder.userId, {
+      $set: { subscriptionType: updatedOrder.plan }
+    });
+
     res.status(200).json({ success: true, message: "Payment verified successfully" });
   } catch (error) {
+    console.error("Payment verification failed", error);
     res.status(500).json({ success: false, message: "Payment verification failed" });
   }
 };
