@@ -1,7 +1,8 @@
 import express from "express";
 import { PostController } from "./post.controller";
-import { protect } from "../../middlewares/auth.middleware"; 
-import { checkRequestLimit } from "../../middlewares/quota.middleware"; 
+import auth from "../../middleware/auth.middleware";
+import checkRequestLimit from "../../middleware/check.request.limit";
+import { ENUM_USER_ROLE } from "../../../enums/user";
 
 const router = express.Router();
 
@@ -11,7 +12,12 @@ const router = express.Router();
 
 router.post(
   "/create-post",
-  protect,
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   PostController.createPost
 );
 
@@ -32,7 +38,10 @@ router.get(
 
 router.patch(
   "/featured/:postId",
-  protect,
+  auth(
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   PostController.doFeaturedPosts
 );
 
@@ -48,7 +57,12 @@ router.get(
 
 router.patch(
   "/bookmark/:id",
-  protect,
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   PostController.toggleBookmark
 );
 
@@ -65,7 +79,12 @@ router.patch(
 
 router.delete(
   "/:id",
-  protect,
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   PostController.deletePost
 );
 
@@ -80,8 +99,13 @@ router.delete(
  */
 router.post(
   "/remix",
-  protect,
-  checkRequestLimit, // <-- FIXED: Intercepts request if user exceeded monthly quota balance
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  checkRequestLimit(),
   PostController.remixStory
 );
 
@@ -92,8 +116,13 @@ router.post(
  */
 router.post(
   "/translate",
-  protect,
-  checkRequestLimit, // <-- FIXED: Intercepts request if user exceeded monthly quota balance
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  checkRequestLimit(),
   PostController.translateStory
 );
 

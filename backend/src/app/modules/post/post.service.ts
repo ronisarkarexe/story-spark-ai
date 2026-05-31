@@ -14,6 +14,13 @@ import { postSearchFields } from "./post.constant";
 import { SortOrder } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 
+const MAX_SEARCH_TERM_LENGTH = 200;
+
+/** Escape special regex characters to prevent ReDoS. */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // Assuming your project has AI and Quota modules structured like this:
 // import { QuotaService } from "../quota/quota.service";
 // import { AIModelService } from "../ai_model/ai_model.service";
