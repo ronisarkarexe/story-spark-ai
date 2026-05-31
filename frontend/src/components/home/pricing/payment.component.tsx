@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
@@ -9,6 +9,7 @@ import {
   User,
 } from "lucide-react";
 import { getUserInfo } from "../../../services/auth.service";
+import { loadRazorpayScript } from "../../../utils/loadRazorpay";
 
 const PaymentComponent = () => {
   const navigate = useNavigate();
@@ -217,133 +218,21 @@ const PaymentComponent = () => {
                 </p>
               </div>
             ) : (
-              <form
-                className="space-y-5"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handlePay();
-                }}
-              >
-                {/* Cardholder Name */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
-                    Cardholder Name
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                  />
-                </div>
-
-                {/* Card Number */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
-                    Card Number
-                  </label>
-
-                  <div className="relative">
-                    <CreditCard
-                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      size={18}
-                    />
-
-                    <input
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      value={cardNumber}
-                      onChange={(e) =>
-                        setCardNumber(formatCardNumber(e.target.value))
-                      }
-                      className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 py-4 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                    />
-                  </div>
-                </div>
-
-                {/* Expiry + CVV */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-200">
-                      Expiry Date
-                    </label>
-
-                    <input
-                      type="text"
-                      placeholder="MM/YY"
-                      value={expiry}
-                      onChange={(e) =>
-                        setExpiry(formatExpiry(e.target.value))
-                      }
-                      className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-200">
-                      CVC
-                    </label>
-
-                    <input
-                      type="password"
-                      placeholder="123"
-                      value={cvv}
-                      onChange={(e) =>
-                        setCvv(
-                          e.target.value.replace(/\D/g, "").slice(0, 3)
-                        )
-                      }
-                      className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                    />
-                  </div>
-                </div>
-
-                {/* Pay Button */}
+              <>
                 <button
-                  type="submit"
-                  disabled={loading || !isFormValid}
-                  className="motion-cta inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                  type="button"
+                  onClick={handlePayment}
+                  className="motion-cta inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30"
                 >
-                  {loading ? (
-                    <>
-                      <svg
-                        className="h-5 w-5 animate-spin"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8z"
-                        />
-                      </svg>
-
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <ShieldCheck size={18} />
-                      Pay Now — ${planPrice}/mo
-                    </>
-                  )}
+                  <ShieldCheck size={18} />
+                  Pay with Razorpay
                 </button>
 
-                <p className="text-xs leading-5 text-slate-400">
-                  Your payment information is protected with encrypted processing
-                  and is never stored on our servers.
+                <p className="mt-4 text-xs leading-5 text-slate-400">
+                  Your payment is securely processed by Razorpay. We never store
+                  your card details.
                 </p>
-              </form>
+              </>
             )}
 
             {/* Back Button */}
