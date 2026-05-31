@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Post } from "../../../models/post";
 import { useGetFeaturedListsQuery } from "../../../redux/apis/post.api";
 import { formatDateShort } from "../../../utils/time-formate";

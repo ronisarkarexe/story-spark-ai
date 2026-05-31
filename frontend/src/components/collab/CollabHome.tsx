@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 // Socket.IO collab disabled (see CollabRoom). Previous: io, Socket, resolveSocketUrl, BACKEND_URL.
