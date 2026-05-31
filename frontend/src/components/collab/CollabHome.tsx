@@ -23,15 +23,16 @@ export default function CollabHome() {
         setError(
           "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
         );
+        setIsCreating(false);
         return;
       }
 
-      const collabSocket = (socket as any);
+      const collabSocket = socket;
 
       collabSocket.emit(
         "collab:create_room",
         { userId: user?.userId, username: user?.name },
-        (response: { roomId?: string } | undefined) => {
+        (response: { roomId: string } | null) => {
           if (response && response.roomId) {
             navigate(`/collab/${response.roomId}`);
           } else {

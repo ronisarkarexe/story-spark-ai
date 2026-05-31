@@ -77,7 +77,7 @@ const getBookmarks = async (
       path: "storyId",
       match: { isDeleted: { $ne: true } },
       populate: [
-        { path: "author", select: "name email createdAt" },
+        { path: "author", select: "name email createdAt profile.bio" },
         {
           path: "reactions",
           populate: { path: "userId", select: "email" },

@@ -102,7 +102,7 @@ const StoryInspirationComponent: React.FC = () => {
                 Back to Home
               </p>
 
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 Return to homepage
               </p>
             </div>
@@ -180,7 +180,7 @@ const StoryInspirationComponent: React.FC = () => {
             max-w-3xl mx-auto
             text-lg md:text-xl
             leading-relaxed
-            text-slate-600 dark:text-slate-400
+            text-slate-700 dark:text-slate-300
           ">
             Explore timeless narratives, cinematic worlds,
             iconic themes, and powerful writing prompts to
@@ -273,7 +273,7 @@ const StoryInspirationComponent: React.FC = () => {
                     {item.value}
                   </h3>
 
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                  <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
                     {item.label}
                   </p>
                 </div>
@@ -309,7 +309,7 @@ const StoryInspirationComponent: React.FC = () => {
                   Discover Inspirations
                 </h2>
 
-                <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-2xl">
+                <p className="mt-3 text-slate-700 dark:text-slate-300 max-w-2xl">
                   Search through genres, themes, and iconic
                   storytelling structures to unlock your next idea.
                 </p>
@@ -321,7 +321,7 @@ const StoryInspirationComponent: React.FC = () => {
                 border border-indigo-500/10
                 min-w-[220px]
               ">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-sm text-slate-600 dark:text-slate-300">
                   Matching Results
                 </p>
 
@@ -457,7 +457,7 @@ const StoryInspirationComponent: React.FC = () => {
               No Inspiration Found
             </h3>
 
-            <p className="mt-4 text-slate-600 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
+            <p className="mt-4 text-slate-700 dark:text-slate-300 leading-relaxed max-w-md mx-auto">
               Try adjusting your search keywords or explore
               different genres to uncover more creative ideas.
             </p>

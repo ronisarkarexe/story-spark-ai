@@ -17,28 +17,43 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  if (!items || items.length === 0) {
+  if (items.length === 0) {
     return (
-      <section id="faq-section" className="scroll-mt-28 transition-colors duration-300">
-        <div className="text-center py-12 bg-gray-50 dark:bg-blue-500/5 rounded-xl border border-gray-200 dark:border-white/5">
-          <p className="text-gray-600 dark:text-gray-400">No FAQ items match your search.</p>
+      <section id="faq" className="scroll-mt-24">
+        <div className="text-center py-12 bg-white dark:bg-blue-500/5 rounded-xl border border-slate-200 dark:border-white/5 shadow-sm">
+          <p className="text-slate-600 dark:text-gray-400">
+            No FAQ items match your search.
+          </p>
         </div>
       </section>
     );
   }
 
   return (
-    <section id="faq-section" className="scroll-mt-28 transition-colors duration-300">
-      <div className="mb-10 text-center">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">
-          Frequently Asked Questions
+    <section
+      id="faq-section"
+      className="scroll-mt-28 transition-colors duration-300"
+    >
+      {/* Header */}
+      <div className="mb-10">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-400 mb-4">
+          <i className="fa-solid fa-circle-question"></i>
+          <span className="text-sm font-semibold">
+            FREQUENTLY ASKED QUESTIONS
+          </span>
+        </div>
+
+        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+          Common Questions
         </h2>
-        <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          Find quick answers to the most common StorySparkAI questions, workflows, and troubleshooting topics.
+
+        <p className="text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+          Find quick answers to the most common StorySparkAI questions,
+          workflows, and troubleshooting topics.
         </p>
       </div>
 
-      <div className="space-y-5 max-w-3xl mx-auto">
+      <div className="space-y-5">
         {items.map((faq, index) => {
           const isOpen = openIndex === index;
 
@@ -48,8 +63,19 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              className="group overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] backdrop-blur-xl shadow-sm hover:shadow-md transition-all duration-300"
+              transition={{
+                duration: 0.4,
+                delay: index * 0.05,
+              }}
+              className="
+                group overflow-hidden
+                rounded-3xl
+                border border-slate-200 dark:border-white/10
+                bg-white dark:bg-white/[0.04]
+                backdrop-blur-xl
+                shadow-md hover:shadow-xl
+                transition-all duration-300
+              "
             >
               <button
                 onClick={() => toggleAccordion(index)}
@@ -64,17 +90,17 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
                   }`}
                   aria-hidden="true"
                 >
-                  <i className="fa-solid fa-chevron-down"></i>
+                  <i className="fa-solid fa-chevron-down text-xs"></i>
                 </span>
               </button>
 
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {isOpen && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <div className="px-6 pb-6">
                       <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5 p-4 mt-2">
@@ -86,6 +112,16 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* Top Glow Line */}
+              <div
+                className={`
+                  h-[2px] w-full bg-gradient-to-r
+                  from-indigo-500 via-blue-500 to-purple-500
+                  transition-opacity duration-300
+                  ${isOpen ? "opacity-100" : "opacity-0"}
+                `}
+              />
             </motion.div>
           );
         })}

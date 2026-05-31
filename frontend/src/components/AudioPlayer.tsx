@@ -39,6 +39,10 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
   ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
     const speech = useSpeechSynthesis(text);
     const speedSelectId = useId();
+    const languageSelectId = useId();
+    const voiceSelectId = useId();
+    const filteredVoices = speech.voices.filter((voice) => voice.lang === speech.selectedLanguage);
+    const voiceOptions = filteredVoices.length > 0 ? filteredVoices : speech.voices;
 
     useImperativeHandle(
       ref,
@@ -183,7 +187,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
               </button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_180px] md:items-end">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(150px,190px)_minmax(180px,1fr)_minmax(180px,1fr)] lg:items-end">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>Progress</span>
@@ -225,6 +229,56 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     {SPEED_OPTIONS.map((option) => (
                       <option key={option} value={option}>
                         {option.toFixed(2).replace(/\.00$/, "")}&times;
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor={languageSelectId}
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
+                  Narration language
+                </label>
+                <div className="relative">
+                  <select
+                    id={languageSelectId}
+                    aria-label="Narration language"
+                    role="combobox"
+                    value={speech.selectedLanguage}
+                    onChange={(event) => speech.setSelectedLanguage(event.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                  >
+                    {speech.languageOptions.map((option) => (
+                      <option key={option.lang} value={option.lang}>
+                        {option.label} ({option.voiceCount})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor={voiceSelectId}
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
+                  Voice
+                </label>
+                <div className="relative">
+                  <select
+                    id={voiceSelectId}
+                    aria-label="Narration voice"
+                    role="combobox"
+                    value={speech.selectedVoiceId}
+                    onChange={(event) => speech.setSelectedVoiceId(event.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                  >
+                    {voiceOptions.map((voice) => (
+                      <option key={voice.id} value={voice.id}>
+                        {voice.label}
                       </option>
                     ))}
                   </select>

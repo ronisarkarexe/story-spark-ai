@@ -22,6 +22,13 @@ router.post(
   AiModelController.aiFreeModelGenerate
 );
 
+// Generate Model Stream
+router.post(
+  "/generate-model-stream",
+  validateRequest(AIModelValidator.aiModel),
+  AiModelController.aiModelGenerateStream
+);
+
 // Generate Alternate Endings
 router.post(
   "/generate-alternate-endings",

@@ -22,20 +22,54 @@ const toggleReaction = async (
   }
 
   const existingReaction = await Reaction.findOne({
-    postId: new Types.ObjectId(postId),
     userId: user._id,
+    postId: post._id,
   });
 
   if (existingReaction) {
     if (existingReaction.type === type) {
       await Reaction.deleteOne({ _id: existingReaction._id });
-      const likesCount = await Reaction.countDocuments({ postId: new Types.ObjectId(postId), type: "like" });
-      return { message: "Reaction removed", likesCount };
+      const updatedPost = await Post.findOneAndUpdate(
+        { _id: postId },
+        {
+          $pull: { reactions: existingReaction._id },
+          $inc: { likesCount: type === "like" ? -1 : 0 },
+        },
+        { new: true }
+      );
+      if (updatedPost && updatedPost.likesCount < 0) {
+        await Post.updateOne({ _id: postId }, { $set: { likesCount: 0 } });
+      }
+      return {
+        message: "Reaction removed",
+        likesCount: Math.max(0, updatedPost?.likesCount ?? 0),
+      };
     } else {
+      const oldType = existingReaction.type;
       existingReaction.type = type;
       await existingReaction.save();
-      const likesCount = await Reaction.countDocuments({ postId: new Types.ObjectId(postId), type: "like" });
-      return { message: "Reaction updated", likesCount };
+
+      let likesInc = 0;
+      if (oldType === "like" && type !== "like") likesInc = -1;
+      else if (oldType !== "like" && type === "like") likesInc = 1;
+
+      let updatedPost = null;
+      if (likesInc !== 0) {
+        updatedPost = await Post.findOneAndUpdate(
+          { _id: postId },
+          { $inc: { likesCount: likesInc } },
+          { new: true }
+        );
+        if (updatedPost && updatedPost.likesCount < 0) {
+          await Post.updateOne({ _id: postId }, { $set: { likesCount: 0 } });
+        }
+      } else {
+        updatedPost = await Post.findById(postId);
+      }
+      return {
+        message: "Reaction updated",
+        likesCount: Math.max(0, updatedPost?.likesCount ?? 0),
+      };
     }
   } else {
     const newReaction = await Reaction.create({
@@ -43,8 +77,18 @@ const toggleReaction = async (
       userId: user._id,
       type: type,
     });
-    const likesCount = await Reaction.countDocuments({ postId: new Types.ObjectId(postId), type: "like" });
-    return { message: "Reaction added", likesCount };
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: postId },
+      {
+        $addToSet: { reactions: newReaction._id },
+        $inc: { likesCount: type === "like" ? 1 : 0 },
+      },
+      { new: true }
+    );
+    return {
+      message: "Reaction added",
+      likesCount: updatedPost?.likesCount ?? 0,
+    };
   }
 };
 

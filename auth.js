@@ -6,7 +6,7 @@
 let currentMode = 'signin';
 
 // ── Google Identity Services (GIS) Client ID ──
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 let isSubmitting = false;
 
@@ -42,6 +42,7 @@ function initInlineValidation() {
     const nameField = document.getElementById('name-field');
     const emailField = document.getElementById('email-field');
     const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
 
     if (nameField) {
         nameField.addEventListener('blur', () => validateName(true));
@@ -62,8 +63,18 @@ function initInlineValidation() {
         passwordField.addEventListener('input', () => {
             updatePasswordStrengthUI(passwordField.value || '');
             if (passwordField.getAttribute('aria-invalid') === 'true') validatePassword(true);
+            if (confirmPasswordField && confirmPasswordField.value) {
+                validateConfirmPassword(false);
+            }
         });
         updatePasswordStrengthUI(passwordField.value || '');
+    }
+
+    if (confirmPasswordField) {
+        confirmPasswordField.addEventListener('blur', () => validateConfirmPassword(true));
+        confirmPasswordField.addEventListener('input', () => {
+            validateConfirmPassword(false);
+        });
     }
 }
 
@@ -176,6 +187,45 @@ function validatePassword(showInline) {
     return !message;
 }
 
+function validateConfirmPassword(showInline) {
+    const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
+    if (!confirmPasswordField || currentMode !== 'signup') return true;
+
+    const password = (passwordField && passwordField.value) || '';
+    const confirmPassword = confirmPasswordField.value || '';
+    const feedbackEl = document.getElementById('confirm-password-feedback');
+    let message = '';
+    let isMatch = false;
+
+    if (!confirmPassword) {
+        message = '';
+    } else if (password !== confirmPassword) {
+        message = 'Passwords do not match';
+    } else {
+        message = 'Passwords match';
+        isMatch = true;
+    }
+
+    if (feedbackEl) {
+        if (!message) {
+            feedbackEl.classList.remove('is-visible', 'match', 'mismatch');
+            feedbackEl.textContent = '';
+        } else {
+            feedbackEl.classList.add('is-visible');
+            feedbackEl.textContent = message;
+            feedbackEl.classList.remove('match', 'mismatch');
+            feedbackEl.classList.add(isMatch ? 'match' : 'mismatch');
+        }
+    }
+
+    if (showInline) {
+        setFieldError('confirm-password-field', 'confirm-password-error', isMatch ? '' : message);
+    }
+
+    return isMatch || !confirmPassword;
+}
+
 function setSubmitting(submitting) {
     isSubmitting = submitting;
     const submitBtn = document.getElementById('submit-btn');
@@ -183,12 +233,14 @@ function setSubmitting(submitting) {
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
 
     if (submitBtn) submitBtn.disabled = submitting;
     if (spinner) spinner.classList.toggle('hidden', !submitting);
     if (emailField) emailField.disabled = submitting;
     if (nameField) nameField.disabled = submitting;
     if (passwordField) passwordField.disabled = submitting;
+    if (confirmPasswordField) confirmPasswordField.disabled = submitting;
 }
 
 /* ── Advanced Particle System (Canvas + Mouse Interactions) ── */
@@ -357,6 +409,12 @@ function toggleAuthMode(mode) {
         setFieldError('name-field', 'name-error', '');
         setFieldError('email-field', 'email-error', '');
         setFieldError('password-field', 'password-error', '');
+        setFieldError('confirm-password-field', 'confirm-password-error', '');
+        const feedbackEl = document.getElementById('confirm-password-feedback');
+        if (feedbackEl) {
+            feedbackEl.classList.remove('is-visible', 'match', 'mismatch');
+            feedbackEl.textContent = '';
+        }
         setSubmitting(false);
 
         form.classList.remove('form-transitioning');
@@ -419,6 +477,20 @@ function togglePasswordVisibility() {
     }
 }
 
+function toggleConfirmPasswordVisibility() {
+    const field = document.getElementById('confirm-password-field');
+    const icon = document.getElementById('confirm-eye-icon');
+    if (!field || !icon) return;
+
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.className = 'fi fi-rr-eye text-[16px]';
+    } else {
+        field.type = 'password';
+        icon.className = 'fi fi-rr-eye-crossed text-[16px]';
+    }
+}
+
 /* ── Form Submission handling ── */
 function handleFormSubmit(e) {
     e.preventDefault();
@@ -427,6 +499,7 @@ function handleFormSubmit(e) {
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
     if (!emailField) return;
 
     setAlert('', '');
@@ -434,8 +507,9 @@ function handleFormSubmit(e) {
     const okName = validateName(true);
     const okEmail = validateEmail(true);
     const okPassword = validatePassword(true);
+    const okConfirmPassword = currentMode === 'signup' ? validateConfirmPassword(true) : true;
 
-    const isValid = currentMode === 'signup' ? (okName && okEmail && okPassword) : (okEmail && okPassword);
+    const isValid = currentMode === 'signup' ? (okName && okEmail && okPassword && okConfirmPassword) : (okEmail && okPassword);
     if (!isValid) {
         setAlert('error', 'Please fix the highlighted fields and try again.');
         const firstInvalid =
