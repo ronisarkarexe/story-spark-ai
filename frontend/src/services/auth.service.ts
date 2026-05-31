@@ -7,6 +7,13 @@ import {
   setToLocalStorage,
 } from "../utils/local-storage";
 
+const AUTH_CHANGE_EVENT = "story-spark-auth-change";
+
+const emitAuthChange = () => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+};
+
 type AuthUserInfo = {
   email: string;
   userId: string;
@@ -16,11 +23,12 @@ type AuthUserInfo = {
   subscriptionType: string;
   exp: number;
   iat: number;
+  avatar?: string;
 };
 
-const buildUserInfo = (decodedData: AuthUserInfo): AuthUserInfo => ({
+const buildUserInfo = (decodedData: any): AuthUserInfo => ({
   email: decodedData.email || "",
-  userId: decodedData.userId || "",
+  userId: decodedData.userId || decodedData._id || "",
   name: decodedData.name || "",
   postsCount: decodedData.postsCount || 0,
   role: decodedData.role || "guest",
@@ -42,7 +50,7 @@ const getValidDecodedToken = () => {
       removeFromLocalStorage(AUTH_KEY);
       return null;
     }
-      return buildUserInfo(decodedData);
+      return buildUserInfo(decodedData as AuthUserInfo);
     } catch (error) {
       console.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);
@@ -53,7 +61,9 @@ const getValidDecodedToken = () => {
 };
 
 export const storeUserInfo = ({ accessToken }: AccessToken) => {
-  return setToLocalStorage(AUTH_KEY, accessToken);
+  const result = setToLocalStorage(AUTH_KEY, accessToken);
+  emitAuthChange();
+  return result;
 };
 
 export const getUserInfo = (): AuthUserInfo | null => {
@@ -64,7 +74,11 @@ export const isLoggedIn = () => {
 };
 
 export const removeUserInfo = () => {
-  return removeFromLocalStorage(AUTH_KEY);
+  const result = removeFromLocalStorage(AUTH_KEY);
+  emitAuthChange();
+  return result;
 };
 
 export const getToken = () => getFromLocalStorage(AUTH_KEY);
+
+export const authChangeEventName = AUTH_CHANGE_EVENT;

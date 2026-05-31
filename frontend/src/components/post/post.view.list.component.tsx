@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../models/post";
+import ImageFallback from "../ImageFallback";
+ImageFallback
 import BookmarkButton from "../BookmarkButton";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
 
@@ -14,6 +16,22 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   isLoading,
 }) => {
   const navigate = useNavigate();
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+
+  const handleImageError = (storyId: string) => {
+    setImageErrors((prev) => ({ ...prev, [storyId]: true }));
+  };
+
+  const formatDate = (value?: string) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
+  };
 
   const calculateReadingTime = (content: string): number => {
     if (!content) return 1;
@@ -65,11 +83,37 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
               className="cursor-pointer bg-gray-50 text-slate-900 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 overflow-hidden group flex flex-col h-full dark:bg-slate-900/60 dark:text-white dark:border-slate-800"
             >
               <div className="relative overflow-hidden">
-                <img
-                  src={story.imageURL}
-                  alt={`Cover image for ${story.title}`}
-                  className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                <ImageFallback
+                    src={story.imageURL}
+                    alt={`Cover image for ${story.title}`}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
                 />
+
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-100 to-transparent opacity-70 pointer-events-none dark:from-slate-900 dark:to-transparent dark:opacity-60"></div>
+
+                <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-md border border-gray-200 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg dark:bg-slate-900/80 dark:border-slate-600 dark:text-blue-300">
+                  {story.tag}
+                </span>
+                {/* Deep Gradient Wash */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#03050C] via-[#03050C]/20 to-transparent opacity-90" />
+                
+                {/* Floating Tags - Premium Styling */}
+                <div className="absolute top-6 left-6 flex gap-2">
+                  <span className="px-5 py-2 bg-blue-600/20 backdrop-blur-2xl border border-blue-500/30 text-blue-400 text-[10px] font-black uppercase tracking-[0.25em] rounded-full shadow-2xl">
+              <div className="relative overflow-hidden bg-slate-200 dark:bg-slate-800">
+                {!imageErrors[story._id] && story.imageURL ? (
+                  <img
+                    src={story.imageURL}
+                    alt={`Cover image for ${story.title}`}
+                    onError={() => handleImageError(story._id)}
+                    className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                  />
+                ) : (
+                  <div className="w-full h-52 bg-gradient-to-br from-indigo-500/25 via-purple-500/25 to-blue-500/25 flex items-center justify-center relative">
+                    <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" />
+                    <i className="fas fa-book-open text-4xl text-indigo-400/80 relative z-10 animate-pulse" />
+                  </div>
+                )}
 
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-transparent to-transparent opacity-100 pointer-events-none dark:from-slate-900/90 dark:via-transparent dark:to-transparent"></div>
 
@@ -82,11 +126,11 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                 </div>
 
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <span className="px-3 py-1 bg-indigo-600/80 backdrop-blur-md border border-indigo-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
+                  <span className="px-3 py-1 bg-indigo-600 border border-indigo-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
                     {story.tag}
                   </span>
                   {story.language && (
-                    <span className="px-3 py-1 bg-purple-600/80 backdrop-blur-md border border-purple-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
+                    <span className="px-3 py-1 bg-purple-600 border border-purple-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
                       {story.language}
                     </span>
                   )}
@@ -104,23 +148,28 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 
                 <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-auto">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                       <SSProfile name={story.author?.name || "Unknown"} size="h-8 w-8" />
                       <div className="flex flex-col">
                         <span className="text-sm font-semibold text-slate-900 dark:text-gray-200">
                           {story.author?.name || "Unknown"}
                         </span>
                         <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider dark:text-slate-400">
-                          {new Date(story.createdAt).toLocaleDateString()}
+                          {formatDate(story.publishedAt || story.createdAt)}
                         </span>
+                        {story.author?.profile?.bio ? (
+                          <span className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
+                            {story.author.profile.bio}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
-                    
+
                     <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400 px-2 py-1 rounded-md">
                       {calculateReadingTime(story.content)} MIN READ
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                     <div className="flex gap-4">
                       <span className="flex items-center gap-1.5 hover:text-red-500 transition-colors">

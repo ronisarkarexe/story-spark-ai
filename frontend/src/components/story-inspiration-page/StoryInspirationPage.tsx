@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getBaseUrl } from '../../helpers/config';
 
 const StoryInspirationPage: React.FC = () => {
   const [intro, setIntro] = useState('');
@@ -11,15 +12,14 @@ const StoryInspirationPage: React.FC = () => {
     setError('');
     setIdeas([]);
     try {
-      // Replace with your backend API endpoint
-      const response = await fetch('/api/story-inspiration', {
+      const response = await fetch(`${getBaseUrl()}/story-inspiration`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ intro }),
       });
       if (!response.ok) throw new Error('Failed to fetch ideas');
       const data = await response.json();
-      setIdeas(data.ideas || []);
+      setIdeas(data.data?.ideas || data.ideas || []);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

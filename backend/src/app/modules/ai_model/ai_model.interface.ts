@@ -3,6 +3,8 @@ export interface IAIModel {
   wordLength: number;
   numStories: number;
   language?: string;
+  tone?: string;
+  genre?: string;
 }
 
 export interface IStory {
@@ -40,8 +42,5 @@ export interface IAlternateEndingPayload {
   title: string;
   content: string;
   tag: string;
-
   language?: string;
-
 }
-

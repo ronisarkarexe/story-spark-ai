@@ -67,11 +67,11 @@
 //             </span>
 //           </button>
 
-//           <img
-//             className="h-9 w-9 rounded-full"
-//             src="https://avatars.githubusercontent.com/u/76697055?v=4"
-//             alt="profile"
-//           />
+//               <ImageFallback
+//               className="h-9 w-9 rounded-full"
+//               src="https://avatars.githubusercontent.com/u/76697055?v=4"
+//               alt="profile"
+//             />
 //         </div>
 //       </header>
 
@@ -175,7 +175,8 @@ import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo } from "../../services/auth.service";
-
+import ImageFallback from "../ImageFallback";
+import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 const DashboardLayout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
@@ -187,7 +188,7 @@ const DashboardLayout: React.FC = () => {
   if (!user) {
   return <Navigate to="/login" replace />;
 }
-
+const { data } = useGetProfileInfoQuery();
   const currentPage = menuItems
     .flatMap((item) => (item.subRoutes ? [item, ...item.subRoutes] : [item]))
     .find(
@@ -240,12 +241,17 @@ const DashboardLayout: React.FC = () => {
               5
             </span>
           </button>
+              <ImageFallback
+                className="h-9 w-9 rounded-full"
+                src="https://avatars.githubusercontent.com/u/76697055?v=4"
+                alt="profile"
+              />
 
-          <img
-            className="h-9 w-9 rounded-full"
-            src="https://avatars.githubusercontent.com/u/76697055?v=4"
-            alt="profile"
-          />
+        <img
+          className="h-9 w-9 rounded-full"
+          src={user?.avatar || "https://avatars.githubusercontent.com/u/76697055?v=4"}
+          alt={user?.name || "profile"}
+        />
         </div>
       </header>
 
@@ -259,9 +265,11 @@ const DashboardLayout: React.FC = () => {
         >
           <nav className="p-4 space-y-2 overflow-y-auto h-full">
             {accessibleMenuItems.map((item) => {
-              const isActive =
-                location.pathname === item.path ||
-                location.pathname.startsWith(item.path + "/");
+             const isActive =
+  item.path === "/dashboard"
+    ? location.pathname === "/dashboard"
+    : location.pathname === item.path ||
+      location.pathname.startsWith(item.path + "/");
 
               return (
                 <div key={item.name}>

@@ -32,23 +32,15 @@ const LoginComponent = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setIsBusy(true);
-
     try {
       const res = await loginUser({ ...data }).unwrap();
-
       if (res.data.accessToken) {
         toast.success("User logged in successfully!");
-
-        storeUserInfo({
-          accessToken: res.data.accessToken,
-        });
-
+        storeUserInfo({ accessToken: res.data.accessToken });
         setIsLoggedIn(true);
       }
     } catch {
-      toast.error(
-        "Login failed. Please check your credentials."
-      );
+      toast.error("Login failed. Please check your credentials.");
     } finally {
       setIsBusy(false);
     }
@@ -58,21 +50,13 @@ const LoginComponent = () => {
     credentialResponse: CredentialResponse
   ) => {
     setIsBusy(true);
-
     try {
       const res = await googleLogin({
         token: credentialResponse.credential,
       }).unwrap();
-
       if (res.data.accessToken) {
-        toast.success(
-          "User logged in successfully with Google!"
-        );
-
-        storeUserInfo({
-          accessToken: res.data.accessToken,
-        });
-
+        toast.success("User logged in successfully with Google!");
+        storeUserInfo({ accessToken: res.data.accessToken });
         setIsLoggedIn(true);
       }
    } catch (error) {
@@ -83,45 +67,46 @@ const LoginComponent = () => {
       toast.error(
         "Failed to login with Google. Please try again."
       );
+    } catch {
+      toast.error("Failed to login with Google. Please try again.");
     } finally {
       setIsBusy(false);
     }
   };
 
   const handleGoogleLoginError = () => {
-    toast.error(
-      "Google login failed. Please try again."
-    );
+    toast.error("Google login failed. Please try again.");
   };
 
-  // Role-based redirect fix
   if (isLoggedIn) {
     const userInfo = getUserInfo();
-
     const isDashboardUser =
       userInfo?.role === USER_ROLE.ADMIN ||
       userInfo?.role === USER_ROLE.SUPER_ADMIN;
-
     return (
       <RedirectComponent
-        defaultPath={
-          isDashboardUser
-            ? "/dashboard"
-            : "/explore"
-        }
+        defaultPath={isDashboardUser ? "/dashboard" : "/explore"}
       />
     );
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4">
+    <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-3">
+
+      {/* Back to Home Button */}
+      <button
+        onClick={() => window.location.href = "/"}
+        className="absolute top-4 left-4 sm:top-6 sm:left-6 inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-50/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/50 rounded-full shadow-lg backdrop-blur-md hover:shadow-xl transition-all duration-200 group z-20 cursor-pointer"
+      >
+        <span className="transform group-hover:-translate-x-1 transition-transform duration-200">←</span>
+        Back to Home
+      </button>
 
       {/* Background Glow */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
-
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10">
+      <div className="flex w-full max-w-md flex-col justify-center py-8 relative z-10 mx-auto px-2 sm:px-4 box-border overflow-hidden">
 
         <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
           <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
@@ -130,23 +115,17 @@ const LoginComponent = () => {
         </div>
 
         <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
-
             <button
             onClick={() => window.location.href = "/"}
-            className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2"
+            className="mb-4 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline hover:underline transition-colors duration-200 flex items-center gap-2 cursor-pointer"
                       >
             ← Back to Home
             </button>
-
           <h3 className="mb-6 text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-200">
             Welcome Back
           </h3>
 
-          <form
-            className="space-y-5"
-            onSubmit={handleSubmit(onSubmit)}
-          >
-
+          <form className="space-y-5 w-full" onSubmit={handleSubmit(onSubmit)}>
             <SSInput
               label="Email address"
               name="email"
@@ -158,7 +137,6 @@ const LoginComponent = () => {
               validation={{ required: "Email is required" }}
               error={errors.email}
             />
-
             <SSInput
               label="Password"
               name="password"
@@ -170,7 +148,6 @@ const LoginComponent = () => {
               validation={{ required: "Password is required" }}
               error={errors.password}
             />
-
             <div className="flex justify-end -mt-2">
               <a
                 href="/forgot-password"
@@ -179,30 +156,20 @@ const LoginComponent = () => {
                 Forgot Password?
               </a>
             </div>
-
-            <SSButton
-              text="Sign In"
-              type="submit"
-              isLoading={isBusy}
-            />
-
+            <SSButton text="Sign In" type="submit" isLoading={isBusy} />
           </form>
 
           <div className="mt-6 relative">
-
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200"></div>
             </div>
-
             <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                 OR
               </span>
             </div>
-
           </div>
 
-          {/* Explicitly added list-none to prevent stray bullet point artifact on production build */}
           <div className="mt-6 flex justify-center list-none">
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
@@ -211,25 +178,19 @@ const LoginComponent = () => {
           </div>
 
           <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
-
             Don't have an account?{" "}
-
             <a
               href="/signup"
               className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
             >
               Sign up for free
             </a>
-
           </p>
 
         </div>
       </div>
 
-      <Toaster
-        position="top-right"
-        reverseOrder={false}
-      />
+      <Toaster position="top-right" reverseOrder={false} />
 
     </div>
   );

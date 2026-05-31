@@ -27,7 +27,11 @@ export default {
     return url;
   })(),
   cors_origins: parseCorsOrigins(process.env.CORS_ORIGINS),
-  bcrypt_salt_rounds: process.env.SALT_ROUNDS,
+  bcrypt_salt_rounds: (() => {
+    const raw = process.env.SALT_ROUNDS;
+    const parsed = raw ? Number(raw) : NaN;
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : 10;
+  })(),
   jwt: {
     secret: process.env.JWT_SECRET,
     refresh_secret: process.env.JWT_REFRESH_SECRET,
