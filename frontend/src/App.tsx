@@ -26,6 +26,7 @@ import NotFoundComponent from "./components/not-found.component";
 import EmailValidationComponent from "./components/email_validation/email.validation.component";
 import { USER_ROLE } from "./constants/role";
 import PostListsComponent from "./components/dashboard/posts/post_lists.component";
+import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
 import ProfileComponent from "./components/dashboard/profile/profile.component";
 import PaymentComponent from "./components/home/pricing/payment.component";
 import Contact from "./components/contactus/contactus";
@@ -132,6 +133,10 @@ const router = createBrowserRouter([
           {
             element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
             children: [{ path: "analytics", element: <AnalyticsDashboard /> }],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+            children: [{ path: "published-stories", element: <PublishedStoriesComponent /> }],
           },
           {
             element: <ProtectedRoute allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER]} />,

@@ -2,20 +2,13 @@ import { Request, Response } from "express";
 import crypto from "crypto";
 import razorpayInstance from "../config/razorpay";
 
-// Validate RAZORPAY_KEY_SECRET is present at startup so misconfigured
-// deployments fail loudly rather than silently passing undefined to
-// crypto.createHmac() and returning an opaque 500 during payment verification.
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
-if (!RAZORPAY_KEY_SECRET) {
-  throw new Error(
-    "Missing required environment variable: RAZORPAY_KEY_SECRET. " +
-    "Payment verification cannot work without it."
-  );
-}
-
 // Creates a new Razorpay order and returns the order details to the frontend
 export const createOrder = async (req: Request, res: Response) => {
   try {
+    if (!razorpayInstance) {
+      return res.status(503).json({ success: false, message: "Payment service is not configured." });
+    }
+
     const { amount } = req.body;
 
     // Validate that amount is provided and is a positive number
@@ -39,6 +32,12 @@ export const createOrder = async (req: Request, res: Response) => {
 // Verifies the payment signature to confirm the payment is legitimate
 export const verifyPayment = async (req: Request, res: Response) => {
   try {
+    // Validate RAZORPAY_KEY_SECRET is present at call time
+    const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+    if (!RAZORPAY_KEY_SECRET) {
+      return res.status(503).json({ success: false, message: "Payment service is not configured." });
+    }
+
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     // Validate that all required payment fields are present
