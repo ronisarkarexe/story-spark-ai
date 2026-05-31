@@ -54,9 +54,29 @@ const restoreVersion = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
+  const { prompt } = req.body as { prompt?: string };
+
+  if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "prompt is required and must be at least 3 characters."
+    );
+  }
+
+  const enhancedPrompt = await StoryVersionService.enhancePrompt(prompt.trim());
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Prompt enhanced successfully!",
+    data: { enhancedPrompt },
+  });
+});
+
 export const StoryVersionController = {
   getVersionsByStoryId,
   getVersionById,
   restoreVersion,
+  enhancePrompt,
 };
-

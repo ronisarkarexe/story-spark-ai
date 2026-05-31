@@ -1,11 +1,3 @@
-import { AccessToken } from "../models/login";
-import { decodedToken } from "../utils/jwt";
-
-let memoryToken: string | null = null;
-
-export const setMemoryToken = (token: string | null) => {
-  memoryToken = token;
-};
 
 export const getMemoryToken = () => memoryToken;
 
@@ -56,6 +48,7 @@ const getValidDecodedToken = () => {
 
 export const storeUserInfo = ({ accessToken }: AccessToken) => {
   setMemoryToken(accessToken);
+  emitAuthChange();
 };
 
 export const getUserInfo = (): AuthUserInfo | null => {
@@ -67,6 +60,9 @@ export const isLoggedIn = () => {
 
 export const removeUserInfo = () => {
   setMemoryToken(null);
+  emitAuthChange();
 };
 
 export const getToken = () => getMemoryToken();
+
+export const authChangeEventName = AUTH_CHANGE_EVENT;

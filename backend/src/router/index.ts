@@ -12,7 +12,6 @@ import { ReactionRouter } from "../app/modules/reaction/reaction.router";
 import { ContactRoutes } from "../app/modules/contact/contact.route";
 import { StoriesRouter } from "../routes/stories";
 import storyRoutes from "../routes/story.routes";
-
 import { ReportRouter } from "../app/modules/report/report.router";
 import { NewsletterRouter } from "../app/modules/newsletter/newsletter.route";
 import paymentRouter from "../router/payment.route";
@@ -22,6 +21,7 @@ import { AnalyticsRouter } from "../app/modules/analytics/analytics.router";
 import { BugReportRouter } from "../app/modules/bug_report/bug_report.router";
 import { RecommendationRouter } from "../app/modules/recommendation/recommendation.router";
 import { WriterApplicationRoutes } from "../app/modules/writer_application/writer_application.route";
+import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_inspiration.router";
 
 const router = express.Router();
 
@@ -95,6 +95,10 @@ const modules = [
     router: storyRoutes,
   },
   {
+    path: "/story-inspiration",
+    router: StoryInspirationRouter,
+  },
+  {
     path: "/contact",
     router: ContactRoutes,
   },
@@ -115,6 +119,7 @@ const modules = [
     router: WriterApplicationRoutes,
   },
 ];
+
 modules.forEach((route) => router.use(route.path, route.router));
 
 export const Routers = router;

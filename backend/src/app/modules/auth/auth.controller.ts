@@ -2,20 +2,17 @@ import { Request, Response } from "express";
 import httpStatus from "http-status";
 import { AuthModel } from "./auth.interface";
 import { AuthService } from "./auth.service";
-import config from "../../../config";
 import sendResponse from "../../../shared/send_response";
 import { IUser } from "../user/user.interface";
 import catchAsync from "../../../shared/catch_async";
+import { setRefreshTokenCookie } from "../../../utils/cookie.util";
 
 const login = catchAsync(async (req: Request, res: Response) => {
   const body: AuthModel = req.body;
   const result = await AuthService.login(body);
   const { accessToken, refreshToken } = result;
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: config.env === "production",
-  });
+  setRefreshTokenCookie(res, refreshToken);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -30,10 +27,7 @@ const register = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthService.register(body);
   const { accessToken, refreshToken } = result;
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: config.env === "production",
-  });
+  setRefreshTokenCookie(res, refreshToken);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -60,16 +54,27 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthService.googleLogin(body);
   const { accessToken, refreshToken } = result;
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: config.env === "production",
-  });
+  setRefreshTokenCookie(res, refreshToken);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "User logged in successfully with Google!",
     data: { accessToken },
+  });
+});
+
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const { oldPassword, newPassword } = req.body;
+
+  await AuthService.changePassword(user, { oldPassword, newPassword });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password changed successfully. All previous sessions have been invalidated.",
+    data: null,
   });
 });
 
@@ -94,10 +99,7 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
   const { accessToken, refreshToken } = result;
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: config.env === "production",
-  });
+  setRefreshTokenCookie(res, refreshToken);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -112,6 +114,7 @@ export const AuthController = {
   register,
   refreshToken,
   googleLogin,
+  changePassword,
   forgotPassword,
   resetPassword,
 };

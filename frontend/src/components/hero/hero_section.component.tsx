@@ -295,10 +295,10 @@ const HeroSectionComponent = () => {
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
           </p>
           <div className="flex-grow flex flex-col items-center justify-center">
-            <div className="relative max-w-3xl w-full">
+            <div className="relative max-w-3xl w-full before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-purple-500/20 before:via-indigo-500/20 before:to-blue-500/20 before:blur-xl before:animate-pulse">
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <Link to="/stories">
-                  <button className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-md shadow-blue-500/15 dark:shadow-indigo-500/10 hover:shadow-lg hover:shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
+                  <button className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-blue-500/25 dark:shadow-indigo-500/15 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
                     <i className="fa fa-wand-magic-sparkles"></i>
                     <span>Get Started</span>
                   </button>
