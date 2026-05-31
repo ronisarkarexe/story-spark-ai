@@ -44,7 +44,7 @@ const LatestPostsComponent = () => {
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 
