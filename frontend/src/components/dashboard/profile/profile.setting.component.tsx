@@ -1,6 +1,7 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { User } from "../../../models/user";
-
+import ImageFallback from "../../ImageFallback";
+ImageFallback
 interface ProfileSettingComponentProps {
   user: User;
   onSave: (updatedUser: Partial<User>) => void;
@@ -123,6 +124,32 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       className={`${inputClassName} cursor-not-allowed`}
                       disabled={true}
                     />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label
+                      htmlFor="avatar"
+                      className="block text-sm font-medium text-gray-400 mb-1"
+                    >
+                      Avatar URL
+                    </label>
+                    <input
+                      type="url"
+                      id="avatar"
+                      name="avatar"
+                      value={formData.avatar}
+                      onChange={handleChange}
+                      className={inputClassName}
+                    />
+                    {formData.avatar && (
+                      <div className="mt-2">
+                        <ImageFallback
+                          src={formData.avatar}
+                          alt="Profile preview"
+                          className="h-16 w-16 rounded-full object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="md:col-span-2">

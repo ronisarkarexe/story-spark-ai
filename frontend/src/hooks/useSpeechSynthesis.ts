@@ -306,7 +306,9 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
       }
 
       if (typeof event.charIndex === "number") {
-        setCurrentWordIndex(getWordIndexAtCharIndex(event.charIndex, wordRanges));
+        const idx = getWordIndexAtCharIndex(event.charIndex, wordRanges);
+        setCurrentWordIndex(idx);
+        currentWordIndexRef.current = idx;
       }
     };
 
@@ -384,13 +386,79 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
     setIsSpeaking(true);
   }, [isSupported]);
 
+  const currentWordIndexRef = useRef(0);
+
   const setRate = useCallback((nextRate: number) => {
     setRateState(nextRate);
 
-    if (utteranceRef.current) {
-      utteranceRef.current.rate = nextRate;
+    // The Web Speech API does not apply rate changes to an active utterance.
+    // We must stop and restart from the current word to apply the new rate.
+    if (!utteranceRef.current || !window.speechSynthesis.speaking) {
+      return;
     }
-  }, []);
+
+    const speechSynthesis = window.speechSynthesis;
+    const wasPaused = speechSynthesis.paused;
+    const resumeFromWord = currentWordIndexRef.current;
+
+    // Cancel current utterance
+    speechSynthesis.cancel();
+    utteranceRef.current = null;
+
+    if (wasPaused) {
+      // If paused, don't restart — just update rate for next play
+      setIsPlaying(false);
+      setIsPaused(false);
+      setIsSpeaking(false);
+      return;
+    }
+
+    // Restart from the current word with the new rate
+    const remainingText = text
+      .split(/\s+/)
+      .slice(resumeFromWord)
+      .join(" ");
+
+    if (!remainingText.trim()) return;
+
+    sessionRef.current += 1;
+    const sessionId = sessionRef.current;
+
+    const utterance = new SpeechSynthesisUtterance(remainingText);
+    utterance.rate = nextRate;
+    utterance.lang = window.navigator.language || "en-US";
+
+    utterance.onboundary = (event: SpeechSynthesisEvent) => {
+      if (sessionRef.current !== sessionId) return;
+      if (typeof event.charIndex === "number") {
+        const localIndex = getWordIndexAtCharIndex(event.charIndex, buildWordRanges(remainingText));
+        setCurrentWordIndex(resumeFromWord + localIndex);
+        currentWordIndexRef.current = resumeFromWord + localIndex;
+      }
+    };
+
+    utterance.onend = () => {
+      if (sessionRef.current !== sessionId) return;
+      utteranceRef.current = null;
+      setIsPlaying(false);
+      setIsPaused(false);
+      setIsSpeaking(false);
+      setCurrentWordIndex(totalWords);
+      currentWordIndexRef.current = totalWords;
+    };
+
+    utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
+      if (sessionRef.current !== sessionId) return;
+      utteranceRef.current = null;
+      setIsPlaying(false);
+      setIsPaused(false);
+      setIsSpeaking(false);
+      if (event.error !== "interrupted") setError("Narration failed to play.");
+    };
+
+    utteranceRef.current = utterance;
+    speechSynthesis.speak(utterance);
+  }, [text, totalWords]);
 
   const setSelectedLanguage = useCallback((nextLanguage: string) => {
     stop();

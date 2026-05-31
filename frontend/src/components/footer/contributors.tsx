@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Globe, GitPullRequest, Users } from "lucide-react";
+import ImageFallback from "../ImageFallback";
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Globe,
@@ -853,6 +857,30 @@ const ContributorsComponent = () => {
                   boxShadow: "0 8px 32px rgba(99,102,241,0.3)",
                 }}
               >
+                <div className="relative mb-5">
+                  <ImageFallback
+                    src={contributor.avatar_url}
+                    alt={contributor.login}
+                    className="h-24 w-24 rounded-full border-4 border-blue-500/20 object-cover transition-all duration-300 group-hover:border-blue-400/50"
+                  />
+
+                  <div className="absolute inset-0 rounded-full bg-blue-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+
+                <h3 className="text-lg font-semibold text-white">
+                  {contributor.login}
+                </h3>
+
+                <p className="mt-2 text-sm text-slate-400">
+                  {contributor.contributions} contributions
+                </p>
+
+                <div className="mt-4 inline-flex items-center gap-2 text-blue-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <Globe size={16} />
+                  View Profile
+                </div>
+              </motion.a>
+            ))}
                 <Code2
                   size={20}
                   className="transition-transform duration-300 group-hover:rotate-12"

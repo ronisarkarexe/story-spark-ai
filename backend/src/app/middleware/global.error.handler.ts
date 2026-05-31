@@ -73,7 +73,9 @@ const globalErrorHandler: ErrorRequestHandler = (
     success: false,
     message,
     errorMessage,
-    stack: config.env != "production" ? err.stack : undefined,
+    // Expose stack only in explicit development; hide by default so any
+    // non-development environment (including an unset NODE_ENV) stays safe.
+    stack: config.env === "development" ? err.stack : undefined,
   });
 };
 

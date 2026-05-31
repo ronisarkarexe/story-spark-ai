@@ -38,7 +38,7 @@ async function main() {
       cors: {
         origin: config.cors_origins?.length
           ? config.cors_origins
-          : ["http://localhost:4001", "https://storysparkai.vercel.app"],
+          : ["http://localhost:4001", "https://storysparkai-five.vercel.app"],
         credentials: true,
       },
     });
@@ -62,7 +62,7 @@ async function main() {
           token,
           config.jwt.secret as Secret
         );
-        const userId = verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
+        const userId = verifiedUser._id || verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
         if (!userId) {
           return next(new Error("Unauthorized"));
         }

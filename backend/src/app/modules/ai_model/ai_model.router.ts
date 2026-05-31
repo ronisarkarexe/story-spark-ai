@@ -69,4 +69,21 @@ router.post(
   freeAiRateLimiter,
   AiModelController.aiFreeModelTranslate
 );
+
+// AI Chat
+router.post(
+  "/chat",
+  validateRequest(AIModelValidator.aiChat),
+  checkRequestLimit(),
+  AiModelController.aiModelChat
+);
+
+// AI Chat Free
+router.post(
+  "/chat-free",
+  validateRequest(AIModelValidator.aiChat),
+  freeAiRateLimiter,
+  AiModelController.aiFreeModelChat
+);
+
 export const AIModelRouter = router;

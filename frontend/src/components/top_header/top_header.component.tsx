@@ -1,5 +1,8 @@
 import { useState } from "react";
 import logo from "../../assets/logo.png";
+import ImageFallback from "../ImageFallback";
+
+const TopHeaderComponent = () => {
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 function TopHeaderComponent() {
   const [, setShowNotification] = useState<boolean>(false);
@@ -58,6 +61,11 @@ function TopHeaderComponent() {
                     type="button"
                     className="!rounded-button bg-white flex text-sm rounded-full focus:outline-none"
                   >
+                    <ImageFallback
+                      className="h-8 w-8 rounded-full"
+                      src="https://avatars.githubusercontent.com/u/76697055?v=4"
+                      alt="profile"
+                    />
                     <img
                      className="h-8 w-8 rounded-full"
                      src={data?.profile?.avatar || "https://ui-avatars.com/api/?name=User"}

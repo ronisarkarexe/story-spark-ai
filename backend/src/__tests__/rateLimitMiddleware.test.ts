@@ -15,10 +15,10 @@ import {
 import type { Request, Response, NextFunction } from "express";
 
 // ── Mock factory ──────────────────────────────
-function buildMocks(ip: string, userId?: string) {
+function buildMocks(ip: string, userId?: string, headers?: Record<string, string>) {
   const req = {
     ip,
-    headers : {} as Record<string, string>,
+    headers : (headers ?? {}) as Record<string, string>,
     user    : userId ? { id: userId } : undefined,
   } as unknown as Request;
 
@@ -26,9 +26,9 @@ function buildMocks(ip: string, userId?: string) {
     statusCode : 200,
     body       : null as unknown,
     headers    : {} as Record<string, string>,
-    status(code: number) { this.statusCode = code; return this; },
-    json(body: unknown)  { this.body = body;        return this; },
-    setHeader(k: string, v: string) { this.headers[k] = v; },
+    status(code: number) { (this as any).statusCode = code; return this; },
+    json(body: unknown)  { (this as any).body = body;        return this; },
+    setHeader(k: string, v: string) { (this as any).headers[k] = v; },
   } as unknown as Response;
 
   const next: NextFunction = jest.fn();
@@ -75,6 +75,32 @@ describe("storyRateLimiter — basic behaviour", () => {
     const status = getRateLimitStatus("10.0.0.3");
     expect(status.count).toBe(2);
     expect(status.remaining).toBe(8);
+  });
+});
+
+describe("storyRateLimiter — X-Forwarded-For spoofing", () => {
+  it("ignores X-Forwarded-For and keys on req.ip", () => {
+    const { req, res, next } = buildMocks("10.0.0.1", undefined, {
+      "x-forwarded-for": "1.2.3.4",
+    });
+    for (let i = 0; i < 10; i++) storyRateLimiter(req, res, next);
+    // 11th should be blocked — same req.ip regardless of header
+    storyRateLimiter(req, res, next);
+    expect((res as any).statusCode).toBe(429);
+  });
+
+  it("does not create separate buckets per X-Forwarded-For value", () => {
+    const { req: r1, res: s1, next: n1 } = buildMocks("10.0.0.1", undefined, {
+      "x-forwarded-for": "1.1.1.1",
+    });
+    const { req: r2, res: s2, next: n2 } = buildMocks("10.0.0.1", undefined, {
+      "x-forwarded-for": "2.2.2.2",
+    });
+    // First requestor fills the bucket
+    for (let i = 0; i < 10; i++) storyRateLimiter(r1, s1, n1);
+    // Second requestor shares same req.ip → should be blocked
+    storyRateLimiter(r2, s2, n2);
+    expect((s2 as any).statusCode).toBe(429);
   });
 });
 

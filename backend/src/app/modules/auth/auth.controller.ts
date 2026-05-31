@@ -5,7 +5,7 @@ import { AuthService } from "./auth.service";
 import sendResponse from "../../../shared/send_response";
 import { IUser } from "../user/user.interface";
 import catchAsync from "../../../shared/catch_async";
-import { setRefreshTokenCookie } from "../../../utils/cookie.util";
+import { setRefreshTokenCookie, clearRefreshTokenCookie } from "../../../utils/cookie.util";
 
 const login = catchAsync(async (req: Request, res: Response) => {
   const body: AuthModel = req.body;
@@ -38,14 +38,30 @@ const register = catchAsync(async (req: Request, res: Response) => {
 });
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
-  const token = req.headers.authorization;
+  const token = req.cookies?.refreshToken as string | undefined;
   const result = await AuthService.refreshToken(token as string);
-  const { accessToken } = result;
+  const { accessToken, refreshToken: rotatedRefreshToken } = result;
+
+  // Rotation: replace the cookie with the freshly issued refresh token.
+  setRefreshTokenCookie(res, rotatedRefreshToken);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Got Access Token!",
     data: { accessToken },
+  });
+});
+
+const logout = catchAsync(async (req: Request, res: Response) => {
+  const token = req.cookies?.refreshToken as string | undefined;
+  await AuthService.logout(token);
+  clearRefreshTokenCookie(res);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Logged out successfully",
+    data: null,
   });
 });
 
@@ -74,6 +90,7 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Password changed successfully. All previous sessions have been invalidated.",
+    data: null,
   });
 });
 
@@ -112,6 +129,7 @@ export const AuthController = {
   login,
   register,
   refreshToken,
+  logout,
   googleLogin,
   changePassword,
   forgotPassword,
