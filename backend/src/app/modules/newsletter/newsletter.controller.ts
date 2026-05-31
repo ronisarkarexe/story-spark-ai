@@ -78,7 +78,7 @@ export const generateUnsubscribeToken = async (req: Request, res: Response) => {
 // Unsubscribe via signed token — safe, no unauthenticated email enumeration
 export const unsubscribeByToken = async (req: Request, res: Response) => {
   try {
-    const { token } = req.params;
+    const token = req.params.token as string;
     const result = await newsletterService.unsubscribeByToken(token);
     res.status(200).json(result);
   } catch (err: any) {

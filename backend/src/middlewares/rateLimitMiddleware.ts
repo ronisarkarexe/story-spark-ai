@@ -30,10 +30,13 @@ export function storyRateLimiter(
   res: Response,
   next: NextFunction
 ): void {
-  // Prefer authenticated user id, fall back to IP
+  // Prefer authenticated user id, fall back to IP.
+  // NOTE: Do NOT read X-Forwarded-For directly — the client controls that
+  // header and can spoof a new IP per request to bypass the limit.
+  // Instead rely on req.ip, which Express derives from the proxy chain
+  // when trust proxy is enabled (see app.set("trust proxy", 1) in app.ts).
   const key: string =
     (req as any).user?.id ??
-    (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0].trim() ??
     req.ip ??
     "anonymous";
 

@@ -25,12 +25,12 @@ const NavListComponent = () => {
         <nav className="hidden items-center gap-2 lg:flex">
           <NavLink to="/" end className={linkClass}>Home</NavLink>
           <NavLink to="/explore" className={linkClass}>Explore</NavLink>
-          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
+          <NavLink to="/story-inspiration" className={linkClass}>Stories</NavLink>
+          <NavLink to="/community" className={linkClass}>Community</NavLink>
           {loggedIn && <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>}
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          {/* Cursor glow toggle */}
           <div className="relative group/glow">
             <button
               type="button"
@@ -45,7 +45,6 @@ const NavListComponent = () => {
             >
               <Sparkles className="h-4 w-4" />
             </button>
-            {/* Tooltip */}
             <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition-opacity duration-200 group-hover/glow:opacity-100 dark:bg-slate-700">
               {glowEnabled ? "Glow: On" : "Glow: Off"}
             </span>
@@ -64,7 +63,8 @@ const NavListComponent = () => {
         <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 lg:hidden dark:border-white/10">
           <NavLink to="/" end className={linkClass}>Home</NavLink>
           <NavLink to="/explore" className={linkClass}>Explore</NavLink>
-          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
+          <NavLink to="/story-inspiration" className={linkClass}>Stories</NavLink>
+          <NavLink to="/community" className={linkClass}>Community</NavLink>
         </div>
       )}
     </header>
