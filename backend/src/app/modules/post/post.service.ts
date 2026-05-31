@@ -18,6 +18,11 @@ import { GamificationService } from "../gamification/gamification.service";
 // import { QuotaService } from "../quota/quota.service";
 // import { AIModelService } from "../ai_model/ai_model.service";
 
+const MAX_SEARCH_TERM_LENGTH = 100;
+const escapeRegex = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+};
+
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
   const { email, role } = token;
   const user = await User.findOne({

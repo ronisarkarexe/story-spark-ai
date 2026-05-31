@@ -2,13 +2,28 @@ import React from "react";
 import { Post } from "../../models/post";
 import { useNavigate } from "react-router-dom";
 
+export interface IStories {
+  uuid?: string;
+  _id?: string;
+  title: string;
+  content: string;
+  tag?: string;
+  imageURL?: string;
+  [key: string]: unknown;
+}
+
 interface IRelatedStoriesComponentProps {
-  posts: Post[],
-  currentPostId: string;
+  posts?: Post[],
+  currentPostId?: string;
+  stories?: IStories[];
+  isLogin?: boolean;
+  setStories?: React.Dispatch<React.SetStateAction<IStories[]>>;
+  onPublishSuccess?: () => void;
+  isLoading?: boolean;
 }
 
 const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
-  posts,currentPostId,
+  posts = [], currentPostId,
 }) => {
   const navigate = useNavigate();
   const filteredPosts=posts.filter((post)=>post._id!==currentPostId)

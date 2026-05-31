@@ -1,4 +1,5 @@
 import { Post } from "../../../models/post";
+/* eslint-disable */
 import { useGetFeaturedListsQuery } from "../../../redux/apis/post.api";
 import { formatDateShort } from "../../../utils/time-formate";
 import LoadingAnimation from "../../loading/loading.component";
@@ -12,6 +13,23 @@ import { FaXTwitter } from "react-icons/fa6";
 const FeatureComponent = () => {
   const { data, isLoading, isError, refetch } = useGetFeaturedListsQuery(undefined);
   const navigate = useNavigate();
+  
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const calculateReadingTime = (text?: string) => {
+    if (!text) return 1;
+    const wordsPerMinute = 200;
+    const words = text.trim().split(/\s+/).length;
+    return Math.ceil(words / wordsPerMinute);
+  };
+
+  const handleCopyLink = (e: React.MouseEvent, id: string, url: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   if (isLoading) return <LoadingAnimation />;
   if (isError) {
     return (

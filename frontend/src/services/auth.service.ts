@@ -1,5 +1,20 @@
+import { AccessToken } from "../models/login";
+import { decodedToken } from "../utils/jwt";
+
+export const AUTH_CHANGE_EVENT = "story-spark-auth-change";
+
+let memoryToken: string | null = null;
+
+export const setMemoryToken = (token: string | null) => {
+  memoryToken = token;
+};
 
 export const getMemoryToken = () => memoryToken;
+
+export const emitAuthChange = () => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+};
 
 type AuthUserInfo = {
   email: string;
@@ -12,7 +27,7 @@ type AuthUserInfo = {
   iat: number;
 };
 
-const buildUserInfo = (decodedData: AuthUserInfo): AuthUserInfo => ({
+const buildUserInfo = (decodedData: Partial<AuthUserInfo>): AuthUserInfo => ({
   email: decodedData.email || "",
   userId: decodedData.userId || "",
   name: decodedData.name || "",
@@ -28,15 +43,15 @@ const getValidDecodedToken = () => {
 
   if (authToken) {
     try {
-      const decodedData = decodedToken(authToken) as AuthUserInfo;
-          if (
-      typeof decodedData.exp === "number" &&
-      decodedData.exp <= Math.floor(Date.now() / 1000)
-    ) {
-      setMemoryToken(null);
-      return null;
-    }
-      return buildUserInfo(decodedData);
+      const decodedData = decodedToken(authToken);
+      if (
+        typeof decodedData.exp === "number" &&
+        decodedData.exp <= Math.floor(Date.now() / 1000)
+      ) {
+        setMemoryToken(null);
+        return null;
+      }
+      return buildUserInfo(decodedData as AuthUserInfo);
     } catch (error) {
       console.error("Invalid auth token:", error);
       setMemoryToken(null);
@@ -49,11 +64,13 @@ const getValidDecodedToken = () => {
 export const storeUserInfo = ({ accessToken }: AccessToken) => {
   setMemoryToken(accessToken);
   emitAuthChange();
+  return true;
 };
 
 export const getUserInfo = (): AuthUserInfo | null => {
   return getValidDecodedToken();
 };
+
 export const isLoggedIn = () => {
   return !!getValidDecodedToken();
 };
@@ -61,6 +78,7 @@ export const isLoggedIn = () => {
 export const removeUserInfo = () => {
   setMemoryToken(null);
   emitAuthChange();
+  return true;
 };
 
 export const getToken = () => getMemoryToken();

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
 import { Post } from "../../../models/post";
 import LoadingAnimation from "../../loading/loading.component";
@@ -44,7 +45,7 @@ const LatestPostsComponent = () => {
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 

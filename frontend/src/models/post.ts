@@ -61,5 +61,4 @@ export interface Post {
   bookmarks?: Bookmark[];
   createdAt: string;
   updatedAt: string;
-  emotions?: string[];
 }
