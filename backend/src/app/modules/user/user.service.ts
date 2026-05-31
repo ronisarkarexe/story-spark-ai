@@ -17,7 +17,10 @@ const getUser = async (payload: string): Promise<IUser | null> => {
   return result;
 };
 
-const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
+const updateUser = async (
+  token: ITokenPayload,
+  payload: Partial<SafeUserUpdate>
+) => {
   const updatePayload: Partial<SafeUserUpdate> = {};
 
   if (payload.name !== undefined) {
