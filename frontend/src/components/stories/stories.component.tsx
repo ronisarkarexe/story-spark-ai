@@ -410,6 +410,7 @@ const StoriesComponent = () => {
   }, []);
 
   const [stories, setStories] = useState<IStories[]>(
+    draft?.stories?.length ? draft.stories : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
     [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
   );
   
@@ -751,9 +752,9 @@ useEffect(() => {
           </h1>
 
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white">
-              <div className="relative">
-                <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white overflow-hidden">
+              <div className="relative w-full">
+                <form className="space-y-4 w-full" onSubmit={handleSubmit(onSubmit)}>
                   
                   {/* ── Genre chips ── */}
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -846,14 +847,14 @@ useEffect(() => {
                   </div>
 
                   {/* ── Prompt textarea ── */}
-                  <div className="relative">
+                  <div className="relative w-full">
                     <textarea
                       {...register("prompt")}
                       ref={(el) => {
                         register("prompt").ref(el);
                         inputRef.current = el;
                       }}
-                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-10 transition-colors duration-200 ${
+                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-12 transition-colors duration-200 box-border ${
                         isOverLimit
                           ? "ring-1 ring-red-500 rounded"
                           : isNearLimit
@@ -872,6 +873,16 @@ useEffect(() => {
                         }
                       }}
                     />
+                    {/* Character count display */}
+<div className={`flex justify-end mt-1 text-xs font-medium transition-colors duration-200 ${
+  isOverLimit
+    ? "text-red-500"
+    : isNearLimit
+    ? "text-yellow-500"
+    : "text-gray-400"
+}`}>
+  {textareaValue.length} / {MAX_PROMPT_LENGTH}
+</div>
 
                     {textareaValue.length > 0 && (
                       <button

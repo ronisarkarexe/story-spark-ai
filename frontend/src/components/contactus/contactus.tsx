@@ -144,7 +144,7 @@ export default function Contact() {
 
       <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-purple-500/20 blur-[140px]" />
 
-      <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-20 lg:grid-cols-2">
+      <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-4 lg:grid-cols-2 lg:gap-20">
         {/* LEFT */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}

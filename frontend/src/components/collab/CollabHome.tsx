@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import { connectSocket } from "../../socket/socket.oi";
+import { getUserInfo, isLoggedIn } from "../../services/auth.service";
+import { io } from "socket.io-client";
 
 export default function CollabHome() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ export default function CollabHome() {
         setError(
           "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
         );
+        setIsCreating(false);
         return;
       }
 

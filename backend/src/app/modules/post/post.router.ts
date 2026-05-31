@@ -2,6 +2,8 @@ import express from "express";
 import { PostController } from "./post.controller";
 import auth from "../../middleware/auth.middleware";
 import checkRequestLimit from "../../middleware/check.request.limit";
+import validateRequest from "../../middleware/validate.request";
+import { PostValidator } from "./post.validation";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import validateRequest from "../../middleware/validate.request";
 import { PostValidator } from "./post.validation";
@@ -15,6 +17,7 @@ const router = express.Router();
 router.post(
   "/create-post",
   auth(),
+  validateRequest(PostValidator.createPost),
   PostController.createPost
 );
 

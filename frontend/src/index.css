@@ -1278,6 +1278,48 @@ html, body {
   z-index: 2;
 }
 
+
+/* ─── Scroll-to-Top Button ─────────────────────────────── */
+.scroll-to-top-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #ffffff;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 9999;
+}
+
+.scroll-to-top-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Mobile: slightly smaller and closer to edge */
+@media (max-width: 640px) {
+  .scroll-to-top-btn {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 42px;
+    height: 42px;
+    font-size: 1rem;
+  }
+}
+=======
 /* Navbar Container */
 .navbar {
   display: flex;
@@ -1362,3 +1404,4 @@ html, body {
     padding: 0.5rem 0;
   }
 }
+

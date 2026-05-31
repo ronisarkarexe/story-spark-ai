@@ -9,6 +9,7 @@ import {
   useVerifyOtpMutation,
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
+import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 interface IRegisterInfo {
@@ -249,27 +250,89 @@ const SignUpComponent = () => {
   return (
     <div className="min-h-[calc(100dvh-4.5rem)] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8">
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="relative max-w-md w-full">
+      <div className="flex w-full flex-col justify-center py-12 relative z-10">
         <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
           <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
         </div>
-
-        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden w-full max-w-full min-w-0">
-          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200 mb-6">
+        <div className="flex justify-center items-center gap-40">
+        
+                <div className="flex flex-col gap-5">
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
+                    
+                    Turns Ideas into
+                    <br /> 
+                    unforgotable stories
+                    
+                    </h1>
+                  <p>AI powered storytelling that helps you
+                      <br />            
+                     create connect inspire.</p>
+        
+                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                      <div>
+                        <WandSparkles className="text-violet-600"/>
+                      </div>
+                      <div>
+                        <h1 className="font-bold">Smart writing</h1>
+                        <p>AI that understands your ideas</p>
+                      </div>
+                     </div>
+        
+        
+                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                      <div>
+                        <BookOpen className="text-violet-600"/>
+                      </div>
+                      <div>
+                        <h1 className="font-bold">Endless Creativity</h1>
+                        <p>Stories that captivate and inspire</p>
+                      </div>
+                     </div>
+        
+        
+                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                      <div>
+                        <UsersRound className="text-violet-600"/>
+                      </div>
+                      <div>
+                        <h1 className="font-bold">Built for everyone</h1>
+                        <p>Writers, Creaters and dreamers</p>
+                      </div>
+                     </div>
+                     <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                        Create, edit, and generate engaging multiple story
+                        <br />
+                         variations from a single prompt.
+                          <br />                
+                         Perfect for writers, creators, and enthusiasts 
+                         <br />
+                         exploring the future of fiction.
+                     </div>
+                </div>
+        
+        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
+          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
 
           {!showOtpField && (
+            <p className="mt-2 mb-6 text-center text-sm text-slate-500 dark:text-slate-400">
+              Join StorySparkAI and begin your creative journey.
+            </p>
+          )}
+          <body className="overflow-x-hidden"></body>
+          {!showOtpField && (
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-350 dark:border-slate-700/50"></div>
+                <div className="w-full border-t border-slate-700/50"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-slate-50 dark:bg-slate-800/60 px-2 text-slate-500 dark:text-slate-400 font-semibold">
+             <div className="relative flex justify-center text-sm">
+                <span className="bg-white dark:bg-slate-800/60 text-slate-800 dark:text-slate-400 font-semibold">
                   SIGN UP WITH EMAIL
                 </span>
               </div>
@@ -277,7 +340,11 @@ const SignUpComponent = () => {
           )}
 
           {!showOtpField ? (
-            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+
+            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate> 
+
+            <form className="space-y-5 w-full max-w-full min-w-0" onSubmit={handleSubmit(onSubmit)}>
+
               <SSInput
                 label="Name"
                 name="name"
@@ -288,10 +355,10 @@ const SignUpComponent = () => {
                 autoComplete="name"
                 validation={{
                   required: "Name is required",
-                  minLength: {
-                    value: 3,
-                    message: "Name must be at least 3 characters",
-                  },
+                minLength: {
+                value: 3,
+                message: "Name must be at least 3 characters",
+                },
                   pattern: {
                     value: /^[A-Za-z0-9\s._]+$/,
                     message:
@@ -326,44 +393,44 @@ const SignUpComponent = () => {
               />
 
               {password?.length > 0 && (
-                <div className="space-y-3 -mt-2">
+              <div className="space-y-3 -mt-2">
+                <div
+                  className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={passedChecks}
+                  aria-valuemin={0}
+                  aria-valuemax={PASSWORD_REQUIREMENTS.length}
+                  aria-label="Password strength"
+                >
                   <div
-                    className="w-full h-2 bg-slate-300 dark:bg-slate-700 rounded-full overflow-hidden"
-                    role="progressbar"
-                    aria-valuenow={passedChecks}
-                    aria-valuemin={0}
-                    aria-valuemax={PASSWORD_REQUIREMENTS.length}
-                    aria-label="Password strength"
-                  >
-                    <div
-                      className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
-                    ></div>
-                  </div>
-
-                  <p
-                    className={`text-sm font-medium ${textColor}`}
-                    aria-live="polite"
-                  >
-                    {strengthLabel} Password
-                  </p>
-
-                  <ul className="space-y-1 text-xs">
-                    {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
-                      const met = passwordChecks[key];
-                      return (
-                        <li
-                          key={key}
-                          className={met ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}
-                          aria-label={`${label}: ${met ? "met" : "not met"}`}
-                        >
-                          <span aria-hidden="true">{met ? "✅" : "❌"}</span>{" "}
-                          {label}
-                        </li>
-                      );
-                    })}
-                  </ul>
+                    className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
+                  ></div>
                 </div>
-              )}
+
+                <p
+                  className={`text-sm font-medium ${textColor}`}
+                  aria-live="polite"
+                >
+                  {strengthLabel} Password
+                </p>
+
+                <ul className="space-y-1 text-xs">
+                  {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
+                    const met = passwordChecks[key];
+                    return (
+                      <li
+                        key={key}
+                        className={met ? "text-green-400" : "text-red-400"}
+                        aria-label={`${label}: ${met ? "met" : "not met"}`}
+                      >
+                        <span aria-hidden="true">{met ? "✅" : "❌"}</span>{" "}
+                        {label}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+)}
 
               <SSInput
                 label="Confirm Password"
@@ -371,7 +438,7 @@ const SignUpComponent = () => {
                 type="password"
                 placeholder="Confirm your password"
                 required={true}
-                icon="fi fi-rr-lock"
+                icon="fi fi-rr-lock" 
                 register={register}
                 autoComplete="new-password"
                 error={errors.confirmPassword}
@@ -418,7 +485,7 @@ const SignUpComponent = () => {
                   type="button"
                   onClick={handleResendOtp}
                   disabled={cooldown > 0 || isBusy}
-                  className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 disabled:text-gray-500 transition-colors duration-200 focus:outline-none disabled:cursor-not-allowed"
+                  className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-gray-500 transition-colors duration-200 focus:outline-none disabled:cursor-not-allowed"
                 >
                   {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
                 </button>
@@ -427,11 +494,11 @@ const SignUpComponent = () => {
           )}
 
           {!showOtpField && (
-            <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-8 text-center text-sm text-slate-400">
               Already have an account?{" "}
               <a
                 href="/login"
-                className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
+                className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
               >
                 Sign In
               </a>
@@ -440,6 +507,7 @@ const SignUpComponent = () => {
         </div>
       </div>
       <Toaster position="top-right" reverseOrder={false} />
+    </div>
     </div>
   );
 };

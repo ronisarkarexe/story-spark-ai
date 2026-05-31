@@ -44,3 +44,12 @@ export interface IAlternateEndingPayload {
   tag: string;
   language?: string;
 }
+export interface IChatMessage {
+  role: "user" | "model";
+  parts: string;
+}
+
+export interface IChatPayload {
+  message: string;
+  history?: IChatMessage[];
+}

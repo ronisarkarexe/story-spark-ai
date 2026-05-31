@@ -1,9 +1,9 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
-import { SupportLink } from "../help_center.utils";
+import { Support_Links } from "../help_center.utils";
 
 interface SupportLinksProps {
-  links: SupportLink[];
+  links: Support_Links[];
 }
 
 const SupportLinks: FC<SupportLinksProps> = ({ links }) => {
@@ -34,6 +34,10 @@ const SupportLinks: FC<SupportLinksProps> = ({ links }) => {
         </p>
       </div>
 
+      {/* Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        {links && links.map((link) => (
+          <motion.a
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
         {links.map((link) => (
@@ -42,6 +46,7 @@ const SupportLinks: FC<SupportLinksProps> = ({ links }) => {
             href={link.href}
             target={link.external ? "_blank" : undefined}
             rel={link.external ? "noopener noreferrer" : undefined}
+            className="group flex items-start gap-5 bg-white dark:bg-blue-500/10 hover:bg-gray-50 dark:hover:bg-blue-500/20 border border-gray-200 dark:border-white/5 hover:border-indigo-400 dark:hover:border-indigo-500/30 p-6 rounded-xl shadow-sm dark:shadow-none transition-all duration-300 hover:scale-[1.02] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             className="group flex items-start gap-5 bg-white dark:bg-blue-500/10 hover:bg-slate-50 dark:hover:bg-blue-500/20 border border-slate-200 dark:border-white/5 hover:border-indigo-500/30 p-6 rounded-xl shadow-sm transition-all duration-300 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           >
 
@@ -53,6 +58,7 @@ const SupportLinks: FC<SupportLinksProps> = ({ links }) => {
               ></i>
 
             </div>
+            
 
             <div className="flex-1 min-w-0">
 
@@ -67,6 +73,7 @@ const SupportLinks: FC<SupportLinksProps> = ({ links }) => {
                   ></i>
                 )}
 
+              <p className="text-gray-600 dark:text-gray-500 text-sm mt-1 leading-relaxed">
               </h3>
 
               <p className="text-slate-600 dark:text-gray-500 text-sm mt-1 leading-relaxed">
@@ -78,8 +85,13 @@ const SupportLinks: FC<SupportLinksProps> = ({ links }) => {
         ))}
       </div>
 
+<<<<<<< HEAD
+      {/* GitHub CTA Container */}
+      <div className="flex justify-center mt-8">
+=======
       <div className="mt-10 text-center">
         {/* GitHub CTA */}
+>>>>>>> upstream/main
         <a
           href="https://github.com"
           target="_blank"
@@ -89,6 +101,21 @@ const SupportLinks: FC<SupportLinksProps> = ({ links }) => {
           <i className="fa-brands fa-github text-base"></i>
           Contribute Now
         </a>
+<<<<<<< HEAD
+          {/* GitHub CTA */}
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-2xl border border-indigo-500/20 bg-indigo-500/10 px-5 py-3 text-sm font-semibold text-indigo-600 transition-all duration-300 hover:scale-105 hover:bg-indigo-500/20 dark:text-indigo-300"
+          >
+            <i className="fa-brands fa-github text-base"></i>
+            Contribute Now
+          </a>
+        ))}
+
+=======
+>>>>>>> upstream/main
       </div>
     </motion.section>
   );

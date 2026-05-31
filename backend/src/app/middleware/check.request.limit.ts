@@ -14,7 +14,10 @@ import { createUserQuotaGuard } from "../modules/ai_model/quota.lifecycle";
 const checkRequestLimit =
   () => async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = req.headers.authorization as string;
+      const authHeader = req.headers.authorization as string;
+      const token = authHeader?.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : authHeader;
       if (!token) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,

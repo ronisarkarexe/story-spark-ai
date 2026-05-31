@@ -456,3 +456,30 @@ Preserve the story's tone, style and meaning. Only translate — do not modify t
     );
   }
 }
+
+export async function chatWithGemini(
+  message: string,
+  history: { role: string; parts: { text: string }[] }[] = []
+): Promise<string> {
+  assertGeminiApiKeyConfigured();
+
+  try {
+    const chatSession = model.startChat({
+      generationConfig: {
+        ...generationConfig,
+        responseMimeType: "text/plain",
+      },
+      safetySettings,
+      history,
+    });
+
+    const result = await chatSession.sendMessage(message);
+    return result.response.text();
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `AI chat failed: ${errorMsg}`
+    );
+  }
+}
