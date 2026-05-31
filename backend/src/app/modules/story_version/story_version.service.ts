@@ -2,12 +2,12 @@ import { enhancePromptWithGemini } from "./enhance_prompt.utils";
 import { raceGenerationWithTimeout, GenerationTimeoutError } from "../../../utils/generation_timeout";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
-import httpStatus from "http-status";
-import ApiError from "../../../errors/api_error";
 import { Post } from "../post/post.model";
 import { StoryVersion } from "./story_version.model";
 import { IStoryVersion } from "./story_version.interface";
 import { IPost } from "../post/post.interface";
+
+const ENHANCE_TIMEOUT_MS = 60000;
 
 const createVersionSnapshot = async (
   storyId: string,
@@ -136,8 +136,6 @@ const restoreVersion = async (
   return post;
 };
 
-export const StoryVersionService = {const ENHANCE_TIMEOUT_MS = 60000;
-
 const enhancePrompt = async (prompt: string): Promise<string> => {
   try {
     const enhanced = await raceGenerationWithTimeout(
@@ -170,6 +168,8 @@ const enhancePrompt = async (prompt: string): Promise<string> => {
     );
   }
 };
+
+export const StoryVersionService = {
   createVersionSnapshot,
   getVersionsByStoryId,
   getVersionById,

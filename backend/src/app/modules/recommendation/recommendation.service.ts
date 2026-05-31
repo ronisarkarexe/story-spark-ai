@@ -3,8 +3,7 @@ import ApiError from "../../../errors/api_error";
 import { Post } from "../post/post.model";
 import { User } from "../user/user.model";
 import { ITokenPayload } from "../../../interfaces/token";
-import mongoose from "mongoose";
-import { IStoryVersion } from "../story_version/story_version.interface";
+
 const getPersonalizedRecommendations = async (token: ITokenPayload) => {
   const user = await User.findById(token._id);
   if (!user) {
@@ -21,7 +20,7 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
     query._id = { $nin: readingHistory };
   }
 
-  let recommendations: IStoryVersion[] = [];
+  let recommendations: any[] = [];
 
   // If user has preferences, try to match them
   if (readingPreferences) {
