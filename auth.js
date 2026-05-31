@@ -6,7 +6,7 @@
 let currentMode = 'signin';
 
 // ── Google Identity Services (GIS) Client ID ──
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 let isSubmitting = false;
 
@@ -42,6 +42,7 @@ function initInlineValidation() {
     const nameField = document.getElementById('name-field');
     const emailField = document.getElementById('email-field');
     const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
 
     if (nameField) {
         nameField.addEventListener('blur', () => validateName(true));
@@ -62,8 +63,18 @@ function initInlineValidation() {
         passwordField.addEventListener('input', () => {
             updatePasswordStrengthUI(passwordField.value || '');
             if (passwordField.getAttribute('aria-invalid') === 'true') validatePassword(true);
+            if (confirmPasswordField && confirmPasswordField.value) {
+                validateConfirmPassword(false);
+            }
         });
         updatePasswordStrengthUI(passwordField.value || '');
+    }
+
+    if (confirmPasswordField) {
+        confirmPasswordField.addEventListener('blur', () => validateConfirmPassword(true));
+        confirmPasswordField.addEventListener('input', () => {
+            validateConfirmPassword(false);
+        });
     }
 }
 
@@ -176,6 +187,45 @@ function validatePassword(showInline) {
     return !message;
 }
 
+function validateConfirmPassword(showInline) {
+    const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
+    if (!confirmPasswordField || currentMode !== 'signup') return true;
+
+    const password = (passwordField && passwordField.value) || '';
+    const confirmPassword = confirmPasswordField.value || '';
+    const feedbackEl = document.getElementById('confirm-password-feedback');
+    let message = '';
+    let isMatch = false;
+
+    if (!confirmPassword) {
+        message = '';
+    } else if (password !== confirmPassword) {
+        message = 'Passwords do not match';
+    } else {
+        message = 'Passwords match';
+        isMatch = true;
+    }
+
+    if (feedbackEl) {
+        if (!message) {
+            feedbackEl.classList.remove('is-visible', 'match', 'mismatch');
+            feedbackEl.textContent = '';
+        } else {
+            feedbackEl.classList.add('is-visible');
+            feedbackEl.textContent = message;
+            feedbackEl.classList.remove('match', 'mismatch');
+            feedbackEl.classList.add(isMatch ? 'match' : 'mismatch');
+        }
+    }
+
+    if (showInline) {
+        setFieldError('confirm-password-field', 'confirm-password-error', isMatch ? '' : message);
+    }
+
+    return isMatch || !confirmPassword;
+}
+
 function setSubmitting(submitting) {
     isSubmitting = submitting;
     const submitBtn = document.getElementById('submit-btn');
@@ -183,12 +233,14 @@ function setSubmitting(submitting) {
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
 
     if (submitBtn) submitBtn.disabled = submitting;
     if (spinner) spinner.classList.toggle('hidden', !submitting);
     if (emailField) emailField.disabled = submitting;
     if (nameField) nameField.disabled = submitting;
     if (passwordField) passwordField.disabled = submitting;
+    if (confirmPasswordField) confirmPasswordField.disabled = submitting;
 }
 
 /* ── Advanced Particle System (Canvas + Mouse Interactions) ── */
@@ -357,6 +409,12 @@ function toggleAuthMode(mode) {
         setFieldError('name-field', 'name-error', '');
         setFieldError('email-field', 'email-error', '');
         setFieldError('password-field', 'password-error', '');
+        setFieldError('confirm-password-field', 'confirm-password-error', '');
+        const feedbackEl = document.getElementById('confirm-password-feedback');
+        if (feedbackEl) {
+            feedbackEl.classList.remove('is-visible', 'match', 'mismatch');
+            feedbackEl.textContent = '';
+        }
         setSubmitting(false);
 
         form.classList.remove('form-transitioning');
@@ -419,14 +477,30 @@ function togglePasswordVisibility() {
     }
 }
 
+function toggleConfirmPasswordVisibility() {
+    const field = document.getElementById('confirm-password-field');
+    const icon = document.getElementById('confirm-eye-icon');
+    if (!field || !icon) return;
+
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.className = 'fi fi-rr-eye text-[16px]';
+    } else {
+        field.type = 'password';
+        icon.className = 'fi fi-rr-eye-crossed text-[16px]';
+    }
+}
+
 /* ── Form Submission handling ── */
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
     e.preventDefault();
     if (isSubmitting) return;
 
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
+    const rememberCheckbox = document.getElementById('remember');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
     if (!emailField) return;
 
     setAlert('', '');
@@ -434,8 +508,9 @@ function handleFormSubmit(e) {
     const okName = validateName(true);
     const okEmail = validateEmail(true);
     const okPassword = validatePassword(true);
+    const okConfirmPassword = currentMode === 'signup' ? validateConfirmPassword(true) : true;
 
-    const isValid = currentMode === 'signup' ? (okName && okEmail && okPassword) : (okEmail && okPassword);
+    const isValid = currentMode === 'signup' ? (okName && okEmail && okPassword && okConfirmPassword) : (okEmail && okPassword);
     if (!isValid) {
         setAlert('error', 'Please fix the highlighted fields and try again.');
         const firstInvalid =
@@ -447,20 +522,47 @@ function handleFormSubmit(e) {
 
     const email = (emailField.value || '').trim();
     const name = (nameField && nameField.value ? nameField.value.trim() : '');
+    const password = (passwordField && passwordField.value ? passwordField.value : '');
+    const rememberMe = rememberCheckbox ? rememberCheckbox.checked : false;
 
     setSubmitting(true);
     setAlert('info', currentMode === 'signup' ? 'Creating your account…' : 'Signing you in…');
 
-    window.setTimeout(() => {
-        setSubmitting(false);
+    try {
+        const endpoint = currentMode === 'signup' ? '/api/auth/register' : '/api/auth/login';
+        const body = currentMode === 'signup'
+            ? { email, name, password }
+            : { email, password, rememberMe };
+
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            setAlert('error', data.message || 'Something went wrong. Please try again.');
+            setSubmitting(false);
+            return;
+        }
+
+        localStorage.setItem('accessToken', data.data.accessToken);
+
         if (currentMode === 'signin') {
-            setAlert('success', `Signed in as <span class="font-semibold">${escapeHtml(email)}</span>.`);
+            setAlert('success', `Signed in as <span class="font-semibold">${escapeHtml(email)}</span>. Redirecting…`);
+            setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
         } else {
             const greeting = name ? `Welcome, <span class="font-semibold">${escapeHtml(name)}</span>!` : 'Welcome!';
             setAlert('success', `${greeting} Your account is ready. Redirecting to sign in…`);
-            window.setTimeout(() => toggleAuthMode('signin'), 900);
+            setTimeout(() => toggleAuthMode('signin'), 900);
         }
-    }, 900);
+    } catch (err) {
+        setAlert('error', 'Network error. Please check your connection and try again.');
+    }
+
+    setSubmitting(false);
 }
 
 function escapeHtml(text) {
@@ -488,10 +590,48 @@ function initGoogleAuth() {
 }
 
 function decodeJwt(token) {
+    if (!token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+
     try {
-        const base64Url = token.split('.')[1];
+        const base64Url = parts[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        return JSON.parse(atob(base64));
+        const decoded = JSON.parse(atob(base64));
+
+        if (!decoded || typeof decoded !== 'object') return null;
+
+        // Required userId validation
+        if (typeof decoded.userId !== 'string' || decoded.userId.trim() === '') return null;
+
+        // Required email validation with format regex
+        if (typeof decoded.email !== 'string' || decoded.email.trim() === '') return null;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(decoded.email)) return null;
+
+        // Required role validation
+        if (typeof decoded.role !== 'string' || decoded.role.trim() === '') return null;
+        const validRoles = ['user', 'admin', 'guest'];
+        if (!validRoles.includes(decoded.role)) return null;
+
+        // Required subscriptionType validation
+        if (typeof decoded.subscriptionType !== 'string' || decoded.subscriptionType.trim() === '') return null;
+        const validSubscriptions = ['free', 'premium'];
+        if (!validSubscriptions.includes(decoded.subscriptionType)) return null;
+
+        // Required exp (expiration) validation
+        if (typeof decoded.exp !== 'number' || decoded.exp <= Math.floor(Date.now() / 1000)) return null;
+
+        // Required iat validation
+        if (typeof decoded.iat !== 'number') return null;
+
+        // Optional name validation
+        if (decoded.name !== undefined && typeof decoded.name !== 'string') return null;
+
+        // Optional postsCount validation
+        if (decoded.postsCount !== undefined && typeof decoded.postsCount !== 'number') return null;
+
+        return decoded;
     } catch (e) {
         return null;
     }

@@ -1,53 +1,128 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { isLoggedIn } from "../../../services/auth.service";
 import { useToggleFollowMutation } from "../../../redux/apis/user.api";
-
-const writers = [
-  { id: "roni-sarkar-id", name: "Roni Sarkar", role: "AI Writer", image: "https://avatars.githubusercontent.com/u/76697055?v=4" },
-  { id: "sarah-lee-id", name: "Sarah Lee", role: "Content Creator", image: "https://i.pravatar.cc/150?img=5" },
-  { id: "john-doe-id", name: "John Doe", role: "Story Writer", image: "https://i.pravatar.cc/150?img=8" },
-];
+import ImageFallback from "../../ImageFallback";
+ImageFallback
 
 const RecommendedWritersComponent = () => {
+  const recommendedWriters = [
+    {
+      id: "roni-sarkar-id",
+      name: "Roni Sarkar",
+      role: "AI Writer",
+      image: "https://avatars.githubusercontent.com/u/76697055?v=4",
+    },
+    {
+      id: "sarah-lee-id",
+      name: "Sarah Lee",
+      role: "Content Creator",
+      image: "https://i.pravatar.cc/150?img=5",
+    },
+    {
+      id: "john-doe-id",
+      name: "John Doe",
+      role: "Story Writer",
+      image: "https://i.pravatar.cc/150?img=8",
+    },
+  ];
+
   const [following, setFollowing] = useState<number[]>([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [toggleFollowMutation, { isLoading }] = useToggleFollowMutation();
 
   const toggleFollow = async (index: number, authorId: string) => {
-    if (!isLoggedIn()) return setShowLoginModal(true);
-    await toggleFollowMutation(authorId).unwrap();
-    setFollowing((prev) => (prev.includes(index) ? prev.filter((v) => v !== index) : [...prev, index]));
+    if (!isLoggedIn()) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    try {
+      await toggleFollowMutation(authorId).unwrap();
+
+      if (following.includes(index)) {
+        setFollowing(following.filter((id) => id !== index));
+      } else {
+        setFollowing([...following, index]);
+      }
+    } catch (error) {
+      console.error("Failed to toggle follow:", error);
+    }
   };
 
   return (
     <>
-      <section className="story-panel rounded-lg p-5 sm:p-6">
-        <h3 className="mb-5 text-lg font-bold tracking-tight text-slate-100">Recommended Writers</h3>
-        <div className="space-y-3">
-          {writers.map((writer, index) => (
-            <div key={writer.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-700/40 bg-slate-950/20 p-3">
-              <div className="flex items-center gap-3">
-                <img className="h-10 w-10 rounded-full object-cover" src={writer.image} alt={writer.name} />
-                <div>
-                  <p className="text-sm font-semibold text-slate-300">{writer.name}</p>
-                  <p className="text-xs text-slate-500">{writer.role}</p>
+      <section className="bg-blue-500/10 rounded-lg shadow-sm p-6">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-gray-300 mb-4">
+          Recommended Writers
+        </h3>
+
+        <div className="space-y-4">
+          {recommendedWriters.map((writer, index) => (
+            <div key={writer.id} className="flex items-center justify-between">
+              <div className="flex items-center">
+                <ImageFallback
+                  className="h-10 w-10 rounded-full"
+                <img
+                  className="h-10 w-10 rounded-full object-cover"
+                  src={writer.image}
+                  alt={writer.name}
+                />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-slate-700 dark:text-gray-400">
+                    {writer.name}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-gray-500">
+                    {writer.role}
+                  </p>
                 </div>
               </div>
-              <button disabled={isLoading} onClick={() => toggleFollow(index, writer.id)} className="motion-cta rounded-full px-3 py-1.5 text-sm font-semibold disabled:opacity-50">
+              <button disabled={isLoading} onClick={() => toggleFollow(index, writer.id)} className="motion-cta rounded-full px-3 py-1.5 text-sm text-white font-semibold disabled:opacity-50">
                 {following.includes(index) ? "Following" : "Follow"}
               </button>
             </div>
           ))}
         </div>
       </section>
+
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-          <div className="rounded-xl border border-white/10 bg-slate-900 p-6">
-            <p className="mb-4 text-slate-200">You need to log in or sign up to follow writers.</p>
-            <div className="flex gap-3">
-              <Link to="/login" className="motion-cta rounded-lg px-4 py-2">Log In</Link>
-              <button onClick={() => setShowLoginModal(false)} className="rounded-lg px-4 py-2 text-slate-300">Close</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0f172a] border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.5)] max-w-md w-full p-6 transform transition-all">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-user-lock text-2xl text-blue-400"></i>
+              </div>
+
+              <h3 className="text-2xl font-bold text-gray-200 mb-2">
+                Authentication Required
+              </h3>
+
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                You need to log in or sign up to follow writers.
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <Link
+                  to="/login"
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
+                >
+                  Log In
+                </Link>
+
+                <Link
+                  to="/signup"
+                  className="w-full bg-white/5 hover:bg-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all border border-white/10"
+                >
+                  Sign Up
+                </Link>
+
+                <button
+                  onClick={() => setShowLoginModal(false)}
+                  className="w-full bg-transparent hover:bg-white/5 text-gray-400 hover:text-gray-300 font-medium py-3 px-4 rounded-xl transition-all mt-1"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

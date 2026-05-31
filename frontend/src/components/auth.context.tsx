@@ -1,6 +1,11 @@
 import React, { createContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUserInfo, removeUserInfo, storeUserInfo } from "../services/auth.service";
+import {
+  getUserInfo,
+  removeUserInfo,
+  storeUserInfo,
+} from "../services/auth.service";
+import { AUTH_KEY } from "../constants/storage-key";
 
 interface User {
   id: string;
@@ -22,7 +27,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(
-    localStorage.getItem("accessToken")
+    localStorage.getItem(AUTH_KEY),
   );
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
@@ -30,16 +35,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = useCallback(() => {
     setAccessToken(null);
     setUser(null);
-    localStorage.removeItem("accessToken");
-    removeUserInfo();
+    removeUserInfo(); // handles localStorage removal via AUTH_KEY
     navigate("/login");
   }, [navigate]);
 
   const login = async (token: string) => {
     setAccessToken(token);
-    localStorage.setItem("accessToken", token);
-    storeUserInfo({ accessToken: token });
-    
+    storeUserInfo({ accessToken: token }); // single source of truth for token storage
+
     const userInfo = getUserInfo();
     if (userInfo) {
       setUser({
@@ -58,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
       const userInfo = getUserInfo();
-      
+
       if (!userInfo || !userInfo.userId) {
         logout();
         return;

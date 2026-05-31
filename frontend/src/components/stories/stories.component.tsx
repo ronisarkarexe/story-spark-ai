@@ -15,6 +15,7 @@ import { getErrorMessage } from "../../error/error.message";
 import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import { useRecentPrompts } from "../../hooks/useRecentPrompts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
+
 const soundtrackMap: Record<string, string> = {
   "🧙 Fantasy": "/audio/fantasy.mp3",
   "😱 Horror": "/audio/horror.mp3",
@@ -25,6 +26,7 @@ const soundtrackMap: Record<string, string> = {
   "🔍 Mystery": "/audio/mystery.mp3", 
   "🌟 Adventure": "/audio/adventure.mp3"
 };
+
 type Inputs = {
   prompt: string;
 };
@@ -44,7 +46,7 @@ const LANGUAGES = [
   { code: "bn", name: "Bengali" },
   { code: "ta", name: "Tamil" },
   { code: "te", name: "Telugu" },
-  { code: "mr", name: "Marathi" }
+  { code: "mr", name: "Marathi" },
 ];
 
 const GENRES = [
@@ -261,7 +263,7 @@ const UI_TEXT: Record<string, UiText> = {
     back: "ফিরে যান", freeAccess: "৩টি অনুরোধের জন্য বিনামূল্যে ব্যবহার", login: "লগ ইন", forMore: "করে আরও পান!",
     perMonth: "প্রতি মাসে", upgrade: "আপগ্রেড", monthlyRequests: "এই মাসের অনুরোধ", totalPosts: "মোট পোস্ট",
     titleStart: "আপনার ভাবনাকে বদলে দিন", titleAccent: "অসাধারণ গল্পে!", length: "দৈর্ঘ্য", language: "ভাষা",
-    short: "ছোট", medium: "মাঝারি", long: "লম্বা", promptPlaceholder: "প্রতিটি মহান গল্প একটি ভাবনা দিয়ে শুরু হয়। আপনারটি কী?",
+    short: "ছোট", medium: "মাঝারি", long: "লম্বা", promptPlaceholder: "প্রতিটি মহান গল্প একটি ভাবনা দিয়ে শুরু হয়। আপনারটি কী?",
     keyboardTip: "কীবোর্ড টিপ:", press: "চাপুন", toGenerate: "তৈরি করতে", alsoWorks: "এটিও কাজ করে", forNewLine: "নতুন লাইনের জন্য",
     generating: "তৈরি হচ্ছে...", generate: "তৈরি করুন", examples: "কিছু উদাহরণ প্রম্পট:",
     selectPrompt: "একটি প্রম্পট বেছে নিন", characterLimit: "অক্ষরের সীমা পূর্ণ - তৈরি বন্ধ", charactersRemaining: "অক্ষর বাকি",
@@ -309,10 +311,94 @@ const UI_TEXT: Record<string, UiText> = {
 
 const LANGUAGE_STORAGE_KEY = "storySparkLanguage";
 
+// NEW: Tone definitions — each has a label, emoji, and Tailwind colour classes
+// for the active/inactive pill states.
+const TONES = [
+  {
+    label: "Dark",
+    emoji: "🌑",
+    activeClass: "bg-gray-700 text-gray-100 border-gray-500 shadow-gray-700/40",
+    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
+  },
+  {
+    label: "Whimsical",
+    emoji: "🌈",
+    activeClass: "bg-sky-500/20 text-sky-300 border-sky-500/60 shadow-sky-500/20",
+    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
+  },
+  {
+    label: "Dramatic",
+    emoji: "🎬",
+    activeClass: "bg-red-500/20 text-red-300 border-red-500/60 shadow-red-500/20",
+    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
+  },
+  {
+    label: "Humorous",
+    emoji: "😄",
+    activeClass: "bg-yellow-500/20 text-yellow-300 border-yellow-500/60 shadow-yellow-500/20",
+    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
+  },
+  {
+    label: "Suspenseful",
+    emoji: "😰",
+    activeClass: "bg-orange-500/20 text-orange-300 border-orange-500/60 shadow-orange-500/20",
+    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
+  },
+  {
+    label: "Heartwarming",
+    emoji: "🥰",
+    activeClass: "bg-pink-500/20 text-pink-300 border-pink-500/60 shadow-pink-500/20",
+    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
+  },
+] as const;
+
+type ToneLabel = (typeof TONES)[number]["label"];
+
+// ---------------------------------------------------------------------------
+// TonePicker sub-component
+// ---------------------------------------------------------------------------
+interface TonePickerProps {
+  selected: ToneLabel | "";
+  onChange: (tone: ToneLabel | "") => void;
+}
+
+const TonePicker: React.FC<TonePickerProps> = ({ selected, onChange }) => {
+  return (
+    <div className="flex flex-wrap gap-2 mb-3">
+      <span className="w-full text-xs text-gray-400 mb-1">🎭 Tone:</span>
+      {TONES.map((tone) => {
+        const isActive = selected === tone.label;
+        return (
+          <button
+            key={tone.label}
+            type="button"
+            onClick={() => onChange(isActive ? "" : tone.label)}
+            aria-pressed={isActive}
+            title={isActive ? `Remove "${tone.label}" tone` : `Set tone to "${tone.label}"`}
+            className={`
+              px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200
+              ${isActive
+                ? `${tone.activeClass} shadow-md scale-105`
+                : tone.inactiveClass
+              }
+            `}
+          >
+            {tone.emoji} {tone.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Main StoriesComponent
+// ---------------------------------------------------------------------------
 const StoriesComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
+
   const draft = useMemo(() => {
     try {
       const saved = localStorage.getItem("story_spark_draft");
@@ -323,8 +409,10 @@ const StoriesComponent = () => {
   }, []);
 
   const [stories, setStories] = useState<IStories[]>(
-    draft?.stories?.length ? draft.stories : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
+    draft?.stories?.length ? draft.stories : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
+    [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
   );
+  
   const [loading, setLoading] = useState<boolean>(false);
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
@@ -333,16 +421,23 @@ const StoriesComponent = () => {
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string>(draft?.genre || "");
+  const [selectedGenre, setSelectedGenre] = useState<string>(
+  draft?.genre
+    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
+    : "🧙 Fantasy",
+);
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
+  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
   const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(draft?.language || "English");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
+  
   const dropdownRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  
   const playSoundtrack = (genre: string) => {
     const soundtrack = soundtrackMap[genre];
 
@@ -363,10 +458,11 @@ const StoriesComponent = () => {
 
     audioRef.current = audio;
   };
+
   const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
   const isGenerationInProgressRef = useRef(false);
   const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-    parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
+    parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
   );
   const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
   const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
@@ -381,17 +477,26 @@ const StoriesComponent = () => {
   // Autosave Draft
   useEffect(() => {
     const timer = setTimeout(() => {
+      // stories intentionally excluded — API response, not user input
+      // including stories risks hitting localStorage quota (~5MB) silently
       const draftData = {
         prompt: textareaValue,
         genre: selectedGenre,
         length: selectedLength,
         language: selectedLanguage,
+        tone: selectedTone,
         stories: stories,
       };
-      localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
+      try {
+        localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "QuotaExceededError") {
+          toast.error("Couldn't autosave draft — storage limit reached.");
+        }
+      }
     }, 1000);
     return () => clearTimeout(timer);
-  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, stories]);
+  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, selectedTone, stories]);
 
   useEffect(() => {
     const selectedLocale =
@@ -431,13 +536,24 @@ const StoriesComponent = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-
-  useEffect(() => {
-    if (location.state && location.state.prompt) {
+useEffect(() => {
+  if (location.state) {
+    if (location.state.prompt) {
       setTextareaValue(location.state.prompt);
-      navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location, navigate]);
+
+    if (location.state.genre) {
+  const matchedGenre =
+    GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
+  setSelectedGenre(matchedGenre);
+}
+
+    navigate(location.pathname, {
+      replace: true,
+      state: {},
+    });
+  }
+}, [location, navigate]);
 
   useEffect(() => {
     setValue("prompt", textareaValue);
@@ -466,7 +582,7 @@ const StoriesComponent = () => {
 
     if (getWordCount(data.prompt) < 10) {
       toast.error(
-        "Please enter a prompt with at least 10 words to generate a story.",
+        "Please enter a prompt with at least 10 words to generate a story."
       );
       return;
     }
@@ -479,10 +595,13 @@ const StoriesComponent = () => {
           ? `[Genre: ${selectedGenre}] ${data.prompt}`
           : data.prompt,
         wordLength:
-          selectedLength === "short" ? 150
-          : selectedLength === "long" ? 500
-          : 250,
+          selectedLength === "short"
+            ? 175
+            : selectedLength === "long"
+            ? 800
+            : 450,
         language: selectedLanguage,
+        tone: selectedTone || undefined,
       };
       const generationRequest = login
         ? generateModel(payload)
@@ -491,13 +610,11 @@ const StoriesComponent = () => {
       const res = await generationRequest.unwrap();
       if (res) {
         toast.success(res.message);
-        // Save prompt to recent prompts on successful generation
         addPrompt(data.prompt);
         setStories(res.data as IStories[]);
         setTextareaValue("");
         setSelectedPrompt("");
         setValue("prompt", "");
-        // audio last — it's non-critical
         if (selectedGenre) {
           playSoundtrack(selectedGenre);
         }
@@ -602,9 +719,8 @@ const StoriesComponent = () => {
                 {getRequestLimit(userRole?.subscriptionType as string)}
               </span>
               <Link to="/pricing" className="border-1 border-white/20 pl-2 text-gray-300">
-               {text.upgrade}
+                {text.upgrade}
               </Link>
-              
               <i className="fas fa-bolt text-yellow-400"></i>
             </button>
             <div className="mt-3 text-slate-500 text-xs text-center md:text-right dark:text-gray-500">
@@ -628,85 +744,286 @@ const StoriesComponent = () => {
           </h1>
 
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white">
-<div className="relative">
-  <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-    <div className="flex flex-wrap gap-2 mb-3">
-      {GENRES.map((genre) => (
-        <button
-          key={genre.value}
-          type="button"
-          onClick={() => {
-            const newGenre =
-              selectedGenre === genre.value ? "" : genre.value;
+            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white overflow-hidden">
+              <div className="relative w-full">
+                <form className="space-y-4 w-full" onSubmit={handleSubmit(onSubmit)}>
+                  
+                  {/* ── Genre chips ── */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {GENRES.map((genre) => (
+                      <button
+                        key={genre.value}
+                        type="button"
+                        onClick={() => {
+                          const newGenre = selectedGenre === genre.value ? "" : genre.value;
+                          setSelectedGenre(newGenre);
+                          if (newGenre) {
+                            playSoundtrack(newGenre);
+                          } else if (audioRef.current) {
+                            audioRef.current.pause();
+                            audioRef.current.currentTime = 0;
+                          }
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                          selectedGenre === genre.value
+                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+                            : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+                        }`}
+                      >
+                        {genre.icon} {genreLabels[genre.name]}
+                      </button>
+                    ))}
+                  </div>
 
-            setSelectedGenre(newGenre);
+                  {/* ── NEW: Tone picker ── */}
+                  <TonePicker selected={selectedTone} onChange={setSelectedTone} />
 
-            if (newGenre) {
-              playSoundtrack(newGenre);
-            } else if (audioRef.current) {
-              audioRef.current.pause();
-              audioRef.current.currentTime = 0;
-            }
-          }}
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-            selectedGenre === genre.value
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-          }`}
-        >
-          {genre.icon} {genreLabels[genre.name]}
-        </button>
-      ))}
-    </div>
+                  {/* ── Length + Language row ── */}
+                  <div className="flex flex-wrap items-center gap-4 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400 mr-1">📏 {text.length}:</span>
 
-    <div className="flex flex-wrap items-center gap-4 mb-3">
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-400 mr-1">📏 {text.length}:</span>
+                      {(["short", "medium", "long"] as const).map((length) => (
+                        <button
+                          key={length}
+                          type="button"
+                          onClick={() => setSelectedLength(length)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                            selectedLength === length
+                              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+                              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+                          }`}
+                        >
+                          {text[length]}
+                        </button>
+                      ))}
+                    </div>
 
-        {(["short", "medium", "long"] as const).map((length) => (
-          <button
-            key={length}
-            type="button"
-            onClick={() => setSelectedLength(length)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-              selectedLength === length
-                ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-            }`}
-          >
-            {text[length]}
-          </button>
-        ))}
-      </div>
+                    <div className="flex items-center gap-2 ml-0 sm:ml-auto">
+                      <span className="text-xs text-gray-400 mr-1">🌐 {text.language}:</span>
+                      <div className="relative" ref={languageDropdownRef}>
+                        <button
+                          key="lang-selector-btn"
+                          type="button"
+                          onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                          className="flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 cursor-pointer"
+                        >
+                          <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
+                          <span className="text-gray-400 text-[10px]">▼</span>
+                        </button>
 
-      <div className="flex items-center gap-2 ml-0 sm:ml-auto">
-        <span className="text-xs text-gray-400 mr-1">🌐 {text.language}:</span>
-        <div className="relative" ref={languageDropdownRef}>
-          <button
-            key="lang-selector-btn"
-            type="button"
-            onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 cursor-pointer"
-          >
-            <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
-            <span className="text-gray-400 text-[10px]">▼</span>
-          </button>
+                        {isLanguageDropdownOpen && (
+                          <ul className="absolute right-0 z-20 mt-1 max-h-48 w-36 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
+                            {LANGUAGES.map((lang) => (
+                              <li key={lang.code}>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedLanguage(lang.name);
+                                    setIsLanguageDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-3 py-2 text-xs transition-colors duration-150 cursor-pointer ${
+                                    selectedLanguage === lang.name
+                                      ? "bg-indigo-600 text-white font-bold"
+                                      : "text-gray-400 hover:bg-indigo-600/50 hover:text-white"
+                                  }`}
+                                >
+                                  {lang.name}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
-          {isLanguageDropdownOpen && (
-            <ul className="absolute right-0 z-20 mt-1 max-h-48 w-36 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
-              {LANGUAGES.map((lang) => (
-                <li key={lang.code}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedLanguage(lang.name);
-                      setIsLanguageDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-xs transition-colors duration-150 cursor-pointer ${
-                      selectedLanguage === lang.name
-                        ? "bg-indigo-600 text-white font-bold"
-                        : "text-gray-400 hover:bg-indigo-600/50 hover:text-white"
+                  {/* ── Prompt textarea ── */}
+                  <div className="relative w-full">
+                    <textarea
+                      {...register("prompt")}
+                      ref={(el) => {
+                        register("prompt").ref(el);
+                        inputRef.current = el;
+                      }}
+                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-12 transition-colors duration-200 box-border ${
+                        isOverLimit
+                          ? "ring-1 ring-red-500 rounded"
+                          : isNearLimit
+                          ? "ring-1 ring-yellow-400 rounded"
+                          : ""
+                      }`}
+                      placeholder={text.promptPlaceholder}
+                      value={textareaValue}
+                      maxLength={MAX_PROMPT_LENGTH}
+                      onChange={(e) => setTextareaValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          const form = e.currentTarget.closest("form");
+                          if (form) form.requestSubmit();
+                        }
+                      }}
+                    />
+                    {/* Character count display */}
+<div className={`flex justify-end mt-1 text-xs font-medium transition-colors duration-200 ${
+  isOverLimit
+    ? "text-red-500"
+    : isNearLimit
+    ? "text-yellow-500"
+    : "text-gray-400"
+}`}>
+  {textareaValue.length} / {MAX_PROMPT_LENGTH}
+</div>
+
+                    {textareaValue.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleClearPrompt}
+                        className="absolute right-2 top-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
+                        aria-label={text.close}
+                        title={text.close}
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setIsRecentPromptsOpen(!isRecentPromptsOpen)}
+                      className="absolute right-2 top-12 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2"
+                      aria-label={text.recentPrompts}
+                      title={text.recentPrompts}
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      {text.recentPrompts}
+                    </button>
+
+                    <div className="flex items-center justify-between mt-1 px-1">
+                      {isOverLimit ? (
+                        <p className="text-xs text-red-400 flex items-center gap-1">
+                          <span>⚠</span> {text.characterLimit}
+                        </p>
+                      ) : isNearLimit ? (
+                        <p className="text-xs text-yellow-400 flex items-center gap-1">
+                          <span>⚠</span>{" "}
+                          {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
+                        </p>
+                      ) : (
+                        <span />
+                      )}
+
+                      <span
+                        className={`text-xs tabular-nums ml-auto ${
+                          isOverLimit
+                            ? "text-red-400 font-medium"
+                            : isNearLimit
+                            ? "text-yellow-400"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {textareaValue.length} / {MAX_PROMPT_LENGTH}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-1 px-1">
+                    💡 <span className="font-medium">{text.keyboardTip}</span> {text.press}{" "}
+                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+                      Enter
+                    </kbd>{" "}
+                    {text.toGenerate} &bull;{" "}
+                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+                      Ctrl + Enter
+                    </kbd>{" "}
+                    {text.alsoWorks} &bull;{" "}
+                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+                      Shift + Enter
+                    </kbd>{" "}
+                    {text.forNewLine}
+                  </p>
+
+                  {/* ── Generate button row ── */}
+                  <div className="flex items-center justify-between mt-2 w-full">
+                    {/* Active tone badge */}
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      {selectedTone && (
+                        <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 border border-white/10">
+                          {TONES.find((t) => t.label === selectedTone)?.emoji}{" "}
+                          <span className="font-medium">{selectedTone}</span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTone("")}
+                            className="ml-1 text-gray-500 hover:text-red-400 transition-colors"
+                            aria-label="Remove tone"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading || isOverLimit}
+                      aria-busy={loading}
+                      aria-disabled={loading || isOverLimit}
+                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
+                        loading || isOverLimit
+                          ? "opacity-50 cursor-not-allowed"
+                          : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
+                      } transition-all duration-300 transform flex items-center space-x-2 group`}
+                    >
+                      <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
+                      {loading ? text.generating : text.generate}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div className="w-full max-w-2xl m-auto mt-4">
+              <h1 className="text-sm text-slate-500 mb-1 dark:text-gray-500">
+                {text.examples}
+              </h1>
+
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="w-full p-3 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-between text-sm text-left transition-all duration-200"
+                >
+                  <span className="truncate pr-4">
+                    {selectedPrompt || text.selectPrompt}
+                  </span>
+
+                  <span
+                    className={`text-gray-300 transition-transform duration-200 ${
+                      isDropdownOpen ? "rotate-180" : ""
                     }`}
                   >
                     {lang.name}
@@ -717,16 +1034,32 @@ const StoriesComponent = () => {
           )}
         </div>
       </div>
+
+      {/* Clear prompt button - next to language selector */}
+      {textareaValue.length > 0 && (
+        <button
+          type="button"
+          onClick={handleClearPrompt}
+          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200 border border-red-500/20"
+          aria-label={text.close}
+          title="Clear prompt"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear
+        </button>
+      )}
     </div>
 
-    <div className="relative">
+    <div className="relative overflow-hidden">
       <textarea
   {...register("prompt")}
   ref={(el) => {
     register("prompt").ref(el);
     inputRef.current = el;
   }}
-        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-10 transition-colors duration-200 ${
+        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-4 transition-colors duration-200 ${
           isOverLimit
             ? "ring-1 ring-red-500 rounded"
             : isNearLimit
@@ -746,29 +1079,7 @@ const StoriesComponent = () => {
         }}
         />
 
-      {textareaValue.length > 0 && (
-        <button
-          type="button"
-          onClick={handleClearPrompt}
-          className="absolute right-2 top-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
-          aria-label={text.close}
-          title={text.close}
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      )}
+
 
       <button
         type="button"
@@ -821,87 +1132,27 @@ const StoriesComponent = () => {
       </div>
     </div>
 
-    <p className="text-xs text-gray-500 mt-1 px-1">
-      💡  <span className="font-medium">{text.keyboardTip}</span> {text.press}{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-        Enter
-      </kbd>{" "}
-      {text.toGenerate} &bull;{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-        Ctrl + Enter
-      </kbd>{" "}
-      {text.alsoWorks} &bull;{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-        Shift + Enter
-      </kbd>{" "}
-      {text.forNewLine}
-    </p>
-
-    <div className="flex justify-end mt-2 w-full">
-      <button
-        type="submit"
-        disabled={loading || isOverLimit}
-        aria-busy={loading}
-        aria-disabled={loading || isOverLimit}
-        className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-          loading || isOverLimit
-            ? "opacity-50 cursor-not-allowed"
-            : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
-        } transition-all duration-300 transform flex items-center space-x-2 group`}
-      >
-        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
-        {loading ? text.generating : text.generate}
-      </button>
-    </div>
-  </form>
-</div>
+                {isDropdownOpen && (
+                  <ul className="relative z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
+                    {prompts.map((item) => (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPrompt(item.prompt);
+                            setTextareaValue(item.prompt);
+                            setIsDropdownOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
+                        >
+                          {item.prompt}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
-
-            <div className="w-full max-w-2xl m-auto mt-4">
-          <h1 className="text-sm text-slate-500 mb-1 dark:text-gray-500">
-    {text.examples}
-  </h1>
-
-  <div className="relative" ref={dropdownRef}>
-    <button
-      type="button"
-      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-      className="w-full p-3 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-between text-sm text-left transition-all duration-200"
-    >
-      <span className="truncate pr-4">
-        {selectedPrompt || text.selectPrompt}
-      </span>
-
-      <span
-        className={`text-gray-300 transition-transform duration-200 ${
-          isDropdownOpen ? "rotate-180" : ""
-        }`}
-      >
-        ▼
-      </span>
-    </button>
-
-    {isDropdownOpen && (
-      <ul className="relative z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
-        {prompts.map((item) => (
-          <li key={item.id}>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedPrompt(item.prompt);
-                setTextareaValue(item.prompt);
-                setIsDropdownOpen(false);
-              }}
-              className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
-            >
-              {item.prompt}
-            </button>
-          </li>
-        ))}
-      </ul>
-    )}
-  </div>
-</div>
           </div>
         </div>
       </div>
@@ -930,8 +1181,8 @@ const StoriesComponent = () => {
 
       {showHelpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md w-full text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
-              <h2 className="text-xl font-bold text-slate-900 mb-4 dark:text-white">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md w-full text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
+            <h2 className="text-xl font-bold text-slate-900 mb-4 dark:text-white">
               {text.shortcuts}
             </h2>
 
@@ -953,7 +1204,9 @@ const StoriesComponent = () => {
         </div>
       )}
 
-      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
+      {loading && (
+        <StoryGeneratingAnimation onCancel={handleCancelGeneration} />
+      )}
       <StoriesViewComponent
         stories={stories}
         isLogin={login}
