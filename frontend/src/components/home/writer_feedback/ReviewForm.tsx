@@ -53,26 +53,31 @@ const ReviewForm = () => {
   };
 
   return (
-    <div className="mt-12 max-w-xl mx-auto bg-blue-500/10 p-8 rounded-xl">
-      <h3 className="text-xl font-bold text-slate-900 dark:text-gray-300 mb-6">
-        Share Your Experience
-      </h3>
+    <div className="writer-feedback-form story-panel mx-auto mt-14 max-w-xl rounded-2xl p-6 sm:p-8">
+      <div className="mb-6 text-center">
+        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+          Share Your Experience
+        </h3>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Tell us how Story Spark AI has shaped your writing journey.
+        </p>
+      </div>
 
       {success && (
-        <div aria-live="polite" className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">
+        <div aria-live="polite" className="mb-4 rounded-lg border border-emerald-500/25 bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-300">
           Thank you! Your review has been submitted for approval.
         </div>
       )}
 
       {errors.submit && (
-        <div aria-live="polite" className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+        <div aria-live="polite" className="mb-4 rounded-lg border border-red-500/25 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-300">
           {errors.submit}
         </div>
       )}
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-gray-400 mb-1">
+          <label htmlFor="name" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
             Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -82,13 +87,13 @@ const ReviewForm = () => {
             onChange={(e) => setName(e.target.value)}
             aria-invalid={!!errors.name}
             aria-describedby={errors.name ? "name-error" : undefined}
-            className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/60 dark:border-slate-600 dark:bg-slate-900/60 dark:text-slate-100"
           />
-          {errors.name && <p id="name-error" className="text-red-500 text-xs mt-1">{errors.name}</p>}
+          {errors.name && <p id="name-error" className="mt-1 text-xs text-red-500">{errors.name}</p>}
         </div>
 
         <div>
-          <label htmlFor="role" className="block text-sm font-medium text-slate-700 dark:text-gray-400 mb-1">
+          <label htmlFor="role" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
             Role <span className="text-red-500">*</span>
           </label>
           <input
@@ -98,13 +103,14 @@ const ReviewForm = () => {
             onChange={(e) => setRole(e.target.value)}
             aria-invalid={!!errors.role}
             aria-describedby={errors.role ? "role-error" : undefined}
-            className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g. Novelist, Poet, Blogger"
+            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/60 dark:border-slate-600 dark:bg-slate-900/60 dark:text-slate-100"
           />
-          {errors.role && <p id="role-error" className="text-red-500 text-xs mt-1">{errors.role}</p>}
+          {errors.role && <p id="role-error" className="mt-1 text-xs text-red-500">{errors.role}</p>}
         </div>
 
         <div>
-          <label htmlFor="feedback" className="block text-sm font-medium text-slate-700 dark:text-gray-400 mb-1">
+          <label htmlFor="feedback" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
             Review <span className="text-red-500">*</span>
           </label>
           <textarea
@@ -115,25 +121,26 @@ const ReviewForm = () => {
             maxLength={500}
             aria-invalid={!!errors.feedback}
             aria-describedby={errors.feedback ? "feedback-error" : undefined}
-            className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-slate-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="What do you love about writing here?"
+            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/60 dark:border-slate-600 dark:bg-slate-900/60 dark:text-slate-100"
           />
-          <p className="text-xs text-slate-400 text-right">{feedback.length}/500</p>
-          {errors.feedback && <p id="feedback-error" className="text-red-500 text-xs mt-1">{errors.feedback}</p>}
+          <p className="text-right text-xs text-slate-400">{feedback.length}/500</p>
+          {errors.feedback && <p id="feedback-error" className="mt-1 text-xs text-red-500">{errors.feedback}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-gray-400 mb-1">
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
             Rating <span className="text-red-500">*</span>
           </label>
           <StarRating rating={rating} setRating={setRating} />
-          {errors.rating && <p className="text-red-500 text-xs mt-1">{errors.rating}</p>}
+          {errors.rating && <p className="mt-1 text-xs text-red-500">{errors.rating}</p>}
         </div>
 
         <button
           type="button"
           onClick={handleSubmit}
           disabled={isLoading}
-          className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="motion-cta w-full rounded-lg px-4 py-2.5 font-semibold disabled:opacity-50"
         >
           {isLoading ? "Submitting..." : "Submit Review"}
         </button>

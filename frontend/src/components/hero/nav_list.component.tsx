@@ -2,10 +2,13 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
+import { useTheme } from "../theme/theme.context";
+import { Sparkles } from "lucide-react";
 
 const NavListComponent = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
+  const { glowEnabled, toggleGlow } = useTheme();
 
   const handleLogout = () => {
     removeUserInfo();
@@ -27,6 +30,26 @@ const NavListComponent = () => {
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          {/* Cursor glow toggle */}
+          <div className="relative group/glow">
+            <button
+              type="button"
+              onClick={toggleGlow}
+              aria-label={glowEnabled ? "Disable cursor glow" : "Enable cursor glow"}
+              aria-pressed={glowEnabled}
+              className={`rounded-full p-2 transition-all duration-300 ${
+                glowEnabled
+                  ? "text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 dark:bg-indigo-400/10 hover:bg-indigo-500/20"
+                  : "text-slate-500 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-white/10"
+              }`}
+            >
+              <Sparkles className="h-4 w-4" />
+            </button>
+            {/* Tooltip */}
+            <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition-opacity duration-200 group-hover/glow:opacity-100 dark:bg-slate-700">
+              {glowEnabled ? "Glow: On" : "Glow: Off"}
+            </span>
+          </div>
           {loggedIn ? (
             <button onClick={handleLogout} className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Logout</button>
           ) : (

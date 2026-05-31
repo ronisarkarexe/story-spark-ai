@@ -15,7 +15,7 @@ const ResourceComponent = () => (
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
         {resources.map((resource) => (
           <div key={resource.title} className="motion-card-subtle story-panel group flex h-full flex-col rounded-lg p-6">
-            <h3 className="mb-3 text-xl font-bold text-slate-100">{resource.title}</h3>
+            <h3 className="mb-3 text-xl font-bold text-slate-800 dark:text-slate-100">{resource.title}</h3>
             <p className="mb-6 flex-grow leading-relaxed text-slate-400">{resource.description}</p>
             <Link to={resource.link} className="inline-flex items-center font-semibold text-blue-300 transition-colors hover:text-blue-200">
               {resource.linkText}

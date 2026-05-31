@@ -23,14 +23,14 @@ const RecommendedWritersComponent = () => {
   return (
     <>
       <section className="story-panel rounded-lg p-5 sm:p-6">
-        <h3 className="mb-5 text-lg font-bold tracking-tight text-slate-100">Recommended Writers</h3>
+        <h3 className="mb-5 text-lg font-bold tracking-tight text-slate-800 dark:text-slate-100">Recommended Writers</h3>
         <div className="space-y-3">
           {writers.map((writer, index) => (
-            <div key={writer.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-700/40 bg-slate-950/20 p-3">
+            <div key={writer.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700/40 dark:bg-slate-950/20 shadow-sm dark:shadow-none">
               <div className="flex items-center gap-3">
                 <img className="h-10 w-10 rounded-full object-cover" src={writer.image} alt={writer.name} />
                 <div>
-                  <p className="text-sm font-semibold text-slate-300">{writer.name}</p>
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{writer.name}</p>
                   <p className="text-xs text-slate-500">{writer.role}</p>
                 </div>
               </div>

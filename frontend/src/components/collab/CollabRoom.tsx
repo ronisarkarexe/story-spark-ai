@@ -51,7 +51,7 @@ export default function CollabRoom() {
       }
 
       // Connect to collab namespace
-      const collabSocket = socket.io.of("/collab");
+      const collabSocket = (socket.io as any).of ? (socket.io as any).of("/collab") : socket;
 
       // Request room info
       collabSocket.emit("collab:get_room", { roomId }, (response: any) => {
@@ -100,7 +100,8 @@ export default function CollabRoom() {
 
     const socket = getSocketIo();
     if (socket) {
-      socket.io.of("/collab").emit("collab:add_text", {
+      const collabSocket = (socket.io as any).of ? (socket.io as any).of("/collab") : socket;
+      collabSocket.emit("collab:add_text", {
         roomId,
         userId: user.userId,
         text: newText,
@@ -112,7 +113,8 @@ export default function CollabRoom() {
   const handleAIContinue = () => {
     const socket = getSocketIo();
     if (socket) {
-      socket.io.of("/collab").emit("collab:ai_continue", { roomId });
+      const collabSocket = (socket.io as any).of ? (socket.io as any).of("/collab") : socket;
+      collabSocket.emit("collab:ai_continue", { roomId });
     }
   };
 
