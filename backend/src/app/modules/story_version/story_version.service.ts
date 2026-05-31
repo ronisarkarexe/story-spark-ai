@@ -136,7 +136,7 @@ const restoreVersion = async (
   return post;
 };
 
-export const StoryVersionService = {const ENHANCE_TIMEOUT_MS = 60000;
+const ENHANCE_TIMEOUT_MS = 60000;
 
 const enhancePrompt = async (prompt: string): Promise<string> => {
   try {
@@ -170,6 +170,8 @@ const enhancePrompt = async (prompt: string): Promise<string> => {
     );
   }
 };
+
+export const StoryVersionService = {
   createVersionSnapshot,
   getVersionsByStoryId,
   getVersionById,
