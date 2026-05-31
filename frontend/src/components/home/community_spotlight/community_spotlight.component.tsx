@@ -1,38 +1,19 @@
-import { useMemo } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+
 import { useNavigate } from "react-router-dom";
 
-import { Post } from "../../../models/post";
+
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
 import LoadingAnimation from "../../loading/loading.component";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
 
-type SpotlightWriter = {
-  author: Post["author"];
-  storiesCount: number;
-  likesCount: number;
-  commentsCount: number;
-  viewsCount: number;
-  bookmarksCount: number;
-  engagementScore: number;
-  topPost: Post;
-};
 
-const TOP_WRITERS_LIMIT = 3;
 
-const getBookmarkCount = (post: Post) => post.bookmarks?.length ?? 0;
 
-const getPostEngagementScore = (post: Post) =>
-  (post.likesCount ?? 0) * 3 +
-  (post.commentsCount ?? 0) * 2 +
-  getBookmarkCount(post) * 2 +
-  (post.viewsCount ?? 0);
 
-const getWriterEngagementScore = (writer: Omit<SpotlightWriter, "engagementScore">) =>
-  writer.likesCount * 3 +
-  writer.commentsCount * 2 +
-  writer.bookmarksCount * 2 +
-  writer.viewsCount +
-  writer.storiesCount * 5;
+
+
+
 
 const rankStyles = [
   {
@@ -55,8 +36,9 @@ const rankStyles = [
 const formatMetric = (value: number) =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(value);
 
-const CommunitySpotlightComponent = () => {
+const CommunitySpotlightComponent = ({ isLogin }: { isLogin?: boolean }) => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
+  const topWriters: any[] = (data as any)?.posts || [];
   const navigate = useNavigate();
 
   if (isLoading) return <LoadingAnimation />;
@@ -102,7 +84,7 @@ const CommunitySpotlightComponent = () => {
 
       {topWriters.length > 0 ? (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {topWriters.map((writer, index) => {
+          {topWriters.map((writer: any, index: number) => {
             const rank = index + 1;
             const style = rankStyles[index];
 

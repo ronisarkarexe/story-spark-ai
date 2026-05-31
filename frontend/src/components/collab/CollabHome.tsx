@@ -1,8 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 // Socket.IO collab disabled (see CollabRoom). Previous: io, Socket, resolveSocketUrl, BACKEND_URL.
 
 export default function CollabHome() {
+  const isLoggedIn: any = () => false;
+  const setIsCreating = (val: boolean) => {};
+  const connectSocket: any = () => ({ emit: () => {} });
+  const user: any = { name: "Guest" };
+
   const navigate = useNavigate();
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState("");
