@@ -183,11 +183,11 @@ const DashboardLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { data } = useGetProfileInfoQuery();
   const user = getUserInfo();
   if (!user) {
-  return <Navigate to="/login" replace />;
-}
-const { data } = useGetProfileInfoQuery();
+    return <Navigate to="/login" replace />;
+  }
   const currentPage = menuItems
     .flatMap((item) => (item.subRoutes ? [item, ...item.subRoutes] : [item]))
     .find(
