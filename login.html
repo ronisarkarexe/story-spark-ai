@@ -9,11 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css" rel="stylesheet"/>
     
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <link href="auth.css" rel="stylesheet"/>
-    
-    <link rel="stylesheet" href="/src/index.css" />
 </head>
 <body class="bg-background text-on-surface font-body-md selection:bg-primary/30">
 <div class="min-h-screen flex items-center justify-center p-4 md:p-0">
@@ -110,7 +110,7 @@
                     <label class="field-label" for="name-field">Full Name</label>
                     <div class="input-icon-wrapper">
                         <i class="fi fi-rr-user input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="Alex Spark" type="text" id="name-field" autocomplete="name"/>
+                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="Alex Spark" type="text" id="name-field" autocomplete="name"/>
                     </div>
                     <span class="field-error-msg" id="name-error">Please enter your full name.</span>
                 </div>
@@ -119,7 +119,7 @@
                     <label class="field-label" for="email-field">Email Address</label>
                     <div class="input-icon-wrapper">
                         <i class="fi fi-rr-envelope input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" required autocomplete="email" value="admin@gmail.com"/>
+                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" required autocomplete="email" value="admin@gmail.com"/>
                     </div>
                     <span class="field-error-msg" id="email-error">Please enter a valid email address.</span>
                 </div>
@@ -131,7 +131,7 @@
                     </div>
                     <div class="input-icon-wrapper">
                         <i class="fi fi-rr-lock input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••" type="password" required autocomplete="current-password" value="admin@123"/>
+                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••" type="password" required autocomplete="current-password" value="admin@123"/>
                         <button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors p-1 rounded" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
                             <i class="fi fi-rr-eye-crossed text-[16px]" id="eye-icon"></i>
                         </button>

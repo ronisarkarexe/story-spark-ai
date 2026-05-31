@@ -31,14 +31,15 @@ const login = async (payload: AuthModel) => {
   if (!match) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Password is not valid!");
   }
-  const { _id, email, role, subscriptionType, name, postsCount } = isExistUser;
+  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } =
+    isExistUser;
   const accessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
   const refreshToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
@@ -51,7 +52,7 @@ const login = async (payload: AuthModel) => {
   };
 };
 
-const register = async (payload: IUser & { verificationToken?: string }) => {
+const register = async (payload: IUser & { verificationToken?: string; confirmPassword?: string }) => {
   const { email: userEmail, verificationToken } = payload;
   
   // FIX #4: Verify that email was verified via OTP before allowing registration
@@ -98,14 +99,15 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
   // Clean up OTP record after successful registration
   await OTPModel.deleteOne({ email: userEmail });
   
-  const { _id, email, role, subscriptionType, name, postsCount } = result;
+  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } =
+    result;
   const accessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
   const refreshToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
@@ -131,9 +133,18 @@ const refreshToken = async (token: string) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
-  const { _id, email, role, subscriptionType, name, postsCount } = user;
+
+  if (user.tokenVersion !== (verifiedToken as any).tokenVersion) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Invalid or expired refresh token"
+    );
+  }
+
+  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } =
+    user;
   const newAccessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
@@ -184,14 +195,15 @@ const googleLogin = async (payload: { token: string }) => {
       user = await User.create(newUser);
     }
 
-    const { _id, role, subscriptionType, postsCount, name } = user;
+    const { _id, role, subscriptionType, postsCount, name, tokenVersion } =
+      user;
     const accessToken = JwtHalers.createToken(
-      { _id, email, role, subscriptionType, name, postsCount },
+      { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
       config.jwt.secret as Secret,
       config.jwt.expires_in as string
     );
     const refreshTokenData = JwtHalers.createToken(
-      { _id, email, role, subscriptionType, name, postsCount },
+      { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
       config.jwt.refresh_secret as Secret,
       config.jwt.refresh_expires_in as string
     );
@@ -216,6 +228,37 @@ const googleLogin = async (payload: { token: string }) => {
       error.message || "Google login failed"
     );
   }
+};
+
+const changePassword = async (userPayload: any, payload: any) => {
+  const { oldPassword, newPassword } = payload;
+  const user = await User.findById(userPayload._id);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  if (!user.password) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "User does not have a password set"
+    );
+  }
+
+  const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+  if (!isPasswordMatch) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Old password is incorrect");
+  }
+
+  user.password = newPassword;
+
+  if (user.tokenVersion !== undefined) {
+    user.tokenVersion += 1;
+  } else {
+    user.tokenVersion = 1;
+  }
+
+  await user.save();
 };
 
 const forgotPassword = async (email: string) => {
@@ -324,6 +367,7 @@ export const AuthService = {
   register,
   refreshToken,
   googleLogin,
+  changePassword,
   forgotPassword,
   resetPassword,
 };

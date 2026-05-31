@@ -31,7 +31,9 @@ const story = {
 describe("AiModelService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedRace.mockImplementation(async (operation) => operation({} as AbortSignal));
+    mockedRace.mockImplementation(async (operation) =>
+      operation({} as AbortSignal)
+    );
   });
 
   it("returns stories on success without empty-array masking", async () => {
@@ -117,5 +119,83 @@ describe("AiModelService", () => {
         numStories: 1,
       })
     ).rejects.toMatchObject({ statusCode: httpStatus.GATEWAY_TIMEOUT });
+  });
+
+  // ── Tone selector tests ────────────────────────────────────────────────────
+
+  it("passes tone to generateWithGeminiStories when provided (authenticated)", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiModelGenerate(
+      { prompt: "test", wordLength: 100, numStories: 1, tone: "Dark" },
+      { email: "user@example.com" } as never
+    );
+
+    // The 6th argument to generateWithGeminiStories should be the tone string
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",   // prompt
+      100,      // wordLength
+      1,        // numStories
+      "English", // language default
+      expect.any(Object), // AbortSignal
+      "Dark"    // tone
+    );
+  });
+
+  it("passes tone to generateWithGeminiStories when provided (free/guest)", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiFreeModelGenerate({
+      prompt: "test",
+      wordLength: 150,
+      numStories: 1,
+      tone: "Humorous",
+    });
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      150,
+      1,
+      "English",
+      expect.any(Object),
+      "Humorous"
+    );
+  });
+
+  it("passes undefined tone when tone is omitted (authenticated)", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiModelGenerate(
+      { prompt: "test", wordLength: 100, numStories: 1 },
+      { email: "user@example.com" } as never
+    );
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      100,
+      1,
+      "English",
+      expect.any(Object),
+      undefined // no tone → undefined, so the util skips the directive
+    );
+  });
+
+  it("passes undefined tone when tone is omitted (free/guest)", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiFreeModelGenerate({
+      prompt: "test",
+      wordLength: 150,
+      numStories: 1,
+    });
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      150,
+      1,
+      "English",
+      expect.any(Object),
+      undefined
+    );
   });
 });

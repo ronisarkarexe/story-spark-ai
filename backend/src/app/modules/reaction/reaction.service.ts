@@ -21,11 +21,9 @@ const toggleReaction = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
-  // Check if reaction already exists
   const existingReaction = await Reaction.findOne({
-    postId: postId,
     userId: user._id,
-    type: type,
+    postId: post._id,
   });
 
   if (existingReaction) {

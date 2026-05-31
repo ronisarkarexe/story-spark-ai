@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { setGuestUserIdCookie } from "../../../utils/cookie.util";
 import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
 import catchAsync from "../../../shared/catch_async";
@@ -11,6 +12,7 @@ import {
   createGuestQuotaGuard,
   runWithQuotaCleanup,
 } from "./quota.lifecycle";
+import { generateWithGeminiStoriesStream } from "./ai_model.utils";
 
 const aiModelGenerate = catchAsync(async (req: Request, res: Response) => {
   const prompt = req.body;
@@ -41,7 +43,7 @@ const aiFreeModelGenerate = catchAsync(async (req: Request, res: Response) => {
 
   if (!userId) {
     userId = Math.random().toString(36).substring(7);
-    res.cookie("userId", userId, { maxAge: 30 * 24 * 60 * 60 * 1000 });
+    setGuestUserIdCookie(res, userId);  // ✅ Fixed: now includes sameSite
   }
 
   const guard = createGuestQuotaGuard(userId);
@@ -87,7 +89,7 @@ const aiFreeModelAlternateEndings = catchAsync(
 
     if (!userId) {
       userId = Math.random().toString(36).substring(7);
-      res.cookie("userId", userId, { maxAge: 30 * 24 * 60 * 60 * 1000 });
+      setGuestUserIdCookie(res, userId);  // ✅ Fixed: now includes sameSite
     }
 
     const guard = createGuestQuotaGuard(userId);
@@ -104,6 +106,38 @@ const aiFreeModelAlternateEndings = catchAsync(
   }
 );
 
+const aiModelGenerateStream = async (req: Request, res: Response) => {
+  const { prompt, wordLength, numStories } = req.body;
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  const controller = new AbortController();
+
+  req.on("close", () => {
+    controller.abort();
+  });
+
+  try {
+    await generateWithGeminiStoriesStream(
+      prompt,
+      wordLength ?? 250,
+      numStories ?? 2,
+      (chunk: string) => {
+        res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+      },
+      controller.signal
+    );
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    res.write(`data: ${JSON.stringify({ error: errorMsg })}\n\n`);
+    res.end();
+  }
+};
 const aiModelRemix = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body as IRemixPayload;
   const token = await getToken(req);
@@ -155,9 +189,9 @@ export const AiModelController = {
   aiFreeModelGenerate,
   aiModelAlternateEndings,
   aiFreeModelAlternateEndings,
+  aiModelGenerateStream,
   aiModelRemix,
   aiFreeModelRemix,
   aiModelTranslate,
   aiFreeModelTranslate,
 };
-
