@@ -8,7 +8,7 @@ interface HelpHeroProps {
   resultCount?: number;
 }
 
-const HelpHero: FC<HelpHeroProps> = () => {
+const HelpHero: FC<HelpHeroProps> = ({ searchQuery, onSearchChange, resultCount }) => {
   return (
     <section
       id="help-hero"
@@ -20,12 +20,10 @@ const HelpHero: FC<HelpHeroProps> = () => {
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl -z-10"
         aria-hidden="true"
       />
-
       <div
         className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-3xl -z-10"
         aria-hidden="true"
       />
-
       <div
         className="absolute inset-0 opacity-[0.04] pointer-events-none"
         style={{
@@ -49,19 +47,6 @@ const HelpHero: FC<HelpHeroProps> = () => {
             </div>
           </Link>
         </motion.div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <Link to="/" className="inline-block mb-8">
-          <div className="bg-white dark:bg-gradient-to-r dark:from-white/20 dark:to-white/10 hover:bg-slate-100 dark:hover:from-white/30 dark:hover:to-white/20 text-slate-700 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded-lg border border-slate-200 dark:border-white/10 shadow-sm">
-            
-            <i
-              className="fa-solid fa-left-long"
-              aria-hidden="true"
-            ></i>
-
-            BACK
-          </div>
-        </Link>
 
         {/* Main Content */}
         <motion.div
@@ -70,20 +55,11 @@ const HelpHero: FC<HelpHeroProps> = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
         >
-          
           <div className="inline-flex items-center justify-center mx-auto px-4 py-1.5 mb-6 rounded-full border border-indigo-200 dark:border-white/20 bg-indigo-100 dark:bg-blue-500/20 text-indigo-700 dark:text-white shadow-sm">
-            
-            <span className="text-sm font-medium">
-              SUPPORT &amp; GUIDANCE
-            </span>
-
+            <span className="text-sm font-medium">SUPPORT &amp; GUIDANCE</span>
             <span className="ml-2 text-sm">
-              <i
-                className="fa-solid fa-circle-question"
-                aria-hidden="true"
-              ></i>
+              <i className="fa-solid fa-circle-question" aria-hidden="true"></i>
             </span>
-
           </div>
 
           <motion.h1
@@ -93,20 +69,29 @@ const HelpHero: FC<HelpHeroProps> = () => {
             How can we help you today?
           </motion.h1>
 
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
-
-
           <p className="text-lg text-slate-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
             Find answers, troubleshoot issues, and get started with StorySparkAI.
             Search our guides or browse topics below.
           </p>
 
-          <HelpSearchBar
-            value={searchQuery}
-            onChange={onSearchChange}
-            resultCount={searchQuery ? resultCount : undefined}
-          />
-
+          {onSearchChange && (
+            <div className="relative max-w-xl mx-auto">
+              <input
+                type="text"
+                value={searchQuery ?? ""}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search help articles..."
+                className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm backdrop-blur-md transition-all"
+                aria-label="Search help articles"
+              />
+              <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+              {searchQuery && resultCount !== undefined && (
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                  {resultCount} result{resultCount !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+          )}
         </motion.div>
       </div>
     </section>

@@ -22,8 +22,10 @@ if (config.disable_logs) {
 
 async function connectDB() {
   if (mongoose.connection.readyState === 1) return;
-  // config.database_url is guaranteed non-empty by config/index.ts — it throws at
-  // module load time if DATABASE_URL is missing, so no runtime guard is needed here.
+  if (!config.database_url) {
+    logger.warn("DATABASE_URL is not set — skipping database connection.");
+    return;
+  }
   await mongoose.connect(config.database_url);
 }
 

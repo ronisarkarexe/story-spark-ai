@@ -1,7 +1,7 @@
 import express from "express";
 import { PostController } from "./post.controller";
-import { protect } from "../../middlewares/auth.middleware"; 
-import { checkRequestLimit } from "../../middlewares/quota.middleware"; 
+import auth from "../../middleware/auth.middleware";
+import checkRequestLimit from "../../middleware/check.request.limit";
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post(
   "/create-post",
-  protect,
+  auth(),
   PostController.createPost
 );
 
@@ -32,7 +32,7 @@ router.get(
 
 router.patch(
   "/featured/:postId",
-  protect,
+  auth(),
   PostController.doFeaturedPosts
 );
 
@@ -48,24 +48,19 @@ router.get(
 
 router.patch(
   "/bookmark/:id",
-  protect,
+  auth(),
   PostController.toggleBookmark
 );
 
 router.patch(
   "/:id",
-  auth(
-    ENUM_USER_ROLE.USER,
-    ENUM_USER_ROLE.WRITER,
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
-  ),
+  auth(),
   PostController.updatePost
 );
 
 router.delete(
   "/:id",
-  protect,
+  auth(),
   PostController.deletePost
 );
 
@@ -80,8 +75,8 @@ router.delete(
  */
 router.post(
   "/remix",
-  protect,
-  checkRequestLimit, // <-- FIXED: Intercepts request if user exceeded monthly quota balance
+  auth(),
+  checkRequestLimit(),
   PostController.remixStory
 );
 
@@ -92,8 +87,8 @@ router.post(
  */
 router.post(
   "/translate",
-  protect,
-  checkRequestLimit, // <-- FIXED: Intercepts request if user exceeded monthly quota balance
+  auth(),
+  checkRequestLimit(),
   PostController.translateStory
 );
 
