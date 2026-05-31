@@ -137,16 +137,16 @@ Password hashing uses **bcrypt** (`SALT_ROUNDS`). Google OAuth is handled via `G
 
 ---
 
-### 4. 🤖 AI Layer
-StorySparkAI supports two AI providers — switchable via environment variables:
+### 4. 🤖 AI Layer & Media Assets
+StorySparkAI supports two AI providers and an image asset manager — configured via environment variables:
 
-| Provider | Env var | Used for |
+| Provider / Service | Env var | Used for |
 |---|---|---|
 | OpenAI | `OPEN_AI_KEY` | Story generation + analysis |
 | Google Gemini | `GEMINI_API_KEY` | Story generation + analysis |
-| Unsplash | `UNSPLASH_KEY_API` | Story cover image fetching |
+| Unsplash | `UNSPLASH_API_KEY` | Story cover image fetching |
 
-AI is used **only** for generation and analysis — all story data, user data, and bookmarks are stored in MongoDB.
+The AI layer and external media assets are used **only** for content generation and analysis — all persistent story data, user profiles, and bookmarks are stored securely in MongoDB.
 
 ---
 
