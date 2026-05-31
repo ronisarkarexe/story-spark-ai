@@ -13,6 +13,7 @@ const post_router_1 = require("../app/modules/post/post.router");
 const notification_router_1 = require("../app/modules/notification/notification.router");
 const comment_router_1 = require("../app/modules/comment/comment.router");
 const analysis_router_1 = require("../app/modules/analysis/analysis.router");
+const reaction_router_1 = require("../app/modules/reaction/reaction.router");
 const router = express_1.default.Router();
 const modules = [
     {
@@ -46,6 +47,10 @@ const modules = [
     {
         path: "/analysis",
         router: analysis_router_1.AnalysisRouter,
+    },
+    {
+        path: "/reaction",
+        router: reaction_router_1.ReactionRouter,
     },
 ];
 modules.forEach((route) => router.use(route.path, route.router));

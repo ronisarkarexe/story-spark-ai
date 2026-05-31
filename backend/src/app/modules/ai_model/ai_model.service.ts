@@ -5,40 +5,58 @@ import { User } from "../user/user.model";
 import { IAIModel } from "./ai_model.interface";
 import { generateWithGeminiStories } from "./ai_model.utils";
 import httpStatus from "http-status";
+import { REQUEST_LIMITS } from "../../../interfaces/ai_model_request_limit";
 
 const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
+  const { email } = token;
+  const { prompt, wordLength, numStories } = payload;
+  const currentDate = new Date();
+  const firstDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1
+  );
+
+  await User.updateOne(
+    { email, lastRequestDate: { $lt: firstDayOfMonth } },
+    { $set: { requestsThisMonth: 0, lastRequestDate: currentDate } }
+  );
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  const requestLimit =
+    REQUEST_LIMITS[user.subscriptionType as keyof typeof REQUEST_LIMITS];
+
+  const reservedUser = await User.findOneAndUpdate(
+    {
+      email,
+      requestsThisMonth: { $lt: requestLimit },
+    },
+    {
+      $inc: { requestsThisMonth: 1 },
+      $set: { lastRequestDate: currentDate },
+    },
+    { new: true }
+  );
+
+  if (!reservedUser) {
+    throw new ApiError(httpStatus.CONFLICT, "Monthly request limit exceeded!");
+  }
+
   try {
-    const { email } = token;
-    const { prompt, wordLength, numStories } = payload;
     const result = await Promise.race([
       timeoutLimit(60000),
       generateWithGeminiStories(prompt, wordLength, numStories),
     ]);
-
-    if (result) {
-      const user = await User.findOne({ email: email });
-
-      if (!user) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
-      }
-
-      const currentDate = new Date();
-      const firstDayOfMonth = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        1
-      );
-      if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
-        user.requestsThisMonth = 0;
-        user.lastRequestDate = currentDate;
-      }
-
-      user.requestsThisMonth += 1;
-      user.lastRequestDate = currentDate;
-      await user.save();
-    }
     return result;
   } catch (error) {
+    await User.updateOne(
+      { email, requestsThisMonth: { $gt: 0 } },
+      { $inc: { requestsThisMonth: -1 } }
+    );
     throw new ApiError(httpStatus.GATEWAY_TIMEOUT, "Request timed out!");
   }
 };

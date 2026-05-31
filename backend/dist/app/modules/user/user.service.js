@@ -18,18 +18,25 @@ const api_error_1 = __importDefault(require("../../../errors/api_error"));
 const user_model_1 = require("./user.model");
 const http_status_1 = __importDefault(require("http-status"));
 const getAllUsers = () => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_model_1.User.find({});
+    const result = yield user_model_1.User.find({}).select("-password");
     return result;
 });
 const getUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_model_1.User.findOne({ _id: payload });
+    const result = yield user_model_1.User.findOne({ _id: payload }).select("-password");
     return result;
 });
 const updateUser = (token, payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_model_1.User.findOneAndUpdate({ email: token.email }, payload, {
+    const updatePayload = {};
+    if (payload.name !== undefined) {
+        updatePayload.name = payload.name;
+    }
+    if (payload.profile !== undefined) {
+        updatePayload.profile = payload.profile;
+    }
+    const result = yield user_model_1.User.findOneAndUpdate({ email: token.email }, updatePayload, {
         new: true,
         runValidators: true,
-    });
+    }).select("-password");
     return result;
 });
 const deleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
@@ -60,6 +67,9 @@ const approveWriterApplication = (email) => __awaiter(void 0, void 0, void 0, fu
         }
         if (isExistUser.role === user_1.ENUM_USER_ROLE.WRITER) {
             throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "User is already a writer!");
+        }
+        if (!isExistUser.isApplyForWriter) {
+            throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "User has not applied for writer!");
         }
         const result = yield user_model_1.User.findOneAndUpdate({ email: email }, { role: user_1.ENUM_USER_ROLE.WRITER }, {
             new: true,

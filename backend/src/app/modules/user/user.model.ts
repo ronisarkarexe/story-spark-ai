@@ -10,7 +10,7 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
   {
     email: { type: String, required: true, unique: true, lowercase: true },
     name: { type: String, maxlength: 100, minlength: 5 },
-    password: { type: String, required: false, default: "" },
+    password: { type: String, required: false, default: "", select: false },
     role: {
       type: String,
       required: true,

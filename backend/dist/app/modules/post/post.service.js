@@ -95,7 +95,11 @@ const getPosts = (filters, pagination) => __awaiter(void 0, void 0, void 0, func
         .sort(sortCondition)
         .skip(skip)
         .limit(limit)
-        .populate("author", "name email createdAt");
+        .populate("author", "name email createdAt")
+        .populate({
+        path: "reactions",
+        populate: { path: "userId", select: "email" },
+    });
     const total = yield post_model_1.Post.countDocuments(whereCondition);
     return {
         meta: {
@@ -111,7 +115,11 @@ const getLatestPosts = () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield post_model_1.Post.find()
             .sort({ createdAt: -1 })
             .limit(2)
-            .populate("author", "name email createdAt");
+            .populate("author", "name email createdAt")
+            .populate({
+            path: "reactions",
+            populate: { path: "userId", select: "email" },
+        });
         return res;
     }
     catch (error) {
@@ -123,7 +131,11 @@ const getFeaturedPosts = () => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield post_model_1.Post.find({ isFeaturedPost: true })
             .sort({ createdAt: -1, updatedBy: -1 })
             .limit(2)
-            .populate("author", "name email createdAt");
+            .populate("author", "name email createdAt")
+            .populate({
+            path: "reactions",
+            populate: { path: "userId", select: "email" },
+        });
         return res;
     }
     catch (error) {
@@ -140,7 +152,12 @@ const doFeaturedPosts = (postId) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 const getSinglePost = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    const postById = yield post_model_1.Post.findOne({ _id: id }).populate("author", "name email createdAt");
+    const postById = yield post_model_1.Post.findOne({ _id: id })
+        .populate("author", "name email createdAt")
+        .populate({
+        path: "reactions",
+        populate: { path: "userId", select: "email" },
+    });
     if (!postById) {
         throw new api_error_1.default(http_status_1.default.NOT_FOUND, "Post not found!");
     }
@@ -149,7 +166,11 @@ const getSinglePost = (id) => __awaiter(void 0, void 0, void 0, function* () {
 const getPostsByTag = (tag) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield post_model_1.Post.find({ tag })
         .limit(2)
-        .populate("author", "name email createdAt");
+        .populate("author", "name email createdAt")
+        .populate({
+        path: "reactions",
+        populate: { path: "userId", select: "email" },
+    });
     return result;
 });
 exports.PostService = {

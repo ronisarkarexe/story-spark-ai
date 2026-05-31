@@ -5,21 +5,33 @@ import { IUser } from "./user.interface";
 import { User } from "./user.model";
 import httpStatus from "http-status";
 
+type SafeUserUpdate = Pick<IUser, "name" | "profile">;
+
 const getAllUsers = async (): Promise<IUser[]> => {
-  const result = await User.find({});
+  const result = await User.find({}).select("-password");
   return result;
 };
 
 const getUser = async (payload: string): Promise<IUser | null> => {
-  const result = await User.findOne({ _id: payload });
+  const result = await User.findOne({ _id: payload }).select("-password");
   return result;
 };
 
 const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
-  const result = await User.findOneAndUpdate({ email: token.email }, payload, {
+  const updatePayload: Partial<SafeUserUpdate> = {};
+
+  if (payload.name !== undefined) {
+    updatePayload.name = payload.name;
+  }
+
+  if (payload.profile !== undefined) {
+    updatePayload.profile = payload.profile;
+  }
+
+  const result = await User.findOneAndUpdate({ email: token.email }, updatePayload, {
     new: true,
     runValidators: true,
-  });
+  }).select("-password");
   return result;
 };
 
@@ -60,6 +72,12 @@ const approveWriterApplication = async (email: string) => {
     }
     if (isExistUser.role === ENUM_USER_ROLE.WRITER) {
       throw new ApiError(httpStatus.BAD_REQUEST, "User is already a writer!");
+    }
+    if (!isExistUser.isApplyForWriter) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "User has not applied for writer!"
+      );
     }
     const result = await User.findOneAndUpdate(
       { email: email },

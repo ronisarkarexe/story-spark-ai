@@ -13,7 +13,9 @@ const googleClient = new OAuth2Client(config.google_client_id);
 
 const login = async (payload: AuthModel) => {
   const { email: userEmail, password } = payload;
-  const isExistUser = await User.findOne({ email: userEmail });
+  const isExistUser = await User.findOne({ email: userEmail }).select(
+    "+password"
+  );
   if (!isExistUser) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }

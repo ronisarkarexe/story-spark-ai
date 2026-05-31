@@ -23,7 +23,7 @@ const api_error_1 = __importDefault(require("../../../errors/api_error"));
 const googleClient = new google_auth_library_1.OAuth2Client(config_1.default.google_client_id);
 const login = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const { email: userEmail, password } = payload;
-    const isExistUser = yield user_model_1.User.findOne({ email: userEmail });
+    const isExistUser = yield user_model_1.User.findOne({ email: userEmail }).select("+password");
     if (!isExistUser) {
         throw new api_error_1.default(http_status_1.default.NOT_FOUND, "User not found!");
     }
