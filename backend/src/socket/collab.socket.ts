@@ -4,8 +4,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import config from "../config";
 import { JwtHalers } from "../utils/jwt.helper";
 import type { Secret } from "jsonwebtoken";
+import { User } from "../app/modules/user/user.model";
+import { reserveUserQuota } from "../app/modules/ai_model/quota.service";
+import { createUserQuotaGuard, runWithQuotaCleanup } from "../app/modules/ai_model/quota.lifecycle";
 
 const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
 
 const COLORS = [
   "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4",
@@ -148,46 +153,78 @@ export const setupCollabSocket = (io: Server) => {
 
     // AI continues the story
     socket.on("collab:ai_continue", async ({ roomId }) => {
-      const userId = socket.data.userId;
       const room = rooms.get(roomId);
       if (!room) return;
 
-      // Only participants can trigger AI continuation
+      const userId = socket.data.userId;
+      if (!userId) {
+        socket.emit("collab:error", { message: "Unauthorized" });
+        return;
+      }
+
+      // 1. Participant Authorization Check
       const participant = room.participants.find(p => p.userId === userId);
       if (!participant) {
         socket.emit("collab:error", { message: "You are not a participant of this room" });
         return;
       }
 
-      collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
-
-      let aiText = "";
-      try {
-        const fullContext = room.story.map(chunk => chunk.text).join(" ");
-        const prompt = `Continue the following story naturally and creatively in 2-3 sentences:\n\n${fullContext}`;
-
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const result = await model.generateContent(prompt);
-        aiText = result.response.text();
-      } catch (error) {
-        logger.error("AI collaboration generation failed", error);
-        aiText = "...the AI lost its train of thought. Please try again.";
+      // Check if user exists in the DB
+      const user = await User.findById(userId);
+      if (!user) {
+        socket.emit("collab:error", { message: "User not found!" });
+        return;
       }
 
-      const aiChunk: IStoryChunk = {
-        authorId: "ai",
-        authorName: "✨ AI",
-        color: "#d4af37",
-        text: aiText,
-        isAI: true,
-        timestamp: new Date(),
-      };
+      try {
+        // 2. Atomic Quota Reservation
+        await reserveUserQuota(user.email);
+      } catch (error: any) {
+        const errorMsg = error instanceof Error ? error.message : "Monthly request limit exceeded!";
+        socket.emit("collab:error", { message: errorMsg });
+        return;
+      }
 
-      room.story.push(aiChunk);
-      collabNamespace.to(roomId).emit("collab:story_updated", {
-        story: room.story,
-        newChunk: aiChunk
-      });
+      const guard = createUserQuotaGuard(user.email);
+
+      try {
+        await runWithQuotaCleanup(guard, async () => {
+          // 3. Emit AI Thinking ONLY after quota check succeeds to prevent infinite loading state spams
+          collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
+
+          const fullContext = room.story.map(chunk => chunk.text).join("\n");
+          const prompt = `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${fullContext}\n\nContinuation:`;
+
+          const result = await model.generateContent(prompt);
+          const aiText = result.response.text().trim();
+          
+          if (!aiText) {
+            throw new Error("Empty response from AI");
+          }
+
+          const aiChunk: IStoryChunk = {
+            authorId: "ai",
+            authorName: "✨ AI",
+            color: "#d4af37",
+            text: aiText,
+            isAI: true,
+            timestamp: new Date(),
+          };
+
+          room.story.push(aiChunk);
+          
+          // Broadcast the update to the entire room
+          collabNamespace.to(roomId).emit("collab:story_updated", {
+            story: room.story,
+            newChunk: aiChunk
+          });
+        });
+      } catch (err) {
+        socket.emit("collab:error", { message: "AI continuation failed" });
+      } finally {
+        // 4. Guarantee spinner cleanup on success or failure
+        collabNamespace.to(roomId).emit("collab:user_stop_typing", { userId: "ai" });
+      }
     });
 
     // Typing indicator

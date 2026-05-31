@@ -1,7 +1,10 @@
-import { useNavigate } from "react-router-dom";
-import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
+import { Post } from "../../../models/post";
 import LoadingAnimation from "../../loading/loading.component";
+import SSProfile from "../../ui-component/ss-profile/ss-profile";
+import { formatDateShort } from "../../../utils/time-formate";
+import { useNavigate } from "react-router-dom";
+import BookmarkButton from "../../BookmarkButton";
 
 const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
@@ -36,10 +39,12 @@ const LatestPostsComponent = () => {
             </button>
           ))
         ) : (
-          <div className="story-panel rounded-lg px-4 py-5 text-slate-300">Posts are not available.</div>
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400">
+            Posts are not available.
+          </div>
         )}
       </div>
-    </section>
+    </div>
   );
 };
 

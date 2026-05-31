@@ -21,35 +21,49 @@ const toggleReaction = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
-  // Check if reaction already exists
   const existingReaction = await Reaction.findOne({
-    postId: postId,
     userId: user._id,
-    type: type,
+    postId: post._id,
   });
 
   if (existingReaction) {
-    // Remove reaction
+    // Remove reaction atomically
     await Reaction.findByIdAndDelete(existingReaction._id);
-    post.likesCount = Math.max(0, post.likesCount - 1);
-    post.reactions = post.reactions || [];
-    post.reactions = post.reactions.filter(
-      (rId) => rId.toString() !== existingReaction._id.toString()
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: postId },
+      {
+        $pull: { reactions: existingReaction._id },
+        $inc: { likesCount: -1 },
+      },
+      { new: true }
     );
-    await post.save();
-    return { message: "Reaction removed", likesCount: post.likesCount };
+    // Ensure likesCount never goes below 0
+    if (updatedPost && updatedPost.likesCount < 0) {
+      await Post.updateOne({ _id: postId }, { $set: { likesCount: 0 } });
+    }
+    return {
+      message: "Reaction removed",
+      likesCount: Math.max(0, updatedPost?.likesCount ?? 0),
+    };
   } else {
-    // Add reaction
+    // Add reaction atomically
     const newReaction = await Reaction.create({
       postId: new Types.ObjectId(postId),
       userId: user._id,
       type: type,
     });
-    post.likesCount = post.likesCount + 1;
-    post.reactions = post.reactions || [];
-    post.reactions.push(newReaction._id);
-    await post.save();
-    return { message: "Reaction added", likesCount: post.likesCount };
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: postId },
+      {
+        $addToSet: { reactions: newReaction._id },
+        $inc: { likesCount: 1 },
+      },
+      { new: true }
+    );
+    return {
+      message: "Reaction added",
+      likesCount: updatedPost?.likesCount ?? 0,
+    };
   }
 };
 
