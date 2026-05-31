@@ -9,12 +9,54 @@ import {
   User,
 } from "lucide-react";
 import { getUserInfo } from "../../../services/auth.service";
+import { loadRazorpayScript } from "../../../utils/loadRazorpay";
 
 const PaymentComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = getUserInfo();
   const loggedIn = !!user;
+
+  // Form states for credit card payment
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const formatCardNumber = (value: string) => {
+    return value
+      .replace(/\D/g, "")
+      .slice(0, 16)
+      .replace(/(.{4})/g, "$1 ")
+      .trim();
+  };
+
+  const formatExpiry = (value: string) => {
+    return value
+      .replace(/\D/g, "")
+      .slice(0, 4)
+      .replace(/^(\d{2})(\d)/, "$1/$2");
+  };
+
+  const isFormValid =
+    name.trim() &&
+    cardNumber.length === 19 &&
+    expiry.length === 5 &&
+    cvv.length === 3;
+
+  const handlePay = async () => {
+    if (!isFormValid) return;
+
+    setLoading(true);
+    try {
+      await handlePayment();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Read selected plan from pricing page
   const [searchParams] = useSearchParams();

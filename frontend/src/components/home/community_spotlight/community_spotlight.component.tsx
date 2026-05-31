@@ -27,7 +27,7 @@ const getPostEngagementScore = (post: Post) =>
   getBookmarkCount(post) * 2 +
   (post.viewsCount ?? 0);
 
-const getWriterEngagementScore = (writer: Omit<SpotlightWriter, "engagementScore">) =>
+const getWriterEngagementScore = (writer: Omit<SpotlightWriter, "engagementScore" | "topPost">) =>
   writer.likesCount * 3 +
   writer.commentsCount * 2 +
   writer.bookmarksCount * 2 +
@@ -58,6 +58,62 @@ const formatMetric = (value: number) =>
 const CommunitySpotlightComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
+
+  const topWriters = useMemo(() => {
+    const posts = data?.posts ?? [];
+    const writerMap = new Map<string, Omit<SpotlightWriter, "engagementScore" | "topPost"> & { posts: Post[] }>();
+
+    for (const post of posts) {
+      const author = post.author;
+      if (!author) continue;
+      const authorId = author._id || author.email || author.name;
+      if (!authorId) continue;
+
+      if (!writerMap.has(authorId)) {
+        writerMap.set(authorId, {
+          author,
+          storiesCount: 0,
+          likesCount: 0,
+          commentsCount: 0,
+          viewsCount: 0,
+          bookmarksCount: 0,
+          posts: [],
+        });
+      }
+
+      const writer = writerMap.get(authorId)!;
+      writer.storiesCount += 1;
+      writer.likesCount += post.likesCount ?? 0;
+      writer.commentsCount += post.commentsCount ?? 0;
+      writer.viewsCount += post.viewsCount ?? 0;
+      writer.bookmarksCount += post.bookmarks?.length ?? 0;
+      writer.posts.push(post);
+    }
+
+    const list: SpotlightWriter[] = [];
+    for (const writer of writerMap.values()) {
+      const sortedPosts = [...writer.posts].sort((a, b) => getPostEngagementScore(b) - getPostEngagementScore(a));
+      const topPost = sortedPosts[0];
+
+      const scoreInput = {
+        author: writer.author,
+        storiesCount: writer.storiesCount,
+        likesCount: writer.likesCount,
+        commentsCount: writer.commentsCount,
+        viewsCount: writer.viewsCount,
+        bookmarksCount: writer.bookmarksCount,
+      };
+      const engagementScore = getWriterEngagementScore(scoreInput);
+
+      list.push({
+        ...scoreInput,
+        engagementScore,
+        topPost,
+      });
+    }
+
+    return list.sort((a, b) => b.engagementScore - a.engagementScore).slice(0, TOP_WRITERS_LIMIT);
+  }, [data?.posts]);
 
   if (isLoading) return <LoadingAnimation />;
   if (isError) {

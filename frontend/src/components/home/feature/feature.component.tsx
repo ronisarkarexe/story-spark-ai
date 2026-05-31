@@ -8,10 +8,26 @@ import BookmarkButton from "../../BookmarkButton";
 import React, { useState } from "react";
 import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+const calculateReadingTime = (text?: string): number => {
+  if (!text) return 1;
+  const wordsPerMinute = 200;
+  const words = text.trim().split(/\s+/).length;
+  return Math.max(1, Math.round(words / wordsPerMinute));
+};
 
 const FeatureComponent = () => {
   const { data, isLoading, isError, refetch } = useGetFeaturedListsQuery(undefined);
   const navigate = useNavigate();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyLink = (e: React.MouseEvent, postId: string, url: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(postId);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
+
   if (isLoading) return <LoadingAnimation />;
   if (isError) {
     return (
