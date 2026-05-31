@@ -19,6 +19,7 @@ export interface IPostPayload {
 }
 
 export interface IPost extends IPostPayload {
+  _id?: Types.ObjectId | string;
   author: Types.ObjectId;
   likesCount: number;
   commentsCount: number;
