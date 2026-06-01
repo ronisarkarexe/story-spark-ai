@@ -90,80 +90,65 @@ const LoginComponent = () => {
   }
 
   return (
-
-
-
-    <div className="min-h-screen bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 box-border">
+    <div className="relative flex min-h-screen items-center justify-center overflow-x-hidden bg-white px-4 text-slate-900 box-border dark:bg-[#0B1120] dark:text-slate-100">
 
       {/* Background Glow */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 box-border">
-
-        <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-          <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
+      <div className="relative z-10 w-full max-w-6xl py-12">
+        <div className="mb-10">
+          <h2 className="text-center text-4xl font-extrabold tracking-tight drop-shadow-sm sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-400 dark:to-indigo-400">
             STORY SPARK AI
           </h2>
         </div>
-        <div className="flex flex-col lg:flex-row justify-center items-start lg:items-center gap-8 lg:gap-16 w-full">
 
-        <div className="flex flex-col gap-5">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
-            
-            Turns Ideas into
-            <br /> 
-            unforgotable stories
-            
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-12">
+          <div className="flex flex-col gap-5 lg:pt-6">
+            <h1 className="text-3xl font-bold leading-tight sm:text-4xl bg-gradient-to-r from-blue-600 to-purple-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-500">
+              Turns Ideas into
+              <br />
+              unforgettable stories
             </h1>
-          <p>AI powered storytelling that helps you
-              <br />            
-             create connect inspire.</p>
+            <p className="text-slate-600 dark:text-slate-300">
+              AI powered storytelling that helps you create, connect, and inspire.
+            </p>
 
-             <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-              <div>
-                <WandSparkles className="text-violet-600"/>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700 dark:border-slate-700/50 dark:bg-slate-800/60 dark:text-slate-300">
+                <WandSparkles className="mt-0.5 text-violet-600 dark:text-violet-400" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    Smart writing
+                  </p>
+                  <p className="text-sm">AI that understands your ideas</p>
+                </div>
               </div>
-              <div>
-                <h1 className="font-bold">Smart writing</h1>
-                <p>AI that understands your ideas</p>
+
+              <div className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700 dark:border-slate-700/50 dark:bg-slate-800/60 dark:text-slate-300">
+                <BookOpen className="mt-0.5 text-violet-600 dark:text-violet-400" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    Endless creativity
+                  </p>
+                  <p className="text-sm">Stories that captivate and inspire</p>
+                </div>
               </div>
-             </div>
 
-
-             <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-              <div>
-                <BookOpen className="text-violet-600"/>
+              <div className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700 dark:border-slate-700/50 dark:bg-slate-800/60 dark:text-slate-300 sm:col-span-2">
+                <UsersRound className="mt-0.5 text-violet-600 dark:text-violet-400" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    Built for everyone
+                  </p>
+                  <p className="text-sm">Writers, creators, and dreamers</p>
+                </div>
               </div>
-              <div>
-                <h1 className="font-bold">Endless Creativity</h1>
-                <p>Stories that captivate and inspire</p>
-              </div>
-             </div>
+            </div>
+          </div>
 
-
-             <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-              <div>
-                <UsersRound className="text-violet-600"/>
-              </div>
-              <div>
-                <h1 className="font-bold">Built for everyone</h1>
-                <p>Writers, Creaters and dreamers</p>
-              </div>
-             </div>
-             <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-                Create, edit, and generate engaging multiple story
-                <br />
-                 variations from a single prompt.
-                  <br />                
-                 Perfect for writers, creators, and enthusiasts 
-                 <br />
-                 exploring the future of fiction.
-             </div>
-        </div>
-
-
-        <div className="w-full max-w-md min-w-0 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl overflow-hidden">
+          <div className="w-full min-w-0">
+            <div className="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-8 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/60 sm:p-10">
 
             <button
             onClick={() => window.location.href = "/"}
@@ -253,7 +238,7 @@ const LoginComponent = () => {
             </a>
           </p>
         </div>
-      </div>
+        </div>
 
       <Toaster
         position="top-right"
@@ -261,7 +246,7 @@ const LoginComponent = () => {
         />
 
     </div>
-        </div>
+      </div>
   );
 };
 

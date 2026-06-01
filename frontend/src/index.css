@@ -700,16 +700,24 @@ select:focus-visible {
 }
 
 .story-section-heading {
-  color: #f8fafc;
+  color: #0f172a;
   font-size: clamp(1.875rem, 4vw, 2.75rem);
   font-weight: 800;
   line-height: 1.08;
 }
 
 .story-section-copy {
-  color: #94a3b8;
+  color: #475569;
   font-size: clamp(1rem, 2vw, 1.125rem);
   line-height: 1.7;
+}
+
+html.dark .story-section-heading {
+  color: #f8fafc;
+}
+
+html.dark .story-section-copy {
+  color: #94a3b8;
 }
 
 .story-panel {
@@ -1319,7 +1327,7 @@ html, body {
     font-size: 1rem;
   }
 }
-=======
+
 /* Navbar Container */
 .navbar {
   display: flex;

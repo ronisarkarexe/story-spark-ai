@@ -112,34 +112,16 @@ const CommunitySpotlightComponent = () => {
 
   if (isError) {
     return (
-      <section className="px-5 py-10">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-200">
-            Community Spotlight
-          </h2>
-  
-          <p className="mt-2 text-slate-600 dark:text-gray-400">
-            Top contributors loved by the Story Spark community
-          </p>
-        </div>
-  
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((item) => (
-            <div
-              key={item}
-              className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-40"
-            ></div>
-          ))}
-  if (isLoading) return <LoadingAnimation />;
-  if (isError) {
-    return (
       <section className="story-section">
         <div className="story-page-shell">
-          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-10 text-center text-red-200">
-            <p className="mb-3 font-semibold">Failed to load spotlight stories.</p>
+          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-10 text-center text-red-700 dark:text-red-200">
+            <p className="mb-3 font-semibold">
+              Failed to load spotlight stories.
+            </p>
             <button
               onClick={() => refetch()}
               className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+              type="button"
             >
               Try Again
             </button>
@@ -148,7 +130,7 @@ const CommunitySpotlightComponent = () => {
       </section>
     );
   }
-  
+
   return (
     <section className="px-5 py-10 text-slate-900 dark:text-slate-100">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

@@ -32,11 +32,13 @@ const HomeComponent = () => {
           </div>
         </div>
       </div>
-      <CommunitySpotlightComponent /> 
-      <ResourceComponent />
-      <WriterFeedbackComponent />
-      <PricingComponent />
-      <StartWritingComponent />
+      <div className="flex flex-col gap-16 pb-16 sm:gap-20">
+        <CommunitySpotlightComponent />
+        <ResourceComponent />
+        <WriterFeedbackComponent />
+        <PricingComponent />
+        <StartWritingComponent />
+      </div>
     </>
   );
 };
