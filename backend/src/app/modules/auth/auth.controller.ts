@@ -109,7 +109,18 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const logout = catchAsync(async (req: Request, res: Response) => {
+  res.clearCookie('refreshToken');
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User logged out successfully!",
+    data: null,
+  });
+});
+
 export const AuthController = {
+  logout,
   login,
   register,
   refreshToken,

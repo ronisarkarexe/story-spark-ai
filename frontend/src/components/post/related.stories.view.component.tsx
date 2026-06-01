@@ -2,7 +2,7 @@ import React from "react";
 import { Post } from "../../models/post";
 import { useNavigate } from "react-router-dom";
 import ImageFallback from "../ImageFallback";
-ImageFallback
+
 interface IRelatedStoriesComponentProps {
   posts: Post[],
   currentPostId: string;

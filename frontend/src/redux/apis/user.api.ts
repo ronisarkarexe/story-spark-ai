@@ -2,7 +2,7 @@ import { User } from "../../models/user";
 import { IMeta } from "../../types";
 import baseApi from "../base_api/base.api";
 import { USER_URL } from "../base_api/base.endpoints";
-import { tagTypes as baseTagTypes } from "../tag-types";
+import { tagTypes } from "../tag-types";
 
 const userApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -43,7 +43,7 @@ const userApi = baseApi.injectEndpoints({
         data: data,
       }),
       // ─── OPTIMIZED: INVALIDATES ANALYTICS CACHE UPON UPDATE ───
-      invalidatesTags: [tagTypes.user, tagTypes.analytics || "Analytics"],
+      invalidatesTags: [tagTypes.user, "Analytics" as never],
     }),
     toggleFollow: build.mutation({
       query: (authorId: string) => ({

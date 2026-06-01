@@ -1,5 +1,4 @@
 import { Post } from "../../../models/post";
-/* eslint-disable */
 import { useGetFeaturedListsQuery } from "../../../redux/apis/post.api";
 import { formatDateShort } from "../../../utils/time-formate";
 import LoadingAnimation from "../../loading/loading.component";
@@ -97,7 +96,7 @@ const FeatureComponent = () => {
                       <div onClick={(e) => e.stopPropagation()} className="relative z-10">
                         <BookmarkButton
                           storyId={post._id}
-                          bookmarks={[]}
+                          
                           className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         />
                       </div>

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,7 +19,8 @@ type SpotlightWriter = {
 
 const TOP_WRITERS_LIMIT = 3;
 
-const getBookmarkCount = (post: Post) => post.bookmarks?.length ?? 0;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getBookmarkCount = (post: Post) => (post as any).bookmarks?.length ?? 0;
 
 const getPostEngagementScore = (post: Post) =>
   (post.likesCount ?? 0) * 3 +

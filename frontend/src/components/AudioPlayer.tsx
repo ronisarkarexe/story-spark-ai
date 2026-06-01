@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, {
   forwardRef,
   useEffect,
@@ -44,7 +45,6 @@ const controlButtonBaseClass =
 const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
   ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
     const [voiceGender, setVoiceGender] = useState<"female" | "male">("female");
-    const speech: any = useSpeechSynthesis(text, voiceGender);
     const speech: any = useSpeechSynthesis(text);
     const preview = useVoicePreview();
     const favorites = useVoiceFavorites();
@@ -55,14 +55,14 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     const languageSelectId = useId();
     const voiceSelectId = useId();
 
-    const filteredVoices = speech.voices.filter((voice) => voice.lang === speech.selectedLanguage);
+    const filteredVoices = speech.voices.filter((voice: any) => voice.lang === speech.selectedLanguage);
     const voiceOptions = filteredVoices.length > 0 ? filteredVoices : speech.voices;
 
     const displayedVoices = useMemo(() => {
       if (!showFavoritesOnly) {
         return voiceOptions;
       }
-      return voiceOptions.filter((voice) => favorites.isFavorite(voice.id));
+      return voiceOptions.filter((voice: any) => favorites.isFavorite(voice.id));
     }, [voiceOptions, showFavoritesOnly, favorites]);
 
     useImperativeHandle(
@@ -92,7 +92,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     useEffect(() => {
       if (showFavoritesOnly && displayedVoices.length > 0) {
         const isCurrentVoiceStillAvailable = displayedVoices.some(
-          (v) => v.id === speech.selectedVoiceId
+          (v: any) => v.id === speech.selectedVoiceId
         );
         if (!isCurrentVoiceStillAvailable) {
           speech.setSelectedVoiceId(displayedVoices[0].id);
@@ -260,7 +260,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                       onChange={(event) => speech.setRate(Number(event.target.value))}
                       className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                     >
-                      {SPEED_OPTIONS.map((option) => (
+                      {SPEED_OPTIONS.map((option: any) => (
                         <option key={option} value={option}>
                           {option.toFixed(2).replace(/\.00$/, "")}&times;
                         </option>
@@ -302,12 +302,12 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                         min={0.5}
                         max={2}
                         step={0.1}
-                        value={(speech as any).pitch}
-                        onChange={(event) => (speech as any).setPitch(Number(event.target.value))}
+                        value={speech.pitch}
+                        onChange={(event) => speech.setPitch(Number(event.target.value))}
                         className="w-full accent-indigo-500"
                       />
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {(speech as any).pitch.toFixed(1)}x
+                        {speech.pitch.toFixed(1)}x
                       </div>
                     </div>
                   </div>
@@ -322,12 +322,12 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                         min={0}
                         max={1}
                         step={0.05}
-                        value={(speech as any).volume}
-                        onChange={(event) => (speech as any).setVolume(Number(event.target.value))}
+                        value={speech.volume}
+                        onChange={(event) => speech.setVolume(Number(event.target.value))}
                         className="w-full accent-indigo-500"
                       />
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {Math.round((speech as any).volume * 100)}%
+                        {Math.round(speech.volume * 100)}%
                       </div>
                     </div>
                   </div>
@@ -350,7 +350,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     onChange={(event) => speech.setSelectedLanguage(event.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                   >
-                    {speech.languageOptions.map((option) => (
+                    {speech.languageOptions.map((option: any) => (
                       <option key={option.lang} value={option.lang}>
                         {option.label} ({option.voiceCount})
                       </option>
@@ -392,7 +392,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                       {displayedVoices.length === 0 ? (
                         <option disabled>No favorites available</option>
                       ) : (
-                        displayedVoices.map((voice) => (
+                        displayedVoices.map((voice: any) => (
                           <option key={voice.id} value={voice.id}>
                             {voice.label}
                           </option>
@@ -412,7 +412,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     type="button"
                     onClick={() => {
                       const currentVoice = speech.voices.find(
-                        (v) => v.id === speech.selectedVoiceId,
+                        (v: any) => v.id === speech.selectedVoiceId,
                       );
                       if (currentVoice) {
                         preview.playPreview(currentVoice);

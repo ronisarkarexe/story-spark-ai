@@ -38,6 +38,7 @@ const ChatComponent: React.FC = () => {
       
       const botMessage: IChatMessage = { role: "model", parts: response };
       setMessages((prev) => [...prev, botMessage]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Chat error:", error);
       toast.error(error.response?.data?.message || "Failed to get AI response");

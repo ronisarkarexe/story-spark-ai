@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Review = any;
 import React from "react";
 import { useGetReviewsQuery } from "../../../redux/apis/review.api";
 import defaultAvatar from "../../../assets/logoNew.png";
