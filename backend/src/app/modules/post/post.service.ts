@@ -11,7 +11,7 @@ import {
 } from "../../../interfaces/pagination";
 import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
-import { SortOrder } from "mongoose";
+import mongoose, { SortOrder } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 
 // Assuming your project has AI and Quota modules structured like this:
@@ -213,17 +213,15 @@ const getPublishedPostsByAuthor = async (
 
 const getLatestPosts = async () => {
   try {
-    const res = await Post.find({ isDeleted: { $ne: true } })
+    const res = await Post.find({ isDeleted: { $ne: true }, isPublished: true })
       .sort({ createdAt: -1 })
-      .limit(3)
-      .populate("author", "name email createdAt")
       .limit(50)
-      .populate("author", "name createdAt profile.bio")
+      .populate("author", "name email createdAt")
       .populate({
         path: "reactions",
-        populate: { path: "userId", select: "_id" },
+        populate: { path: "userId", select: "email" },
       })
-      .populate("bookmarks", "_id");
+      .populate("bookmarks", "email");
     return res;
   } catch (error) {
     throw new ApiError(
@@ -288,28 +286,25 @@ const getSinglePost = async (id: string) => {
   return postById;
 };
 
-  const getPostsByTag = async (tag: string, excludeId?: string) => {
-
+const getPostsByTag = async (tag: string, excludeId?: string) => {
   if (!tag) {
     return [];
   }
 
-  const query: any = { tag, isDeleted: { $ne: true } };
+  const query: any = { tag, isDeleted: { $ne: true }, isPublished: true };
 
   if (excludeId) {
     query._id = { $ne: excludeId };
   }
 
   const result = await Post.find(query)
-    .limit(3)
-    .populate("author", "name email createdAt")
     .limit(2)
-    .populate("author", "name createdAt profile.bio")
+    .populate("author", "name email createdAt")
     .populate({
       path: "reactions",
-      populate: { path: "userId", select: "_id" },
+      populate: { path: "userId", select: "email" },
     })
-    .populate("bookmarks", "_id");
+    .populate("bookmarks", "email");
   return result;
 };
 
@@ -319,9 +314,12 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
-  if (!post) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
+  if (!mongoose.isValidObjectId(postId)) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+  }
+  const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
+  if (!postExists) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
   // Check bookmark status atomically via a DB query instead of loading the full document
   const isBookmarked = await Post.exists({ _id: postId, bookmarks: user._id });

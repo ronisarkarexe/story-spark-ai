@@ -1,5 +1,9 @@
 import { enhancePromptWithGemini } from "./enhance_prompt.utils";
-import { raceGenerationWithTimeout, GenerationTimeoutError } from "../../../utils/generation_timeout";
+import { storyQueue } from "../../../services/storyRequestQueue";
+import {
+  raceGenerationWithTimeout,
+  GenerationTimeoutError,
+} from "../../../utils/generation_timeout";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { Post } from "../post/post.model";
@@ -11,7 +15,7 @@ const createVersionSnapshot = async (
   storyId: string,
   userId: string,
   prompt: string = "",
-  generationType: string = "edited"
+  generationType: string = "edited",
 ): Promise<IStoryVersion | null> => {
   try {
     const post = await Post.findById(storyId);
@@ -28,7 +32,9 @@ const createVersionSnapshot = async (
           .sort({ versionNumber: -1 })
           .select("versionNumber");
 
-        const nextVersionNumber = lastVersion ? lastVersion.versionNumber + 1 : 1;
+        const nextVersionNumber = lastVersion
+          ? lastVersion.versionNumber + 1
+          : 1;
 
         const snapshot = await StoryVersion.create({
           storyId: post._id,
@@ -58,7 +64,7 @@ const createVersionSnapshot = async (
 
 const getVersionsByStoryId = async (
   storyId: string,
-  userId: string
+  userId: string,
 ): Promise<IStoryVersion[]> => {
   const post = await Post.findById(storyId);
   if (!post) {
@@ -67,7 +73,10 @@ const getVersionsByStoryId = async (
 
   // Enforce access control - users can only view their own stories
   if (post.author.toString() !== userId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story history!");
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have access to this story history!",
+    );
   }
 
   return await StoryVersion.find({ storyId }).sort({ versionNumber: -1 });
@@ -75,17 +84,23 @@ const getVersionsByStoryId = async (
 
 const getVersionById = async (
   versionId: string,
-  userId: string
+  userId: string,
 ): Promise<IStoryVersion> => {
   const version = await StoryVersion.findById(versionId);
   if (!version) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Story version snapshot not found!");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Story version snapshot not found!",
+    );
   }
 
   // Fetch the post to verify ownership
   const post = await Post.findById(version.storyId);
   if (!post || post.author.toString() !== userId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story version!");
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have access to this story version!",
+    );
   }
 
   return version;
@@ -93,11 +108,14 @@ const getVersionById = async (
 
 const restoreVersion = async (
   versionId: string,
-  userId: string
+  userId: string,
 ): Promise<IPost> => {
   const version = await StoryVersion.findById(versionId);
   if (!version) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Story version snapshot not found!");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Story version snapshot not found!",
+    );
   }
 
   const post = await Post.findById(version.storyId);
@@ -107,7 +125,10 @@ const restoreVersion = async (
 
   // Access check
   if (post.author.toString() !== userId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have permission to restore this story!");
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have permission to restore this story!",
+    );
   }
 
   // 1. Create a version snapshot of the CURRENT active post content so we preserve it (avoiding data loss)
@@ -115,7 +136,7 @@ const restoreVersion = async (
     post._id.toString(),
     userId,
     "Snapshot created automatically before restoration",
-    "pre-restoration"
+    "pre-restoration",
   );
 
   // 2. Overwrite active post with chosen version
@@ -128,7 +149,7 @@ const restoreVersion = async (
     post._id.toString(),
     userId,
     `Restored to Version ${version.versionNumber}`,
-    "restored"
+    "restored",
   );
 
   return post;
@@ -138,15 +159,17 @@ const ENHANCE_TIMEOUT_MS = 60000;
 
 const enhancePrompt = async (prompt: string): Promise<string> => {
   try {
-    const enhanced = await raceGenerationWithTimeout(
-      (signal) => enhancePromptWithGemini(prompt, signal),
-      ENHANCE_TIMEOUT_MS
+    const enhanced = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        (signal) => enhancePromptWithGemini(prompt, signal),
+        ENHANCE_TIMEOUT_MS,
+      ),
     );
 
     if (!enhanced || typeof enhanced !== "string" || enhanced.trim() === "") {
       throw new ApiError(
         httpStatus.BAD_GATEWAY,
-        "Prompt enhancement returned empty result."
+        "Prompt enhancement returned empty result.",
       );
     }
 
@@ -157,14 +180,14 @@ const enhancePrompt = async (prompt: string): Promise<string> => {
     if (error instanceof GenerationTimeoutError) {
       throw new ApiError(
         httpStatus.GATEWAY_TIMEOUT,
-        "Prompt enhancement timed out. Please try again."
+        "Prompt enhancement timed out. Please try again.",
       );
     }
 
     const msg = error instanceof Error ? error.message : String(error);
     throw new ApiError(
       httpStatus.BAD_GATEWAY,
-      `Prompt enhancement failed. (${msg})`
+      `Prompt enhancement failed. (${msg})`,
     );
   }
 };

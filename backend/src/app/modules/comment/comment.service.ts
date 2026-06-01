@@ -43,7 +43,25 @@ const createComment = async (
 };
 
 const getCommentsByPostId = async (postId: string) => {
-main
+  const comments = await Comment.find({ postId, parentCommentId: null })
+    .populate("userId", "name email")
+    .populate({
+      path: "likes",
+    })
+    .sort({ createdAt: -1 });
+  const commentsWithReplies = await Promise.all(
+    comments.map(async (comment) => {
+      const replies = await Comment.find({ parentCommentId: comment._id })
+        .populate("userId", "name email")
+        .sort({ createdAt: 1 });
+      return {
+        ...comment.toObject(),
+        replies,
+      };
+    })
+  );
+  const totalComments = await Comment.countDocuments({ postId });
+  return { comments: commentsWithReplies, totalComments };
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
