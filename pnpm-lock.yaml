@@ -178,6 +178,9 @@ importers:
       eventemitter3:
         specifier: ^5.0.4
         version: 5.0.4
+      fdir:
+        specifier: ^6.5.0
+        version: 6.5.0(picomatch@4.0.4)
       framer-motion:
         specifier: ^12.5.0
         version: 12.40.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
