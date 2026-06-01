@@ -1,7 +1,10 @@
 import { useForm, SubmitHandler } from "react-hook-form";
+import { Link } from "react-router-dom";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { useState } from "react";
+import "./auth.css";
+import "@flaticon/flaticon-uicons/css/all/all.css";
 import {
   useLoginUserMutation,
   useGoogleLoginMutation,
@@ -175,12 +178,12 @@ const LoginComponent = () => {
             />
 
             <div className="flex justify-end -mt-2">
-              <a
-                href="/forgot-password"
+              <Link
+                to="/forgot-password"
                 className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
               >
                 Forgot Password?
-              </a>
+              </Link>
             </div>
 
             <SSButton
@@ -217,12 +220,12 @@ const LoginComponent = () => {
 
             Don't have an account?{" "}
 
-            <a
-              href="/signup"
+            <Link
+              to="/signup"
               className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
             >
               Sign up for free
-            </a>
+            </Link>
 
           </p>
 

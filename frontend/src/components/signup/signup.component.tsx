@@ -9,7 +9,9 @@ import {
   useVerifyOtpMutation,
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
+
 
 interface IRegisterInfo {
   name: string;
@@ -436,12 +438,12 @@ const SignUpComponent = () => {
           {!showOtpField && (
             <p className="mt-8 text-center text-sm text-slate-400">
               Already have an account?{" "}
-              <a
-                href="/login"
+              <Link
+                to="/login"
                 className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
               >
                 Sign In
-              </a>
+              </Link>
             </p>
           )}
         </div>

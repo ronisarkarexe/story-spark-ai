@@ -8,8 +8,6 @@ import WritingAssistantComponent from "./components/writing-assistant/writing_as
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
 import StoriesComponent from "./components/stories/stories.component";
-
-
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import LoginComponent from "./components/login/login.component";
@@ -44,8 +42,14 @@ import TemplatesComponent from "./components/templates/templates.component";
 import CommunityComponent from "./components/community/community.component";
 import ResourcesListComponent from "./components/community/resources_list.component";
 import ResourceDetailComponent from "./components/community/resource_detail.component";
-import ContributorsComponent from "./components/footer/contributors";
+import BranchingStory from "./components/stories/BranchingStory";
+import SimpleProtectedRoute from './components/ProtectedRoute';
+import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
+import ScrollToTopButton from "./components/ScrollToTopButton";
+import ForgotPasswordComponent from "./components/login/forgot_password.component";
 import ReportBug from "./components/report-bug/ReportBug";
+import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import ContributorsComponent from "./components/footer/contributors";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import StoryWorkspace from "./components/story/StoryWorkspace";
 
