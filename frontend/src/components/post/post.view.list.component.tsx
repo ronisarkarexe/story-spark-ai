@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../models/post";
 import ImageFallback from "../ImageFallback";
-ImageFallback
 import BookmarkButton from "../BookmarkButton";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface IExploreViewListComponentProps {
   posts: Post[];
@@ -17,6 +21,35 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 }) => {
   const navigate = useNavigate();
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    if (isLoading || posts.length === 0) return;
+
+    ScrollTrigger.batch('.story-card', {
+      onEnter: (batch) => {
+        gsap.fromTo(batch, 
+          {
+            opacity: 0,
+            y: 50,
+            scale: 0.95
+          },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: "power3.out",
+            overwrite: true
+          }
+        );
+      },
+      once: true,
+      start: "top 85%"
+    });
+  }, { dependencies: [posts, isLoading], scope: containerRef });
+
 
   const handleImageError = (storyId: string) => {
     setImageErrors((prev) => ({ ...prev, [storyId]: true }));
@@ -73,14 +106,14 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   }
 
   return (
-    <div>
+    <div ref={containerRef}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {posts.length > 0 ? (
           posts.map((story) => (
             <div
               key={story._id}
               onClick={() => navigate(`/post/${story._id}`)}
-              className="cursor-pointer bg-gray-50 text-slate-900 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 overflow-hidden group flex flex-col h-full dark:bg-slate-900/60 dark:text-white dark:border-slate-800"
+              className="story-card cursor-pointer bg-gray-50 text-slate-900 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 overflow-hidden group flex flex-col h-full dark:bg-slate-900/60 dark:text-white dark:border-slate-800"
             >
               <div className="relative overflow-hidden">
                 <ImageFallback
