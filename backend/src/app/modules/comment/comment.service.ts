@@ -43,7 +43,10 @@ const createComment = async (
 };
 
 const getCommentsByPostId = async (postId: string) => {
-main
+  const comments = await Comment.find({ postId, isDeleted: { $ne: true } })
+    .populate("userId", "name profile.avatar")
+    .sort({ createdAt: -1 });
+  return comments;
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
