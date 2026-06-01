@@ -10,7 +10,6 @@ import {
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
 
 
 interface IRegisterInfo {
