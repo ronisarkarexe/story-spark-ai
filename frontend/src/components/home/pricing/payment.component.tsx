@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
@@ -221,7 +221,7 @@ const PaymentComponent = () => {
                 className="space-y-5"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  handlePay();
+                  handlePayment();
                 }}
               >
                 {/* Cardholder Name */}
