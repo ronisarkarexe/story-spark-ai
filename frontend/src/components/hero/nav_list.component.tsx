@@ -1,3 +1,4 @@
+import React, { FC, useState, useRef, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 
@@ -30,7 +31,7 @@ const ThemeToggle: FC = () => {
 };
 
 interface NotificationComponentProps {
-  notifications: unknown[];
+  notifications: any[];
   showNotification: boolean;
   setShowNotification: () => void;
   unreadCount: number;

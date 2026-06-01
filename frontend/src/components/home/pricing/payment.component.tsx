@@ -18,6 +18,32 @@ const PaymentComponent = () => {
 
   // Read selected plan from pricing page
   const [searchParams] = useSearchParams();
+  
+  const [name, setName] = React.useState("");
+  const [cardNumber, setCardNumber] = React.useState("");
+  const [expiry, setExpiry] = React.useState("");
+  const [cvv, setCvv] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  
+  const isFormValid = name && cardNumber && expiry && cvv;
+
+  const loadRazorpayScript = async () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const formatCardNumber = (value: string) => {
+    return value.replace(/\s/g, "").replace(/(\d{4})/g, "$1 ").trim();
+  };
+
+  const formatExpiry = (value: string) => {
+    return value.replace(/\D/g, "").slice(0, 4).replace(/(\d{2})/, "$1/");
+  };
 
   const planName = searchParams.get("plan") || "Pro";
   const planPrice = Number(searchParams.get("price") || "19.99");

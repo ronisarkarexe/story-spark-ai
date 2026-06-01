@@ -27,7 +27,6 @@ interface Room {
   story: StoryChunk[];
   createdAt: Date;
 }
-import { useParams, useNavigate } from "react-router-dom";
 
 /**
  * Collab rooms required Socket.IO to `BACKEND_URL/collab`. That is disabled in the
@@ -70,7 +69,7 @@ export default function CollabRoom() {
       collabSocketRef.current = collabSocket;
 
       // Request room info
-      collabSocket.emit("collab:get_room", { roomId }, (response: unknown) => {
+      collabSocket.emit("collab:get_room", { roomId }, (response: any) => {
         if (response && response.room) {
           setRoom(response.room);
           setError(null);
@@ -81,13 +80,13 @@ export default function CollabRoom() {
       });
 
       // Listen for room updates
-      const handleRoomUpdated = (data: unknown) => {
+      const handleRoomUpdated = (data: any) => {
         if (data && data.room) {
           setRoom(data.room);
         }
       };
 
-      const handleStoryUpdated = (data: unknown) => {
+      const handleStoryUpdated = (data: any) => {
         if (data && data.story) {
           setRoom((prev) => (prev ? { ...prev, story: data.story } : null));
         }
@@ -95,7 +94,7 @@ export default function CollabRoom() {
 
       collabSocket.on("collab:room_updated", handleRoomUpdated);
       collabSocket.on("collab:story_updated", handleStoryUpdated);
-      collabSocket.on("collab:error", (data: unknown) => {
+      collabSocket.on("collab:error", (data: any) => {
         setError(data.message);
         setLoading(false);
       });

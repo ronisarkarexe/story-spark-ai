@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { connectSocket } from "../../socket/socket.oi";
-import {  isLoggedIn } from "../../services/auth.service";
+import {  isLoggedIn, getUserInfo } from "../../services/auth.service";
 import { io } from "socket.io-client"; // Imported to resolve namespace path mappings if needed
 // Socket.IO collab disabled (see CollabRoom). Previous: io, Socket, resolveSocketUrl, BACKEND_URL.
 
@@ -9,6 +9,8 @@ export default function CollabHome() {
   const navigate = useNavigate();
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const user = getUserInfo();
 
   const createRoom = () => {
     if (!isLoggedIn()) {
@@ -37,7 +39,6 @@ export default function CollabHome() {
           token: localStorage.getItem("AUTH_KEY") 
         }
       });
-      const collabSocket = socket;
 
       collabSocket.emit(
         "collab:create_room",
