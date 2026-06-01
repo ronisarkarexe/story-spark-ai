@@ -97,7 +97,7 @@ const FeatureComponent = () => {
                       <div onClick={(e) => e.stopPropagation()} className="relative z-10">
                         <BookmarkButton
                           storyId={post._id}
-                          bookmarks={post.bookmarks}
+                          bookmarks={[]}
                           className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         />
                       </div>

@@ -20,39 +20,30 @@ const toggleBookmark = async (storyId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Story not found!");
   }
 
-  // Check if bookmark already exists
-  const existingBookmark = await Bookmark.findOne({
+  // Bookmark collection is the single source of truth; bookmarksCount mirrors it.
+  const deletedBookmark = await Bookmark.findOneAndDelete({
     userId: user._id,
     storyId: post._id,
   });
 
-  if (existingBookmark) {
-    // Remove bookmark
-    await Bookmark.findByIdAndDelete(existingBookmark._id);
-    
-    // Synchronize with Post.bookmarks array
-    post.bookmarks = post.bookmarks || [];
-    post.bookmarks = post.bookmarks.filter(
-      (uId) => uId && uId.toString() !== user._id.toString()
+  if (deletedBookmark) {
+    await Post.updateOne(
+      { _id: post._id, bookmarksCount: { $gt: 0 } },
+      { $inc: { bookmarksCount: -1 } }
     );
-    await post.save();
-
     return { message: "Bookmark removed", isBookmarked: false };
-  } else {
-    // Add bookmark
-    await Bookmark.create({
-      userId: user._id,
-      storyId: post._id,
-    });
+  }
 
-    // Synchronize with Post.bookmarks array
-    post.bookmarks = post.bookmarks || [];
-    if (!post.bookmarks.some((uId) => uId && uId.toString() === user._id.toString())) {
-      post.bookmarks.push(user._id);
-    }
-    await post.save();
-
+  try {
+    await Bookmark.create({ userId: user._id, storyId: post._id });
+    await Post.updateOne({ _id: post._id }, { $inc: { bookmarksCount: 1 } });
     return { message: "Story bookmarked!", isBookmarked: true };
+  } catch (error: any) {
+    // Duplicate means it was already bookmarked; treat as a no-op success.
+    if (error.code === 11000) {
+      return { message: "Story bookmarked!", isBookmarked: true };
+    }
+    throw error;
   }
 };
 
@@ -77,12 +68,11 @@ const getBookmarks = async (
       path: "storyId",
       match: { isDeleted: { $ne: true } },
       populate: [
-        { path: "author", select: "name email createdAt profile.bio" },
+        { path: "author", select: "name createdAt profile.bio" },
         {
           path: "reactions",
-          populate: { path: "userId", select: "email" },
+          populate: { path: "userId", select: "_id" },
         },
-        { path: "bookmarks", select: "email" },
       ],
     });
 
@@ -124,19 +114,17 @@ const deleteBookmark = async (storyId: string, token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-  const post = await Post.findById(storyId);
 
   const deletedBookmark = await Bookmark.findOneAndDelete({
     userId: user._id,
     storyId: new Types.ObjectId(storyId),
   });
 
-  if (deletedBookmark && post) {
-    post.bookmarks = post.bookmarks || [];
-    post.bookmarks = post.bookmarks.filter(
-      (uId) => uId && uId.toString() !== user._id.toString()
+  if (deletedBookmark) {
+    await Post.updateOne(
+      { _id: storyId, bookmarksCount: { $gt: 0 } },
+      { $inc: { bookmarksCount: -1 } }
     );
-    await post.save();
   }
 
   return { message: "Bookmark removed" };

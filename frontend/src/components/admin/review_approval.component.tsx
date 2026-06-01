@@ -1,3 +1,4 @@
+
 import React from "react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -6,6 +7,8 @@ import {
   useGetPendingReviewsQuery,
 } from "../../redux/apis/review.api";
 import { Review } from "../../models/review";
+import defaultAvatar from "../../assets/logoNew.png";
+import ImageFallback from "../ImageFallback";
 
 const ReviewApprovalComponent = () => {
   const { data: reviews = [], isLoading } =
@@ -48,8 +51,8 @@ const ReviewApprovalComponent = () => {
             className="border rounded-xl p-5 shadow-md"
           >
             <div className="flex items-center gap-4 mb-4">
-              <img
-                src={review.imgSrc}
+              <ImageFallback
+                src={review.imgSrc?.trim() ? review.imgSrc : defaultAvatar}
                 alt={review.name}
                 className="w-14 h-14 rounded-full"
               />

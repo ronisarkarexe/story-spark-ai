@@ -59,7 +59,6 @@ const getCommentsByPostId = async (postId: string) => {
   const topLevelComments: ICommentDTO[] = [];
   const replyMap = new Map<string, ICommentDTO[]>();
 
-  // Distribute comments into top-level list and replies map
   for (const comment of allComments) {
     const commentDTO: ICommentDTO = {
       ...comment,
@@ -77,18 +76,22 @@ const getCommentsByPostId = async (postId: string) => {
     }
   }
 
-  // Attach replies to their corresponding top-level comments and sort them chronologically (createdAt: 1)
   for (const comment of topLevelComments) {
     const idStr = comment._id.toString();
     const replies = replyMap.get(idStr) || [];
-    
-    // Sort replies in ascending chronological order, avoiding new Date allocation where possible
+
     replies.sort((a, b) => {
-      const timeA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
-      const timeB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
+      const timeA =
+        a.createdAt instanceof Date
+          ? a.createdAt.getTime()
+          : new Date(a.createdAt).getTime();
+      const timeB =
+        b.createdAt instanceof Date
+          ? b.createdAt.getTime()
+          : new Date(b.createdAt).getTime();
       return timeA - timeB;
     });
-    
+
     comment.replies = replies;
   }
 
@@ -112,7 +115,7 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
-  
+
   // Replace the read-modify-write likes toggle with atomic MongoDB operators.
   // The original pattern read likes, checked membership with includes, mutated
   // the array, and saved. Two concurrent toggles by the same user can both pass

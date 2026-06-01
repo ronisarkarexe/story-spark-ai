@@ -1,16 +1,12 @@
 import express from "express";
 import { PostController } from "./post.controller";
-import auth from "../../middleware/auth.middleware"; 
-import checkRequestLimit from "../../middleware/check.request.limit"; 
+import auth from "../../middleware/auth.middleware";
+import checkRequestLimit from "../../middleware/check.request.limit";
+import validateRequest from "../../middleware/validate.request";
+import { PostValidator } from "./post.validation";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 
 const router = express.Router();
-const protect = auth(
-  ENUM_USER_ROLE.USER,
-  ENUM_USER_ROLE.WRITER,
-  ENUM_USER_ROLE.ADMIN,
-  ENUM_USER_ROLE.SUPER_ADMIN
-);
 
 /* ============================================================
    SYSTEM LAYOUT CONFIGURATIONS & CORE INBOUND PUBLIC ENTRIES
@@ -18,7 +14,8 @@ const protect = auth(
 
 router.post(
   "/create-post",
-  protect,
+  auth(),
+  validateRequest(PostValidator.createPost),
   PostController.createPost
 );
 
@@ -39,7 +36,7 @@ router.get(
 
 router.patch(
   "/featured/:postId",
-  protect,
+  auth(),
   PostController.doFeaturedPosts
 );
 
@@ -55,7 +52,7 @@ router.get(
 
 router.patch(
   "/bookmark/:id",
-  protect,
+  auth(),
   PostController.toggleBookmark
 );
 
@@ -67,12 +64,13 @@ router.patch(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
+  validateRequest(PostValidator.updatePost),
   PostController.updatePost
 );
 
 router.delete(
   "/:id",
-  protect,
+  auth(),
   PostController.deletePost
 );
 
@@ -87,8 +85,8 @@ router.delete(
  */
 router.post(
   "/remix",
-  protect,
-  checkRequestLimit(), // <-- FIXED: Intercepts request if user exceeded monthly quota balance
+  auth(),
+  checkRequestLimit(),
   PostController.remixStory
 );
 
@@ -99,8 +97,8 @@ router.post(
  */
 router.post(
   "/translate",
-  protect,
-  checkRequestLimit(), // <-- FIXED: Intercepts request if user exceeded monthly quota balance
+  auth(),
+  checkRequestLimit(),
   PostController.translateStory
 );
 

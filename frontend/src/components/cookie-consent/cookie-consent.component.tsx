@@ -66,18 +66,18 @@ const CookieConsentBanner: FC = () => {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 bg-slate-950/95 border-t border-slate-700 py-5 shadow-2xl backdrop-blur-xl text-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 sm:px-6 lg:px-8 xl:flex-row xl:items-start xl:justify-between xl:gap-8">
+    <div className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4 text-white sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-h-[82vh] max-w-5xl flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-700 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl sm:p-5 xl:flex-row xl:items-start xl:justify-between xl:gap-6">
         <div className="max-w-3xl space-y-3">
-          <p className="text-sm uppercase tracking-[0.28em] text-slate-400">Cookie Preferences</p>
-          <h2 className="text-2xl font-semibold text-white">Manage your cookie settings</h2>
-          <p className="text-slate-300 leading-7">
+          <p className="text-xs uppercase tracking-[0.26em] text-slate-400">Cookie Preferences</p>
+          <h2 className="text-xl font-semibold text-white sm:text-2xl">Manage your cookie settings</h2>
+          <p className="text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
             StorySpark AI uses cookies to keep the experience secure and smooth. Select which cookie categories you want to allow, or accept all for the best experience.
             <Link to="/cookie-policy" className="ml-1 text-blue-300 underline hover:text-blue-200">Learn more</Link>.
           </p>
-          <div className="rounded-3xl border border-slate-700 bg-slate-900/90 p-4">
+          <div className="rounded-2xl border border-slate-700 bg-slate-900/90 p-3 sm:p-4">
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-slate-700 bg-slate-950 p-4">
+              <div className="rounded-xl border border-slate-700 bg-slate-950 p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold text-white">Essential Cookies</p>
@@ -86,7 +86,7 @@ const CookieConsentBanner: FC = () => {
                   <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-300">Required</span>
                 </div>
               </div>
-              <div className="rounded-2xl border border-slate-700 bg-slate-950 p-4">
+              <div className="rounded-xl border border-slate-700 bg-slate-950 p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold text-white">Functional Cookies</p>
@@ -103,7 +103,7 @@ const CookieConsentBanner: FC = () => {
                   </label>
                 </div>
               </div>
-              <div className="rounded-2xl border border-slate-700 bg-slate-950 p-4 sm:col-span-2">
+              <div className="rounded-xl border border-slate-700 bg-slate-950 p-3 sm:col-span-2 sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold text-white">Analytics Cookies</p>
@@ -123,22 +123,22 @@ const CookieConsentBanner: FC = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-3 xl:w-[320px]">
+        <div className="flex flex-col gap-3 sm:flex-row xl:w-[300px] xl:flex-col">
           <button
             onClick={handleAcceptAll}
-            className="rounded-3xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-400 hover:to-indigo-400"
+            className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-400 hover:to-indigo-400 sm:flex-1 xl:flex-none"
           >
             Accept all cookies
           </button>
           <button
             onClick={handleSave}
-            className="rounded-3xl border border-slate-700 bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:border-slate-500"
+            className="rounded-xl border border-slate-700 bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:border-slate-500 sm:flex-1 xl:flex-none"
           >
             Save preferences
           </button>
           <button
             onClick={handleRejectNonEssential}
-            className="rounded-3xl border border-slate-700 bg-slate-950 px-6 py-3 text-sm font-semibold text-slate-300 transition hover:border-slate-500"
+            className="rounded-xl border border-slate-700 bg-slate-950 px-6 py-3 text-sm font-semibold text-slate-300 transition hover:border-slate-500 sm:flex-1 xl:flex-none"
           >
             Reject non-essential
           </button>

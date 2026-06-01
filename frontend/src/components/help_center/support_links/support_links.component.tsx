@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
-import { SupportLink } from "../help_center.utils";
+import { Support_Links as SupportLink } from "../help_center.utils";
 
 interface SupportLinksProps {
   links: SupportLink[];

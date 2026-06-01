@@ -5,7 +5,7 @@ import app from "./app";
 import dns from "dns";
 import http from "http";
 import { Server } from "socket.io";
-import { JwtHalers } from "./utils/jwt.helper";
+import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
 
@@ -38,7 +38,7 @@ async function main() {
       cors: {
         origin: config.cors_origins?.length
           ? config.cors_origins
-          : ["http://localhost:4001", "https://storysparkai.vercel.app"],
+          : ["http://localhost:4001", "https://storysparkai-five.vercel.app"],
         credentials: true,
       },
     });
@@ -58,7 +58,7 @@ async function main() {
           return next(new Error("Unauthorized"));
         }
 
-        const verifiedUser = JwtHalers.verifyToken(
+        const verifiedUser = JwtHelpers.verifyToken(
           token,
           config.jwt.secret as Secret
         );

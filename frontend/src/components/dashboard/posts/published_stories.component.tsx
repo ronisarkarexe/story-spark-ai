@@ -137,18 +137,28 @@ const PublishedStoriesComponent: React.FC = () => {
       )}
 
       {!isLoading && !isError && stories.length === 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-white/[0.07] dark:bg-[#0a1020]">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300">
-            <i className="fas fa-book-open"></i>
-          </div>
-          <h3 className="text-xl font-black text-slate-900 dark:text-white">
-            No published stories found
-          </h3>
-          <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-            Publish a story and it will appear here automatically.
-          </p>
-        </div>
-      )}
+  <div className="rounded-2xl border border-dashed border-blue-200 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-12 text-center shadow-sm dark:border-blue-500/20 dark:from-blue-500/10 dark:via-[#0a1020] dark:to-indigo-500/10">
+    <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-4xl text-blue-600 shadow-inner dark:bg-blue-500/15 dark:text-blue-300">
+      <i className="fas fa-book-open"></i>
+    </div>
+
+    <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+      No stories yet!
+    </h3>
+
+    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-400">
+      Start by entering a prompt below and create your first AI-powered story.
+    </p>
+
+    <Link
+      to="/story-workspace"
+      className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-500"
+    >
+      <i className="fas fa-plus text-xs"></i>
+      Create Your First Story
+    </Link>
+  </div>
+)}
 
       {!isLoading && !isError && stories.length > 0 && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">

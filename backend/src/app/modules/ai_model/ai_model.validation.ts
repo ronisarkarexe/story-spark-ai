@@ -32,7 +32,17 @@ const aiAlternateEndings = z.object({
   }),
 });
 
+const aiChat = z.object({
+  body: z.object({
+    message: z.string({ required_error: "Message is required!" }),
+    history: z.array(z.object({
+      role: z.enum(["user", "model"]),
+      parts: z.string(),
+    })).optional(),
+  }),
+});
 export const AIModelValidator = {
   aiModel,
   aiAlternateEndings,
+  aiChat,
 };

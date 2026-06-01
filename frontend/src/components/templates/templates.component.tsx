@@ -31,12 +31,9 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       {/* Banner Image with Zoom Effect */}
       <div className="relative h-48 overflow-hidden w-full shrink-0 bg-[#0B0F19]">
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/40 to-transparent z-10 pointer-events-none"></div>
-        <img 
-          src={image} 
-          alt={title} 
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
+        <img
+          src={image}
+          alt={title}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
         />
         {/* Category badge */}

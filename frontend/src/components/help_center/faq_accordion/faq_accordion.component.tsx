@@ -1,6 +1,6 @@
 import { FC, useCallback, useId, useState } from "react";
 import { motion } from "framer-motion";
-import { FaqItem } from "../help_center.utils";
+import { FAQItem as FaqItem } from "../help_center.utils";
 
 interface FAQAccordionProps {
   items: FaqItem[];
