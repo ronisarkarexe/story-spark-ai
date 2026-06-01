@@ -75,7 +75,6 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
 }) => {
   const location = useLocation();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
-  const dispatch = useDispatch();
 
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
@@ -85,7 +84,6 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
-  const [showRemix, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -276,32 +274,16 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
 
   // Sync state instantly whenever a new template is submitted or selected
   useEffect(() => {
-  if (stories && stories.length > 0) {
-    setSelectedStory(stories[0]);
-
-    // Save story into Redux for continuation engine
-    dispatch(
-      setStory({
-        id: stories[0].uuid,
-        title: stories[0].title,
-        chapters: [
-          {
-            id: 1,
-            title: "Chapter 1",
-            content: stories[0].content,
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      })
-    );
-  } else {
-    setSelectedStory(null);
-  }
-
-  lastSavedContentRef.current = "";
-  hasSavedSessionRef.current = false;
-  savedPostIdRef.current = null;
-}, [stories, dispatch]);
+    if (stories && stories.length > 0) {
+      setSelectedStory(stories[0]);
+    } else {
+      setSelectedStory(null);
+    }
+    // Reset auto-save status for new story session
+    lastSavedContentRef.current = "";
+    hasSavedSessionRef.current = false;
+    savedPostIdRef.current = null;
+  }, [stories]);
 
   useEffect(() => {
     const autoSaveStory = async () => {
@@ -797,6 +779,7 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
 
   const isNarrationActive = narrationState !== "idle";
 
+
 if (isLoading) {
   return (
     <div className="flex items-center justify-center py-20">
@@ -1096,7 +1079,7 @@ if (isLoading) {
                               <details className="group border border-slate-800 rounded-lg overflow-hidden bg-slate-950/20">
                                 <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none">
                                   <span>PREVIEW FULL STORY WITH THIS ENDING</span>
-                                  <span className="transition-transform duration-200 group-open:rotate-180">Γû╝</span>
+                                  <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
                                 </summary>
                                 <div className="p-4 border-t border-slate-800/80 text-xs text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
                                   {currentEndingData.fullStory}

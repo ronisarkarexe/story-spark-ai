@@ -6,6 +6,11 @@ import { Post } from "../post/post.model";
 import { StoryVersion } from "./story_version.model";
 import { IStoryVersion } from "./story_version.interface";
 import { IPost } from "../post/post.interface";
+import paginationHelper from "../../../utils/pagination_helper";
+import {
+  IPaginationOptions,
+  IGenericResponse,
+} from "../../../interfaces/pagination";
 
 const createVersionSnapshot = async (
   storyId: string,
@@ -58,8 +63,10 @@ const createVersionSnapshot = async (
 
 const getVersionsByStoryId = async (
   storyId: string,
-  userId: string
-): Promise<IStoryVersion[]> => {
+  userId: string,
+  pagination: IPaginationOptions
+): Promise<IGenericResponse<IStoryVersion[]>> => {
+  const { page, limit, skip } = paginationHelper(pagination);
   const post = await Post.findById(storyId);
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
@@ -70,7 +77,21 @@ const getVersionsByStoryId = async (
     throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story history!");
   }
 
-  return await StoryVersion.find({ storyId }).sort({ versionNumber: -1 });
+const data = await StoryVersion.find({ storyId })
+  .sort({ versionNumber: -1 })
+  .skip(skip)
+  .limit(limit);
+
+const total = await StoryVersion.countDocuments({ storyId });
+
+return {
+  meta: {
+    page,
+    limit,
+    total,
+  },
+  data,
+};
 };
 
 const getVersionById = async (
