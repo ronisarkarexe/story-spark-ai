@@ -8,7 +8,6 @@ import {
 } from "../../redux/apis/review.api";
 import { Review } from "../../models/review";
 import ImageFallback from "../ImageFallback";
-ImageFallback
 const ReviewApprovalComponent = () => {
   const { data: reviews = [], isLoading } =
     useGetPendingReviewsQuery({});

@@ -4,7 +4,6 @@ import { useDebounced } from "../../../hooks/global";
 import { Topic } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
 import ImageFallback from "../../ImageFallback";
-ImageFallback
 const PostListsComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [size, setSize] = useState<number>(10);

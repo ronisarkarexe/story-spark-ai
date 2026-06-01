@@ -58,11 +58,9 @@ const LoginComponent = () => {
       if (res.data.accessToken) {
         toast.success("User logged in successfully with Google!");
 
-
         storeUserInfo({
           accessToken: res.data.accessToken,
         });
-
 
         setIsLoggedIn(true);
       }
@@ -90,101 +88,76 @@ const LoginComponent = () => {
   }
 
   return (
-
-
-
     <div className="min-h-screen bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 box-border">
-
       {/* Background Glow */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 box-border">
+      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 box-border lg:max-w-4xl">
 
         <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
           <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
         </div>
-        <div className="flex justify-center items-center gap-40">
+        <div className="flex flex-col lg:flex-row justify-center items-center gap-10 lg:gap-20">
 
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 hidden lg:flex max-w-md">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
-            
             Turns Ideas into
             <br /> 
-            unforgotable stories
-            
-            </h1>
+            unforgettable stories
+          </h1>
           <p>AI powered storytelling that helps you
               <br />            
              create connect inspire.</p>
 
-             <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+             <div className="flex justify-start items-center p-4 gap-6 border border-gray-200 rounded-2xl bg-slate-50 dark:border-slate-800 dark:bg-slate-800/50 dark:text-gray-300">
               <div>
-                <WandSparkles className="text-violet-600"/>
+                <WandSparkles className="text-violet-500 w-8 h-8"/>
               </div>
               <div>
                 <h1 className="font-bold">Smart writing</h1>
-                <p>AI that understands your ideas</p>
+                <p className="text-sm">AI that understands your ideas</p>
               </div>
              </div>
 
-
-             <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+             <div className="flex justify-start items-center p-4 gap-6 border border-gray-200 rounded-2xl bg-slate-50 dark:border-slate-800 dark:bg-slate-800/50 dark:text-gray-300">
               <div>
-                <BookOpen className="text-violet-600"/>
+                <BookOpen className="text-blue-500 w-8 h-8"/>
               </div>
               <div>
                 <h1 className="font-bold">Endless Creativity</h1>
-                <p>Stories that captivate and inspire</p>
+                <p className="text-sm">Stories that captivate and inspire</p>
               </div>
              </div>
 
-
-             <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+             <div className="flex justify-start items-center p-4 gap-6 border border-gray-200 rounded-2xl bg-slate-50 dark:border-slate-800 dark:bg-slate-800/50 dark:text-gray-300">
               <div>
-                <UsersRound className="text-violet-600"/>
+                <UsersRound className="text-indigo-500 w-8 h-8"/>
               </div>
               <div>
                 <h1 className="font-bold">Built for everyone</h1>
-                <p>Writers, Creaters and dreamers</p>
+                <p className="text-sm">Writers, Creators and dreamers</p>
               </div>
              </div>
-             <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-                Create, edit, and generate engaging multiple story
-                <br />
-                 variations from a single prompt.
-                  <br />                
-                 Perfect for writers, creators, and enthusiasts 
-                 <br />
-                 exploring the future of fiction.
+             <div className="border border-gray-200 p-4 rounded-2xl bg-slate-50 dark:border-slate-800 dark:bg-slate-800/50 dark:text-gray-300 text-sm">
+                Create, edit, and generate engaging multiple story variations from a single prompt. Perfect for writers, creators, and enthusiasts exploring the future of fiction.
              </div>
         </div>
 
 
         <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl overflow-hidden">
-
-        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
-
             <button
             onClick={() => window.location.href = "/"}
-            className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2"
+            className="mb-4 text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 font-medium"
             >
             ← Back to Home
           </button>
 
-
           <h3 className="mb-6 text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-200">
             Welcome Back
           </h3>
-
-          <form
-            className="space-y-5"
-            onSubmit={handleSubmit(onSubmit)}
-            >
-
-          {/* Added w-full to the form */}
 
           <form className="space-y-5 w-full" onSubmit={handleSubmit(onSubmit)}>
             <SSInput
@@ -214,17 +187,11 @@ const LoginComponent = () => {
             <div className="flex justify-end -mt-2">
               <a
                 href="/forgot-password"
-                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                className="text-xs font-semibold text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
                 >
                 Forgot Password?
               </a>
             </div>
-
-            <SSButton
-              text="Sign In"
-              type="submit"
-              isLoading={isBusy}
-              />
 
             <SSButton text="Sign In" type="submit" isLoading={isBusy} />
           </form>
@@ -235,16 +202,13 @@ const LoginComponent = () => {
             </div>
 
             <div className="relative flex justify-center text-sm w-full">
-
-              <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+              <span className="px-4 bg-slate-50 dark:bg-[#151f32] text-slate-500 dark:text-slate-400">
                 OR
               </span>
             </div>
           </div>
 
-
           <div className="mt-6 flex justify-center list-none w-full">
-
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}
@@ -255,7 +219,7 @@ const LoginComponent = () => {
             Don't have an account?{" "}
             <a
               href="/signup"
-              className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+              className="font-semibold text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
               >
               Sign up for free
             </a>
@@ -267,9 +231,8 @@ const LoginComponent = () => {
         position="top-right"
         reverseOrder={false}
         />
-
     </div>
-        </div>
+    </div>
   );
 };
 

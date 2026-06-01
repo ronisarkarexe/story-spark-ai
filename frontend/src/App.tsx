@@ -72,7 +72,6 @@ const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
 // 2. CENTRAL ROUTER MATRIX (Initialized exactly once in the global scope)
 // =========================================================================
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
-const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
 
 const router = createBrowserRouter([
   {

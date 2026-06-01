@@ -6,36 +6,33 @@ import SSProfile from "../../ui-component/ss-profile/ss-profile";
 import { useNavigate } from "react-router-dom";
 import BookmarkButton from "../../BookmarkButton";
 import React, { useState } from "react";
-ImageFallback
 import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import ImageFallback from "../../ImageFallback";
 
+const calculateReadingTime = (content?: string) => {
+  if (!content) return 1;
+  const words = content.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / 200));
+};
+
 const FeatureComponent = () => {
   const { data, isLoading, isError, refetch } = useGetFeaturedListsQuery(undefined);
   const navigate = useNavigate();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyLink = (e: React.MouseEvent, id: string, url: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   if (isLoading) return <LoadingAnimation />;
   if (isError) {
-      return (
-        <div className="mb-12 text-slate-900 dark:text-slate-100">
-          <h2 className="text-2xl font-bold mb-6">
-            Featured Posts
-          </h2>
-    
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72"
-              ></div>
-            ))}
-          </div>
-        </div>
-      );
-    }
     return (
       <div className="mb-12 rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-center text-red-200">
-        <p className="mb-3 font-semibold">Failed to load featured posts.</p>
+        <p className="mb-3 font-semibold text-slate-900 dark:text-white">Failed to load featured posts.</p>
         <button
           onClick={() => refetch()}
           className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
@@ -63,11 +60,8 @@ const FeatureComponent = () => {
                 onClick={() => navigate(`/post/${post._id}`)}
                 className="motion-card story-panel group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:border-indigo-500/30 shadow-md shadow-slate-100 dark:shadow-none"
               >
-                <div className="relative overflow-hidden h-48">
-                  <ImageFallback
-                    className="motion-image h-full w-full object-cover"
                 <div className="relative h-48 overflow-hidden sm:h-52">
-                  <img
+                  <ImageFallback
                     className="motion-image h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     src={post.imageURL}
                     alt={post.title || "Featured Post"}
@@ -183,8 +177,7 @@ const FeatureComponent = () => {
             );
           })
         ) : (
-          <div className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72 w-full"></div>
-          <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400">
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400 col-span-1 sm:col-span-2">
             Featured posts are not available.
           </div>
         )}

@@ -5,7 +5,7 @@ import {
   useMarkNotificationReadMutation,
 } from "../redux/apis/notification.api";
 import { connectSocket, disconnectSocket } from "../socket/socket.oi";
-import type { NotificationItem, INotification } from "../models/notification";
+import type { INotification } from "../models/notification";
 
 /**
  * Notification bell: REST + Socket.IO real-time updates.

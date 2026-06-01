@@ -13,12 +13,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReviewService = void 0;
-const review_model_1 = require("./review.model");
+const http_status_1 = __importDefault(require("http-status"));
+const api_error_1 = __importDefault(require("../../../errors/api_error"));
 const redis_client_1 = __importDefault(require("../../utils/redis.client"));
+const review_model_1 = require("./review.model");
 const PUBLISHED_REVIEWS_KEY = "reviews:published:v1";
 const REVIEWS_CACHE_TTL = Number(process.env.REVIEWS_CACHE_TTL) || 300; // seconds
-const createReview = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield review_model_1.Review.create(payload);
+const createReview = (payload, token) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield review_model_1.Review.create(Object.assign(Object.assign({}, payload), { userId: token._id }));
     // Invalidate cache (best-effort)
     try {
         yield redis_client_1.default.del(PUBLISHED_REVIEWS_KEY);
@@ -64,6 +66,9 @@ const approveReview = (id) => __awaiter(void 0, void 0, void 0, function* () {
     }, {
         new: true,
     });
+    if (!result) {
+        throw new api_error_1.default(http_status_1.default.NOT_FOUND, "Review not found!");
+    }
     // Invalidate cache (best-effort)
     try {
         yield redis_client_1.default.del(PUBLISHED_REVIEWS_KEY);
