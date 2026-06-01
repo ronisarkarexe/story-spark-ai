@@ -1,0 +1,35 @@
+# Runs from the PR branch (pull_request), so fork contributors get a green merge check
+# while waiting for merge-conflict-bot.yml on main to be updated.
+
+name: Merge Conflict Check (fork PR)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  mergeable:
+    if: github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check mergeability (read-only)
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (pr.mergeable === false) {
+              core.setFailed(
+                'GitHub reports merge conflicts with main. Merge or rebase main into your branch.'
+              );
+              return;
+            }
+            if (pr.mergeable === null) {
+              core.info('Mergeability still computing; re-run checks in a minute.');
+              return;
+            }
+            core.info(`PR is mergeable with ${pr.base.ref} (no conflict block).`);
