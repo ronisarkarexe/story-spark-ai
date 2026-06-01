@@ -106,7 +106,7 @@ const LoginComponent = () => {
             STORY SPARK AI
           </h2>
         </div>
-        <div className="flex justify-center items-center gap-40">
+        <div className="flex flex-col lg:flex-row justify-center items-start lg:items-center gap-8 lg:gap-16 w-full">
 
         <div className="flex flex-col gap-5">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
@@ -163,9 +163,7 @@ const LoginComponent = () => {
         </div>
 
 
-        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl overflow-hidden">
-
-        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
+        <div className="w-full max-w-md min-w-0 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl overflow-hidden">
 
             <button
             onClick={() => window.location.href = "/"}
@@ -180,13 +178,9 @@ const LoginComponent = () => {
           </h3>
 
           <form
-            className="space-y-5"
+            className="space-y-5 w-full"
             onSubmit={handleSubmit(onSubmit)}
-            >
-
-          {/* Added w-full to the form */}
-
-          <form className="space-y-5 w-full" onSubmit={handleSubmit(onSubmit)}>
+          >
             <SSInput
               label="Email address"
               name="email"
@@ -225,8 +219,6 @@ const LoginComponent = () => {
               type="submit"
               isLoading={isBusy}
               />
-
-            <SSButton text="Sign In" type="submit" isLoading={isBusy} />
           </form>
 
           <div className="mt-6 relative w-full">
