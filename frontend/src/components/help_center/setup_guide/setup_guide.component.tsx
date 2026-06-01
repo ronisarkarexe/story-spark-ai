@@ -18,13 +18,11 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
       aria-labelledby="setup-heading"
     >
       {/* Header Info Block */}
-      <div className="mb-12">
-        <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-300">
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-300 mb-4">
           <i className="fa-solid fa-code" aria-hidden="true"></i>
           DEVELOPER GUIDE
         </div>
-
-      <div className="text-center mb-10">
         
         <h2
           id="setup-heading"
@@ -36,7 +34,6 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
         <p className="mt-3 text-slate-600 dark:text-gray-400 max-w-2xl mx-auto">
           Get StorySparkAI running locally and start contributing to the monorepo.
         </p>
-
       </div>
 
       {/* Interactive Timeline Matrix */}
@@ -113,116 +110,16 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
 
                 {/* Visual Ambient Bottom Accent Line */}
                 <div className="mt-6 h-1 w-20 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 opacity-70 transition-all duration-300 group-hover:w-32" />
-            <li
-              key={step.step}
-              className="relative flex gap-6"
-            >
-              
-              <div
-                className="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-500/20 border border-indigo-300 dark:border-indigo-500/40 flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-bold z-10"
-                aria-hidden="true"
-              >
-                {step.step}
               </div>
-
-              <div className="flex-1 bg-white dark:bg-blue-500/10 border border-slate-200 dark:border-white/5 rounded-xl p-6 shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500/20 transition-colors">
-                
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-gray-300 mb-2">
-                  {step.title}
-                </h3>
-
-                <p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed mb-4">
-                  {step.description}
-                </p>
-
-                {step.code && (
-                  <pre className="bg-gray-900/90 border border-gray-700 rounded-lg p-4 overflow-x-auto text-sm">
-                    <code className="text-emerald-400/90 font-mono whitespace-pre">
-                      {step.code}
-                    </code>
-                  </pre>
-                )}
-
-              </div>
-
-              {index < steps.length - 1 && (
-                <span className="sr-only">
-                  Next step
-                </span>
-              )}
-
-            </li>
+            </motion.li>
           ))}
         </ol>
       </div>
 
-<<<<<<< HEAD
       {/* Global Security & Prerequisites Info Callout */}
       <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.1 }}
-        viewport={{ once: true }}
-        className="mt-12 overflow-hidden rounded-3xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-blue-50 p-6 shadow-sm dark:border-indigo-500/20 dark:from-indigo-950/40 dark:via-slate-900 dark:to-blue-950/30"
+        className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/30 border border-indigo-200 dark:border-indigo-500/20 rounded-xl shadow-sm"
       >
-        <div className="flex flex-col sm:flex-row items-start gap-5">
-          {/* Info Icon Container */}
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-600 shadow-sm dark:text-indigo-300">
-            <i className="fa-solid fa-circle-info text-lg" aria-hidden="true"></i>
-          </div>
-
-          {/* Callout Information Description */}
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              Prerequisites
-            </h3>
-
-            <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-              Before starting, ensure you have{" "}
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
-                Node.js 18+
-              </span>
-              ,{" "}
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
-                npm 9+
-              </span>
-              , and a running MongoDB instance configured locally or in the cloud.
-            </p>
-
-            {/* Version Framework Pill Badges */}
-            <div className="mt-4 flex flex-wrap gap-3">
-              <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-300">
-                Node.js 18+
-              </span>
-              <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-300">
-                npm 9+
-              </span>
-              <span className="rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-300">
-                MongoDB
-              </span>
-            </div>
-
-            {/* Crucial Security Warn Banner */}
-            <div className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
-              <div className="flex items-start gap-3">
-                <i className="fa-solid fa-shield-halved mt-0.5 text-amber-500" aria-hidden="true"></i>
-                <p className="text-sm leading-relaxed text-amber-700 dark:text-amber-300">
-                  Always copy{" "}
-                  <code className="rounded bg-black/10 px-1.5 py-0.5 font-mono text-xs dark:bg-white/10">
-                    .env.example
-                  </code>{" "}
-                  to{" "}
-                  <code className="rounded bg-black/10 px-1.5 py-0.5 font-mono text-xs dark:bg-white/10">
-                    .env
-                  </code>{" "}
-                  and never commit real production environment variables or secret API keys to public source control repositories.
-                </p>
-              </div>
-            </div>
-      <div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/30 border border-indigo-200 dark:border-indigo-500/20 rounded-xl shadow-sm">
-=======
-      <motion.div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/30 border border-indigo-200 dark:border-indigo-500/20 rounded-xl shadow-sm">
->>>>>>> upstream/main
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           

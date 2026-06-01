@@ -1,7 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { User } from "../../../models/user";
 import ImageFallback from "../../ImageFallback";
-ImageFallback
 interface ProfileSettingComponentProps {
   user: User;
   onSave: (updatedUser: Partial<User>) => void;

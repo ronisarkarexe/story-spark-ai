@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { connectSocket } from "../../socket/socket.oi";
-import { getUserInfo, isLoggedIn } from "../../services/auth.service";
+import {  isLoggedIn, getUserInfo } from "../../services/auth.service";
 import { io } from "socket.io-client"; // Imported to resolve namespace path mappings if needed
 // Socket.IO collab disabled (see CollabRoom). Previous: io, Socket, resolveSocketUrl, BACKEND_URL.
 
@@ -10,6 +10,8 @@ export default function CollabHome() {
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState("");
 
+  const user = getUserInfo();
+
   const createRoom = () => {
     if (!isLoggedIn()) {
       navigate("/login");
@@ -17,13 +19,11 @@ export default function CollabHome() {
     }
 
     try {
-      setIsCreating(true);
       const socket = connectSocket();
       if (!socket) {
         setError(
           "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
         );
-        setIsCreating(false);
         return;
       }
 
@@ -37,7 +37,6 @@ export default function CollabHome() {
           token: localStorage.getItem("AUTH_KEY") 
         }
       });
-      const collabSocket = socket;
 
       collabSocket.emit(
         "collab:create_room",
@@ -48,13 +47,11 @@ export default function CollabHome() {
           } else {
             setError("Failed to create room. Please try again.");
           }
-          setIsCreating(false);
         }
       );
     } catch (err) {
       console.error("Create room error:", err);
       setError("Error creating room. Please try again.");
-      setIsCreating(false);
     }
   };
 

@@ -409,8 +409,7 @@ const StoriesComponent = () => {
   }, []);
 
   const [stories, setStories] = useState<IStories[]>(
-    draft?.stories?.length ? draft.stories : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
-    [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
+    draft?.stories?.length ? draft.stories : []
   );
   
   const [loading, setLoading] = useState<boolean>(false);
@@ -1026,112 +1025,9 @@ useEffect(() => {
                       isDropdownOpen ? "rotate-180" : ""
                     }`}
                   >
-                    {lang.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      {/* Clear prompt button - next to language selector */}
-      {textareaValue.length > 0 && (
-        <button
-          type="button"
-          onClick={handleClearPrompt}
-          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200 border border-red-500/20"
-          aria-label={text.close}
-          title="Clear prompt"
-        >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Clear
-        </button>
-      )}
-    </div>
-
-    <div className="relative overflow-hidden">
-      <textarea
-  {...register("prompt")}
-  ref={(el) => {
-    register("prompt").ref(el);
-    inputRef.current = el;
-  }}
-        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-4 transition-colors duration-200 ${
-          isOverLimit
-            ? "ring-1 ring-red-500 rounded"
-            : isNearLimit
-            ? "ring-1 ring-yellow-400 rounded"
-            : ""
-        }`}
-        placeholder={text.promptPlaceholder}
-        value={textareaValue}
-        maxLength={MAX_PROMPT_LENGTH}
-        onChange={(e) => setTextareaValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            const form = e.currentTarget.closest("form");
-            if (form) form.requestSubmit();
-          }
-        }}
-        />
-
-
-
-      <button
-        type="button"
-        onClick={() => setIsRecentPromptsOpen(!isRecentPromptsOpen)}
-        className="absolute right-2 top-12 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2"
-        aria-label={text.recentPrompts}
-        title={text.recentPrompts}
-      >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        {text.recentPrompts}
-      </button>
-
-      <div className="flex items-center justify-between mt-1 px-1">
-        {isOverLimit ? (
-          <p className="text-xs text-red-400 flex items-center gap-1">
-            <span>⚠</span> {text.characterLimit}
-          </p>
-        ) : isNearLimit ? (
-          <p className="text-xs text-yellow-400 flex items-center gap-1">
-            <span>⚠</span>{" "}
-            {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-          </p>
-        ) : (
-          <span />
-        )}
-
-        <span
-          className={`text-xs tabular-nums ml-auto ${
-            isOverLimit
-              ? "text-red-400 font-medium"
-              : isNearLimit
-              ? "text-yellow-400"
-              : "text-gray-500"
-          }`}
-        >
-          {textareaValue.length} / {MAX_PROMPT_LENGTH}
-        </span>
-      </div>
-    </div>
-
+                    ▼
+                  </span>
+                </button>
                 {isDropdownOpen && (
                   <ul className="relative z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
                     {prompts.map((item) => (

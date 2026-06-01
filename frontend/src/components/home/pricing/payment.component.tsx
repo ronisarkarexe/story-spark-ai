@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
@@ -18,21 +18,48 @@ const PaymentComponent = () => {
 
   // Read selected plan from pricing page
   const [searchParams] = useSearchParams();
+  
+  const [name, setName] = React.useState("");
+  const [cardNumber, setCardNumber] = React.useState("");
+  const [expiry, setExpiry] = React.useState("");
+  const [cvv, setCvv] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  
+  const isFormValid = name && cardNumber && expiry && cvv;
+
+  const loadRazorpayScript = async () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const formatCardNumber = (value: string) => {
+    return value.replace(/\s/g, "").replace(/(\d{4})/g, "$1 ").trim();
+  };
+
+  const formatExpiry = (value: string) => {
+    return value.replace(/\D/g, "").slice(0, 4).replace(/(\d{2})/, "$1/");
+  };
 
   const planName = searchParams.get("plan") || "Pro";
   const planPrice = Number(searchParams.get("price") || "19.99");
 
   // Razorpay payment handler
   const handlePayment = async () => {
-    // Load Razorpay SDK
-    const loaded = await loadRazorpayScript();
+    setLoading(true);
+    try {
+      // Load Razorpay SDK
+      const loaded = await loadRazorpayScript();
 
     if (!loaded) {
       alert("Failed to load Razorpay SDK.");
       return;
     }
 
-    try {
       // Create order from backend
       const res = await fetch("/api/v1/payment/create-order", {
         method: "POST",
@@ -108,6 +135,8 @@ const PaymentComponent = () => {
     } catch (error) {
       console.error(error);
       alert("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -221,7 +250,7 @@ const PaymentComponent = () => {
                 className="space-y-5"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  handlePay();
+                  handlePayment();
                 }}
               >
                 {/* Cardholder Name */}

@@ -55,7 +55,7 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
   // Fallback: If no preferences or not enough recommendations, get top popular posts
   if (recommendations.length < 10) {
     const limit = 10 - recommendations.length;
-    const recommendationIds = recommendations.map(r => r._id);
+    const recommendationIds = recommendations.map(r => (r as any)._id);
     
     // Add existing recommendations to exclusion list to avoid duplicates
     const fallbackQuery = { 

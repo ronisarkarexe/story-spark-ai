@@ -102,7 +102,7 @@ const getKeyQuote = (content: string) => {
   return quote.length > 120 ? `${quote.slice(0, 117)}...` : quote;
 };
 
-const getGenreLabel = (story: IStories) =>
+const getGenreLabel = (story: IStories & { genre?: string }) =>
   cleanText(story.genre || story.tag || "Story").replace(/^[^\w]+/, "") ||
   "Story";
 

@@ -18,7 +18,7 @@ interface SSInputProps<T extends FieldValues> {
   validation?: RegisterOptions<T>;
   error?: FieldError;
   autoComplete?: string;
-  autoFocus?: boolean;
+  
 }
 
 const SSInput = <T extends FieldValues>({
@@ -31,7 +31,7 @@ const SSInput = <T extends FieldValues>({
   validation,
   error,
   autoComplete,
-  autoFocus
+  
 }: SSInputProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
 

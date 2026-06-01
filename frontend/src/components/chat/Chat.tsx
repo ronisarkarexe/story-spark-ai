@@ -38,9 +38,11 @@ const ChatComponent: React.FC = () => {
       
       const botMessage: IChatMessage = { role: "model", parts: response };
       setMessages((prev) => [...prev, botMessage]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Chat error:", error);
-      toast.error(error.response?.data?.message || "Failed to get AI response");
+      const errorMessage = error instanceof Error ? error.message : "Failed to get AI response";
+      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || errorMessage;
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

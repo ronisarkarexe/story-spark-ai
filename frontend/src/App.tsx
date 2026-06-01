@@ -1,4 +1,23 @@
 import React from "react";
+
+import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import TemplatesComponent from "./components/templates/templates.component";
+import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
+import HelpCenterComponent from "./components/help_center/help_center.component";
+import Contact from "./components/contactus/contactus";
+import CookiePolicy from "./components/cookie-consent/cookie-consent.component";
+import Terms from "./components/footer/terms";
+import GuidelinesComponent from "./components/guidelines/guidelines.component";
+import ContributorsComponent from "./components/community/Githubcontributors.component";
+import ForgotPasswordComponent from "./components/login/forgot_password.component";
+import ExploreComponent from "./components/post/post.component";
+import CommunityComponent from "./components/community/community.component";
+import EmailValidationComponent from "./components/email_validation/email.validation.component";
+import DashboardComponent from "./components/dashboard/dashboard.component";
+import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
+import UserComponent from "./components/dashboard/users/user.component";
+
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
 
 // iii. Services & helpers
@@ -24,12 +43,6 @@ import PublishedStoriesComponent from "./components/dashboard/posts/published_st
 
 import ScrollToTopButton from "./components/ScrollToTopButton";
 
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 
 
@@ -72,7 +85,7 @@ const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
 // 2. CENTRAL ROUTER MATRIX (Initialized exactly once in the global scope)
 // =========================================================================
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
-const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
+
 
 const router = createBrowserRouter([
   {
@@ -183,10 +196,3 @@ function App() {
 
 
 export default App;
-
-
-export default App;
-
-
-export default App;
-

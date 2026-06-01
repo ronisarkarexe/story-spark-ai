@@ -20,6 +20,7 @@ import {
   chatWithGemini,
 } from "./ai_model.utils";
 import { assertSuccessfulGeneration } from "./quota.lifecycle";
+import { storyQueue } from "../../../services/storyRequestQueue";
 
 const AUTHENTICATED_GENERATION_TIMEOUT_MS = 60000;
 const FREE_GENERATION_TIMEOUT_MS = 60000;
@@ -50,7 +51,7 @@ const mapGenerationError = (error: unknown, message: string): never => {
   if (error instanceof GenerationTimeoutError) {
     throw new ApiError(
       httpStatus.GATEWAY_TIMEOUT,
-      "AI generation timed out. Please try again."
+      "AI generation timed out. Please try again.",
     );
   }
 
@@ -65,18 +66,20 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload) => {
     normalizeStoryPayload(payload);
 
   try {
-    const result = await raceGenerationWithTimeout(
-      (signal) =>
-        generateWithGeminiStories(
-          prompt,
-          wordLength,
-          numStories,
-          language,
-          signal,
-          tone,
-          genre,
-        ),
-      AUTHENTICATED_GENERATION_TIMEOUT_MS
+    const result = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        (signal) =>
+          generateWithGeminiStories(
+            prompt,
+            wordLength,
+            numStories,
+            language,
+            signal,
+            tone,
+            genre,
+          ),
+        AUTHENTICATED_GENERATION_TIMEOUT_MS,
+      ),
     );
     assertSuccessfulGeneration(result, GENERATION_FAILED_MESSAGE);
     return result;
@@ -90,18 +93,20 @@ const aiFreeModelGenerate = async (payload: IAIModel) => {
     normalizeStoryPayload(payload);
 
   try {
-    const result = await raceGenerationWithTimeout(
-      (signal) =>
-        generateWithGeminiStories(
-          prompt,
-          wordLength,
-          numStories,
-          language,
-          signal,
-          tone,
-          genre,
-        ),
-      FREE_GENERATION_TIMEOUT_MS
+    const result = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        (signal) =>
+          generateWithGeminiStories(
+            prompt,
+            wordLength,
+            numStories,
+            language,
+            signal,
+            tone,
+            genre,
+          ),
+        FREE_GENERATION_TIMEOUT_MS,
+      ),
     );
     assertSuccessfulGeneration(result, FREE_GENERATION_FAILED_MESSAGE);
     return result;
@@ -114,14 +119,16 @@ const aiFreeModelGenerate = async (payload: IAIModel) => {
 // consistent with aiModelGenerate and all other authenticated functions.
 const aiModelAlternateEndings = async (
   payload: IAlternateEndingPayload,
-  _token?: ITokenPayload
+  _token?: ITokenPayload,
 ) => {
   const { title, content, tag, language = "English" } = payload;
 
   try {
-    const result = await raceGenerationWithTimeout(
-      () => generateAlternateEndingsWithGemini(title, content, tag, language),
-      AUTHENTICATED_GENERATION_TIMEOUT_MS
+    const result = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        () => generateAlternateEndingsWithGemini(title, content, tag, language),
+        AUTHENTICATED_GENERATION_TIMEOUT_MS,
+      ),
     );
     assertSuccessfulGeneration(result, ALTERNATE_ENDING_FAILED_MESSAGE);
     return result;
@@ -130,13 +137,17 @@ const aiModelAlternateEndings = async (
   }
 };
 
-const aiFreeModelAlternateEndings = async (payload: IAlternateEndingPayload) => {
+const aiFreeModelAlternateEndings = async (
+  payload: IAlternateEndingPayload,
+) => {
   const { title, content, tag, language = "English" } = payload;
 
   try {
-    const result = await raceGenerationWithTimeout(
-      () => generateAlternateEndingsWithGemini(title, content, tag, language),
-      FREE_GENERATION_TIMEOUT_MS
+    const result = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        () => generateAlternateEndingsWithGemini(title, content, tag, language),
+        FREE_GENERATION_TIMEOUT_MS,
+      ),
     );
     assertSuccessfulGeneration(result, FREE_ALTERNATE_ENDING_FAILED_MESSAGE);
     return result;
@@ -146,11 +157,28 @@ const aiFreeModelAlternateEndings = async (payload: IAlternateEndingPayload) => 
 };
 
 const aiModelRemix = async (payload: IRemixPayload, _token?: ITokenPayload) => {
-  const { title, content, tag, remixType, remixOption = "", language = "English" } = payload;
+  const {
+    title,
+    content,
+    tag,
+    remixType,
+    remixOption = "",
+    language = "English",
+  } = payload;
   try {
-    const result = await raceGenerationWithTimeout(
-      () => generateRemixWithGemini(title, content, tag, remixType, remixOption, language),
-      AUTHENTICATED_GENERATION_TIMEOUT_MS
+    const result = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        () =>
+          generateRemixWithGemini(
+            title,
+            content,
+            tag,
+            remixType,
+            remixOption,
+            language,
+          ),
+        AUTHENTICATED_GENERATION_TIMEOUT_MS,
+      ),
     );
     return result;
   } catch (error) {
@@ -159,11 +187,28 @@ const aiModelRemix = async (payload: IRemixPayload, _token?: ITokenPayload) => {
 };
 
 const aiFreeModelRemix = async (payload: IRemixPayload) => {
-  const { title, content, tag, remixType, remixOption = "", language = "English" } = payload;
+  const {
+    title,
+    content,
+    tag,
+    remixType,
+    remixOption = "",
+    language = "English",
+  } = payload;
   try {
-    const result = await raceGenerationWithTimeout(
-      () => generateRemixWithGemini(title, content, tag, remixType, remixOption, language),
-      FREE_GENERATION_TIMEOUT_MS
+    const result = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        () =>
+          generateRemixWithGemini(
+            title,
+            content,
+            tag,
+            remixType,
+            remixOption,
+            language,
+          ),
+        FREE_GENERATION_TIMEOUT_MS,
+      ),
     );
     return result;
   } catch (error) {
@@ -171,12 +216,17 @@ const aiFreeModelRemix = async (payload: IRemixPayload) => {
   }
 };
 
-const aiModelTranslate = async (payload: ITranslatePayload, _token?: ITokenPayload) => {
+const aiModelTranslate = async (
+  payload: ITranslatePayload,
+  _token?: ITokenPayload,
+) => {
   const { title, content, targetLanguage } = payload;
   try {
-    const result = await raceGenerationWithTimeout(
-      () => translateStoryWithGemini(title, content, targetLanguage),
-      AUTHENTICATED_GENERATION_TIMEOUT_MS
+    const result = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        () => translateStoryWithGemini(title, content, targetLanguage),
+        AUTHENTICATED_GENERATION_TIMEOUT_MS,
+      ),
     );
     return result;
   } catch (error) {
@@ -187,9 +237,11 @@ const aiModelTranslate = async (payload: ITranslatePayload, _token?: ITokenPaylo
 const aiFreeModelTranslate = async (payload: ITranslatePayload) => {
   const { title, content, targetLanguage } = payload;
   try {
-    const result = await raceGenerationWithTimeout(
-      () => translateStoryWithGemini(title, content, targetLanguage),
-      FREE_GENERATION_TIMEOUT_MS
+    const result = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        () => translateStoryWithGemini(title, content, targetLanguage),
+        FREE_GENERATION_TIMEOUT_MS,
+      ),
     );
     return result;
   } catch (error) {
@@ -206,9 +258,11 @@ const aiModelChat = async (payload: IChatPayload, _token?: ITokenPayload) => {
       parts: [{ text: msg.parts }],
     }));
 
-    const result = await raceGenerationWithTimeout(
-      () => chatWithGemini(message, formattedHistory),
-      AUTHENTICATED_GENERATION_TIMEOUT_MS
+    const result = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        () => chatWithGemini(message, formattedHistory),
+        AUTHENTICATED_GENERATION_TIMEOUT_MS,
+      ),
     );
     return result;
   } catch (error) {
@@ -225,9 +279,11 @@ const aiFreeModelChat = async (payload: IChatPayload) => {
       parts: [{ text: msg.parts }],
     }));
 
-    const result = await raceGenerationWithTimeout(
-      () => chatWithGemini(message, formattedHistory),
-      FREE_GENERATION_TIMEOUT_MS
+    const result = await storyQueue.enqueue(() =>
+      raceGenerationWithTimeout(
+        () => chatWithGemini(message, formattedHistory),
+        FREE_GENERATION_TIMEOUT_MS,
+      ),
     );
     return result;
   } catch (error) {
