@@ -1,0 +1,142 @@
+name: 🔀 Merge Conflict Bot
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+  issues: write
+
+concurrency:
+  group: merge-conflict-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check-conflicts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify if PR has merge conflicts
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const number = pr.number;
+            const author = pr.user.login;
+
+            if (pr.user.type === 'Bot') return;
+
+            const MARKER = '<!-- merge-conflict-bot-story-spark-ai-v1 -->';
+            const CONFLICT_LABEL = 'has-merge-conflicts';
+
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: CONFLICT_LABEL });
+            } catch (e) {
+              if (e?.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner,
+                  repo,
+                  name: CONFLICT_LABEL,
+                  color: 'd93f0b',
+                  description: 'PR has merge conflicts with the base branch'
+                });
+              }
+            }
+
+            let latest = pr;
+            for (let i = 0; i < 6; i++) {
+              const { data } = await github.rest.pulls.get({
+                owner, repo, pull_number: number
+              });
+              latest = data;
+              if (latest.mergeable !== null) break;
+              await new Promise(r => setTimeout(r, 5000));
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: number, per_page: 100
+            });
+            const existing = comments.find(c => c.body?.includes(MARKER));
+
+            const hasConflicts = latest.mergeable === false;
+            const isBehind = latest.mergeable_state === 'behind';
+
+            let commentBody;
+            if (hasConflicts) {
+              commentBody = [
+                MARKER,
+                `## ⚠️ Merge conflicts detected — @${author}`,
+                ``,
+                `This PR **cannot be merged** into \`${pr.base.ref}\` because it has merge conflicts.`,
+                ``,
+                `### How to fix`,
+                ``,
+                `1. Fetch the latest \`${pr.base.ref}\`:`,
+                `   \`\`\`bash`,
+                `   git fetch origin ${pr.base.ref}`,
+                `   git checkout your-branch`,
+                `   git merge origin/${pr.base.ref}`,
+                `   # or: git rebase origin/${pr.base.ref}`,
+                `   \`\`\``,
+                `2. Resolve conflict markers in your editor (\`<<<<<<<\`, \`=======\`, \`>>>>>>>\`)`,
+                `3. Commit and push:`,
+                `   \`\`\`bash`,
+                `   git add .`,
+                `   git commit -m "fix: resolve merge conflicts"`,
+                `   git push`,
+                `   \`\`\``,
+                ``,
+                `After you push, this comment will update automatically.`,
+                ``,
+                `📖 [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md)`,
+              ].join('\n');
+
+              try {
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: number, labels: [CONFLICT_LABEL]
+                });
+              } catch (e) {
+                core.warning(`Could not add label: ${e?.message}`);
+              }
+            } else {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner, repo, issue_number: number, name: CONFLICT_LABEL
+                });
+              } catch (e) {
+                if (e?.status !== 404) core.warning(`Could not remove label: ${e?.message}`);
+              }
+
+              if (isBehind && latest.mergeable !== false) {
+                commentBody = [
+                  MARKER,
+                  `## ℹ️ Branch is behind \`${pr.base.ref}\` — @${author}`,
+                  ``,
+                  `No merge conflicts right now, but your branch is **behind** the base branch.`,
+                  `Rebase or merge \`${pr.base.ref}\` into your branch so CI and review stay up to date.`,
+                  ``,
+                  `_This comment updates when you push new commits._`,
+                ].join('\n');
+              } else {
+                commentBody = [
+                  MARKER,
+                  `## ✅ No merge conflicts — @${author}`,
+                  ``,
+                  `This PR is mergeable with \`${pr.base.ref}\` (from GitHub's merge check).`,
+                  `_CI and maintainer review still apply._`,
+                ].join('\n');
+              }
+            }
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: existing.id, body: commentBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: number, body: commentBody
+              });
+            }

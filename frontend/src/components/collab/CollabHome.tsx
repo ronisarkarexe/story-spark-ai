@@ -29,7 +29,7 @@ export default function CollabHome() {
         return;
       }
 
-      const collabSocket = socket.io.socket("/collab");
+      const collabSocket = socket;
 
       collabSocket.emit(
         "collab:create_room",

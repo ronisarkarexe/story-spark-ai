@@ -26,16 +26,17 @@ export type AuthUserInfo = {
   avatar?: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const buildUserInfo = (decodedData: any): AuthUserInfo => ({
-  email: decodedData.email || "",
-  userId: decodedData.userId || decodedData._id || "",
-  name: decodedData.name || "",
-  postsCount: decodedData.postsCount || 0,
-  role: decodedData.role || "guest",
-  subscriptionType: decodedData.subscriptionType || "free",
-  exp: decodedData.exp || 0,
-  iat: decodedData.iat || 0,
-  avatar: decodedData.avatar || "",
+  email: decodedData?.email || "",
+  userId: decodedData?.userId || decodedData?._id || "",
+  name: decodedData?.name || "",
+  postsCount: decodedData?.postsCount || 0,
+  role: decodedData?.role || "guest",
+  subscriptionType: decodedData?.subscriptionType || "free",
+  exp: decodedData?.exp || 0,
+  iat: decodedData?.iat || 0,
+  avatar: decodedData?.avatar || "",
 });
 
 const getValidDecodedToken = () => {
@@ -44,7 +45,7 @@ const getValidDecodedToken = () => {
   if (authToken) {
     try {
       const decodedData = decodedToken(authToken);
-      
+
       if (!decodedData) {
         removeFromLocalStorage(AUTH_KEY);
         return null;
@@ -57,7 +58,7 @@ const getValidDecodedToken = () => {
         removeFromLocalStorage(AUTH_KEY);
         return null;
       }
-      
+
       return buildUserInfo(decodedData);
     } catch (error) {
       console.error("Invalid auth token:", error);

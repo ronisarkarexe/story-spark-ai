@@ -1,6 +1,5 @@
 import { FC, useId, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
 import { FAQItem } from "../help_center.utils";
 
 interface FAQAccordionProps {
@@ -8,7 +7,7 @@ interface FAQAccordionProps {
 }
 
 const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(items.length > 0 ? 0 : null);
   const baseId = useId();
 
   const toggleAccordion = (index: number) => {
@@ -22,22 +21,15 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
           <div className="w-20 h-20 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center mx-auto mb-5">
             <i className="fa-solid fa-question text-3xl text-slate-500" aria-hidden="true"></i>
           </div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-            No FAQs Found
-          </h3>
-          <p className="text-slate-600 dark:text-slate-400">
-            Try searching with different keywords.
-          </p>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No FAQs Found</h3>
+          <p className="text-slate-600 dark:text-slate-400">Try searching with different keywords.</p>
         </div>
       </section>
     );
   }
 
   return (
-    <section
-      id="faq-section"
-      className="scroll-mt-28 transition-colors duration-300"
-    >
+    <section id="faq-section" className="scroll-mt-28 transition-colors duration-300">
       <div className="mb-10">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-400 mb-4">
           <i className="fa-solid fa-circle-question" aria-hidden="true"></i>
@@ -67,46 +59,54 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
               transition={{ duration: 0.4, delay: index * 0.05 }}
               className="group overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] backdrop-blur-xl shadow-md hover:shadow-xl transition-all duration-300"
             >
+              {/* Top Glow Line */}
+              <div
+                className={`h-[2px] w-full bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 transition-opacity duration-300 ${
+                  isOpen ? "opacity-100" : "opacity-0"
+                }`}
+              />
+
+              {/* Question Button */}
               <h3>
                 <button
-                  id={buttonId}
                   type="button"
-                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 cursor-pointer"
+                  id={buttonId}
+                  onClick={() => toggleAccordion(index)}
                   aria-expanded={isOpen}
                   aria-controls={panelId}
-                  onClick={() => toggleAccordion(index)}
+                  className="w-full flex items-center justify-between px-6 py-5 text-left transition-all duration-300 hover:bg-slate-50 dark:hover:bg-white/[0.03] cursor-pointer"
                 >
-                  <span className="text-slate-900 dark:text-slate-200 font-semibold">
+                  <span className="text-slate-900 dark:text-slate-100 font-bold pr-4">
                     {faq.question}
                   </span>
                   <span
-                    className={`flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 transition-transform duration-300 ${
+                    className={`flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 transition-transform duration-300 ${
                       isOpen ? "rotate-180" : ""
                     }`}
-                    aria-hidden="true"
                   >
-                    <i className="fa-solid fa-chevron-down"></i>
+                    <i className="fa-solid fa-chevron-down text-xs"></i>
                   </span>
                 </button>
               </h3>
 
+              {/* Animated Answer Panel */}
               <AnimatePresence initial={false}>
                 {isOpen && (
                   <motion.div
-                    key={panelId}
                     id={panelId}
                     role="region"
                     aria-labelledby={buttonId}
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden px-6 pb-6"
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
                   >
-                    <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5 p-4">
-                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
-                        {faq.answer}
-                      </p>
+                    <div className="px-6 pb-6">
+                      <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-white/5 p-5">
+                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm">
+                          {faq.answer}
+                        </p>
+                      </div>
                     </div>
                   </motion.div>
                 )}

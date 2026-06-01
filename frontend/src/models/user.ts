@@ -3,6 +3,8 @@ export interface SocialLinks {
   twitter?: string;
   linkedin?: string;
   instagram?: string;
+  github?: string;
+  discord?: string;
 }
 
 export interface UserProfile {

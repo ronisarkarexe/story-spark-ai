@@ -27,7 +27,6 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
         <h2 id="categories-heading" className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">
           Explore by Category
         </h2>
-
         <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
           Browse support topics designed to help you quickly understand
           StorySparkAI features, workflows, and troubleshooting steps.

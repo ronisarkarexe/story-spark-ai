@@ -19,7 +19,6 @@
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
- 
     "dns": "^0.1.2",
     "dotenv": "^16.6.1",
     "express": "^4.21.1",
@@ -34,7 +33,6 @@
     "nodemailer": "^8.0.7",
     "openai": "^4.104.0",
     "razorpay": "^2.9.6",
- 
     "socket.io": "^4.8.3",
     "uuid": "^11.1.0",
     "winston": "^3.19.0",

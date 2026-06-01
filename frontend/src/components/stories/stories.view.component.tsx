@@ -21,6 +21,7 @@ import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
+import { useUpdatePostMutation } from "../../redux/apis/post.api";
 
 export interface IStories {
   uuid: string;
@@ -83,8 +84,11 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
-
+  const [showRemix, setShowRemix] = useState<boolean>(false);
+  const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [showExportMenu, setShowExportMenu] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
+  const [updatePost] = useUpdatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
   
@@ -195,19 +199,42 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
   }, [stories, dispatch]);
 
   useEffect(() => {
+    if (!selectedStory?.uuid) return;
+    try {
+      const storedDraftId = sessionStorage.getItem(`story_spark_autosave_draft_id:${selectedStory.uuid}`);
+      if (storedDraftId) savedPostIdRef.current = storedDraftId;
+    } catch (error) {
+      console.warn("Failed to read autosave draft id from sessionStorage", error);
+    }
+  }, [selectedStory?.uuid]);
+
+  useEffect(() => {
     const autoSaveStory = async () => {
       if (!isLogin || !selectedStory) return;
       if (selectedStory.content === lastSavedContentRef.current) return;
-      if (hasSavedSessionRef.current) return;
       if (isSavingRef.current) return;
       isSavingRef.current = true;
       const post: any = { ...selectedStory, topic: selectTopics, isPublished: false };
       try {
-        const result = await createPost(post).unwrap();
-        if (result && result.data && result.data._id) savedPostIdRef.current = result.data._id;
+        if (savedPostIdRef.current) {
+          await updatePost({ id: savedPostIdRef.current, data: post as unknown as Record<string, unknown> }).unwrap();
+        } else {
+          const result = await createPost(post).unwrap();
+          const createdId = result?.data?._id;
+          if (createdId) {
+            savedPostIdRef.current = createdId;
+            try {
+              sessionStorage.setItem(`story_spark_autosave_draft_id:${selectedStory.uuid}`, createdId);
+            } catch (storageError) {
+              console.warn("Failed to persist autosave draft id to sessionStorage", storageError);
+            }
+          }
+        }
         lastSavedContentRef.current = selectedStory.content;
-        hasSavedSessionRef.current = true;
-        toast.success("Story auto-saved!");
+        if (!hasSavedSessionRef.current) {
+          hasSavedSessionRef.current = true;
+          toast.success("Story auto-saved!");
+        }
       } catch (error) {
         console.error("Auto-save failed", error);
       } finally {
@@ -216,7 +243,7 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
     };
     const timer = setTimeout(() => { autoSaveStory(); }, 5000);
     return () => clearTimeout(timer);
-  }, [selectedStory, isLogin, selectTopics, createPost]);
+  }, [selectedStory, selectedStory?.content, isLogin, selectTopics, createPost, updatePost]);
 
   const handelStorySelection = (story: IStories) => { 
     setSelectedStory(story); 
@@ -369,42 +396,54 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
 
   const handleExportDOCX = async () => {
     if (!selectedStory) { toast.error("No story available to export."); return; }
+    const toastId = toast.loading("Preparing your DOCX file...");
     try {
+      const title = selectedStory.title || "Story";
+      const content = selectedStory.content || "";
+      const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
+      const isoDate = new Date().toISOString().split("T")[0];
+
       const doc = new Document({
         sections: [{
           properties: {},
           children: [
-            new Paragraph({
-              text: selectedStory.title,
-              heading: HeadingLevel.HEADING_1,
-              alignment: AlignmentType.CENTER,
-            }),
+            new Paragraph({ children: [new TextRun({ text: title, bold: true, size: 32 })] }),
+            new Paragraph({ children: [new TextRun({ text: `Author: ${authorName}`, size: 24 })] }),
+            new Paragraph({ children: [new TextRun({ text: `Date: ${isoDate}`, size: 24 })] }),
             new Paragraph({ text: "" }),
-            ...selectedStory.content.split("\n").map(para => new Paragraph({
-              children: [new TextRun(para.trim())],
-            })),
+            ...content.split(/\n+/).filter(para => para.trim() !== "").map(para => new Paragraph({
+              children: [new TextRun({ text: para.trim(), size: 24 })],
+              spacing: { after: 200 }
+            }))
           ],
         }],
       });
+
       const blob = await Packer.toBlob(doc);
-      saveAs(blob, `${selectedStory.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}.docx`);
-      toast.success("Word document downloaded!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to export Word document.");
+      saveAs(blob, `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}.docx`);
+      toast.dismiss(toastId);
+      toast.success("DOCX downloaded!");
+    } catch (error) {
+      console.error(error);
+      toast.dismiss(toastId);
+      toast.error("Failed to export DOCX.");
     }
   };
 
   const handleExportTXT = () => {
     if (!selectedStory) { toast.error("No story available to export."); return; }
     try {
-      const textContent = `${selectedStory.title}\n\n${selectedStory.content}`;
-      const blob = new Blob([textContent], { type: "text/plain;charset=utf-8;" });
-      saveAs(blob, `${selectedStory.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}.txt`);
-      toast.success("Text file downloaded!");
+      const title = selectedStory.title || "Story";
+      const content = selectedStory.content || "";
+      const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
+      const isoDate = new Date().toISOString().split("T")[0];
+      const txtContent = `Title: ${title}\nAuthor: ${authorName}\nDate: ${isoDate}\n\n${content}\n`;
+      const blob = new Blob([txtContent], { type: "text/plain;charset=utf-8;" });
+      saveAs(blob, `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}.txt`);
+      toast.success("TXT downloaded!");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to export Text file.");
+      toast.error("Failed to export TXT.");
     }
   };
 
@@ -479,6 +518,8 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
     const shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(tweetText)}`;
     window.open(shareUrl, "_blank");
   };
+
+
 
   const handelPublishStory = async () => {
     if (!isLogin) { toast.error("Please login to publish the story."); return; }
@@ -590,57 +631,43 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
             <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <h3 className="text-xl font-bold text-slate-200 relative z-10">
-                Generated Story
-              </h3>
-              <div className="flex flex-wrap items-center gap-2 relative z-10">
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleCopyStory}
-                  disabled={!selectedStory}
-                >
+              <h3 className="text-xl font-bold text-slate-200 relative z-10">Generated Story</h3>
+              <div className="flex flex-wrap items-center gap-2 relative z-50">
+                <button type="button" className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleCopyStory} disabled={!selectedStory}>
                   {isCopied ? "✓ Copied" : "📋 Copy"}
                 </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportPDF}
-                  disabled={!selectedStory}
-                >
-                  📄 Export PDF
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    onClick={() => setShowExportMenu(!showExportMenu)}
+                    disabled={!selectedStory}
+                  >
+                    ⬇️ Export <i className="fa-solid fa-chevron-down text-xs ml-1"></i>
+                  </button>
+                  <div className={`absolute top-full mt-2 left-0 w-48 bg-slate-800/95 backdrop-blur-md border border-slate-700/80 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col transition-all duration-300 origin-top-left ${showExportMenu ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"}`}>
+                    <button type="button" className="w-full text-left px-4 py-3 text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50" onClick={() => { handleExportPDF(); setShowExportMenu(false); }}>
+                      📄 PDF
+                    </button>
+                    <button type="button" className="w-full text-left px-4 py-3 text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50" onClick={() => { handleExportDOCX(); setShowExportMenu(false); }}>
+                      📘 Word (DOCX)
+                    </button>
+                    <button type="button" className="w-full text-left px-4 py-3 text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50" onClick={() => { handleExportMarkdown(); setShowExportMenu(false); }}>
+                      Ⓜ️ Markdown
+                    </button>
+                    <button type="button" className="w-full text-left px-4 py-3 text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50" onClick={() => { handleExportTXT(); setShowExportMenu(false); }}>
+                      📝 Plain Text
+                    </button>
+                    <button type="button" className="w-full text-left px-4 py-3 text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3" onClick={() => { handleExportEPUB(); setShowExportMenu(false); }}>
+                      📚 EPUB
+                    </button>
+                  </div>
+                </div>
+                <button type="button" className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowWorldMap(true)} disabled={!selectedStory}>
+                  🗺️ World Map
                 </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportMarkdown}
-                  disabled={!selectedStory}
-                >
-                  ⬇️ Export Markdown
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-sky-700 text-slate-200 font-semibold cursor-pointer hover:bg-sky-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportDOCX}
-                  disabled={!selectedStory}
-                >
-                  📝 Export Word
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportTXT}
-                  disabled={!selectedStory}
-                >
-                  📄 Export TXT
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-amber-700 text-slate-200 font-semibold cursor-pointer hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportEPUB}
-                  disabled={!selectedStory}
-                >
-                  📚 Export EPUB
+                <button type="button" className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowRemix(true)} disabled={!selectedStory}>
+                  🔀 Remix
                 </button>
                 <button
                   type="button"
@@ -663,7 +690,6 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
                 </button>
               </div>
             </div>
-            
             {selectedStory.enhancedPrompt && (
               <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
                 <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">

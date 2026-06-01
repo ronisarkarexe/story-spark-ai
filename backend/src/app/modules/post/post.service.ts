@@ -59,6 +59,7 @@ const getPosts = async (
     filters;
   const andCondition: Record<string, unknown>[] = [
     { isDeleted: { $ne: true } },
+    { isPublished: true },
   ];
 
   if (searchTerm) {
@@ -199,7 +200,7 @@ const getPublishedPostsByAuthor = async (
 
 const getLatestPosts = async () => {
   try {
-    const res = await Post.find({ isDeleted: { $ne: true } })
+    const res = await Post.find({ isDeleted: { $ne: true }, isPublished: true })
       .sort({ createdAt: -1 })
       .limit(50)
       .populate("author", "name email createdAt")
@@ -222,6 +223,7 @@ const getFeaturedPosts = async () => {
     const res = await Post.find({
       isFeaturedPost: true,
       isDeleted: { $ne: true },
+      isPublished: true,
     })
       .sort({ createdAt: -1, updatedBy: -1 })
       .limit(10)
@@ -411,11 +413,6 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
-  // Enforces data consistency by decrementing/reserving 1 credit balance mapping
-  // If your project uses an external service class call, invoke it here:
-  // await QuotaService.reserveUserQuota(user._id, 1);
-  
-  // Place your real AI model generation text manipulation calls here
   const remixedContent = `[AI Remixed Version based on prompt: "${prompt}"]\n\n${originalPost.content}`;
 
   const res = await Post.create({
@@ -445,10 +442,6 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
-  // Decrement/Reserve quota allocation block
-  // await QuotaService.reserveUserQuota(user._id, 1);
-
-  // Place your real language model translation core handler services here
   const translatedContent = `[Translated to ${language}]\n\n${originalPost.content}`;
 
   const res = await Post.create({
@@ -467,6 +460,11 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
   return res;
 };
 
+const getGenres = async (): Promise<string[]> => {
+  const genres = await Post.distinct("tag", { isDeleted: { $ne: true }, tag: { $nin: [null, ""] } });
+  return genres.sort();
+};
+
 export const PostService = {
   createPost,
   getPosts,
@@ -479,7 +477,8 @@ export const PostService = {
   toggleBookmark,
   updatePost,
   deletePost,
-  remixStory,       // Exposed service for AI story variations
-  translateStory,   // Exposed service for localized modifications
+  remixStory,
+  translateStory,
+  getGenres,
 };
 

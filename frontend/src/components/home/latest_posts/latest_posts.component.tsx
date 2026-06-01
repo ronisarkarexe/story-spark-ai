@@ -1,15 +1,31 @@
-import { useState } from "react";
-import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
-import { Post } from "../../../models/post";
-import LoadingAnimation from "../../loading/loading.component";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Post } from "../../../models/post";
+import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
+import LoadingAnimation from "../../loading/loading.component";
+
+const INITIAL_VISIBLE_COUNT = 6;
 
 const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
-
-  // Track the ID of the currently expanded post (null means all are collapsed)
+  const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
+
+  // --- STRICT DEDUPLICATION FILTERING ---
+  const seenIds = new Set<string>();
+  const uniquePosts = (data?.posts ?? []).filter((post: Post) => {
+    if (!post?._id || seenIds.has(post._id)) return false;
+    seenIds.add(post._id);
+    return true;
+  }) as Post[];
+
+  const shouldShowLoadMore = uniquePosts.length > INITIAL_VISIBLE_COUNT;
+  const visiblePosts = showAllPosts || !shouldShowLoadMore ? uniquePosts : uniquePosts.slice(0, INITIAL_VISIBLE_COUNT);
+
+  useEffect(() => {
+    setShowAllPosts(false);
+  }, [data?.posts]);
 
   if (isLoading) return <LoadingAnimation />;
 
@@ -30,14 +46,6 @@ const LatestPostsComponent = () => {
     );
   }
 
-  // --- STRICT DEDUPLICATION FILTERING ---
-  const seenIds = new Set<string>();
-  const uniquePosts = (data?.posts ?? []).filter((post: Post) => {
-    if (!post?._id || seenIds.has(post._id)) return false;
-    seenIds.add(post._id);
-    return true;
-  });
-
   const toggleAccordion = (postId: string) => {
     setExpandedPostId((prevId) => (prevId === postId ? null : postId));
   };
@@ -46,8 +54,8 @@ const LatestPostsComponent = () => {
     <section className="text-slate-100">
       <h2 className="mb-6 text-2xl font-bold">Latest Posts</h2>
       <div className="space-y-3">
-        {uniquePosts.length > 0 ? (
-          uniquePosts.map((post: Post) => {
+        {visiblePosts.length > 0 ? (
+          visiblePosts.map((post: Post) => {
             const isExpanded = expandedPostId === post._id;
 
             return (
@@ -55,7 +63,6 @@ const LatestPostsComponent = () => {
                 key={post._id}
                 className="motion-card-subtle story-panel rounded-lg overflow-hidden border border-slate-700/30 bg-[#252b3d]/40 transition-all duration-200"
               >
-                {/* Accordion Header / Trigger Button */}
                 <button
                   onClick={() => toggleAccordion(post._id)}
                   className="w-full flex items-center justify-between p-4 text-left font-bold text-slate-100 hover:bg-slate-700/20 transition-colors"
@@ -66,7 +73,6 @@ const LatestPostsComponent = () => {
                   </span>
                 </button>
 
-                {/* Accordion Content Panel */}
                 <div
                   className={`transition-all duration-300 ease-in-out overflow-hidden ${
                     isExpanded ? "max-h-[500px] border-t border-slate-700/30" : "max-h-0"
@@ -96,6 +102,17 @@ const LatestPostsComponent = () => {
           </div>
         )}
       </div>
+      {shouldShowLoadMore && !showAllPosts && (
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={() => setShowAllPosts(true)}
+            className="motion-cta cursor-pointer rounded-lg border border-slate-300/70 bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-white dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+          >
+            Load More
+          </button>
+        </div>
+      )}
     </section>
   );
 };

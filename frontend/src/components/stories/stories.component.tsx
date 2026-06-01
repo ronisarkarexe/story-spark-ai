@@ -387,6 +387,8 @@ const TonePicker: React.FC<TonePickerProps> = ({ selected, onChange }) => {
 };
 
 const StoriesComponent = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+const storiesPerPage = 10;
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
@@ -441,6 +443,20 @@ const StoriesComponent = () => {
       }
     });
   }, [stories, searchQuery, searchFilter]);
+  const indexOfLastStory = currentPage * storiesPerPage;
+const indexOfFirstStory = indexOfLastStory - storiesPerPage;
+
+const currentStories = filteredStories.slice(
+  indexOfFirstStory,
+  indexOfLastStory
+);
+
+const totalPages = Math.ceil(
+  filteredStories.length / storiesPerPage
+);
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchQuery, searchFilter]);
 
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
@@ -726,11 +742,15 @@ const StoriesComponent = () => {
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
+  const isGenerateDisabled = loading || isOverLimit;
 
   useKeyboardShortcuts({
     onOpenHelp: () => setShowHelpModal(true),
     onCloseHelp: () => setShowHelpModal(false),
     onGenerate: () => {
+      if (isGenerateDisabled) {
+        return;
+      }
       if (inputRef.current) {
         const form = inputRef.current.closest("form");
         if (form) form.requestSubmit();
@@ -817,7 +837,9 @@ const StoriesComponent = () => {
                       <button
                         key={genre.value}
                         type="button"
+                        disabled={loading}
                         onClick={() => {
+                          if (loading) return;
                           const newGenre = selectedGenre === genre.value ? "" : genre.value;
                           setSelectedGenre(newGenre);
                           if (newGenre) {
@@ -831,7 +853,7 @@ const StoriesComponent = () => {
                           selectedGenre === genre.value
                             ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
                             : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                        }`}
+                        } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
                       >
                         {genre.icon} {genreLabels[genre.name]}
                       </button>
@@ -849,12 +871,13 @@ const StoriesComponent = () => {
                         <button
                           key={length}
                           type="button"
+                          disabled={loading}
                           onClick={() => setSelectedLength(length)}
                           className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
                             selectedLength === length
                               ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
                               : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                          }`}
+                          } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
                         >
                           {text[length]}
                         </button>
@@ -866,8 +889,11 @@ const StoriesComponent = () => {
                       <div className="relative" ref={languageDropdownRef}>
                         <button
                           type="button"
-                          onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                          className="flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 cursor-pointer"
+                          disabled={loading}
+                          onClick={() => !loading && setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                          className={`flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 ${
+                            loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                          }`}
                         >
                           <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
                           <span className="text-gray-400 text-[10px]">▼</span>
@@ -907,6 +933,8 @@ const StoriesComponent = () => {
                         register("prompt").ref(el);
                         inputRef.current = el;
                       }}
+                      disabled={loading}
+                      aria-busy={loading}
                       className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-12 transition-colors duration-200 box-border ${
                         isOverLimit
                           ? "ring-1 ring-red-500 rounded"
@@ -921,17 +949,25 @@ const StoriesComponent = () => {
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();
+                          if (isGenerateDisabled) {
+                            return;
+                          }
                           const form = e.currentTarget.closest("form");
                           if (form) form.requestSubmit();
                         }
                       }}
                     />
-                    
+
                     {textareaValue.length > 0 && (
                       <button
                         type="button"
+                        disabled={loading}
                         onClick={handleClearPrompt}
-                        className="absolute right-2 top-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
+                        className={`absolute right-2 top-2 text-gray-400 transition-colors duration-200 ${
+                          loading
+                            ? "cursor-not-allowed opacity-50"
+                            : "hover:text-red-500"
+                        }`}
                         aria-label={text.close}
                         title={text.close}
                       >
@@ -953,8 +989,13 @@ const StoriesComponent = () => {
 
                     <button
                       type="button"
-                      onClick={() => setIsRecentPromptsOpen(!isRecentPromptsOpen)}
-                      className="absolute right-2 top-12 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2"
+                      disabled={loading}
+                      onClick={() => !loading && setIsRecentPromptsOpen(!isRecentPromptsOpen)}
+                      className={`absolute right-2 top-12 bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2 ${
+                        loading
+                          ? "cursor-not-allowed opacity-60"
+                          : "hover:bg-indigo-700"
+                      }`}
                       aria-label={text.recentPrompts}
                       title={text.recentPrompts}
                     >
@@ -1027,8 +1068,13 @@ const StoriesComponent = () => {
                           <span className="font-medium">{selectedTone}</span>
                           <button
                             type="button"
+                            disabled={loading}
                             onClick={() => setSelectedTone("")}
-                            className="ml-1 text-gray-500 hover:text-red-400 transition-colors"
+                            className={`ml-1 text-gray-500 transition-colors ${
+                              loading
+                                ? "cursor-not-allowed opacity-50"
+                                : "hover:text-red-400"
+                            }`}
                             aria-label="Remove tone"
                           >
                             ×
@@ -1039,19 +1085,28 @@ const StoriesComponent = () => {
 
                     <button
                       type="submit"
-                      disabled={loading || isOverLimit}
+                      disabled={isGenerateDisabled}
                       aria-busy={loading}
-                      aria-disabled={loading || isOverLimit}
+                      aria-disabled={isGenerateDisabled}
                       className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-                        loading || isOverLimit
+                        isGenerateDisabled
                           ? "opacity-50 cursor-not-allowed"
                           : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
                       } transition-all duration-300 transform flex items-center space-x-2 group`}
                     >
-                      <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
-                      {loading ? text.generating : text.generate}
+                      {loading ? (
+                        <i className="fas fa-circle-notch text-xl animate-spin"></i>
+                      ) : (
+                        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
+                      )}
+                      <span>{loading ? text.generating : text.generate}</span>
                     </button>
                   </div>
+                  {loading && (
+                    <p className="text-sm text-indigo-300 mt-3 text-right" aria-live="polite">
+                      Your story is being generated. You can cancel the request if it takes too long.
+                    </p>
+                  )}
                 </form>
               </div>
             </div>
@@ -1078,7 +1133,6 @@ const StoriesComponent = () => {
                     ▼
                   </span>
                 </button>
-
                 {isDropdownOpen && (
                   <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
                     {prompts.map((item) => (
@@ -1207,12 +1261,36 @@ const StoriesComponent = () => {
       )}
 
       <StoriesViewComponent
-        stories={filteredStories}
+        stories={currentStories}
         isLogin={login}
         setStories={setStories}
         onPublishSuccess={handlePublishSuccess}
         isLoading={loading}
       />
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setCurrentPage((p) => p - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          <span className="text-slate-400">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            onClick={() => setCurrentPage((p) => p + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
@@ -1248,7 +1326,7 @@ const StoriesComponent = () => {
           </div>
         </div>
       )}
-
+     
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

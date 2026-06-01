@@ -3,8 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { useState } from "react";
-import "./auth.css";
-import "@flaticon/flaticon-uicons/css/all/all.css";
 import {
   useLoginUserMutation,
   useGoogleLoginMutation,
@@ -37,15 +35,23 @@ const LoginComponent = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setIsBusy(true);
+
     try {
       const res = await loginUser({ ...data }).unwrap();
+
       if (res.data.accessToken) {
         toast.success("User logged in successfully!");
-        storeUserInfo({ accessToken: res.data.accessToken });
+
+        storeUserInfo({
+          accessToken: res.data.accessToken,
+        });
+
         setIsLoggedIn(true);
       }
     } catch {
-      toast.error("Login failed. Please check your credentials.");
+      toast.error(
+        "Login failed. Please check your credentials."
+      );
     } finally {
       setIsBusy(false);
     }
@@ -55,6 +61,7 @@ const LoginComponent = () => {
     credentialResponse: CredentialResponse
   ) => {
     setIsBusy(true);
+
     try {
       const res = await googleLogin({
         token: credentialResponse.credential,
@@ -67,24 +74,35 @@ const LoginComponent = () => {
         setIsLoggedIn(true);
       }
     } catch {
-      toast.error("Failed to login with Google. Please try again.");
+      toast.error(
+        "Failed to login with Google. Please try again."
+      );
     } finally {
       setIsBusy(false);
     }
   };
 
   const handleGoogleLoginError = () => {
-    toast.error("Google login failed. Please try again.");
+    toast.error(
+      "Google login failed. Please try again."
+    );
   };
 
+  // Role-based redirect fix
   if (isLoggedIn) {
     const userInfo = getUserInfo();
+
     const isDashboardUser =
       userInfo?.role === USER_ROLE.ADMIN ||
       userInfo?.role === USER_ROLE.SUPER_ADMIN;
+
     return (
       <RedirectComponent
-        defaultPath={isDashboardUser ? "/dashboard" : "/explore"}
+        defaultPath={
+          isDashboardUser
+            ? "/dashboard"
+            : "/explore"
+        }
       />
     );
   }
@@ -95,6 +113,7 @@ const LoginComponent = () => {
       
       {/* Background Glow */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <main className="auth-container flex flex-col md:flex-row overflow-hidden rounded-3xl border border-white/10 dark:border-white/10 border-black/10 shadow-[0_0_40px_rgba(168,85,247,0.12)] w-full max-w-6xl bg-white dark:bg-[#0b1020] relative z-10">
@@ -224,7 +243,8 @@ const LoginComponent = () => {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-center w-full">
+            {/* Explicitly added list-none to prevent stray bullet point artifact on production build */}
+            <div className="mt-6 flex justify-center list-none w-full">
               <GoogleLogin
                 onSuccess={handleGoogleLoginSuccess}
                 onError={handleGoogleLoginError}
