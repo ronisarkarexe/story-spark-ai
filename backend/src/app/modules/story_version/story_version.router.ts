@@ -41,4 +41,16 @@ router.post(
   StoryVersionController.restoreVersion
 );
 
+// Enhance a story prompt using AI
+router.post(
+  "/enhance-prompt",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  StoryVersionController.enhancePrompt
+);
+
 export const StoryVersionRouter = router;

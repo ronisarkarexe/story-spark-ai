@@ -5,6 +5,7 @@ import { USER_ROLE } from "../../constants/role";
 import logo from "../../assets/logoNew.png";
 import NotificationComponent from "../notification/notification.component";
 import { useNotifications } from "../../hooks/useNotifications";
+import ThemeToggle from "../theme/theme_toggle.component";
 
 const getLinkClass = (isActive: boolean) =>
   `relative flex items-center gap-1.5 rounded-md px-3 py-2 text-[11px] font-bold tracking-widest transition-all duration-200 ${
@@ -222,7 +223,7 @@ const NavListComponent: React.FC = () => {
               </>
             )}
 
-
+            <ThemeToggle />
 
             <div className="relative inline-flex" ref={notificationMenuRef}>
               <button
@@ -245,7 +246,7 @@ const NavListComponent: React.FC = () => {
 
           {/* Mobile Actions */}
           <div className="flex xl:hidden items-center gap-1.5">
-
+            <ThemeToggle />
 
             <button
               type="button"
@@ -296,4 +297,4 @@ const NavListComponent: React.FC = () => {
   );
 };
 
-export default NavListComponent;
+export default NavListComponent;

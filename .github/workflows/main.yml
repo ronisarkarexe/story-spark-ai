@@ -18,10 +18,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-
+        run: npm install
 
       - name: Work around npm optional dependency bug (Tailwind CSS oxide Linux binary)
         run: npm install -w story-spark-ai-frontend --no-save @tailwindcss/oxide-linux-x64-gnu

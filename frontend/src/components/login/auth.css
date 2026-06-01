@@ -29,8 +29,8 @@ body {
         radial-gradient(circle at bottom right, rgba(255, 182, 106, 0.12), transparent 20%),
         linear-gradient(180deg, #090b12 0%, #0d111b 100%);
     background-color: #090b12;
+    scroll-behavior: smooth;
 }
-
 /* ── Keyframe Animations ── */
 @keyframes float {
     0%, 100% { transform: translateY(0px) translateX(0px); }
@@ -43,6 +43,73 @@ body {
 }
 
 /* ── Particles Canvas (Canvas-driven background) ── */
+
+#particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.left-pane-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.22), transparent 35%),
+    radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.18), transparent 35%),
+    radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.12), transparent 45%);
+  z-index: 0;
+  filter: blur(10px);
+}
+
+.hero-gradient {
+  background: linear-gradient(
+    90deg,
+    #a855f7,
+    #ec4899,
+    #f97316
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-panel {
+  background: rgba(10, 15, 35, 0.72);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.auth-container {
+  background: #050816;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+
+.auth-divider-text {
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
 #particle-canvas {
     position: absolute;
     inset: 0;
@@ -126,13 +193,45 @@ input[type="email"],
 input[type="password"] {
     height: var(--ds-input-height);
     font-size: 15px;
+    line-height: calc(var(--ds-input-height) - 2px);
     padding: 0 16px;
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.04);
     color: #e1e2ea;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    display: block;
     box-sizing: border-box;
     transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.auth-field {
+    appearance: none;
+    -webkit-appearance: none;
+    font-family: inherit;
+    width: 100% !important;
+    max-width: 100%;
+    height: var(--ds-input-height);
+    line-height: var(--ds-input-height);
+    box-sizing: border-box; 
+    padding-left: 44px !important; 
+    padding-right: 44px !important;
+    overflow: hidden;
+}
+.auth-field::placeholder {
+    line-height: var(--ds-input-height);
+}
+
+.auth-field:-webkit-autofill,
+.auth-field:-webkit-autofill:hover,
+.auth-field:-webkit-autofill:focus {
+    -webkit-text-fill-color: #e1e2ea;
+    box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.04) inset;
+    transition: background-color 9999s ease-in-out 0s;
+}
+
+.input-icon-wrapper {
+    position: relative;
+    width: 100%;
 }
 
 .ds-input-group {
@@ -269,6 +368,40 @@ input:focus {
 
 .ds-error.is-visible {
     display: block;
+}
+
+/* ── Password Match Feedback ── */
+.ds-feedback {
+    margin-top: 8px;
+    font-size: 12.5px;
+    line-height: 1.35;
+    display: none;
+    align-items: center;
+    gap: 6px;
+}
+
+.ds-feedback.is-visible {
+    display: flex;
+}
+
+.ds-feedback.match {
+    color: #6ee7b7;
+}
+
+.ds-feedback.match::before {
+    content: "✓";
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.ds-feedback.mismatch {
+    color: #ffb4ab;
+}
+
+.ds-feedback.mismatch::before {
+    content: "✕";
+    font-weight: bold;
+    font-size: 14px;
 }
 
 .ds-alert {

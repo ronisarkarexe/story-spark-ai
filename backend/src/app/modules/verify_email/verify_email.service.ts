@@ -18,7 +18,8 @@ const transporter = nodemailer.createTransport({
 const VerifyEmail = async (payload: IEmailBody) => {
   try {
     const { email, name } = payload;
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Use a cryptographically secure RNG so OTPs cannot be predicted.
+    const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
     
     // Delete any existing OTP for this email
@@ -90,11 +91,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
       `,
     };
     
-    if (!config.verify_email || !config.verify_password) {
-      console.log(`\n=========================================\n[DEV MODE] OTP for ${email} is: ${otp}\n=========================================\n`);
-    } else {
-      await transporter.sendMail(mailOptions);
-    }
+    await transporter.sendMail(mailOptions);
 
     return {
       expiresAt,
@@ -103,6 +100,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
     if (error instanceof ApiError) {
       throw error;
     }
+    console.error("Mail Error:", error);
     throw new ApiError(500, "Failed to send email");
   }
 };

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, ChangeEvent, FormEvent } from "react";
 import { User } from "../../../models/user";
-
+import ImageFallback from "../../ImageFallback";
+ImageFallback
 interface ProfileSettingComponentProps {
   user: User;
   onSave: (updatedUser: Partial<User>) => void;
@@ -19,9 +20,10 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
       instagram: user.profile?.social?.instagram || "",
     },
   });
+  const [nameError, setNameError] = useState<string>("");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
 
@@ -42,10 +44,18 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    const trimmedName = formData.name?.trim();
+    if (!trimmedName) {
+      setNameError("Full Name cannot be empty.");
+      return;
+    }
+
+    setNameError("");
     onSave({
-      name: formData.name,
+      name: trimmedName,
       profile: {
         bio: formData.bio,
         avatar: formData.avatar,
@@ -58,25 +68,25 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
     "w-full px-4 py-2 border border-slate-350 rounded-lg bg-white text-slate-800 dark:bg-slate-900/70 dark:text-gray-100 dark:border-slate-700/50 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition";
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06] rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-indigo-600 px-6 py-4">
+    <div className="w-full">
+      <div className="w-full">
+        <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-lg dark:border-white/[0.06] dark:bg-white/[0.02]">
+          <div className="bg-indigo-600 px-6 py-5 sm:px-8">
             <h2 className="text-2xl font-bold text-white">User Settings</h2>
             <p className="text-indigo-200 mt-1">
               Manage your profile and social links
             </p>
           </div>
 
-          <div className="p-6 md:p-8">
+          <div className="p-6 md:p-8 lg:p-10">
             <form onSubmit={handleSubmit}>
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-gray-300 mb-4 border-b border-slate-200 dark:border-slate-750 pb-2">
+              <div className="mb-10">
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-gray-300 mb-6 border-b border-slate-200 dark:border-slate-750 pb-2">
                   Basic Information
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-12 md:gap-y-8 lg:gap-x-14">
+                  <div className="min-w-0">
                     <label
                       htmlFor="name"
                       className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1"
@@ -91,9 +101,14 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       onChange={handleChange}
                       className={inputClassName}
                     />
+                    {nameError && (
+                      <p className="mt-2 text-sm text-rose-600 dark:text-rose-400">
+                        {nameError}
+                      </p>
+                    )}
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <label
                       htmlFor="email"
                       className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1"
@@ -109,6 +124,32 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                       className={`${inputClassName} cursor-not-allowed`}
                       disabled={true}
                     />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label
+                      htmlFor="avatar"
+                      className="block text-sm font-medium text-gray-400 mb-1"
+                    >
+                      Avatar URL
+                    </label>
+                    <input
+                      type="url"
+                      id="avatar"
+                      name="avatar"
+                      value={formData.avatar}
+                      onChange={handleChange}
+                      className={inputClassName}
+                    />
+                    {formData.avatar && (
+                      <div className="mt-2">
+                        <ImageFallback
+                          src={formData.avatar}
+                          alt="Profile preview"
+                          className="h-16 w-16 rounded-full object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="md:col-span-2">
@@ -130,13 +171,13 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                 </div>
               </div>
 
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-gray-300 mb-4 border-b border-slate-200 dark:border-slate-750 pb-2">
+              <div className="mb-10">
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-gray-300 mb-6 border-b border-slate-200 dark:border-slate-750 pb-2">
                   Social Links
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-12 md:gap-y-8 lg:gap-x-14">
+                  <div className="min-w-0">
                     <label
                       htmlFor="facebook"
                       className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1 flex items-center"
@@ -161,7 +202,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                     />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <label
                       htmlFor="twitter"
                       className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1 flex items-center"
@@ -186,7 +227,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                     />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <label
                       htmlFor="linkedin"
                       className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1 flex items-center"
@@ -211,7 +252,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                     />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <label
                       htmlFor="instagram"
                       className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1 flex items-center"
@@ -238,12 +279,12 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                 </div>
               </div>
 
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-gray-300 mb-4 border-b border-slate-200 dark:border-slate-750 pb-2">
+              <div className="mb-10">
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-gray-300 mb-6 border-b border-slate-200 dark:border-slate-750 pb-2">
                   Account Status
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6">
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 dark:bg-blue-950/20 dark:border-blue-900/30">
                     <p className="text-sm font-medium text-blue-700 dark:text-blue-400">Role</p>
                     <p className="text-lg font-semibold text-blue-900 dark:text-blue-300 capitalize">
@@ -271,7 +312,7 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-4 pt-6 border-t border-slate-200 dark:border-slate-700/50">
+              <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-8 sm:flex-row sm:justify-end sm:space-x-4 sm:space-x-reverse dark:border-slate-700/50">
                 <button
                   type="button"
                   className="px-6 py-2 border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-100 dark:border-slate-700/50 dark:text-slate-300 dark:hover:bg-slate-800 transition"

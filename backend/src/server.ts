@@ -5,7 +5,7 @@ import app from "./app";
 import dns from "dns";
 import http from "http";
 import { Server } from "socket.io";
-import { JwtHalers } from "./utils/jwt.helper";
+import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
 
@@ -29,13 +29,16 @@ async function connectDB() {
 
 async function main() {
   try {
-    await connectDB();
+    await connectDB().catch((error) => {
+      logger.error("Error connecting to the database on startup:", error);
+    });
+
     const httpServer = http.createServer(app);
     const io = new Server(httpServer, {
       cors: {
         origin: config.cors_origins?.length
           ? config.cors_origins
-          : ["http://localhost:4001", "https://storysparkai.vercel.app"],
+          : ["http://localhost:4001", "https://storysparkai-five.vercel.app"],
         credentials: true,
       },
     });
@@ -55,11 +58,11 @@ async function main() {
           return next(new Error("Unauthorized"));
         }
 
-        const verifiedUser = JwtHalers.verifyToken(
+        const verifiedUser = JwtHelpers.verifyToken(
           token,
           config.jwt.secret as Secret
         );
-        const userId = verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
+        const userId = verifiedUser._id || verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
         if (!userId) {
           return next(new Error("Unauthorized"));
         }
@@ -82,7 +85,7 @@ async function main() {
       logger.info(`Story-Spark-AI app listening on port ${config.port}`);
     });
   } catch (error) {
-    logger.error("Error connecting to the database:", error);
+    logger.error("Error in main startup sequence:", error);
   }
 }
 
