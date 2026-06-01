@@ -6,6 +6,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const openai = new OpenAI({ apiKey: process.env.OPEN_AI_KEY });
 const genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
+export const GEMINI_MODEL = "gemini-2.5-flash";
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface AIResponse {
@@ -35,7 +37,7 @@ async function generateWithOpenAI(prompt: string): Promise<string> {
 // ─── Gemini call ─────────────────────────────────────────────────────────────
 
 async function generateWithGemini(prompt: string): Promise<string> {
-  const model  = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model  = genAI.getGenerativeModel({ model: GEMINI_MODEL });
   const result = await model.generateContent(prompt);
   const text   = result.response.text();
 

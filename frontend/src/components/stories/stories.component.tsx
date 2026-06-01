@@ -395,6 +395,8 @@ const TonePicker: React.FC<TonePickerProps> = ({ selected, onChange }) => {
 // Main StoriesComponent
 // ---------------------------------------------------------------------------
 const StoriesComponent = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+const storiesPerPage = 10;
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
@@ -410,7 +412,6 @@ const StoriesComponent = () => {
 
   const [stories, setStories] = useState<IStories[]>(
     draft?.stories?.length ? draft.stories : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
-    [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
   );
   
   const [loading, setLoading] = useState<boolean>(false);
@@ -440,6 +441,20 @@ const StoriesComponent = () => {
       }
     });
   }, [stories, searchQuery, searchFilter]);
+  const indexOfLastStory = currentPage * storiesPerPage;
+const indexOfFirstStory = indexOfLastStory - storiesPerPage;
+
+const currentStories = filteredStories.slice(
+  indexOfFirstStory,
+  indexOfLastStory
+);
+
+const totalPages = Math.ceil(
+  filteredStories.length / storiesPerPage
+);
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchQuery, searchFilter]);
 
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
@@ -733,11 +748,15 @@ useEffect(() => {
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
+  const isGenerateDisabled = loading || isOverLimit;
 
   useKeyboardShortcuts({
     onOpenHelp: () => setShowHelpModal(true),
     onCloseHelp: () => setShowHelpModal(false),
     onGenerate: () => {
+      if (isGenerateDisabled) {
+        return;
+      }
       if (inputRef.current) {
         const form = inputRef.current.closest("form");
         if (form) form.requestSubmit();
@@ -824,7 +843,9 @@ useEffect(() => {
                       <button
                         key={genre.value}
                         type="button"
+                        disabled={loading}
                         onClick={() => {
+                          if (loading) return;
                           const newGenre = selectedGenre === genre.value ? "" : genre.value;
                           setSelectedGenre(newGenre);
                           if (newGenre) {
@@ -838,7 +859,7 @@ useEffect(() => {
                           selectedGenre === genre.value
                             ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
                             : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                        }`}
+                        } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
                       >
                         {genre.icon} {genreLabels[genre.name]}
                       </button>
@@ -857,12 +878,13 @@ useEffect(() => {
                         <button
                           key={length}
                           type="button"
+                          disabled={loading}
                           onClick={() => setSelectedLength(length)}
                           className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
                             selectedLength === length
                               ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
                               : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                          }`}
+                          } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
                         >
                           {text[length]}
                         </button>
@@ -875,8 +897,11 @@ useEffect(() => {
                         <button
                           key="lang-selector-btn"
                           type="button"
-                          onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                          className="flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 cursor-pointer"
+                          disabled={loading}
+                          onClick={() => !loading && setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                          className={`flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 ${
+                            loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                          }`}
                         >
                           <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
                           <span className="text-gray-400 text-[10px]">▼</span>
@@ -916,6 +941,8 @@ useEffect(() => {
                         register("prompt").ref(el);
                         inputRef.current = el;
                       }}
+                      disabled={loading}
+                      aria-busy={loading}
                       className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-12 transition-colors duration-200 box-border ${
                         isOverLimit
                           ? "ring-1 ring-red-500 rounded"
@@ -930,27 +957,25 @@ useEffect(() => {
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();
+                          if (isGenerateDisabled) {
+                            return;
+                          }
                           const form = e.currentTarget.closest("form");
                           if (form) form.requestSubmit();
                         }
                       }}
                     />
-                    {/* Character count display */}
-<div className={`flex justify-end mt-1 text-xs font-medium transition-colors duration-200 ${
-  isOverLimit
-    ? "text-red-500"
-    : isNearLimit
-    ? "text-yellow-500"
-    : "text-gray-400"
-}`}>
-  {textareaValue.length} / {MAX_PROMPT_LENGTH}
-</div>
 
                     {textareaValue.length > 0 && (
                       <button
                         type="button"
+                        disabled={loading}
                         onClick={handleClearPrompt}
-                        className="absolute right-2 top-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
+                        className={`absolute right-2 top-2 text-gray-400 transition-colors duration-200 ${
+                          loading
+                            ? "cursor-not-allowed opacity-50"
+                            : "hover:text-red-500"
+                        }`}
                         aria-label={text.close}
                         title={text.close}
                       >
@@ -972,8 +997,13 @@ useEffect(() => {
 
                     <button
                       type="button"
-                      onClick={() => setIsRecentPromptsOpen(!isRecentPromptsOpen)}
-                      className="absolute right-2 top-12 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2"
+                      disabled={loading}
+                      onClick={() => !loading && setIsRecentPromptsOpen(!isRecentPromptsOpen)}
+                      className={`absolute right-2 top-12 bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2 ${
+                        loading
+                          ? "cursor-not-allowed opacity-60"
+                          : "hover:bg-indigo-700"
+                      }`}
                       aria-label={text.recentPrompts}
                       title={text.recentPrompts}
                     >
@@ -1047,8 +1077,13 @@ useEffect(() => {
                           <span className="font-medium">{selectedTone}</span>
                           <button
                             type="button"
+                            disabled={loading}
                             onClick={() => setSelectedTone("")}
-                            className="ml-1 text-gray-500 hover:text-red-400 transition-colors"
+                            className={`ml-1 text-gray-500 transition-colors ${
+                              loading
+                                ? "cursor-not-allowed opacity-50"
+                                : "hover:text-red-400"
+                            }`}
                             aria-label="Remove tone"
                           >
                             ×
@@ -1059,19 +1094,28 @@ useEffect(() => {
 
                     <button
                       type="submit"
-                      disabled={loading || isOverLimit}
+                      disabled={isGenerateDisabled}
                       aria-busy={loading}
-                      aria-disabled={loading || isOverLimit}
+                      aria-disabled={isGenerateDisabled}
                       className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-                        loading || isOverLimit
+                        isGenerateDisabled
                           ? "opacity-50 cursor-not-allowed"
                           : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
                       } transition-all duration-300 transform flex items-center space-x-2 group`}
                     >
-                      <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
-                      {loading ? text.generating : text.generate}
+                      {loading ? (
+                        <i className="fas fa-circle-notch text-xl animate-spin"></i>
+                      ) : (
+                        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
+                      )}
+                      <span>{loading ? text.generating : text.generate}</span>
                     </button>
                   </div>
+                  {loading && (
+                    <p className="text-sm text-indigo-300 mt-3 text-right" aria-live="polite">
+                      Your story is being generated. You can cancel the request if it takes too long.
+                    </p>
+                  )}
                 </form>
               </div>
             </div>
@@ -1090,171 +1134,14 @@ useEffect(() => {
                   <span className="truncate pr-4">
                     {selectedPrompt || text.selectPrompt}
                   </span>
-
                   <span
                     className={`text-gray-300 transition-transform duration-200 ${
                       isDropdownOpen ? "rotate-180" : ""
                     }`}
                   >
-                    {lang.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      {/* Clear prompt button - next to language selector */}
-      {textareaValue.length > 0 && (
-        <button
-          type="button"
-
-          onClick={() => setSelectedLength(length)}
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-            selectedLength === length
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-              : "bg-gray-200 text-slate-700 hover:bg-gray-300 dark:bg-white/10 dark:text-gray-400 dark:hover:bg-white/20 dark:hover:text-gray-200"
-          }`}
-          onClick={handleClearPrompt}
-          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200 border border-red-500/20"
-          aria-label={text.close}
-          title="Clear prompt"
-        >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Clear
-        </button>
-      )}
-    </div>
-    <div className="mb-4">
-      <h3 className="text-lg font-semibold mb-3">
-        Story Templates
-      </h3>
-
-
-    <div className="flex flex-wrap gap-2">
-      {storyTemplates.map((template) => (
-      <button
-        key={template.title}
-        type="button"
-        onClick={() => setTextareaValue(template.prompt)}
-        className="px-4 py-2 rounded-full bg-purple-100 hover:bg-purple-200 transition-colors text-sm font-medium"
-      >
-        {template.title}
-      </button>
-    ))}
-  </div>
-</div>
-
-<div className="relative">
-  <textarea
-    {...register("prompt")}
-    ref={(el) => {
-      register("prompt").ref(el);
-      inputRef.current = el;
-    }}
-    onInput={(e) => {
-      e.currentTarget.style.height = "auto";
-      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-    }}
-    className={`w-full min-h-[140px] max-h-[400px] overflow-y-auto resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-2 focus:ring-indigo-500/40 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 pr-10 transition-colors duration-200 ${
-      isOverLimit
-        ? "ring-1 ring-red-500 rounded"
-        : isNearLimit
-        ? "ring-1 ring-yellow-400 rounded"
-        : ""
-    }`}
-    placeholder="Every great story begins with a single idea. What's yours?"
-    value={textareaValue}
-    maxLength={MAX_PROMPT_LENGTH}
-    onChange={(e) => setTextareaValue(e.target.value)}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        const form = e.currentTarget.closest("form");
-        if (form) form.requestSubmit();
-      }
-    }}
-  />
-    <div className="relative overflow-hidden">
-      <textarea
-  {...register("prompt")}
-  ref={(el) => {
-    register("prompt").ref(el);
-    inputRef.current = el;
-  }}
-        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-4 transition-colors duration-200 ${
-          isOverLimit
-            ? "ring-1 ring-red-500 rounded"
-            : isNearLimit
-            ? "ring-1 ring-yellow-400 rounded"
-            : ""
-        }`}
-        placeholder={text.promptPlaceholder}
-        value={textareaValue}
-        maxLength={MAX_PROMPT_LENGTH}
-        onChange={(e) => setTextareaValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            const form = e.currentTarget.closest("form");
-            if (form) form.requestSubmit();
-          }
-        }}
-        />
-      <button
-        type="button"
-        onClick={() => setIsRecentPromptsOpen(!isRecentPromptsOpen)}
-        className="absolute right-2 top-12 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2"
-        aria-label={text.recentPrompts}
-        title={text.recentPrompts}
-      >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        {text.recentPrompts}
-      </button>
-
-      <div className="flex items-center justify-between mt-1 px-1">
-        {isOverLimit ? (
-          <p className="text-xs text-red-400 flex items-center gap-1">
-            <span>⚠</span> {text.characterLimit}
-          </p>
-        ) : isNearLimit ? (
-          <p className="text-xs text-yellow-400 flex items-center gap-1">
-            <span>⚠</span>{" "}
-            {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-          </p>
-        ) : (
-          <span />
-        )}
-
-        <span
-          className={`text-xs tabular-nums ml-auto ${
-            isOverLimit
-              ? "text-red-400 font-medium"
-              : isNearLimit
-              ? "text-yellow-400"
-              : "text-gray-500"
-          }`}
-        >
-          {textareaValue.length} / {MAX_PROMPT_LENGTH}
-        </span>
-      </div>
-    </div>
-
+                    ▼
+                  </span>
+                </button>
                 {isDropdownOpen && (
                   <ul className="relative z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
                     {prompts.map((item) => (
@@ -1362,7 +1249,7 @@ useEffect(() => {
       )}
 
       <StoriesViewComponent
-        stories={filteredStories}
+        stories={currentStories}
         isLogin={login}
         setStories={setStories}
         onPublishSuccess={handlePublishSuccess}
@@ -1402,10 +1289,33 @@ useEffect(() => {
           </div>
         </div>
       )}
-
+     
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };
+{totalPages > 1 && (
+  <div className="flex justify-center items-center gap-4 mt-6">
+    <button
+      onClick={() => setCurrentPage((p) => p - 1)}
+      disabled={currentPage === 1}
+      className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50"
+    >
+      Previous
+    </button>
+
+    <span>
+      Page {currentPage} of {totalPages}
+    </span>
+
+    <button
+      onClick={() => setCurrentPage((p) => p + 1)}
+      disabled={currentPage === totalPages}
+      className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50"
+    >
+      Next
+    </button>
+  </div>
+)}
 
 export default StoriesComponent;

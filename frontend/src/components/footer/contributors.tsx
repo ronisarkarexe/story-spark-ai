@@ -403,9 +403,11 @@ const ContributorsComponent = () => {
           "https://api.github.com/repos/ronisarkarexe/story-spark-ai/contributors"
         );
         const data = await response.json();
+  
         if (Array.isArray(data)) {
           const filtered = data.filter(
-            (contributor: Contributor) => contributor.contributions >= 1
+          (contributor: Contributor) =>
+            contributor.contributions >= 1
           );
           setContributors(filtered);
         }
@@ -415,6 +417,7 @@ const ContributorsComponent = () => {
         setLoading(false);
       }
     };
+  
     fetchContributors();
   }, []);
 

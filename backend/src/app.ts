@@ -15,7 +15,6 @@ import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import { User } from "./app/modules/user/user.model";
-import storyRoutes from "./routes/story.routes";
 import compression from "compression";
 import morgan from "morgan";
 import logger from "./utils/logger.util";
@@ -24,7 +23,7 @@ import { requestIdMiddleware } from "./app/middleware/requestId";
 morgan.token("reqId", (req: Request) => req.headers["x-request-id"] as string);
 
 const app: Application = express();
-app.set("trust proxy", 1); // Trust first proxy to securely read req.ip
+app.set("trust proxy", 1);
 app.use(helmet());
 app.use(compression() as unknown as RequestHandler);
 app.use(requestIdMiddleware as unknown as RequestHandler);
@@ -41,17 +40,15 @@ app.use(
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: "Too many requests, please try again later."
+  message: "Too many requests, please try again later.",
 });
-
 app.use(limiter as unknown as RequestHandler);
-
-
 
 const defaultCorsOrigins = [
   "http://localhost:4001",
   "http://localhost:4002",
   "https://storysparkai-five.vercel.app",
+  "https://storysparkai.vercel.app",
 ];
 
 const corsOrigins =
@@ -59,7 +56,6 @@ const corsOrigins =
     ? config.cors_origins
     : defaultCorsOrigins;
 
-// ── CORS MIDDLEWARE ──
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -75,33 +71,27 @@ app.use(
   })
 );
 
-// ✅ FIX: BODY PARSERS MUST COME BEFORE ROUTES
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser() as unknown as RequestHandler);
 
-// ── ROUTES ──
-app.use("/review", storyRoutes);
 app.use("/api/v1", Routers);
 
-// ── 404 HANDLER ──
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((req: Request, res: Response, _next: NextFunction) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
     message: "Not Found",
     errorMessages: [
       {
-      path: req.originalUrl,
-      message: "API Not Found",
+        path: req.originalUrl,
+        message: "API Not Found",
       },
     ],
   });
 });
 
-// ── GLOBAL ERROR HANDLER ──
 app.use(globalErrorHandler);
 
-// ── CRON JOB ──
 if (!process.env.VERCEL) {
   cron.schedule("0 0 1 * *", async () => {
     try {

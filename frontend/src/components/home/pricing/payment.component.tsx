@@ -250,7 +250,7 @@ const paymentObject = new (
                     Card Number
                   </label>
 
-                  <div className="relative">
+                  <div className="relative overflow-hidden">
                     <CreditCard
                       className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                       size={18}
@@ -269,7 +269,7 @@ const paymentObject = new (
                 </div>
 
                 {/* Expiry + CVV */}
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-200">
                       Expiry Date

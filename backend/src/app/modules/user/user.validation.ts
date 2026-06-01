@@ -63,12 +63,15 @@ const updateUser = z.object({
               instagram: z.string().optional(),
             })
             .partial()
+            .strict()
             .optional(),
         })
         .partial()
+        .strict()
         .optional(),
     })
-    .partial(),
+    .partial()
+    .strict(),
 });
 
 export const UserValidator = {

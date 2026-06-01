@@ -36,10 +36,18 @@ const AnalyticsPage = () => {
 
   const token = getToken() || "";
 
-  const fetchData = async (endpoint: string) => {
-    const res = await fetch(`${API_BASE}/analytics/${endpoint}`, {
-      headers: { Authorization: token },
-    });
+  const fetchData = async (
+    endpoint: string,
+    signal: AbortSignal
+  ) => {
+    const res = await fetch(
+      `${API_BASE}/analytics/${endpoint}`,
+      {
+        headers: { Authorization: token },
+        signal,
+      }
+    );
+  
     const data = await res.json();
     return data.data;
   };
