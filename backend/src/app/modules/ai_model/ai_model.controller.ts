@@ -5,13 +5,15 @@ import ApiError from "../../../errors/api_error";
 import catchAsync from "../../../shared/catch_async";
 import sendResponse from "../../../shared/send_response";
 import { AiModelService } from "./ai_model.service";
-import { IRemixPayload, ITranslatePayload, IChatPayload } from "./ai_model.interface";
-import { reserveGuestQuota } from "./quota.service";
 import {
-  createGuestQuotaGuard,
-  runWithQuotaCleanup,
-} from "./quota.lifecycle";
+  IRemixPayload,
+  ITranslatePayload,
+  IChatPayload,
+} from "./ai_model.interface";
+import { reserveGuestQuota } from "./quota.service";
+import { createGuestQuotaGuard, runWithQuotaCleanup } from "./quota.lifecycle";
 import { generateWithGeminiStoriesStream } from "./ai_model.utils";
+import { storyQueue } from "../../../services/storyRequestQueue";
 
 const aiModelGenerate = catchAsync(async (req: Request, res: Response) => {
   const prompt = req.body;
@@ -20,7 +22,7 @@ const aiModelGenerate = catchAsync(async (req: Request, res: Response) => {
   if (!guard) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Quota guard missing — checkRequestLimit middleware required"
+      "Quota guard missing — checkRequestLimit middleware required",
     );
   }
 
@@ -41,7 +43,7 @@ const aiFreeModelGenerate = catchAsync(async (req: Request, res: Response) => {
 
   if (!userId) {
     userId = Math.random().toString(36).substring(7);
-    setGuestUserIdCookie(res, userId);  // ✅ Fixed: now includes sameSite
+    setGuestUserIdCookie(res, userId); // ✅ Fixed: now includes sameSite
   }
 
   const guard = createGuestQuotaGuard(userId);
@@ -57,27 +59,29 @@ const aiFreeModelGenerate = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const aiModelAlternateEndings = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body;
-  const guard = res.locals.quotaRefundGuard;
+const aiModelAlternateEndings = catchAsync(
+  async (req: Request, res: Response) => {
+    const payload = req.body;
+    const guard = res.locals.quotaRefundGuard;
 
-  if (!guard) {
-    throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      "Quota guard missing — checkRequestLimit middleware required"
-    );
-  }
+    if (!guard) {
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Quota guard missing — checkRequestLimit middleware required",
+      );
+    }
 
-  await runWithQuotaCleanup(guard, async () => {
-    const result = await AiModelService.aiModelAlternateEndings(payload);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Alternate endings generated successfully!",
-      data: result,
+    await runWithQuotaCleanup(guard, async () => {
+      const result = await AiModelService.aiModelAlternateEndings(payload);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Alternate endings generated successfully!",
+        data: result,
+      });
     });
-  });
-});
+  },
+);
 
 const aiFreeModelAlternateEndings = catchAsync(
   async (req: Request, res: Response) => {
@@ -86,7 +90,7 @@ const aiFreeModelAlternateEndings = catchAsync(
 
     if (!userId) {
       userId = Math.random().toString(36).substring(7);
-      setGuestUserIdCookie(res, userId);  // ✅ Fixed: now includes sameSite
+      setGuestUserIdCookie(res, userId); // ✅ Fixed: now includes sameSite
     }
 
     const guard = createGuestQuotaGuard(userId);
@@ -100,7 +104,7 @@ const aiFreeModelAlternateEndings = catchAsync(
         data: result,
       });
     });
-  }
+  },
 );
 
 const aiModelGenerateStream = async (req: Request, res: Response) => {
@@ -118,14 +122,16 @@ const aiModelGenerateStream = async (req: Request, res: Response) => {
   });
 
   try {
-    await generateWithGeminiStoriesStream(
-      prompt,
-      wordLength ?? 250,
-      numStories ?? 2,
-      (chunk: string) => {
-        res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
-      },
-      controller.signal
+    await storyQueue.enqueue(() =>
+      generateWithGeminiStoriesStream(
+        prompt,
+        wordLength ?? 250,
+        numStories ?? 2,
+        (chunk: string) => {
+          res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+        },
+        controller.signal,
+      ),
     );
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
@@ -142,7 +148,7 @@ const aiModelRemix = catchAsync(async (req: Request, res: Response) => {
   if (!guard) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Quota guard missing — checkRequestLimit middleware required"
+      "Quota guard missing — checkRequestLimit middleware required",
     );
   }
 
@@ -186,7 +192,7 @@ const aiModelTranslate = catchAsync(async (req: Request, res: Response) => {
   if (!guard) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Quota guard missing — checkRequestLimit middleware required"
+      "Quota guard missing — checkRequestLimit middleware required",
     );
   }
 
@@ -230,7 +236,7 @@ const aiModelChat = catchAsync(async (req: Request, res: Response) => {
   if (!guard) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Quota guard missing — checkRequestLimit middleware required"
+      "Quota guard missing — checkRequestLimit middleware required",
     );
   }
 
