@@ -1,21 +1,17 @@
 
 import { Link } from "react-router-dom";
 import {
-    Handshake,
     Sparkles,
-    Smile,
-    Ban,
     Lightbulb,
-    FileText,
     ArrowLeft,
-    LucideIcon,
     MessageCircle,
     GitPullRequestArrow,
     Code2,
     Accessibility,
     Bug,
-    HeartHandshake
+    HeartHandshake,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 type GuidelineSection = {
   title: string;
@@ -124,7 +120,11 @@ const workflowSteps = [
 ];
 
 const Guidelines = () => {
-    return <></>;
+  return (
+    <div>
+      <h1>Guidelines</h1>
+    </div>
+  );
 };
 
 export default Guidelines;

@@ -81,6 +81,22 @@ const TONE_INSTRUCTIONS: Record<string, string> = {
  * Returns the tone instruction string for injection into the prompt,
  * or an empty string if no tone (or an unrecognised tone) is supplied.
  */
+const GENRE_MODIFIER_INSTRUCTIONS: Record<string, string> = {
+  fantasy: "Write in the style of epic fantasy fiction. Include vivid world-building, magic, and heroic themes.",
+  horror: "Write in the style of psychological horror. Build dread slowly, use dark imagery, and leave an unsettling feeling.",
+  romance: "Write in the style of contemporary romance. Focus on emotional tension, character chemistry, and satisfying resolution.",
+  scifi: "Write in the style of science fiction. Ground the story in plausible technology or speculative concepts.",
+  mystery: "Write in the style of a mystery thriller. Plant subtle clues, build suspense, and deliver a reveal.",
+  childrens: "Write in the style of a children's picture book. Use simple language, a warm tone, and a clear moral.",
+};
+
+const buildGenreInstruction = (genre?: string): string => {
+  if (!genre) return "";
+  const instruction = GENRE_MODIFIER_INSTRUCTIONS[genre];
+  if (!instruction) return "";
+  return `Genre & Style Directive: ${instruction}\n\n`;
+};
+
 const buildToneInstruction = (tone?: string): string => {
   if (!tone) return "";
   const instruction = TONE_INSTRUCTIONS[tone];
@@ -113,6 +129,7 @@ export async function generateWithGeminiStories(
   language: string = "English",
   signal?: AbortSignal,
   tone?: string, // NEW: optional tone parameter
+  genre?: string, // NEW: optional genre parameter
 ): Promise<Story[]> {
   throwIfAborted(signal);
 
@@ -127,9 +144,10 @@ export async function generateWithGeminiStories(
 
     // NEW: Prepend the tone instruction block to the Gemini prompt when a tone is selected.
     const toneInstruction = buildToneInstruction(tone);
+    const genreInstruction = buildGenreInstruction(genre);
 
     const response = await chatSession.sendMessage(
-      `${toneInstruction}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+      `${genreInstruction}${toneInstruction}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
       First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
       Then, generate ${numStories} different short stories based on this ENHANCED prompt.
       The stories MUST be written entirely in the ${language} language.
@@ -267,6 +285,67 @@ export async function generateAlternateEndingsWithGemini(
   }
 }
 
+export async function generateWithGeminiStoriesStream(
+  prompt: string,
+  wordLength: number = 250,
+  numStories: number = 2,
+  onChunk: (chunk: string) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  if (signal?.aborted) {
+    throw new GenerationAbortedError();
+  }
+
+  const streamingModel = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+  });
+
+  const streamingConfig = {
+    temperature: 1,
+    topP: 0.95,
+    topK: 64,
+    maxOutputTokens: 8192,
+  };
+
+  try {
+    const result = await streamingModel.generateContentStream({
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `Generate ${numStories} different short stories based on the following prompt: "${prompt}".
+              Each story should be in JSON format with fields: "title", "content", and "tag".
+              Ensure each story is approximately ${wordLength} words long.
+              Return the output as a JSON array.`,
+            },
+          ],
+        },
+      ],
+      generationConfig: streamingConfig,
+      safetySettings,
+    });
+
+    for await (const chunk of result.stream) {
+      if (signal?.aborted) {
+        throw new GenerationAbortedError();
+      }
+      const chunkText = chunk.text();
+      if (chunkText) {
+        onChunk(chunkText);
+      }
+    }
+  } catch (error: unknown) {
+    if (error instanceof ApiError || error instanceof GenerationAbortedError) {
+      throw error;
+    }
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `AI streaming generation failed: ${errorMsg}`
+    );
+  }
+}
 export async function generateRemixWithGemini(
   title: string,
   content: string,
@@ -374,6 +453,33 @@ Preserve the story's tone, style and meaning. Only translate — do not modify t
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
       `AI translation failed: ${errorMsg}`
+    );
+  }
+}
+
+export async function chatWithGemini(
+  message: string,
+  history: { role: string; parts: { text: string }[] }[] = []
+): Promise<string> {
+  assertGeminiApiKeyConfigured();
+
+  try {
+    const chatSession = model.startChat({
+      generationConfig: {
+        ...generationConfig,
+        responseMimeType: "text/plain",
+      },
+      safetySettings,
+      history,
+    });
+
+    const result = await chatSession.sendMessage(message);
+    return result.response.text();
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `AI chat failed: ${errorMsg}`
     );
   }
 }

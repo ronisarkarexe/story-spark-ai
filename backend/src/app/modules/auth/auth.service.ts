@@ -1,50 +1,77 @@
 import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
-import { Secret } from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
+import crypto from "crypto";
 import { OAuth2Client } from "google-auth-library";
 import { AuthModel } from "./auth.interface";
 import { User } from "../user/user.model";
-import { JwtHalers } from "../../../utils/jwt.helper";
+import { JwtHelpers } from "../../../utils/jwt.helper";
 import logger from "../../../utils/logger.util";
 import config from "../../../config";
 import ApiError from "../../../errors/api_error";
 import { IUser } from "../user/user.interface";
 import { OTPModel } from "../verify_email/otp.model";
+import { RefreshSession } from "./refresh_session.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 import { GamificationService } from "../gamification/gamification.service";
 
 const googleClient = new OAuth2Client(config.google_client_id);
 
-const login = async (payload: AuthModel) => {
-  const { email: userEmail, password } = payload;
+// Token claims; tokenVersion enables global session revocation.
+const buildClaims = (user: any) => ({
+  _id: user._id,
+  email: user.email,
+  role: user.role,
+  subscriptionType: user.subscriptionType,
+  name: user.name,
+  postsCount: user.postsCount,
+  tokenVersion: user.tokenVersion ?? 0,
+});
+
+const issueAccessToken = (user: any, expiresIn?: string): string =>
+  JwtHelpers.createToken(
+    buildClaims(user),
+    config.jwt.secret as Secret,
+    expiresIn ?? (config.jwt.expires_in as string)
+  );
+
+// Issues a refresh token with a unique jti and records its session for rotation.
+const issueRefreshToken = async (user: any): Promise<string> => {
+  const jti = crypto.randomBytes(16).toString("hex");
+  const token = JwtHelpers.createToken(
+    { ...buildClaims(user), jti },
+    config.jwt.refresh_secret as Secret,
+    config.jwt.refresh_expires_in as string
+  );
+  const decoded = jwt.decode(token) as { exp?: number } | null;
+  const expiresAt = decoded?.exp
+    ? new Date(decoded.exp * 1000)
+    : new Date(Date.now() + 120 * 24 * 60 * 60 * 1000);
+  await RefreshSession.create({ jti, userId: user._id, expiresAt });
+  return token;
+};
+
+const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
+  const { email: userEmail, password, rememberMe } = payload;
   const isExistUser = await User.findOne({ email: userEmail });
   if (!isExistUser) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
-  
+
   // Check if user has password (Google users might not)
   if (!isExistUser.password) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Please use Google login for this account!");
   }
-  
+
   const match = await bcrypt.compare(password, isExistUser.password);
   if (!match) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Password is not valid!");
   }
-  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } =
-    isExistUser;
-  const accessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
-    config.jwt.secret as Secret,
-    config.jwt.expires_in as string
-  );
-  const refreshToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
-    config.jwt.refresh_secret as Secret,
-    config.jwt.refresh_expires_in as string
-  );
 
-  GamificationService.updateDailyStreak(String(_id)).catch(console.error);
+  const accessToken = issueAccessToken(isExistUser, rememberMe ? "30d" : "15m");
+  const refreshToken = await issueRefreshToken(isExistUser);
+
+  GamificationService.updateDailyStreak(String(isExistUser._id)).catch(console.error);
 
   return {
     accessToken,
@@ -55,7 +82,6 @@ const login = async (payload: AuthModel) => {
 const register = async (payload: IUser & { verificationToken?: string; confirmPassword?: string }) => {
   const { email: userEmail, verificationToken } = payload;
   
-  // FIX #4: Verify that email was verified via OTP before allowing registration
   if (!verificationToken) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
@@ -63,7 +89,6 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
     );
   }
 
-  // Check if verification token is valid
   const otpRecord = await OTPModel.findOne({
     email: userEmail,
     isVerified: true,
@@ -77,7 +102,6 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
     );
   }
 
-  // Check if verification token has expired
   if (
     !otpRecord.verificationTokenExpires ||
     new Date() > otpRecord.verificationTokenExpires
@@ -95,22 +119,13 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
   
   const { verificationToken: _, ...userPayload } = payload;
   const result = await User.create(userPayload);
-  
+
   // Clean up OTP record after successful registration
   await OTPModel.deleteOne({ email: userEmail });
-  
-  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } =
-    result;
-  const accessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
-    config.jwt.secret as Secret,
-    config.jwt.expires_in as string
-  );
-  const refreshToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
-    config.jwt.refresh_secret as Secret,
-    config.jwt.refresh_expires_in as string
-  );
+
+  const accessToken = issueAccessToken(result);
+  const refreshToken = await issueRefreshToken(result);
+
   return {
     accessToken,
     refreshToken,
@@ -118,9 +133,13 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
 };
 
 const refreshToken = async (token: string) => {
+  if (!token) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "No refresh token provided");
+  }
+
   let verifiedToken = null;
   try {
-    verifiedToken = JwtHalers.verifyToken(
+    verifiedToken = JwtHelpers.verifyToken(
       token,
       config.jwt.refresh_secret as Secret
     );
@@ -129,6 +148,7 @@ const refreshToken = async (token: string) => {
   }
 
   const { email: userEmail } = verifiedToken;
+  const jti = (verifiedToken as any).jti as string | undefined;
   const user = await User.findOne({ email: userEmail });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
@@ -141,16 +161,63 @@ const refreshToken = async (token: string) => {
     );
   }
 
-  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } =
-    user;
-  const newAccessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
-    config.jwt.secret as Secret,
-    config.jwt.expires_in as string
+  if (!jti) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid refresh token");
+  }
+
+  const session = await RefreshSession.findOne({ jti });
+  if (!session || session.revoked) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Invalid or expired refresh token"
+    );
+  }
+
+  // Reuse of an already-used token signals theft: revoke the family and bump tokenVersion.
+  if (session.used) {
+    await RefreshSession.updateMany({ userId: user._id }, { revoked: true });
+    await User.updateOne({ _id: user._id }, { $inc: { tokenVersion: 1 } });
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Refresh token reuse detected. Please sign in again."
+    );
+  }
+
+  // Atomically claim the token so only one concurrent request can rotate it.
+  const claimed = await RefreshSession.findOneAndUpdate(
+    { jti, used: false, revoked: false },
+    { used: true },
+    { new: true }
   );
+  if (!claimed) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Invalid or expired refresh token"
+    );
+  }
+
+  const accessToken = issueAccessToken(user);
+  const newRefreshToken = await issueRefreshToken(user);
   return {
-    accessToken: newAccessToken,
+    accessToken,
+    refreshToken: newRefreshToken,
   };
+};
+
+const logout = async (token?: string) => {
+  if (!token) return;
+  try {
+    const verified = JwtHelpers.verifyToken(
+      token,
+      config.jwt.refresh_secret as Secret
+    );
+    const jti = (verified as any).jti as string | undefined;
+    if (jti) {
+      await RefreshSession.updateOne({ jti }, { revoked: true });
+    }
+  } catch (error) {
+    // Ignore invalid tokens on logout; the cookie is cleared either way.
+  }
 };
 
 const googleLogin = async (payload: { token: string }) => {
@@ -172,10 +239,13 @@ const googleLogin = async (payload: { token: string }) => {
       throw new ApiError(httpStatus.BAD_REQUEST, "Invalid Google token");
     }
 
+    if (!payload_data.email_verified) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Google email is not verified");
+    }
+
     const { email, name: googleName, picture } = payload_data;
     let user = await User.findOne({ email });
 
-    // If user doesn't exist, create a new user
     if (!user) {
       const newUser: Partial<IUser> = {
         email: email as string,
@@ -195,20 +265,10 @@ const googleLogin = async (payload: { token: string }) => {
       user = await User.create(newUser);
     }
 
-    const { _id, role, subscriptionType, postsCount, name, tokenVersion } =
-      user;
-    const accessToken = JwtHalers.createToken(
-      { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
-      config.jwt.secret as Secret,
-      config.jwt.expires_in as string
-    );
-    const refreshTokenData = JwtHalers.createToken(
-      { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
-      config.jwt.refresh_secret as Secret,
-      config.jwt.refresh_expires_in as string
-    );
+    const accessToken = issueAccessToken(user);
+    const refreshTokenData = await issueRefreshToken(user);
 
-    GamificationService.updateDailyStreak(String(_id)).catch(console.error);
+    GamificationService.updateDailyStreak(String(user._id)).catch(console.error);
 
     return {
       accessToken,
@@ -218,7 +278,6 @@ const googleLogin = async (payload: { token: string }) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Google login error: ${errorMessage}`);
     
-    // If it's already an ApiError, re-throw it
     if (error instanceof ApiError) {
       throw error;
     }
@@ -257,10 +316,8 @@ const changePassword = async (userPayload: any, payload: any) => {
   } else {
     user.tokenVersion = 1;
   }
-
   await user.save();
 };
-
 const forgotPassword = async (email: string) => {
   if (!email) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email is required!");
@@ -270,7 +327,6 @@ const forgotPassword = async (email: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
   
-  // Send OTP using VerifyEmailService
   const result = await VerifyEmailService.VerifyEmail({
     email: user.email,
     name: user.name || "User",
@@ -293,7 +349,6 @@ const resetPassword = async (payload: {
     throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
   }
   
-  // Validate password strength using Zod schema's rules manually to return user-friendly errors
   const getPasswordError = (pwd: string) => {
     if (pwd.length < 8) return "Password must be at least 8 characters long";
     if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
@@ -312,7 +367,6 @@ const resetPassword = async (payload: {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
 
-  // Verify token against OTPModel
   const otpRecord = await OTPModel.findOne({
     email,
     isVerified: true,
@@ -336,25 +390,18 @@ const resetPassword = async (payload: {
     );
   }
 
-  // Update user password. Pre-save hook hashes it.
+  // Bump tokenVersion and revoke sessions so the reset invalidates old logins.
   user.password = password;
+  user.tokenVersion = (user.tokenVersion ?? 0) + 1;
   await user.save();
+  await RefreshSession.updateMany({ userId: user._id }, { revoked: true });
 
   // Clean up OTP record
   await OTPModel.deleteOne({ email });
 
-  // Generate JWT tokens for auto-login
-  const { _id, role, subscriptionType, name, postsCount } = user;
-  const accessToken = JwtHalers.createToken(
-    { _id, email: user.email, role, subscriptionType, name, postsCount },
-    config.jwt.secret as Secret,
-    config.jwt.expires_in as string
-  );
-  const refreshToken = JwtHalers.createToken(
-    { _id, email: user.email, role, subscriptionType, name, postsCount },
-    config.jwt.refresh_secret as Secret,
-    config.jwt.refresh_expires_in as string
-  );
+  // Generate JWT tokens for auto-login with the new tokenVersion.
+  const accessToken = issueAccessToken(user);
+  const refreshToken = await issueRefreshToken(user);
 
   return {
     accessToken,
@@ -366,6 +413,7 @@ export const AuthService = {
   login,
   register,
   refreshToken,
+  logout,
   googleLogin,
   changePassword,
   forgotPassword,

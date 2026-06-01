@@ -321,33 +321,33 @@ const TONES = [
     inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
   },
   {
+    label: "Whimsical",
+    emoji: "🌈",
+    activeClass: "bg-sky-500/20 text-sky-300 border-sky-500/60 shadow-sky-500/20",
+    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
+  },
+  {
+    label: "Dramatic",
+    emoji: "🎬",
+    activeClass: "bg-red-500/20 text-red-300 border-red-500/60 shadow-red-500/20",
+    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
+  },
+  {
     label: "Humorous",
     emoji: "😄",
     activeClass: "bg-yellow-500/20 text-yellow-300 border-yellow-500/60 shadow-yellow-500/20",
     inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
   },
   {
-    label: "Romantic",
-    emoji: "💕",
-    activeClass: "bg-pink-500/20 text-pink-300 border-pink-500/60 shadow-pink-500/20",
-    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
-  },
-  {
-    label: "Epic",
-    emoji: "⚔️",
+    label: "Suspenseful",
+    emoji: "😰",
     activeClass: "bg-orange-500/20 text-orange-300 border-orange-500/60 shadow-orange-500/20",
     inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
   },
   {
-    label: "Mysterious",
-    emoji: "🔮",
-    activeClass: "bg-purple-500/20 text-purple-300 border-purple-500/60 shadow-purple-500/20",
-    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
-  },
-  {
-    label: "Children's",
-    emoji: "🧸",
-    activeClass: "bg-green-500/20 text-green-300 border-green-500/60 shadow-green-500/20",
+    label: "Heartwarming",
+    emoji: "🥰",
+    activeClass: "bg-pink-500/20 text-pink-300 border-pink-500/60 shadow-pink-500/20",
     inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
   },
 ] as const;
@@ -409,10 +409,38 @@ const StoriesComponent = () => {
   }, []);
 
   const [stories, setStories] = useState<IStories[]>(
+    draft?.stories?.length ? draft.stories : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
     [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
   );
   
   const [loading, setLoading] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchFilter, setSearchFilter] = useState<string>("all");
+
+  const filteredStories = useMemo(() => {
+    if (!searchQuery.trim()) return stories;
+    
+    const query = searchQuery.toLowerCase();
+    
+    return stories.filter((story) => {
+      switch (searchFilter) {
+        case "title":
+          return story.title?.toLowerCase().includes(query);
+        case "content":
+          return story.content?.toLowerCase().includes(query);
+        case "genre":
+          return story.tag?.toLowerCase().includes(query);
+        case "all":
+        default:
+          return (
+            story.title?.toLowerCase().includes(query) ||
+            story.content?.toLowerCase().includes(query) ||
+            story.tag?.toLowerCase().includes(query)
+          );
+      }
+    });
+  }, [stories, searchQuery, searchFilter]);
+
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
   const login = isLoggedIn();
@@ -420,13 +448,13 @@ const StoriesComponent = () => {
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
- const [selectedGenre, setSelectedGenre] = useState<string>(
+  const [selectedGenre, setSelectedGenre] = useState<string>(
   draft?.genre
-    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "")
-    : "",
+    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
+    : "🧙 Fantasy",
 );
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "");
+  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
   const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(draft?.language || "English");
@@ -595,10 +623,10 @@ useEffect(() => {
           : data.prompt,
         wordLength:
           selectedLength === "short"
-            ? 150
+            ? 175
             : selectedLength === "long"
-            ? 500
-            : 250,
+            ? 800
+            : 450,
         language: selectedLanguage,
         tone: selectedTone || undefined,
       };
@@ -743,9 +771,9 @@ useEffect(() => {
           </h1>
 
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white">
-              <div className="relative">
-                <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white overflow-hidden">
+              <div className="relative w-full">
+                <form className="space-y-4 w-full" onSubmit={handleSubmit(onSubmit)}>
                   
                   {/* ── Genre chips ── */}
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -838,14 +866,14 @@ useEffect(() => {
                   </div>
 
                   {/* ── Prompt textarea ── */}
-                  <div className="relative">
+                  <div className="relative w-full">
                     <textarea
                       {...register("prompt")}
                       ref={(el) => {
                         register("prompt").ref(el);
                         inputRef.current = el;
                       }}
-                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-10 transition-colors duration-200 ${
+                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-12 transition-colors duration-200 box-border ${
                         isOverLimit
                           ? "ring-1 ring-red-500 rounded"
                           : isNearLimit
@@ -864,6 +892,16 @@ useEffect(() => {
                         }
                       }}
                     />
+                    {/* Character count display */}
+<div className={`flex justify-end mt-1 text-xs font-medium transition-colors duration-200 ${
+  isOverLimit
+    ? "text-red-500"
+    : isNearLimit
+    ? "text-yellow-500"
+    : "text-gray-400"
+}`}>
+  {textareaValue.length} / {MAX_PROMPT_LENGTH}
+</div>
 
                     {textareaValue.length > 0 && (
                       <button
@@ -1015,9 +1053,111 @@ useEffect(() => {
                       isDropdownOpen ? "rotate-180" : ""
                     }`}
                   >
-                    ▼
-                  </span>
-                </button>
+                    {lang.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Clear prompt button - next to language selector */}
+      {textareaValue.length > 0 && (
+        <button
+          type="button"
+          onClick={handleClearPrompt}
+          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200 border border-red-500/20"
+          aria-label={text.close}
+          title="Clear prompt"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear
+        </button>
+      )}
+    </div>
+
+    <div className="relative overflow-hidden">
+      <textarea
+  {...register("prompt")}
+  ref={(el) => {
+    register("prompt").ref(el);
+    inputRef.current = el;
+  }}
+        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-4 transition-colors duration-200 ${
+          isOverLimit
+            ? "ring-1 ring-red-500 rounded"
+            : isNearLimit
+            ? "ring-1 ring-yellow-400 rounded"
+            : ""
+        }`}
+        placeholder={text.promptPlaceholder}
+        value={textareaValue}
+        maxLength={MAX_PROMPT_LENGTH}
+        onChange={(e) => setTextareaValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            const form = e.currentTarget.closest("form");
+            if (form) form.requestSubmit();
+          }
+        }}
+        />
+
+
+
+      <button
+        type="button"
+        onClick={() => setIsRecentPromptsOpen(!isRecentPromptsOpen)}
+        className="absolute right-2 top-12 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2"
+        aria-label={text.recentPrompts}
+        title={text.recentPrompts}
+      >
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        {text.recentPrompts}
+      </button>
+
+      <div className="flex items-center justify-between mt-1 px-1">
+        {isOverLimit ? (
+          <p className="text-xs text-red-400 flex items-center gap-1">
+            <span>⚠</span> {text.characterLimit}
+          </p>
+        ) : isNearLimit ? (
+          <p className="text-xs text-yellow-400 flex items-center gap-1">
+            <span>⚠</span>{" "}
+            {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
+          </p>
+        ) : (
+          <span />
+        )}
+
+        <span
+          className={`text-xs tabular-nums ml-auto ${
+            isOverLimit
+              ? "text-red-400 font-medium"
+              : isNearLimit
+              ? "text-yellow-400"
+              : "text-gray-500"
+          }`}
+        >
+          {textareaValue.length} / {MAX_PROMPT_LENGTH}
+        </span>
+      </div>
+    </div>
 
                 {isDropdownOpen && (
                   <ul className="relative z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
@@ -1081,28 +1221,58 @@ useEffect(() => {
               <div><kbd>Ctrl + S</kbd> {text.publishStory}</div>
             </div>
 
-            <button
-              onClick={() => setShowHelpModal(false)}
-              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
+        <button
+        onClick={() => setShowHelpModal(false)}
+        className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
+      >
+        {text.close}
+      </button>
+        </div>
+      </div>
+      )}
+
+      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
+
+      {/* Search UI */}
+      {stories.length > 0 && (
+        <div className="mb-6 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-4 rounded-2xl">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search stories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <select
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              {text.close}
-            </button>
+              <option value="all">All Fields</option>
+              <option value="title">Title</option>
+              <option value="content">Content</option>
+              <option value="genre">Genre</option>
+            </select>
           </div>
+          {searchQuery && (
+            <div className="mt-2 text-sm text-slate-400">
+              Found {filteredStories.length} {filteredStories.length === 1 ? 'story' : 'stories'}
+            </div>
+          )}
         </div>
       )}
 
-      {loading && (
-        <StoryGeneratingAnimation onCancel={handleCancelGeneration} />
-      )}
       <StoriesViewComponent
-        stories={stories}
+        stories={filteredStories}
         isLogin={login}
         setStories={setStories}
         onPublishSuccess={handlePublishSuccess}
         isLoading={loading}
       />
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
-
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.15)] max-w-md w-full p-6 transform transition-all text-slate-900 dark:bg-[#0f172a] dark:border-white/10 dark:text-white dark:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
