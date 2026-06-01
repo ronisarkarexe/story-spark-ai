@@ -1,9 +1,9 @@
 import { FC, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaqItem } from "../help_center.utils";
+import { FAQItem } from "../help_center.utils";
 
 interface FAQAccordionProps {
-  items: FaqItem[];
+  items: FAQItem[];
 }
 
 const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
@@ -49,7 +49,7 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
 
           return (
             <motion.div
-              key={faq.id}
+              key={index}
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

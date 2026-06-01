@@ -1,10 +1,16 @@
 import React, { useState, useMemo } from "react";
 import { useGetPostListsQuery } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
-import { Topic } from "../../../models/post";
+import { Topic, Post } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
 import ImageFallback from "../../ImageFallback";
-ImageFallback
+
+interface FilterStats {
+  total: number;
+  published: number;
+  drafts: number;
+  featured: number;
+}
 const PostListsComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [size, setSize] = useState<number>(10);
@@ -366,41 +372,39 @@ const PostListsComponent: React.FC = () => {
                     <div className="flex flex-wrap gap-1.5 max-w-[200px]">
                       {getTopicBadges(post.topic)}
                     </div>
-                    <div className="text-sm">
-                      <p className="font-medium text-gray-300">{post.author.name}</p>
-                      <p className="text-xs text-gray-500">{post.author.email}</p>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(post.isPublished, post.isFeaturedPost)}
                     </div>
-                  </div>
-
-                  {/* Status Badges */}
-                  <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
-                    {getStatusBadge(post.isPublished, post.isFeaturedPost)}
-                    {post.isPublished && !post.isFeaturedPost && (
-                      <div className="text-xs px-2.5 py-1.5 rounded-full text-gray-400 bg-gray-800/40">
-                        {formatDate(post.createdAt)}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Stats */}
-                  <div className="hidden lg:flex items-center gap-6 flex-shrink-0 py-2">
-                    <div className="text-center group/stat">
-                      <div className="flex items-center justify-center gap-1.5 text-gray-300 group-hover/stat:text-rose-400 transition-colors">
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-1.5 text-gray-300">
                         <i className="fas fa-heart text-sm"></i>
                         <span className="text-sm font-semibold">{post.likesCount}</span>
                       </div>
-                    </div>
-                    <div className="text-center group/stat">
-                      <div className="flex items-center justify-center gap-1.5 text-gray-300 group-hover/stat:text-blue-400 transition-colors">
+                      <div className="flex items-center gap-1.5 text-gray-300">
                         <i className="fas fa-comment text-sm"></i>
                         <span className="text-sm font-semibold">{post.commentsCount}</span>
                       </div>
-                    </div>
-                    <div className="text-center group/stat">
-                      <div className="flex items-center justify-center gap-1.5 text-gray-300 group-hover/stat:text-emerald-400 transition-colors">
+                      <div className="flex items-center gap-1.5 text-gray-300">
                         <i className="fas fa-eye text-sm"></i>
                         <span className="text-sm font-semibold">{post.viewsCount}</span>
                       </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                    {formatDate(post.createdAt)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <button className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-all flex items-center justify-center">
+                        <i className="fas fa-edit text-xs"></i>
+                      </button>
+                      <button className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-all flex items-center justify-center">
+                        <i className="fas fa-trash-alt text-xs"></i>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -408,62 +412,6 @@ const PostListsComponent: React.FC = () => {
             )}
           </tbody>
         </table>
-      </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 flex-shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-gray-800/40">
-                    <button 
-                      className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-500/40 hover:text-blue-300 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200 hover:scale-110 active:scale-95"
-                      title="Edit post"
-                      aria-label="Edit post"
-                    >
-                      <i className="fas fa-edit text-sm"></i>
-                    </button>
-                    <button 
-                      className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-300 hover:shadow-lg hover:shadow-rose-500/20 transition-all duration-200 hover:scale-110 active:scale-95"
-                      title="Delete post"
-                      aria-label="Delete post"
-                    >
-                      <i className="fas fa-trash-alt text-sm"></i>
-                    </button>
-                    <button 
-                      className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-gray-700/20 text-gray-400 border border-gray-700/40 hover:bg-gray-700/40 hover:border-gray-600/60 hover:text-gray-300 hover:shadow-lg hover:shadow-gray-500/10 transition-all duration-200 hover:scale-110 active:scale-95"
-                      title="More actions"
-                      aria-label="More actions"
-                    >
-                      <i className="fas fa-ellipsis-v text-sm"></i>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Mobile Stats Row */}
-                <div className="lg:hidden mt-4 pt-4 border-t border-gray-800/40 flex justify-around">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-gray-300 text-sm">
-                      <i className="fas fa-heart text-xs"></i>
-                      <span className="font-semibold">{post.likesCount}</span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">Likes</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-gray-300 text-sm">
-                      <i className="fas fa-comment text-xs"></i>
-                      <span className="font-semibold">{post.commentsCount}</span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">Comments</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-gray-300 text-sm">
-                      <i className="fas fa-eye text-xs"></i>
-                      <span className="font-semibold">{post.viewsCount}</span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">Views</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Pagination Section */}

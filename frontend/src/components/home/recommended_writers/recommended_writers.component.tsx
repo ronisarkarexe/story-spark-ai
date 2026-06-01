@@ -62,8 +62,6 @@ const RecommendedWritersComponent = () => {
             <div key={writer.id} className="flex items-center justify-between">
               <div className="flex items-center">
                 <ImageFallback
-                  className="h-10 w-10 rounded-full"
-                <img
                   className="h-10 w-10 rounded-full object-cover"
                   src={writer.image}
                   alt={writer.name}

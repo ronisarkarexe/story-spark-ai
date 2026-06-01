@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { HELP_SECTIONS } from "../help_center.utils";
+import { HELP_CATEGORIES } from "../help_center.utils";
 
 const HelpSidebar = () => {
   const [activeSection, setActiveSection] = useState<string>(
-    HELP_SECTIONS[0]?.id ?? "help-categories"
+    HELP_CATEGORIES[0]?.id ?? "help-categories"
   );
 
   useEffect(() => {
-    const sectionIds = HELP_SECTIONS.map((section) => section.id);
+    const sectionIds = HELP_CATEGORIES.map((section) => section.id);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -85,7 +85,7 @@ const HelpSidebar = () => {
               </div>
 
               <div className="relative space-y-3">
-                {HELP_SECTIONS.map((section) => {
+                {HELP_CATEGORIES.map((section) => {
                   const isActive = activeSection === section.id;
                   return (
                     <button
@@ -106,7 +106,7 @@ const HelpSidebar = () => {
                       )}
                       <div className="relative z-10 flex-1 text-left">
                         <p className={`font-semibold text-sm transition-colors duration-300 ${isActive ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
-                          {section.label}
+                          {section.title}
                         </p>
                       </div>
                       <div className="relative z-10">
@@ -151,7 +151,7 @@ const HelpSidebar = () => {
         aria-label="Help center sections"
       >
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
-          {HELP_SECTIONS.map((section) => (
+          {HELP_CATEGORIES.map((section) => (
             <button
               key={section.id}
               type="button"
@@ -163,7 +163,7 @@ const HelpSidebar = () => {
               }`}
               aria-current={activeSection === section.id ? "true" : undefined}
             >
-              {section.label}
+              {section.title}
             </button>
           ))}
         </div>

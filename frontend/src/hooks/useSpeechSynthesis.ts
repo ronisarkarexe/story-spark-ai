@@ -105,9 +105,9 @@ const buildWordRanges = (inputText: string): WordRange[] => {
 };
 
 const findVoiceByGender = (
-  voices: SpeechSynthesisVoice[],
+  voices: SpeechVoiceOption[],
   gender: "female" | "male"
-): SpeechSynthesisVoice | undefined => {
+): SpeechVoiceOption | undefined => {
   const genderMatchers: Record<"female" | "male", RegExp> = {
     female: /(female|zira|samantha|victoria|siri female|google uk english female|google us english female)/i,
     male: /(male|david|guy|alex|siri male|google uk english male|google us english male)/i,
@@ -216,7 +216,6 @@ export const useSpeechSynthesis = (
 
   const [isSupported, setIsSupported] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -330,11 +329,6 @@ export const useSpeechSynthesis = (
       utterance.lang = browserVoice.lang;
     }
 
-    const selectedVoice = findVoiceByGender(voices, voiceGender);
-
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-    }
 
     utterance.onstart = () => {
       if (sessionRef.current !== sessionId) {
@@ -387,18 +381,21 @@ export const useSpeechSynthesis = (
 
     utteranceRef.current = utterance;
     speechSynthesis.speak(utterance);
-  }, [clearUtterance, isReady, isSupported, rateState, text, totalWords, voiceGender, wordRanges, voices, pitchState, volumeState]);
   }, [
     clearUtterance,
     isReady,
     isSupported,
     rateState,
+    pitchState,
+    volumeState,
     selectedLanguage,
     selectedVoice,
     selectedVoiceId,
     text,
     totalWords,
+    voiceGender,
     wordRanges,
+    voices,
   ]);
 
   const pause = useCallback(() => {
@@ -560,9 +557,7 @@ export const useSpeechSynthesis = (
         return;
       }
 
-      const nextVoices = speechSynthesis.getVoices();
-      setVoices(nextVoices);
-      setIsReady(nextVoices.length > 0);
+
       const availableVoices = speechSynthesis.getVoices().map(mapVoiceOption);
       setVoices(availableVoices);
       setIsReady(availableVoices.length > 0);

@@ -20,202 +20,36 @@ import StoryTradingCard from "../cards/StoryTradingCard";
 import CardCollection from "../cards/CardCollection";
 import StoryCoverImage from "./StoryCoverImage";
 
-ImageFallback
+type StorySentenceSegment = {
+  id: string;
+  text: string;
+  startWordIndex: number;
+  endWordIndex: number;
+};
+
+const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+  if (!content.trim()) return [];
+  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
+  const segments: StorySentenceSegment[] = [];
+  let wordCursor = 0;
+  sentenceMatches.forEach((sentence, index) => {
+    const trimmedSentence = sentence.trim();
+    if (!trimmedSentence) return;
+    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
+    const startWordIndex = wordCursor;
+    const endWordIndex = wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
+    segments.push({ id: `${index}-${startWordIndex}-${endWordIndex}`, text: sentence, startWordIndex, endWordIndex });
+    wordCursor += wordsInSentence;
+  });
+  return segments;
+};
+
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
 import { useUpdatePostMutation } from "../../redux/apis/post.api";
 
-// ─── StoryCoverImage ────────────────────────────────────────────────────────
-
-const GENRE_THEMES: Record<string, { gradient: string; accent: string; icon: string }> = {
-  fantasy:    { gradient: "135deg, #667eea 0%, #764ba2 50%, #f093fb 100%", accent: "#c084fc", icon: "✦" },
-  romance:    { gradient: "135deg, #f857a6 0%, #ff5858 50%, #ffb347 100%", accent: "#fb7185", icon: "♡" },
-  horror:     { gradient: "135deg, #0f0c29 0%, #302b63 50%, #24243e 100%", accent: "#a855f7", icon: "☽" },
-  thriller:   { gradient: "135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%", accent: "#38bdf8", icon: "◈" },
-  mystery:    { gradient: "135deg, #2c3e50 0%, #3498db 50%, #2980b9 100%", accent: "#60a5fa", icon: "◎" },
-  adventure:  { gradient: "135deg, #f7971e 0%, #ffd200 50%, #21d4fd 100%", accent: "#fbbf24", icon: "⊕" },
-  scifi:      { gradient: "135deg, #0f2027 0%, #203a43 50%, #2c5364 100%", accent: "#22d3ee", icon: "◇" },
-  "sci-fi":   { gradient: "135deg, #0f2027 0%, #203a43 50%, #2c5364 100%", accent: "#22d3ee", icon: "◇" },
-  comedy:     { gradient: "135deg, #fddb92 0%, #d1fdff 50%, #f5af19 100%", accent: "#f59e0b", icon: "◉" },
-  drama:      { gradient: "135deg, #8e2de2 0%, #4a00e0 50%, #3b82f6 100%", accent: "#a78bfa", icon: "✧" },
-  historical: { gradient: "135deg, #b79891 0%, #94716b 50%, #6b4226 100%", accent: "#d4a574", icon: "⬡" },
-  default:    { gradient: "135deg, #667eea 0%, #764ba2 50%, #4facfe 100%", accent: "#a78bfa", icon: "✦" },
-};
-
-function getGenreTheme(tag?: string) {
-  const key = (tag || "default").toLowerCase().trim();
-  return GENRE_THEMES[key] ?? GENRE_THEMES.default;
-}
-
-function getInitials(title?: string): string {
-  if (!title || !title.trim()) return "?";
-  const words = title.trim().split(/\s+/);
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return words.slice(0, 2).map((w) => w[0] ?? "").join("").toUpperCase();
-}
-
-interface StoryCoverImageProps {
-  title?: string;
-  tag?: string;
-  imageUrl?: string;
-  size?: "full" | "thumb";
-  className?: string;
-  style?: React.CSSProperties;
-}
-
-const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
-  title = "",
-  tag = "default",
-  imageUrl = "",
-  size = "full",
-  className = "",
-  style = {},
-}) => {
-  const theme = getGenreTheme(tag);
-  const initials = getInitials(title);
-
-  // Fallback high-fidelity asset image link requested in issue #1246 description
-  const defaultPlaceholder = "https://images.unsplash.com/photo-11455390582262-044cdead277a?w=600&auto=format&fit=crop&q=80";
-  const finalImageSrc = imageUrl && imageUrl.trim() !== "" && !imageUrl.includes("placeholder.com") ? imageUrl : defaultPlaceholder;
-
-  if (size === "thumb") {
-    return (
-      <div
-        className={className}
-        style={{
-          width: "100%",
-          height: "100%",
-          borderRadius: "50%",
-          background: `linear-gradient(${theme.gradient})`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "1.1rem",
-          fontWeight: 700,
-          color: "#fff",
-          letterSpacing: "0.05em",
-          textShadow: "0 1px 4px rgba(0,0,0,0.4)",
-          userSelect: "none",
-          ...style,
-        }}
-      >
-        {initials}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={className}
-      style={{
-        width: "100%",
-        height: "100%",
-        minHeight: "192px",
-        position: "relative",
-        overflow: "hidden",
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url(${finalImageSrc})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        borderRadius: "inherit",
-        ...style,
-      }}
-    >
-      {/* Decorative orbs */}
-      <div style={{
-        position: "absolute", top: "-30%", right: "-15%",
-        width: "60%", height: "120%",
-        background: "rgba(255,255,255,0.08)",
-        borderRadius: "50%",
-        pointerEvents: "none",
-      }} />
-      <div style={{
-        position: "absolute", bottom: "-20%", left: "-10%",
-        width: "45%", height: "80%",
-        background: "rgba(0,0,0,0.12)",
-        borderRadius: "50%",
-        pointerEvents: "none",
-      }} />
-
-      {/* Accent glyph */}
-      <div style={{
-        position: "absolute", top: "12px", right: "16px",
-        fontSize: "3.5rem",
-        color: theme.accent,
-        opacity: 0.35,
-        lineHeight: 1,
-        userSelect: "none",
-        pointerEvents: "none",
-        fontWeight: 300,
-      }}>
-        {theme.icon}
-      </div>
-
-      {/* Genre pill */}
-      <div style={{
-        position: "absolute", top: "14px", left: "14px",
-        background: "rgba(0,0,0,0.4)",
-        backdropFilter: "blur(6px)",
-        color: "#fff",
-        fontSize: "0.65rem",
-        fontWeight: 700,
-        letterSpacing: "0.12em",
-        textTransform: "uppercase",
-        padding: "3px 10px",
-        borderRadius: "999px",
-        border: `1px solid ${theme.accent}55`,
-        userSelect: "none",
-      }}>
-        {tag}
-      </div>
-
-      {/* Large faded initials centered if background asset image fails to show up */}
-      {!imageUrl && (
-        <div style={{
-          position: "absolute", inset: 0,
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <div style={{
-            fontSize: "5rem",
-            fontWeight: 900,
-            color: "rgba(255,255,255,0.12)",
-            letterSpacing: "-0.04em",
-            lineHeight: 1,
-            userSelect: "none",
-            pointerEvents: "none",
-          }}>
-            {initials}
-          </div>
-        </div>
-      )}
-
-      {/* Title at bottom */}
-      <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0,
-        background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)",
-        padding: "40px 14px 14px",
-      }}>
-        <p style={{
-          margin: 0,
-          color: "#fff",
-          fontSize: "0.95rem",
-          fontWeight: 700,
-          lineHeight: 1.3,
-          textShadow: "0 2px 8px rgba(0,0,0,0.8)",
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-        }}>
-          {title}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-// ─── Main Component ─────────────────────────────────────────────────────────
 
 import ImageFallback from "../ImageFallback";
 export interface IStories {
@@ -225,17 +59,22 @@ export interface IStories {
   tag: string;
   imageURL: string;
   language?: string;
-import React from "react";
-import { Post } from "../../models/post";
-import { useNavigate } from "react-router-dom";
-
-interface IRelatedStoriesComponentProps {
-  posts: Post[],
-  currentPostId: string;
+  genre?: string;
+  enhancedPrompt?: string;
 }
 
-const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
-  posts, currentPostId,
+const StoriesViewComponent: React.FC<{
+  stories: IStories[];
+  setStories: React.Dispatch<React.SetStateAction<IStories[]>>;
+  isLogin?: boolean;
+  isLoading?: boolean;
+  onPublishSuccess?: () => void;
+}> = ({
+  stories,
+  setStories,
+  isLogin,
+  isLoading,
+  onPublishSuccess,
 }) => {
   const location = useLocation();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
@@ -369,7 +208,7 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
       if (selectedStory.content === lastSavedContentRef.current) return;
       if (isSavingRef.current) return;
       isSavingRef.current = true;
-      const post: IPost = { ...selectedStory, topic: selectTopics, isPublished: false };
+      const post: any = { ...selectedStory, topic: selectTopics, isPublished: false };
       try {
         if (savedPostIdRef.current) {
           await updatePost({ id: savedPostIdRef.current, data: post as unknown as Record<string, unknown> }).unwrap();
@@ -620,7 +459,7 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
     if (!isLogin) { toast.error("Please login to publish the story."); return; }
     if (!selectedStory) { toast.error("No story available. Please generate a story first."); return; }
     if (selectTopics.length < 2) { toast.error("Please select at least 2 topics."); return; }
-    const post: IPost = { ...selectedStory, topic: selectTopics, isPublished: true };
+    const post: any = { ...selectedStory, topic: selectTopics, isPublished: true };
     setLoading(true);
     try {
       if (savedPostIdRef.current) {
@@ -757,7 +596,7 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
                 <button type="button" className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleExportTXT} disabled={!selectedStory}>
                   📄 Export TXT
                 </button>
-                <button type="button" className="rounded-lg px-4 py-2 bg-amber-700 text-slate-200 font-semibold cursor-pointer hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleExportEPUB} disabled={!selectedStory}>
+                <button type="button" className="rounded-lg px-4 py-2 bg-amber-700 text-slate-200 font-semibold cursor-pointer hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => toast.error("EPUB export is not available yet")} disabled={!selectedStory}>
                   📚 Export EPUB
                 </button>
                 <button type="button" className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowWorldMap(true)} disabled={!selectedStory}>
@@ -791,70 +630,8 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
               <p className="break-words whitespace-pre-wrap">
                 {sentenceSegments.length > 0 ? (
                   sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence =
-                      isNarrationActive &&
-                      narrationWordIndex >= segment.startWordIndex &&
-                      narrationWordIndex <= segment.endWordIndex;
-
-                    return (
-                      <span
-                        key={segment.id}
-                        className={
-                          isActiveSentence
-                            ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-100 ring-1 ring-indigo-400/30"
-                            : undefined
-                        }
-                      >
-                        {segment.text}
-                      </span>
-                    );
-                  })
-                ) : (
-                  selectedStory.content
-                )}
-              </p>
-            </div>
-
-            <div className="relative z-10 mt-6">
-              <AudioPlayer
-                ref={audioPlayerRef}
-                text={selectedStory.content}
-                title={selectedStory.title}
-                onWordIndexChange={setNarrationWordIndex}
-                onPlaybackStateChange={setNarrationState}
-    <div className="grid grid-cols-2 gap-6">
-      {filteredPosts.length > 0 ? (
-        filteredPosts.map((post: Post) => (
-          <div
-            onClick={() => navigate(`/post/${post._id}`)}
-            key={post._id}
-            className="cursor-pointer bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-2 hover:border-blue-500/40 hover:bg-slate-800/80 transition-all duration-300 overflow-hidden group flex flex-col h-full"
-          >
-            <div className="relative overflow-hidden">
-              <img
-                src={post.imageURL}
-                alt="Related Story"
-                className="w-full h-40 object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 pointer-events-none"></div>
-            </div>
-
-            {selectedStory.enhancedPrompt && (
-              <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
-                <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
-                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
-                </h4>
-                <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">{selectedStory.enhancedPrompt}</p>
-              </div>
-            )}
-
-            <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
-              <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
                     const isActiveSentence = isNarrationActive && narrationWordIndex >= segment.startWordIndex && narrationWordIndex <= segment.endWordIndex;
                     
-                    // Split the sentence text into word tokens, preserving whitespace
                     const rawParts = segment.text.split(/(\s+)/);
                     let wordOffset = 0;
 
@@ -928,6 +705,20 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
                     });
                   })()
                 )}
+              </p>
+            </div>
+
+            <div className="relative z-10 mt-6">
+              <AudioPlayer ref={audioPlayerRef} text={selectedStory.content} title={selectedStory.title} onWordIndexChange={setNarrationWordIndex} onPlaybackStateChange={setNarrationState} />
+            </div>
+            <div className="mt-6"><ContinueStoryButton /></div>
+
+            {selectedStory.enhancedPrompt && (
+              <div className="mt-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
+                <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
+                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
+                </h4>
+                <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">{selectedStory.enhancedPrompt}</p>
               </div>
             )}
           </div>
@@ -973,12 +764,11 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
               </div>
             </div>
           </div>
-        ))
-      ) : (
-        <p className="text-center text-slate-500 col-span-2 py-8">No related stories found.</p>
-      )}
+        </div>
+      </div>
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };
 
-export default RelatedStoriesComponent;
+export default StoriesViewComponent;

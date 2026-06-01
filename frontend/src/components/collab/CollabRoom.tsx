@@ -27,7 +27,6 @@ interface Room {
   story: StoryChunk[];
   createdAt: Date;
 }
-import { useParams, useNavigate } from "react-router-dom";
 
 /**
  * Collab rooms required Socket.IO to `BACKEND_URL/collab`. That is disabled in the
@@ -41,6 +40,7 @@ export default function CollabRoom() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newText, setNewText] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const user = getUserInfo();
   
   // FIX: Persistent reference holder for the custom workspace namespace connection
@@ -61,7 +61,7 @@ export default function CollabRoom() {
       }
 
       // Connect to collab namespace
-      const collabSocket = socket.io.socket("/collab");
+      const collabSocket = (socket as any).io.socket("/collab");
 
       // Request room info
       collabSocket.emit("collab:get_room", { roomId }, (response: any) => {
@@ -109,9 +109,9 @@ export default function CollabRoom() {
   const handleAddText = () => {
     if (!newText.trim() || !user) return;
 
-    const socket = getSocketIo();
+    const socket = connectSocket();
     if (socket) {
-      socket.io.socket("/collab").emit("collab:add_text", {
+      (socket as any).io.socket("/collab").emit("collab:add_text", {
         roomId,
         userId: user.userId,
         text: newText,
@@ -121,9 +121,9 @@ export default function CollabRoom() {
   };
 
   const handleAIContinue = () => {
-    const socket = getSocketIo();
+    const socket = connectSocket();
     if (socket) {
-      socket.io.socket("/collab").emit("collab:ai_continue", { roomId });
+      (socket as any).io.socket("/collab").emit("collab:ai_continue", { roomId });
     }
   };
 
