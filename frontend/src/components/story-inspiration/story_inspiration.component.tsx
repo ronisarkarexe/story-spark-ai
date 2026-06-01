@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import StoryInspirationCard from "./story_inspiration_card.component";
 import { inspirationData } from "./inspirationData";
+import { useScrollRevealBatch } from "../../hooks/useScrollReveal";
 
 const StoryInspirationComponent: React.FC = () => {
   const navigate = useNavigate();
@@ -12,6 +13,8 @@ const StoryInspirationComponent: React.FC = () => {
 
   const [selectedGenre, setSelectedGenre] =
     useState<string>("All");
+
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const genres = [
     "All",
@@ -55,6 +58,8 @@ const StoryInspirationComponent: React.FC = () => {
 
       return matchesGenre && matchesSearch;
     });
+
+  useScrollRevealBatch(gridRef, { selector: '.story-card-reveal' }, [filteredStories]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f5f7ff] dark:bg-[#050816] text-slate-900 dark:text-white transition-colors duration-300">
@@ -426,6 +431,7 @@ const StoryInspirationComponent: React.FC = () => {
         {filteredStories.length > 0 ? (
           <motion.div
             layout
+            ref={gridRef}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             {filteredStories.map((story) => (

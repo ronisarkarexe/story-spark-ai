@@ -8,6 +8,13 @@ import {
     Lightbulb,
     FileText,
     ArrowLeft,
+    LucideIcon,
+    MessageCircle,
+    GitPullRequestArrow,
+    Code2,
+    Accessibility,
+    Bug,
+    HeartHandshake
 } from "lucide-react";
 
 type GuidelineSection = {
@@ -117,7 +124,7 @@ const workflowSteps = [
 ];
 
 const Guidelines = () => {
-
+    return <></>;
 };
 
 export default Guidelines;
