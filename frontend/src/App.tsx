@@ -6,6 +6,10 @@ import WritingAssistantComponent from "./components/writing-assistant/writing_as
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
 import StoriesComponent from "./components/stories/stories.component";
+import BranchingStory from "./components/stories/BranchingStory";
+import SimpleProtectedRoute from "./components/ProtectedRoute";
+import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import LoginComponent from "./components/login/login.component";
@@ -42,9 +46,7 @@ import TemplatesComponent from "./components/templates/templates.component";
 import CommunityComponent from "./components/community/community.component";
 import ResourcesListComponent from "./components/community/resources_list.component";
 import ResourceDetailComponent from "./components/community/resource_detail.component";
-import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import ContributorsComponent from "./components/footer/contributors";
-import BranchingStory from "./components/stories/BranchingStory";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import StoryWorkspace from "./components/story/StoryWorkspace";
@@ -78,7 +80,7 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <>
-        <MagicCursorComponent />
+        <ScrollToTopButton />
         <ScrollToTop />
         <RootLayout>
           <Outlet />
@@ -90,10 +92,9 @@ const router = createBrowserRouter([
       { path: "templates", element: <TemplatesComponent /> },
       { path: "writing-assistant", element: <WritingAssistantComponent /> },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
-      { path: "stories", element: <StoriesComponent /> },
-      { path: "story-workspace", element: <StoryWorkspace /> },
       { path: "login", element: <LoginComponent /> },
       { path: "signup", element: <SignUpComponent /> },
+      { path: "forgot-password", element: <ForgotPasswordComponent /> },
       { path: "pricing", element: <PricingComponent /> },
       { path: "post/:id", element: <PostDetailsComponent /> },
       { path: "help", element: <HelpCenterComponent /> },
@@ -120,6 +121,30 @@ const router = createBrowserRouter([
           { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
         ],
       },
+      {
+        path: "stories",
+        element: (
+          <SimpleProtectedRoute>
+            <StoriesComponent />
+          </SimpleProtectedRoute>
+        ),
+      },
+      {
+        path: "branching-story",
+        element: (
+          <SimpleProtectedRoute>
+            <BranchingStory />
+          </SimpleProtectedRoute>
+        ),
+      },
+      {
+        path: "story-workspace",
+        element: (
+          <SimpleProtectedRoute>
+            <StoryWorkspace />
+          </SimpleProtectedRoute>
+        ),
+      },
       { path: "*", element: <NotFoundComponent /> },
     ],
   },
@@ -145,7 +170,10 @@ const router = createBrowserRouter([
           { path: "users", element: <UserComponent /> },
           {
             element: <ProtectedRoute allowedRoles={[USER_ROLE.USER, USER_ROLE.WRITER]} />,
-            children: [{ path: "settings", element: <SettingComponent /> }],
+            children: [
+              { path: "settings", element: <SettingComponent /> },
+              { path: "published-stories", element: <PublishedStoriesComponent /> },
+            ],
           },
           {
             element: <ProtectedRoute allowedRoles={[USER_ROLE.WRITER]} />,

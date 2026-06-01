@@ -15,6 +15,7 @@ import PostCommentComponent from "./post.comment.component";
 
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
+import ImageFallback from "../ImageFallback";
 import BookmarkButton from "../BookmarkButton";
 import AudioPlayer from "../AudioPlayer";
 
@@ -31,6 +32,7 @@ import {
 import { toast } from "react-hot-toast";
 
 import { FaXTwitter } from "react-icons/fa6";
+
 
 interface IStoryVersion {
   _id: string;
@@ -52,18 +54,32 @@ const PostDetailsComponent = () => {
   const { data: post, isLoading } = useGetPostByIdQuery(id || "");
 
   const tag = post?.tag;
-  const { data: relatedPost } = useGetPostByTagQuery({
-    tag: tag || "",
-    excludeId: post?._id || "",
-  });
 
+  const { data: relatedPost } = useGetPostByTagQuery(
+    {
+      tag: tag || "",
+      excludeId: post?._id || "",
+    },
+    {
+      skip: !tag,
+    }
+  );
+  
+
+  console.log("Current Post:", post);
+  console.log("Tag:", tag);
+  console.log(
+  "Related Posts Full Data:",
+  JSON.stringify(relatedPost, null, 2)
+);
+  
   const [toggleReaction] = useToggleReactionMutation();
   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
   const currentUser = getUserInfo();
 
   const authorId = post?.author?._id;
   const isOwner = Boolean(
-    currentUser?.email && post?.author?.email === currentUser.email
+    currentUser?.userId && authorId === currentUser.userId
   );
 
   const { data: followData } = useGetFollowStatusQuery(authorId || "", {
@@ -156,14 +172,12 @@ const PostDetailsComponent = () => {
   const hasUserReacted = post?.reactions?.some((r) => {
     const userId = r.userId;
 
-    const email =
-      typeof userId === "object" &&
-      userId !== null &&
-      "email" in userId
-        ? userId.email
-        : undefined;
+    const reactorId =
+      typeof userId === "object" && userId !== null && "_id" in userId
+        ? userId._id
+        : userId;
 
-    return email === currentUser?.email;
+    return Boolean(currentUser?.userId) && reactorId === currentUser?.userId;
   });
 
   const handleTwitterShare = () => {
@@ -349,9 +363,9 @@ const PostDetailsComponent = () => {
                 )}
 
                 <div className="mb-12">
-                  <img
+                  <ImageFallback
                     src={post?.imageURL}
-                    alt={post?.title}
+                    alt={post?.title || "Story image"}
                     className="w-full h-[400px] object-cover rounded-lg shadow-md"
                   />
                 </div>

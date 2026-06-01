@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import ImageFallback from "../ImageFallback";
+ImageFallback
 export interface StoryInspiration {
   id: string;
   title: string;
@@ -92,13 +93,10 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
       {/* Zoom-in Card Cover Image */}
       <div className="relative h-44 w-full overflow-hidden bg-gray-100 dark:bg-[#0A0E17]">
         <div className="absolute inset-0 bg-gradient-to-t from-gray-100 via-gray-100/50 to-transparent z-10 pointer-events-none dark:from-[#0B0F19] dark:via-[#0B0F19]/50 dark:to-transparent" />
-        <img
-          src={image}
-          alt={title}
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-          className="motion-image w-full h-full object-cover"
+        <ImageFallback
+            src={image}
+            alt={title}
+            className="motion-image w-full h-full object-cover"
         />
         
         {/* Genre tag */}

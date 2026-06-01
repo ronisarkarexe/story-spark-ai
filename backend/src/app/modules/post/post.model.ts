@@ -41,5 +41,25 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
 PostSchema.index({ author: 1, publishedAt: -1 });
 PostSchema.index({ author: 1, createdAt: -1 });
 PostSchema.index({ author: 1, emotions: 1 });
+PostSchema.index({
+  isPublished: 1,
+  isDeleted: 1,
+  likesCount: -1,
+  viewsCount: -1,
+});
+PostSchema.index({
+  isPublished: 1,
+  isDeleted: 1,
+  genre: 1,
+  likesCount: -1,
+  viewsCount: -1,
+});
+PostSchema.index({
+  isPublished: 1,
+  isDeleted: 1,
+  emotions: 1,
+  likesCount: -1,
+  viewsCount: -1,
+});
 
 export const Post = model<IPost, PostModel>("Post", PostSchema);

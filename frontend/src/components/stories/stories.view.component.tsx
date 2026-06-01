@@ -52,6 +52,7 @@ function getInitials(title?: string): string {
 interface StoryCoverImageProps {
   title?: string;
   tag?: string;
+  imageUrl?: string;
   size?: "full" | "thumb";
   className?: string;
   style?: React.CSSProperties;
@@ -60,12 +61,22 @@ interface StoryCoverImageProps {
 const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
   title = "",
   tag = "default",
+  imageUrl = "",
   size = "full",
   className = "",
   style = {},
 }) => {
   const theme = getGenreTheme(tag);
   const initials = getInitials(title);
+  const cleanImageUrl = imageUrl.trim();
+  const hasImageUrl = Boolean(cleanImageUrl) && !cleanImageUrl.includes("placeholder.com");
+  const imageBackground = hasImageUrl
+    ? {
+        backgroundImage: `linear-gradient(rgba(15,23,42,0.1), rgba(15,23,42,0.42)), url(${cleanImageUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : { background: `linear-gradient(${theme.gradient})` };
 
   if (size === "thumb") {
     return (
@@ -75,7 +86,7 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
           width: "100%",
           height: "100%",
           borderRadius: "50%",
-          background: `linear-gradient(${theme.gradient})`,
+          ...imageBackground,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -88,7 +99,7 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
           ...style,
         }}
       >
-        {initials}
+        {!hasImageUrl && initials}
       </div>
     );
   }
@@ -102,7 +113,7 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
         minHeight: "192px",
         position: "relative",
         overflow: "hidden",
-        background: `linear-gradient(${theme.gradient})`,
+        ...imageBackground,
         borderRadius: "inherit",
         ...style,
       }}
@@ -169,7 +180,7 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
           userSelect: "none",
           pointerEvents: "none",
         }}>
-          {initials}
+          {!hasImageUrl && initials}
         </div>
       </div>
 
@@ -631,6 +642,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                     <StoryCoverImage
                       title={story.title}
                       tag={story.tag}
+                      imageUrl={story.imageURL}
                       size="thumb"
                       style={{ width: "100%", height: "100%" }}
                     />
@@ -850,6 +862,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                 <StoryCoverImage
                   title={selectedStory.title}
                   tag={selectedStory.tag}
+                  imageUrl={selectedStory.imageURL}
                   className="transition-transform duration-500 group-hover:scale-105"
                   style={{ width: "100%", height: "100%", borderRadius: "0.75rem" }}
                 />

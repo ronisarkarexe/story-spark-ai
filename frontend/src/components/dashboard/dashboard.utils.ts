@@ -21,6 +21,12 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
+  name: "Published Stories",
+  icon: "fas fa-book",
+  path: "/dashboard/published-stories",
+  roles: [USER_ROLE.USER, USER_ROLE.WRITER],
+},
+  {
     name: "Analytics",
     icon: "fas fa-chart-line",
     path: "/dashboard/analytics",
