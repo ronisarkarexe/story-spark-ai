@@ -11,7 +11,10 @@ const VALID_TONES = [
 
 const aiModel = z.object({
   body: z.object({
-    prompt: z.string({ required_error: "Prompt is required!" }),
+    prompt: z
+      .string({ required_error: "Prompt is required!" })
+      .trim()
+      .min(1, "Prompt cannot be empty or whitespace only!"),
     language: z.string().optional(),
     tone: z
       .enum(VALID_TONES, {

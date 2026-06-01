@@ -5,6 +5,8 @@ import sendResponse from "../../../shared/send_response";
 import { StoryVersionService } from "./story_version.service";
 import ApiError from "../../../errors/api_error";
 import { routeParam } from "../../../shared/route_param";
+import { paginationFields } from "../../../constants/pagination";
+import pick from "../../../shared/pick";
 
 const getVersionsByStoryId = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
@@ -13,13 +15,21 @@ const getVersionsByStoryId = catchAsync(async (req: Request, res: Response) => {
     throw new ApiError(httpStatus.UNAUTHORIZED, "User is not authorized");
   }
 
-  const result = await StoryVersionService.getVersionsByStoryId(id, user._id);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Story version timeline retrieved successfully!",
-    data: result,
-  });
+  const pagination = pick(req.query, paginationFields);
+
+const result = await StoryVersionService.getVersionsByStoryId(
+  id,
+  user._id,
+  pagination
+);
+
+sendResponse(res, {
+  statusCode: httpStatus.OK,
+  success: true,
+  message: "Story version timeline retrieved successfully!",
+  data: result.data,
+  meta: result.meta,
+});
 });
 
 const getVersionById = catchAsync(async (req: Request, res: Response) => {

@@ -108,24 +108,19 @@ Task:
           segmentIndex,
         },
       });
+    } catch (error) {
+      const detail =
+        error instanceof Error ? error.message : String(error);
 
-   } catch (error) {
-  const detail =
-    error instanceof Error ? error.message : String(error);
+      console.error("[StoryBranching] generation error:", detail);
 
-  console.error("[StoryBranching] generation error:", detail);
-
-  return res.status(503).json({
-    message:
-      "Story generation is temporarily unavailable. Please try again later.",
-  });
-}
       sendResponse(res, {
         success: false,
         statusCode: 503,
-        message,
-        data: null
+        message:
+          "Story generation is temporarily unavailable. Please try again later.",
+        data: null,
       });
     }
-  }
+  },
 };

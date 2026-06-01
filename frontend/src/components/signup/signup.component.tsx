@@ -1,4 +1,4 @@
-import { useForm, SubmitHandler } from "react-hook-form";
+﻿import { useForm, SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { useState, useEffect } from "react";
@@ -9,7 +9,7 @@ import {
   useVerifyOtpMutation,
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface IRegisterInfo {
   name: string;
@@ -84,7 +84,6 @@ const PASSWORD_REQUIREMENTS = [
 
 const SignUpComponent = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [emailVerify] = useEmailVerifyMutation();
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerUser] = useRegisterUserMutation();
@@ -200,8 +199,7 @@ const SignUpComponent = () => {
         if (res.data.accessToken) {
           toast.success("OTP validated successfully!");
           storeUserInfo({ accessToken: res.data.accessToken });
-          const redirectPath = location.state && location.state.from ? location.state.from : "/";
-          navigate(redirectPath);
+          navigate("/");
         }
       } else {
         throw new Error("No verification token received");
@@ -247,7 +245,7 @@ const SignUpComponent = () => {
   };
 
   return (
-    <div className="min-h-[calc(100dvh-4.5rem)] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8">
+    <div className="min-h-[calc(100dvh-4.5rem)] bg-slate-900 text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8">
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
@@ -259,13 +257,13 @@ const SignUpComponent = () => {
           </h2>
         </div>
 
-        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
-          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
+        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
+          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
 
           {!showOtpField && (
-            <p className="mt-2 mb-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-2 mb-6 text-center text-sm text-slate-400">
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
@@ -276,7 +274,7 @@ const SignUpComponent = () => {
                 <div className="w-full border-t border-slate-700/50"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-white dark:bg-slate-800/60 text-slate-800 dark:text-slate-400 font-semibold">
+                <span className="px-4 bg-slate-800/60 text-slate-400 font-semibold">
                   SIGN UP WITH EMAIL
                 </span>
               </div>
@@ -363,7 +361,7 @@ const SignUpComponent = () => {
                         className={met ? "text-green-400" : "text-red-400"}
                         aria-label={`${label}: ${met ? "met" : "not met"}`}
                       >
-                        <span aria-hidden="true">{met ? "✅" : "❌"}</span>{" "}
+                        <span aria-hidden="true">{met ? "Γ£à" : "Γ¥î"}</span>{" "}
                         {label}
                       </li>
                     );
