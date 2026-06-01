@@ -59,37 +59,15 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
 
   return (
     <div className={`flex flex-col min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${!isAuthPage ? "pb-20 lg:pb-0" : ""}`}>
-<<<<<<< HEAD
-      
       {/* Fixed: NavListComponent now receives all required configurations */}
       {!hideHeader && (
-        <NavListComponent 
-          logo="/logo.png" // Point this to your actual public/assets logo file
-          isLogin={isLogin}
-          isAdmin={isAdmin}
-          unreadCount={unreadCount}
-          notifications={notifications}
-          isOpen={isNotificationOpen}
-          toggle={() => setIsNotificationOpen(!isNotificationOpen)}
-          close={() => setIsNotificationOpen(false)}
-          markAsRead={markAsRead}
-          handleLogout={handleLogout}
-          getLinkClass={getLinkClass}
-          getMobileLinkClass={getMobileLinkClass}
-          renderMobileNavContent={renderMobileNavContent}
-        />
+        <NavListComponent />
       )}
 
       <CookieConsentBanner />
       <div className="flex-grow min-h-0">{children}</div>
       {!hideFooter && <FooterComponent />}
-=======
-      {!hideHeader && <NavListComponent />}
-      {!isAuthPage && <CookieConsentBanner />}
-      <div className="flex-grow min-h-0">{children}</div>
-      {!hideFooter && <FooterComponent />}
       <ChatComponent />
->>>>>>> upstream/main
     </div>
   );
 };

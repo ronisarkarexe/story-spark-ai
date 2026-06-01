@@ -28,28 +28,20 @@ import LoginComponent from "./components/login/login.component";
 import SignUpComponent from "./components/signup/signup.component";
 import ForgotPasswordComponent from "./components/login/forgot_password.component";
 import DashboardComponent from "./components/dashboard/dashboard.component";
-import RootLayout from "./components/layout/root_layout.component";
-import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import SettingComponent from "./components/dashboard/settings/settings.component";
 import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
 import UserComponent from "./components/dashboard/users/user.component";
 import PricingComponent from "./components/pricing/pricing.component";
 import ExploreComponent from "./components/post/post.component";
 import PostDetailsComponent from "./components/post/post.details.component";
-import BookmarksComponent from "./components/post/bookmarks.component";
-import { getUserInfo } from "./services/auth.service";
 import NotFoundComponent from "./components/not-found.component";
 import PaymentComponent from "./components/home/pricing/payment.component";
-import PostDetailsComponent from "./components/post/post.details.component";
 import PostListsComponent from "./components/dashboard/posts/post_lists.component";
-import PricingComponent from "./components/pricing/pricing.component";
 import PrivacyPolicy from "./components/footer/Privacy.tsx";
 import ProfileComponent from "./components/dashboard/profile/profile.component";
 import ReportBug from "./components/report-bug/ReportBug";
 import ResourceDetailComponent from "./components/community/resource_detail.component";
 import ResourcesListComponent from "./components/community/resources_list.component";
-import SettingComponent from "./components/dashboard/settings/settings.component";
-import SignUpComponent from "./components/signup/signup.component";
 import StoryWorkspace from "./components/story/StoryWorkspace";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import TemplatesComponent from "./components/templates/templates.component";
@@ -59,9 +51,9 @@ import HelpCenterComponent from "./components/help_center/help_center.component"
 import Contact from "./components/contactus/contactus";
 import GuidelinesComponent from "./components/footer/guidelines.tsx";
 import ContributorsComponent from "./components/footer/contributors";
-import ReportBug from "./components/report-bug/ReportBug";
-import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
-import StoryWorkspace from "./components/story/StoryWorkspace";
+import Terms from "./components/footer/terms";
+import CommunityComponent from "./components/community/community.component";
+import EmailValidationComponent from "./components/email_validation/email.validation.component";
 
 
 type ProtectedRouteProps = {

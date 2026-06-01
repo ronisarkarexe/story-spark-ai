@@ -18,31 +18,24 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
       aria-labelledby="setup-heading"
     >
       {/* Header Info Block */}
-      <div className="mb-12">
-        <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-300">
+      <div className="mb-12 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-300 mb-4">
           <i className="fa-solid fa-code" aria-hidden="true"></i>
           DEVELOPER GUIDE
         </div>
-
-      <div className="text-center mb-10">
-        
         <h2
           id="setup-heading"
           className="text-3xl font-bold text-slate-800 dark:text-gray-300"
         >
           Developer Setup
         </h2>
-
         <p className="mt-3 text-slate-600 dark:text-gray-400 max-w-2xl mx-auto">
           Get StorySparkAI running locally and start contributing to the monorepo.
         </p>
-
       </div>
 
       {/* Interactive Timeline Matrix */}
       <div className="relative">
-        {/* Desktop vertical grid layout line */}
-        
         {/* Vertical connector line (desktop) */}
         <div
           className="absolute left-6 top-0 bottom-0 hidden md:block w-px bg-gradient-to-b from-indigo-500/40 via-blue-500/20 to-transparent"
@@ -71,7 +64,6 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
 
               {/* Main Content Card Container */}
               <div className="flex-1 min-w-0 rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 dark:border-white/10 dark:bg-slate-900/70 dark:hover:border-indigo-500/30">
-                
                 {/* Micro Step Badge */}
                 <div className="mb-4 inline-flex items-center rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-indigo-600 dark:text-indigo-300">
                   STEP {step.step}
@@ -102,7 +94,7 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
                       </span>
                     </div>
 
-                    {/* Pre-formatted Output Window - Fixed wrapping context */}
+                    {/* Pre-formatted Output Window */}
                     <pre className="overflow-x-auto p-5 text-sm leading-relaxed">
                       <code className="font-mono text-emerald-400 whitespace-pre-wrap break-all">
                         {step.code}
@@ -113,51 +105,13 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
 
                 {/* Visual Ambient Bottom Accent Line */}
                 <div className="mt-6 h-1 w-20 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 opacity-70 transition-all duration-300 group-hover:w-32" />
-            <li
-              key={step.step}
-              className="relative flex gap-6"
-            >
-              
-              <div
-                className="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-500/20 border border-indigo-300 dark:border-indigo-500/40 flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-bold z-10"
-                aria-hidden="true"
-              >
-                {step.step}
               </div>
-
-              <div className="flex-1 bg-white dark:bg-blue-500/10 border border-slate-200 dark:border-white/5 rounded-xl p-6 shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500/20 transition-colors">
-                
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-gray-300 mb-2">
-                  {step.title}
-                </h3>
-
-                <p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed mb-4">
-                  {step.description}
-                </p>
-
-                {step.code && (
-                  <pre className="bg-gray-900/90 border border-gray-700 rounded-lg p-4 overflow-x-auto text-sm">
-                    <code className="text-emerald-400/90 font-mono whitespace-pre">
-                      {step.code}
-                    </code>
-                  </pre>
-                )}
-
-              </div>
-
-              {index < steps.length - 1 && (
-                <span className="sr-only">
-                  Next step
-                </span>
-              )}
-
-            </li>
+            </motion.li>
           ))}
         </ol>
       </div>
 
-<<<<<<< HEAD
-      {/* Global Security & Prerequisites Info Callout */}
+      {/* Global Prerequisites Info Callout */}
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -219,42 +173,6 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
                 </p>
               </div>
             </div>
-      <div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/30 border border-indigo-200 dark:border-indigo-500/20 rounded-xl shadow-sm">
-=======
-      <motion.div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/30 border border-indigo-200 dark:border-indigo-500/20 rounded-xl shadow-sm">
->>>>>>> upstream/main
-        
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          
-          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-700 dark:text-indigo-400">
-            <i
-              className="fas fa-info-circle"
-              aria-hidden="true"
-            ></i>
-          </div>
-
-          <div>
-            
-            <h3 className="text-slate-800 dark:text-gray-300 font-semibold mb-1">
-              Prerequisites
-            </h3>
-
-            <p className="text-slate-600 dark:text-gray-400 text-sm">
-              Node.js 18.18+, npm 9+, and a MongoDB URI. Copy{" "}
-              
-              <code className="text-indigo-700 dark:text-indigo-400 bg-indigo-100 dark:bg-gray-900/50 px-1.5 py-0.5 rounded">
-                .env.example
-              </code>{" "}
-              
-              files — never commit real{" "}
-              
-              <code className="text-indigo-700 dark:text-indigo-400 bg-indigo-100 dark:bg-gray-900/50 px-1.5 py-0.5 rounded">
-                .env
-              </code>{" "}
-              
-              files to git.
-            </p>
-
           </div>
         </div>
       </motion.div>

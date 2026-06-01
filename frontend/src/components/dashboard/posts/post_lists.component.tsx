@@ -1,10 +1,17 @@
 import React, { useState, useMemo } from "react";
 import { useGetPostListsQuery } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
-import { Topic } from "../../../models/post";
+import { Post, Topic } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
 import ImageFallback from "../../ImageFallback";
-ImageFallback
+
+interface FilterStats {
+  total: number;
+  published: number;
+  drafts: number;
+  featured: number;
+}
+
 const PostListsComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [size, setSize] = useState<number>(10);
@@ -64,12 +71,14 @@ const PostListsComponent: React.FC = () => {
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  setSearchTerm(e.target.value);
-  setPage(1);
-};
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -77,27 +86,8 @@ const PostListsComponent: React.FC = () => {
     });
   };
 
-  const getAuthorInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map(n => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const getInitialsBgColor = (email: string) => {
-    const colors = [
-      "from-blue-500 to-purple-500",
-      "from-emerald-500 to-cyan-500",
-      "from-rose-500 to-pink-500",
-      "from-amber-500 to-orange-500",
-      "from-violet-500 to-indigo-500",
-    ];
-    return colors[email.charCodeAt(0) % colors.length];
-  };
-
-  const getTopicBadges = (topics: Topic[]) => {
+  const getTopicBadges = (topics?: Topic[]) => {
+    if (!topics) return null;
     return topics.map((topic) => (
       <span
         key={topic._id}
@@ -131,7 +121,7 @@ const PostListsComponent: React.FC = () => {
             : "bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
           }`}
       >
-        <span className={`w-2 h-2 rounded-full ${isPublished ? "bg-emerald-400" : "bg-amber-400"}`}></span>
+        <span className={`w-2 h-2 rounded-full mr-1.5 ${isPublished ? "bg-emerald-400" : "bg-amber-400"}`}></span>
         {isPublished ? "Published" : "Draft"}
       </span>
     );
@@ -145,22 +135,22 @@ const PostListsComponent: React.FC = () => {
         else if (label === "Drafts") setFilterStatus("draft");
         else if (label === "Featured") setFilterStatus("featured");
       }}
-      className={`flex-1 p-4 rounded-xl border-2 transition-all duration-300 group ${
+      className={`flex-1 p-4 rounded-xl border-2 transition-all duration-300 group text-left ${
         isActive
-          ? `bg-gradient-to-br ${color} border-${color.split(" ")[1]}/60 shadow-lg shadow-${color.split(" ")[1]}/20`
+          ? `bg-[#1e293b] border-blue-500/60 shadow-lg`
           : "bg-[#141624]/40 border-gray-800/40 hover:border-gray-700/60 hover:bg-[#0f1119]/60"
       }`}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className={`text-xs uppercase tracking-wider font-semibold ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-300"} transition-colors`}>
+          <p className={`text-xs uppercase tracking-wider font-semibold ${isActive ? "text-blue-400" : "text-gray-400 group-hover:text-gray-300"} transition-colors`}>
             {label}
           </p>
           <p className={`text-2xl font-bold mt-1 ${isActive ? "text-white" : "text-gray-200"}`}>
             {count}
           </p>
         </div>
-        <i className={`${icon} text-3xl ${isActive ? "text-white/80" : "text-gray-500 group-hover:text-gray-400"} transition-colors`}></i>
+        <i className={`${icon} text-3xl ${isActive ? "text-blue-400" : "text-gray-500 group-hover:text-gray-400"} transition-colors`}></i>
       </div>
     </button>
   );
@@ -187,7 +177,7 @@ const PostListsComponent: React.FC = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <StatCard icon="fas fa-file" label="All Posts" count={filterStats.total} color="from-blue-600/20 to-blue-500/10" isActive={filterStatus === "all"} />
             <StatCard icon="fas fa-check-circle" label="Published" count={filterStats.published} color="from-emerald-600/20 to-emerald-500/10" isActive={filterStatus === "published"} />
             <StatCard icon="fas fa-file-alt" label="Drafts" count={filterStats.drafts} color="from-amber-600/20 to-amber-500/10" isActive={filterStatus === "draft"} />
@@ -230,50 +220,29 @@ const PostListsComponent: React.FC = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto p-6">
         <table className="min-w-full divide-y divide-gray-800/60">
           <thead className="bg-[#141624]/80 backdrop-blur-sm">
             <tr>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
+              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Title
               </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
+              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Author
               </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
+              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Topics
               </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
+              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Status
               </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
+              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Stats
               </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
+              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Created
               </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
+              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -316,10 +285,6 @@ const PostListsComponent: React.FC = () => {
                         <div className="h-4 bg-gray-800/40 rounded-md w-6 mx-auto" />
                         <div className="h-2 bg-gray-800/20 rounded-md w-8 mt-1" />
                       </div>
-                      <div className="text-center">
-                        <div className="h-4 bg-gray-800/40 rounded-md w-6 mx-auto" />
-                        <div className="h-2 bg-gray-800/20 rounded-md w-8 mt-1" />
-                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -334,7 +299,7 @@ const PostListsComponent: React.FC = () => {
                 </tr>
               ))
             ) : (
-              data?.posts?.map((post) => (
+              filteredPosts.map((post: Post) => (
                 <tr key={post._id} className="hover:bg-gray-800/30 transition-colors duration-200 group">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -342,7 +307,7 @@ const PostListsComponent: React.FC = () => {
                         <div className="flex-shrink-0 h-11 w-11 mr-4 relative">
                           <ImageFallback
                             className="h-11 w-11 rounded-lg object-cover shadow-md ring-1 ring-white/10"
-                            src="broken-url"
+                            src={post.imageURL}
                             alt={post.title}
                           />
                         </div>
@@ -358,49 +323,49 @@ const PostListsComponent: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-200">
-                      {post.author?.name || 'Unknown User'}
+                    <div className="text-sm">
+                      <p className="font-medium text-gray-300">{post.author?.name || 'Unknown'}</p>
+                      <p className="text-xs text-gray-500">{post.author?.email || ''}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-wrap gap-1.5 max-w-[200px]">
                       {getTopicBadges(post.topic)}
                     </div>
-                    <div className="text-sm">
-                      <p className="font-medium text-gray-300">{post.author.name}</p>
-                      <p className="text-xs text-gray-500">{post.author.email}</p>
-                    </div>
-                  </div>
-
-                  {/* Status Badges */}
-                  <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(post.isPublished, post.isFeaturedPost)}
-                    {post.isPublished && !post.isFeaturedPost && (
-                      <div className="text-xs px-2.5 py-1.5 rounded-full text-gray-400 bg-gray-800/40">
-                        {formatDate(post.createdAt)}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Stats */}
-                  <div className="hidden lg:flex items-center gap-6 flex-shrink-0 py-2">
-                    <div className="text-center group/stat">
-                      <div className="flex items-center justify-center gap-1.5 text-gray-300 group-hover/stat:text-rose-400 transition-colors">
-                        <i className="fas fa-heart text-sm"></i>
-                        <span className="text-sm font-semibold">{post.likesCount}</span>
-                      </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex space-x-4 text-gray-400 text-xs">
+                      <span title="Likes" className="flex items-center gap-1">
+                        <i className="fas fa-heart text-rose-500/80"></i> {post.likesCount || 0}
+                      </span>
+                      <span title="Comments" className="flex items-center gap-1">
+                        <i className="fas fa-comment text-blue-500/80"></i> {post.commentsCount || 0}
+                      </span>
+                      <span title="Views" className="flex items-center gap-1">
+                        <i className="fas fa-eye text-emerald-500/80"></i> {post.viewsCount || 0}
+                      </span>
                     </div>
-                    <div className="text-center group/stat">
-                      <div className="flex items-center justify-center gap-1.5 text-gray-300 group-hover/stat:text-blue-400 transition-colors">
-                        <i className="fas fa-comment text-sm"></i>
-                        <span className="text-sm font-semibold">{post.commentsCount}</span>
-                      </div>
-                    </div>
-                    <div className="text-center group/stat">
-                      <div className="flex items-center justify-center gap-1.5 text-gray-300 group-hover/stat:text-emerald-400 transition-colors">
-                        <i className="fas fa-eye text-sm"></i>
-                        <span className="text-sm font-semibold">{post.viewsCount}</span>
-                      </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                    {formatDate(post.createdAt)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex items-center gap-2">
+                      <button 
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-500/40 hover:text-blue-300 transition-all duration-200"
+                        title="Edit post"
+                      >
+                        <i className="fas fa-edit text-xs"></i>
+                      </button>
+                      <button 
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-300 transition-all duration-200"
+                        title="Delete post"
+                      >
+                        <i className="fas fa-trash-alt text-xs"></i>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -408,62 +373,6 @@ const PostListsComponent: React.FC = () => {
             )}
           </tbody>
         </table>
-      </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 flex-shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-gray-800/40">
-                    <button 
-                      className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-500/40 hover:text-blue-300 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200 hover:scale-110 active:scale-95"
-                      title="Edit post"
-                      aria-label="Edit post"
-                    >
-                      <i className="fas fa-edit text-sm"></i>
-                    </button>
-                    <button 
-                      className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-300 hover:shadow-lg hover:shadow-rose-500/20 transition-all duration-200 hover:scale-110 active:scale-95"
-                      title="Delete post"
-                      aria-label="Delete post"
-                    >
-                      <i className="fas fa-trash-alt text-sm"></i>
-                    </button>
-                    <button 
-                      className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-gray-700/20 text-gray-400 border border-gray-700/40 hover:bg-gray-700/40 hover:border-gray-600/60 hover:text-gray-300 hover:shadow-lg hover:shadow-gray-500/10 transition-all duration-200 hover:scale-110 active:scale-95"
-                      title="More actions"
-                      aria-label="More actions"
-                    >
-                      <i className="fas fa-ellipsis-v text-sm"></i>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Mobile Stats Row */}
-                <div className="lg:hidden mt-4 pt-4 border-t border-gray-800/40 flex justify-around">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-gray-300 text-sm">
-                      <i className="fas fa-heart text-xs"></i>
-                      <span className="font-semibold">{post.likesCount}</span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">Likes</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-gray-300 text-sm">
-                      <i className="fas fa-comment text-xs"></i>
-                      <span className="font-semibold">{post.commentsCount}</span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">Comments</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-gray-300 text-sm">
-                      <i className="fas fa-eye text-xs"></i>
-                      <span className="font-semibold">{post.viewsCount}</span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">Views</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Pagination Section */}

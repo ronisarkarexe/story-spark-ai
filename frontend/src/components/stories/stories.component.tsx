@@ -183,7 +183,7 @@ const UI_TEXT: Record<string, UiText> = {
     charactersRemaining: "caracteres restantes", shortcuts: "Atajos de teclado", openHelp: "Abrir ayuda", closeHelp: "Cerrar ayuda",
     focusPrompt: "Enfocar indicacion", generateStory: "Generar historia", publishStory: "Publicar historia", close: "Cerrar",
     freeLimitReached: "Limite gratuito alcanzado", freeLimitMessage: "Has usado las 3 generaciones gratuitas. Inicia sesion para continuar creando historias.",
-    continueBrowsing: "Continuar navegando", recentPrompts: "Indicaciones recientes", usePrompt: "Usar", delete: "Eliminar", clearAll: "Limpiar todo", noRecentPrompts: "Sin indicaciones recientes",
+    continueBrowsing: "Continuar navegando", recentPrompts: "Indicaciones recientes", usePrompt: "Usar", delete: "Eliminar", clearAll: "Limpiar todo", noRecentPrompts: "Sin indicaciones recentes",
   },
   French: {
     back: "RETOUR", freeAccess: "Acces gratuit pour 3 demandes", login: "Connexion", forMore: "pour en obtenir plus !",
@@ -269,7 +269,7 @@ const UI_TEXT: Record<string, UiText> = {
     selectPrompt: "একটি প্রম্পট বেছে নিন", characterLimit: "অক্ষরের সীমা পূর্ণ - তৈরি বন্ধ", charactersRemaining: "অক্ষর বাকি",
     shortcuts: "কীবোর্ড শর্টকাট", openHelp: "সহায়তা খুলুন", closeHelp: "সহায়তা বন্ধ করুন", focusPrompt: "প্রম্পটে যান",
     generateStory: "গল্প তৈরি করুন", publishStory: "গল্প প্রকাশ করুন", close: "বন্ধ করুন", freeLimitReached: "বিনামূল্যের সীমা পূর্ণ",
-    freeLimitMessage: "আপনি ৩টি বিনামূল্যের গল্প তৈরি ব্যবহার করেছেন। চালিয়ে যেতে লগ ইন করুন।", continueBrowsing: "ব্রাউজ চালিয়ে যান", recentPrompts: "সম্প্রতি ব্যবহৃত প্রম্পট", usePrompt: "ব্যবহার করুন", delete: "মুছে ফেলুন", clearAll: "সব মুছে দিন", noRecentPrompts: "কোনো সম্প্রতি ব্যবহৃত প্রম্পট নেই",
+    freeLimitMessage: "আপনি ৩টি বিনামূল্যের গল্প তৈরি ব্যবহার করেছেন। চালিয়ে যেতে লগ ইন করুন।", continueBrowsing: "ব্রাউজ চালিয়ে যান", recentPrompts: "সম্প্রতি ব্যবহৃত প্রম্পট", usePrompt: "ব্যবহার করুন", delete: "मुছে ফেলুন", clearAll: "সব মুছে দিন", noRecentPrompts: "কোনো সম্প্রতি ব্যবহৃত প্রম্পট নেই",
   },
   Tamil: {
     back: "திரும்பு", freeAccess: "3 கோரிக்கைகளுக்கு இலவச அணுகல்", login: "உள்நுழை", forMore: "செய்து மேலும் பெறுங்கள்!",
@@ -288,7 +288,7 @@ const UI_TEXT: Record<string, UiText> = {
     perMonth: "నెలకు", upgrade: "అప్‌గ్రేడ్", monthlyRequests: "ఈ నెల అభ్యర్థనలు", totalPosts: "మొత్తం పోస్టులు",
     titleStart: "మీ ఆలోచనలను", titleAccent: "అద్భుత కథలుగా మార్చండి!", length: "పొడవు", language: "భాష",
     short: "చిన్నది", medium: "మధ్యస్థం", long: "పొడవైనది", promptPlaceholder: "ప్రతి గొప్ప కథ ఒక ఆలోచనతో మొదలవుతుంది. మీది ఏమిటి?",
-    keyboardTip: "కీబోర్డ్ చిట్కా:", press: "నొక్కండి", toGenerate: "రూపొందించడానికి", alsoWorks: "కూడా పనిచేస్తుంది", forNewLine: "కొత్త లైన్ కోసం",
+    keyboardTip: "కీబోర్ड చిట్కా:", press: "నొక్కండి", toGenerate: "రూపొందించడానికి", alsoWorks: "కూడా పనిచేస్తుంది", forNewLine: "కొత్త లైన్ కోసం",
     generating: "రూపొందిస్తోంది...", generate: "రూపొందించు", examples: "కొన్ని ఉదాహరణ ప్రాంప్ట్‌లు:",
     selectPrompt: "ప్రాంప్ట్ ఎంచుకోండి", characterLimit: "అక్షర పరిమితి చేరింది - రూపొందింపు నిలిపివేయబడింది", charactersRemaining: "అక్షరాలు మిగిలాయి",
     shortcuts: "కీబోర్డ్ సత్వరమార్గాలు", openHelp: "సహాయం తెరవండి", closeHelp: "సహాయం మూసివేయండి", focusPrompt: "ప్రాంప్ట్‌పై దృష్టి",
@@ -311,8 +311,6 @@ const UI_TEXT: Record<string, UiText> = {
 
 const LANGUAGE_STORAGE_KEY = "storySparkLanguage";
 
-// NEW: Tone definitions — each has a label, emoji, and Tailwind colour classes
-// for the active/inactive pill states.
 const TONES = [
   {
     label: "Dark",
@@ -354,9 +352,6 @@ const TONES = [
 
 type ToneLabel = (typeof TONES)[number]["label"];
 
-// ---------------------------------------------------------------------------
-// TonePicker sub-component
-// ---------------------------------------------------------------------------
 interface TonePickerProps {
   selected: ToneLabel | "";
   onChange: (tone: ToneLabel | "") => void;
@@ -391,9 +386,6 @@ const TonePicker: React.FC<TonePickerProps> = ({ selected, onChange }) => {
   );
 };
 
-// ---------------------------------------------------------------------------
-// Main StoriesComponent
-// ---------------------------------------------------------------------------
 const StoriesComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -409,8 +401,17 @@ const StoriesComponent = () => {
   }, []);
 
   const [stories, setStories] = useState<IStories[]>(
-    draft?.stories?.length ? draft.stories : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
-    [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
+    draft?.stories?.length
+      ? draft.stories
+      : [
+          {
+            uuid: "test-1",
+            title: "The Wizard's Journey",
+            content: "Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",
+            tag: "Fantasy",
+            imageURL: "https://placehold.co/400x300/png?text=Wizards+Journey",
+          },
+        ]
   );
   
   const [loading, setLoading] = useState<boolean>(false);
@@ -446,43 +447,15 @@ const StoriesComponent = () => {
   const login = isLoggedIn();
   const [generateModel] = useGenerateModelMutation();
   const [generateFreeModel] = useGenerateFreeModelMutation();
+  
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string>("");
-  const [selectedLength, setSelectedLength] = useState<string>("medium");
-  const [textareaValue, setTextareaValue] = useState<string>("");
-  const storyTemplates= [
-  {
-    title: "Fantasy Adventure",
-    prompt:
-      "In a kingdom ruled by dragons, a young warrior discovers an ancient secret that could change the fate of the world.",
-  },
-  {
-    title: "Sci-Fi Mystery",
-    prompt:
-      "In the year 2099, a detective uncovers a conspiracy involving artificial intelligence and missing memories.",
-  },
-  {
-    title: "Horror Story",
-    prompt:
-      "A group of friends enters an abandoned mansion, only to realize they are not alone.",
-  },
-  {
-    title: "Romance",
-    prompt:
-      "Two strangers meet during a train journey and slowly discover a connection that changes their lives forever.",
-  },
-  {
-    title: "Thriller",
-    prompt:
-      "A journalist receives an anonymous message exposing a dangerous secret hidden by powerful people.",
-  },
-];
+  
   const [selectedGenre, setSelectedGenre] = useState<string>(
-  draft?.genre
-    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
-    : "🧙 Fantasy",
-);
+    draft?.genre
+      ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
+      : "🧙 Fantasy"
+  );
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
   const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
   const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
@@ -494,10 +467,32 @@ const StoriesComponent = () => {
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const storyTemplates = [
+    {
+      title: "Fantasy Adventure",
+      prompt: "In a kingdom ruled by dragons, a young warrior discovers an ancient secret that could change the fate of the world.",
+    },
+    {
+      title: "Sci-Fi Mystery",
+      prompt: "In the year 2099, a detective uncovers a conspiracy involving artificial intelligence and missing memories.",
+    },
+    {
+      title: "Horror Story",
+      prompt: "A group of friends enters an abandoned mansion, only to realize they are not alone.",
+    },
+    {
+      title: "Romance",
+      prompt: "Two strangers meet during a train journey and slowly discover a connection that changes their lives forever.",
+    },
+    {
+      title: "Thriller",
+      prompt: "A journalist receives an anonymous message exposing a dangerous secret hidden by powerful people.",
+    },
+  ];
   
   const playSoundtrack = (genre: string) => {
     const soundtrack = soundtrackMap[genre];
-
     if (!soundtrack) return;
 
     if (audioRef.current) {
@@ -534,8 +529,6 @@ const StoriesComponent = () => {
   // Autosave Draft
   useEffect(() => {
     const timer = setTimeout(() => {
-      // stories intentionally excluded — API response, not user input
-      // including stories risks hitting localStorage quota (~5MB) silently
       const draftData = {
         prompt: textareaValue,
         genre: selectedGenre,
@@ -593,24 +586,25 @@ const StoriesComponent = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-useEffect(() => {
-  if (location.state) {
-    if (location.state.prompt) {
-      setTextareaValue(location.state.prompt);
+
+  useEffect(() => {
+    if (location.state) {
+      if (location.state.prompt) {
+        setTextareaValue(location.state.prompt);
+      }
+
+      if (location.state.genre) {
+        const matchedGenre =
+          GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
+        setSelectedGenre(matchedGenre);
+      }
+
+      navigate(location.pathname, {
+        replace: true,
+        state: {},
+      });
     }
-
-    if (location.state.genre) {
-  const matchedGenre =
-    GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
-  setSelectedGenre(matchedGenre);
-}
-
-    navigate(location.pathname, {
-      replace: true,
-      state: {},
-    });
-  }
-}, [location, navigate]);
+  }, [location, navigate]);
 
   useEffect(() => {
     setValue("prompt", textareaValue);
@@ -649,7 +643,6 @@ useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
 
     try {
-      // 60-second client-side request timeout safeguard
       timeoutId = setTimeout(() => {
         if (isGenerationInProgressRef.current) {
           toast.error("Story generation timed out. Please try again.");
@@ -818,7 +811,7 @@ useEffect(() => {
               <div className="relative w-full">
                 <form className="space-y-4 w-full" onSubmit={handleSubmit(onSubmit)}>
                   
-                  {/* ── Genre chips ── */}
+                  {/* Genre chips */}
                   <div className="flex flex-wrap gap-2 mb-3">
                     {GENRES.map((genre) => (
                       <button
@@ -845,14 +838,13 @@ useEffect(() => {
                     ))}
                   </div>
 
-                  {/* ── NEW: Tone picker ── */}
+                  {/* Tone picker */}
                   <TonePicker selected={selectedTone} onChange={setSelectedTone} />
 
-                  {/* ── Length + Language row ── */}
+                  {/* Length + Language row */}
                   <div className="flex flex-wrap items-center gap-4 mb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-400 mr-1">📏 {text.length}:</span>
-
                       {(["short", "medium", "long"] as const).map((length) => (
                         <button
                           key={length}
@@ -873,7 +865,6 @@ useEffect(() => {
                       <span className="text-xs text-gray-400 mr-1">🌐 {text.language}:</span>
                       <div className="relative" ref={languageDropdownRef}>
                         <button
-                          key="lang-selector-btn"
                           type="button"
                           onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
                           className="flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 cursor-pointer"
@@ -908,7 +899,7 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  {/* ── Prompt textarea ── */}
+                  {/* Prompt textarea */}
                   <div className="relative w-full">
                     <textarea
                       {...register("prompt")}
@@ -935,17 +926,7 @@ useEffect(() => {
                         }
                       }}
                     />
-                    {/* Character count display */}
-<div className={`flex justify-end mt-1 text-xs font-medium transition-colors duration-200 ${
-  isOverLimit
-    ? "text-red-500"
-    : isNearLimit
-    ? "text-yellow-500"
-    : "text-gray-400"
-}`}>
-  {textareaValue.length} / {MAX_PROMPT_LENGTH}
-</div>
-
+                    
                     {textareaValue.length > 0 && (
                       <button
                         type="button"
@@ -1037,9 +1018,8 @@ useEffect(() => {
                     {text.forNewLine}
                   </p>
 
-                  {/* ── Generate button row ── */}
+                  {/* Generate button row */}
                   <div className="flex items-center justify-between mt-2 w-full">
-                    {/* Active tone badge */}
                     <div className="flex items-center gap-2 text-xs text-gray-400">
                       {selectedTone && (
                         <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 border border-white/10">
@@ -1090,173 +1070,17 @@ useEffect(() => {
                   <span className="truncate pr-4">
                     {selectedPrompt || text.selectPrompt}
                   </span>
-
                   <span
                     className={`text-gray-300 transition-transform duration-200 ${
                       isDropdownOpen ? "rotate-180" : ""
                     }`}
                   >
-                    {lang.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      {/* Clear prompt button - next to language selector */}
-      {textareaValue.length > 0 && (
-        <button
-          type="button"
-
-          onClick={() => setSelectedLength(length)}
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-            selectedLength === length
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-              : "bg-gray-200 text-slate-700 hover:bg-gray-300 dark:bg-white/10 dark:text-gray-400 dark:hover:bg-white/20 dark:hover:text-gray-200"
-          }`}
-          onClick={handleClearPrompt}
-          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200 border border-red-500/20"
-          aria-label={text.close}
-          title="Clear prompt"
-        >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Clear
-        </button>
-      )}
-    </div>
-    <div className="mb-4">
-      <h3 className="text-lg font-semibold mb-3">
-        Story Templates
-      </h3>
-
-
-    <div className="flex flex-wrap gap-2">
-      {storyTemplates.map((template) => (
-      <button
-        key={template.title}
-        type="button"
-        onClick={() => setTextareaValue(template.prompt)}
-        className="px-4 py-2 rounded-full bg-purple-100 hover:bg-purple-200 transition-colors text-sm font-medium"
-      >
-        {template.title}
-      </button>
-    ))}
-  </div>
-</div>
-
-<div className="relative">
-  <textarea
-    {...register("prompt")}
-    ref={(el) => {
-      register("prompt").ref(el);
-      inputRef.current = el;
-    }}
-    onInput={(e) => {
-      e.currentTarget.style.height = "auto";
-      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-    }}
-    className={`w-full min-h-[140px] max-h-[400px] overflow-y-auto resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-2 focus:ring-indigo-500/40 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 pr-10 transition-colors duration-200 ${
-      isOverLimit
-        ? "ring-1 ring-red-500 rounded"
-        : isNearLimit
-        ? "ring-1 ring-yellow-400 rounded"
-        : ""
-    }`}
-    placeholder="Every great story begins with a single idea. What's yours?"
-    value={textareaValue}
-    maxLength={MAX_PROMPT_LENGTH}
-    onChange={(e) => setTextareaValue(e.target.value)}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        const form = e.currentTarget.closest("form");
-        if (form) form.requestSubmit();
-      }
-    }}
-  />
-    <div className="relative overflow-hidden">
-      <textarea
-  {...register("prompt")}
-  ref={(el) => {
-    register("prompt").ref(el);
-    inputRef.current = el;
-  }}
-        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-4 transition-colors duration-200 ${
-          isOverLimit
-            ? "ring-1 ring-red-500 rounded"
-            : isNearLimit
-            ? "ring-1 ring-yellow-400 rounded"
-            : ""
-        }`}
-        placeholder={text.promptPlaceholder}
-        value={textareaValue}
-        maxLength={MAX_PROMPT_LENGTH}
-        onChange={(e) => setTextareaValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            const form = e.currentTarget.closest("form");
-            if (form) form.requestSubmit();
-          }
-        }}
-        />
-      <button
-        type="button"
-        onClick={() => setIsRecentPromptsOpen(!isRecentPromptsOpen)}
-        className="absolute right-2 top-12 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2"
-        aria-label={text.recentPrompts}
-        title={text.recentPrompts}
-      >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        {text.recentPrompts}
-      </button>
-
-      <div className="flex items-center justify-between mt-1 px-1">
-        {isOverLimit ? (
-          <p className="text-xs text-red-400 flex items-center gap-1">
-            <span>⚠</span> {text.characterLimit}
-          </p>
-        ) : isNearLimit ? (
-          <p className="text-xs text-yellow-400 flex items-center gap-1">
-            <span>⚠</span>{" "}
-            {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-          </p>
-        ) : (
-          <span />
-        )}
-
-        <span
-          className={`text-xs tabular-nums ml-auto ${
-            isOverLimit
-              ? "text-red-400 font-medium"
-              : isNearLimit
-              ? "text-yellow-400"
-              : "text-gray-500"
-          }`}
-        >
-          {textareaValue.length} / {MAX_PROMPT_LENGTH}
-        </span>
-      </div>
-    </div>
+                    ▼
+                  </span>
+                </button>
 
                 {isDropdownOpen && (
-                  <ul className="relative z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
+                  <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
                     {prompts.map((item) => (
                       <li key={item.id}>
                         <button
@@ -1274,6 +1098,27 @@ useEffect(() => {
                     ))}
                   </ul>
                 )}
+              </div>
+            </div>
+
+            <div className="w-full max-w-2xl m-auto mt-4">
+              <h3 className="text-lg font-semibold mb-3 text-slate-500 dark:text-gray-500">
+                Story Templates
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {storyTemplates.map((template) => (
+                  <button
+                    key={template.title}
+                    type="button"
+                    onClick={() => {
+                      setTextareaValue(template.prompt);
+                      setValue("prompt", template.prompt);
+                    }}
+                    className="px-4 py-2 rounded-full bg-purple-100 hover:bg-purple-200 transition-colors text-sm font-medium text-slate-900"
+                  >
+                    {template.title}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -1317,21 +1162,21 @@ useEffect(() => {
               <div><kbd>Ctrl + S</kbd> {text.publishStory}</div>
             </div>
 
-        <button
-        onClick={() => setShowHelpModal(false)}
-        className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
-      >
-        {text.close}
-      </button>
+            <button
+              onClick={() => setShowHelpModal(false)}
+              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
+            >
+              {text.close}
+            </button>
+          </div>
         </div>
-      </div>
       )}
 
       {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
 
       {/* Search UI */}
       {stories.length > 0 && (
-        <div className="mb-6 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-4 rounded-2xl">
+        <div className="mb-6 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-4 rounded-2xl max-w-3xl mx-auto">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <input
@@ -1371,6 +1216,7 @@ useEffect(() => {
 
       <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
+      
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.15)] max-w-md w-full p-6 transform transition-all text-slate-900 dark:bg-[#0f172a] dark:border-white/10 dark:text-white dark:shadow-[0_0_15px_rgba(59,130,246,0.5)]">

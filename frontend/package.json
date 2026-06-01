@@ -24,6 +24,7 @@
     "@reduxjs/toolkit": "^2.6.1",
     "@tailwindcss/vite": "^4.0.6",
     "axios": "^1.8.2",
+    "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.9",
     "d3": "^7.9.0",
     "docx": "^9.7.1",
@@ -52,6 +53,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
+    "@types/canvas-confetti": "^1.6.4",
     "@types/d3": "^7.4.3",
     "@types/file-saver": "^2.0.7",
     "@types/jszip": "^3.4.0",

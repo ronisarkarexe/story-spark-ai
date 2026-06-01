@@ -3,6 +3,7 @@ import { useGetReviewsQuery } from "../../../redux/apis/review.api";
 import defaultAvatar from "../../../assets/logoNew.png";
 import ImageFallback from "../../ImageFallback";
 import ReviewForm from "./ReviewForm";
+import { Review } from "../../../models/review";
 
 const WriterFeedbackComponent = () => {
   const { data: feedbackData = [], isLoading } =

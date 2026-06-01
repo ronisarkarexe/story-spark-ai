@@ -1,3 +1,5 @@
+process.env.DATABASE_URL = process.env.DATABASE_URL || "mongodb://localhost:27017/test-db";
+
 /** @type {import('jest').Config} */
 module.exports = {
   preset: "ts-jest",

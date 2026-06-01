@@ -49,7 +49,7 @@ const NavListComponent: React.FC = () => {
   const user = getUserInfo();
   const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
 
-  const handelLogout = () => {
+  const handleLogout = () => {
     removeUserInfo();
     setIsLogin(false);
     navigate("/login");
@@ -199,10 +199,6 @@ const NavListComponent: React.FC = () => {
           </div>
         )}
       </div>
-    </header>
-  );
-};
-
       <NotificationComponent
         notifications={notifications}
         showNotification={isOpen}
@@ -210,32 +206,7 @@ const NavListComponent: React.FC = () => {
         unreadCount={unreadCount}
         onMarkAsRead={markAsRead}
       />
-
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="xl:hidden mt-2 px-1 pb-4 flex flex-col gap-1.5 border-t border-slate-200/70 dark:border-white/10 pt-3">
-
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) => getMobileLinkClass(isActive)}
-            onClick={() => setMenuOpen(false)}
-          >
-            {({ isActive }) => renderMobileNavContent("HOME", isActive)}
-          </NavLink>
-
-          <NavLink
-            to="/explore"
-            className={({ isActive }) => getMobileLinkClass(isActive)}
-            onClick={() => setMenuOpen(false)}
-          >
-            {({ isActive }) => renderMobileNavContent("EXPLORE", isActive)}
-          </NavLink>
-
-        </div>
-      )}
-    </div>
-  </header>
+    </header>
   );
 };
 

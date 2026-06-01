@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { connectSocket } from "../../socket/socket.oi";
+import { connectSocket, getSocketIo } from "../../socket/socket.oi";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import { io, Socket } from "socket.io-client"; // Imported Socket type and io helper safely
 
@@ -27,7 +27,7 @@ interface Room {
   story: StoryChunk[];
   createdAt: Date;
 }
-import { useParams, useNavigate } from "react-router-dom";
+
 
 /**
  * Collab rooms required Socket.IO to `BACKEND_URL/collab`. That is disabled in the
