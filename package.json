@@ -19,15 +19,15 @@
     "backend"
   ],
   "scripts": {
-    "dev": "npx concurrently -n backend,frontend -c blue,green \"npm run dev -w story-spark-ai-backend\" \"npm run dev -w story-spark-ai-frontend\"",
-    "dev:backend": "npm run dev -w story-spark-ai-backend",
-    "dev:frontend": "npm run dev -w story-spark-ai-frontend",
-    "build": "npm run build -w story-spark-ai-backend && npm run build -w story-spark-ai-frontend",
-    "build:backend": "npm run build -w story-spark-ai-backend",
-    "build:frontend": "npm run build -w story-spark-ai-frontend",
-    "start:backend": "npm run start -w story-spark-ai-backend",
-    "start:frontend": "npm run start -w story-spark-ai-frontend",
-    "lint": "npm run lint -w story-spark-ai-frontend"
+    "dev": "npx concurrently -n backend,frontend -c blue,green \"pnpm --filter story-spark-ai-backend run dev\" \"pnpm --filter story-spark-ai-frontend run dev\"",
+    "dev:backend": "pnpm --filter story-spark-ai-backend run dev",
+    "dev:frontend": "pnpm --filter story-spark-ai-frontend run dev",
+    "build": "pnpm --filter story-spark-ai-backend run build && pnpm --filter story-spark-ai-frontend run build",
+    "build:backend": "pnpm --filter story-spark-ai-backend run build",
+    "build:frontend": "pnpm --filter story-spark-ai-frontend run build",
+    "start:backend": "pnpm --filter story-spark-ai-backend run start",
+    "start:frontend": "pnpm --filter story-spark-ai-frontend run start",
+    "lint": "pnpm --filter story-spark-ai-frontend run lint"
   },
   "packageManager": "pnpm@9.15.9",
   "devDependencies": {
