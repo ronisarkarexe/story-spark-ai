@@ -30,6 +30,7 @@ function getInitials(title?: string): string {
 interface StoryCoverImageProps {
   title?: string;
   tag?: string;
+  imageUrl?: string;
   size?: "full" | "thumb";
   className?: string;
   style?: React.CSSProperties;
@@ -38,6 +39,7 @@ interface StoryCoverImageProps {
 const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
   title = "",
   tag = "default",
+  imageUrl = "",
   size = "full",
   className = "",
   style = {},
@@ -71,6 +73,9 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
     );
   }
 
+  const defaultPlaceholder = "https://images.unsplash.com/photo-11455390582262-044cdead277a?w=600&auto=format&fit=crop&q=80";
+  const finalImageSrc = imageUrl && imageUrl.trim() !== "" && !imageUrl.includes("placeholder.com") ? imageUrl : defaultPlaceholder;
+
   return (
     <div
       aria-label={`${title || "Story"} cover preview`}
@@ -82,7 +87,9 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
         minHeight: "192px",
         position: "relative",
         overflow: "hidden",
-        background: `linear-gradient(${theme.gradient})`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url(${finalImageSrc})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         borderRadius: "inherit",
         ...style,
       }}

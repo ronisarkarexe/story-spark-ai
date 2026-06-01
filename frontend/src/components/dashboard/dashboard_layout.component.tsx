@@ -189,9 +189,7 @@ const DashboardLayout: React.FC = () => {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  return <Navigate to="/login" replace />;
-}
-const { data } = useGetProfileInfoQuery();
+  const { data } = useGetProfileInfoQuery();
   const currentPage = menuItems
     .flatMap((item) => (item.subRoutes ? [item, ...item.subRoutes] : [item]))
     .find(
@@ -241,22 +239,11 @@ const { data } = useGetProfileInfoQuery();
             <span className="absolute -top-1 -right-2 bg-red-500 text-[10px] px-1 rounded-full">5</span>
           </button>
 
-          <img
-            className="h-9 w-9 rounded-full"
+          <ImageFallback
+            className="h-9 w-9 rounded-full object-cover"
             src={user?.avatar || "https://avatars.githubusercontent.com/u/76697055?v=4"}
             alt={user?.name || "profile"}
           />
-              <ImageFallback
-                className="h-9 w-9 rounded-full"
-                src="https://avatars.githubusercontent.com/u/76697055?v=4"
-                alt="profile"
-              />
-
-        <img
-          className="h-9 w-9 rounded-full"
-          src={user?.avatar || "https://avatars.githubusercontent.com/u/76697055?v=4"}
-          alt={user?.name || "profile"}
-        />
 
         </div>
       </header>
@@ -268,10 +255,6 @@ const { data } = useGetProfileInfoQuery();
            {/* Sidebar menu logic remains as you provided */}
            <nav className="p-4 space-y-2 overflow-y-auto h-full">
             {accessibleMenuItems.map((item) => {
-
-               // ... (Sidebar rendering logic)
-               return <div key={item.name}>{/* ... menu items ... */}</div>
-
              const isActive =
   item.path === "/dashboard"
     ? location.pathname === "/dashboard"

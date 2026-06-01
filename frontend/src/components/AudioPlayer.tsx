@@ -45,7 +45,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
   ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
     const [voiceGender, setVoiceGender] = useState<"female" | "male">("female");
     const speech = useSpeechSynthesis(text, voiceGender);
-    const speech = useSpeechSynthesis(text);
     const preview = useVoicePreview();
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);

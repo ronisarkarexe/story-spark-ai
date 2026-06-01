@@ -57,21 +57,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
     <div className={`flex flex-col min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${!isAuthPage ? "pb-20 lg:pb-0" : ""}`}>
 
       {!hideHeader && (
-        <NavListComponent
-          logo="/logo.png"
-          isLogin={isLogin}
-          isAdmin={isAdmin}
-          unreadCount={unreadCount}
-          notifications={notifications}
-          isOpen={isNotificationOpen}
-          toggle={() => setIsNotificationOpen(!isNotificationOpen)}
-          close={() => setIsNotificationOpen(false)}
-          markAsRead={markAsRead}
-          handleLogout={handleLogout}
-          getLinkClass={getLinkClass}
-          getMobileLinkClass={getMobileLinkClass}
-          renderMobileNavContent={renderMobileNavContent}
-        />
+        <NavListComponent />
       )}
 
       <CookieConsentBanner />
