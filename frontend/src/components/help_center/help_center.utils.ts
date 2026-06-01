@@ -133,3 +133,11 @@ export const matchesSearch = (query: string, fields: string[]): boolean => {
   const lowerQuery = query.toLowerCase();
   return fields.some(field => field?.toLowerCase().includes(lowerQuery));
 };
+
+export const HELP_SECTIONS = [
+  { id: "categories", label: "Categories" },
+  { id: "faq-section", label: "FAQ" },
+  { id: "troubleshoot-section", label: "Troubleshoot" },
+  { id: "setup-guide-section", label: "Setup Guide" },
+  { id: "support-links-section", label: "Support Links" },
+];

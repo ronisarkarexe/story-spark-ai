@@ -1,7 +1,3 @@
-import { useEffect, useState } from "react";
-
-import { Globe, GitPullRequest, Users } from "lucide-react";
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Globe,

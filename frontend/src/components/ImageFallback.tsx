@@ -4,6 +4,7 @@ interface ImageFallbackProps {
   src?: string;
   alt: string;
   className?: string;
+  onError?: () => void;
 }
 
 const FALLBACK =
@@ -13,6 +14,7 @@ export default function ImageFallback({
   src,
   alt,
   className,
+  onError,
 }: ImageFallbackProps) {
   const [imageSrc, setImageSrc] = useState(src || FALLBACK);
 
@@ -25,7 +27,10 @@ export default function ImageFallback({
       src={imageSrc}
       alt={alt}
       className={className}
-      onError={() => setImageSrc(FALLBACK)}
+      onError={() => {
+        setImageSrc(FALLBACK);
+        if (onError) onError();
+      }}
     />
   );
 }

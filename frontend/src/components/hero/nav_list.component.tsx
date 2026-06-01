@@ -58,7 +58,7 @@ const NotificationComponent: FC<NotificationComponentProps> = ({
       </div>
       <div className="max-h-64 overflow-y-auto space-y-2">
         {notifications && notifications.length > 0 ? (
-          notifications.map((n) => (
+          notifications.map((n: NotificationItem) => (
             <div 
               key={n.id} 
               onClick={() => onMarkAsRead(n.id)}
@@ -76,6 +76,13 @@ const NotificationComponent: FC<NotificationComponentProps> = ({
   );
 };
 
+interface NotificationItem {
+  id: string;
+  title?: string;
+  message?: string;
+  isRead?: boolean;
+}
+
 const NavListComponent: FC = () => {
   const navigate = useNavigate(); 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -83,7 +90,7 @@ const NavListComponent: FC = () => {
 
   const [isLogin, setIsLogin] = useState(isLoggedIn());
   const isAdmin = false; 
-  const [notifications, setNotifications] = useState<unknown[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
