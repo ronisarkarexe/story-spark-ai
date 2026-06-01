@@ -31,21 +31,29 @@ const toggleReaction = async (
   const existingReaction = await Reaction.findOne({
     postId: new Types.ObjectId(postId),
     userId: user._id,
-    type,
-  }).lean();
+    type: type,
+  });
 
   if (existingReaction) {
-    await Reaction.findByIdAndDelete(existingReaction._id);
-
-    post.likesCount = Math.max(0, (post.likesCount || 0) - 1);
-    post.reactions = post.reactions || [];
-    post.reactions = post.reactions.filter(
-      (rId) => rId.toString() !== existingReaction._id.toString()
+    await Reaction.deleteOne({ _id: existingReaction._id });
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: postId },
+      { $inc: { likesCount: -1 } },
+      { new: true }
     );
-
-    await post.save();
-
-    return { message: "Reaction removed", likesCount: post.likesCount };
+    return { message: "Reaction removed successfully", likesCount: updatedPost?.likesCount || 0 };
+  } else {
+    await Reaction.create({
+      postId: new Types.ObjectId(postId),
+      userId: user._id,
+      type: type,
+    });
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: postId },
+      { $inc: { likesCount: 1 } },
+      { new: true }
+    );
+    return { message: "Reaction added successfully", likesCount: updatedPost?.likesCount || 0 };
   }
 
   const newReaction = await Reaction.create({

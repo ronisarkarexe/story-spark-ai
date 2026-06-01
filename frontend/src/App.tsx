@@ -59,14 +59,10 @@ import HelpCenterComponent from "./components/help_center/help_center.component"
 import Contact from "./components/contactus/contactus";
 import GuidelinesComponent from "./components/footer/guidelines.tsx";
 import ContributorsComponent from "./components/footer/contributors";
-import Terms from "./components/footer/terms.tsx";
-import ExploreComponent from "./components/post/post.component";
-import CommunityComponent from "./components/community/community.component";
-import EmailValidationComponent from "./components/email_validation/email.validation.component";
-import DashboardComponent from "./components/dashboard/dashboard.component";
-import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
-import UserComponent from "./components/dashboard/users/user.component";
-import ForgotPasswordComponent from "./components/login/forgot_password.component";
+import ReportBug from "./components/report-bug/ReportBug";
+import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
+import StoryWorkspace from "./components/story/StoryWorkspace";
+
 
 type ProtectedRouteProps = {
   allowedRoles: string[];

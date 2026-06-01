@@ -30,17 +30,6 @@ type AuthUserInfo = {
   avatar?: string;
 };
 
-// FIX: Changed decodedData type to 'any' or Partial to accept looser/undefined parameters safely from the JWT payload
-const buildUserInfo = (decodedData: any): AuthUserInfo => ({
-  email: decodedData?.email || "",
-  userId: decodedData?.userId || "",
-  name: decodedData?.name || "",
-  postsCount: decodedData?.postsCount || 0,
-  role: decodedData?.role || "guest",
-  subscriptionType: decodedData?.subscriptionType || "free",
-  exp: decodedData?.exp || 0,
-  iat: decodedData?.iat || 0,
-
 const buildUserInfo = (decodedData: any): AuthUserInfo => ({
   email: decodedData.email || "",
   userId: decodedData.userId || decodedData._id || "",
