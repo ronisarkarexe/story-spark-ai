@@ -108,6 +108,9 @@ Task:
           segmentIndex,
         },
       });
+    } catch (error) {
+      const detail =
+        error instanceof Error ? error.message : String(error);
 
     } catch (error) {
       const detail =
@@ -120,5 +123,5 @@ Task:
           "Story generation is temporarily unavailable. Please try again later.",
       });
     }
-  }
+  },
 };

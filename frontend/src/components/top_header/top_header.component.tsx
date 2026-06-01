@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import logo from "../../assets/logo.png";
 import ImageFallback from "../ImageFallback";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
@@ -76,6 +76,6 @@ function TopHeaderComponent() {
       </div>
     </div>
   );
-}
+};
 
 export default TopHeaderComponent;

@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { connectSocket, getSocketIo } from "../../socket/socket.oi";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
-import { io, Socket } from "socket.io-client"; // Imported Socket type and io helper safely
 
 interface Participant {
   userId: string;
@@ -42,9 +41,6 @@ export default function CollabRoom() {
   const [error, setError] = useState<string | null>(null);
   const [newText, setNewText] = useState("");
   const user = getUserInfo();
-  
-  // FIX: Persistent reference holder for the custom workspace namespace connection
-  const collabSocketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -64,7 +60,7 @@ export default function CollabRoom() {
       const collabSocket = socket.io.socket("/collab");
 
       // Request room info
-      collabSocket.emit("collab:get_room", { roomId }, (response: any) => {
+      collabSocket.emit("collab:get_room", { roomId }, (response: CollabRoomResponse) => {
         if (response && response.room) {
           setRoom(response.room);
           setError(null);
@@ -75,22 +71,24 @@ export default function CollabRoom() {
       });
 
       // Listen for room updates
-      const handleRoomUpdated = (data: any) => {
+      const handleRoomUpdated = (data: CollabRoomResponse) => {
         if (data && data.room) {
           setRoom(data.room);
         }
       };
 
-      const handleStoryUpdated = (data: any) => {
+      const handleStoryUpdated = (data: CollabStoryResponse) => {
         if (data && data.story) {
-          setRoom((prev) => (prev ? { ...prev, story: data.story } : null));
+          setRoom((prev) =>
+            prev && data.story ? { ...prev, story: data.story } : prev,
+          );
         }
       };
 
       collabSocket.on("collab:room_updated", handleRoomUpdated);
       collabSocket.on("collab:story_updated", handleStoryUpdated);
-      collabSocket.on("collab:error", (data: any) => {
-        setError(data.message);
+      collabSocket.on("collab:error", (data: CollabRoomResponse) => {
+        setError(data.message ?? "Collaboration error");
         setLoading(false);
       });
 

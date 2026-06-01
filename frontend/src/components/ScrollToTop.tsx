@@ -12,7 +12,7 @@ const ScrollToTop = () => {
         left: 0,
         behavior: "instant", // Standardizes immediate jumping for new pages
       });
-    } catch (err) {
+    } catch {
       // Fallback fallback for older browsers/mobile webviews that don't support options objects
       window.scrollTo(0, 0);
     }

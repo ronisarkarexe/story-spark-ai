@@ -84,7 +84,6 @@ const PASSWORD_REQUIREMENTS = [
 
 const SignUpComponent = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [emailVerify] = useEmailVerifyMutation();
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerUser] = useRegisterUserMutation();
@@ -200,8 +199,7 @@ const SignUpComponent = () => {
         if (res.data.accessToken) {
           toast.success("OTP validated successfully!");
           storeUserInfo({ accessToken: res.data.accessToken });
-          const redirectPath = location.state && location.state.from ? location.state.from : "/";
-          navigate(redirectPath);
+          navigate("/");
         }
       } else {
         throw new Error("No verification token received");

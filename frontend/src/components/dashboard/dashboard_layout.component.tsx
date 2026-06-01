@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo } from "../../services/auth.service";
-import ErrorBoundary from "../ErrorBoundary";
-import ImageFallback from "../ImageFallback";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 
 const DashboardLayout: React.FC = () => {
@@ -55,18 +53,22 @@ const DashboardLayout: React.FC = () => {
       <header className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between dark:bg-[#0a1020] dark:border-white/[0.06]">
         <div className="flex items-center gap-4">
           <Link to="/">
-            <button className="w-9 h-9 rounded-lg bg-white/[0.7] hover:bg-white transition text-slate-900 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] dark:text-white">
+              <button className="w-9 h-9 rounded-lg bg-white/[0.7] hover:bg-white transition text-slate-900 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] dark:text-white">
               <i className="fas fa-arrow-left"></i>
             </button>
           </Link>
+
           <div>
             <h1 className="text-lg font-semibold">{pageTitle}</h1>
           </div>
         </div>
+
         <div className="flex items-center gap-4 text-slate-900 dark:text-white">
           <button className="relative">
             <i className="fas fa-bell text-lg"></i>
-            <span className="absolute -top-1 -right-2 bg-red-500 text-[10px] px-1 rounded-full">5</span>
+            <span className="absolute -top-1 -right-2 bg-red-500 text-[10px] px-1 rounded-full">
+              5
+            </span>
           </button>
 
           <ImageFallback
@@ -155,11 +157,9 @@ const DashboardLayout: React.FC = () => {
           </div>
         </aside>
 
-        {/* Main Content wrapped with ErrorBoundary */}
+        {/* Main Content */}
         <main className="flex-1 overflow-auto p-6 bg-white text-slate-900 dark:bg-[#070c18] dark:text-white">
-          <ErrorBoundary>
-            <Outlet />
-          </ErrorBoundary>
+          <Outlet />
         </main>
       </div>
     </div>

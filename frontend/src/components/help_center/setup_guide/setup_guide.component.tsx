@@ -1,4 +1,4 @@
-import { FC } from "react";
+﻿import { FC } from "react";
 import { motion } from "framer-motion";
 import { SetupStep } from "../help_center.utils";
 
@@ -9,11 +9,11 @@ interface SetupGuideProps {
 const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
   return (
     <motion.section
-      id="setup-guide-section"
-      className="scroll-mt-28"
-      initial={{ opacity: 0, y: 24 }}
+      id="developer-setup"
+      className="scroll-mt-24"
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
+      viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5 }}
       aria-labelledby="setup-heading"
     >
@@ -34,15 +34,14 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
         </p>
       </div>
 
-      {/* Interactive Timeline Matrix */}
       <div className="relative">
         {/* Vertical connector line (desktop) */}
         <div
-          className="absolute left-6 top-0 bottom-0 hidden md:block w-px bg-gradient-to-b from-indigo-500/40 via-blue-500/20 to-transparent"
+          className="hidden md:block absolute left-6 top-8 bottom-8 w-px bg-gradient-to-b from-indigo-500/50 via-blue-500/30 to-transparent"
           aria-hidden="true"
         />
 
-        <ol className="space-y-8 relative z-10">
+        <ol className="space-y-6">
           {steps.map((step, index) => (
             <motion.li
               key={`setup-step-${step.step}-${index}`}

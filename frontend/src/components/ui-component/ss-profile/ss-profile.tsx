@@ -1,6 +1,6 @@
 import React from "react";
 import ImageFallback from "../../ImageFallback";
-ImageFallback
+
 type SSProfileProps = {
   name: string;
   imageUrl?: string;

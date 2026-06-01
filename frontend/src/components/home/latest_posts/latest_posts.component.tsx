@@ -82,7 +82,7 @@ const LatestPostsComponent = () => {
                     <p className="text-slate-400 text-sm md:text-base leading-relaxed mb-4 whitespace-pre-wrap">
                       {post.content || "No preview content available."}
                     </p>
-                    
+
                     <div className="flex justify-end">
                       <button
                         onClick={() => navigate(`/post/${post._id}`)}
