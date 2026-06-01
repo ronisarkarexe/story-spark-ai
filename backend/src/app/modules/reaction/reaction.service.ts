@@ -56,19 +56,6 @@ const toggleReaction = async (
     return { message: "Reaction added successfully", likesCount: updatedPost?.likesCount || 0 };
   }
 
-  const newReaction = await Reaction.create({
-    postId: new Types.ObjectId(postId),
-    userId: user._id,
-    type,
-  });
-
-  post.likesCount = (post.likesCount || 0) + 1;
-  post.reactions = post.reactions || [];
-  post.reactions.push(newReaction._id);
-
-  await post.save();
-
-  return { message: "Reaction added", likesCount: post.likesCount };
 };
 
 export const ReactionService = {

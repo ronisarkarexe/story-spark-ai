@@ -16,18 +16,35 @@ import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import { User } from "./app/modules/user/user.model";
 import storyRoutes from "./routes/story.routes";
+import compression from "compression";
+import morgan from "morgan";
+import logger from "./utils/logger.util";
+import { requestIdMiddleware } from "./app/middleware/requestId";
 
+morgan.token("reqId", (req: Request) => req.headers["x-request-id"] as string);
 
 const app: Application = express();
 app.set("trust proxy", 1); // Trust first proxy to securely read req.ip
 app.use(helmet());
+app.use(compression() as unknown as RequestHandler);
+app.use(requestIdMiddleware as unknown as RequestHandler);
+app.use(
+  morgan(
+    ":reqId :method :url :status :res[content-length] - :response-time ms",
+    {
+      stream: {
+        write: (message: string) => logger.info(message.trim()),
+      },
+    }
+  ) as unknown as RequestHandler
+);
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: "Too many requests, please try again later."
 });
 
-app.use(limiter as RequestHandler);
+app.use(limiter as unknown as RequestHandler);
 
 
 
