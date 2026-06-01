@@ -1,7 +1,10 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
-import ThemeToggle from "../theme/theme_toggle.component";
+import { useState, useRef } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
+
+import logo from "../../assets/logo.png";
+import NotificationComponent from "../notification/notification.component";
+
 
 const NavListComponent = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -46,13 +49,10 @@ const NavListComponent = () => {
           <NavLink to="/community" className={linkClass}>Community</NavLink>
         </div>
       )}
-import { useState, useRef } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import logo from "../../assets/logo.png";
-import NotificationComponent from "../notification/notification.component";
-import { getUserInfo } from "../../services/auth.service";
-import type { NotificationItem } from "../notification/notification.component";
 
+</header>
+  );
+};
 // Inline fallback for ThemeToggle
 const ThemeToggle = () => (
   <button
@@ -68,9 +68,9 @@ const ThemeToggle = () => (
 
 // Inline fallback for useNotification
 const useNotification = () => {
-  const notifications: NotificationItem[] = [];
+  const notifications: never[] = [];
   const unreadCount = 0;
-  const markAsRead = (_id?: string) => {};
+  const markAsRead = () => {};
   const isOpen = false;
   const toggle = () => {};
   const close = () => {};
@@ -113,7 +113,9 @@ const NavList = () => {
   const handelLogout = () => {
     try {
       localStorage.removeItem("token");
-    } catch (e) {}
+    } catch (e) {
+      console.error("Error during logout:", e);
+    }
     navigate("/login");
   };
 
@@ -354,5 +356,6 @@ const NavList = () => {
   );
 };
 
+export { NavList };
+
 export default NavListComponent;
-export default NavList;
