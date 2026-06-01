@@ -1,9 +1,7 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { connectSocket } from "../../socket/socket.oi";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
-import { io } from "socket.io-client"; // Imported to resolve namespace path mappings if needed
-// Socket.IO collab disabled (see CollabRoom). Previous: io, Socket, resolveSocketUrl, BACKEND_URL.
 
 export default function CollabHome() {
   const navigate = useNavigate();
@@ -29,14 +27,16 @@ export default function CollabHome() {
         return;
       }
 
-      const collabSocket = socket;
-
-      collabSocket.emit(
+      socket.emit(
         "collab:create_room",
         { userId: user?.userId, username: user?.name },
         (response: unknown) => {
-          if (response && (response as { roomId: string }).roomId) {
-            navigate(`/collab/${(response as { roomId: string }).roomId}`);
+          const roomId = response && typeof response === "object" && "roomId" in response
+            ? String((response as { roomId: string }).roomId)
+            : "";
+
+          if (roomId) {
+            navigate(`/collab/${roomId}`);
           } else {
             setError("Failed to create room. Please try again.");
           }
@@ -72,7 +72,7 @@ export default function CollabHome() {
           </button>
         </div>
         <div className="text-center mb-12">
-          <div className="text-6xl mb-4">✍️</div>
+          <div className="text-6xl mb-4">Γ£ì∩╕Å</div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-3">
             Story Collab Mode
           </h1>
@@ -95,7 +95,7 @@ export default function CollabHome() {
             disabled={isCreating}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 text-white font-semibold text-lg transition-all shadow-lg shadow-indigo-500/20"
           >
-            {isCreating ? "Creating Room..." : "✨ Create a New Story Room"}
+            {isCreating ? "Creating room..." : "Γ£¿ Create a New Story Room"}
           </button>
 
           <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export default function CollabHome() {
               onClick={joinRoom}
               className="px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 dark:bg-white/10 dark:hover:bg-white/15 dark:border-white/10 text-slate-900 dark:text-white font-medium transition"
             >
-              Join 🚀
+              Join ≡ƒÜÇ
             </button>
           </div>
         </div>
@@ -125,9 +125,9 @@ export default function CollabHome() {
         {/* Features */}
         <div className="mt-12 grid grid-cols-3 gap-4 text-center">
           {[
-            { icon: "🎨", label: "Color-coded writers" },
-            { icon: "⚡", label: "Real-time sync" },
-            { icon: "✨", label: "AI co-writer" },
+            { icon: "≡ƒÄ¿", label: "Color-coded writers" },
+            { icon: "ΓÜí", label: "Real-time sync" },
+            { icon: "Γ£¿", label: "AI co-writer" },
           ].map((f) => (
             <div key={f.label} className="bg-white dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl p-3 shadow-sm dark:shadow-none">
               <div className="text-2xl mb-1">{f.icon}</div>

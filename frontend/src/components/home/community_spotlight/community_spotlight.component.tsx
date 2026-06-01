@@ -1,227 +1,75 @@
-import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-
+﻿import { useNavigate } from "react-router-dom";
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
 import LoadingAnimation from "../../loading/loading.component";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
 
-type SpotlightWriter = {
-  author: Post["author"];
-  storiesCount: number;
-  likesCount: number;
-  commentsCount: number;
-  viewsCount: number;
-  bookmarksCount: number;
-  engagementScore: number;
-  topPost: Post;
-};
-
-const TOP_WRITERS_LIMIT = 3;
-
-const getBookmarkCount = (post: Post) => post.bookmarksCount ?? 0;
-
-const getPostEngagementScore = (post: Post) =>
-  (post.likesCount ?? 0) * 3 +
-  (post.commentsCount ?? 0) * 2 +
-  getBookmarkCount(post) * 2 +
-  (post.viewsCount ?? 0);
-
-const getWriterEngagementScore = (writer: Omit<SpotlightWriter, "engagementScore">) =>
-  writer.likesCount * 3 +
-  writer.commentsCount * 2 +
-  writer.bookmarksCount * 2 +
-  writer.viewsCount +
-  writer.storiesCount * 5;
-
-const rankStyles = [
+const MOCK_SPOTLIGHT_POSTS = [
   {
-    badge: "bg-amber-400 text-slate-950 shadow-amber-500/30",
-    ring: "ring-amber-300/70 dark:ring-amber-400/40",
-    label: "Community leader",
+    _id: "mock21",
+    title: "A Letter to My Younger Self",
+    content: "If I could go back and tell my younger self one thing, it would be this: your voice matters, even when it shakes.",
+    author: { _id: "mock-author-1", name: "Maya Chen", email: "", createdAt: "" },
   },
   {
-    badge: "bg-sky-400 text-slate-950 shadow-sky-500/30",
-    ring: "ring-sky-300/70 dark:ring-sky-400/40",
-    label: "Rising favorite",
+    _id: "mock22",
+    title: "Midnight on Maple Street",
+    content: "The streetlights flickered as she walked home, clutching the notebook that held every secret she was too afraid to share.",
+    author: { _id: "mock-author-2", name: "James Okonkwo", email: "", createdAt: "" },
   },
   {
-    badge: "bg-violet-400 text-slate-950 shadow-violet-500/30",
-    ring: "ring-violet-300/70 dark:ring-violet-400/40",
-    label: "Reader pick",
+    _id: "mock23",
+    title: "The Garden We Forgot",
+    content: "Behind the old house, wildflowers had taken over what used to be a carefully tended garden ΓÇö and somehow, it was more beautiful.",
+    author: { _id: "mock-author-3", name: "Elena Rodriguez", email: "", createdAt: "" },
   },
-];
-
-const formatMetric = (value: number) =>
-  new Intl.NumberFormat("en", { notation: "compact" }).format(value);
+  {
+    _id: "mock24",
+    title: "Small Acts of Courage",
+    content: "Heroism isn't always loud. Sometimes it's showing up, speaking up, or simply refusing to give up on the people you love.",
+    author: { _id: "mock-author-4", name: "Arjun Patel", email: "", createdAt: "" },
+  },
+  {
+    _id: "mock25",
+    title: "Echoes in the Attic",
+    content: "Every box held a memory ΓÇö faded photographs, handwritten letters, and the faint scent of a summer long gone.",
+    author: { _id: "mock-author-5", name: "Sophie Laurent", email: "", createdAt: "" },
+  },
+  {
+    _id: "mock26",
+    title: "Where the River Bends",
+    content: "They met where the river bends, where the water slows and the world feels like it might pause just long enough to listen.",
+    author: { _id: "mock-author-6", name: "Daniel Kim", email: "", createdAt: "" },
+  },
+] as Post[];
 
 const CommunitySpotlightComponent = () => {
-  const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
+  const { data, isLoading, isError } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
-
-  const topWriters = useMemo<SpotlightWriter[]>(() => {
-    const writers = new Map<string, Omit<SpotlightWriter, "engagementScore">>();
-
-    data?.posts?.forEach((post: Post) => {
-      if (!post.author) return;
-
-      const authorKey = post.author._id || post.author.email || post.author.name;
-      if (!authorKey) return;
-
-      const existingWriter = writers.get(authorKey);
-      const postScore = getPostEngagementScore(post);
-
-      if (!existingWriter) {
-        writers.set(authorKey, {
-          author: post.author,
-          storiesCount: 1,
-          likesCount: post.likesCount ?? 0,
-          commentsCount: post.commentsCount ?? 0,
-          viewsCount: post.viewsCount ?? 0,
-          bookmarksCount: getBookmarkCount(post),
-          topPost: post,
-        });
-        return;
-      }
-
-      existingWriter.storiesCount += 1;
-      existingWriter.likesCount += post.likesCount ?? 0;
-      existingWriter.commentsCount += post.commentsCount ?? 0;
-      existingWriter.viewsCount += post.viewsCount ?? 0;
-      existingWriter.bookmarksCount += getBookmarkCount(post);
-
-      if (postScore > getPostEngagementScore(existingWriter.topPost)) {
-        existingWriter.topPost = post;
-      }
-    });
-
-    return Array.from(writers.values())
-      .map((writer) => ({
-        ...writer,
-        engagementScore: getWriterEngagementScore(writer),
-      }))
-      .sort((a, b) => b.engagementScore - a.engagementScore)
-      .slice(0, TOP_WRITERS_LIMIT) as SpotlightWriter[];
-  }, [data?.posts]);
 
   if (isLoading) return <LoadingAnimation />;
 
-  if (isError) {
-    return (
-      <section className="story-section">
-        <div className="story-page-shell">
-          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-10 text-center text-red-200">
-            <p className="mb-3 font-semibold">Failed to load spotlight stories.</p>
-            <button
-              onClick={() => refetch()}
-              className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const posts = isError || !data?.posts?.length ? MOCK_SPOTLIGHT_POSTS : data.posts;
 
   return (
-    <section className="px-5 py-10 text-slate-900 dark:text-slate-100">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">
-            Top 3 contributors
-          </p>
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-100">
-            Community Spotlight
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-gray-400 sm:text-base">
-            Ranked by stories, views, likes, comments, and bookmarks from the
-            latest community activity.
-          </p>
+    <section className="story-section">
+      <div className="story-page-shell">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="story-section-heading">Community Spotlight</h2>
         </div>
-
-        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300">
-          <i className="fas fa-wand-magic-sparkles text-xs"></i>
-          Reader powered
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          {posts.slice(0, 6).map((post: Post) => (
+            <button key={post._id} onClick={() => navigate(`/post/${post._id}`)} className="motion-card-subtle story-panel rounded-lg p-5 text-left">
+              <div className="mb-3 flex items-center gap-3">
+                <SSProfile name={post.author?.name || "Unknown User"} size="h-9 w-9" />
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{post.author?.name || "Unknown User"}</p>
+              </div>
+              <h3 className="mb-2 text-lg font-bold text-slate-800 dark:text-slate-100">{post.title}</h3>
+              <p className="line-clamp-3 text-sm text-slate-600 dark:text-slate-400">{post.content}</p>
+            </button>
+          ))}
         </div>
       </div>
-
-      {topWriters.length > 0 ? (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {topWriters.map((writer, index) => {
-            const rank = index + 1;
-            const style = rankStyles[index];
-
-            return (
-              <button
-                key={writer.author._id || writer.author.email || writer.author.name}
-                type="button"
-                aria-label={`Read ${writer.topPost.title} by ${writer.author.name || "Unknown User"}`}
-                onClick={() => navigate(`/post/${writer.topPost._id}`)}
-                className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-5 text-left shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700/60 dark:bg-slate-900/70 dark:hover:border-blue-400/50 dark:focus:ring-offset-slate-950"
-              >
-                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-violet-500 to-amber-400"></div>
-
-                <div className="mb-6 flex items-start justify-between gap-4">
-                  <div className="flex min-w-0 items-center gap-4">
-                    <div className={`rounded-full ring-4 ${style.ring} transition-transform duration-300 group-hover:scale-105`}>
-                      <SSProfile name={writer.author.name || "Unknown User"} size="h-14 w-14" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-lg font-bold text-slate-900 dark:text-gray-100">
-                        {writer.author.name || "Unknown User"}
-                      </p>
-                      <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-gray-500">
-                        {style.label}
-                      </p>
-                    </div>
-                  </div>
-                  <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-black shadow-lg ${style.badge}`}>
-                    #{rank}
-                  </span>
-                </div>
-
-                <div className="mb-5 rounded-xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-700/60 dark:bg-slate-800/50">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-gray-500">
-                    Top story
-                  </p>
-                  <h3 className="line-clamp-2 text-base font-semibold leading-6 text-slate-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-300">
-                    {writer.topPost.title}
-                  </h3>
-                </div>
-
-                <div className="mt-auto grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-xl bg-blue-50 px-3 py-3 dark:bg-blue-500/10">
-                    <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{formatMetric(writer.engagementScore)}</p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">Score</p>
-                  </div>
-                  <div className="rounded-xl bg-violet-50 px-3 py-3 dark:bg-violet-500/10">
-                    <p className="text-lg font-bold text-violet-700 dark:text-violet-300">{formatMetric(writer.storiesCount)}</p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">Stories</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-100 px-3 py-3 dark:bg-slate-800">
-                    <p className="text-lg font-bold text-slate-800 dark:text-gray-200">{formatMetric(writer.likesCount)}</p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">Likes</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-100 px-3 py-3 dark:bg-slate-800">
-                    <p className="text-lg font-bold text-slate-800 dark:text-gray-200">{formatMetric(writer.viewsCount)}</p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">Views</p>
-                  </div>
-                </div>
-
-                <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition-colors group-hover:text-blue-700 dark:text-blue-300 dark:group-hover:text-blue-200">
-                  Read top story
-                  <i className="fas fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1"></i>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="rounded-xl border border-slate-200 bg-slate-100 px-5 py-5 text-slate-700 dark:border-slate-700/70 dark:bg-slate-900/40 dark:text-slate-300">
-          No top contributors yet.
-        </div>
-      )}
     </section>
   );
 };

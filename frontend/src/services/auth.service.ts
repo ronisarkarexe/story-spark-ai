@@ -1,4 +1,4 @@
-import { AUTH_KEY } from "../constants/storage-key";
+﻿import { AUTH_KEY } from "../constants/storage-key";
 import { AccessToken } from "../models/login";
 import { decodedToken } from "../utils/jwt";
 import {
@@ -14,7 +14,7 @@ const emitAuthChange = () => {
   window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
 };
 
-export type AuthUserInfo = {
+type AuthUserInfo = {
   email: string;
   userId: string;
   name: string;
@@ -23,20 +23,17 @@ export type AuthUserInfo = {
   subscriptionType: string;
   exp: number;
   iat: number;
-  avatar?: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const buildUserInfo = (decodedData: any): AuthUserInfo => ({
-  email: decodedData?.email || "",
-  userId: decodedData?.userId || decodedData?._id || "",
-  name: decodedData?.name || "",
-  postsCount: decodedData?.postsCount || 0,
-  role: decodedData?.role || "guest",
-  subscriptionType: decodedData?.subscriptionType || "free",
-  exp: decodedData?.exp || 0,
-  iat: decodedData?.iat || 0,
-  avatar: decodedData?.avatar || "",
+const buildUserInfo = (decodedData: Partial<AuthUserInfo>): AuthUserInfo => ({
+  email: decodedData.email || "",
+  userId: decodedData.userId || "",
+  name: decodedData.name || "",
+  postsCount: decodedData.postsCount || 0,
+  role: decodedData.role || "guest",
+  subscriptionType: decodedData.subscriptionType || "free",
+  exp: decodedData.exp || 0,
+  iat: decodedData.iat || 0,
 });
 
 const getValidDecodedToken = () => {
@@ -45,21 +42,14 @@ const getValidDecodedToken = () => {
   if (authToken) {
     try {
       const decodedData = decodedToken(authToken);
-
-      if (!decodedData) {
-        removeFromLocalStorage(AUTH_KEY);
-        return null;
-      }
-
-      if (
-        typeof decodedData.exp === "number" &&
-        decodedData.exp <= Math.floor(Date.now() / 1000)
-      ) {
-        removeFromLocalStorage(AUTH_KEY);
-        return null;
-      }
-
-      return buildUserInfo(decodedData);
+          if (
+      typeof decodedData.exp === "number" &&
+      decodedData.exp <= Math.floor(Date.now() / 1000)
+    ) {
+      removeFromLocalStorage(AUTH_KEY);
+      return null;
+    }
+      return buildUserInfo(decodedData as AuthUserInfo);
     } catch (error) {
       console.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);
@@ -78,7 +68,6 @@ export const storeUserInfo = ({ accessToken }: AccessToken) => {
 export const getUserInfo = (): AuthUserInfo | null => {
   return getValidDecodedToken();
 };
-
 export const isLoggedIn = () => {
   return !!getValidDecodedToken();
 };

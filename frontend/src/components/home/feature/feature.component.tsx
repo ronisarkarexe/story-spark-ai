@@ -1,4 +1,4 @@
-import { Post } from "../../../models/post";
+﻿import { Post } from "../../../models/post";
 import { useGetFeaturedListsQuery } from "../../../redux/apis/post.api";
 import { formatDateShort } from "../../../utils/time-formate";
 import LoadingAnimation from "../../loading/loading.component";
@@ -90,9 +90,9 @@ const FeatureComponent = () => {
                             <p className="text-xs text-slate-500 dark:text-slate-400">
                               {formatDateShort(post.createdAt)}
                             </p>
-                            <span className="text-xs text-slate-400 dark:text-slate-600">•</span>
+                            <span className="text-xs text-slate-400 dark:text-slate-600">ΓÇó</span>
                             <p className="text-xs font-medium text-indigo-500 dark:text-indigo-300">
-                              ⏱️ {calculateReadingTime(post.content)} min read
+                              ΓÅ▒∩╕Å {calculateReadingTime(post.content)} min read
                             </p>
                           </div>
                         </div>

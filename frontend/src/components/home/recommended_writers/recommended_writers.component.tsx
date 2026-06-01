@@ -1,9 +1,7 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { isLoggedIn } from "../../../services/auth.service";
 import { useToggleFollowMutation } from "../../../redux/apis/user.api";
-import ImageFallback from "../../ImageFallback";
-ImageFallback
 
 const RecommendedWritersComponent = () => {
   const recommendedWriters = [
@@ -52,29 +50,16 @@ const RecommendedWritersComponent = () => {
 
   return (
     <>
-      <section className="bg-blue-500/10 rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-gray-300 mb-4">
-          Recommended Writers
-        </h3>
-
-        <div className="space-y-4">
+      <section className="story-panel rounded-lg p-5 sm:p-6">
+        <h3 className="mb-5 text-lg font-bold tracking-tight text-slate-800 dark:text-slate-100">Recommended Writers</h3>
+        <div className="space-y-3">
           {recommendedWriters.map((writer, index) => (
-            <div key={writer.id} className="flex items-center justify-between">
-              <div className="flex items-center">
-                <ImageFallback
-                  className="h-10 w-10 rounded-full"
-                <img
-                  className="h-10 w-10 rounded-full object-cover"
-                  src={writer.image}
-                  alt={writer.name}
-                />
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-slate-700 dark:text-gray-400">
-                    {writer.name}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-gray-500">
-                    {writer.role}
-                  </p>
+            <div key={writer.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700/40 dark:bg-slate-950/20 shadow-sm dark:shadow-none">
+              <div className="flex items-center gap-3">
+                <img className="h-10 w-10 rounded-full object-cover" src={writer.image} alt={writer.name} />
+                <div>
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{writer.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-500">{writer.role}</p>
                 </div>
               </div>
               <button disabled={isLoading} onClick={() => toggleFollow(index, writer.id)} className="motion-cta rounded-full px-3 py-1.5 text-sm text-white font-semibold disabled:opacity-50">
