@@ -69,7 +69,8 @@ export default function CollabRoom() {
       collabSocketRef.current = collabSocket;
 
       // Request room info
-      collabSocket.emit("collab:get_room", { roomId }, (response: any) => {
+      interface RoomResponse { room?: Room }
+      collabSocket.emit("collab:get_room", { roomId }, (response: RoomResponse) => {
         if (response && response.room) {
           setRoom(response.room);
           setError(null);
@@ -80,13 +81,13 @@ export default function CollabRoom() {
       });
 
       // Listen for room updates
-      const handleRoomUpdated = (data: any) => {
+      const handleRoomUpdated = (data: { room?: Room }) => {
         if (data && data.room) {
           setRoom(data.room);
         }
       };
 
-      const handleStoryUpdated = (data: any) => {
+      const handleStoryUpdated = (data: { story?: StoryChunk[] }) => {
         if (data && data.story) {
           setRoom((prev) => (prev ? { ...prev, story: data.story } : null));
         }
@@ -94,7 +95,7 @@ export default function CollabRoom() {
 
       collabSocket.on("collab:room_updated", handleRoomUpdated);
       collabSocket.on("collab:story_updated", handleStoryUpdated);
-      collabSocket.on("collab:error", (data: any) => {
+      collabSocket.on("collab:error", (data: { message: string }) => {
         setError(data.message);
         setLoading(false);
       });

@@ -9,7 +9,7 @@ export default function CollabHome() {
   const navigate = useNavigate();
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
+
   const user = getUserInfo();
 
   const createRoom = () => {

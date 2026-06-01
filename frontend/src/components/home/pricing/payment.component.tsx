@@ -50,15 +50,16 @@ const PaymentComponent = () => {
 
   // Razorpay payment handler
   const handlePayment = async () => {
-    // Load Razorpay SDK
-    const loaded = await loadRazorpayScript();
+    setLoading(true);
+    try {
+      // Load Razorpay SDK
+      const loaded = await loadRazorpayScript();
 
     if (!loaded) {
       alert("Failed to load Razorpay SDK.");
       return;
     }
 
-    try {
       // Create order from backend
       const res = await fetch("/api/v1/payment/create-order", {
         method: "POST",
@@ -134,6 +135,8 @@ const PaymentComponent = () => {
     } catch (error) {
       console.error(error);
       alert("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
   };
 

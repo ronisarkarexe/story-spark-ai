@@ -1,6 +1,6 @@
 import React  from 'react';
 import { isLoggedIn } from '../../services/auth.service';
-import { genres, featuredWriters } from './community.data';
+import { featuredWriters } from './community.data';
 import ImageFallback from "../ImageFallback";
 
 const CommunityComponent: React.FC = () => {

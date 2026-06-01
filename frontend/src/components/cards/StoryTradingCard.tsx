@@ -102,8 +102,8 @@ const getKeyQuote = (content: string) => {
   return quote.length > 120 ? `${quote.slice(0, 117)}...` : quote;
 };
 
-const getGenreLabel = (story: IStories) =>
-  cleanText((story as any).genre || story.tag || "Story").replace(/^[^\w]+/, "") ||
+const getGenreLabel = (story: IStories & { genre?: string }) =>
+  cleanText(story.genre || story.tag || "Story").replace(/^[^\w]+/, "") ||
   "Story";
 
 interface StoryTradingCardProps {
