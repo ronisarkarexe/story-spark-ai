@@ -20,42 +20,30 @@ const toggleBookmark = async (storyId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Story not found!");
   }
 
-  // Atomically find and delete the bookmark if it exists
+  // Bookmark collection is the single source of truth; bookmarksCount mirrors it.
   const deletedBookmark = await Bookmark.findOneAndDelete({
     userId: user._id,
     storyId: post._id,
   });
 
   if (deletedBookmark) {
-    // Atomically pull the user from the bookmarks array
-    await Post.findOneAndUpdate(
-      { _id: post._id },
-      { $pull: { bookmarks: user._id } }
+    await Post.updateOne(
+      { _id: post._id, bookmarksCount: { $gt: 0 } },
+      { $inc: { bookmarksCount: -1 } }
     );
-
     return { message: "Bookmark removed", isBookmarked: false };
-  } else {
-    // Add bookmark atomically
-    try {
-      await Bookmark.create({
-        userId: user._id,
-        storyId: post._id,
-      });
+  }
 
-      // Atomically add the user to the bookmarks array if not already present
-      await Post.findOneAndUpdate(
-        { _id: post._id },
-        { $addToSet: { bookmarks: user._id } }
-      );
-
+  try {
+    await Bookmark.create({ userId: user._id, storyId: post._id });
+    await Post.updateOne({ _id: post._id }, { $inc: { bookmarksCount: 1 } });
+    return { message: "Story bookmarked!", isBookmarked: true };
+  } catch (error: any) {
+    // Duplicate means it was already bookmarked; treat as a no-op success.
+    if (error.code === 11000) {
       return { message: "Story bookmarked!", isBookmarked: true };
-    } catch (error: any) {
-      // Handle rare duplicate bookmark race condition
-      if (error.code === 11000) {
-        return { message: "Story bookmarked!", isBookmarked: true };
-      }
-      throw error;
     }
+    throw error;
   }
 };
 
@@ -85,7 +73,6 @@ const getBookmarks = async (
           path: "reactions",
           populate: { path: "userId", select: "_id" },
         },
-        { path: "bookmarks", select: "_id" },
       ],
     });
 
@@ -134,9 +121,9 @@ const deleteBookmark = async (storyId: string, token: ITokenPayload) => {
   });
 
   if (deletedBookmark) {
-    await Post.findOneAndUpdate(
-      { _id: storyId },
-      { $pull: { bookmarks: user._id } }
+    await Post.updateOne(
+      { _id: storyId, bookmarksCount: { $gt: 0 } },
+      { $inc: { bookmarksCount: -1 } }
     );
   }
 

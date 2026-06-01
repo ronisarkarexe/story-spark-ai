@@ -27,24 +27,14 @@ export default function CollabHome() {
         return;
       }
 
-      // FIX: Establish connection directly to the namespace path.
-      // If your backend runs on a dynamic env value, replace the fallback string with import.meta.env.VITE_SOCKET_URL
-      const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
-      const collabSocket = io(`${socketUrl}/collab`, {
-        transports: ["websocket"],
-        // pass existing auth parameters if your socket initialization requires them:
-        auth: {
-          token: localStorage.getItem("AUTH_KEY") 
-        }
-      });
-      const collabSocket = socket;
+      const collabSocket = socket.io.socket("/collab");
 
       collabSocket.emit(
         "collab:create_room",
         { userId: user?.userId, username: user?.name },
-        (response: { roomId: string } | null) => {
-          if (response && response.roomId) {
-            navigate(`/collab/${response.roomId}`);
+        (response: unknown) => {
+          if (response && (response as { roomId: string }).roomId) {
+            navigate(`/collab/${(response as { roomId: string }).roomId}`);
           } else {
             setError("Failed to create room. Please try again.");
           }

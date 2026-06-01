@@ -5,7 +5,7 @@ import crypto from "crypto";
 import { OAuth2Client } from "google-auth-library";
 import { AuthModel } from "./auth.interface";
 import { User } from "../user/user.model";
-import { JwtHalers } from "../../../utils/jwt.helper";
+import { JwtHelpers } from "../../../utils/jwt.helper";
 import logger from "../../../utils/logger.util";
 import config from "../../../config";
 import ApiError from "../../../errors/api_error";
@@ -29,7 +29,7 @@ const buildClaims = (user: any) => ({
 });
 
 const issueAccessToken = (user: any, expiresIn?: string): string =>
-  JwtHalers.createToken(
+  JwtHelpers.createToken(
     buildClaims(user),
     config.jwt.secret as Secret,
     expiresIn ?? (config.jwt.expires_in as string)
@@ -38,7 +38,7 @@ const issueAccessToken = (user: any, expiresIn?: string): string =>
 // Issues a refresh token with a unique jti and records its session for rotation.
 const issueRefreshToken = async (user: any): Promise<string> => {
   const jti = crypto.randomBytes(16).toString("hex");
-  const token = JwtHalers.createToken(
+  const token = JwtHelpers.createToken(
     { ...buildClaims(user), jti },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
@@ -82,7 +82,6 @@ const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
 const register = async (payload: IUser & { verificationToken?: string; confirmPassword?: string }) => {
   const { email: userEmail, verificationToken } = payload;
   
-  // FIX #4: Verify that email was verified via OTP before allowing registration
   if (!verificationToken) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
@@ -90,7 +89,6 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
     );
   }
 
-  // Check if verification token is valid
   const otpRecord = await OTPModel.findOne({
     email: userEmail,
     isVerified: true,
@@ -104,7 +102,6 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
     );
   }
 
-  // Check if verification token has expired
   if (
     !otpRecord.verificationTokenExpires ||
     new Date() > otpRecord.verificationTokenExpires
@@ -128,6 +125,7 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
 
   const accessToken = issueAccessToken(result);
   const refreshToken = await issueRefreshToken(result);
+
   return {
     accessToken,
     refreshToken,
@@ -141,7 +139,7 @@ const refreshToken = async (token: string) => {
 
   let verifiedToken = null;
   try {
-    verifiedToken = JwtHalers.verifyToken(
+    verifiedToken = JwtHelpers.verifyToken(
       token,
       config.jwt.refresh_secret as Secret
     );
@@ -209,7 +207,7 @@ const refreshToken = async (token: string) => {
 const logout = async (token?: string) => {
   if (!token) return;
   try {
-    const verified = JwtHalers.verifyToken(
+    const verified = JwtHelpers.verifyToken(
       token,
       config.jwt.refresh_secret as Secret
     );
@@ -241,7 +239,6 @@ const googleLogin = async (payload: { token: string }) => {
       throw new ApiError(httpStatus.BAD_REQUEST, "Invalid Google token");
     }
 
-    // Reject unverified Google emails to prevent account takeover (CWE-287).
     if (!payload_data.email_verified) {
       throw new ApiError(httpStatus.UNAUTHORIZED, "Google email is not verified");
     }
@@ -249,7 +246,6 @@ const googleLogin = async (payload: { token: string }) => {
     const { email, name: googleName, picture } = payload_data;
     let user = await User.findOne({ email });
 
-    // If user doesn't exist, create a new user
     if (!user) {
       const newUser: Partial<IUser> = {
         email: email as string,
@@ -282,7 +278,6 @@ const googleLogin = async (payload: { token: string }) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Google login error: ${errorMessage}`);
     
-    // If it's already an ApiError, re-throw it
     if (error instanceof ApiError) {
       throw error;
     }
@@ -321,10 +316,8 @@ const changePassword = async (userPayload: any, payload: any) => {
   } else {
     user.tokenVersion = 1;
   }
-
   await user.save();
 };
-
 const forgotPassword = async (email: string) => {
   if (!email) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email is required!");
@@ -334,7 +327,6 @@ const forgotPassword = async (email: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
   
-  // Send OTP using VerifyEmailService
   const result = await VerifyEmailService.VerifyEmail({
     email: user.email,
     name: user.name || "User",
@@ -357,7 +349,6 @@ const resetPassword = async (payload: {
     throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
   }
   
-  // Validate password strength using Zod schema's rules manually to return user-friendly errors
   const getPasswordError = (pwd: string) => {
     if (pwd.length < 8) return "Password must be at least 8 characters long";
     if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
@@ -376,7 +367,6 @@ const resetPassword = async (payload: {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
 
-  // Verify token against OTPModel
   const otpRecord = await OTPModel.findOne({
     email,
     isVerified: true,

@@ -4,6 +4,7 @@ import { User } from "../user/user.model";
 import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
 import { Post } from "./post.model";
+import { Bookmark } from "../bookmark/bookmark.model";
 import { StoryVersionService } from "../story_version/story_version.service";
 import {
   IGenericResponse,
@@ -138,8 +139,7 @@ const getPosts = async (
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "_id" },
-    })
-    .populate("bookmarks", "_id");
+    });
   const total = await Post.countDocuments(whereCondition);
   return {
     meta: {
@@ -197,8 +197,7 @@ const getPublishedPostsByAuthor = async (
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "_id" },
-    })
-    .populate("bookmarks", "_id");
+    });
   const total = await Post.countDocuments(whereCondition);
 
   return {
@@ -222,8 +221,7 @@ const getLatestPosts = async () => {
       .populate({
         path: "reactions",
         populate: { path: "userId", select: "_id" },
-      })
-      .populate("bookmarks", "_id");
+      });
     return res;
   } catch (error) {
     throw new ApiError(
@@ -247,8 +245,7 @@ const getFeaturedPosts = async () => {
       .populate({
         path: "reactions",
         populate: { path: "userId", select: "_id" },
-      })
-      .populate("bookmarks", "_id");
+      });
     return res;
   } catch (error) {
     throw new ApiError(
@@ -280,8 +277,7 @@ const getSinglePost = async (id: string) => {
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "_id" },
-    })
-    .populate("bookmarks", "_id");
+    });
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
@@ -308,8 +304,7 @@ const getSinglePost = async (id: string) => {
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "_id" },
-    })
-    .populate("bookmarks", "_id");
+    });
   return result;
 };
 
@@ -323,23 +318,30 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (!postExists) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
-  // Check bookmark status atomically via a DB query instead of loading the full document
-  const isBookmarked = await Post.exists({ _id: postId, bookmarks: user._id });
 
-  if (isBookmarked) {
-    // Remove bookmark atomically
+  // Bookmark collection is the single source of truth; bookmarksCount mirrors it.
+  const deleted = await Bookmark.findOneAndDelete({
+    userId: user._id,
+    storyId: post._id,
+  });
+
+  if (deleted) {
     await Post.updateOne(
-      { _id: postId },
-      { $pull: { bookmarks: user._id } }
+      { _id: postId, bookmarksCount: { $gt: 0 } },
+      { $inc: { bookmarksCount: -1 } }
     );
     return { message: "Bookmark removed", bookmarked: false };
-  } else {
-    // Add bookmark atomically — $addToSet prevents duplicates
-    await Post.updateOne(
-      { _id: postId },
-      { $addToSet: { bookmarks: user._id } }
-    );
+  }
+
+  try {
+    await Bookmark.create({ userId: user._id, storyId: post._id });
+    await Post.updateOne({ _id: postId }, { $inc: { bookmarksCount: 1 } });
     return { message: "Bookmark added", bookmarked: true };
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return { message: "Bookmark added", bookmarked: true };
+    }
+    throw error;
   }
 }
 

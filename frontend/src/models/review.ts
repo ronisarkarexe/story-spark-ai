@@ -3,5 +3,6 @@ export interface Review {
   name: string;
   role: string;
   feedback: string;
-  imgSrc: string;
+  imgSrc?: string;
+  rating?: number;
 }

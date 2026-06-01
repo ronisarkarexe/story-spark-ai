@@ -7,8 +7,9 @@ import {
   useGetPendingReviewsQuery,
 } from "../../redux/apis/review.api";
 import { Review } from "../../models/review";
+import defaultAvatar from "../../assets/logoNew.png";
 import ImageFallback from "../ImageFallback";
-ImageFallback
+
 const ReviewApprovalComponent = () => {
   const { data: reviews = [], isLoading } =
     useGetPendingReviewsQuery({});
@@ -51,10 +52,10 @@ const ReviewApprovalComponent = () => {
           >
             <div className="flex items-center gap-4 mb-4">
               <ImageFallback
-                  src={review.imgSrc}
-                  alt={review.name}
-                  className="w-14 h-14 rounded-full"
-                />
+                src={review.imgSrc?.trim() ? review.imgSrc : defaultAvatar}
+                alt={review.name}
+                className="w-14 h-14 rounded-full"
+              />
 
               <div>
                 <h3 className="font-bold text-lg">

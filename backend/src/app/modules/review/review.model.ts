@@ -26,7 +26,7 @@ const ReviewSchema = new Schema<IReview, ReviewModel>(
 
     imgSrc: {
       type: String,
-      required: true,
+      default: "",
     },
 
     rating: {

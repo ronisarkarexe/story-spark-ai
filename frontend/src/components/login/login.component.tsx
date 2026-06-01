@@ -1,7 +1,8 @@
 import { useForm, SubmitHandler } from "react-hook-form";
-import SSInput from "../ui-component/ss-input/ss-input";
-import SSButton from "../ui-component/ss-button/ss-button";
 import { useState } from "react";
+import "./auth.css";
+
+import "@flaticon/flaticon-uicons/css/all/all.css";
 import {
   useLoginUserMutation,
   useGoogleLoginMutation,
@@ -12,6 +13,10 @@ import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
+
+
+
+
 
 type Inputs = {
   email: string;
@@ -25,7 +30,6 @@ const LoginComponent = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
 
   const [isBusy, setIsBusy] = useState<boolean>(false);
@@ -163,9 +167,14 @@ const LoginComponent = () => {
         </div>
 
 
-        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl overflow-hidden">
 
-        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
+        <div className="w-full min-w-0 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
+
+          <img
+            src="src/assets/login.jpg"
+            alt="Background"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
 
             <button
             onClick={() => window.location.href = "/"}
@@ -175,12 +184,10 @@ const LoginComponent = () => {
           </button>
 
 
-          <h3 className="mb-6 text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-200">
-            Welcome Back
-          </h3>
+          <div className="absolute inset-0 bg-black/60"></div>
 
           <form
-            className="space-y-5"
+            className="w-full space-y-5 "
             onSubmit={handleSubmit(onSubmit)}
             >
 
@@ -239,6 +246,7 @@ const LoginComponent = () => {
               <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                 OR
               </span>
+
             </div>
           </div>
 

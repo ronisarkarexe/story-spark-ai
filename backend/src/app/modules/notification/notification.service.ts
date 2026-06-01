@@ -4,7 +4,10 @@ import { ITokenPayload } from "../../../interfaces/token";
 import { User } from "../user/user.model";
 import { INotification } from "./notification.interface";
 import { Notification } from "./notification.model";
-import { emitNotificationToUser } from "../../../socket/notification.socket";
+import {
+  emitNotificationStateToUser,
+  emitNotificationToUser,
+} from "../../../socket/notification.socket";
 
 const createNotification = async (payload: INotification) => {
   const notification = await Notification.create(payload);
@@ -47,6 +50,8 @@ const markNotificationAsRead = async (
   if (!notification) {
     throw new ApiError(httpStatus.NOT_FOUND, "Notification not found!");
   }
+
+  emitNotificationStateToUser(userId, "notification:updated", notification);
 
   return notification;
 };

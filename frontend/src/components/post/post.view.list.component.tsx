@@ -120,7 +120,6 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                 <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
                   <BookmarkButton
                     storyId={story._id}
-                    bookmarks={story.bookmarks}
                     className="backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 hover:bg-white/30 p-2 !rounded-full shadow-lg hover:scale-110 transition-all duration-300"
                   />
                 </div>

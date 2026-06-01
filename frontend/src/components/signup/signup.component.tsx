@@ -1,509 +1,150 @@
-import { useForm, SubmitHandler } from "react-hook-form";
-import SSInput from "../ui-component/ss-input/ss-input";
-import SSButton from "../ui-component/ss-button/ss-button";
-import { useState, useEffect } from "react";
-import { storeUserInfo } from "../../services/auth.service";
-import toast, { Toaster } from "react-hot-toast";
-import {
-  useEmailVerifyMutation,
-  useVerifyOtpMutation,
-} from "../../redux/apis/otp.verify.api";
-import { useRegisterUserMutation } from "../../redux/apis/auth.api";
-import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { FC } from "react";
+import { motion } from "framer-motion";
 
-interface IRegisterInfo {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
+interface HelpCategory {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  sectionId?: string;
 }
 
-interface Inputs extends IRegisterInfo {
-  otp: string;
+interface HelpCategoriesProps {
+  categories: HelpCategory[];
 }
 
-const getPasswordError = (password: string) => {
-  if (password.length < 8) {
-    return "Password must be at least 8 characters long";
-  }
-  if (!/[A-Z]/.test(password)) {
-    return "Password must contain at least one uppercase letter";
-  }
-  if (!/[a-z]/.test(password)) {
-    return "Password must contain at least one lowercase letter";
-  }
-  if (!/[0-9]/.test(password)) {
-    return "Password must contain at least one number";
-  }
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    return "Password must contain at least one special character";
-  }
-
-  return "";
-};
-
-type StrengthLevel = "weak" | "medium" | "strong";
-
-const PASSWORD_STRENGTH_CONFIG: Record<
-  StrengthLevel,
-  { label: string; barColor: string; barWidth: string; textColor: string }
-> = {
-  weak: {
-    label: "Weak",
-    barColor: "bg-red-500",
-    barWidth: "w-1/3",
-    textColor: "text-red-400",
-  },
-  medium: {
-    label: "Medium",
-    barColor: "bg-yellow-400",
-    barWidth: "w-2/3",
-    textColor: "text-yellow-300",
-  },
-  strong: {
-    label: "Strong",
-    barColor: "bg-green-500",
-    barWidth: "w-full",
-    textColor: "text-green-400",
-  },
-};
-
-const getStrengthLevel = (passedChecks: number): StrengthLevel => {
-  if (passedChecks <= 2) return "weak";
-  if (passedChecks <= 4) return "medium";
-  return "strong";
-};
-
-const PASSWORD_REQUIREMENTS = [
-  { key: "length" as const, label: "Minimum 8 characters" },
-  { key: "uppercase" as const, label: "One uppercase letter" },
-  { key: "lowercase" as const, label: "One lowercase letter" },
-  { key: "number" as const, label: "One number" },
-  { key: "special" as const, label: "One special character" },
-];
-
-const SignUpComponent = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [emailVerify] = useEmailVerifyMutation();
-  const [verifyOtp] = useVerifyOtpMutation();
-  const [registerUser] = useRegisterUserMutation();
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<Inputs>({ mode: "onChange" });
-  const [isBusy, setIsBusy] = useState<boolean>(false);
-  const [showOtpField, setShowOtpField] = useState<boolean>(false);
-  const [registerInfo, setRegisterInfo] = useState<IRegisterInfo>();
-  const [expiredAt, setExpiredAt] = useState(0);
-  const [cooldown, setCooldown] = useState(0);
-
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setInterval(() => {
-      setCooldown((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [cooldown]);
-
-  const password = watch("password");
-  const confirmPassword = watch("confirmPassword");
-  const otp = watch("otp");
-  const passwordChecks = {
-    length: password?.length >= 8,
-    uppercase: /[A-Z]/.test(password || ""),
-    lowercase: /[a-z]/.test(password || ""),
-    number: /[0-9]/.test(password || ""),
-    special: /[^A-Za-z0-9]/.test(password || ""),
-  };
-
-  const passedChecks =
-    Object.values(passwordChecks).filter(Boolean).length;
-
-  const strengthLevel = getStrengthLevel(passedChecks);
-  const { label: strengthLabel, barColor, barWidth, textColor } =
-    PASSWORD_STRENGTH_CONFIG[strengthLevel];
-
-  const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    if (data) {
-      const user = {
-        name: data.name,
-        email: data.email,
-        password: data.password,
-        confirmPassword: data.confirmPassword,
-      };
-      const otpPayload = {
-        name: data.name,
-        email: data.email,
-      };
-      if (password !== confirmPassword) {
-        toast.error("Passwords do not match!");
-        return;
-      }
-      const passwordError = getPasswordError(data.password);
-      if (passwordError) {
-        toast.error(passwordError);
-        return;
-      }
-      setIsBusy(true);
-      try {
-        const res = await emailVerify({ ...otpPayload }).unwrap();
-        if (res?.data) {
-          const { expiresAt } = res.data;
-          setExpiredAt(new Date(expiresAt).getTime());
-          toast.success("OTP sent to your email");
-          setRegisterInfo(user);
-          setShowOtpField(true);
-          setCooldown(60);
-        }
-      } catch (error) {
-        const message =
-          (error as { data?: Array<{ message?: string }> })?.data?.[0]
-            ?.message ||
-          "Failed to send OTP. Check backend .env email credentials.";
-        toast.error(message);
-      } finally {
-        setIsBusy(false);
-      }
-    }
-  };
-
-  const handleOtpValidation = async () => {
-    const enteredOtp = otp?.trim();
-    if (!enteredOtp) {
-      toast.error("Please enter OTP");
-      return;
-    }
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
-    if (Date.now() > expiredAt) {
-      toast.error("OTP expired. Please request a new one.");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const otpResponse = await verifyOtp({
-        email: registerInfo.email,
-        otp: enteredOtp,
-      }).unwrap();
-
-      if (otpResponse?.data?.verificationToken) {
-        const res = await registerUser({
-          ...registerInfo,
-          verificationToken: otpResponse.data.verificationToken,
-        }).unwrap();
-
-        if (res.data.accessToken) {
-          toast.success("OTP validated successfully!");
-          storeUserInfo({ accessToken: res.data.accessToken });
-          const redirectPath = location.state && location.state.from ? location.state.from : "/";
-          navigate(redirectPath);
-        }
-      } else {
-        throw new Error("No verification token received");
-      }
-    } catch (err: unknown) {
-      const message =
-        (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-        "OTP verification failed. Please check the code and try again.";
-      toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (cooldown > 0 || isBusy) return;
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const otpPayload = {
-        name: registerInfo.name,
-        email: registerInfo.email,
-      };
-      const res = await emailVerify({ ...otpPayload }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
-        setValue("otp", "");
-        setCooldown(60);
-      }
-    } catch (error) {
-      const message =
-        (error as { data?: Array<{ message?: string }> })?.data?.[0]
-          ?.message || "Failed to resend OTP. Please try again.";
-      toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
+const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
   return (
-    <div className="min-h-[calc(100dvh-4.5rem)] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8">
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="flex w-full flex-col justify-center py-12 relative z-10">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-          <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
-            STORY SPARK AI
-          </h2>
+    <motion.section
+      id="help-categories"
+      className="scroll-mt-28 transition-colors duration-300"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.5 }}
+      aria-labelledby="categories-heading"
+    >
+      {/* Section Header */}
+      <div className="mb-12 text-center sm:text-left">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-300 mb-4">
+          <i className="fa-solid fa-layer-group" aria-hidden="true"></i>
+          <span className="text-sm font-semibold">HELP CATEGORIES</span>
         </div>
-        <div className="flex justify-center items-center gap-40">
 
-          <div className="flex flex-col gap-5">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
-              Turns Ideas into
-              <br />
-              unforgotable stories
-            </h1>
-            <p>AI powered storytelling that helps you
-              <br />
-              create connect inspire.</p>
+        <h2
+          id="categories-heading"
+          className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4"
+        >
+          Explore by Category
+        </h2>
 
-            <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-              <div>
-                <WandSparkles className="text-violet-600" />
-              </div>
-              <div>
-                <h1 className="font-bold">Smart writing</h1>
-                <p>AI that understands your ideas</p>
-              </div>
-            </div>
-
-            <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-              <div>
-                <BookOpen className="text-violet-600" />
-              </div>
-              <div>
-                <h1 className="font-bold">Endless Creativity</h1>
-                <p>Stories that captivate and inspire</p>
-              </div>
-            </div>
-
-            <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-              <div>
-                <UsersRound className="text-violet-600" />
-              </div>
-              <div>
-                <h1 className="font-bold">Built for everyone</h1>
-                <p>Writers, Creaters and dreamers</p>
-              </div>
-            </div>
-
-            <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-              Create, edit, and generate engaging multiple story
-              <br />
-              variations from a single prompt.
-              <br />
-              Perfect for writers, creators, and enthusiasts
-              <br />
-              exploring the future of fiction.
-            </div>
-          </div>
-
-          <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
-            <h3 className="text-center text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
-              {showOtpField ? "Verify Your Email" : "Create Account"}
-            </h3>
-
-            {!showOtpField && (
-              <p className="mt-2 mb-6 text-center text-sm text-slate-500 dark:text-slate-400">
-                Join StorySparkAI and begin your creative journey.
-              </p>
-            )}
-
-            {!showOtpField && (
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-700/50"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white dark:bg-slate-800/60 text-slate-800 dark:text-slate-400 font-semibold">
-                    SIGN UP WITH EMAIL
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {!showOtpField ? (
-              <form className="space-y-5 w-full max-w-full min-w-0" onSubmit={handleSubmit(onSubmit)} noValidate>
-                <SSInput
-                  label="Name"
-                  name="name"
-                  placeholder="Enter your name"
-                  required={true}
-                  icon="fi fi-rr-user"
-                  register={register}
-                  autoComplete="name"
-                  validation={{
-                    required: "Name is required",
-                    minLength: {
-                      value: 3,
-                      message: "Name must be at least 3 characters",
-                    },
-                    pattern: {
-                      value: /^[A-Za-z0-9\s._]+$/,
-                      message:
-                        "Only letters, numbers, spaces, underscores, and dots are allowed",
-                    },
-                  }}
-                  error={errors.name}
-                />
-
-                <SSInput
-                  label="Email address"
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  required={true}
-                  icon="fi fi-rr-envelope"
-                  register={register}
-                  autoComplete="email"
-                  error={errors.email}
-                />
-
-                <SSInput
-                  label="Password"
-                  name="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  required={true}
-                  icon="fi fi-rr-lock"
-                  register={register}
-                  autoComplete="new-password"
-                  error={errors.password}
-                />
-
-                {password?.length > 0 && (
-                  <div className="space-y-3 -mt-2">
-                    <div
-                      className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
-                      role="progressbar"
-                      aria-valuenow={passedChecks}
-                      aria-valuemin={0}
-                      aria-valuemax={PASSWORD_REQUIREMENTS.length}
-                      aria-label="Password strength"
-                    >
-                      <div
-                        className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
-                      ></div>
-                    </div>
-
-                    <p
-                      className={`text-sm font-medium ${textColor}`}
-                      aria-live="polite"
-                    >
-                      {strengthLabel} Password
-                    </p>
-
-                    <ul className="space-y-1 text-xs">
-                      {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
-                        const met = passwordChecks[key];
-                        return (
-                          <li
-                            key={key}
-                            className={met ? "text-green-400" : "text-red-400"}
-                            aria-label={`${label}: ${met ? "met" : "not met"}`}
-                          >
-                            <span aria-hidden="true">{met ? "✅" : "❌"}</span>{" "}
-                            {label}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                )}
-
-                <SSInput
-                  label="Confirm Password"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="Confirm your password"
-                  required={true}
-                  icon="fi fi-rr-lock"
-                  register={register}
-                  autoComplete="new-password"
-                  error={errors.confirmPassword}
-                />
-
-                <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
-              </form>
-            ) : (
-              <div className="space-y-5 w-full max-w-full min-w-0">
-                <SSInput
-                  label="OTP"
-                  name="otp"
-                  placeholder="Enter your OTP"
-                  required={true}
-                  icon="fi fi-rr-key"
-                  register={register}
-                  validation={{
-                    required: "Please enter OTP",
-                    minLength: {
-                      value: 6,
-                      message: "OTP must be 6 digits",
-                    },
-                    maxLength: {
-                      value: 6,
-                      message: "OTP must be 6 digits",
-                    },
-                    pattern: {
-                      value: /^[0-9]{6}$/,
-                      message: "OTP must contain only numbers",
-                    },
-                  }}
-                  error={errors.otp}
-                />
-
-                <SSButton
-                  text="Verify OTP"
-                  type="button"
-                  onClick={handleOtpValidation}
-                  isLoading={isBusy}
-                />
-
-                <div className="text-center mt-2">
-                  <button
-                    type="button"
-                    onClick={handleResendOtp}
-                    disabled={cooldown > 0 || isBusy}
-                    className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-gray-500 transition-colors duration-200 focus:outline-none disabled:cursor-not-allowed"
-                  >
-                    {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {!showOtpField && (
-              <p className="mt-8 text-center text-sm text-slate-400">
-                Already have an account?{" "}
-                <a
-                  href="/login"
-                  className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
-                >
-                  Sign In
-                </a>
-              </p>
-            )}
-          </div>
-        </div>
-        <Toaster position="top-right" reverseOrder={false} />
+        <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          Browse support topics designed to help you quickly understand
+          StorySparkAI features, workflows, and troubleshooting steps.
+        </p>
       </div>
-    </div>
+
+      {/* Categories Grid */}
+      {categories.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] p-12 text-center">
+          <div className="w-20 h-20 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center mx-auto mb-5">
+            <i className="fa-solid fa-magnifying-glass text-3xl text-slate-500"></i>
+          </div>
+
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+            No Categories Found
+          </h3>
+
+          <p className="text-slate-600 dark:text-slate-400">
+            Try adjusting your search keywords.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-14">
+          {categories.map((category, index) => (
+            <motion.div
+              key={category.id}
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{
+                duration: 0.45,
+                delay: index * 0.08,
+              }}
+              whileHover={{ y: -6 }}
+              className="
+                group relative overflow-hidden
+                rounded-3xl
+                border border-slate-200 dark:border-white/10
+                bg-white dark:bg-white/[0.04]
+                backdrop-blur-2xl
+                hover:border-blue-500/40
+                transition-all duration-300
+                shadow-lg hover:shadow-2xl
+              "
+            >
+              {/* Glow effects */}
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+              <div className="relative z-10 p-7">
+                {/* Icon */}
+                <div
+                  className="
+                    w-16 h-16 rounded-2xl
+                    bg-gradient-to-br from-blue-500/20 to-indigo-500/20
+                    border border-blue-500/20
+                    flex items-center justify-center
+                    text-2xl text-blue-600 dark:text-blue-300
+                    mb-6
+                    group-hover:scale-110
+                    transition-transform duration-300
+                  "
+                >
+                  <i className={`fa-solid ${category.icon}`} aria-hidden="true"></i>
+                </div>
+
+                {/* Title & Description */}
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors">
+                  {category.title}
+                </h3>
+
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
+                  {category.description}
+                </p>
+
+                {/* Card Action */}
+                <div className="mt-6 flex items-center justify-between">
+                  <span className="text-blue-600 dark:text-blue-300 text-sm font-semibold">
+                    Learn More
+                  </span>
+
+                  <div
+                    className="
+                      w-10 h-10 rounded-xl
+                      bg-slate-100 dark:bg-white/5
+                      border border-slate-200 dark:border-white/10
+                      flex items-center justify-center
+                      text-slate-400
+                      group-hover:text-white
+                      group-hover:bg-blue-500/20
+                      group-hover:border-blue-500/30
+                      transition-all duration-300
+                    "
+                  >
+                    <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </div>
+
+              {/* Top border gradient */}
+              <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </motion.section>
   );
 };
 
-export default SignUpComponent;
+export default HelpCategories;

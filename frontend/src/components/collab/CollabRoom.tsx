@@ -60,14 +60,8 @@ export default function CollabRoom() {
         return;
       }
 
-      // FIX: Establish dynamic or baseline safe namespace path target
-      const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
-      const collabSocket = io(`${socketUrl}/collab`, {
-        transports: ["websocket"]
-      });
-      
-      // Save reference to be used by click triggers safely elsewhere
-      collabSocketRef.current = collabSocket;
+      // Connect to collab namespace
+      const collabSocket = socket.io.socket("/collab");
 
       // Request room info
       collabSocket.emit("collab:get_room", { roomId }, (response: any) => {
@@ -115,9 +109,9 @@ export default function CollabRoom() {
   const handleAddText = () => {
     if (!newText.trim() || !user) return;
 
-    // FIX: Using persistent local ref to target the connection directly
-    if (collabSocketRef.current) {
-      collabSocketRef.current.emit("collab:add_text", {
+    const socket = getSocketIo();
+    if (socket) {
+      socket.io.socket("/collab").emit("collab:add_text", {
         roomId,
         userId: user.userId,
         text: newText,
@@ -127,9 +121,9 @@ export default function CollabRoom() {
   };
 
   const handleAIContinue = () => {
-    // FIX: Using persistent local ref to target the connection directly
-    if (collabSocketRef.current) {
-      collabSocketRef.current.emit("collab:ai_continue", { roomId });
+    const socket = getSocketIo();
+    if (socket) {
+      socket.io.socket("/collab").emit("collab:ai_continue", { roomId });
     }
   };
 
