@@ -146,7 +146,7 @@ const LoginComponent = () => {
           </h3>
 
           <form
-            className="space-y-5"
+            className="space-y-5 w-full"
             onSubmit={handleSubmit(onSubmit)}
           >
 
