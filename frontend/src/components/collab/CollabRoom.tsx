@@ -89,7 +89,7 @@ export default function CollabRoom() {
 
       const handleStoryUpdated = (data: { story?: StoryChunk[] }) => {
         if (data && data.story) {
-          setRoom((prev) => (prev ? { ...prev, story: data.story } : null));
+          setRoom((prev) => (prev ? { ...prev, story: data.story as StoryChunk[] } : null));
         }
       };
 

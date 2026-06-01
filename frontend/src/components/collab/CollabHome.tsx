@@ -19,13 +19,11 @@ export default function CollabHome() {
     }
 
     try {
-      setIsCreating(true);
       const socket = connectSocket();
       if (!socket) {
         setError(
           "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
         );
-        setIsCreating(false);
         return;
       }
 
@@ -49,13 +47,11 @@ export default function CollabHome() {
           } else {
             setError("Failed to create room. Please try again.");
           }
-          setIsCreating(false);
         }
       );
     } catch (err) {
       console.error("Create room error:", err);
       setError("Error creating room. Please try again.");
-      setIsCreating(false);
     }
   };
 

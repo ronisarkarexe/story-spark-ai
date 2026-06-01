@@ -27,14 +27,14 @@ const emitAuthChange = () => {
 };
 
 const buildUserInfo = (decodedData: Record<string, unknown>): AuthUserInfo => ({
-  email: decodedData?.email || "",
-  userId: decodedData?.userId || decodedData?._id || "",
-  name: decodedData?.name || "",
-  postsCount: decodedData?.postsCount || 0,
-  role: decodedData?.role || "guest",
-  subscriptionType: decodedData?.subscriptionType || "free",
-  exp: decodedData?.exp || 0,
-  iat: decodedData?.iat || 0,
+  email: (decodedData?.email as string) || "",
+  userId: (decodedData?.userId as string) || (decodedData?._id as string) || "",
+  name: (decodedData?.name as string) || "",
+  postsCount: (decodedData?.postsCount as number) || 0,
+  role: (decodedData?.role as string) || "guest",
+  subscriptionType: (decodedData?.subscriptionType as string) || "free",
+  exp: (decodedData?.exp as number) || 0,
+  iat: (decodedData?.iat as number) || 0,
 });
 
 const getValidDecodedToken = () => {
@@ -57,7 +57,7 @@ const getValidDecodedToken = () => {
         return null;
       }
       
-      return buildUserInfo(decodedData);
+      return buildUserInfo(decodedData as Record<string, unknown>);
     } catch (error) {
       console.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);
