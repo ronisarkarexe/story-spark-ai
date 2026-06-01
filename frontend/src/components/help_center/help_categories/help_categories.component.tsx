@@ -40,12 +40,6 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
         <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
           Browse support topics designed to help you quickly understand
           StorySparkAI features, workflows, and troubleshooting steps.
-<<<<<<< HEAD
-        </p>
-      </div>
-
-      {/* Categories Content Matrix */}
-      {categories.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] p-12 text-center">
           <div className="w-20 h-20 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center mx-auto mb-5">
             <i className="fa-solid fa-magnifying-glass text-3xl text-slate-500"></i>
@@ -60,7 +54,7 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-14">
           {categories.map((category, index) => (
             <motion.div
               key={category.title}
@@ -157,8 +151,6 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
 
         <p className="mt-3 text-slate-600 dark:text-gray-400 max-w-2xl mx-auto">
           Jump into the topic you need — from your first story to contributing code.
-=======
->>>>>>> upstream/main
         </p>
       </div>
 

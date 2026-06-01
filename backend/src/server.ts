@@ -5,7 +5,7 @@ import app from "./app";
 import dns from "dns";
 import http from "http";
 import { Server } from "socket.io";
-import { JwtHalers } from "./utils/jwt.helper";
+import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
 
@@ -58,7 +58,7 @@ async function main() {
           return next(new Error("Unauthorized"));
         }
 
-        const verifiedUser = JwtHalers.verifyToken(
+        const verifiedUser = JwtHelpers.verifyToken(
           token,
           config.jwt.secret as Secret
         );

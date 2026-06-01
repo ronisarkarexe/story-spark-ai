@@ -19,7 +19,7 @@ type SpotlightWriter = {
 
 const TOP_WRITERS_LIMIT = 3;
 
-const getBookmarkCount = (post: Post) => post.bookmarks?.length ?? 0;
+const getBookmarkCount = (post: Post) => post.bookmarksCount ?? 0;
 
 const getPostEngagementScore = (post: Post) =>
   (post.likesCount ?? 0) * 3 +

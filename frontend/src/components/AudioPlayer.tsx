@@ -43,12 +43,15 @@ const controlButtonBaseClass =
 
 const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
   ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
+    const [voiceGender, setVoiceGender] = useState<"female" | "male">("female");
+    const speech = useSpeechSynthesis(text, voiceGender);
     const speech = useSpeechSynthesis(text);
     const preview = useVoicePreview();
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
     const speedSelectId = useId();
+    const voiceGenderSelectId = useId();
     const languageSelectId = useId();
     const voiceSelectId = useId();
 
@@ -240,28 +243,94 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label
-                  htmlFor={speedSelectId}
-                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                  Playback speed
-                </label>
-                <div className="relative">
-                  <select
-                    id={speedSelectId}
-                    aria-label="Playback speed"
-                    role="combobox"
-                    value={speech.rate}
-                    onChange={(event) => speech.setRate(Number(event.target.value))}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label
+                    htmlFor={speedSelectId}
+                    className="text-sm font-medium text-slate-700 dark:text-slate-300"
                   >
-                    {SPEED_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option.toFixed(2).replace(/\.00$/, "")}&times;
-                      </option>
-                    ))}
-                  </select>
+                    Playback speed
+                  </label>
+                  <div className="relative">
+                    <select
+                      id={speedSelectId}
+                      aria-label="Playback speed"
+                      role="combobox"
+                      value={speech.rate}
+                      onChange={(event) => speech.setRate(Number(event.target.value))}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                    >
+                      {SPEED_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option.toFixed(2).replace(/\.00$/, "")}&times;
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label
+                    htmlFor={voiceGenderSelectId}
+                    className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                  >
+                    Voice
+                  </label>
+                  <div className="relative">
+                    <select
+                      id={voiceGenderSelectId}
+                      aria-label="Voice gender"
+                      role="combobox"
+                      value={voiceGender}
+                      onChange={(event) => setVoiceGender(event.target.value as "female" | "male")}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                    >
+                      <option value="female">Female voice</option>
+                      <option value="male">Male voice</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Pitch
+                    </label>
+                    <div className="space-y-2">
+                      <input
+                        type="range"
+                        min={0.5}
+                        max={2}
+                        step={0.1}
+                        value={speech.pitch}
+                        onChange={(event) => speech.setPitch(Number(event.target.value))}
+                        className="w-full accent-indigo-500"
+                      />
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        {speech.pitch.toFixed(1)}x
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Volume
+                    </label>
+                    <div className="space-y-2">
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        value={speech.volume}
+                        onChange={(event) => speech.setVolume(Number(event.target.value))}
+                        className="w-full accent-indigo-500"
+                      />
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        {Math.round(speech.volume * 100)}%
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 

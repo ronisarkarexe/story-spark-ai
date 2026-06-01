@@ -86,29 +86,26 @@ const SSInput = <T extends FieldValues>({
         />
 
         {type === "password" && (
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
 
+    className="absolute inset-y-0 right-2 flex items-center text-gray-500"
 
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
+    
+    aria-label={showPassword ? "Hide password" : "Show password"}
+    title={showPassword ? "Hide password" : "Show password"}
 
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-          >
-            <i
-              className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}
-            ></i>
-
-          </button>
-        )}
-
-
+  >
+    <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
+  </button>
+)}
       </div>
       {error && (
-
-        <p className="text-red-400 text-sm mt-1">{error.message}</p>
-
-      )}
-
+        <p className="text-red-400 text-sm mt-1 w-full break-words overflow-hidden">
+        {error.message}
+        </p>
+    )}
     </div>
   );
 };

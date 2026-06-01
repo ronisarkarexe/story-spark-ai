@@ -414,6 +414,33 @@ const StoriesComponent = () => {
   );
   
   const [loading, setLoading] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchFilter, setSearchFilter] = useState<string>("all");
+
+  const filteredStories = useMemo(() => {
+    if (!searchQuery.trim()) return stories;
+    
+    const query = searchQuery.toLowerCase();
+    
+    return stories.filter((story) => {
+      switch (searchFilter) {
+        case "title":
+          return story.title?.toLowerCase().includes(query);
+        case "content":
+          return story.content?.toLowerCase().includes(query);
+        case "genre":
+          return story.tag?.toLowerCase().includes(query);
+        case "all":
+        default:
+          return (
+            story.title?.toLowerCase().includes(query) ||
+            story.content?.toLowerCase().includes(query) ||
+            story.tag?.toLowerCase().includes(query)
+          );
+      }
+    });
+  }, [stories, searchQuery, searchFilter]);
+
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
   const login = isLoggedIn();
@@ -421,6 +448,36 @@ const StoriesComponent = () => {
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [selectedGenre, setSelectedGenre] = useState<string>("");
+  const [selectedLength, setSelectedLength] = useState<string>("medium");
+  const [textareaValue, setTextareaValue] = useState<string>("");
+  const storyTemplates= [
+  {
+    title: "Fantasy Adventure",
+    prompt:
+      "In a kingdom ruled by dragons, a young warrior discovers an ancient secret that could change the fate of the world.",
+  },
+  {
+    title: "Sci-Fi Mystery",
+    prompt:
+      "In the year 2099, a detective uncovers a conspiracy involving artificial intelligence and missing memories.",
+  },
+  {
+    title: "Horror Story",
+    prompt:
+      "A group of friends enters an abandoned mansion, only to realize they are not alone.",
+  },
+  {
+    title: "Romance",
+    prompt:
+      "Two strangers meet during a train journey and slowly discover a connection that changes their lives forever.",
+  },
+  {
+    title: "Thriller",
+    prompt:
+      "A journalist receives an anonymous message exposing a dangerous secret hidden by powerful people.",
+  },
+];
   const [selectedGenre, setSelectedGenre] = useState<string>(
   draft?.genre
     ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
@@ -589,7 +646,17 @@ useEffect(() => {
     isGenerationInProgressRef.current = true;
     setLoading(true);
 
+    let timeoutId: NodeJS.Timeout | null = null;
+
     try {
+      // 60-second client-side request timeout safeguard
+      timeoutId = setTimeout(() => {
+        if (isGenerationInProgressRef.current) {
+          toast.error("Story generation timed out. Please try again.");
+          handleCancelGeneration();
+        }
+      }, 60000);
+
       const payload = {
         prompt: selectedGenre
           ? `[Genre: ${selectedGenre}] ${data.prompt}`
@@ -630,6 +697,9 @@ useEffect(() => {
         toast.error(message);
       }
     } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       activeGenerationRef.current = null;
       isGenerationInProgressRef.current = false;
       setLoading(false);
@@ -1039,6 +1109,13 @@ useEffect(() => {
       {textareaValue.length > 0 && (
         <button
           type="button"
+
+          onClick={() => setSelectedLength(length)}
+          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+            selectedLength === length
+              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+              : "bg-gray-200 text-slate-700 hover:bg-gray-300 dark:bg-white/10 dark:text-gray-400 dark:hover:bg-white/20 dark:hover:text-gray-200"
+          }`}
           onClick={handleClearPrompt}
           className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200 border border-red-500/20"
           aria-label={text.close}
@@ -1051,7 +1128,56 @@ useEffect(() => {
         </button>
       )}
     </div>
+    <div className="mb-4">
+      <h3 className="text-lg font-semibold mb-3">
+        Story Templates
+      </h3>
 
+
+    <div className="flex flex-wrap gap-2">
+      {storyTemplates.map((template) => (
+      <button
+        key={template.title}
+        type="button"
+        onClick={() => setTextareaValue(template.prompt)}
+        className="px-4 py-2 rounded-full bg-purple-100 hover:bg-purple-200 transition-colors text-sm font-medium"
+      >
+        {template.title}
+      </button>
+    ))}
+  </div>
+</div>
+
+<div className="relative">
+  <textarea
+    {...register("prompt")}
+    ref={(el) => {
+      register("prompt").ref(el);
+      inputRef.current = el;
+    }}
+    onInput={(e) => {
+      e.currentTarget.style.height = "auto";
+      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+    }}
+    className={`w-full min-h-[140px] max-h-[400px] overflow-y-auto resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-2 focus:ring-indigo-500/40 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 pr-10 transition-colors duration-200 ${
+      isOverLimit
+        ? "ring-1 ring-red-500 rounded"
+        : isNearLimit
+        ? "ring-1 ring-yellow-400 rounded"
+        : ""
+    }`}
+    placeholder="Every great story begins with a single idea. What's yours?"
+    value={textareaValue}
+    maxLength={MAX_PROMPT_LENGTH}
+    onChange={(e) => setTextareaValue(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        const form = e.currentTarget.closest("form");
+        if (form) form.requestSubmit();
+      }
+    }}
+  />
     <div className="relative overflow-hidden">
       <textarea
   {...register("prompt")}
@@ -1078,9 +1204,6 @@ useEffect(() => {
           }
         }}
         />
-
-
-
       <button
         type="button"
         onClick={() => setIsRecentPromptsOpen(!isRecentPromptsOpen)}
@@ -1194,28 +1317,60 @@ useEffect(() => {
               <div><kbd>Ctrl + S</kbd> {text.publishStory}</div>
             </div>
 
-            <button
-              onClick={() => setShowHelpModal(false)}
-              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
+        <button
+        onClick={() => setShowHelpModal(false)}
+        className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
+      >
+        {text.close}
+      </button>
+        </div>
+      </div>
+      )}
+
+      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
+
+      {/* Search UI */}
+      {stories.length > 0 && (
+        <div className="mb-6 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-4 rounded-2xl">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search stories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <select
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              {text.close}
-            </button>
+              <option value="all">All Fields</option>
+              <option value="title">Title</option>
+              <option value="content">Content</option>
+              <option value="genre">Genre</option>
+            </select>
           </div>
+          {searchQuery && (
+            <div className="mt-2 text-sm text-slate-400">
+              Found {filteredStories.length} {filteredStories.length === 1 ? 'story' : 'stories'}
+            </div>
+          )}
         </div>
       )}
 
-      {loading && (
-        <StoryGeneratingAnimation onCancel={handleCancelGeneration} />
-      )}
       <StoriesViewComponent
-        stories={stories}
+        stories={filteredStories}
         isLogin={login}
         setStories={setStories}
         onPublishSuccess={handlePublishSuccess}
         isLoading={loading}
       />
-      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
 
+      <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.15)] max-w-md w-full p-6 transform transition-all text-slate-900 dark:bg-[#0f172a] dark:border-white/10 dark:text-white dark:shadow-[0_0_15px_rgba(59,130,246,0.5)]">

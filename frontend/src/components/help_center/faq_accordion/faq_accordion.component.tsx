@@ -182,6 +182,15 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
               transition={{ duration: 0.4, delay: index * 0.05 }}
               className="group overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] backdrop-blur-xl shadow-md hover:shadow-xl transition-all duration-300"
             >
+              <h3>
+                <button
+                  id={buttonId}
+                  type="button"
+                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 cursor-pointer"
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  onClick={() => toggleItem(item.id)}
+                  onKeyDown={(e) => handleKeyDown(e, item.id)}
               <button
                 id={buttonId}
                 type="button"

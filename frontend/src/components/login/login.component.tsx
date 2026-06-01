@@ -1,7 +1,10 @@
 import { useForm, SubmitHandler } from "react-hook-form";
+import { Link } from "react-router-dom";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { useState } from "react";
+import "./auth.css";
+import "@flaticon/flaticon-uicons/css/all/all.css";
 import {
   useLoginUserMutation,
   useGoogleLoginMutation,
@@ -12,6 +15,10 @@ import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
+
+
+
+
 
 type Inputs = {
   email: string;
@@ -25,7 +32,6 @@ const LoginComponent = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
 
   const [isBusy, setIsBusy] = useState<boolean>(false);
@@ -163,7 +169,6 @@ const LoginComponent = () => {
         </div>
 
 
-        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl overflow-hidden">
 
             <button
             onClick={() => window.location.href = "/"}
@@ -173,12 +178,10 @@ const LoginComponent = () => {
           </button>
 
 
-          <h3 className="mb-6 text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-200">
-            Welcome Back
-          </h3>
+          <div className="absolute inset-0 bg-black/60"></div>
 
           <form
-            className="space-y-5"
+            className="w-full space-y-5 "
             onSubmit={handleSubmit(onSubmit)}
             >
 
@@ -210,12 +213,12 @@ const LoginComponent = () => {
               />
 
             <div className="flex justify-end -mt-2">
-              <a
-                href="/forgot-password"
+              <Link
+                to="/forgot-password"
                 className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
                 >
                 Forgot Password?
-              </a>
+              </Link>
             </div>
 
             <SSButton
@@ -237,6 +240,7 @@ const LoginComponent = () => {
               <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                 OR
               </span>
+
             </div>
           </div>
 
@@ -251,12 +255,23 @@ const LoginComponent = () => {
 
           <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
             Don't have an account?{" "}
+
+
+            <Link
+              to="/signup"
+
             <a
               href="/signup"
+
               className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
               >
               Sign up for free
+
+            </Link>
+
+
             </a>
+
           </p>
         </div>
       </div>
