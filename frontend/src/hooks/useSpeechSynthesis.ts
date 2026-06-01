@@ -43,16 +43,8 @@ export interface UseSpeechSynthesisResult {
   stop: () => void;
   /** Current playback speed. */
   rate: number;
-  /** Update narration speed for future and active utterances. */
+  /** Update playback speed for future narration and active utterances when possible. */
   setRate: (nextRate: number) => void;
-  /** Current pitch multiplier. */
-  pitch: number;
-  /** Update narration pitch for future and active utterances. */
-  setPitch: (nextPitch: number) => void;
-  /** Current output volume. */
-  volume: number;
-  /** Update narration volume for future and active utterances. */
-  setVolume: (nextVolume: number) => void;
   /** Available browser narration voices. */
   voices: SpeechVoiceOption[];
   /** Available languages inferred from browser voices. */
@@ -102,29 +94,6 @@ const buildWordRanges = (inputText: string): WordRange[] => {
   }
 
   return ranges;
-};
-
-const findVoiceByGender = (
-  voices: SpeechSynthesisVoice[],
-  gender: "female" | "male"
-): SpeechSynthesisVoice | undefined => {
-  const genderMatchers: Record<"female" | "male", RegExp> = {
-    female: /(female|zira|samantha|victoria|siri female|google uk english female|google us english female)/i,
-    male: /(male|david|guy|alex|siri male|google uk english male|google us english male)/i,
-  };
-
-  const matchedVoice = voices.find((voice) => genderMatchers[gender].test(voice.name));
-  if (matchedVoice) {
-    return matchedVoice;
-  }
-
-  return voices.find((voice) => {
-    const normalized = voice.name.toLowerCase();
-    if (gender === "female") {
-      return /female/i.test(normalized) && !/male/i.test(normalized);
-    }
-    return /male/i.test(normalized) && !/female/i.test(normalized);
-  });
 };
 
 const getWordIndexAtCharIndex = (
@@ -206,24 +175,18 @@ const findVoiceForLanguage = (
  * It handles voice loading, play/pause/resume/stop controls, rate changes,
  * and word-level progress tracking for optional text highlighting.
  */
-export const useSpeechSynthesis = (
-  text: string,
-  voiceGender: "female" | "male" = "female"
-): UseSpeechSynthesisResult => {
+export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const sessionRef = useRef(0);
   const previousTextRef = useRef(text);
 
   const [isSupported, setIsSupported] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [rateState, setRateState] = useState(1);
-  const [pitchState, setPitchState] = useState(1);
-  const [volumeState, setVolumeState] = useState(1);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [voices, setVoices] = useState<SpeechVoiceOption[]>([]);
   const [selectedLanguage, setSelectedLanguageState] = useState("");
@@ -316,9 +279,6 @@ export const useSpeechSynthesis = (
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = rateState;
-    utterance.pitch = pitchState;
-    utterance.volume = volumeState;
-    utterance.lang = window.navigator.language || "en-US";
     utterance.lang = selectedVoice?.lang || selectedLanguage || getPreferredLanguage();
 
     const browserVoice = speechSynthesis
@@ -328,12 +288,6 @@ export const useSpeechSynthesis = (
     if (browserVoice) {
       utterance.voice = browserVoice;
       utterance.lang = browserVoice.lang;
-    }
-
-    const selectedVoice = findVoiceByGender(voices, voiceGender);
-
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
     }
 
     utterance.onstart = () => {
@@ -352,9 +306,7 @@ export const useSpeechSynthesis = (
       }
 
       if (typeof event.charIndex === "number") {
-        const idx = getWordIndexAtCharIndex(event.charIndex, wordRanges);
-        setCurrentWordIndex(idx);
-        currentWordIndexRef.current = idx;
+        setCurrentWordIndex(getWordIndexAtCharIndex(event.charIndex, wordRanges));
       }
     };
 
@@ -387,7 +339,6 @@ export const useSpeechSynthesis = (
 
     utteranceRef.current = utterance;
     speechSynthesis.speak(utterance);
-  }, [clearUtterance, isReady, isSupported, rateState, text, totalWords, voiceGender, wordRanges, voices, pitchState, volumeState]);
   }, [
     clearUtterance,
     isReady,
@@ -433,95 +384,14 @@ export const useSpeechSynthesis = (
     setIsSpeaking(true);
   }, [isSupported]);
 
-  const currentWordIndexRef = useRef(0);
-
   const setRate = useCallback((nextRate: number) => {
     setRateState(nextRate);
 
-    // The Web Speech API does not apply rate changes to an active utterance.
-    // We must stop and restart from the current word to apply the new rate.
-    if (!utteranceRef.current || !window.speechSynthesis.speaking) {
-      return;
-    }
-
-    const speechSynthesis = window.speechSynthesis;
-    const wasPaused = speechSynthesis.paused;
-    const resumeFromWord = currentWordIndexRef.current;
-
-    // Cancel current utterance
-    speechSynthesis.cancel();
-    utteranceRef.current = null;
-
-    if (wasPaused) {
-      // If paused, don't restart — just update rate for next play
-      setIsPlaying(false);
-      setIsPaused(false);
-      setIsSpeaking(false);
-      return;
-    }
-
-    // Restart from the current word with the new rate
-    const remainingText = text
-      .split(/\s+/)
-      .slice(resumeFromWord)
-      .join(" ");
-
-    if (!remainingText.trim()) return;
-
-    sessionRef.current += 1;
-    const sessionId = sessionRef.current;
-
-    const utterance = new SpeechSynthesisUtterance(remainingText);
-    utterance.rate = nextRate;
-    utterance.lang = window.navigator.language || "en-US";
-
-    utterance.onboundary = (event: SpeechSynthesisEvent) => {
-      if (sessionRef.current !== sessionId) return;
-      if (typeof event.charIndex === "number") {
-        const localIndex = getWordIndexAtCharIndex(event.charIndex, buildWordRanges(remainingText));
-        setCurrentWordIndex(resumeFromWord + localIndex);
-        currentWordIndexRef.current = resumeFromWord + localIndex;
-      }
-    };
-
-    utterance.onend = () => {
-      if (sessionRef.current !== sessionId) return;
-      utteranceRef.current = null;
-      setIsPlaying(false);
-      setIsPaused(false);
-      setIsSpeaking(false);
-      setCurrentWordIndex(totalWords);
-      currentWordIndexRef.current = totalWords;
-    };
-
-    utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
-      if (sessionRef.current !== sessionId) return;
-      utteranceRef.current = null;
-      setIsPlaying(false);
-      setIsPaused(false);
-      setIsSpeaking(false);
-      if (event.error !== "interrupted") setError("Narration failed to play.");
-    };
-
-    utteranceRef.current = utterance;
-    speechSynthesis.speak(utterance);
-  }, [text, totalWords]);
-
-  const setPitch = useCallback((nextPitch: number) => {
-    setPitchState(nextPitch);
-
     if (utteranceRef.current) {
-      utteranceRef.current.pitch = nextPitch;
+      utteranceRef.current.rate = nextRate;
     }
   }, []);
 
-  const setVolume = useCallback((nextVolume: number) => {
-    setVolumeState(nextVolume);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.volume = nextVolume;
-    }
-  }, []);
   const setSelectedLanguage = useCallback((nextLanguage: string) => {
     stop();
     setError(null);
@@ -560,9 +430,6 @@ export const useSpeechSynthesis = (
         return;
       }
 
-      const nextVoices = speechSynthesis.getVoices();
-      setVoices(nextVoices);
-      setIsReady(nextVoices.length > 0);
       const availableVoices = speechSynthesis.getVoices().map(mapVoiceOption);
       setVoices(availableVoices);
       setIsReady(availableVoices.length > 0);
@@ -623,10 +490,6 @@ export const useSpeechSynthesis = (
     stop,
     rate: rateState,
     setRate,
-    pitch: pitchState,
-    setPitch,
-    volume: volumeState,
-    setVolume,
     voices,
     languageOptions,
     selectedLanguage,

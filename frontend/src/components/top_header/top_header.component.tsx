@@ -1,10 +1,9 @@
 import { useState } from "react";
 import logo from "../../assets/logo.png";
 import ImageFallback from "../ImageFallback";
+import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 
 const TopHeaderComponent = () => {
-import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
-function TopHeaderComponent() {
   const [, setShowNotification] = useState<boolean>(false);
   const { data } = useGetProfileInfoQuery();
   return (

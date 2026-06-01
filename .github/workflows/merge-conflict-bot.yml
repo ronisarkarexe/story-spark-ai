@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  pull-requests: read
+  pull-requests: write
   issues: write
 
 concurrency:
@@ -131,12 +131,23 @@ jobs:
               }
             }
 
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner, repo, comment_id: existing.id, body: commentBody
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner, repo, issue_number: number, body: commentBody
-              });
+            try {
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner, repo, comment_id: existing.id, body: commentBody
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: number, body: commentBody
+                });
+              }
+            } catch (e) {
+              if (e?.status === 403) {
+                core.warning(
+                  'Could not post PR comment (token cannot write on fork PRs). ' +
+                  'Ask a maintainer to enable workflow write permissions for fork pull requests.'
+                );
+                return;
+              }
+              throw e;
             }
