@@ -20,17 +20,23 @@ const comment_model_1 = require("./comment.model");
 const mongoose_1 = require("mongoose");
 const post_model_1 = require("../post/post.model");
 const createComment = (payload, token) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email } = token;
-    const user = yield user_model_1.User.findOne({ email });
+    const { _id, email } = token;
+    const user = _id ? yield user_model_1.User.findById(_id) : yield user_model_1.User.findOne({ email });
     if (!user) {
         throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "User not found!");
     }
-    const post = yield post_model_1.Post.findOne({ _id: payload.postId });
+    const post = yield post_model_1.Post.findOne({
+        _id: payload.postId,
+        isDeleted: { $ne: true },
+    });
     if (!post) {
         throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "Post not found!");
     }
-    post.commentsCount = post.commentsCount + 1;
-    yield post.save();
+    // Use an atomic $inc update instead of the read-modify-write pattern.
+    // With concurrent requests, both would read the same commentsCount value
+    // and both would write count + 1, losing one increment per race.
+    // findByIdAndUpdate with $inc is a single atomic MongoDB operation.
+    yield post_model_1.Post.findByIdAndUpdate(post._id, { $inc: { commentsCount: 1 } });
     const commentData = {
         postId: new mongoose_1.Types.ObjectId(payload.postId),
         userId: user._id,
@@ -43,22 +49,75 @@ const createComment = (payload, token) => __awaiter(void 0, void 0, void 0, func
     return res;
 });
 const getCommentsByPostId = (postId) => __awaiter(void 0, void 0, void 0, function* () {
-    const comments = yield comment_model_1.Comment.find({ postId, parentCommentId: null })
+    const allComments = (yield comment_model_1.Comment.find({ postId })
         .populate("userId", "name email")
-        .populate({
-        path: "likes",
-    })
-        .sort({ createdAt: -1 });
-    const commentsWithReplies = yield Promise.all(comments.map((comment) => __awaiter(void 0, void 0, void 0, function* () {
-        const replies = yield comment_model_1.Comment.find({ parentCommentId: comment._id })
-            .populate("userId", "name email")
-            .sort({ createdAt: 1 });
-        return Object.assign(Object.assign({}, comment.toObject()), { replies });
-    })));
-    const totalComments = yield comment_model_1.Comment.countDocuments({ postId });
-    return { comments: commentsWithReplies, totalComments };
+        .populate("likes")
+        .sort({ createdAt: -1 })
+        .lean());
+    const totalComments = allComments.length;
+    const topLevelComments = [];
+    const replyMap = new Map();
+    // Distribute comments into top-level list and replies map
+    for (const comment of allComments) {
+        if (!comment.parentCommentId) {
+            comment.replies = [];
+            topLevelComments.push(comment);
+        }
+        else {
+            const parentIdStr = comment.parentCommentId.toString();
+            if (!replyMap.has(parentIdStr)) {
+                replyMap.set(parentIdStr, []);
+            }
+            replyMap.get(parentIdStr).push(comment);
+        }
+    }
+    // Attach replies to their corresponding top-level comments and sort them chronologically (createdAt: 1)
+    for (const comment of topLevelComments) {
+        const idStr = comment._id.toString();
+        const replies = replyMap.get(idStr) || [];
+        // Sort replies in ascending chronological order
+        replies.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        comment.replies = replies;
+    }
+    return { comments: topLevelComments, totalComments };
+});
+const toggleCommentLike = (commentId, token) => __awaiter(void 0, void 0, void 0, function* () {
+    const { _id, email } = token;
+    const user = _id ? yield user_model_1.User.findById(_id) : yield user_model_1.User.findOne({ email });
+    if (!user) {
+        throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "User not found!");
+    }
+    const comment = yield comment_model_1.Comment.findById(commentId);
+    if (!comment) {
+        throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "Comment not found!");
+    }
+    const post = yield post_model_1.Post.findOne({
+        _id: comment.postId,
+        isDeleted: { $ne: true },
+    });
+    if (!post) {
+        throw new api_error_1.default(http_status_1.default.NOT_FOUND, "Post not found!");
+    }
+    // Replace the read-modify-write likes toggle with atomic MongoDB operators.
+    // The original pattern read likes, checked membership with includes, mutated
+    // the array, and saved. Two concurrent toggles by the same user can both pass
+    // the includes check (both see the ID absent), both push, and both save,
+    // resulting in a duplicate like entry.
+    //
+    // $addToSet adds the user ID only if it is not already present (like).
+    // $pull removes all matching entries (unlike). Both are atomic.
+    // Checking the current state first determines which operation to perform.
+    const isCurrentlyLiked = yield comment_model_1.Comment.exists({
+        _id: comment._id,
+        likes: user._id,
+    });
+    const updatedComment = yield comment_model_1.Comment.findByIdAndUpdate(comment._id, isCurrentlyLiked
+        ? { $pull: { likes: user._id } }
+        : { $addToSet: { likes: user._id } }, { new: true });
+    return updatedComment;
 });
 exports.CommentService = {
     createComment,
     getCommentsByPostId,
+    toggleCommentLike,
 };

@@ -16,14 +16,25 @@ const http_status_1 = __importDefault(require("http-status"));
 const config_1 = __importDefault(require("../../config"));
 const api_error_1 = __importDefault(require("../../errors/api_error"));
 const jwt_helper_1 = require("../../utils/jwt.helper");
+const user_model_1 = require("../modules/user/user.model");
 const auth = (...requiredRole) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = req.headers.authorization;
+        const authHeader = (req.headers.authorization || '');
+        const token = authHeader.startsWith('Bearer ')
+            ? authHeader.slice(7).trim()
+            : authHeader.trim();
         if (!token) {
             throw new api_error_1.default(http_status_1.default.UNAUTHORIZED, "You are not authorized to access");
         }
         // verify token
-        const verifiedUser = yield jwt_helper_1.JwtHalers.verifyToken(token, config_1.default.jwt.secret);
+        const verifiedUser = jwt_helper_1.JwtHalers.verifyToken(token, config_1.default.jwt.secret);
+        const user = yield user_model_1.User.findById(verifiedUser._id);
+        if (!user) {
+            throw new api_error_1.default(http_status_1.default.UNAUTHORIZED, "User not found");
+        }
+        if (user.tokenVersion !== verifiedUser.tokenVersion) {
+            throw new api_error_1.default(http_status_1.default.UNAUTHORIZED, "Token is invalid or expired");
+        }
         if (requiredRole.length && !requiredRole.includes(verifiedUser.role)) {
             throw new api_error_1.default(http_status_1.default.FORBIDDEN, "Forbidden");
         }

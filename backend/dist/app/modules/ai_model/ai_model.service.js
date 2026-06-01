@@ -13,59 +13,163 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AiModelService = void 0;
-const api_error_1 = __importDefault(require("../../../errors/api_error"));
-const timeout_limit_1 = require("../../../utils/timeout_limit");
-const user_model_1 = require("../user/user.model");
-const ai_model_utils_1 = require("./ai_model.utils");
 const http_status_1 = __importDefault(require("http-status"));
-const ai_model_request_limit_1 = require("../../../interfaces/ai_model_request_limit");
-const aiModelGenerate = (payload, token) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email } = token;
-    const { prompt, wordLength, numStories } = payload;
-    const currentDate = new Date();
-    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    yield user_model_1.User.updateOne({ email, lastRequestDate: { $lt: firstDayOfMonth } }, { $set: { requestsThisMonth: 0, lastRequestDate: currentDate } });
-    const user = yield user_model_1.User.findOne({ email });
-    if (!user) {
-        throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "User not found!");
+const api_error_1 = __importDefault(require("../../../errors/api_error"));
+const generation_timeout_1 = require("../../../utils/generation_timeout");
+const ai_model_utils_1 = require("./ai_model.utils");
+const quota_lifecycle_1 = require("./quota.lifecycle");
+const AUTHENTICATED_GENERATION_TIMEOUT_MS = 60000;
+const FREE_GENERATION_TIMEOUT_MS = 60000;
+const GENERATION_FAILED_MESSAGE = "Story generation failed. Your request quota has been restored.";
+const FREE_GENERATION_FAILED_MESSAGE = "Story generation failed. Your free generation quota has been restored.";
+const ALTERNATE_ENDING_FAILED_MESSAGE = "Alternate ending generation failed. Your request quota has been restored.";
+const FREE_ALTERNATE_ENDING_FAILED_MESSAGE = "Alternate ending generation failed. Your free generation quota has been restored.";
+const normalizeStoryPayload = (payload) => {
+    var _a, _b, _c, _d, _e;
+    return ({
+        prompt: payload.prompt,
+        wordLength: (_a = payload.wordLength) !== null && _a !== void 0 ? _a : 250,
+        numStories: (_b = payload.numStories) !== null && _b !== void 0 ? _b : 2,
+        language: (_c = payload.language) !== null && _c !== void 0 ? _c : "English",
+        tone: (_d = payload.tone) !== null && _d !== void 0 ? _d : undefined,
+        genre: (_e = payload.genre) !== null && _e !== void 0 ? _e : undefined,
+    });
+};
+const mapGenerationError = (error, message) => {
+    if (error instanceof api_error_1.default) {
+        throw error;
     }
-    const requestLimit = ai_model_request_limit_1.REQUEST_LIMITS[user.subscriptionType];
-    const reservedUser = yield user_model_1.User.findOneAndUpdate({
-        email,
-        requestsThisMonth: { $lt: requestLimit },
-    }, {
-        $inc: { requestsThisMonth: 1 },
-        $set: { lastRequestDate: currentDate },
-    }, { new: true });
-    if (!reservedUser) {
-        throw new api_error_1.default(http_status_1.default.CONFLICT, "Monthly request limit exceeded!");
+    if (error instanceof generation_timeout_1.GenerationTimeoutError) {
+        throw new api_error_1.default(http_status_1.default.GATEWAY_TIMEOUT, "AI generation timed out. Please try again.");
     }
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new api_error_1.default(http_status_1.default.BAD_GATEWAY, `${message} (${errorMsg})`);
+};
+// Bug fix 1: quota.lifecycle owns rollback — no manual User.updateOne needed.
+// Bug fix 2: _token kept as unused param (quota handled upstream by middleware).
+const aiModelGenerate = (payload, _token) => __awaiter(void 0, void 0, void 0, function* () {
+    const { prompt, wordLength, numStories, language, tone, genre } = normalizeStoryPayload(payload);
     try {
-        const result = yield Promise.race([
-            (0, timeout_limit_1.timeoutLimit)(60000),
-            (0, ai_model_utils_1.generateWithGeminiStories)(prompt, wordLength, numStories),
-        ]);
+        const result = yield (0, generation_timeout_1.raceGenerationWithTimeout)((signal) => (0, ai_model_utils_1.generateWithGeminiStories)(prompt, wordLength, numStories, language, signal, tone, genre), AUTHENTICATED_GENERATION_TIMEOUT_MS);
+        (0, quota_lifecycle_1.assertSuccessfulGeneration)(result, GENERATION_FAILED_MESSAGE);
         return result;
     }
     catch (error) {
-        yield user_model_1.User.updateOne({ email, requestsThisMonth: { $gt: 0 } }, { $inc: { requestsThisMonth: -1 } });
-        throw new api_error_1.default(http_status_1.default.GATEWAY_TIMEOUT, "Request timed out!");
+        mapGenerationError(error, GENERATION_FAILED_MESSAGE);
     }
 });
 const aiFreeModelGenerate = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const { prompt, wordLength, numStories, language, tone, genre } = normalizeStoryPayload(payload);
     try {
-        const { prompt } = payload;
-        const result = yield Promise.race([
-            (0, timeout_limit_1.timeoutLimit)(10000),
-            (0, ai_model_utils_1.generateWithGeminiStories)(prompt, 150),
-        ]);
+        const result = yield (0, generation_timeout_1.raceGenerationWithTimeout)((signal) => (0, ai_model_utils_1.generateWithGeminiStories)(prompt, wordLength, numStories, language, signal, tone, genre), FREE_GENERATION_TIMEOUT_MS);
+        (0, quota_lifecycle_1.assertSuccessfulGeneration)(result, FREE_GENERATION_FAILED_MESSAGE);
         return result;
     }
     catch (error) {
-        throw new api_error_1.default(http_status_1.default.GATEWAY_TIMEOUT, "Request timed out!");
+        mapGenerationError(error, FREE_GENERATION_FAILED_MESSAGE);
+    }
+});
+// Bug fix 3: migrated from old inline quota pattern to quota.lifecycle,
+// consistent with aiModelGenerate and all other authenticated functions.
+const aiModelAlternateEndings = (payload, _token) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, content, tag, language = "English" } = payload;
+    try {
+        const result = yield (0, generation_timeout_1.raceGenerationWithTimeout)(() => (0, ai_model_utils_1.generateAlternateEndingsWithGemini)(title, content, tag, language), AUTHENTICATED_GENERATION_TIMEOUT_MS);
+        (0, quota_lifecycle_1.assertSuccessfulGeneration)(result, ALTERNATE_ENDING_FAILED_MESSAGE);
+        return result;
+    }
+    catch (error) {
+        mapGenerationError(error, ALTERNATE_ENDING_FAILED_MESSAGE);
+    }
+});
+const aiFreeModelAlternateEndings = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, content, tag, language = "English" } = payload;
+    try {
+        const result = yield (0, generation_timeout_1.raceGenerationWithTimeout)(() => (0, ai_model_utils_1.generateAlternateEndingsWithGemini)(title, content, tag, language), FREE_GENERATION_TIMEOUT_MS);
+        (0, quota_lifecycle_1.assertSuccessfulGeneration)(result, FREE_ALTERNATE_ENDING_FAILED_MESSAGE);
+        return result;
+    }
+    catch (error) {
+        mapGenerationError(error, FREE_ALTERNATE_ENDING_FAILED_MESSAGE);
+    }
+});
+const aiModelRemix = (payload, _token) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, content, tag, remixType, remixOption = "", language = "English" } = payload;
+    try {
+        const result = yield (0, generation_timeout_1.raceGenerationWithTimeout)(() => (0, ai_model_utils_1.generateRemixWithGemini)(title, content, tag, remixType, remixOption, language), AUTHENTICATED_GENERATION_TIMEOUT_MS);
+        return result;
+    }
+    catch (error) {
+        mapGenerationError(error, "Remix generation failed.");
+    }
+});
+const aiFreeModelRemix = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, content, tag, remixType, remixOption = "", language = "English" } = payload;
+    try {
+        const result = yield (0, generation_timeout_1.raceGenerationWithTimeout)(() => (0, ai_model_utils_1.generateRemixWithGemini)(title, content, tag, remixType, remixOption, language), FREE_GENERATION_TIMEOUT_MS);
+        return result;
+    }
+    catch (error) {
+        mapGenerationError(error, "Remix generation failed.");
+    }
+});
+const aiModelTranslate = (payload, _token) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, content, targetLanguage } = payload;
+    try {
+        const result = yield (0, generation_timeout_1.raceGenerationWithTimeout)(() => (0, ai_model_utils_1.translateStoryWithGemini)(title, content, targetLanguage), AUTHENTICATED_GENERATION_TIMEOUT_MS);
+        return result;
+    }
+    catch (error) {
+        mapGenerationError(error, "Translation failed.");
+    }
+});
+const aiFreeModelTranslate = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, content, targetLanguage } = payload;
+    try {
+        const result = yield (0, generation_timeout_1.raceGenerationWithTimeout)(() => (0, ai_model_utils_1.translateStoryWithGemini)(title, content, targetLanguage), FREE_GENERATION_TIMEOUT_MS);
+        return result;
+    }
+    catch (error) {
+        mapGenerationError(error, "Translation failed.");
+    }
+});
+const aiModelChat = (payload, _token) => __awaiter(void 0, void 0, void 0, function* () {
+    const { message, history = [] } = payload;
+    try {
+        const formattedHistory = history.map((msg) => ({
+            role: msg.role,
+            parts: [{ text: msg.parts }],
+        }));
+        const result = yield (0, generation_timeout_1.raceGenerationWithTimeout)(() => (0, ai_model_utils_1.chatWithGemini)(message, formattedHistory), AUTHENTICATED_GENERATION_TIMEOUT_MS);
+        return result;
+    }
+    catch (error) {
+        mapGenerationError(error, "AI chat failed.");
+    }
+});
+const aiFreeModelChat = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const { message, history = [] } = payload;
+    try {
+        const formattedHistory = history.map((msg) => ({
+            role: msg.role,
+            parts: [{ text: msg.parts }],
+        }));
+        const result = yield (0, generation_timeout_1.raceGenerationWithTimeout)(() => (0, ai_model_utils_1.chatWithGemini)(message, formattedHistory), FREE_GENERATION_TIMEOUT_MS);
+        return result;
+    }
+    catch (error) {
+        mapGenerationError(error, "AI chat failed.");
     }
 });
 exports.AiModelService = {
     aiModelGenerate,
     aiFreeModelGenerate,
+    aiModelAlternateEndings,
+    aiFreeModelAlternateEndings,
+    aiModelRemix,
+    aiFreeModelRemix,
+    aiModelTranslate,
+    aiFreeModelTranslate,
+    aiModelChat,
+    aiFreeModelChat,
 };

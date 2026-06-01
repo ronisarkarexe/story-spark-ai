@@ -1,1 +1,1 @@
-export const paginationFields = ["page", "limit", "sortBy", "orderBy"];
+export const paginationFields = ["page", "limit", "sortBy", "orderBy","sortOrder"];

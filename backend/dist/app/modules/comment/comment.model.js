@@ -19,4 +19,15 @@ const CommentSchema = new mongoose_1.Schema({
         },
     ],
 }, { timestamps: true });
+// Supports checking replies under a specific parent comment
+CommentSchema.index({
+    postId: 1,
+    parentCommentId: 1,
+    createdAt: -1
+});
+// Supports fetching all comments for a post ordered by createdAt
+CommentSchema.index({
+    postId: 1,
+    createdAt: -1
+});
 exports.Comment = (0, mongoose_1.model)("Comment", CommentSchema);

@@ -26,6 +26,16 @@ const VerifyEmail = (0, catch_async_1.default)((req, res) => __awaiter(void 0, v
         data: result,
     });
 }));
+const VerifyOtp = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield verify_email_service_1.VerifyEmailService.VerifyOtp(req.body);
+    (0, send_response_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "OTP verified successfully!",
+        data: result,
+    });
+}));
 exports.VerifyEmailController = {
     VerifyEmail,
+    VerifyOtp,
 };

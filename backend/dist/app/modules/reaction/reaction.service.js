@@ -21,24 +21,29 @@ const mongoose_1 = require("mongoose");
 const post_model_1 = require("../post/post.model");
 const toggleReaction = (postId_1, ...args_1) => __awaiter(void 0, [postId_1, ...args_1], void 0, function* (postId, type = "like", token) {
     const { email } = token;
-    const user = yield user_model_1.User.findOne({ email });
+    // Optimization: Use select() and lean() for user lookup to reduce overhead
+    const user = yield user_model_1.User.findOne({ email }).select("_id").lean();
     if (!user) {
         throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "User not found!");
     }
-    const post = yield post_model_1.Post.findOne({ _id: postId });
+    // Optimization: Use select() to fetch only necessary fields for the toggle operation
+    // Note: lean() is NOT used here because we call post.save() later
+    const post = yield post_model_1.Post.findOne({ _id: postId, isDeleted: { $ne: true } }).select("likesCount reactions");
     if (!post) {
         throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "Post not found!");
     }
     // Check if reaction already exists
+    // Optimization: Use lean() for read-only existence check
     const existingReaction = yield reaction_model_1.Reaction.findOne({
-        postId: postId,
+        postId: new mongoose_1.Types.ObjectId(postId),
         userId: user._id,
         type: type,
-    });
+    }).lean();
     if (existingReaction) {
         // Remove reaction
         yield reaction_model_1.Reaction.findByIdAndDelete(existingReaction._id);
-        post.likesCount = Math.max(0, post.likesCount - 1);
+        // Update post counts and reactions list (Preserving upstream/main logic)
+        post.likesCount = Math.max(0, (post.likesCount || 0) - 1);
         post.reactions = post.reactions || [];
         post.reactions = post.reactions.filter((rId) => rId.toString() !== existingReaction._id.toString());
         yield post.save();
@@ -51,7 +56,8 @@ const toggleReaction = (postId_1, ...args_1) => __awaiter(void 0, [postId_1, ...
             userId: user._id,
             type: type,
         });
-        post.likesCount = post.likesCount + 1;
+        // Update post counts and reactions list (Preserving upstream/main logic)
+        post.likesCount = (post.likesCount || 0) + 1;
         post.reactions = post.reactions || [];
         post.reactions.push(newReaction._id);
         yield post.save();

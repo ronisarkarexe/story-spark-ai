@@ -5,14 +5,19 @@ import { ENUM_USER_ROLE } from "../../../enums/user";
 
 const router = express.Router();
 
-router.post(
-  "/create-notification",
-  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.WRITER),
-  NotificationController.createNotification
+router.get(
+  "/",
+  auth(
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.USER
+  ),
+  NotificationController.getUserNotifications
 );
 
-router.post(
-  "/mark-notification-as-read",
+router.patch(
+  "/:id/read",
   auth(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN,
@@ -20,22 +25,6 @@ router.post(
     ENUM_USER_ROLE.USER
   ),
   NotificationController.markNotificationAsRead
-);
-
-router.get(
-  "/get-notifications-by-user-email",
-  NotificationController.getNotificationsByUserEmail
-);
-
-router.get(
-  "/all-notification",
-  auth(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.USER,
-    ENUM_USER_ROLE.WRITER
-  ),
-  NotificationController.getAllNotificationsByUserEmail
 );
 
 export const NotificationRouter = router;

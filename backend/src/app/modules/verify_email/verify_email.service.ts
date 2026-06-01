@@ -1,13 +1,11 @@
 import nodemailer from "nodemailer";
 import { IEmailBody } from "./verify_email.interface";
+import { IVerifyOtpBody } from "./verify_email.interface";
 import ApiError from "../../../errors/api_error";
 import config from "../../../config";
-
-interface OTPStore {
-  [email: string]: { otp: string; expiresAt: number };
-}
-
-const otpStore: OTPStore = {};
+import httpStatus from "http-status";
+import { OTPModel } from "./otp.model";
+import crypto from "crypto";
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -20,9 +18,29 @@ const transporter = nodemailer.createTransport({
 const VerifyEmail = async (payload: IEmailBody) => {
   try {
     const { email, name } = payload;
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 10 * 60 * 1000;
-    otpStore[email] = { otp, expiresAt };
+    // Use a cryptographically secure RNG so OTPs cannot be predicted.
+    const otp = crypto.randomInt(100000, 1000000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+    
+    // Delete any existing OTP for this email
+    await OTPModel.deleteOne({ email });
+    
+    // Create new OTP record in MongoDB
+    await OTPModel.create({
+      email,
+      otp,
+      expiresAt,
+      failedAttempts: 0,
+      isVerified: false,
+    });
+
+    if (!config.verify_email || !config.verify_password) {
+      console.log(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
+      return {
+        expiresAt,
+      };
+    }
+    
     const mailOptions = {
       from: config.verify_email,
       to: email,
@@ -72,13 +90,89 @@ const VerifyEmail = async (payload: IEmailBody) => {
       </html>
       `,
     };
+    
     await transporter.sendMail(mailOptions);
-    return { otp, expiresAt };
+
+    return {
+      expiresAt,
+    };
   } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    console.error("Mail Error:", error);
     throw new ApiError(500, "Failed to send email");
   }
 };
 
+const VerifyOtp = async (payload: IVerifyOtpBody) => {
+  const { email, otp } = payload;
+  
+  // FIX #3: Input validation - check if otp is a non-empty string before calling .trim()
+  if (typeof otp !== "string" || !otp) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "OTP must be a non-empty string"
+    );
+  }
+  
+  const storedOtpRecord = await OTPModel.findOne({ email });
+
+  if (!storedOtpRecord) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "OTP not found or expired. Please request a new one."
+    );
+  }
+
+  // Check if OTP has expired
+  if (new Date() > storedOtpRecord.expiresAt) {
+    await OTPModel.deleteOne({ email });
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "OTP expired. Please request a new one."
+    );
+  }
+
+  // FIX #2: Rate limiting - max 5 failed attempts
+  if (storedOtpRecord.failedAttempts >= 5) {
+    await OTPModel.deleteOne({ email });
+    throw new ApiError(
+      httpStatus.TOO_MANY_REQUESTS,
+      "Too many failed attempts. Please request a new OTP."
+    );
+  }
+
+  // Verify OTP
+  if (storedOtpRecord.otp !== otp.trim()) {
+    // Increment failed attempts
+    storedOtpRecord.failedAttempts += 1;
+    await storedOtpRecord.save();
+    
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Invalid OTP. Please try again. (${5 - storedOtpRecord.failedAttempts} attempts remaining)`
+    );
+  }
+
+  // FIX #4: Create verification token instead of returning only { verified: true }
+  // This token binds the verification to a specific email and must be used in registration
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const verificationTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes validity
+  
+  storedOtpRecord.isVerified = true;
+  storedOtpRecord.verificationToken = verificationToken;
+  storedOtpRecord.verificationTokenExpires = verificationTokenExpires;
+  await storedOtpRecord.save();
+
+  return { 
+    verified: true,
+    verificationToken, // Client must include this in registration request
+    expiresIn: 15 * 60, // 15 minutes in seconds
+  };
+};
+
 export const VerifyEmailService = {
   VerifyEmail,
+  VerifyOtp,
 };

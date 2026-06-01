@@ -10,10 +10,14 @@ const handle_cast_error_1 = __importDefault(require("../../errors/handle_cast_er
 const handle_zod_error_1 = __importDefault(require("../../errors/handle_zod_error"));
 const handle_duplicate_error_1 = __importDefault(require("../../errors/handle_duplicate_error"));
 const api_error_1 = __importDefault(require("../../errors/api_error"));
+const logger_util_1 = __importDefault(require("../../utils/logger.util"));
 const globalErrorHandler = (err, req, res, next) => {
-    config_1.default.env === "development"
-        ? console.log("Global Error Handler", err)
-        : console.error("Global Error Handler", err);
+    if (config_1.default.env === "development") {
+        logger_util_1.default.info(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
+    }
+    else {
+        logger_util_1.default.error(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
+    }
     let statusCode = 500;
     let message = "Something went wrong!";
     let errorMessage = [];
@@ -68,7 +72,9 @@ const globalErrorHandler = (err, req, res, next) => {
         success: false,
         message,
         errorMessage,
-        stack: config_1.default.env != "production" ? err.stack : undefined,
+        // Expose stack only in explicit development; hide by default so any
+        // non-development environment (including an unset NODE_ENV) stays safe.
+        stack: config_1.default.env === "development" ? err.stack : undefined,
     });
 };
 exports.default = globalErrorHandler;

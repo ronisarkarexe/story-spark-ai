@@ -11,4 +11,5 @@ const ReactionSchema = new mongoose_1.Schema({
         required: true,
     },
 }, { timestamps: true });
+ReactionSchema.index({ postId: 1, userId: 1, type: 1 }, { unique: true });
 exports.Reaction = (0, mongoose_1.model)("Reaction", ReactionSchema);

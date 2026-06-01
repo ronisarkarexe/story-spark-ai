@@ -13,35 +13,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_status_1 = __importDefault(require("http-status"));
-const user_model_1 = require("../modules/user/user.model");
-const ai_model_request_limit_1 = require("../../interfaces/ai_model_request_limit");
 const api_error_1 = __importDefault(require("../../errors/api_error"));
 const jwt_helper_1 = require("../../utils/jwt.helper");
 const config_1 = __importDefault(require("../../config"));
+const quota_service_1 = require("../modules/ai_model/quota.service");
+const quota_lifecycle_1 = require("../modules/ai_model/quota.lifecycle");
+// Note: Actual quota/limit enforcement is handled by reserveUserQuota
+// to allow for atomic MongoDB operations and rollback on failure.
+// This middleware ensures the user is authenticated, reserves the quota atomically,
+// and binds the QuotaRefundGuard to res.locals.quotaRefundGuard.
 const checkRequestLimit = () => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = req.headers.authorization;
+        const authHeader = req.headers.authorization;
+        const token = (authHeader === null || authHeader === void 0 ? void 0 : authHeader.startsWith("Bearer "))
+            ? authHeader.slice(7)
+            : authHeader;
         if (!token) {
             throw new api_error_1.default(http_status_1.default.UNAUTHORIZED, "You are not authorized to access");
         }
-        const verifiedUser = yield jwt_helper_1.JwtHalers.verifyToken(token, config_1.default.jwt.secret);
+        const verifiedUser = jwt_helper_1.JwtHalers.verifyToken(token, config_1.default.jwt.secret);
         const { email: userEmail } = verifiedUser;
-        const user = yield user_model_1.User.findOne({ email: userEmail });
-        if (!user) {
-            throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "User not found!");
-        }
-        const currentDate = new Date();
-        const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        // Reset the request count if the last request was in a previous month
-        if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
-            user.requestsThisMonth = 0;
-            user.lastRequestDate = currentDate;
-        }
-        const requestLimit = ai_model_request_limit_1.REQUEST_LIMITS[user.subscriptionType];
-        // Check if the user has exceeded their monthly limit
-        if (user.requestsThisMonth >= requestLimit) {
-            throw new api_error_1.default(http_status_1.default.CONFLICT, "Monthly request limit exceeded!");
-        }
+        // Atomically reserve the monthly quota for the user
+        yield (0, quota_service_1.reserveUserQuota)(userEmail);
+        // Create and attach the quota refund guard to res.locals
+        res.locals.quotaRefundGuard = (0, quota_lifecycle_1.createUserQuotaGuard)(userEmail);
         next();
     }
     catch (err) {

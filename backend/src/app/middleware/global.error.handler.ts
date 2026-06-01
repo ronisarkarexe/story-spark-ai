@@ -8,6 +8,7 @@ import handleCastError from "../../errors/handle_cast_error";
 import handleZodError from "../../errors/handle_zod_error";
 import handleDuplicateError from "../../errors/handle_duplicate_error";
 import ApiError from "../../errors/api_error";
+import logger from "../../utils/logger.util";
 
 const globalErrorHandler: ErrorRequestHandler = (
   err,
@@ -15,9 +16,11 @@ const globalErrorHandler: ErrorRequestHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  config.env === "development"
-    ? console.log("Global Error Handler", err)
-    : console.error("Global Error Handler", err);
+  if (config.env === "development") {
+    logger.info(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
+  } else {
+    logger.error(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
+  }
 
   let statusCode = 500;
   let message = "Something went wrong!";
@@ -70,7 +73,9 @@ const globalErrorHandler: ErrorRequestHandler = (
     success: false,
     message,
     errorMessage,
-    stack: config.env != "production" ? err.stack : undefined,
+    // Expose stack only in explicit development; hide by default so any
+    // non-development environment (including an unset NODE_ENV) stays safe.
+    stack: config.env === "development" ? err.stack : undefined,
   });
 };
 

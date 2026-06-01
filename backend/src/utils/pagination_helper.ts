@@ -5,6 +5,7 @@ interface IOptions {
   limit?: number;
   sortBy?: string;
   orderBy?: SortOrder;
+  sortOrder?: SortOrder;
 }
 
 interface PGOptions {
@@ -20,7 +21,7 @@ const paginationHelper = (option: IOptions): PGOptions => {
   const limit = Number(option.limit || 10);
   const skip = (page - 1) * limit;
   const sortBy = option.sortBy || "createdAt";
-  const orderBy = option.orderBy || "desc";
+  const orderBy = option.sortOrder || option.orderBy || "desc";
   return {
     page,
     limit,

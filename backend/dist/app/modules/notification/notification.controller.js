@@ -18,30 +18,9 @@ const route_param_1 = require("../../../shared/route_param");
 const catch_async_1 = __importDefault(require("../../../shared/catch_async"));
 const send_response_1 = __importDefault(require("../../../shared/send_response"));
 const http_status_1 = __importDefault(require("http-status"));
-const token_1 = require("../../middleware/token");
-const createNotification = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield notification_service_1.NotificationService.createNotification(req.body);
-    (0, send_response_1.default)(res, {
-        statusCode: http_status_1.default.OK,
-        success: true,
-        message: "Notification created successfully!",
-        data: result,
-    });
-}));
-const getNotificationsByUserEmail = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email } = req.query;
-    const result = yield notification_service_1.NotificationService.getNotificationsByUserEmail(email);
-    (0, send_response_1.default)(res, {
-        statusCode: http_status_1.default.OK,
-        success: true,
-        message: "Notifications fetched successfully!",
-        data: result,
-    });
-}));
-const getAllNotificationsByUserEmail = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const token = yield (0, token_1.getToken)(req);
-    const { email } = token;
-    const result = yield notification_service_1.NotificationService.getAllNotificationsByUserEmail(email);
+const getUserNotifications = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const token = req.user;
+    const result = yield notification_service_1.NotificationService.getUserNotifications(token);
     (0, send_response_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
@@ -50,18 +29,17 @@ const getAllNotificationsByUserEmail = (0, catch_async_1.default)((req, res) => 
     });
 }));
 const markNotificationAsRead = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const notificationId = (0, route_param_1.routeParam)(req.params.notificationId);
-    const result = yield notification_service_1.NotificationService.markNotificationAsRead(notificationId);
+    const notificationId = (0, route_param_1.routeParam)(req.params.id);
+    const token = req.user;
+    const result = yield notification_service_1.NotificationService.markNotificationAsRead(notificationId, token);
     (0, send_response_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
-        message: "Notifications fetched successfully!",
+        message: "Notification marked as read successfully!",
         data: result,
     });
 }));
 exports.NotificationController = {
-    createNotification,
-    getNotificationsByUserEmail,
-    getAllNotificationsByUserEmail,
+    getUserNotifications,
     markNotificationAsRead,
 };

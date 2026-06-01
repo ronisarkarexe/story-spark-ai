@@ -14,6 +14,17 @@ const VerifyEmail = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const VerifyOtp = catchAsync(async (req: Request, res: Response) => {
+  const result = await VerifyEmailService.VerifyOtp(req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "OTP verified successfully!",
+    data: result,
+  });
+});
+
 export const VerifyEmailController = {
   VerifyEmail,
+  VerifyOtp,
 };

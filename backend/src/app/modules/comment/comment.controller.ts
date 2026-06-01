@@ -28,7 +28,20 @@ const getCommentsByPostId = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const toggleCommentLike = catchAsync(async (req: Request, res: Response) => {
+  const commentId = routeParam(req.params.commentId);
+  const token = await getToken(req);
+  const result = await CommentService.toggleCommentLike(commentId, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Comment like toggled successfully!",
+    data: result,
+  });
+});
+
 export const CommentController = {
   createComment,
   getCommentsByPostId,
+  toggleCommentLike,
 };

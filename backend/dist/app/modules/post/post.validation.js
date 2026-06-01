@@ -23,9 +23,22 @@ const createPost = zod_1.z.object({
             .url("Invalid image URL format"),
         topic: zod_1.z
             .array(TopicSchema)
-            .nonempty({ message: "At least one topic is required!" }),
+            .min(2, { message: "At least two topics are required!" }),
+        language: zod_1.z.string().optional(),
+    }),
+});
+const updatePost = zod_1.z.object({
+    body: zod_1.z.object({
+        title: zod_1.z.string().min(3).optional(),
+        content: zod_1.z.string().min(10).optional(),
+        tag: zod_1.z.string().optional(),
+        imageURL: zod_1.z.string().url().optional(),
+        topic: zod_1.z.array(TopicSchema).min(2).optional(),
+        language: zod_1.z.string().optional(),
+        isPublished: zod_1.z.boolean().optional(),
     }),
 });
 exports.PostValidator = {
     createPost,
+    updatePost,
 };

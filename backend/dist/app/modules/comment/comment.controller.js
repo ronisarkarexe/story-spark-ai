@@ -39,7 +39,19 @@ const getCommentsByPostId = (0, catch_async_1.default)((req, res) => __awaiter(v
         data: result,
     });
 }));
+const toggleCommentLike = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const commentId = (0, route_param_1.routeParam)(req.params.commentId);
+    const token = yield (0, token_1.getToken)(req);
+    const result = yield comment_service_1.CommentService.toggleCommentLike(commentId, token);
+    (0, send_response_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Comment like toggled successfully!",
+        data: result,
+    });
+}));
 exports.CommentController = {
     createComment,
     getCommentsByPostId,
+    toggleCommentLike,
 };
