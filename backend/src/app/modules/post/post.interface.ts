@@ -33,7 +33,7 @@ export interface IPost extends IPostPayload {
   attachments?: string[];
   comments?: Types.ObjectId[];
   reactions?: Types.ObjectId[];
-  bookmarks?: Types.ObjectId[];
+  bookmarksCount: number;
 }
 
 export type PostModel = Model<IPost, object>;
