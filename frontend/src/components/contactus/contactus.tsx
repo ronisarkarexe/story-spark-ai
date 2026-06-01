@@ -13,7 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 
-import { instance as axios } from "../../helpers/axios/axionInstance";
+import { instance as axios } from "../../helpers/axios/axiosInstance";
 import { getBaseUrl } from "../../helpers/config";
 import storybook from "../../assets/storybook.png";
 
