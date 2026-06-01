@@ -1043,17 +1043,29 @@ useEffect(() => {
                       isDropdownOpen ? "rotate-180" : ""
                     }`}
                   >
-<<<<<<< HEAD
                     ▼
                   </span>
                 </button>
-=======
-                    {lang.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+
+                {isDropdownOpen && (
+                  <ul className="relative z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
+                    {prompts.map((item) => (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPrompt(item.prompt);
+                            setTextareaValue(item.prompt);
+                            setIsDropdownOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
+                        >
+                          {item.prompt}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
         </div>
       </div>
 
