@@ -1,6 +1,5 @@
 import { useForm, SubmitHandler } from "react-hook-form";
-import SSInput from "../ui-component/ss-input/ss-input";
-import SSButton from "../ui-component/ss-button/ss-button";
+
 import { useState, useEffect } from "react";
 import { storeUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
@@ -248,10 +247,9 @@ const SignUpComponent = () => {
   };
 
   return (
-    <div className="min-h-[calc(100dvh-4.5rem)] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8">
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center p-4 md:p-6 bg-[#050816] dark:bg-[#050816] bg-white text-black dark:text-white transition-all duration-300">
 
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <main className="auth-container flex flex-col md:flex-row overflow-hidden rounded-3xl border border-white/10 dark:border-white/10 border-black/10 shadow-[0_0_40px_rgba(168,85,247,0.12)] w-full max-w-6xl bg-white dark:bg-[#0b1020]">
 
       <div className="flex w-full flex-col justify-center py-12 relative z-10">
         <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
@@ -365,71 +363,244 @@ const SignUpComponent = () => {
                       "Only letters, numbers, spaces, underscores, and dots are allowed",
                   },
                 }}
-                error={errors.name}
               />
+            ))}
 
-              <SSInput
-                label="Email address"
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                required={true}
-                icon="fi fi-rr-envelope"
-                register={register}
-                autoComplete="email"
-                error={errors.email}
-              />
+          </div>
 
-              <SSInput
-                label="Password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                required={true}
-                icon="fi fi-rr-lock"
-                register={register}
-                autoComplete="new-password"
-                error={errors.password}
-              />
+          {/* Content */}
 
-              {password?.length > 0 && (
-              <div className="space-y-3 -mt-2">
-                <div
-                  className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
-                  role="progressbar"
-                  aria-valuenow={passedChecks}
-                  aria-valuemin={0}
-                  aria-valuemax={PASSWORD_REQUIREMENTS.length}
-                  aria-label="Password strength"
-                >
-                  <div
-                    className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
-                  ></div>
-                </div>
+          <div className="relative z-10 px-8 md:px-14">
 
-                <p
-                  className={`text-sm font-medium ${textColor}`}
-                  aria-live="polite"
-                >
-                  {strengthLabel} Password
-                </p>
+            {/* Brand */}
 
-                <ul className="space-y-1 text-xs">
-                  {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
-                    const met = passwordChecks[key];
-                    return (
-                      <li
-                        key={key}
-                        className={met ? "text-green-400" : "text-red-400"}
-                        aria-label={`${label}: ${met ? "met" : "not met"}`}
-                      >
-                        <span aria-hidden="true">{met ? "✅" : "❌"}</span>{" "}
-                        {label}
-                      </li>
-                    );
-                  })}
-                </ul>
+            <div className="flex items-center gap-3 mb-8">
+
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+
+                <span className="fi fi-rr-sparkles text-white text-sm"></span>
+
               </div>
+
+              <span className="text-white text-sm tracking-[0.25em] font-bold uppercase">
+
+                Story Spark AI
+
+              </span>
+
+            </div>
+
+            {/* Hero Text */}
+
+            <h1 className="text-4xl md:text-6xl font-black leading-[0.95] text-white drop-shadow-xl">
+
+              One Spark.
+              <br />
+
+              <span className="bg-gradient-to-r from-purple-300 via-pink-300 to-orange-200 bg-clip-text text-transparent">
+
+                Infinite Worlds.
+
+              </span>
+
+            </h1>
+
+            <p className="mt-6 text-white/90 text-lg leading-relaxed max-w-xl font-medium">
+
+              Turn your imagination into fully illustrated
+              multi-variation AI stories.
+
+            </p>
+
+          </div>
+
+        </section>
+
+        {/* RIGHT SIDE */}
+
+        <section className="w-full md:w-[48%] flex items-center justify-center p-4 md:p-6 bg-white dark:bg-[#050816]">
+
+          <div className="w-full max-w-[470px] rounded-3xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#09111f]/80 backdrop-blur-xl p-7 md:p-9 shadow-xl">
+
+            {/* Heading */}
+
+            <div className="mb-7">
+
+              <h2 className="text-4xl font-black text-black dark:text-white">
+
+                Create Account
+
+              </h2>
+
+              <p className="mt-2 text-[16px] text-gray-600 dark:text-gray-400">
+
+                Join StorySparkAI and begin your creative journey.
+
+              </p>
+
+            </div>
+
+            {/* Login Header */}
+
+            <div className="border-b border-black/10 dark:border-white/10 mb-8">
+
+              <button className="w-full pb-4 text-base font-bold tracking-widest text-purple-500 border-b-2 border-purple-500">
+
+                Sing Up
+
+              </button>
+
+            </div>
+
+            {/* FORM */}
+
+            <form
+              className="space-y-5"
+              onSubmit={handleSubmit(onSubmit)}
+            >
+
+              {/* NAME */}
+
+              <div>
+
+                <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+
+                  Full Name
+
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="Enter your full name"
+                  className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
+                  {...register("name", {
+                    required: "Name is required",
+                  })}
+                />
+
+                {errors.name && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {errors.name.message}
+                  </p>
+                )}
+
+              </div>
+
+              {/* EMAIL */}
+
+              <div>
+
+                <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+
+                  Email Address
+
+                </label>
+
+                <input
+                  type="email"
+                  placeholder="name@storyspark.ai"
+                  className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
+                  {...register("email", {
+                    required: "Email is required",
+                  })}
+                />
+
+                {errors.email && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {errors.email.message}
+                  </p>
+                )}
+
+              </div>
+
+              {/* PASSWORD */}
+
+              <div>
+
+                <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+
+                  Password
+
+                </label>
+
+                <input
+                  type="password"
+                  placeholder="Enter your password"
+                  className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
+                  {...register("password", {
+                    required: "Password is required",
+                  })}
+                />
+
+                {errors.password && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
+
+              </div>
+
+              {/* CONFIRM PASSWORD */}
+
+              <div>
+
+                <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+
+                  Confirm Password
+
+                </label>
+
+                <input
+                  type="password"
+                  placeholder="Confirm your password"
+                  className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
+                  {...register("confirmPassword", {
+                    required: "Confirm password is required",
+                  })}
+                />
+
+                {errors.confirmPassword && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+
+              </div>
+{/* PASSWORD STRENGTH */}
+
+{password && (
+  <div className="space-y-2">
+
+    <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+
+      <div
+        className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
+      />
+
+    </div>
+
+    <p className={`text-sm font-medium ${textColor}`}>
+      Password Strength: {strengthLabel}
+    </p>
+
+    <div className="space-y-1 mt-3">
+
+      {PASSWORD_REQUIREMENTS.map((rule) => (
+        <p
+          key={rule.key}
+          className={`text-xs ${
+            passwordChecks[rule.key]
+              ? "text-green-400"
+              : "text-gray-400"
+          }`}
+        >
+          • {rule.label}
+        </p>
+      ))}
+
+    </div>
+
+  </div>
 )}
 
               <SSInput
@@ -473,25 +644,16 @@ const SignUpComponent = () => {
                 error={errors.otp}
               />
 
-              <SSButton
-                text="Verify OTP"
-                type="button"
-                onClick={handleOtpValidation}
-                isLoading={isBusy}
-              />
+    <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+      OTP Code
+    </label>
 
-              <div className="text-center mt-2">
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  disabled={cooldown > 0 || isBusy}
-                  className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-gray-500 transition-colors duration-200 focus:outline-none disabled:cursor-not-allowed"
-                >
-                  {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
-                </button>
-              </div>
-            </div>
-          )}
+    <input
+      type="text"
+      placeholder="Enter OTP"
+      className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
+      {...register("otp")}
+    />
 
           {!showOtpField && (
             <p className="mt-8 text-center text-sm text-slate-400">

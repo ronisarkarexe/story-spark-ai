@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import httpStatus from "http-status";
 import ApiError from "../../errors/api_error";
-import { JwtHalers } from "../../utils/jwt.helper";
+import { JwtHelpers } from "../../utils/jwt.helper";
 import config from "../../config";
 import { Secret } from "jsonwebtoken";
 import { reserveUserQuota } from "../modules/ai_model/quota.service";
@@ -24,7 +24,7 @@ const checkRequestLimit =
           "You are not authorized to access"
         );
       }
-      const verifiedUser = JwtHalers.verifyToken(
+      const verifiedUser = JwtHelpers.verifyToken(
         token,
         config.jwt.secret as Secret
       );

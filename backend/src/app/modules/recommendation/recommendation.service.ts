@@ -5,32 +5,48 @@ import { User } from "../user/user.model";
 import { ITokenPayload } from "../../../interfaces/token";
 import mongoose from "mongoose";
 import { IPost } from "../post/post.interface";
+
+// Optimization: Define field selection constants for reuse and performance
+const USER_RECOMMENDATION_FIELDS = "readingPreferences readingHistory";
+const POST_RECOMMENDATION_FIELDS =
+  "_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt";
+const AUTHOR_RECOMMENDATION_FIELDS = "name profile.avatar";
+
+// Optimization: Define a type for lean recommendation results
+type RecommendationPost = Partial<IPost> & {
+  _id: mongoose.Types.ObjectId;
+};
+
 const getPersonalizedRecommendations = async (token: ITokenPayload) => {
-  const user = await User.findById(token._id);
+  // Optimization: Use select() and lean() for user profile retrieval
+  const user = await User.findById(token._id)
+    .select(USER_RECOMMENDATION_FIELDS)
+    .lean();
+
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
 
   const { readingPreferences, readingHistory } = user;
-  
+
   // Base query: not deleted and published
   const query: any = { isDeleted: false, isPublished: true };
-  
+
   // Exclude read posts
   if (readingHistory && readingHistory.length > 0) {
     query._id = { $nin: readingHistory };
   }
 
-  let recommendations: IPost[] = [];
+  let recommendations: RecommendationPost[] = [];
 
   // If user has preferences, try to match them
   if (readingPreferences) {
-    const favoriteGenres = readingPreferences.favoriteGenres
+    const favoriteGenres = [...(readingPreferences.favoriteGenres || [])]
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
       .map(g => g.name);
-      
-    const favoriteEmotions = readingPreferences.favoriteEmotions
+
+    const favoriteEmotions = [...(readingPreferences.favoriteEmotions || [])]
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
       .map(e => e.name);
@@ -43,12 +59,16 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
       if (favoriteEmotions.length > 0) {
         orConditions.push({ emotions: { $in: favoriteEmotions } });
       }
-      
+
       const prefQuery = { ...query, $or: orConditions };
+
+      // Optimization: Use populate with selected fields, select specific post fields, and lean()
       recommendations = await Post.find(prefQuery)
-        .populate("author", "name profile.avatar")
+        .populate("author", AUTHOR_RECOMMENDATION_FIELDS)
+        .select(POST_RECOMMENDATION_FIELDS)
         .sort({ likesCount: -1, viewsCount: -1 })
-        .limit(10);
+        .limit(10)
+        .lean() as RecommendationPost[];
     }
   }
 
@@ -56,22 +76,25 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
   if (recommendations.length < 10) {
     const limit = 10 - recommendations.length;
     const recommendationIds = recommendations.map(r => r._id);
-    
+
     // Add existing recommendations to exclusion list to avoid duplicates
-    const fallbackQuery = { 
-      ...query, 
+    const fallbackQuery = {
+      ...query,
       ...(recommendationIds.length > 0 && {
-        _id: { 
-          $nin: [...(readingHistory || []), ...recommendationIds] 
+        _id: {
+          $nin: [...(readingHistory || []), ...recommendationIds]
         }
       })
     };
 
+    // Optimization: Use populate with selected fields, select specific post fields, and lean()
     const popularPosts = await Post.find(fallbackQuery)
-      .populate("author", "name profile.avatar")
+      .populate("author", AUTHOR_RECOMMENDATION_FIELDS)
+      .select(POST_RECOMMENDATION_FIELDS)
       .sort({ likesCount: -1, viewsCount: -1 })
-      .limit(limit);
-      
+      .limit(limit)
+      .lean() as RecommendationPost[];
+
     recommendations = [...recommendations, ...popularPosts];
   }
 

@@ -24,32 +24,32 @@ const globalErrorHandler: ErrorRequestHandler = (
 
   let statusCode = 500;
   let message = "Something went wrong!";
-  let errorMessage: IGenericErrorMessage[] = [];
+  let errorMessages: IGenericErrorMessage[] = [];
 
   if (err && err.name === "ValidationError") {
     const simplifiedError = handleValidationError(err);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
-    errorMessage = simplifiedError.errorMessages;
+    errorMessages = simplifiedError.errorMessages;
   } else if (err && err.name === "CastError") {
     const simplifiedError = handleCastError(err);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
-    errorMessage = simplifiedError.errorMessages;
+    errorMessages = simplifiedError.errorMessages;
   } else if (err && err.code === 11000) {
     const simplifiedError = handleDuplicateError(err);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
-    errorMessage = simplifiedError.errorMessages;
+    errorMessages = simplifiedError.errorMessages;
   } else if (err instanceof ZodError) {
     const simplifiedError = handleZodError(err);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
-    errorMessage = simplifiedError.errorMessages;
+    errorMessages = simplifiedError.errorMessages;
   } else if (err instanceof ApiError) {
     statusCode = err.statusCode;
     message = err.message;
-    errorMessage = err?.message
+    errorMessages = err?.message 
       ? [
           {
             path: "",
@@ -59,7 +59,7 @@ const globalErrorHandler: ErrorRequestHandler = (
       : [];
   } else if (err instanceof Error) {
     message = err.message;
-    errorMessage = err?.message
+    errorMessages = err?.message 
       ? [
           {
             path: "",
@@ -72,10 +72,8 @@ const globalErrorHandler: ErrorRequestHandler = (
   res.status(statusCode).json({
     success: false,
     message,
-    errorMessage,
-    // Expose stack only in explicit development; hide by default so any
-    // non-development environment (including an unset NODE_ENV) stays safe.
-    stack: config.env === "development" ? err.stack : undefined,
+    errorMessages,
+    stack: config.env != "production" ? err.stack : undefined,
   });
 };
 

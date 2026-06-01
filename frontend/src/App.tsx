@@ -17,21 +17,11 @@ import CareerComponent from "./components/footer/career.tsx";
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
 import StoriesComponent from "./components/stories/stories.component";
+import BranchingStory from "./components/stories/BranchingStory";
+import SimpleProtectedRoute from './components/ProtectedRoute';
 import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
-
-
-
-
 import ScrollToTopButton from "./components/ScrollToTopButton";
-
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
-
 
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
@@ -49,6 +39,22 @@ import ResourcesListComponent from "./components/community/resources_list.compon
 import SettingComponent from "./components/dashboard/settings/settings.component";
 import SignUpComponent from "./components/signup/signup.component";
 import StoryWorkspace from "./components/story/StoryWorkspace";
+import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import TemplatesComponent from "./components/templates/templates.component";
+import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
+import HelpCenterComponent from "./components/help_center/help_center.component";
+import Contact from "./components/contactus/contactus";
+import GuidelinesComponent from "./components/footer/guidelines.tsx";
+import ContributorsComponent from "./components/footer/contributors";
+import Terms from "./components/footer/terms.tsx";
+import ExploreComponent from "./components/post/post.component";
+import CommunityComponent from "./components/community/community.component";
+import EmailValidationComponent from "./components/email_validation/email.validation.component";
+import DashboardComponent from "./components/dashboard/dashboard.component";
+import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
+import UserComponent from "./components/dashboard/users/user.component";
+import ForgotPasswordComponent from "./components/login/forgot_password.component";
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
@@ -90,12 +96,11 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
       { path: "templates", element: <TemplatesComponent /> },
-      { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES} element={<WritingAssistantComponent />} />, },
+      { path: "writing-assistant", element: <WritingAssistantComponent /> },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
-      { path: "stories", element: <StoriesComponent /> },
-      { path: "story-workspace", element: <StoryWorkspace /> },
       { path: "login", element: <LoginComponent /> },
       { path: "signup", element: <SignUpComponent /> },
+      { path: "forgot-password", element: <ForgotPasswordComponent /> },
       { path: "pricing", element: <PricingComponent /> },
       { path: "post/:id", element: <PostDetailsComponent /> },
       { path: "help", element: <HelpCenterComponent /> },
@@ -104,13 +109,11 @@ const router = createBrowserRouter([
       { path: "career", element: <CareerComponent /> },
       { path: "blog", element: <BlogComponent /> },
       { path: "privacy-policy", element: <PrivacyPolicy /> },
-      { path: "cookie-policy", element: <CookiePolicy /> },
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "report-bug", element: <ReportBug /> },
-      { path: "forgot-password", element: <ForgotPasswordComponent /> },
 
       // Protected Sub-Tree running under the RootLayout context
       {
@@ -123,6 +126,33 @@ const router = createBrowserRouter([
           { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
         ],
       },
+
+      // 🆕 Story generation - Protected with token only (outside role-based routes)
+      {
+        path: "stories",
+        element: (
+          <SimpleProtectedRoute>
+            <StoriesComponent />
+          </SimpleProtectedRoute>
+        ),
+      },
+      {
+        path: "branching-story",
+        element: (
+          <SimpleProtectedRoute>
+            <BranchingStory />
+          </SimpleProtectedRoute>
+        ),
+      },
+      {
+        path: "story-workspace",
+        element: (
+          <SimpleProtectedRoute>
+            <StoryWorkspace />
+          </SimpleProtectedRoute>
+        ),
+      },
+
       { path: "*", element: <NotFoundComponent /> },
     ],
   },
@@ -148,11 +178,12 @@ const router = createBrowserRouter([
           { path: "users", element: <UserComponent /> },
           {
             element: <ProtectedRoute allowedRoles={[USER_ROLE.USER, USER_ROLE.WRITER]} />,
-            children: [{ path: "settings", element: <SettingComponent /> },
+            children: [
+              { path: "settings", element: <SettingComponent /> },
               {
-    path: "published-stories",
-    element: <PublishedStoriesComponent />,
-  },
+                path: "published-stories",
+                element: <PublishedStoriesComponent />,
+              },
             ],
           },
           {
@@ -173,20 +204,7 @@ const router = createBrowserRouter([
 // APP
 // =========================================================================
 function App() {
-  return (
-    <>
-      <RouterProvider router={router} />
-    </>
-  );
+  return <RouterProvider router={router} />;
 }
 
-
-
 export default App;
-
-
-export default App;
-
-
-export default App;
-

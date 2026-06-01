@@ -43,7 +43,43 @@ const createComment = async (
 };
 
 const getCommentsByPostId = async (postId: string) => {
-main
+  const allComments = (await Comment.find({ postId })
+    .populate("userId", "name email")
+    .populate("likes")
+    .sort({ createdAt: -1 })
+    .lean()) as any[];
+
+  const totalComments = allComments.length;
+
+  const topLevelComments: any[] = [];
+  const replyMap = new Map<string, any[]>();
+
+  // Distribute comments into top-level list and replies map
+  for (const comment of allComments) {
+    if (!comment.parentCommentId) {
+      comment.replies = [];
+      topLevelComments.push(comment);
+    } else {
+      const parentIdStr = comment.parentCommentId.toString();
+      if (!replyMap.has(parentIdStr)) {
+        replyMap.set(parentIdStr, []);
+      }
+      replyMap.get(parentIdStr)!.push(comment);
+    }
+  }
+
+  // Attach replies to their corresponding top-level comments and sort them chronologically (createdAt: 1)
+  for (const comment of topLevelComments) {
+    const idStr = comment._id.toString();
+    const replies = replyMap.get(idStr) || [];
+    // Sort replies in ascending chronological order
+    replies.sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+    comment.replies = replies;
+  }
+
+  return { comments: topLevelComments, totalComments };
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
@@ -63,7 +99,7 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
-  
+
   // Replace the read-modify-write likes toggle with atomic MongoDB operators.
   // The original pattern read likes, checked membership with includes, mutated
   // the array, and saved. Two concurrent toggles by the same user can both pass

@@ -47,9 +47,9 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
+);
   AuthController.changePassword
 );
-
 // Forgot Password API route
 router.post(
   "/forgot-password",

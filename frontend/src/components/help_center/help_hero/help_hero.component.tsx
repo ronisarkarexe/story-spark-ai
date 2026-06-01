@@ -80,16 +80,10 @@ const HelpHero: FC<HelpHeroProps> = ({
             <span className="ml-2 text-sm">
               <i className="fa-solid fa-circle-question" aria-hidden="true"></i>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
         <Link to="/" className="inline-block mb-8">
-          <div className="bg-white dark:bg-gradient-to-r dark:from-white/20 dark:to-white/10 hover:bg-slate-100 dark:hover:from-white/30 dark:hover:to-white/20 text-slate-700 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded-lg border border-slate-200 dark:border-white/10 shadow-sm">
-            
-            <i
-              className="fa-solid fa-left-long"
-              aria-hidden="true"
-            ></i>
-
-            BACK
+          <div className="bg-white hover:bg-slate-50 text-slate-700 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded-lg border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:hover:bg-slate-700/80 dark:hover:border-slate-600 dark:text-gray-300 dark:border-slate-700">
+            <i className="fa-solid fa-left-long" aria-hidden="true"></i>
+            Back to Home
           </div>
         </Link>
 

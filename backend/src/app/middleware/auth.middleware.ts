@@ -3,8 +3,7 @@ import httpStatus from "http-status";
 import config from "../../config";
 import { Secret } from "jsonwebtoken";
 import ApiError from "../../errors/api_error";
-import { JwtHalers } from "../../utils/jwt.helper";
-import { User } from "../modules/user/user.model";
+import { JwtHelpers } from "../../utils/jwt.helper";
 
 const auth =
   (...requiredRole: string[]) =>
@@ -22,7 +21,7 @@ const auth =
       }
 
       // verify token
-      const verifiedUser = JwtHalers.verifyToken(
+      const verifiedUser = JwtHelpers.verifyToken(
         token,
         config.jwt.secret as Secret
       );
