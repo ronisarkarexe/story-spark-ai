@@ -12,58 +12,56 @@ const toggleReaction = async (
   token: ITokenPayload
 ) => {
   const { email } = token;
-  const user = await User.findOne({ email });
+
+  // Optimization: Use select() and lean() for user lookup to reduce overhead
+  const user = await User.findOne({ email }).select("_id").lean();
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+
+  // Optimization: Use select() to fetch only necessary fields for the toggle operation
+  // Note: lean() is NOT used here because we call post.save() later
+  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } }).select("likesCount reactions");
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
+  // Check if reaction already exists
+  // Optimization: Use lean() for read-only existence check
   const existingReaction = await Reaction.findOne({
+    postId: new Types.ObjectId(postId),
     userId: user._id,
-    postId: post._id,
-  });
+    type: type,
+  }).lean();
 
   if (existingReaction) {
-    // Remove reaction atomically
+    // Remove reaction
     await Reaction.findByIdAndDelete(existingReaction._id);
-    const updatedPost = await Post.findOneAndUpdate(
-      { _id: postId },
-      {
-        $pull: { reactions: existingReaction._id },
-        $inc: { likesCount: -1 },
-      },
-      { new: true }
+
+    // Update post counts and reactions list (Preserving upstream/main logic)
+    post.likesCount = Math.max(0, (post.likesCount || 0) - 1);
+    post.reactions = post.reactions || [];
+    post.reactions = post.reactions.filter(
+      (rId) => rId.toString() !== existingReaction._id.toString()
     );
-    // Ensure likesCount never goes below 0
-    if (updatedPost && updatedPost.likesCount < 0) {
-      await Post.updateOne({ _id: postId }, { $set: { likesCount: 0 } });
-    }
-    return {
-      message: "Reaction removed",
-      likesCount: Math.max(0, updatedPost?.likesCount ?? 0),
-    };
+    await post.save();
+
+    return { message: "Reaction removed", likesCount: post.likesCount };
   } else {
-    // Add reaction atomically
+    // Add reaction
     const newReaction = await Reaction.create({
       postId: new Types.ObjectId(postId),
       userId: user._id,
       type: type,
     });
-    const updatedPost = await Post.findOneAndUpdate(
-      { _id: postId },
-      {
-        $addToSet: { reactions: newReaction._id },
-        $inc: { likesCount: 1 },
-      },
-      { new: true }
-    );
-    return {
-      message: "Reaction added",
-      likesCount: updatedPost?.likesCount ?? 0,
-    };
+
+    // Update post counts and reactions list (Preserving upstream/main logic)
+    post.likesCount = (post.likesCount || 0) + 1;
+    post.reactions = post.reactions || [];
+    post.reactions.push(newReaction._id);
+    await post.save();
+
+    return { message: "Reaction added", likesCount: post.likesCount };
   }
 };
 

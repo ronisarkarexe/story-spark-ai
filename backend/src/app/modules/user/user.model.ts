@@ -9,7 +9,7 @@ import { USER_STATUS } from "../../../enums/user_status";
 export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
   {
     email: { type: String, required: true, unique: true, lowercase: true },
-    name: { type: String, maxlength: 100, minlength: 5 },
+    name: { type: String, maxlength: 100, minlength: 3 },
     password: { type: String, required: false, default: "" },
     role: {
       type: String,
@@ -91,12 +91,15 @@ UserSchema.pre("save", async function (next) {
   // Only hash password if it exists, is not empty, and has been modified (for password-based auth)
   // Skip for Google OAuth users who don't have passwords
   if (user.isModified("password") && user.password && user.password.trim() !== "") {
-    user.password = await bcrypt.hash(
-      user.password,
-      Number(config.bcrypt_salt_rounds)
-    );
+    user.password = await bcrypt.hash(user.password, config.bcrypt_salt_rounds);
   }
   
+  next();
+});
+UserSchema.pre("save", function (next) {
+  if (this.readingHistory && this.readingHistory.length > 500) {
+    this.readingHistory = this.readingHistory.slice(-500);
+  }
   next();
 });
 

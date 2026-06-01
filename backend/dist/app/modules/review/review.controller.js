@@ -17,8 +17,10 @@ const http_status_1 = __importDefault(require("http-status"));
 const catch_async_1 = __importDefault(require("../../../shared/catch_async"));
 const send_response_1 = __importDefault(require("../../../shared/send_response"));
 const review_service_1 = require("./review.service");
+const token_1 = require("../../middleware/token");
 const createReview = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield review_service_1.ReviewService.createReview(req.body);
+    const token = (0, token_1.getToken)(req);
+    const result = yield review_service_1.ReviewService.createReview(req.body, token);
     (0, send_response_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,

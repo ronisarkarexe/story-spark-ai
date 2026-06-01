@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
+import crypto from "crypto";
 import logger from "../utils/logger.util";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { AiModelService } from "../app/modules/ai_model/ai_model.service";
 import config from "../config";
 import { JwtHalers } from "../utils/jwt.helper";
 import type { Secret } from "jsonwebtoken";
@@ -8,13 +9,16 @@ import { User } from "../app/modules/user/user.model";
 import { reserveUserQuota } from "../app/modules/ai_model/quota.service";
 import { createUserQuotaGuard, runWithQuotaCleanup } from "../app/modules/ai_model/quota.lifecycle";
 
-const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
 
 const COLORS = [
-  "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4",
-  "#FFEAA7", "#DDA0DD", "#98D8C8", "#F7DC6F"
+  "#FF6B6B",
+  "#4ECDC4",
+  "#45B7D1",
+  "#96CEB4",
+  "#FFEAA7",
+  "#DDA0DD",
+  "#98D8C8",
+  "#F7DC6F",
 ];
 
 interface IParticipant {
@@ -45,7 +49,8 @@ const rooms = new Map<string, IRoom>();
 const cleanupTimeouts = new Map<string, NodeJS.Timeout>();
 
 function generateRoomId(): string {
-  return Math.random().toString(36).substring(2, 10);
+  // 128 bits of CSPRNG entropy so the room id is an unguessable join capability.
+  return crypto.randomBytes(16).toString("hex");
 }
 
 function getColorForUser(index: number): string {
@@ -59,11 +64,18 @@ export const setupCollabSocket = (io: Server) => {
     try {
       const token = socket.handshake.auth?.token as string | undefined;
       if (!token) return next(new Error("Unauthorized"));
-      
-      const verifiedUser = JwtHalers.verifyToken(token, config.jwt.secret as Secret);
-      const userId = verifiedUser._id || verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
+
+      const verifiedUser = JwtHalers.verifyToken(
+        token,
+        config.jwt.secret as Secret,
+      );
+      const userId =
+        verifiedUser._id ||
+        verifiedUser.userId ||
+        verifiedUser.sub ||
+        verifiedUser.id;
       if (!userId) return next(new Error("Unauthorized"));
-      
+
       socket.data.userId = userId.toString();
       socket.data.username = verifiedUser.name || "Unknown User";
       next();
@@ -83,12 +95,14 @@ export const setupCollabSocket = (io: Server) => {
       const room: IRoom = {
         roomId,
         createdBy: userId,
-        participants: [{
-          userId,
-          username,
-          color: COLORS[0],
-          socketId: socket.id,
-        }],
+        participants: [
+          {
+            userId,
+            username,
+            color: COLORS[0],
+            socketId: socket.id,
+          },
+        ],
         story: [],
         createdAt: new Date(),
       };
@@ -113,10 +127,17 @@ export const setupCollabSocket = (io: Server) => {
         return;
       }
 
-      const existingParticipant = room.participants.find(p => p.userId === userId);
+      const existingParticipant = room.participants.find(
+        (p) => p.userId === userId,
+      );
       if (!existingParticipant) {
         const color = getColorForUser(room.participants.length);
-        room.participants.push({ userId, username, color, socketId: socket.id });
+        room.participants.push({
+          userId,
+          username,
+          color,
+          socketId: socket.id,
+        });
       } else {
         existingParticipant.socketId = socket.id;
       }
@@ -132,9 +153,11 @@ export const setupCollabSocket = (io: Server) => {
       const room = rooms.get(roomId);
       if (!room) return;
 
-      const participant = room.participants.find(p => p.userId === userId);
+      const participant = room.participants.find((p) => p.userId === userId);
       if (!participant) {
-        socket.emit("collab:error", { message: "You are not a participant of this room" });
+        socket.emit("collab:error", {
+          message: "You are not a participant of this room",
+        });
         return;
       }
 
@@ -148,84 +171,104 @@ export const setupCollabSocket = (io: Server) => {
       };
 
       room.story.push(chunk);
-      collabNamespace.to(roomId).emit("collab:story_updated", { story: room.story, newChunk: chunk });
+      collabNamespace
+        .to(roomId)
+        .emit("collab:story_updated", { story: room.story, newChunk: chunk });
     });
 
     // AI continues the story
-    socket.on("collab:ai_continue", async ({ roomId }) => {
-      const room = rooms.get(roomId);
-      if (!room) return;
+socket.on("collab:ai_continue", async ({ roomId }) => {
+  const room = rooms.get(roomId);
 
-      const userId = socket.data.userId;
-      if (!userId) {
-        socket.emit("collab:error", { message: "Unauthorized" });
-        return;
-      }
+  if (!room) return;
 
-      // 1. Participant Authorization Check
-      const participant = room.participants.find(p => p.userId === userId);
-      if (!participant) {
-        socket.emit("collab:error", { message: "You are not a participant of this room" });
-        return;
-      }
+  const userId = socket.data.userId;
+  if (!userId) {
+    socket.emit("collab:error", { message: "Unauthorized" });
+    return;
+  }
 
-      // Check if user exists in the DB
-      const user = await User.findById(userId);
-      if (!user) {
-        socket.emit("collab:error", { message: "User not found!" });
-        return;
-      }
-
-      try {
-        // 2. Atomic Quota Reservation
-        await reserveUserQuota(user.email);
-      } catch (error: any) {
-        const errorMsg = error instanceof Error ? error.message : "Monthly request limit exceeded!";
-        socket.emit("collab:error", { message: errorMsg });
-        return;
-      }
-
-      const guard = createUserQuotaGuard(user.email);
-
-      try {
-        await runWithQuotaCleanup(guard, async () => {
-          // 3. Emit AI Thinking ONLY after quota check succeeds to prevent infinite loading state spams
-          collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
-
-          const fullContext = room.story.map(chunk => chunk.text).join("\n");
-          const prompt = `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${fullContext}\n\nContinuation:`;
-
-          const result = await model.generateContent(prompt);
-          const aiText = result.response.text().trim();
-          
-          if (!aiText) {
-            throw new Error("Empty response from AI");
-          }
-
-          const aiChunk: IStoryChunk = {
-            authorId: "ai",
-            authorName: "✨ AI",
-            color: "#d4af37",
-            text: aiText,
-            isAI: true,
-            timestamp: new Date(),
-          };
-
-          room.story.push(aiChunk);
-          
-          // Broadcast the update to the entire room
-          collabNamespace.to(roomId).emit("collab:story_updated", {
-            story: room.story,
-            newChunk: aiChunk
-          });
-        });
-      } catch (err) {
-        socket.emit("collab:error", { message: "AI continuation failed" });
-      } finally {
-        // 4. Guarantee spinner cleanup on success or failure
-        collabNamespace.to(roomId).emit("collab:user_stop_typing", { userId: "ai" });
-      }
+  const participant = room.participants.find((p) => p.userId === userId);
+  if (!participant) {
+    socket.emit("collab:error", {
+      message: "You are not a participant of this room",
     });
+    return;
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    socket.emit("collab:error", { message: "User not found!" });
+    return;
+  }
+
+  try {
+    await reserveUserQuota(user.email);
+  } catch (error: any) {
+    const errorMsg =
+      error instanceof Error
+        ? error.message
+        : "Monthly request limit exceeded!";
+    socket.emit("collab:error", { message: errorMsg });
+    return;
+  }
+
+  const guard = createUserQuotaGuard(user.email);
+
+  try {
+    await runWithQuotaCleanup(guard, async () => {
+      collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
+
+      const storyContext = room.story
+        .map((chunk) => chunk.text)
+        .filter(Boolean)
+        .join("\n");
+
+      const prompt = storyContext
+        ? `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${storyContext}\n\nContinuation:`
+        : "Start a collaborative story naturally and creatively in 2-3 sentences. Return ONLY the story text, do not add any quotes, titles, JSON, formatting, or labels.";
+
+      const result = await AiModelService.aiFreeModelGenerate({
+        prompt,
+        wordLength: 120,
+        numStories: 1,
+        language: "English",
+      });
+
+      const continuationText = result?.[0]?.content?.trim();
+
+      if (!continuationText) {
+        throw new Error("Empty response from AI");
+      }
+
+      const aiChunk: IStoryChunk = {
+        authorId: "ai",
+        authorName: "✨ AI",
+        color: "#d4af37",
+        text: continuationText,
+        isAI: true,
+        timestamp: new Date(),
+      };
+
+      room.story.push(aiChunk);
+
+      collabNamespace.to(roomId).emit("collab:story_updated", {
+        story: room.story,
+        newChunk: aiChunk,
+      });
+    });
+  } catch (error) {
+    logger.error("AI collaboration generation failed", error);
+
+    socket.emit("collab:error", {
+      message: "AI continuation failed. Please try again.",
+    });
+  } finally {
+    collabNamespace.to(roomId).emit("collab:user_stop_typing", {
+      userId: "ai",
+    });
+  }
+});
 
     // Typing indicator
     socket.on("collab:typing", ({ roomId }) => {
@@ -233,7 +276,7 @@ export const setupCollabSocket = (io: Server) => {
       const username = socket.data.username;
       const room = rooms.get(roomId);
       if (!room) return;
-      if (!room.participants.some(p => p.userId === userId)) return;
+      if (!room.participants.some((p) => p.userId === userId)) return;
       socket.to(roomId).emit("collab:user_typing", { userId, username });
     });
 
@@ -241,7 +284,7 @@ export const setupCollabSocket = (io: Server) => {
       const userId = socket.data.userId;
       const room = rooms.get(roomId);
       if (!room) return;
-      if (!room.participants.some(p => p.userId === userId)) return;
+      if (!room.participants.some((p) => p.userId === userId)) return;
       socket.to(roomId).emit("collab:user_stop_typing", { userId });
     });
 
@@ -259,8 +302,10 @@ export const setupCollabSocket = (io: Server) => {
         socket.emit("collab:error", { message: "Room not found" });
         return;
       }
-      if (!room.participants.some(p => p.userId === userId)) {
-        socket.emit("collab:error", { message: "You are not a participant of this room" });
+      if (!room.participants.some((p) => p.userId === userId)) {
+        socket.emit("collab:error", {
+          message: "You are not a participant of this room",
+        });
         return;
       }
       socket.emit("collab:room_info", { room });
@@ -270,7 +315,7 @@ export const setupCollabSocket = (io: Server) => {
     socket.on("disconnect", () => {
       rooms.forEach((room) => {
         room.participants = room.participants.filter(
-          p => p.socketId !== socket.id
+          (p) => p.socketId !== socket.id,
         );
         if (room.participants.length === 0) {
           // Clear any existing cleanup timeout to prevent duplicate timer runs

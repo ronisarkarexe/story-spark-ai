@@ -22,8 +22,8 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   // Determine if currently bookmarked by logged in user
-  const isCurrentlyBookmarked = bookmarks.some(
-    (b) => b.email === currentUser?.email
+  const isCurrentlyBookmarked = Boolean(currentUser?.userId) && bookmarks.some(
+    (b) => b._id === currentUser?.userId
   );
 
   const handleBookmark = async (e: React.MouseEvent) => {
