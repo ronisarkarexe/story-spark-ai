@@ -10,7 +10,10 @@ const auth =
   (...requiredRole: string[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = req.headers.authorization as string;
+      const authHeader = (req.headers.authorization || '') as string;
+      const token = authHeader.startsWith('Bearer ')
+        ? authHeader.slice(7).trim()
+        : authHeader.trim();
       if (!token) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,

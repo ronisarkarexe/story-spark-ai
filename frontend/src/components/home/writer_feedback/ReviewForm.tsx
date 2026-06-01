@@ -69,7 +69,13 @@ const ReviewForm = () => {
       return;
     }
     try {
-      await createReview({ name, role, feedback, rating }).unwrap();
+      await createReview({
+  name,
+  role,
+  feedback,
+  rating,
+  imgSrc: ""
+})/*.unwrap();  */
       setSuccess(true);
       setName("");
       setRole("");

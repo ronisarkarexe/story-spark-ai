@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import githubHero from "../../assets/github-hero.png";
-
+import ImageFallback from "../ImageFallback";
 interface GitHubContributor {
   id: number;
   login: string;
@@ -175,7 +175,7 @@ const GithubcontributorsComponent: React.FC = () => {
               className="
               w-full max-w-[620px]
               object-contain
-             drop-shadow-[0_0_60px_rgba(139,92,246,0.45)]
+              drop-shadow-[0_0_60px_rgba(139,92,246,0.45)]
             animate-[float_5s_ease-in-out_infinite]
             "
             />
@@ -432,16 +432,16 @@ const GithubcontributorsComponent: React.FC = () => {
 
                 {/* Avatar */}
                 <div className="flex justify-center mb-5">
-                  <img
-                    src={contributor.avatar_url}
-                    alt={contributor.login}
-                    className="
-                    w-24 h-24 rounded-full
-                    object-cover
-                    border-4 border-white/20
-                    shadow-2xl
-                  "
-                  />
+                  <ImageFallback
+                      src={contributor.avatar_url}
+                      alt={contributor.login}
+                      className="
+                      w-24 h-24 rounded-full
+                      object-cover
+                      border-4 border-white/20
+                      shadow-2xl
+                    "
+                    />
                 </div>
 
                 {/* Username */}

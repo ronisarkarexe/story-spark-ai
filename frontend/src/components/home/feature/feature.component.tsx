@@ -6,8 +6,10 @@ import SSProfile from "../../ui-component/ss-profile/ss-profile";
 import { useNavigate } from "react-router-dom";
 import BookmarkButton from "../../BookmarkButton";
 import React, { useState } from "react";
+import ImageFallback from "../../ImageFallback";
 import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+
 const calculateReadingTime = (text?: string): number => {
   if (!text) return 1;
   const wordsPerMinute = 200;
@@ -29,9 +31,10 @@ const FeatureComponent = () => {
   };
 
   if (isLoading) return <LoadingAnimation />;
+
   if (isError) {
     return (
-      <div className="mb-12 rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-center text-red-200">
+      <div className="mb-12 rounded-lg border border-red-500/20 bg-red-500/10 p-10 text-center text-red-200">
         <p className="mb-3 font-semibold">Failed to load featured posts.</p>
         <button
           onClick={() => refetch()}
@@ -60,8 +63,8 @@ const FeatureComponent = () => {
                 onClick={() => navigate(`/post/${post._id}`)}
                 className="motion-card story-panel group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:border-indigo-500/30 shadow-md shadow-slate-100 dark:shadow-none"
               >
-                <div className="relative h-48 overflow-hidden sm:h-52">
-                  <img
+                <div className="relative overflow-hidden h-48 sm:h-52">
+                  <ImageFallback
                     className="motion-image h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     src={post.imageURL}
                     alt={post.title || "Featured Post"}
@@ -177,7 +180,7 @@ const FeatureComponent = () => {
             );
           })
         ) : (
-          <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400">
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400 w-full text-center">
             Featured posts are not available.
           </div>
         )}

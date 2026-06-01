@@ -38,7 +38,7 @@ async function main() {
       cors: {
         origin: config.cors_origins?.length
           ? config.cors_origins
-          : ["http://localhost:4001", "https://storysparkai.vercel.app"],
+          : ["http://localhost:4001", "https://storysparkai-five.vercel.app"],
         credentials: true,
       },
     });

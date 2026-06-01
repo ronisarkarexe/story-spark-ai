@@ -492,13 +492,14 @@ function toggleConfirmPasswordVisibility() {
 }
 
 /* ── Form Submission handling ── */
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
     e.preventDefault();
     if (isSubmitting) return;
 
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
+    const rememberCheckbox = document.getElementById('remember');
     const confirmPasswordField = document.getElementById('confirm-password-field');
     if (!emailField) return;
 
@@ -521,20 +522,47 @@ function handleFormSubmit(e) {
 
     const email = (emailField.value || '').trim();
     const name = (nameField && nameField.value ? nameField.value.trim() : '');
+    const password = (passwordField && passwordField.value ? passwordField.value : '');
+    const rememberMe = rememberCheckbox ? rememberCheckbox.checked : false;
 
     setSubmitting(true);
     setAlert('info', currentMode === 'signup' ? 'Creating your account…' : 'Signing you in…');
 
-    window.setTimeout(() => {
-        setSubmitting(false);
+    try {
+        const endpoint = currentMode === 'signup' ? '/api/auth/register' : '/api/auth/login';
+        const body = currentMode === 'signup'
+            ? { email, name, password }
+            : { email, password, rememberMe };
+
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            setAlert('error', data.message || 'Something went wrong. Please try again.');
+            setSubmitting(false);
+            return;
+        }
+
+        localStorage.setItem('accessToken', data.data.accessToken);
+
         if (currentMode === 'signin') {
-            setAlert('success', `Signed in as <span class="font-semibold">${escapeHtml(email)}</span>.`);
+            setAlert('success', `Signed in as <span class="font-semibold">${escapeHtml(email)}</span>. Redirecting…`);
+            setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
         } else {
             const greeting = name ? `Welcome, <span class="font-semibold">${escapeHtml(name)}</span>!` : 'Welcome!';
             setAlert('success', `${greeting} Your account is ready. Redirecting to sign in…`);
-            window.setTimeout(() => toggleAuthMode('signin'), 900);
+            setTimeout(() => toggleAuthMode('signin'), 900);
         }
-    }, 900);
+    } catch (err) {
+        setAlert('error', 'Network error. Please check your connection and try again.');
+    }
+
+    setSubmitting(false);
 }
 
 function escapeHtml(text) {
@@ -562,10 +590,48 @@ function initGoogleAuth() {
 }
 
 function decodeJwt(token) {
+    if (!token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+
     try {
-        const base64Url = token.split('.')[1];
+        const base64Url = parts[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        return JSON.parse(atob(base64));
+        const decoded = JSON.parse(atob(base64));
+
+        if (!decoded || typeof decoded !== 'object') return null;
+
+        // Required userId validation
+        if (typeof decoded.userId !== 'string' || decoded.userId.trim() === '') return null;
+
+        // Required email validation with format regex
+        if (typeof decoded.email !== 'string' || decoded.email.trim() === '') return null;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(decoded.email)) return null;
+
+        // Required role validation
+        if (typeof decoded.role !== 'string' || decoded.role.trim() === '') return null;
+        const validRoles = ['user', 'admin', 'guest'];
+        if (!validRoles.includes(decoded.role)) return null;
+
+        // Required subscriptionType validation
+        if (typeof decoded.subscriptionType !== 'string' || decoded.subscriptionType.trim() === '') return null;
+        const validSubscriptions = ['free', 'premium'];
+        if (!validSubscriptions.includes(decoded.subscriptionType)) return null;
+
+        // Required exp (expiration) validation
+        if (typeof decoded.exp !== 'number' || decoded.exp <= Math.floor(Date.now() / 1000)) return null;
+
+        // Required iat validation
+        if (typeof decoded.iat !== 'number') return null;
+
+        // Optional name validation
+        if (decoded.name !== undefined && typeof decoded.name !== 'string') return null;
+
+        // Optional postsCount validation
+        if (decoded.postsCount !== undefined && typeof decoded.postsCount !== 'number') return null;
+
+        return decoded;
     } catch (e) {
         return null;
     }

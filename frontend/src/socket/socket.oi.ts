@@ -25,8 +25,8 @@ export const connectSocket = (): Socket => {
     console.warn("[Story Spark] User not authenticated. Cannot connect to Socket.IO.");
     return null as unknown as Socket;
   }
-
-  socketIoInstance = io(socketUrl, {
+socketIoInstance = io(`${socketUrl}/collab`, {
+  
     transports: ["websocket", "polling"],
     autoConnect: false,
     reconnectionAttempts: 5,

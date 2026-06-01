@@ -1,7 +1,11 @@
 import nodemailer from "nodemailer";
 import config from "../config";
 
-export const sendVerificationEmail = async (to: string, token: string) => {
+export const sendVerificationEmail = async (
+  to: string,
+  token: string,
+  unsubscribeUrl?: string
+) => {
   if (!config.verify_email || !config.verify_password) {
     console.warn("Email configuration missing. Verification email not sent.");
     return;
@@ -17,6 +21,9 @@ export const sendVerificationEmail = async (to: string, token: string) => {
 
   const frontendUrl = config.cors_origins?.[0] || "http://localhost:4001";
   const verifyLink = `${frontendUrl}/verify-newsletter?token=${token}`;
+  const unsubscribeFooter = unsubscribeUrl
+    ? `<p style="color: #888; font-size: 12px;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #888;">Unsubscribe</a>.</p>`
+    : "";
 
   const mailOptions = {
     from: `"Story Spark AI" <${config.verify_email}>`,
@@ -34,6 +41,7 @@ export const sendVerificationEmail = async (to: string, token: string) => {
         <p style="color: #666; font-size: 14px;">This link will expire in 24 hours.</p>
         <hr style="border: none; border-top: 1px solid #eaeaea; margin: 30px 0;" />
         <p style="color: #888; font-size: 12px;">Best regards,<br/>The Story Spark AI Team</p>
+        ${unsubscribeFooter}
       </div>
     `,
   };

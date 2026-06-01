@@ -7,6 +7,7 @@ import { store } from "./redux/store.ts";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ThemeProvider } from "./components/theme/theme.context";
 
+
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 

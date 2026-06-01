@@ -7,7 +7,10 @@ import { Secret } from "jsonwebtoken";
 import { ITokenPayload } from "../../interfaces/token";
 
 export const getToken = (req: Request): ITokenPayload => {
-  const token = req.headers.authorization as string;
+  const authHeader = req.headers.authorization as string;
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : authHeader;
   if (!token) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,

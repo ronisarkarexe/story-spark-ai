@@ -27,6 +27,7 @@
     "chart.js": "^4.4.9",
     "d3": "^7.9.0",
     "eventemitter3": "^5.0.4",
+    "fdir": "^6.5.0",
     "framer-motion": "^12.5.0",
     "gsap": "^3.15.0",
     "html2canvas": "^1.4.1",
