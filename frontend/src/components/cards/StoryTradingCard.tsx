@@ -203,7 +203,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
 
       <div
         ref={cardRef}
-        className={`story-card-holo relative mx-auto aspect-[5/7] w-full max-w-[360px] overflow-hidden rounded-2xl border ${rarityStyle.border} bg-slate-950 p-3 text-white shadow-2xl ${rarityStyle.glow}`}
+        className={`story-card-holo group relative mx-auto aspect-[5/7] w-full max-w-[360px] overflow-hidden rounded-2xl border ${rarityStyle.border} bg-slate-950 p-3 text-white shadow-xl transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.1)] ${rarityStyle.glow}`}
       >
         <div
           className={`absolute inset-0 bg-gradient-to-br ${rarityStyle.accent} opacity-20`}
@@ -228,18 +228,20 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
           </div>
 
           <div className="relative m-3 h-40 overflow-hidden rounded-xl border border-white/10 bg-slate-900">
-            <StoryCoverImage
-              title={story.title}
-              tag={story.tag}
-              className="h-full w-full"
-              style={{ minHeight: "0", borderRadius: "0.75rem" }}
-            />
+            <div className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-105">
+              <StoryCoverImage
+                title={story.title}
+                tag={story.tag}
+                className="h-full w-full"
+                style={{ minHeight: "0", borderRadius: "0.75rem" }}
+              />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
-              <span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${genreClass}`}>
+              <span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-all duration-500 ease-out group-hover:-translate-y-0.5 group-hover:shadow-md ${genreClass}`}>
                 {genre}
               </span>
-              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold text-white">
+              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold text-white transition-all duration-500 ease-out group-hover:-translate-y-0.5 group-hover:shadow-md">
                 {story.language || "English"}
               </span>
             </div>

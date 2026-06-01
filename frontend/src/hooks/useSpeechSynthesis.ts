@@ -216,7 +216,7 @@ export const useSpeechSynthesis = (
 
   const [isSupported, setIsSupported] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -387,7 +387,6 @@ export const useSpeechSynthesis = (
 
     utteranceRef.current = utterance;
     speechSynthesis.speak(utterance);
-  }, [clearUtterance, isReady, isSupported, rateState, text, totalWords, voiceGender, wordRanges, voices, pitchState, volumeState]);
   }, [
     clearUtterance,
     isReady,
@@ -399,6 +398,10 @@ export const useSpeechSynthesis = (
     text,
     totalWords,
     wordRanges,
+    voiceGender,
+    voices,
+    pitchState,
+    volumeState
   ]);
 
   const pause = useCallback(() => {
@@ -560,9 +563,7 @@ export const useSpeechSynthesis = (
         return;
       }
 
-      const nextVoices = speechSynthesis.getVoices();
-      setVoices(nextVoices);
-      setIsReady(nextVoices.length > 0);
+
       const availableVoices = speechSynthesis.getVoices().map(mapVoiceOption);
       setVoices(availableVoices);
       setIsReady(availableVoices.length > 0);

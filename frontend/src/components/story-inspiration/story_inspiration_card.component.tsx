@@ -88,7 +88,7 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
   };
 
   return (
-    <div className="motion-card group relative bg-white border border-gray-100 hover:border-indigo-500/40 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full transition-colors duration-300 dark:bg-slate-900/50 dark:border-none dark:shadow-xl">
+    <div className="motion-card group relative bg-white border border-gray-100 hover:border-indigo-500/40 rounded-2xl overflow-hidden shadow-md hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col h-full transition-all duration-500 ease-out hover:-translate-y-2 dark:bg-slate-900/50 dark:border-none dark:shadow-xl dark:hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.2)]">
       
       {/* Zoom-in Card Cover Image */}
       <div className="relative h-44 w-full overflow-hidden bg-gray-100 dark:bg-[#0A0E17]">
@@ -96,11 +96,11 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
         <ImageFallback
             src={image}
             alt={title}
-            className="motion-image w-full h-full object-cover"
+            className="motion-image w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
         
         {/* Genre tag */}
-        <div className={`absolute top-4 right-4 z-20 px-3.5 py-1.5 rounded-full backdrop-blur-md border bg-gray-100 text-slate-700 border-gray-200 text-[10px] font-bold tracking-widest uppercase shadow-md flex items-center gap-1.5 ${genreBadgeClasses[genre] || "dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300"}`}>
+        <div className={`absolute top-4 right-4 z-20 px-3.5 py-1.5 rounded-full backdrop-blur-md border bg-gray-100 text-slate-700 border-gray-200 text-[10px] font-bold tracking-widest uppercase shadow-md flex items-center gap-1.5 transition-all duration-500 ease-out group-hover:shadow-lg group-hover:-translate-y-0.5 ${genreBadgeClasses[genre] || "dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300"}`}>
           <i className={`${config.icon} text-xs`}></i>
           {genre}
         </div>
@@ -133,7 +133,7 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
             {themes.map((theme, i) => (
               <span
                 key={i}
-                className="text-[11px] px-2 py-0.5 rounded bg-gray-100 text-slate-700 border border-gray-200 font-medium hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-colors duration-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                className="text-[11px] px-2 py-0.5 rounded bg-gray-100 text-slate-700 border border-gray-200 font-medium hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
               >
                 {theme}
               </span>
@@ -173,7 +173,7 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
         {/* Generate CTA Button */}
         <button
           onClick={handleGenerateSimilar}
-          className="motion-cta w-full mt-auto py-3.5 rounded-xl bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-100 hover:border-purple-300 font-semibold flex items-center justify-center gap-2 group/btn shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-lg hover:shadow-indigo-500/15 transition-colors duration-300 dark:bg-gradient-to-r dark:from-blue-600/80 dark:to-indigo-600/80 dark:text-white dark:border-white/10 dark:hover:from-blue-600 dark:hover:to-indigo-600 dark:hover:border-indigo-300/30 dark:shadow-[0_4px_12px_rgba(0,0,0,0.15)] dark:hover:shadow-indigo-500/25"
+          className="motion-cta w-full mt-auto py-3.5 rounded-xl bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-100 hover:border-purple-300 font-semibold flex items-center justify-center gap-2 group/btn shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-500 ease-out group-hover:shadow-[0_8px_16px_rgba(99,102,241,0.15)] hover:shadow-lg hover:shadow-indigo-500/20 dark:bg-gradient-to-r dark:from-blue-600/80 dark:to-indigo-600/80 dark:text-white dark:border-white/10 dark:hover:from-blue-600 dark:hover:to-indigo-600 dark:hover:border-indigo-300/30 dark:shadow-[0_4px_12px_rgba(0,0,0,0.15)] dark:group-hover:shadow-[0_8px_16px_rgba(99,102,241,0.2)] dark:hover:shadow-indigo-500/30"
         >
           <span>Generate Similar Story</span>
           <i className="motion-icon fas fa-wand-magic-sparkles text-sm group-hover/btn:translate-x-0.5 group-hover/btn:rotate-12"></i>
