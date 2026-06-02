@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
@@ -11,12 +11,13 @@ import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
-ImageFallback
+import ImageFallback from "../ImageFallback";
+import { downloadBlob, getSafeFileName, createDocxBlob } from "./exportUtils";
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
-import ImageFallback from "../ImageFallback";
+
 export interface IStories {
   uuid: string;
   title: string;
@@ -24,6 +25,9 @@ export interface IStories {
   tag: string;
   imageURL: string;
   language?: string;
+  genre?: string;
+  emotions?: string[];
+  enhancedPrompt?: string;
 }
 
 interface IPost extends IStories {
@@ -96,6 +100,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
+  const [showRemix, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -136,9 +141,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
         title: selectedStory.title,
         content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
         tag: selectedStory.tag,
-
         language: selectedStory.language || "English",
-
       };
       
       const generationRequest = isLogin
@@ -639,7 +642,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       const tag = selectedStory.tag || "General";
       const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
       const isoDate = new Date().toISOString().split("T")[0];
-      const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
+      const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}`;
       const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
       downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
@@ -911,7 +914,7 @@ if (isLoading) {
                     }
                   }}
                   placeholder="Add related topic"
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                  className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
                 <button
                   type="button"
@@ -979,7 +982,7 @@ if (isLoading) {
                     <button
                       type="button"
                       onClick={handleResetEnding}
-                      className="rounded-lg px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-200 border border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                      className="rounded-lg px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-200 border border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer"
                     >
                       <i className="fa-solid fa-rotate-left"></i> Reset to Original
                     </button>
@@ -1051,7 +1054,7 @@ if (isLoading) {
                                 <button
                                   type="button"
                                   onClick={() => handleApplyEnding(currentEndingData)}
-                                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
+                                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all active:scale-95 cursor-pointer"
                                 >
                                   Apply to Story
                                 </button>
@@ -1085,7 +1088,7 @@ if (isLoading) {
                     <button
                       type="button"
                       onClick={handleGenerateAlternateEndings}
-                      className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer"
+                      className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 active:scale-95 cursor-pointer"
                     >
                       Generate Alternate Endings
                     </button>
@@ -1147,6 +1150,12 @@ if (isLoading) {
           story={selectedStory.content}
           title={selectedStory.title}
           onClose={() => setShowWorldMap(false)}
+        />
+      )}
+      {showRemix && selectedStory && (
+        <StoryRemix
+          story={selectedStory}
+          onClose={() => setShowRemix(false)}
         />
       )}
       <Toaster position="top-right" reverseOrder={false} />
