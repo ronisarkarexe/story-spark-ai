@@ -241,20 +241,21 @@ const LoginComponent = () => {
             <a
               href="/signup"
               className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
-              >
+            >
               Sign up for free
             </a>
           </p>
         </div>
-        </div>
-
-      <Toaster
-        position="top-right"
-        reverseOrder={false}
-        />
-
-    </div>
       </div>
+    </div>
+
+    <Toaster
+      position="top-right"
+      reverseOrder={false}
+    />
+
+  </div>
+</div>
   );
 };
 

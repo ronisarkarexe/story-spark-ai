@@ -59,9 +59,6 @@ const CommunitySpotlightComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
 
-  console.log("Posts Data:", data?.posts);
-
-  
   const topWriters = useMemo(() => {
     const writers = new Map<string, Omit<SpotlightWriter, "engagementScore">>();
 
