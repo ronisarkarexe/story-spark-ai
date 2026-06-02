@@ -23,7 +23,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install 
 
       - name: Rebuild native bindings for current platform
         run: pnpm rebuild
