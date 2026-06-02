@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import StoryInspirationCard from "./story_inspiration_card.component";
 import { inspirationData } from "./inspirationData";
+import { getSavedWorkspacePreferences } from "../../utils/preferences";
 
 const StoryInspirationComponent: React.FC = () => {
   const navigate = useNavigate();
@@ -21,9 +22,9 @@ const StoryInspirationComponent: React.FC = () => {
   ];
 
   const [selectedGenre, setSelectedGenre] = useState<string>(() => {
-    const savedGenre = localStorage.getItem("pref_defaultGenre");
-    if (!savedGenre) return "All";
-    const cleaned = savedGenre.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji}/gu, "").trim();
+    const { defaultGenre } = getSavedWorkspacePreferences();
+    if (!defaultGenre) return "All";
+    const cleaned = defaultGenre.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji}/gu, "").trim();
     const matched = genres.find((g) => g.toLowerCase() === cleaned.toLowerCase());
     return matched || "All";
   });
