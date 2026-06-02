@@ -58,6 +58,7 @@ const SSInput = <T extends FieldValues>({
        <input
   type={inputType}
   id={name}
+  className={`box-border w-full min-w-0 max-w-full pl-8 pr-10 py-1.5 text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border-0 sm:text-sm ${
   className={`w-full box-border pl-6 sm:pl-8 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm sm:text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 transition-all duration-200 ${
     error
       ? "border-2 border-red-500"

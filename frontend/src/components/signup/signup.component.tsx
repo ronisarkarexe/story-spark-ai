@@ -245,11 +245,14 @@ const SignUpComponent = () => {
   };
 
   return (
-    <div className="min-h-[calc(100dvh-4.5rem)] bg-slate-900 text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8">
+    <div className="relative flex min-h-screen items-center justify-center overflow-x-hidden bg-white px-4 py-8 text-slate-900 dark:bg-slate-900 dark:text-slate-100 sm:px-6">
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
+      <div className="relative z-10 flex w-full max-w-md min-w-0 flex-col justify-center">
+        <div className="mb-8 w-full min-w-0">
+          <h2 className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-center text-4xl font-extrabold tracking-tight text-transparent drop-shadow-sm sm:text-5xl">
       <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4">
         <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
           <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
@@ -257,13 +260,15 @@ const SignUpComponent = () => {
           </h2>
         </div>
 
+        <div className="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/60 sm:p-8">
+          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-200">
         <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden">
           <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
 
           {!showOtpField && (
-            <p className="mt-2 mb-6 text-center text-sm text-slate-400">
+            <p className="mt-2 mb-6 text-center text-sm text-slate-500 dark:text-slate-400">
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
@@ -274,7 +279,7 @@ const SignUpComponent = () => {
                 <div className="w-full border-t border-slate-700/50"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-slate-800/60 text-slate-400 font-semibold">
+                <span className="bg-slate-50 px-4 font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                   SIGN UP WITH EMAIL
                 </span>
               </div>
@@ -282,6 +287,7 @@ const SignUpComponent = () => {
           )}
 
           {!showOtpField ? (
+            <form className="w-full min-w-0 space-y-5" onSubmit={handleSubmit(onSubmit)}>
             <form className="space-y-5 w-full min-w-0 overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
               <SSInput
                 label="Name"
@@ -293,10 +299,10 @@ const SignUpComponent = () => {
                 autoComplete="name"
                 validation={{
                   required: "Name is required",
-                minLength: {
-                value: 2,
-                message: "Name must be at least 2 characters",
-                },
+                  minLength: {
+                    value: 2,
+                    message: "Name must be at least 2 characters",
+                  },
                   pattern: {
                     value: /^[A-Za-z0-9\s._]+$/,
                     message:
@@ -331,6 +337,7 @@ const SignUpComponent = () => {
               />
 
               {password?.length > 0 && (
+                <div className="-mt-2 w-full min-w-0 space-y-3">
               <div className="space-y-3 -mt-2 min-w-0 overflow-hidden">
                 <div
                   className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
@@ -341,9 +348,42 @@ const SignUpComponent = () => {
                   aria-label="Password strength"
                 >
                   <div
-                    className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
-                  ></div>
+                    className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"
+                    role="progressbar"
+                    aria-valuenow={passedChecks}
+                    aria-valuemin={0}
+                    aria-valuemax={PASSWORD_REQUIREMENTS.length}
+                    aria-label="Password strength"
+                  >
+                    <div
+                      className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
+                    ></div>
+                  </div>
+
+                  <p
+                    className={`text-sm font-medium ${textColor}`}
+                    aria-live="polite"
+                  >
+                    {strengthLabel} Password
+                  </p>
+
+                  <ul className="space-y-1 text-xs">
+                    {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
+                      const met = passwordChecks[key];
+                      return (
+                        <li
+                          key={key}
+                          className={met ? "text-green-500 dark:text-green-400" : "text-red-500 dark:text-red-400"}
+                          aria-label={`${label}: ${met ? "met" : "not met"}`}
+                        >
+                          <span aria-hidden="true">{met ? "OK" : "--"}</span>{" "}
+                          {label}
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
+              )}
 
                 <p
                   className={`text-sm font-medium truncate ${textColor}`}
@@ -376,7 +416,7 @@ const SignUpComponent = () => {
                 type="password"
                 placeholder="Confirm your password"
                 required={true}
-                icon="fi fi-rr-eye"
+                icon="fi fi-rr-lock"
                 register={register}
                 autoComplete="new-password"
                 error={errors.confirmPassword}
@@ -385,7 +425,7 @@ const SignUpComponent = () => {
               <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
             </form>
           ) : (
-            <div className="space-y-5">
+            <div className="w-full min-w-0 space-y-5">
               <SSInput
                 label="OTP"
                 name="otp"
@@ -432,7 +472,7 @@ const SignUpComponent = () => {
           )}
 
           {!showOtpField && (
-            <p className="mt-8 text-center text-sm text-slate-400">
+            <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
               Already have an account?{" "}
               <a
                 href="/login"

@@ -110,35 +110,38 @@ const LoginComponent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-x-hidden bg-white px-4 py-8 text-slate-900 dark:bg-slate-900 dark:text-slate-100 sm:px-6">
 
       {/* Background Glow */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
+      <div className="relative z-10 flex w-full max-w-md min-w-0 flex-col justify-center">
       <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4">
 
-        <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-          <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
+        <div className="mb-8 w-full min-w-0">
+          <h2 className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-center text-4xl font-extrabold tracking-tight text-transparent drop-shadow-sm sm:text-5xl">
             STORY SPARK AI
           </h2>
         </div>
 
+        <div className="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/60 sm:p-8">
         <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden">
 
-            <button
+          <button
             onClick={() => window.location.href = "/"}
             className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2"
-                      >
+          >
             ← Back to Home
-            </button>
+          </button>
 
           <h3 className="mb-6 text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-200">
             Welcome Back
           </h3>
 
           <form
+            className="w-full min-w-0 space-y-5"
             className="space-y-5 w-full min-w-0 overflow-hidden"
             onSubmit={handleSubmit(onSubmit)}
           >
@@ -184,7 +187,7 @@ const LoginComponent = () => {
 
           </form>
 
-          <div className="mt-6 relative">
+          <div className="relative mt-6 w-full min-w-0">
 
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200"></div>
@@ -199,7 +202,7 @@ const LoginComponent = () => {
           </div>
 
           {/* Explicitly added list-none to prevent stray bullet point artifact on production build */}
-          <div className="mt-6 flex justify-center list-none">
+          <div className="mt-6 flex w-full min-w-0 justify-center overflow-hidden list-none">
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}
