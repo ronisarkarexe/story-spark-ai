@@ -879,8 +879,8 @@ const ContributorsComponent = () => {
                   <Globe size={16} />
                   View Profile
                 </div>
-              </motion.a>
-            ))}
+              </a>
+            ))
                 <Code2
                   size={20}
                   className="transition-transform duration-300 group-hover:rotate-12"
@@ -890,7 +890,7 @@ const ContributorsComponent = () => {
                   size={16}
                   className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
                 />
-              </a>
+              </div>
             </div>
           </div>
         </div>

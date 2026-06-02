@@ -370,7 +370,7 @@ const PostListsComponent: React.FC = () => {
                       <p className="font-medium text-gray-300">{post.author.name}</p>
                       <p className="text-xs text-gray-500">{post.author.email}</p>
                     </div>
-                  </div>
+                  </td>
 
                   {/* Status Badges */}
                   <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
@@ -402,7 +402,7 @@ const PostListsComponent: React.FC = () => {
                         <span className="text-sm font-semibold">{post.viewsCount}</span>
                       </div>
                     </div>
-                  </td>
+                  </div>
                 </tr>
               ))
             )}

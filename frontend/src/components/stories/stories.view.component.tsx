@@ -72,11 +72,12 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
               <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400 mb-2">
                 {selectedStory?.title}
               </h1>
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center rounded-full bg-purple-900/60 text-purple-300 border border-purple-700/50 py-1 px-3 text-xs font-semibold">
+              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                <span className="inline-flex items-center rounded-full bg-purple-900/60 text-purple-300 border border-purple-700/50 py-0.5 px-2 text-[10px] font-medium max-w-[120px] truncate whitespace-nowrap overflow-hidden">
                   🎭 {selectedStory.tag}
                 </span>
-                <span className="inline-flex items-center rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
+
+                <span className="inline-flex items-center rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 py-0.5 px-2 text-[10px] font-medium max-w-[120px] truncate whitespace-nowrap overflow-hidden">
                   🌐 {selectedStory.language || "English"}
                 </span>
               </div>
@@ -225,16 +226,16 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
           <div
             onClick={() => navigate(`/post/${post._id}`)}
             key={post._id}
-            className="cursor-pointer bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden group flex flex-col h-full"
+            className="cursor-pointer bg-slate-800/50 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-md hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1.5 hover:border-blue-500/30 transition-all duration-300 overflow-hidden group flex flex-col h-full"
           >
             <div className="relative overflow-hidden">
-              <img
+              <ImageFallback
                 src={post.imageURL}
                 alt="Related Story"
-                className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full aspect-[16/9] object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 pointer-events-none"></div>
-            </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+              </div>
 
             {selectedStory.enhancedPrompt && (
               <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
