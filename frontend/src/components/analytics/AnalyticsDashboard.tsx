@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, CartesianGrid,
+  PieChart, Pie, Cell, CartesianGrid, LineChart, Line
 } from "recharts";
 import { Link } from "react-router-dom";
 
@@ -16,6 +16,11 @@ interface IOverview {
   longestStreak: number;
   totalLikes: number;
   totalViews: number;
+  storyLengths?: {
+    short: number;
+    medium: number;
+    long: number;
+  };
 }
 
 interface IHeatmapDay { date: string; count: number; }
@@ -36,36 +41,58 @@ export default function AnalyticsDashboard() {
 
   const token = localStorage.getItem("token") || "";
 
-  const fetchData = async (endpoint: string) => {
-    const res = await fetch(`${API_BASE}/analytics/${endpoint}`, {
-      headers: { Authorization: token },
-    });
+  const fetchData = async (
+    endpoint: string,
+    signal: AbortSignal
+  ) => {
+    const res = await fetch(
+      `${API_BASE}/analytics/${endpoint}`,
+      {
+        headers: { Authorization: token },
+        signal,
+      }
+    );
+  
     const data = await res.json();
     return data.data;
   };
 
   useEffect(() => {
+    const controller = new AbortController();
+  
     const load = async () => {
       try {
         const [ov, hm, gn, wc, hr] = await Promise.all([
-          fetchData("overview"),
-          fetchData("heatmap"),
-          fetchData("genres"),
-          fetchData("wordcloud"),
-          fetchData("productive-hours"),
+          fetchData("overview", controller.signal),
+          fetchData("heatmap", controller.signal),
+          fetchData("genres", controller.signal),
+          fetchData("wordcloud", controller.signal),
+          fetchData("productive-hours", controller.signal),
         ]);
-        setOverview(ov);
-        setHeatmap(hm);
-        setGenres(gn);
-        setWordCloud(wc);
-        setHours(hr);
+  
+        if (!controller.signal.aborted) {
+          setOverview(ov);
+          setHeatmap(hm);
+          setGenres(gn);
+          setWordCloud(wc);
+          setHours(hr);
+        }
       } catch (e) {
-        console.error(e);
+        if ((e as Error).name !== "AbortError") {
+          console.error(e);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
+  
     load();
+  
+    return () => {
+      controller.abort();
+    };
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return (
@@ -75,6 +102,24 @@ export default function AnalyticsDashboard() {
   );
 
   const maxHour = hours.reduce((max, h) => h.count > max.count ? h : max, hours[0]);
+
+  // Derived Data
+  const storyLengthData = overview?.storyLengths ? [
+    { name: "Short (<500w)", value: overview.storyLengths.short },
+    { name: "Medium", value: overview.storyLengths.medium },
+    { name: "Long (>2000w)", value: overview.storyLengths.long },
+  ].filter(d => d.value > 0) : [];
+
+  // Sort heatmap by date for line chart timeline
+  const timelineData = [...heatmap].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const badges = [
+    { id: "first_story", name: "First Story", desc: "Write your first story", icon: "✨", unlocked: (overview?.totalStories || 0) > 0 },
+    { id: "novelist", name: "Novelist", desc: "Write over 10,000 words", icon: "📚", unlocked: (overview?.totalWords || 0) > 10000 },
+    { id: "dedicated", name: "Dedicated Writer", desc: "Maintain a 7-day streak", icon: "🎯", unlocked: (overview?.longestStreak || 0) >= 7 },
+    { id: "popular", name: "Popular Author", desc: "Receive 100+ total views", icon: "🌟", unlocked: (overview?.totalViews || 0) >= 100 },
+    { id: "engaging", name: "Engaging Storyteller", desc: "Receive 50+ total likes", icon: "💖", unlocked: (overview?.totalLikes || 0) >= 50 },
+  ];
 
   return (
     <div className="min-h-screen bg-[#0d0d14] text-white px-6 py-10">
@@ -117,6 +162,21 @@ export default function AnalyticsDashboard() {
           ))}
         </div>
 
+        {/* Achievements */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-10">
+          <h2 className="text-xl font-bold mb-4 text-white">🏆 Achievements</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {badges.map(badge => (
+              <div key={badge.id} className={`p-4 rounded-xl border text-center transition-all ${badge.unlocked ? "bg-indigo-500/10 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]" : "bg-white/5 border-white/10 opacity-50 grayscale"}`}>
+                <div className="text-4xl mb-2">{badge.icon}</div>
+                <div className="font-semibold text-sm mb-1">{badge.name}</div>
+                <div className="text-[10px] text-white/50">{badge.desc}</div>
+                {badge.unlocked && <div className="mt-2 text-[10px] uppercase font-bold text-indigo-400">Unlocked</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
           {/* Genre Distribution */}
@@ -149,6 +209,43 @@ export default function AnalyticsDashboard() {
                 <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Timeline */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <h2 className="text-lg font-semibold mb-4 text-indigo-300">📈 Creation Timeline</h2>
+            {timelineData.length === 0 ? (
+              <p className="text-white/30 text-center py-8">No data to display</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={timelineData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fill: "#ffffff40", fontSize: 10 }} minTickGap={30} />
+                  <YAxis tick={{ fill: "#ffffff40", fontSize: 10 }} />
+                  <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #ffffff20", borderRadius: 8 }} />
+                  <Line type="monotone" dataKey="count" stroke="#8b5cf6" strokeWidth={3} dot={{ fill: "#8b5cf6", strokeWidth: 0, r: 4 }} activeDot={{ r: 6, fill: "#c4b5fd" }} />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Story Length Statistics */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <h2 className="text-lg font-semibold mb-4 text-indigo-300">📏 Story Lengths</h2>
+            {storyLengthData.length === 0 ? (
+              <p className="text-white/30 text-center py-8">No length data yet</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie data={storyLengthData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} label={({ name }: { name?: string }) => name ?? ""}>
+                    {storyLengthData.map((_, i) => <Cell key={i} fill={COLORS[(i + 4) % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #ffffff20", borderRadius: 8 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 

@@ -6,6 +6,7 @@ import config from "../../../config";
 import httpStatus from "http-status";
 import { OTPModel } from "./otp.model";
 import crypto from "crypto";
+import { clearOtpAttempts } from "./otp.rate-limiter.middleware";
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -164,6 +165,9 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   storedOtpRecord.verificationToken = verificationToken;
   storedOtpRecord.verificationTokenExpires = verificationTokenExpires;
   await storedOtpRecord.save();
+
+  // Clear memory rate limit attempts on success
+  clearOtpAttempts(email);
 
   return { 
     verified: true,

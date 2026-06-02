@@ -10,9 +10,29 @@
     <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css" rel="stylesheet"/>
     
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'background': '#121212',
+                        'surface': '#1e1e1e',
+                        'surface-container-lowest': '#0f0f0f',
+                        'surface-container-high': '#282828',
+                        'on-surface': '#e6e6e6',
+                        'on-surface-variant': '#cacaca',
+                        'primary': '#d0bcff',
+                        'secondary': '#ccc2dc',
+                        'tertiary': '#efb8c8',
+                        'outline': '#938f99'
+                    }
+                }
+            }
+        }
+    </script>
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
     <link href="auth.css" rel="stylesheet"/>
 </head>
 <body class="bg-background text-on-surface font-body-md selection:bg-primary/30">
@@ -61,6 +81,15 @@
     <section class="w-full md:w-1/2 flex items-center justify-center p-4 md:p-10 bg-surface z-10">
         <div class="auth-form-card glass-panel p-6 md:p-8 rounded-2xl relative">
 
+            <!-- Close button — returns user to previous page -->
+            <button
+                onclick="handleClose()"
+                class="absolute right-4 top-4 text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/10"
+                aria-label="Close and go back"
+                title="Go back">
+                <i class="fi fi-rr-cross-small text-[18px]"></i>
+            </button>
+
             <div class="flex justify-center mb-5 md:hidden">
                 <div class="font-display-lg text-[18px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary">
                     StorySparkAI
@@ -104,7 +133,7 @@
                 <div class="auth-divider-line"></div>
             </div>
             
-            <form class="space-y-4" id="auth-form" novalidate>
+            <form class="space-y-4" id="auth-form" onsubmit="event.preventDefault()" novalidate>
 
                 <div class="hidden animate-in fade-in duration-500" id="signup-fields">
                     <label class="field-label" for="name-field">Full Name</label>

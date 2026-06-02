@@ -12,8 +12,8 @@ const toggleReaction = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: result.message,
-    data: { likesCount: result.likesCount },
+    message: "Reaction added successfully",
+    data: result,
   });
 });
 

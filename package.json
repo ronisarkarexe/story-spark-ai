@@ -33,9 +33,11 @@
   "devDependencies": {
     "concurrently": "^9.1.2"
   },
+  "overrides": {
+    "@types/express": "^4.17.21",
+    "@types/express-serve-static-core": "^4.17.33"
+  },
   "dependencies": {
-    "@flaticon/flaticon-uicons": "^3.3.1",
-    "framer-motion": "^12.40.0",
     "bcryptjs": "^3.0.3",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",

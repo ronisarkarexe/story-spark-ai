@@ -1,6 +1,5 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
 import { formatDateShort } from "../../../utils/time-formate";
@@ -92,4 +91,3 @@ const LatestPostsComponent = () => {
 };
 
 export default LatestPostsComponent;
-

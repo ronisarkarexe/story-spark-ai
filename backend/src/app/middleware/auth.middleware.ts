@@ -4,6 +4,7 @@ import config from "../../config";
 import { Secret } from "jsonwebtoken";
 import ApiError from "../../errors/api_error";
 import { JwtHelpers } from "../../utils/jwt.helper";
+import { User } from "../modules/user/user.model";
 
 const auth =
   (...requiredRole: string[]) =>

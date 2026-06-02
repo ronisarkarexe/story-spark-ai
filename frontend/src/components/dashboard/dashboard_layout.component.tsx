@@ -1,4 +1,4 @@
-// //
+﻿// //
 // import React, { useState } from "react";
 // import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 // import { MenuItem, menuItems } from "./dashboard.utils";
@@ -67,11 +67,11 @@
 //             </span>
 //           </button>
 
-//               <ImageFallback
-//               className="h-9 w-9 rounded-full"
-//               src="https://avatars.githubusercontent.com/u/76697055?v=4"
-//               alt="profile"
-//             />
+//           <img
+//             className="h-9 w-9 rounded-full"
+//             src="https://avatars.githubusercontent.com/u/76697055?v=4"
+//             alt="profile"
+//           />
 //         </div>
 //       </header>
 
@@ -175,8 +175,6 @@ import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo } from "../../services/auth.service";
-import ErrorBoundary from "../ErrorBoundary";
-import ImageFallback from "../ImageFallback";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 const DashboardLayout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -186,12 +184,11 @@ const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
 
   const user = getUserInfo();
+  const { data } = useGetProfileInfoQuery(undefined, { skip: !user });
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  return <Navigate to="/login" replace />;
-}
-const { data } = useGetProfileInfoQuery();
   const currentPage = menuItems
     .flatMap((item) => (item.subRoutes ? [item, ...item.subRoutes] : [item]))
     .find(
@@ -227,56 +224,45 @@ const { data } = useGetProfileInfoQuery();
       <header className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between dark:bg-[#0a1020] dark:border-white/[0.06]">
         <div className="flex items-center gap-4">
           <Link to="/">
-            <button className="w-9 h-9 rounded-lg bg-white/[0.7] hover:bg-white transition text-slate-900 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] dark:text-white">
+              <button className="w-9 h-9 rounded-lg bg-white/[0.7] hover:bg-white transition text-slate-900 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] dark:text-white">
               <i className="fas fa-arrow-left"></i>
             </button>
           </Link>
+
           <div>
             <h1 className="text-lg font-semibold">{pageTitle}</h1>
           </div>
         </div>
+
         <div className="flex items-center gap-4 text-slate-900 dark:text-white">
           <button className="relative">
             <i className="fas fa-bell text-lg"></i>
-            <span className="absolute -top-1 -right-2 bg-red-500 text-[10px] px-1 rounded-full">5</span>
+            <span className="absolute -top-1 -right-2 bg-red-500 text-[10px] px-1 rounded-full">
+              5
+            </span>
           </button>
 
-          <img
-            className="h-9 w-9 rounded-full"
-            src={user?.avatar || "https://avatars.githubusercontent.com/u/76697055?v=4"}
-            alt={user?.name || "profile"}
-          />
-              <ImageFallback
-                className="h-9 w-9 rounded-full"
-                src="https://avatars.githubusercontent.com/u/76697055?v=4"
-                alt="profile"
-              />
-
-        <img
-          className="h-9 w-9 rounded-full"
-          src={user?.avatar || "https://avatars.githubusercontent.com/u/76697055?v=4"}
-          alt={user?.name || "profile"}
-        />
-
+         <img
+  className="h-9 w-9 rounded-full"
+  src={data?.profile?.avatar || "https://ui-avatars.com/api/?name=User"}
+  alt="profile"
+/>
         </div>
       </header>
 
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className={`bg-gray-50 border-r border-gray-200 transition-all duration-300 dark:bg-[#0a1020] dark:border-white/[0.06] ${isSidebarCollapsed ? "w-20" : "w-64"}`}>
-           {/* Sidebar menu logic remains as you provided */}
-           <nav className="p-4 space-y-2 overflow-y-auto h-full">
+        <aside
+          className={`bg-gray-50 border-r border-gray-200 transition-all duration-300 dark:bg-[#0a1020] dark:border-white/[0.06] ${
+            isSidebarCollapsed ? "w-20" : "w-64"
+          }`}
+        >
+          <nav className="p-4 space-y-2 overflow-y-auto h-full">
             {accessibleMenuItems.map((item) => {
-
-               // ... (Sidebar rendering logic)
-               return <div key={item.name}>{/* ... menu items ... */}</div>
-
-             const isActive =
-  item.path === "/dashboard"
-    ? location.pathname === "/dashboard"
-    : location.pathname === item.path ||
-      location.pathname.startsWith(item.path + "/");
+              const isActive =
+                location.pathname === item.path ||
+                location.pathname.startsWith(item.path + "/");
 
               return (
                 <div key={item.name}>
@@ -324,16 +310,31 @@ const { data } = useGetProfileInfoQuery();
                     )}
                 </div>
               );
-
             })}
-           </nav>
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-gray-200 dark:border-white/[0.06]">
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="w-full px-3 py-2 rounded-lg bg-white hover:bg-slate-100 transition text-sm text-slate-900 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] dark:text-white"
+            >
+              <i
+                className={`fas ${
+                  isSidebarCollapsed ? "fa-chevron-right" : "fa-chevron-left"
+                }`}
+              ></i>
+
+              {!isSidebarCollapsed && (
+                <span className="ml-2">Collapse Sidebar</span>
+              )}
+            </button>
+          </div>
         </aside>
 
-        {/* Main Content wrapped with ErrorBoundary */}
+        {/* Main Content */}
         <main className="flex-1 overflow-auto p-6 bg-white text-slate-900 dark:bg-[#070c18] dark:text-white">
-          <ErrorBoundary>
-            <Outlet />
-          </ErrorBoundary>
+          <Outlet />
         </main>
       </div>
     </div>

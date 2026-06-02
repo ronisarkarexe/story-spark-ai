@@ -154,10 +154,7 @@ const deletePost = catchAsync(async (req: Request, res: Response) => {
 const remixStory = catchAsync(async (req: Request, res: Response) => {
   const { postId, prompt } = req.body;
   const token = await getToken(req);
-  
-  // Passes context forward to trigger AI generation and reserve token balance metrics simultaneously
   const result = await PostService.remixStory(postId, prompt, token);
-  
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -169,14 +166,21 @@ const remixStory = catchAsync(async (req: Request, res: Response) => {
 const translateStory = catchAsync(async (req: Request, res: Response) => {
   const { postId, language } = req.body;
   const token = await getToken(req);
-  
-  // Passes context forward to trigger language engine mutations and check quota boundaries
   const result = await PostService.translateStory(postId, language, token);
-  
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Story translated successfully!",
+    data: result,
+  });
+});
+
+const getGenres = catchAsync(async (_req: Request, res: Response) => {
+  const result = await PostService.getGenres();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Genres fetched successfully!",
     data: result,
   });
 });
@@ -193,6 +197,7 @@ export const PostController = {
   toggleBookmark,
   updatePost,
   deletePost,
-  remixStory,       // Exposed remix utility route hook
-  translateStory,   // Exposed translation engine route hook
+  remixStory,
+  translateStory,
+  getGenres,
 };

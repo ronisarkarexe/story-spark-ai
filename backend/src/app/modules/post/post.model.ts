@@ -20,6 +20,7 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
     author: { type: Schema.Types.ObjectId, ref: "User" },
     likesCount: { type: Number, default: 0 },
     commentsCount: { type: Number, default: 0 },
+    bookmarksCount: { type: Number, default: 0 },
     viewsCount: { type: Number, default: 0 },
     isPublished: { type: Boolean, default: true },
     isFeaturedPost: { type: Boolean, default: false },
@@ -31,7 +32,7 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
     attachments: [{ type: String }],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     reactions: [{ type: Schema.Types.ObjectId, ref: "Reaction" }],
-    bookmarks: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+    bookmarks: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   {
     timestamps: true,

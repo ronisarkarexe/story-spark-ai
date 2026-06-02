@@ -5,7 +5,9 @@ import { AIModelValidator } from "./ai_model.validation";
 import checkRequestLimit from "../../middleware/check.request.limit";
 import auth from "../../middleware/auth.middleware";
 import freeAiRateLimiter from "../../middleware/free-ai.rate-limiter";
-
+import {
+  aiGenerationRateLimiter,
+} from "../../middleware/ip.rate-limiter";
 const router = express.Router();
 
 // ========== GENERATE STORIES ==========
@@ -13,6 +15,7 @@ const router = express.Router();
 // Generate Model - PROTECTED (authenticated users only)
 router.post(
   "/generate-model",
+  aiGenerationRateLimiter,
   auth(),
   validateRequest(AIModelValidator.aiModel),
   checkRequestLimit(),
@@ -40,6 +43,7 @@ router.post(
 // Generate Alternate Endings - PROTECTED (authenticated users only)
 router.post(
   "/generate-alternate-endings",
+  aiGenerationRateLimiter,
   auth(),
   validateRequest(AIModelValidator.aiAlternateEndings),
   checkRequestLimit(),
@@ -59,8 +63,10 @@ router.post(
 // Remix Story - PROTECTED
 router.post(
   "/remix",
+  aiGenerationRateLimiter,
   auth(),
   checkRequestLimit(),
+  validateRequest(AIModelValidator.aiRemix),
   AiModelController.aiModelRemix
 );
 
@@ -68,6 +74,7 @@ router.post(
 router.post(
   "/remix-free",
   freeAiRateLimiter,
+  validateRequest(AIModelValidator.aiRemix),
   AiModelController.aiFreeModelRemix
 );
 
@@ -76,8 +83,10 @@ router.post(
 // Translate Story - PROTECTED
 router.post(
   "/translate",
+  aiGenerationRateLimiter,
   auth(),
   checkRequestLimit(),
+  validateRequest(AIModelValidator.aiTranslate),
   AiModelController.aiModelTranslate
 );
 
@@ -85,6 +94,7 @@ router.post(
 router.post(
   "/translate-free",
   freeAiRateLimiter,
+  validateRequest(AIModelValidator.aiTranslate),
   AiModelController.aiFreeModelTranslate
 );
 

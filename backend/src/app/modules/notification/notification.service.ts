@@ -4,7 +4,10 @@ import { ITokenPayload } from "../../../interfaces/token";
 import { User } from "../user/user.model";
 import { INotification } from "./notification.interface";
 import { Notification } from "./notification.model";
-import { emitNotificationToUser } from "../../../socket/notification.socket";
+import {
+  emitNotificationStateToUser,
+  emitNotificationToUser,
+} from "../../../socket/notification.socket";
 
 const createNotification = async (payload: INotification) => {
   const notification = await Notification.create(payload);
@@ -25,12 +28,32 @@ const resolveUserId = async (token: ITokenPayload) => {
   return user._id.toString();
 };
 
-const getUserNotifications = async (token: ITokenPayload) => {
+const getUserNotifications = async (
+  token: ITokenPayload,
+  page: number = 1,
+  limit: number = 20
+) => {
   const userId = await resolveUserId(token);
-  const notifications = await Notification.find({ userId }).sort({
-    createdAt: -1,
-  });
-  return notifications;
+  const skip = (page - 1) * limit;
+
+  // Promise.all use karke concurrent fetch aur count operation chalayenge performance ke liye
+  const [notifications, total] = await Promise.all([
+    Notification.find({ userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Notification.countDocuments({ userId }),
+  ]);
+
+  return {
+    data: notifications,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
 };
 
 const markNotificationAsRead = async (
@@ -47,6 +70,8 @@ const markNotificationAsRead = async (
   if (!notification) {
     throw new ApiError(httpStatus.NOT_FOUND, "Notification not found!");
   }
+
+  emitNotificationStateToUser(userId, "notification:updated", notification);
 
   return notification;
 };

@@ -198,6 +198,15 @@ const postApi = baseApi.injectEndpoints({
         tagTypes.bookmark,
       ],
     }),
+
+    getGenres: build.query<string[], void>({
+      query: () => ({
+        url: `/${POST_URL}/genres`,
+        method: "GET",
+      }),
+      transformResponse: (response: { data: string[] }) => response.data,
+      providesTags: [tagTypes.post],
+    }),
   }),
 });
 
@@ -211,4 +220,5 @@ export const {
   useGetPostByIdQuery,
   useGetPostByTagQuery,
   useDeletePostMutation,
+  useGetGenresQuery,
 } = postApi;
