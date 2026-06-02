@@ -28,9 +28,9 @@ const ExploreComponent = () => {
     daley: 600,
   });
 
-  if (debounceTerm) {
-    query["searchTerm"] = debounceTerm;
-  }
+  if (debounceTerm?.trim()) {
+  query["searchTerm"] = debounceTerm;
+}
 
   if (selectedTags.length > 0) {
     query["genres"] = selectedTags.join(",");
@@ -122,7 +122,7 @@ const ExploreComponent = () => {
                 </button>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {/* Genres */}
                 <div>
                   <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
@@ -211,13 +211,13 @@ const ExploreComponent = () => {
           {/* Content */}
           <div className="flex-1 flex flex-col min-h-[70vh]">
             <div className={`${featuredPost ? "mb-6" : ""}`}>
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-4 items-center overflow-x-auto">
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                   <h2
                     onClick={() => setFeaturedPost(false)}
                     className={`text-3xl font-extrabold mb-6 cursor-pointer transition-all duration-300 ${
                       !featuredPost
-                        ? "bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-500 drop-shadow-sm"
+                        ? "text-blue-600 dark:text-blue-400"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-500 dark:hover:text-slate-300"
                     }`}
                   >
@@ -257,7 +257,7 @@ const ExploreComponent = () => {
               {featuredPost && <ExploreFeatureComponent />}
             </div>
 
-            <div className="flex-grow">
+            <div className="flex-grow pb-24">
               {!isLoading && filteredPosts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] text-center">
                   <div className="text-6xl mb-4">📚</div>
