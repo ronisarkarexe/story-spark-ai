@@ -143,7 +143,7 @@ cp frontend/.env.example frontend/.env
 | `DATABASE_URL` | Yes | MongoDB connection string (local or [Atlas](https://www.mongodb.com/cloud/atlas)) |
 | `PORT` | No | API port (default `5000`) |
 | `NODE_ENV` | No | `development` or `production` |
-| `CORS_ORIGINS` | No | Comma-separated frontend URLs (e.g. `http://localhost:4001`) |
+| `CORS_ORIGINS` | No | Comma-separated frontend URLs allowed for CORS requests (e.g. `http://localhost:4001`) |
 | `SALT_ROUNDS` | Yes | Bcrypt cost factor (e.g. `10`) |
 | `JWT_SECRET` | Yes | Access token signing secret |
 | `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret |
@@ -157,7 +157,6 @@ cp frontend/.env.example frontend/.env
 | `VERIFY_EMAIL` | For email | SMTP sender address |
 | `VERIFY_PASSWORD` | For email | SMTP password or app password |
 | `GOOGLE_CLIENT_ID` | For login with google | https://console.cloud.google.com |
-| `CORS_ORIGINS` | For resolve cors |
 
 #### Frontend (`frontend/.env`)
 

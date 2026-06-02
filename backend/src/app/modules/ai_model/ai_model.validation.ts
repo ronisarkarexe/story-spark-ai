@@ -14,8 +14,9 @@ const aiModel = z.object({
     prompt: z
       .string({ required_error: "Prompt is required!" })
       .trim()
-      .min(1, "Prompt cannot be empty or whitespace only!"),
-    language: z.string().optional(),
+      .min(1, "Prompt cannot be empty or whitespace only!")
+      .max(2000, "Prompt must not exceed 2000 characters"),
+    language: z.string().max(50).optional(),
     tone: z
       .enum(VALID_TONES, {
         errorMap: () => ({
@@ -38,10 +39,16 @@ const aiStoryContinuation = z.object({
 
 const aiAlternateEndings = z.object({
   body: z.object({
-    title: z.string({ required_error: "Title is required!" }),
-    content: z.string({ required_error: "Content is required!" }),
-    tag: z.string({ required_error: "Tag is required!" }),
-    language: z.string().optional(),
+    title: z
+      .string({ required_error: "Title is required!" })
+      .max(200, "Title must not exceed 200 characters"),
+    content: z
+      .string({ required_error: "Content is required!" })
+      .max(10000, "Content must not exceed 10000 characters"),
+    tag: z
+      .string({ required_error: "Tag is required!" })
+      .max(50, "Tag must not exceed 50 characters"),
+    language: z.string().max(50).optional(),
   }),
 });
 

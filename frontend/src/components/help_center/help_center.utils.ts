@@ -3,7 +3,7 @@ export interface FAQItem {
   id: string;
   question: string;
   answer: string;
-  keywords: string[]; // Strict type array prevents TS2488 Spread Iterator crash
+  keywords: string[];
 }
 
 export interface Support_Links {
@@ -22,25 +22,23 @@ export interface SetupStep {
   code?: string;
 }
 
-// HelpCategory Model
 export interface HelpCategory {
   id: string;
   title: string;
   description: string;
   icon: string;
   keywords: string[];
-  sectionId: string; // FIX: Resolves category.sectionId error
+  sectionId: string;
 }
 
-// TroubleshootItem Model
 export interface TroubleshootItem {
   id: string;
   title: string;
   description: string;
   keywords: string[];
-  icon: string;       // FIX: Resolves item.icon layout crash
-  symptoms: string;   // FIX: Resolves item.symptoms layout crash
-  solution: string;   // FIX: Resolves item.solution layout crash
+  icon: string;
+  symptoms: string;
+  solution: string;
 }
 
 // Data Sets
@@ -99,7 +97,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Account & Billing",
     description: "Manage your profile settings, subscriptions, and security options.",
     icon: "fa-solid fa-user-gear",
-    sectionId: "account-billing-section", 
+    sectionId: "account-billing-section",
     keywords: ["profile", "password", "billing", "subscription", "plan"]
   },
   {
@@ -111,6 +109,13 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     keywords: ["editor", "generation", "prompt", "history", "chapters"]
   }
 ];
+
+// CORRECTED MAPPING: Changed 'title' to 'label' so the sidebar reads it correctly
+export const HELP_SECTIONS = HELP_CATEGORIES.map(category => ({
+  id: category.sectionId,
+  label: category.title,
+  icon: category.icon
+}));
 
 export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
   {
@@ -124,21 +129,8 @@ export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
   }
 ];
 
-export type FaqItem = FAQItem;
-export type SupportLink = Support_Links;
 
-export interface HelpSection {
-  id: string;
-  label: string;
-}
-
-export const HELP_SECTIONS: HelpSection[] = [
-  { id: "help-categories", label: "Categories" },
-  { id: "troubleshoot-section", label: "Troubleshooting" },
-  { id: "faq-section", label: "FAQ" },
-  { id: "developer-setup", label: "Setup Guide" },
-  { id: "support-links-section", label: "Support" },
-];
+// Utility Functions
 
 export const scrollToSection = (id: string) => {
   const element = document.getElementById(id);

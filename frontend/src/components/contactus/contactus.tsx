@@ -219,79 +219,86 @@ export default function Contact() {
         >
           <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-20 blur-2xl" />
 
-         <form
+        <form
   onSubmit={submitHandler}
-  className="relative space-y-6 rounded-[2rem] border border-white/10 bg-white/[0.05] p-7 backdrop-blur-2xl sm:p-10"
+  className="relative space-y-6 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.05] p-7 backdrop-blur-2xl transition-all duration-300 hover:border-purple-500/30 sm:p-10"
 >
   {/* NAME */}
   <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
     <User className="h-5 w-5 flex-shrink-0 text-purple-300" />
-    <div className="flex flex-col flex-grow min-w-0">
-      <label className="text-[10px] font-bold uppercase tracking-wider text-purple-300/80 mb-1 block">
+    <div className="flex w-full items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">      <label className="text-[10px] font-bold uppercase tracking-wider text-purple-300/80 mb-1 block">
         Full Name
       </label>
-      <input
-        type="text"
-        name="fullname"
-        value={formData.fullname}
-        onChange={changeHandler}
-        required
-        className="w-full bg-transparent text-base text-white outline-none p-0 border-none focus:ring-0"
-      />
+       <input
+           type="text"
+           name="fullname"
+           value={formData.fullname}
+           onChange={changeHandler}
+           placeholder="John Doe"
+           required
+  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+/>
     </div>
   </div>
 
   {/* EMAIL */}
   <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-blue-400/40 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
     <Mail className="h-5 w-5 flex-shrink-0 text-blue-300" />
-    <div className="flex flex-col flex-grow min-w-0">
+    <div className="flex flex-col flex-grow min-w-full">
       <label className="text-[10px] font-bold uppercase tracking-wider text-blue-300/80 mb-1 block">
         Email Address
       </label>
-      <input
-        type="email"
-        name="email"
-        value={formData.email}
-        onChange={changeHandler}
-        required
-        className="w-full bg-transparent text-base text-white outline-none p-0 border-none focus:ring-0"
-      />
+     <input
+  type="email"
+  name="email"
+  value={formData.email}
+  onChange={changeHandler}
+  placeholder="john@example.com"
+  required
+  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+/>
     </div>
   </div>
 
   {/* SUBJECT */}
   <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-pink-400/40 focus-within:border-pink-500 focus-within:ring-2 focus-within:ring-pink-500/20">
     <FileText className="h-5 w-5 flex-shrink-0 text-pink-300" />
-    <div className="flex flex-col flex-grow min-w-0">
+    <div className="flex flex-col flex-grow min-w-full">
       <label className="text-[10px] font-bold uppercase tracking-wider text-pink-300/80 mb-1 block">
         Subject
       </label>
       <input
-        type="text"
-        name="subject"
-        value={formData.subject}
-        onChange={changeHandler}
-        required
-        className="w-full bg-transparent text-base text-white outline-none p-0 border-none focus:ring-0"
-      />
+  type="text"
+  name="subject"
+  value={formData.subject}
+  onChange={changeHandler}
+  placeholder="Project Collaboration"
+  required
+  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+/>
     </div>
   </div>
 
   {/* MESSAGE */}
   <div className="flex items-start gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-4 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
     <Pencil className="mt-1 h-5 w-5 flex-shrink-0 text-purple-300" />
-    <div className="flex flex-col flex-grow min-w-0">
+    <div className="flex flex-col flex-grow min-w-full">
       <label className="text-[10px] font-bold uppercase tracking-wider text-purple-300/80 mb-2 block">
         Message
       </label>
       <textarea
-        rows={6}
-        name="message"
-        value={formData.message}
-        onChange={changeHandler}
-        required
-        className="w-full resize-none bg-transparent text-base text-white outline-none p-0 border-none focus:ring-0"
-      />
+  rows={6}
+  name="message"
+  value={formData.message}
+  onChange={changeHandler}
+  placeholder="Tell us about your idea..."
+  maxLength={500}
+  required
+  className="w-full min-w-0 resize-none bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+/>
+<div className="mt-2 text-right text-xs text-slate-400">
+  {formData.message.length}/500
+</div>
     </div>
   </div>
 
@@ -303,8 +310,10 @@ export default function Contact() {
   >
     <div className="absolute inset-0 bg-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
     {loading ? (
-      <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-    ) : (
+<>
+  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+  <span>Sending...</span>
+</>    ) : (
       <>
         <Sparkles className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
         <span>Send Message</span>
@@ -321,8 +330,7 @@ export default function Contact() {
       className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-4"
     >
       <p className="text-center text-sm font-medium text-green-400 sm:text-base">
-        ✓ Message sent successfully.
-      </p>
+      🎉 Thank you! Your message has been sent successfully.      </p>
     </motion.div>
   )}
 

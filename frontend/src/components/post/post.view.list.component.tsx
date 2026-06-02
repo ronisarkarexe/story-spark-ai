@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Post } from "../../models/post";
 import BookmarkButton from "../BookmarkButton";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
+import { formatReadingStats } from "../../utils/story-utils";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
@@ -29,12 +30,6 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
       month: "short",
       day: "2-digit",
     });
-  };
-
-  const calculateReadingTime = (content: string): number => {
-    if (!content) return 1;
-    const words = content.trim().split(/\s+/).length;
-    return Math.max(1, Math.ceil(words / 200));
   };
 
   if (isLoading) {
@@ -145,7 +140,7 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                     </div>
 
                     <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400 px-2 py-1 rounded-md">
-                      {calculateReadingTime(story.content)} MIN READ
+                      {formatReadingStats(story.content).toUpperCase()}
                     </div>
                   </div>
 

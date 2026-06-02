@@ -34,46 +34,7 @@ import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import NotFoundComponent from "./components/not-found.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
-// Lazy-loaded page components
-const AboutUsComponent = React.lazy(() => import("./components/footer/about-us.tsx"));
-const AnalyticsPage = React.lazy(() => import("./components/dashboard/analytics/analytics.page"));
-const BlogComponent = React.lazy(() => import("./components/footer/blog.tsx"));
-const BookmarksComponent = React.lazy(() => import("./components/post/bookmarks.component"));
-const CareerComponent = React.lazy(() => import("./components/footer/career.tsx"));
-const CollabHome = React.lazy(() => import("./components/collab/CollabHome"));
-const CollabRoom = React.lazy(() => import("./components/collab/CollabRoom"));
-const StoriesComponent = React.lazy(() => import("./components/stories/stories.component"));
-const BranchingStory = React.lazy(() => import("./components/stories/BranchingStory"));
-const PublishedStoriesComponent = React.lazy(() => import("./components/dashboard/posts/published_stories.component"));
-const LoginComponent = React.lazy(() => import("./components/login/login.component"));
-const PaymentComponent = React.lazy(() => import("./components/home/pricing/payment.component"));
-const PostDetailsComponent = React.lazy(() => import("./components/post/post.details.component"));
-const PostListsComponent = React.lazy(() => import("./components/dashboard/posts/post_lists.component"));
-const PricingComponent = React.lazy(() => import("./components/pricing/pricing.component"));
-const PrivacyPolicy = React.lazy(() => import("./components/footer/Privacy.tsx"));
-const ProfileComponent = React.lazy(() => import("./components/dashboard/profile/profile.component"));
-const ReportBug = React.lazy(() => import("./components/report-bug/ReportBug"));
-const ResourceDetailComponent = React.lazy(() => import("./components/community/resource_detail.component"));
-const ResourcesListComponent = React.lazy(() => import("./components/community/resources_list.component"));
-const SettingComponent = React.lazy(() => import("./components/dashboard/settings/settings.component"));
-const SignUpComponent = React.lazy(() => import("./components/signup/signup.component"));
-const StoryWorkspace = React.lazy(() => import("./components/story/StoryWorkspace"));
-const TemplatesComponent = React.lazy(() => import("./components/templates/templates.component"));
-const WritingAssistantComponent = React.lazy(() => import("./components/writing-assistant/writing_assistant.component"));
-const StoryInspirationWrapper = React.lazy(() => import("./components/StoryInspirationWrapper"));
-const HelpCenterComponent = React.lazy(() => import("./components/help_center/help_center.component"));
-const Contact = React.lazy(() => import("./components/contactus/contactus"));
-const GuidelinesComponent = React.lazy(() => import("./components/footer/guidelines.tsx"));
-const ContributorsComponent = React.lazy(() => import("./components/footer/contributors"));
-const Terms = React.lazy(() => import("./components/footer/terms.tsx"));
-const CookiePolicy = React.lazy(() => import("./components/footer/cookie-policy.tsx"));
-const ExploreComponent = React.lazy(() => import("./components/post/post.component"));
-const CommunityComponent = React.lazy(() => import("./components/community/community.component"));
-const EmailValidationComponent = React.lazy(() => import("./components/email_validation/email.validation.component"));
-const DashboardComponent = React.lazy(() => import("./components/dashboard/dashboard.component"));
-const WriterApplicationComponent = React.lazy(() => import("./components/dashboard/writers/writer_application.component"));
-const UserComponent = React.lazy(() => import("./components/dashboard/users/user.component"));
-const ForgotPasswordComponent = React.lazy(() => import("./components/login/forgot_password.component"));
+
 import PaymentComponent from "./components/home/pricing/payment.component";
 import PostDetailsComponent from "./components/post/post.details.component";
 import PostListsComponent from "./components/dashboard/posts/post_lists.component";
@@ -88,15 +49,13 @@ import ReportBug from "./components/report-bug/ReportBug";
 import StoryWorkspace from "./components/story/StoryWorkspace";
 import ProfileComponent from "./components/dashboard/profile/profile.component";
 import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
-import ScrollToTop from "./components/ScrollToTop";
-import ScrollToTopButton from "./components/ScrollToTopButton";
 import SettingComponent from "./components/dashboard/settings/settings.component";
 import SignUpComponent from "./components/signup/signup.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import UserComponent from "./components/dashboard/users/user.component";
 import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import LoginComponent from "./components/login/login.component";
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
@@ -215,6 +174,18 @@ const router = createBrowserRouter([
     ],
   },
 
+  // Isolated layout branches (Fixed relative context matching)
+  { path: "auth/email-validation", element: <EmailValidationComponent /> },
+  {
+    element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+    children: [
+      { path: "payment", element: <PaymentComponent /> },
+      { path: "collab", element: <CollabHome /> },
+      { path: "collab/:roomId", element: <CollabRoom /> },
+    ],
+  },
+
+  // Dashboard Structure (Cleaned redundant routing conditions)
   // Isolated layout branches (Bypassing public navigation headers entirely)
   {
     path: "/auth/email-validation",
@@ -263,6 +234,10 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardComponent /> },
           { path: "profile", element: <ProfileComponent /> },
+          { path: "settings", element: <SettingComponent /> },
+          { path: "published-stories", element: <PublishedStoriesComponent /> },
+          
+          // Elevated Admin Guard
           {
             element: <ProtectedRoute allowedRoles={ELEVATED_ADMIN_ROLES} />,
             children: [
@@ -270,17 +245,14 @@ const router = createBrowserRouter([
               { path: "users", element: <UserComponent /> },
             ],
           },
-          {
-            element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-            children: [
-              { path: "settings", element: <SettingComponent /> },
-              { path: "published-stories", element: <PublishedStoriesComponent /> },
-            ],
-          },
+          
+          // Writer Only Guard
           {
             element: <ProtectedRoute allowedRoles={[USER_ROLE.WRITER]} />,
             children: [{ path: "analytics", element: <AnalyticsPage /> }],
           },
+          
+          // Elevated Access Guard for Authorship Management
           {
             element: (
               <ProtectedRoute

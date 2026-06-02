@@ -293,10 +293,10 @@ const SignUpComponent = () => {
                 autoComplete="name"
                 validation={{
                   required: "Name is required",
-                minLength: {
-                value: 2,
-                message: "Name must be at least 2 characters",
-                },
+                  minLength: {
+                    value: 2,
+                    message: "Name must be at least 2 characters",
+                  },
                   pattern: {
                     value: /^[A-Za-z0-9\s._]+$/,
                     message:
@@ -331,54 +331,62 @@ const SignUpComponent = () => {
               />
 
               {password?.length > 0 && (
-              <div className="space-y-3 -mt-2 min-w-0 overflow-hidden">
-                <div
-                  className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
-                  role="progressbar"
-                  aria-valuenow={passedChecks}
-                  aria-valuemin={0}
-                  aria-valuemax={PASSWORD_REQUIREMENTS.length}
-                  aria-label="Password strength"
-                >
+                <div className="space-y-3 -mt-2 min-w-0 overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
-                  ></div>
+                    className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={passedChecks}
+                    aria-valuemin={0}
+                    aria-valuemax={PASSWORD_REQUIREMENTS.length}
+                    aria-label="Password strength"
+                  >
+                    <div
+                      className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
+                    ></div>
+                  </div>
+
+                  <p
+                    className={`text-sm font-medium truncate ${textColor}`}
+                    aria-live="polite"
+                  >
+                    {strengthLabel} Password
+                  </p>
+
+                  <ul className="space-y-1 text-xs min-w-0">
+                    {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
+                      const met = passwordChecks[key];
+                      return (
+                        <li
+                          key={key}
+                          className={`${met ? "text-green-400" : "text-red-400"} truncate`}
+                          aria-label={`${label}: ${met ? "met" : "not met"}`}
+                        >
+                          <span aria-hidden="true">{met ? "✔️" : "❌"}</span>{" "}
+                          {label}
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
-
-                <p
-                  className={`text-sm font-medium truncate ${textColor}`}
-                  aria-live="polite"
-                >
-                  {strengthLabel} Password
-                </p>
-
-                <ul className="space-y-1 text-xs min-w-0">
-                  {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
-                    const met = passwordChecks[key];
-                    return (
-                      <li
-                        key={key}
-                        className={`${met ? "text-green-400" : "text-red-400"} truncate`}
-                        aria-label={`${label}: ${met ? "met" : "not met"}`}
-                      >
-                        <span aria-hidden="true">{met ? "Γ£à" : "Γ¥î"}</span>{" "}
-                        {label}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-)}
+              )}
 
               <SSInput
                 label="Confirm Password"
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
-                required={true}
+                required={!showOtpField}
                 icon="fi fi-rr-eye"
                 register={register}
                 autoComplete="new-password"
+                validation={{
+                  validate: (value) => {
+                    if (showOtpField) return true;
+                    if (!value) return "Confirm password is required";
+                    if (value !== password) return "Passwords do not match!";
+                    return true;
+                  }
+                }}
                 error={errors.confirmPassword}
               />
 

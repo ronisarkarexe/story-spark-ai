@@ -50,26 +50,26 @@ const RecommendedWritersComponent = () => {
 
   return (
     <>
-      <section className="bg-blue-500/10 rounded-lg shadow-sm p-6">
+      <section className="w-full max-w-full overflow-hidden bg-blue-500/10 rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-gray-300 mb-4">
           Recommended Writers
         </h3>
 
         <div className="space-y-4">
           {recommendedWriters.map((writer, index) => (
-            <div key={writer.id} className="flex items-center justify-between">
-              <div className="flex items-center">
+            <div key={writer.id} className="flex min-w-0 items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center">
                 <img
-                  className="h-10 w-10 rounded-full"
+                  className="h-10 w-10 shrink-0 rounded-full"
                   src={writer.image}
                   alt={writer.name}
                 />
 
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-slate-700 dark:text-gray-400">
+                <div className="ml-3 min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-700 dark:text-gray-400">
                     {writer.name}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-gray-500">
+                  <p className="truncate text-xs text-slate-500 dark:text-gray-500">
                     {writer.role}
                   </p>
                 </div>
@@ -78,7 +78,7 @@ const RecommendedWritersComponent = () => {
               <button
                 onClick={() => toggleFollow(index, writer.id)}
                 disabled={isLoading}
-                className="!rounded-button text-indigo-600 text-sm font-medium hover:text-indigo-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="!rounded-button shrink-0 text-indigo-600 text-sm font-medium hover:text-indigo-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {following.includes(index) ? "Following" : "Follow"}
               </button>
