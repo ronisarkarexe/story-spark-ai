@@ -250,14 +250,14 @@ const SignUpComponent = () => {
 
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10">
+      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4">
         <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
           <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
         </div>
 
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
+        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden">
           <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
@@ -282,7 +282,7 @@ const SignUpComponent = () => {
           )}
 
           {!showOtpField ? (
-            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            <form className="space-y-5 w-full min-w-0 overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
               <SSInput
                 label="Name"
                 name="name"
@@ -331,7 +331,7 @@ const SignUpComponent = () => {
               />
 
               {password?.length > 0 && (
-              <div className="space-y-3 -mt-2">
+              <div className="space-y-3 -mt-2 min-w-0 overflow-hidden">
                 <div
                   className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
                   role="progressbar"
@@ -346,19 +346,19 @@ const SignUpComponent = () => {
                 </div>
 
                 <p
-                  className={`text-sm font-medium ${textColor}`}
+                  className={`text-sm font-medium truncate ${textColor}`}
                   aria-live="polite"
                 >
                   {strengthLabel} Password
                 </p>
 
-                <ul className="space-y-1 text-xs">
+                <ul className="space-y-1 text-xs min-w-0">
                   {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
                     const met = passwordChecks[key];
                     return (
                       <li
                         key={key}
-                        className={met ? "text-green-400" : "text-red-400"}
+                        className={`${met ? "text-green-400" : "text-red-400"} truncate`}
                         aria-label={`${label}: ${met ? "met" : "not met"}`}
                       >
                         <span aria-hidden="true">{met ? "Γ£à" : "Γ¥î"}</span>{" "}

@@ -2,7 +2,7 @@ import { Application, Request, Response } from "express";
 import mongoose from "mongoose";
 import config from "./config";
 import app from "./app";
-import dns from "dns";
+import dns from "node:dns";
 import http from "http";
 import { Server } from "socket.io";
 import { JwtHelpers } from "./utils/jwt.helper";
@@ -22,7 +22,7 @@ async function connectDB() {
   if (mongoose.connection.readyState === 1) return;
   // config.database_url is guaranteed non-empty by config/index.ts — it throws at
   // module load time if DATABASE_URL is missing, so no runtime guard is needed here.
-  await mongoose.connect(config.database_url);
+  await mongoose.connect(config.database_url as string);
 }
 
 async function main() {
