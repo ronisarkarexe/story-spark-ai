@@ -65,45 +65,30 @@ const SSInput = <T extends FieldValues>({
   }`}
   placeholder={placeholder}
   autoComplete={autoComplete}
+  autoFocus={autoFocus}
   {...register(name, validation)}
 />
-
-        <input
-          type={inputType}
-          id={name}
-          className={`w-full pl-8 pr-10 py-1.5 ttext-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border rounded-md sm:text-sm ${
-          error
-          ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 dark:border-red-500"
-          : "border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:focus:border-blue-500"
-          }`}          placeholder={placeholder}
-          autoComplete={autoComplete}
-          {...register(name, validation)}
-        />
-
         {type === "password" && (
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
 
+    className="absolute inset-y-0 right-2 flex items-center text-gray-500"
 
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
+    
+    aria-label={showPassword ? "Hide password" : "Show password"}
+    title={showPassword ? "Hide password" : "Show password"}
 
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-          >
-            <i
-              className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}
-            ></i>
-
-          </button>
-        )}
-
-
+  >
+    <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
+  </button>
+)}
       </div>
       {error && (
-
-        <p className="text-red-400 text-sm mt-1">{error.message}</p>
-
-      )}
-
+        <p className="text-red-400 text-sm mt-1 w-full break-words overflow-hidden">
+        {error.message}
+        </p>
+    )}
     </div>
   );
 };

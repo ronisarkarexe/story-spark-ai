@@ -10,6 +10,18 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 let isSubmitting = false;
 
+/**
+ * Close the login/signup page and return the user to their previous location.
+ * Falls back to the home page ('/') if there is no browser history to go back to.
+ */
+function handleClose() {
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = '/';
+    }
+}
+
 /* ── DOM Init & Global Handler Registrations ── */
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Detect initial auth page mode based on filename
@@ -357,8 +369,9 @@ function toggleAuthMode(mode) {
     setTimeout(() => {
         const signupFields = document.getElementById('signup-fields');
         const nameField = document.getElementById('name-field');
+        const passwordField = document.getElementById('password-field'); // Added for auto-fill fix
         const submitBtn = document.getElementById('submit-btn');
-        const submitBtnText = document.getElementById('submit-btn-text');
+        const submitBtnText = document.getElementById('btn-label'); // Updated target matching your HTML ID
         const tabSignin = document.getElementById('tab-signin');
         const tabSignup = document.getElementById('tab-signup');
         const forgotPass = document.getElementById('forgot-password-link') || document.querySelector('a[href="#"]');
@@ -369,47 +382,58 @@ function toggleAuthMode(mode) {
             if (signupFields) signupFields.classList.remove('hidden');
             if (nameField) nameField.required = true;
             if (forgotPass) forgotPass.classList.add('invisible');
-            if (submitBtnText) submitBtnText.innerText = 'Create Account';
-            else if (submitBtn) submitBtn.innerText = 'Create Account';
-            if (googleBtnText) googleBtnText.innerText = 'sign in with Google';
+            
+            // Safe Text Target updates to avoid destroying spinner nodes
+            if (submitBtnText) submitBtnText.textContent = 'Sign Up Free';
+            if (googleBtnText) googleBtnText.textContent = 'Continue with Google';
+            
+            // FIX: Dynamic autocomplete switch for password managers
+            if (passwordField) passwordField.setAttribute('autocomplete', 'new-password');
             
             // Tabs styling
             if (tabSignup) tabSignup.className = "flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300";
             if (tabSignin) tabSignin.className = "flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
             
-            // Bottom link toggle content
+            // FIX: Use javascript void anchors to prevent hard page refreshes on interaction links
             if (navToggle) {
-                navToggle.innerHTML = `Already have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold" href="login.html">Log In</a>`;
+                navToggle.innerHTML = `Already have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signin')">Log In</a>`;
             }
             
-            // Push address bar quietly without reload
             window.history.replaceState(null, '', 'signup.html');
         } else {
             if (signupFields) signupFields.classList.add('hidden');
-            if (nameField) nameField.required = false;
+            if (nameField) {
+                nameField.required = false;
+                nameField.value = ''; // Clear out stale text data
+            }
             if (forgotPass) forgotPass.classList.remove('invisible');
-            if (submitBtnText) submitBtnText.innerText = 'Log In to Story Spark';
-            else if (submitBtn) submitBtn.innerText = 'Log In to Story Spark';
-            if (googleBtnText) googleBtnText.innerText = 'Sign in with Google';
+            
+            // Safe Text Target updates to avoid destroying spinner nodes
+            if (submitBtnText) submitBtnText.textContent = 'Log In to StorySparkAI';
+            if (googleBtnText) googleBtnText.textContent = 'Continue with Google';
+            
+            // FIX: Dynamic autocomplete switch for password managers
+            if (passwordField) passwordField.setAttribute('autocomplete', 'current-password');
             
             // Tabs styling
             if (tabSignin) tabSignin.className = "flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300";
             if (tabSignup) tabSignup.className = "flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
             
-            // Bottom link toggle content
+            // FIX: Use javascript void anchors to prevent hard page refreshes on interaction links
             if (navToggle) {
-                navToggle.innerHTML = `Don't have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold" href="signup.html">Sign Up</a>`;
+                navToggle.innerHTML = `Don't have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signup')">Sign up free</a>`;
             }
             
-            // Push address bar quietly without reload
             window.history.replaceState(null, '', 'login.html');
         }
 
+        // Clean layout state tracking elements
         setAlert('', '');
         setFieldError('name-field', 'name-error', '');
         setFieldError('email-field', 'email-error', '');
         setFieldError('password-field', 'password-error', '');
         setFieldError('confirm-password-field', 'confirm-password-error', '');
+        
         const feedbackEl = document.getElementById('confirm-password-feedback');
         if (feedbackEl) {
             feedbackEl.classList.remove('is-visible', 'match', 'mismatch');

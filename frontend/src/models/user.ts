@@ -3,12 +3,19 @@ export interface SocialLinks {
   twitter?: string;
   linkedin?: string;
   instagram?: string;
+  github?: string;
+  discord?: string;
 }
 
 export interface UserProfile {
   social: SocialLinks;
   avatar?: string;
   bio?: string;
+}
+
+export interface WritingGoals {
+  dailyWordCount: number;
+  weeklyWordCount: number;
 }
 
 export interface User {
@@ -29,4 +36,5 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   profile: UserProfile;
+  writingGoals?: WritingGoals;
 }

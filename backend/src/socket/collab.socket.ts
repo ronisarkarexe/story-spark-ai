@@ -3,7 +3,7 @@ import crypto from "crypto";
 import logger from "../utils/logger.util";
 import { AiModelService } from "../app/modules/ai_model/ai_model.service";
 import config from "../config";
-import { JwtHalers } from "../utils/jwt.helper";
+import { JwtHelpers } from "../utils/jwt.helper";
 import type { Secret } from "jsonwebtoken";
 import { User } from "../app/modules/user/user.model";
 import { reserveUserQuota } from "../app/modules/ai_model/quota.service";
@@ -64,16 +64,9 @@ export const setupCollabSocket = (io: Server) => {
     try {
       const token = socket.handshake.auth?.token as string | undefined;
       if (!token) return next(new Error("Unauthorized"));
-
-      const verifiedUser = JwtHalers.verifyToken(
-        token,
-        config.jwt.secret as Secret,
-      );
-      const userId =
-        verifiedUser._id ||
-        verifiedUser.userId ||
-        verifiedUser.sub ||
-        verifiedUser.id;
+      
+      const verifiedUser = JwtHelpers.verifyToken(token, config.jwt.secret as Secret);
+      const userId = verifiedUser._id || verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
       if (!userId) return next(new Error("Unauthorized"));
 
       socket.data.userId = userId.toString();

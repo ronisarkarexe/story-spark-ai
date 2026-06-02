@@ -36,23 +36,33 @@ const AnalyticsPage = () => {
 
   const token = getToken() || "";
 
-  const fetchData = async (endpoint: string) => {
-    const res = await fetch(`${API_BASE}/analytics/${endpoint}`, {
-      headers: { Authorization: token },
-    });
+  const fetchData = async (
+    endpoint: string,
+    signal: AbortSignal
+  ) => {
+    const res = await fetch(
+      `${API_BASE}/analytics/${endpoint}`,
+      {
+        headers: { Authorization: token },
+        signal,
+      }
+    );
+  
     const data = await res.json();
     return data.data;
   };
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const load = async () => {
       try {
         const [ov, hm, gn, wc, hr] = await Promise.all([
-          fetchData("overview"),
-          fetchData("heatmap"),
-          fetchData("genres"),
-          fetchData("wordcloud"),
-          fetchData("productive-hours"),
+          fetchData("overview", controller.signal),
+          fetchData("heatmap", controller.signal),
+          fetchData("genres", controller.signal),
+          fetchData("wordcloud", controller.signal),
+          fetchData("productive-hours", controller.signal),
         ]);
         setOverview(ov || null);
         setHeatmap(hm || []);
@@ -60,12 +70,16 @@ const AnalyticsPage = () => {
         setWordCloud(wc || []);
         setHours(hr || []);
       } catch (e) {
-        console.error(e);
+        if ((e as Error).name !== "AbortError") {
+          console.error(e);
+        }
       } finally {
         setLoading(false);
       }
     };
     load();
+
+    return () => controller.abort();
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return (

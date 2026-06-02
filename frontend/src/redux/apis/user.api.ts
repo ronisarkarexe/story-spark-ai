@@ -43,7 +43,7 @@ const userApi = baseApi.injectEndpoints({
         data: data,
       }),
       // ─── OPTIMIZED: INVALIDATES ANALYTICS CACHE UPON UPDATE ───
-      invalidatesTags: [tagTypes.user, tagTypes.analytics || "Analytics"],
+      invalidatesTags: [tagTypes.user],
     }),
     toggleFollow: build.mutation({
       query: (authorId: string) => ({

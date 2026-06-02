@@ -19,7 +19,7 @@ type SpotlightWriter = {
 
 const TOP_WRITERS_LIMIT = 3;
 
-const getBookmarkCount = (post: Post) => post.bookmarks?.length ?? 0;
+const getBookmarkCount = (post: Post) => post.bookmarksCount ?? 0;
 
 const getPostEngagementScore = (post: Post) =>
   (post.likesCount ?? 0) * 3 +
@@ -59,16 +59,15 @@ const CommunitySpotlightComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
 
-  console.log("Posts Data:", data?.posts);
-
-  
-  const topWriters = useMemo(() => {
+  const topWriters = useMemo<SpotlightWriter[]>(() => {
     const writers = new Map<string, Omit<SpotlightWriter, "engagementScore">>();
 
     data?.posts?.forEach((post: Post) => {
       if (!post.author) return;
 
       const authorKey = post.author._id || post.author.email || post.author.name;
+      if (!authorKey) return;
+
       const existingWriter = writers.get(authorKey);
       const postScore = getPostEngagementScore(post);
 
@@ -82,7 +81,6 @@ const CommunitySpotlightComponent = () => {
           bookmarksCount: getBookmarkCount(post),
           topPost: post,
         });
-
         return;
       }
 
@@ -103,34 +101,11 @@ const CommunitySpotlightComponent = () => {
         engagementScore: getWriterEngagementScore(writer),
       }))
       .sort((a, b) => b.engagementScore - a.engagementScore)
-      .slice(0, TOP_WRITERS_LIMIT);
+      .slice(0, TOP_WRITERS_LIMIT) as SpotlightWriter[];
   }, [data?.posts]);
 
-  if (isLoading) {
-    return <LoadingAnimation />;
-  }
-
-  if (isError) {
-    return (
-      <section className="px-5 py-10">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-200">
-            Community Spotlight
-          </h2>
-  
-          <p className="mt-2 text-slate-600 dark:text-gray-400">
-            Top contributors loved by the Story Spark community
-          </p>
-        </div>
-  
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((item) => (
-            <div
-              key={item}
-              className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-40"
-            ></div>
-          ))}
   if (isLoading) return <LoadingAnimation />;
+
   if (isError) {
     return (
       <section className="story-section">
@@ -148,7 +123,7 @@ const CommunitySpotlightComponent = () => {
       </section>
     );
   }
-  
+
   return (
     <section className="px-5 py-10 text-slate-900 dark:text-slate-100">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -172,7 +147,7 @@ const CommunitySpotlightComponent = () => {
       </div>
 
       {topWriters.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {topWriters.map((writer, index) => {
             const rank = index + 1;
             const style = rankStyles[index];
@@ -181,25 +156,17 @@ const CommunitySpotlightComponent = () => {
               <button
                 key={writer.author._id || writer.author.email || writer.author.name}
                 type="button"
-                aria-label={`Read ${writer.topPost.title} by ${
-                  writer.author.name || "Unknown User"
-                }`}
+                aria-label={`Read ${writer.topPost.title} by ${writer.author.name || "Unknown User"}`}
                 onClick={() => navigate(`/post/${writer.topPost._id}`)}
-                className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 text-left transition-all duration-500 ease-out cursor-pointer hover:bg-blue-50 hover:-translate-y-4 hover:scale-105 hover:z-20 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/30"
+                className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-5 text-left shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700/60 dark:bg-slate-900/70 dark:hover:border-blue-400/50 dark:focus:ring-offset-slate-950"
               >
                 <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-violet-500 to-amber-400"></div>
 
                 <div className="mb-6 flex items-start justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-4">
-                    <div
-                      className={`rounded-full ring-4 ${style.ring} transition-transform duration-300 group-hover:scale-105`}
-                    >
-                      <SSProfile
-                        name={writer.author.name || "Unknown User"}
-                        size="h-12 w-12"
-                      />
+                    <div className={`rounded-full ring-4 ${style.ring} transition-transform duration-300 group-hover:scale-105`}>
+                      <SSProfile name={writer.author.name || "Unknown User"} size="h-14 w-14" />
                     </div>
-
                     <div className="min-w-0">
                       <p className="truncate text-lg font-bold text-slate-900 dark:text-gray-100">
                         {writer.author.name || "Unknown User"}
@@ -209,10 +176,7 @@ const CommunitySpotlightComponent = () => {
                       </p>
                     </div>
                   </div>
-
-                  <span
-                    className={`shrink-0 rounded-full px-3 py-1 text-sm font-black shadow-lg ${style.badge}`}
-                  >
+                  <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-black shadow-lg ${style.badge}`}>
                     #{rank}
                   </span>
                 </div>
@@ -226,38 +190,22 @@ const CommunitySpotlightComponent = () => {
                   </h3>
                 </div>
 
-                <div className="mt-auto grid grid-cols-2 gap-2 text-sm">
+                <div className="mt-auto grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-xl bg-blue-50 px-3 py-3 dark:bg-blue-500/10">
-                    <p className="text-lg font-bold text-blue-700 dark:text-blue-300">
-                      {formatMetric(writer.engagementScore)}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">
-                      Score
-                    </p>
+                    <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{formatMetric(writer.engagementScore)}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">Score</p>
                   </div>
                   <div className="rounded-xl bg-violet-50 px-3 py-3 dark:bg-violet-500/10">
-                    <p className="text-lg font-bold text-violet-700 dark:text-violet-300">
-                      {formatMetric(writer.storiesCount)}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">
-                      Stories
-                    </p>
+                    <p className="text-lg font-bold text-violet-700 dark:text-violet-300">{formatMetric(writer.storiesCount)}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">Stories</p>
                   </div>
                   <div className="rounded-xl bg-slate-100 px-3 py-3 dark:bg-slate-800">
-                    <p className="text-lg font-bold text-slate-800 dark:text-gray-200">
-                      {formatMetric(writer.likesCount)}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">
-                      Likes
-                    </p>
+                    <p className="text-lg font-bold text-slate-800 dark:text-gray-200">{formatMetric(writer.likesCount)}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">Likes</p>
                   </div>
                   <div className="rounded-xl bg-slate-100 px-3 py-3 dark:bg-slate-800">
-                    <p className="text-lg font-bold text-slate-800 dark:text-gray-200">
-                      {formatMetric(writer.viewsCount)}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">
-                      Views
-                    </p>
+                    <p className="text-lg font-bold text-slate-800 dark:text-gray-200">{formatMetric(writer.viewsCount)}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">Views</p>
                   </div>
                 </div>
 

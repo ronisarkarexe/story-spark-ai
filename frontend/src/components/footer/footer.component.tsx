@@ -53,7 +53,7 @@ const FooterComponent = () => {
 
   const resourceLinks = [
     { label: "Blog",         to: "/blog"        },
-    { label: "Help Center",  to: "/help"        },
+    { label: "Help Center",  to: "/help-center"    },
     // ─── FIXED: Changed from "/community" to match the secure dashboard sub-route ───
     { label: "Community",    to: "/dashboard/community" },
     { label: "Contributors", to: "/contributors"},
