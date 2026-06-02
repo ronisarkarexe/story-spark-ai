@@ -1152,12 +1152,17 @@ if (isLoading) {
           onClose={() => setShowWorldMap(false)}
         />
       )}
-      {showRemix && selectedStory && (
-        <StoryRemix
-          story={selectedStory}
-          onClose={() => setShowRemix(false)}
-        />
-      )}
+{showRemix && selectedStory && (
+  <StoryRemix
+    story={selectedStory}
+    onClose={() => setShowRemix(false)}
+    isLogin={isLogin}
+    onRemixComplete={() => {
+      // Handle remix completion logic if needed
+      setShowRemix(false);
+    }}
+  />
+)}
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
