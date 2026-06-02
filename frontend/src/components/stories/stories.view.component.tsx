@@ -1,13 +1,6 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
-import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
-import toast from "react-hot-toast";
-import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
-import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import jsPDF from "jspdf";
-import StoryWorldMap from "../story-map/StoryWorldMap";
-import logo from "../../assets/logoNew.png";
-import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
-import { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setStory } from "../../redux/slices/storySlice";
@@ -20,8 +13,25 @@ import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
+import {
+  useGenerateStoryVisualsMutation,
+  type StoryboardScene,
+} from "../../redux/apis/story.visualizer.api";
+import { setStory } from "../../redux/slices/storySlice";
+import { useApiError } from "../../hooks/useApiError";
 
-// ─── Custom API Error Handlers ──────────────────────────────────────────────
+import logo from "../../assets/logoNew.png";
+import AudioPlayer, {
+  type AudioPlayerHandle,
+  type NarrationPlaybackState,
+} from "../AudioPlayer";
+import BookmarkButton from "../BookmarkButton";
+import { ErrorToast } from "../ErrorToast";
+import ImageFallback from "../ImageFallback";
+import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
+import StoryRemix from "../remix/StoryRemix";
+import StoryWorldMap from "../story-map/StoryWorldMap";
+import StoryVisualizer from "../story-visualizer/StoryVisualizer";
 
 export class ApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -42,47 +52,12 @@ function getErrorMessage(error: unknown): string {
       return "A server error occurred. Please try again later.";
     }
   }
+
   if (error instanceof TypeError) {
     return "Could not reach the server. Please check your connection and try again.";
   }
+
   return "An unexpected error occurred. Please try again.";
-}
-
-// ─── StoryCoverImage Component ──────────────────────────────────────────────
-
-const GENRE_THEMES: Record<string, { gradient: string; accent: string; icon: string }> = {
-  fantasy:     { gradient: "135deg, #667eea 0%, #764ba2 50%, #f093fb 100%", accent: "#c084fc", icon: "✦" },
-  romance:     { gradient: "135deg, #f857a6 0%, #ff5858 50%, #ffb347 100%", accent: "#fb7185", icon: "♡" },
-  horror:      { gradient: "135deg, #0f0c29 0%, #302b63 50%, #24243e 100%", accent: "#a855f7", icon: "☽" },
-  thriller:    { gradient: "135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%", accent: "#38bdf8", icon: "◈" },
-  mystery:     { gradient: "135deg, #2c3e50 0%, #3498db 50%, #2980b9 100%", accent: "#60a5fa", icon: "◎" },
-  adventure:   { gradient: "135deg, #f7971e 0%, #ffd200 50%, #21d4fd 100%", accent: "#fbbf24", icon: "⊕" },
-  scifi:       { gradient: "135deg, #0f2027 0%, #203a43 50%, #2c5364 100%", accent: "#22d3ee", icon: "◇" },
-  "sci-fi":    { gradient: "135deg, #0f2027 0%, #203a43 50%, #2c5364 100%", accent: "#22d3ee", icon: "◇" },
-  comedy:      { gradient: "135deg, #fddb92 0%, #d1fdff 50%, #f5af19 100%", accent: "#f59e0b", icon: "◉" },
-  drama:       { gradient: "135deg, #8e2de2 0%, #4a00e0 50%, #3b82f6 100%", accent: "#a78bfa", icon: "✧" },
-  historical:  { gradient: "135deg, #b79891 0%, #94716b 50%, #6b4226 100%", accent: "#d4a574", icon: "⬡" },
-  default:     { gradient: "135deg, #667eea 0%, #764ba2 50%, #4facfe 100%", accent: "#a78bfa", icon: "✦" },
-};
-
-function getGenreTheme(tag?: string) {
-  const key = (tag || "default").toLowerCase().trim();
-  return GENRE_THEMES[key] ?? GENRE_THEMES.default;
-}
-
-function getInitials(title?: string): string {
-  if (!title || !title.trim()) return "?";
-  const words = title.trim().split(/\s+/);
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return words.slice(0, 2).map((w) => w[0] ?? "").join("").toUpperCase();
-}
-
-interface StoryCoverImageProps {
-  title?: string;
-  tag?: string;
-  size?: "full" | "thumb";
-  className?: string;
-  style?: React.CSSProperties;
 }
 
 export const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
@@ -228,10 +203,11 @@ export interface IStories {
   title: string;
   content: string;
   tag: string;
-  emotions?: string[];
-  enhancedPrompt?: string;
   imageURL: string;
   language?: string;
+  genre?: string;
+  emotions?: string[];
+  enhancedPrompt?: string;
 }
 
 interface StoriesComponentProps {
@@ -260,22 +236,115 @@ type StorySentenceSegment = {
 
 const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
   if (!content.trim()) return [];
+
   const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
   const segments: StorySentenceSegment[] = [];
   let wordCursor = 0;
+
   sentenceMatches.forEach((sentence, index) => {
     const trimmedSentence = sentence.trim();
     if (!trimmedSentence) return;
+
     const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
     const startWordIndex = wordCursor;
     const endWordIndex = wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
-    segments.push({ id: `${index}-${startWordIndex}-${endWordIndex}`, text: sentence, startWordIndex, endWordIndex });
+
+    segments.push({
+      id: `${index}-${startWordIndex}-${endWordIndex}`,
+      text: sentence,
+      startWordIndex,
+      endWordIndex,
+    });
+
     wordCursor += wordsInSentence;
   });
+
   return segments;
 };
 
-// ─── Related Stories Sub-Component ─────────────────────────────────────────
+const getSafeFileName = (title: string, extension: "md" | "docx"): string => {
+  const safeTitle = (title || "story")
+    .trim()
+    .replace(/[^a-z0-9]+/gi, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase();
+
+  return `${safeTitle || "story"}.${extension}`;
+};
+
+const downloadBlob = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  URL.revokeObjectURL(url);
+};
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+const createDocxBlob = ({
+  title,
+  content,
+  tag,
+  author,
+}: {
+  title: string;
+  content: string;
+  tag: string;
+  author: string;
+}): Blob => {
+  const paragraphs = content
+    .split(/\n+/)
+    .map((paragraph) => `<p>${escapeHtml(paragraph.trim())}</p>`)
+    .join("");
+
+  const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${escapeHtml(title)}</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; }
+    h1 { color: #312e81; }
+    .meta { color: #64748b; font-size: 12px; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(title)}</h1>
+  <div class="meta">Tag: ${escapeHtml(tag)} | Author: ${escapeHtml(author)}</div>
+  ${paragraphs}
+</body>
+</html>`;
+
+  return new Blob([html], {
+    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8",
+  });
+};
+
+const StoryRemixModal = StoryRemix as React.ComponentType<{
+  story?: string;
+  title?: string;
+  selectedStory?: IStories;
+  onClose?: () => void;
+  onApplyRemix?: (content: string) => void;
+}>;
+
+const StoryWorldMapModal = StoryWorldMap as React.ComponentType<{
+  story?: string;
+  storyContent?: string;
+  title?: string;
+  onClose: () => void;
+}>;
 
 export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
   posts,
@@ -289,8 +358,8 @@ export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = 
       <h4 className="text-lg font-bold text-slate-200 mb-4">Related Content</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredPosts.map((post) => (
-          <div 
-            key={post._id} 
+          <div
+            key={post._id}
             onClick={() => navigate(`/stories/${post._id}`)}
             className="p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/60 transition-colors"
           >
@@ -308,12 +377,12 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
   setStories,
-  isLoading,
+  isLoading = false,
   onPublishSuccess,
 }) => {
   const location = useLocation();
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
   const dispatch = useDispatch();
+  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
 
   const { error, setError, clearError } = useApiError();
 
@@ -354,6 +423,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   // Mutations
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+  const [generateStoryVisuals, { isLoading: isGeneratingVisuals }] = useGenerateStoryVisualsMutation();
 
   // Effects
 
@@ -564,9 +634,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const handleTopicClick = (index: number) => {
     setTopics((currentTopics) =>
       currentTopics.map((topic, topicIndex) =>
-        topicIndex === index
-          ? { ...topic, selected: !topic.selected }
-          : topic
+        topicIndex === index ? { ...topic, selected: !topic.selected } : topic
       )
     );
   };
@@ -607,6 +675,127 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       return;
     }
 
+    setTopics((currentTopics) => currentTopics.filter((_, topicIndex) => topicIndex !== index));
+  };
+
+  const handleCopyStory = async () => {
+    if (!selectedStory?.content) return;
+
+    await navigator.clipboard.writeText(selectedStory.content);
+    setIsCopied(true);
+    toast.success("Story copied!");
+    window.setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleGenerateAlternateEndings = async () => {
+    if (!selectedStory) return;
+
+    clearError();
+    setIsGeneratingEndings(true);
+    const toastId = toast.loading("Generating alternate endings...");
+
+    try {
+      const payload = {
+        title: selectedStory.title,
+        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
+        tag: selectedStory.tag,
+        language: selectedStory.language || "English",
+      };
+
+      const generationRequest = isLogin
+        ? generateAlternateEndings(payload)
+        : generateFreeAlternateEndings(payload);
+
+      const res = await generationRequest.unwrap();
+
+      if (!res || !Array.isArray(res.data)) {
+        throw new Error("Unexpected response format from the AI service.");
+      }
+
+      setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
+      toast.success("Alternate endings generated successfully!");
+    } catch (err: any) {
+      console.error("[StoriesView Alternate Ending Flow Failure]:", err);
+      const errorStatus = err?.status || err?.data?.status;
+      setError(
+        errorStatus
+          ? getErrorMessage(new ApiError(errorStatus, err?.data?.message || ""))
+          : getErrorMessage(err)
+      );
+      toast.error("Failed to generate alternate endings.");
+    } finally {
+      toast.dismiss(toastId);
+      setIsGeneratingEndings(false);
+    }
+  };
+
+  const handleGenerateStoryVisuals = async () => {
+    if (!selectedStory) {
+      toast.error("No story available. Please generate a story first.");
+      return;
+    }
+
+    const toastId = toast.loading("Generating visuals...");
+
+    try {
+      const res = await generateStoryVisuals({
+        title: selectedStory.title,
+        content: selectedStory.content,
+        genre: selectedStory.genre || selectedStory.tag,
+        language: selectedStory.language,
+      }).unwrap();
+
+      if (res?.data?.scenes?.length) {
+        setStoryboardScenes(res.data.scenes);
+        setStoryboardStyleGuide(res.data.styleGuide || "");
+        setShowStoryVisualizer(true);
+        toast.success("Storyboard visuals generated successfully!");
+      } else {
+        toast.error("No storyboard scenes were returned.");
+      }
+    } catch (visualError) {
+      console.error(visualError);
+      toast.error("Failed to generate visuals. Please try again.");
+    } finally {
+      toast.dismiss(toastId);
+    }
+  };
+
+  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
+    if (!selectedStory) return;
+
+    const updatedStory = {
+      ...selectedStory,
+      content: endingData.fullStory,
+    };
+
+    setSelectedStory(updatedStory);
+    setStories(stories.map((story) => (story.uuid === selectedStory.uuid ? updatedStory : story)));
+    toast.success(`${endingData.style} applied to story!`);
+  };
+
+  const handleResetEnding = () => {
+    if (!selectedStory) return;
+
+    const originalContent = originalStoryContent[selectedStory.uuid];
+    if (!originalContent) return;
+
+    const updatedStory = {
+      ...selectedStory,
+      content: originalContent,
+    };
+
+    setSelectedStory(updatedStory);
+    setStories(stories.map((story) => (story.uuid === selectedStory.uuid ? updatedStory : story)));
+    toast.success("Reverted to original story ending!");
+  };
+
+  const handleExportPDF = async () => {
+    if (!selectedStory) {
+      toast.error("No story available to export.");
+      return;
+    }
+
     setTopics((currentTopics) =>
       currentTopics.filter((_, topicIndex) => topicIndex !== index)
     );
@@ -619,7 +808,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       toast.success("Story copied!");
       setTimeout(() => setIsCopied(false), 2000);
     }
-  };
 
   const handleExportPDF = async () => {
     if (!selectedStory) { 
@@ -643,31 +831,30 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
             reject(new Error(`Timeout loading image: ${src}`));
           }, timeoutMs);
           img.onload = () => {
-            clearTimeout(timeout);
+            window.clearTimeout(timeout);
             resolve(img);
           };
-          img.onerror = (e) => {
-            clearTimeout(timeout);
-            reject(e);
+          img.onerror = (event) => {
+            window.clearTimeout(timeout);
+            reject(event);
           };
           img.src = src;
         });
-      };
 
       let logoImg: HTMLImageElement | null = null;
       let storyImg: HTMLImageElement | null = null;
 
       try {
         logoImg = await loadImageWithTimeout(logo);
-      } catch (err) {
-        console.warn("Failed to load StorySparkAI logo for PDF", err);
+      } catch (logoError) {
+        console.warn("Failed to load StorySparkAI logo for PDF", logoError);
       }
 
       if (selectedStory.imageURL) {
         try {
           storyImg = await loadImageWithTimeout(selectedStory.imageURL);
-        } catch (err) {
-          console.warn("Failed to load story banner image for PDF", err);
+        } catch (imageError) {
+          console.warn("Failed to load story banner image for PDF", imageError);
         }
       }
 
@@ -680,7 +867,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       const title = selectedStory.title || "Untitled Story";
       const content = selectedStory.content || "";
       const tag = (selectedStory.tag || "STORY").toUpperCase();
-
       const leftMargin = 20;
       const rightMargin = 20;
       const topMargin = 20;
@@ -710,14 +896,12 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       doc.line(leftMargin, yCursor, 190, yCursor);
       yCursor += 8;
 
-      // 2. Story Banner Image (only on Page 1)
       if (storyImg) {
         const bannerHeight = 55;
         doc.addImage(storyImg, "JPEG", leftMargin, yCursor, printableWidth, bannerHeight);
         yCursor += bannerHeight + 8;
       }
 
-      // 3. Story Title
       doc.setFont("helvetica", "bold");
       doc.setFontSize(22);
       doc.setTextColor(30, 41, 59);
@@ -727,8 +911,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
         yCursor += 9;
       });
       yCursor += 1;
-
-      // 4. Meta Row (Generated Date & Genre Pill Badge)
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor(100, 116, 139);
@@ -758,20 +940,16 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       doc.line(leftMargin, yCursor, 190, yCursor);
       yCursor += 10;
 
-      // 5. Story Paragraphs Flowing
       const paragraphs = content.split(/\n+/);
-      const lineHeight = 6.5;
-      const paragraphSpacing = 4.5;
-
       doc.setFont("helvetica", "normal");
       doc.setFontSize(11);
       doc.setTextColor(30, 41, 59);
 
-      paragraphs.forEach((para: string, pIdx: number) => {
-        const cleanPara = para.trim();
-        if (!cleanPara) return;
+      paragraphs.forEach((paragraph: string, paragraphIndex: number) => {
+        const cleanParagraph = paragraph.trim();
+        if (!cleanParagraph) return;
 
-        const lines = doc.splitTextToSize(cleanPara, printableWidth);
+        const lines = doc.splitTextToSize(cleanParagraph, printableWidth);
         lines.forEach((line: string) => {
           if (yCursor > maxY) {
             doc.addPage();
@@ -781,17 +959,14 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           doc.setFontSize(11);
           doc.setTextColor(30, 41, 59);
           doc.text(line, leftMargin, yCursor);
-          yCursor += lineHeight;
+          yCursor += 6.5;
         });
 
-        if (pIdx < paragraphs.length - 1) {
-          yCursor += paragraphSpacing;
-        }
+        if (paragraphIndex < paragraphs.length - 1) yCursor += 4.5;
       });
 
-      // 6. Running Header and Footer generation
       const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
+      for (let i = 1; i <= totalPages; i += 1) {
         doc.setPage(i);
 
         doc.setDrawColor(241, 245, 249);
@@ -809,13 +984,11 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           doc.setFontSize(8);
           doc.setTextColor(99, 102, 241);
           doc.text("StorySparkAI", leftMargin, 14);
-
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(148, 163, 184);
           const headerTitle = title.length > 50 ? title.substring(0, 50) + "..." : title;
           doc.text(headerTitle, 190, 14, { align: "right" });
-
           doc.setDrawColor(241, 245, 249);
           doc.setLineWidth(0.2);
           doc.line(leftMargin, 17, 190, 17);
@@ -878,10 +1051,12 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       toast.error("Please login to publish the story.");
       return;
     }
+
     if (!selectedStory) {
       toast.error("No story available. Please generate a story first.");
       return;
     }
+
     if (selectTopics.length < 2) {
       toast.error("Please select at least 2 topics.");
       return;
@@ -890,9 +1065,11 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     const post: IPost = {
       ...selectedStory,
       topic: selectTopics,
+      isPublished: true,
     };
 
     setLoading(true);
+
     try {
       if (savedPostIdRef.current) {
         try {
@@ -901,6 +1078,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           console.warn("Failed to delete auto-saved draft before publishing:", deleteError);
         }
       }
+
       const result = await createPost(post).unwrap();
       if (result) {
         toast.success("Story published successfully!");
@@ -908,7 +1086,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
         setSelectedStory(null);
         onPublishSuccess?.();
       }
-    } catch {
+    } catch (publishError) {
+      console.error(publishError);
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -951,11 +1130,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
       {error && (
         <div className="mb-6 max-w-4xl mx-auto animate-fade-in-up">
-          <ErrorToast
-            message={error}
-            onClose={clearError}
-            autoCloseDuration={6000}
-          />
+          <ErrorToast message={error} onClose={clearError} autoCloseDuration={6000} />
         </div>
       )}
 
@@ -964,7 +1139,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
               <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400 mb-2">
-                {selectedStory?.title}
+                {selectedStory.title}
               </h1>
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center rounded-full bg-purple-900/60 text-purple-300 border border-purple-700/50 py-1 px-3 text-xs font-semibold">
@@ -981,16 +1156,14 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
               </div>
             </div>
 
-            {/* Story choosing thumbnails selection tray */}
             <div className="flex justify-start sm:justify-end">
               <div className="flex -space-x-5">
                 {stories.map((story) => (
                   <button
                     key={story.uuid}
+                    type="button"
                     className={`relative w-16 h-16 rounded-full border-2 ${
-                      selectedStory?.uuid === story.uuid
-                        ? "border-blue-500 scale-110"
-                        : "border-white"
+                      selectedStory.uuid === story.uuid ? "border-blue-500 scale-110" : "border-white"
                     } hover:scale-110 transition-transform duration-200 focus:outline-none`}
                     onClick={() => handelStorySelection(story)}
                   >
@@ -1005,15 +1178,12 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
             </div>
           </div>
 
-          {/* Main layout container panel layout wrapper */}
           <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
             <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <h3 className="text-xl font-bold text-slate-200 relative z-10">
-                Generated Story
-              </h3>
+              <h3 className="text-xl font-bold text-slate-200 relative z-10">Generated Story</h3>
               <div className="flex flex-wrap items-center gap-2 relative z-10">
                 <button
                   type="button"
@@ -1037,7 +1207,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                   onClick={handleExportMarkdown}
                   disabled={!selectedStory}
                 >
-                  ⬇️ Export as Markdown
+                  ⬇️ Export Markdown
                 </button>
                 <button
                   type="button"
@@ -1049,8 +1219,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowRemix(true)}
+                  className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowWorldMap(true)}
                   disabled={!selectedStory}
                 >
                   🔀 Remix
@@ -1061,36 +1231,34 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                   onClick={() => setShowTranslator(true)}
                   disabled={!selectedStory}
                 >
-                  🌍 Translate
+                  🔀 Remix
                 </button>
               </div>
             </div>
 
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
               <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence =
-                      isNarrationActive &&
-                      narrationWordIndex >= segment.startWordIndex &&
-                      narrationWordIndex <= segment.endWordIndex;
+                {sentenceSegments.length > 0
+                  ? sentenceSegments.map((segment) => {
+                      const isActiveSentence =
+                        isNarrationActive &&
+                        narrationWordIndex >= segment.startWordIndex &&
+                        narrationWordIndex <= segment.endWordIndex;
 
-                    return (
-                      <span
-                        key={segment.id}
-                        className={
-                          isActiveSentence
-                            ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-100 ring-1 ring-indigo-400/30"
-                            : undefined
-                        }
-                      >
-                        {segment.text}
-                      </span>
-                    );
-                  })
-                ) : (
-                  selectedStory.content
-                )}
+                      return (
+                        <span
+                          key={segment.id}
+                          className={
+                            isActiveSentence
+                              ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-100 ring-1 ring-indigo-400/30"
+                              : undefined
+                          }
+                        >
+                          {segment.text}
+                        </span>
+                      );
+                    })
+                  : selectedStory.content}
               </p>
             </div>
 
@@ -1118,9 +1286,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
           <div className="mt-7">
             <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
-              <h3 className="text-lg font-bold text-slate-200 mb-4">
-                Select Topics
-              </h3>
+              <h3 className="text-lg font-bold text-slate-200 mb-4">Select Topics</h3>
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
                 <input
                   type="text"
@@ -1200,13 +1366,17 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                   {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
                     <button
                       type="button"
-                      onClick={handleResetEnding}
-                      className="rounded-lg px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-200 border border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                      className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40"
+                      onClick={() => handleRemoveTopic(index)}
+                      disabled={topics.length <= 2}
+                      aria-label={`Remove ${topic.title}`}
                     >
-                      <i className="fa-solid fa-rotate-left"></i> Reset to Original
+                      <i className="fa-solid fa-xmark" />
                     </button>
-                  )}
-                </div>
+                  </span>
+                ))}
+              </div>
+            </div>
 
                 {isGeneratingEndings ? (
                   <div className="flex flex-col items-center justify-center py-10">
@@ -1257,26 +1427,52 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                       const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
 
                       return (
-                        <div className="bg-slate-900/40 rounded-xl p-6 border border-slate-700/30">
-                          <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-lg font-bold text-slate-200">
-                              {activeEndingTab} Suggestion
-                            </h4>
-                            <div>
-                              {isCurrentlyApplied ? (
-                                <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
-                                  <i className="fa-solid fa-check"></i> Applied to Story
-                                </span>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleApplyEnding(currentEndingData)}
-                                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
-                                >
-                                  Apply to Story
-                                </button>
-                              )}
-                            </div>
+                        <button
+                          key={name}
+                          type="button"
+                          onClick={() => setActiveEndingTab(name)}
+                          className={`px-5 py-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                            activeEndingTab === name
+                              ? "border-purple-500 text-purple-400 bg-purple-500/5"
+                              : "border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700"
+                          }`}
+                        >
+                          <span>{name}</span>
+                          {isApplied && <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {(() => {
+                    const currentEndings = endingsCache[selectedStory.uuid] || [];
+                    const currentEndingData = currentEndings.find((ending) => ending.style === activeEndingTab);
+                    if (!currentEndingData) return null;
+
+                    const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
+
+                    return (
+                      <div className="bg-slate-900/40 rounded-xl p-6 border border-slate-700/30">
+                        <div className="flex justify-between items-center mb-4">
+                          <h4 className="text-lg font-bold text-slate-200">{activeEndingTab} Suggestion</h4>
+                          {isCurrentlyApplied ? (
+                            <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
+                              <i className="fa-solid fa-check" /> Applied to Story
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleApplyEnding(currentEndingData)}
+                              className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
+                            >
+                              Apply to Story
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800 leading-relaxed text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap">
+                            <p>{currentEndingData.ending}</p>
                           </div>
 
                           <div className="space-y-4">
@@ -1295,38 +1491,31 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                                 </div>
                               </details>
                             </div>
-                          </div>
+                          </details>
                         </div>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8 bg-slate-900/20 border border-dashed border-slate-700/40 rounded-xl">
-                    <button
-                      type="button"
-                      onClick={handleGenerateAlternateEndings}
-                      className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer"
-                    >
-                      Generate Alternate Endings
-                    </button>
-                    <p className="text-xs text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
-                      Uses the story context to produce 5 unique ending variations (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 bg-slate-900/20 border border-dashed border-slate-700/40 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={handleGenerateAlternateEndings}
+                    className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer"
+                  >
+                    Generate Alternate Endings
+                  </button>
+                  <p className="text-xs text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
+                    Uses the story context to produce 5 unique ending variations for comparison.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="col-span-1 lg:col-span-4">
-          <GeneratedStoryTimeline
-            content={selectedStory.content}
-            title={selectedStory.title}
-            narrationState={narrationState}
-            narrationWordIndex={narrationWordIndex}
-          />
-
           <div className="mb-5">
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
               Preview
@@ -1343,7 +1532,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
               </div>
               <div className="px-3 py-1">
                 <div className="flex justify-between items-center mb-2 w-full">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <div className="inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
                       {selectedStory.tag.toUpperCase()}
                     </div>
@@ -1355,15 +1544,22 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                     </div>
                   </div>
                 </div>
-                <h6 className="mb-1 text-gray-300 text-xl font-semibold">
-                  {selectedStory.title}
-                </h6>
-                <p className="text-gray-400 font-light breakwords text-sm sm:text-base">
+                <h6 className="mb-1 text-gray-300 text-xl font-semibold">{selectedStory.title}</h6>
+                <p className="text-gray-400 font-light break-words text-sm sm:text-base">
                   {getShortenedText(selectedStory.content)}
                 </p>
               </div>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={handelPublishStory}
+            disabled={loading}
+            className="mt-5 w-full rounded-xl px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold hover:from-emerald-600 hover:to-teal-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Publishing..." : "Publish Story"}
+          </button>
         </div>
       </div>
 
