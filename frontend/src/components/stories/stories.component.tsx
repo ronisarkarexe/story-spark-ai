@@ -1027,17 +1027,16 @@ useEffect(() => {
 
                     <div className="flex items-center justify-between mt-1 px-1">
                       {isOverLimit ? (
-                        <p className="text-xs text-red-400 flex items-center gap-1">
-                          <span>âš </span> {text.characterLimit}
-                        </p>
-                      ) : isNearLimit ? (
-                        <p className="text-xs text-yellow-400 flex items-center gap-1">
-                          <span>âš </span>{" "}
-                          {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-                        </p>
-                      ) : (
-                        <span />
-                      )}
+  <p className="text-xs text-red-400 flex items-center gap-1">
+    <span>⚠</span> {text.characterLimit}
+  </p>
+) : isNearLimit ? (
+  <p className="text-xs text-yellow-400 flex items-center gap-1">
+    <span>⚠</span> {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
+  </p>
+) : (
+  <span />
+)}
 
                       <span
                         className={`text-xs tabular-nums ml-auto ${

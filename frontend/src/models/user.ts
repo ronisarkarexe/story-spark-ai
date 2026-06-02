@@ -31,4 +31,8 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   profile: UserProfile;
+  writingGoals?: {
+    dailyWordCount: number;
+    weeklyWordCount: number;
+  };
 }
