@@ -50,7 +50,7 @@ const SSInput = <T extends FieldValues>({
       </label>
       <div className="relative mt-2 w-full min-w-0">
         {icon && (
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+          <span className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center text-gray-500 pointer-events-none">
             <i className={icon}></i>
           </span>
         )}
@@ -58,10 +58,10 @@ const SSInput = <T extends FieldValues>({
        <input
   type={inputType}
   id={name}
-  className={`w-full box-border pl-8 pr-10 py-1.5 text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border-0 sm:text-sm ${
+  className={`w-full box-border pl-6 sm:pl-8 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm sm:text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 transition-all duration-200 ${
     error
-      ? "outline-red-500"
-      : "outline-gray-800 focus:outline-indigo-600"
+      ? "border-2 border-red-500"
+      : "focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
   }`}
   placeholder={placeholder}
   autoComplete={autoComplete}
@@ -72,13 +72,9 @@ const SSInput = <T extends FieldValues>({
   <button
     type="button"
     onClick={() => setShowPassword(!showPassword)}
-
     className="absolute inset-y-0 right-2 flex items-center text-gray-500"
-
-    
     aria-label={showPassword ? "Hide password" : "Show password"}
     title={showPassword ? "Hide password" : "Show password"}
-
   >
     <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
   </button>

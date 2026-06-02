@@ -28,6 +28,8 @@ export interface IStories {
   title: string;
   content: string;
   tag: string;
+  emotions?: string[];
+  enhancedPrompt?: string;
   imageURL: string;
   language?: string;
   enhancedPrompt?: string;
@@ -84,6 +86,7 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
+const [, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -599,7 +602,20 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
     }
   };
 
-  const handleExportMarkdown = () => {
+  const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+const getSafeFileName = (title: string, ext: string) => {
+  return `${title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.${ext}`;
+};
+
+const handleExportMarkdown = () => {
     if (!selectedStory) { toast.error("No story available to export."); return; }
     if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
     try {
@@ -1253,6 +1269,13 @@ if (isLoading) {
 
         {/* Right Column - Preview Card */}
         <div className="col-span-1 lg:col-span-4">
+          <GeneratedStoryTimeline
+            content={selectedStory.content}
+            title={selectedStory.title}
+            narrationState={narrationState}
+            narrationWordIndex={narrationWordIndex}
+          />
+
           <div className="mb-5">
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
               Preview
