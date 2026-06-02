@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import RecentPromptsPanel from "./RecentPromptsPanel";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -20,10 +20,10 @@ const soundtrackMap: Record<string, string> = {
   "ðŸ§™ Fantasy": "/audio/fantasy.mp3",
   "ðŸ˜± Horror": "/audio/horror.mp3",
   "ðŸ’• Romance": "/audio/romance.mp3",
-  "ðŸŽ­ Drama": "/audio/drama.mp3", 
-  "ðŸ˜‚ Comedy": "/audio/comedy.mp3", 
-  "ðŸš€ Sci-Fi": "/audio/sci-fi.mp3", 
-  "ðŸ” Mystery": "/audio/mystery.mp3", 
+  "ðŸŽ­ Drama": "/audio/drama.mp3",
+  "ðŸ˜‚ Comedy": "/audio/comedy.mp3",
+  "ðŸš€ Sci-Fi": "/audio/sci-fi.mp3",
+  "ðŸ” Mystery": "/audio/mystery.mp3",
   "ðŸŒŸ Adventure": "/audio/adventure.mp3"
 };
 
@@ -424,7 +424,7 @@ const getUniqueStories = (storyList: IStories[]) => {
 // ---------------------------------------------------------------------------
 const StoriesComponent = () => {
   const [currentPage, setCurrentPage] = useState(1);
-const storiesPerPage = 10;
+  const storiesPerPage = 10;
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
@@ -439,9 +439,9 @@ const storiesPerPage = 10;
   }, []);
 
   const [stories, setStories] = useState<IStories[]>(
-    draft?.stories?.length ? getUniqueStories(draft.stories) : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
+    draft?.stories?.length ? getUniqueStories(draft.stories) : [{ uuid: "test-1", title: "The Wizard's Journey", content: "Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.", tag: "Fantasy", imageURL: "" }]
   );
-  
+
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
@@ -450,9 +450,9 @@ const storiesPerPage = 10;
 
   const filteredStories = useMemo(() => {
     if (!searchQuery.trim()) return uniqueStories;
-    
+
     const query = searchQuery.toLowerCase();
-    
+
     return uniqueStories.filter((story) => {
       switch (searchFilter) {
         case "title":
@@ -472,19 +472,19 @@ const storiesPerPage = 10;
     });
   }, [uniqueStories, searchQuery, searchFilter]);
   const indexOfLastStory = currentPage * storiesPerPage;
-const indexOfFirstStory = indexOfLastStory - storiesPerPage;
+  const indexOfFirstStory = indexOfLastStory - storiesPerPage;
 
-const currentStories = filteredStories.slice(
-  indexOfFirstStory,
-  indexOfLastStory
-);
+  const currentStories = filteredStories.slice(
+    indexOfFirstStory,
+    indexOfLastStory
+  );
 
-const totalPages = Math.ceil(
-  filteredStories.length / storiesPerPage
-);
-useEffect(() => {
-  setCurrentPage(1);
-}, [searchQuery, searchFilter]);
+  const totalPages = Math.ceil(
+    filteredStories.length / storiesPerPage
+  );
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, searchFilter]);
 
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
@@ -494,22 +494,22 @@ useEffect(() => {
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>(
-  draft?.genre
-    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "ðŸ§™ Fantasy")
-    : "ðŸ§™ Fantasy",
-);
+    draft?.genre
+      ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "ðŸ§™ Fantasy")
+      : "ðŸ§™ Fantasy",
+  );
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
   const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
   const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(draft?.language || "English");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  
+
   const playSoundtrack = (genre: string) => {
     const soundtrack = soundtrackMap[genre];
 
@@ -608,24 +608,24 @@ useEffect(() => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-useEffect(() => {
-  if (location.state) {
-    if (location.state.prompt) {
-      setTextareaValue(location.state.prompt);
+  useEffect(() => {
+    if (location.state) {
+      if (location.state.prompt) {
+        setTextareaValue(location.state.prompt);
+      }
+
+      if (location.state.genre) {
+        const matchedGenre =
+          GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
+        setSelectedGenre(matchedGenre);
+      }
+
+      navigate(location.pathname, {
+        replace: true,
+        state: {},
+      });
     }
-
-    if (location.state.genre) {
-  const matchedGenre =
-    GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
-  setSelectedGenre(matchedGenre);
-}
-
-    navigate(location.pathname, {
-      replace: true,
-      state: {},
-    });
-  }
-}, [location, navigate, setSelectedGenre, setTextareaValue]);
+  }, [location, navigate, setSelectedGenre, setTextareaValue]);
 
   useEffect(() => {
     setValue("prompt", textareaValue);
@@ -661,7 +661,7 @@ useEffect(() => {
     isGenerationInProgressRef.current = true;
     setLoading(true);
 
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     try {
       // 60-second client-side request timeout safeguard
@@ -680,8 +680,8 @@ useEffect(() => {
           selectedLength === "short"
             ? 175
             : selectedLength === "long"
-            ? 800
-            : 450,
+              ? 800
+              : 450,
         language: selectedLanguage,
         tone: selectedTone || undefined,
       };
@@ -838,7 +838,7 @@ useEffect(() => {
             <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white overflow-hidden">
               <div className="relative w-full">
                 <form className="space-y-4 w-full" onSubmit={handleSubmit(onSubmit)}>
-                  
+
                   {/* â”€â”€ Genre chips â”€â”€ */}
                   <div className="flex flex-wrap gap-2 mb-3">
                     {GENRES.map((genre) => (
@@ -857,11 +857,10 @@ useEffect(() => {
                             audioRef.current.currentTime = 0;
                           }
                         }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                          selectedGenre === genre.value
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedGenre === genre.value
                             ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
                             : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                        } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
+                          } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
                       >
                         {genre.icon} {genreLabels[genre.name]}
                       </button>
@@ -882,11 +881,10 @@ useEffect(() => {
                           type="button"
                           disabled={loading}
                           onClick={() => setSelectedLength(length)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                            selectedLength === length
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedLength === length
                               ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
                               : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                          } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
+                            } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
                         >
                           {text[length]}
                         </button>
@@ -901,9 +899,8 @@ useEffect(() => {
                           type="button"
                           disabled={loading}
                           onClick={() => !loading && setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                          className={`flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 ${
-                            loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                          }`}
+                          className={`flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 ${loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                            }`}
                         >
                           <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
                           <span className="text-gray-400 text-[10px]">â–¼</span>
@@ -919,11 +916,10 @@ useEffect(() => {
                                     setSelectedLanguage(lang.name);
                                     setIsLanguageDropdownOpen(false);
                                   }}
-                                  className={`w-full text-left px-3 py-2 text-xs transition-colors duration-150 cursor-pointer ${
-                                    selectedLanguage === lang.name
+                                  className={`w-full text-left px-3 py-2 text-xs transition-colors duration-150 cursor-pointer ${selectedLanguage === lang.name
                                       ? "bg-indigo-600 text-white font-bold"
                                       : "text-gray-400 hover:bg-indigo-600/50 hover:text-white"
-                                  }`}
+                                    }`}
                                 >
                                   {lang.name}
                                 </button>
@@ -945,13 +941,12 @@ useEffect(() => {
                       }}
                       disabled={loading}
                       aria-busy={loading}
-                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-12 transition-colors duration-200 box-border ${
-                        isOverLimit
+                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-12 transition-colors duration-200 box-border ${isOverLimit
                           ? "ring-1 ring-red-500 rounded"
                           : isNearLimit
-                          ? "ring-1 ring-yellow-400 rounded"
-                          : ""
-                      }`}
+                            ? "ring-1 ring-yellow-400 rounded"
+                            : ""
+                        }`}
                       placeholder={text.promptPlaceholder}
                       value={textareaValue}
                       maxLength={MAX_PROMPT_LENGTH}
@@ -973,11 +968,10 @@ useEffect(() => {
                         type="button"
                         disabled={loading}
                         onClick={handleClearPrompt}
-                        className={`absolute right-2 top-2 text-gray-400 transition-colors duration-200 ${
-                          loading
+                        className={`absolute right-2 top-2 text-gray-400 transition-colors duration-200 ${loading
                             ? "cursor-not-allowed opacity-50"
                             : "hover:text-red-500"
-                        }`}
+                          }`}
                         aria-label={text.close}
                         title={text.close}
                       >
@@ -1001,11 +995,10 @@ useEffect(() => {
                       type="button"
                       disabled={loading}
                       onClick={() => !loading && setIsRecentPromptsOpen(!isRecentPromptsOpen)}
-                      className={`absolute right-2 top-12 bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2 ${
-                        loading
+                      className={`absolute right-2 top-12 bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2 ${loading
                           ? "cursor-not-allowed opacity-60"
                           : "hover:bg-indigo-700"
-                      }`}
+                        }`}
                       aria-label={text.recentPrompts}
                       title={text.recentPrompts}
                     >
@@ -1028,24 +1021,24 @@ useEffect(() => {
                     <div className="flex items-center justify-between mt-1 px-1">
                       {isOverLimit ? (
                         <p className="text-xs text-red-400 flex items-center gap-1">
-  <span>⚠</span> {text.characterLimit}
-</p>
+                          <span>⚠️</span> {text.characterLimit}
+                        </p>
                       ) : isNearLimit ? (
-                     <p className="text-xs text-yellow-400 flex items-center gap-1">
-  <span>⚠</span> {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-</p>
+                        <p className="text-xs text-yellow-400 flex items-center gap-1">
+                          <span>⚠️</span>{" "}
+                          {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
+                        </p>
                       ) : (
                         <span />
                       )}
 
                       <span
-                        className={`text-xs tabular-nums ml-auto ${
-                          isOverLimit
+                        className={`text-xs tabular-nums ml-auto ${isOverLimit
                             ? "text-red-400 font-medium"
                             : isNearLimit
-                            ? "text-yellow-400"
-                            : "text-gray-500"
-                        }`}
+                              ? "text-yellow-400"
+                              : "text-gray-500"
+                          }`}
                       >
                         {textareaValue.length} / {MAX_PROMPT_LENGTH}
                       </span>
@@ -1080,11 +1073,10 @@ useEffect(() => {
                             type="button"
                             disabled={loading}
                             onClick={() => setSelectedTone("")}
-                            className={`ml-1 text-gray-500 transition-colors ${
-                              loading
+                            className={`ml-1 text-gray-500 transition-colors ${loading
                                 ? "cursor-not-allowed opacity-50"
                                 : "hover:text-red-400"
-                            }`}
+                              }`}
                             aria-label="Remove tone"
                           >
                             Ã—
@@ -1098,11 +1090,10 @@ useEffect(() => {
                       disabled={isGenerateDisabled}
                       aria-busy={loading}
                       aria-disabled={isGenerateDisabled}
-                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-                        isGenerateDisabled
+                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${isGenerateDisabled
                           ? "opacity-50 cursor-not-allowed"
                           : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
-                      } transition-all duration-300 transform flex items-center space-x-2 group`}
+                        } transition-all duration-300 transform flex items-center space-x-2 group`}
                     >
                       {loading ? (
                         <i className="fas fa-circle-notch text-xl animate-spin"></i>
@@ -1136,9 +1127,8 @@ useEffect(() => {
                     {selectedPrompt || text.selectPrompt}
                   </span>
                   <span
-                    className={`text-gray-300 transition-transform duration-200 ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`text-gray-300 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""
+                      }`}
                   >
                     â–¼
                   </span>
@@ -1205,14 +1195,14 @@ useEffect(() => {
               <div><kbd>Ctrl + S</kbd> {text.publishStory}</div>
             </div>
 
-        <button
-        onClick={() => setShowHelpModal(false)}
-        className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
-      >
-        {text.close}
-      </button>
+            <button
+              onClick={() => setShowHelpModal(false)}
+              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
+            >
+              {text.close}
+            </button>
+          </div>
         </div>
-      </div>
       )}
 
       {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
@@ -1290,7 +1280,7 @@ useEffect(() => {
           </div>
         </div>
       )}
-     
+
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-6">
           <button
