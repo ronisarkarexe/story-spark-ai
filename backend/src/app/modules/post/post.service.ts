@@ -501,8 +501,5 @@ export const PostService = {
   remixStory,       // Exposed service for AI story variations
   translateStory,   // Exposed service for localized modifications
 };
-  remixStory,
-  translateStory,
-  getGenres,
-};
+
 
