@@ -241,15 +241,14 @@ const LoginComponent = () => {
                   Sign up for free
                 </a>
               </p>
+              <Toaster
+                position="top-right"
+                reverseOrder={false}
+              />
             </div>
           </div>
         </div>
       </div>
-    </div>
-      <Toaster
-        position="top-right"
-        reverseOrder={false}
-      />
     </div>
   );
 };
