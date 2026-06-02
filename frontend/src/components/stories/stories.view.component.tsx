@@ -217,13 +217,19 @@ interface IPost extends IStories {
   isPublished?: boolean;
 }
 
+
 interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
-  onPublishSuccess?: () => void;
+  onPublishSuccess: () => void;
   isLoading?: boolean;
+  // ADD THESE THREE LINES:
+  ageRating: string;
+  selectedWarnings: string[];
+  customWarning: string;
 }
+
 
 type StorySentenceSegment = {
   id: string;
@@ -254,6 +260,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   isLogin,
   setStories,
   isLoading,
+  ageRating,
+  selectedWarnings,
+  customWarning,
   onPublishSuccess,
 }) => {
   const location = useLocation();
@@ -613,6 +622,31 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                     😊 {selectedStory.emotions.join(", ")}
                   </span>
                 )}
+                  {/* /* NEW CODE: Age Rating Badge */}
+  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide border ${
+    ageRating === '18+' 
+      ? 'bg-red-950/80 text-red-400 border-red-800/40' 
+      : 'bg-slate-800/60 text-slate-300 border-slate-700/40'
+  }`}>
+    🔞 {ageRating}
+  </span>
+
+  {/* /* NEW CODE: Content Warnings List */}
+  {ageRating === '18+' && (selectedWarnings?.length > 0 || customWarning) && (
+    <div className="flex flex-wrap gap-1.5 items-center text-xs text-red-400 bg-red-950/40 px-3 py-1 rounded-full border border-red-800/30">
+      <span className="font-bold">⚠️ Warnings:</span>
+      {selectedWarnings?.map((warning) => (
+        <span key={warning} className="after:content-[',_'] last:after:content-[''] font-medium">
+          {warning}
+        </span>
+      ))}
+      {customWarning && (
+        <span className={`${selectedWarnings?.length > 0 ? "before:content-['|_'] pl-1" : ""} font-medium`}>
+          {customWarning}
+        </span>
+      )}
+    </div>
+  )}
               </div>
             </div>
 

@@ -21,15 +21,13 @@ const toggleReaction = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
- main
-    const newReaction = await Reaction.create({
-      postId: new Types.ObjectId(postId),
-      userId: user._id,
-      type: type,
-    });
- main
-    };
-  }
+ const newReaction = await Reaction.create({
+    postId: new Types.ObjectId(postId),
+    userId: user._id,
+    type: type,
+  });
+
+  return newReaction;
 };
 
 export const ReactionService = {

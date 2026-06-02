@@ -334,6 +334,9 @@ const StoriesComponent = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>(draft?.genre || "");
+  const [ageRating, setAgeRating] = useState<string>("7+");
+  const [selectedWarnings, setSelectedWarnings] = useState<string[]>([]);
+  const [customWarning, setCustomWarning] = useState<string>("");
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
   const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
@@ -718,7 +721,69 @@ const StoriesComponent = () => {
         </div>
       </div>
     </div>
+    {/* Age Rating and Content Warning Options */}
+<div className="p-3 bg-white/5 border border-gray-200/50 dark:border-slate-700 rounded-lg space-y-4">
+  <div className="flex items-center gap-3">
+    <span className="text-xs font-medium text-slate-500 dark:text-gray-400">🔞 Age Rating:</span>
+    <select 
+      value={ageRating}
+      onChange={(e) => {
+        setAgeRating(e.target.value);
+        if (e.target.value !== "18+") {
+          setSelectedWarnings([]);
+          setCustomWarning("");
+        }
+      }}
+      className="bg-white dark:bg-slate-800 text-sm rounded border border-gray-300 dark:border-slate-600 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-900 dark:text-white"
+    >
+      {["All", "7+", "13+", "16+", "18+"].map(rating => (
+        <option key={rating} value={rating}>{rating}</option>
+      ))}
+    </select>
+  </div>
 
+  {ageRating === "18+" && (
+    <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-slate-700">
+      <div>
+        <span className="text-xs font-medium text-slate-500 dark:text-gray-400 block mb-2">Select Warning Reasons:</span>
+        <div className="flex flex-wrap gap-2">
+          {["Violence", "Gore", "Strong Language", "Substance Use", "Suggestive Themes"].map(reason => {
+            const isSelected = selectedWarnings.includes(reason);
+            return (
+              <button
+                key={reason}
+                type="button"
+                onClick={() => {
+                  setSelectedWarnings(prev => 
+                    prev.includes(reason) ? prev.filter(w => w !== reason) : [...prev, reason]
+                  );
+                }}
+                className={`px-2.5 py-1 rounded text-xs transition-all ${
+                  isSelected 
+                    ? "bg-red-500 text-white" 
+                    : "bg-gray-200 dark:bg-slate-700 text-slate-700 dark:text-gray-300 hover:bg-gray-300"
+                }`}
+              >
+                {reason}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs font-medium text-slate-500 dark:text-gray-400 block mb-1">Custom Warning Reason (Optional):</label>
+        <input 
+          type="text"
+          value={customWarning}
+          onChange={(e) => setCustomWarning(e.target.value)}
+          placeholder="e.g., Jumpscares, flashing lights"
+          className="w-full text-xs px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        />
+      </div>
+    </div>
+  )}
+</div>
     <div className="relative">
       <textarea
   {...register("prompt")}
@@ -955,11 +1020,14 @@ const StoriesComponent = () => {
 
       {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
       <StoriesViewComponent
-        stories={stories}
-        isLogin={login}
-        setStories={setStories}
-        onPublishSuccess={handlePublishSuccess}
-        isLoading={loading}
+      stories={stories}
+          isLogin={login}
+          setStories={setStories}
+          onPublishSuccess={handlePublishSuccess}
+          isLoading={loading}
+          ageRating={ageRating}
+          selectedWarnings={selectedWarnings}
+          customWarning={customWarning}
       />
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
 
