@@ -18,6 +18,7 @@
     --ds-card-max-width: 420px;
 }
 
+
 html, body {
     touch-action: pan-x pan-y;
     overflow-x: hidden;
@@ -31,6 +32,11 @@ body {
         linear-gradient(180deg, #090b12 0%, #0d111b 100%);
     background-color: #090b12;
     scroll-behavior: smooth;
+}
+/* Subtle animated background pan to create a moving theme */
+body {
+    background-size: 140% 140%, 140% 140%, 100% 100%;
+    animation: bg-shift 30s linear infinite;
 }
 /* ── Keyframe Animations ── */
 @keyframes float {
@@ -62,6 +68,24 @@ body {
     radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.12), transparent 45%);
   z-index: 0;
   filter: blur(10px);
+}
+
+/* animate the overlay to give a moving theme */
+.left-pane-overlay {
+    animation: float 14s ease-in-out infinite, overlay-scale 28s ease-in-out infinite;
+    transform-origin: center;
+}
+
+@keyframes overlay-scale {
+    0% { transform: translateY(0px) translateX(0px) scale(1); }
+    50% { transform: translateY(-12px) translateX(8px) scale(1.06); }
+    100% { transform: translateY(0px) translateX(0px) scale(1); }
+}
+
+@keyframes bg-shift {
+    0% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+    50% { background-position: 8% 4%, 92% 96%, 45% 55%; }
+    100% { background-position: 0% 0%, 100% 100%, 50% 50%; }
 }
 
 .hero-gradient {
@@ -222,7 +246,6 @@ input[type="password"] {
     transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease, transform 0.2s ease;
     overflow: hidden;
 }
-
 .auth-field:focus {
     border-color: rgba(124, 58, 237, 0.65);
     box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
@@ -338,9 +361,9 @@ input:focus {
     justify-content: center;
     margin-left: auto;
     margin-right: auto;
-    background: linear-gradient(135deg, #7c3aed 0%, #f97316 100%);
+    background: linear-gradient(135deg, #1e90ff 0%, #2563eb 100%);
     color: #ffffff;
-    box-shadow: 0 0 32px rgba(0, 97, 182, 0.32), 0 8px 22px rgba(0, 0, 0, 0.24);
+    box-shadow: 0 0 32px rgba(37, 99, 235, 0.28), 0 8px 22px rgba(12, 38, 80, 0.38);
     border-radius: 14px;
     transition: box-shadow 0.3s ease, transform 0.2s ease, opacity 0.2s ease;
     cursor: pointer;
@@ -348,7 +371,7 @@ input:focus {
 }
 
 .ds-btn-submit:hover {
-    box-shadow: 0 0 42px rgba(249, 115, 22, 0.35), 0 10px 26px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 42px rgba(37, 99, 235, 0.36), 0 12px 30px rgba(12, 38, 80, 0.42);
     transform: translateY(-1px);
 }
 
