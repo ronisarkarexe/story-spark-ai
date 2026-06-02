@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -216,7 +216,7 @@ const PaymentComponent = () => {
                 ) : (
                   <>
                     <ShieldCheck size={18} />
-                    Pay Now — ${planPrice}/mo
+                    Pay Now ΓÇö ${planPrice}/mo
                   </>
                 )}
               </button>

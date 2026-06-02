@@ -72,18 +72,33 @@ const MagicCursorComponent = () => {
     };
 
     const handlePointerMove = (event: PointerEvent) => {
-      target.current = { x: event.clientX, y: event.clientY };
+  const targetElement = event.target as HTMLElement;
 
-      const dx = event.clientX - lastSparkle.current.x;
-      const dy = event.clientY - lastSparkle.current.y;
-      const distance = Math.hypot(dx, dy);
-      const now = performance.now();
+  const isTypingElement =
+    targetElement.tagName === "TEXTAREA" ||
+    targetElement.tagName === "INPUT" ||
+    targetElement.isContentEditable;
 
-      if (distance > 30 && now - lastSparkle.current.time > 85) {
-        addSparkle(event.clientX, event.clientY);
-        lastSparkle.current = { x: event.clientX, y: event.clientY, time: now };
-      }
+  if (isTypingElement) {
+    return;
+  }
+
+  target.current = { x: event.clientX, y: event.clientY };
+
+  const dx = event.clientX - lastSparkle.current.x;
+  const dy = event.clientY - lastSparkle.current.y;
+  const distance = Math.hypot(dx, dy);
+  const now = performance.now();
+
+  if (distance > 30 && now - lastSparkle.current.time > 85) {
+    addSparkle(event.clientX, event.clientY);
+    lastSparkle.current = {
+      x: event.clientX,
+      y: event.clientY,
+      time: now,
     };
+  }
+};
 
     const handlePointerDown = (event: PointerEvent) => {
       addSparkle(event.clientX - 8, event.clientY + 4);
@@ -123,9 +138,13 @@ const MagicCursorComponent = () => {
     };
   }, [enabled]);
 
-  if (!enabled) {
-    return null;
-  }
+  const isInputFocused =
+  document.activeElement instanceof HTMLInputElement ||
+  document.activeElement instanceof HTMLTextAreaElement;
+
+  if (!enabled || isInputFocused) {
+  return null;
+}
 
   return (
     <div className="magic-cursor-layer" aria-hidden="true">
@@ -145,6 +164,7 @@ const MagicCursorComponent = () => {
         />
       ))}
     </div>
+    
   );
 };
 

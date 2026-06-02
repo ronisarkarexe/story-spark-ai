@@ -3,17 +3,24 @@ import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { IUser } from "./user.interface";
 import { User } from "./user.model";
+import { Post } from "../post/post.model";
 import httpStatus from "http-status";
+import { Comment } from "../comment/comment.model";
+import { Reaction } from "../reaction/reaction.model";
+import { Bookmark } from "../bookmark/bookmark.model";
+import { Notification } from "../notification/notification.model";
+import { StoryVersion } from "../story_version/story_version.model";
+import { Report } from "../report/report.model";
 
 const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram"] as const;
 
 const getAllUsers = async (): Promise<IUser[]> => {
-  const result = await User.find({});
+  const result = await User.find({}).select("-password");
   return result;
 };
 
 const getUser = async (payload: string): Promise<IUser | null> => {
-  const result = await User.findOne({ _id: payload }).select("-password");
+  const result = await User.findOne({ _id: payload });
   return result;
 };
 
@@ -21,7 +28,11 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
   const updateData: Record<string, unknown> = {};
 
   if (typeof payload.name === "string") {
-    updateData.name = payload.name;
+    const trimmedName = payload.name.trim();
+    if (!trimmedName) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Full Name cannot be empty!");
+    }
+    updateData.name = trimmedName;
   }
 
   if (payload.profile) {
@@ -43,6 +54,16 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
     }
   }
 
+  // ─── ADDED: PARSE WRITING GOALS PAYLOADS FOR INJECTION ───
+  if (payload.writingGoals) {
+    if (typeof payload.writingGoals.dailyWordCount === "number") {
+      updateData["writingGoals.dailyWordCount"] = payload.writingGoals.dailyWordCount;
+    }
+    if (typeof payload.writingGoals.weeklyWordCount === "number") {
+      updateData["writingGoals.weeklyWordCount"] = payload.writingGoals.weeklyWordCount;
+    }
+  }
+
   if (Object.keys(updateData).length === 0) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No valid user fields provided!");
   }
@@ -51,8 +72,8 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
     { email: token.email },
     { $set: updateData },
     {
-    new: true,
-    runValidators: true,
+      new: true,
+      runValidators: true,
     }
   );
 
@@ -64,22 +85,42 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
 };
 
 const deleteUser = async (id: string): Promise<void> => {
-  await User.deleteOne({ _id: id });
+  const userExists = await User.exists({ _id: id });
+
+  if (!userExists) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
+  const userPosts = await Post.find({ author: id }).select("_id").lean();
+  const postIds = userPosts.map((p) => p._id);
+
+  await StoryVersion.deleteMany({ storyId: { $in: postIds } });
+  await Reaction.deleteMany({ postId: { $in: postIds } });
+  await Comment.deleteMany({ postId: { $in: postIds } });
+  await Bookmark.deleteMany({ storyId: { $in: postIds } });
+
+  await Bookmark.deleteMany({ userId: id });
+  await Reaction.deleteMany({ userId: id });
+  await Comment.deleteMany({ userId: id });
+  await Report.deleteMany({ reportedBy: id });
+  await Notification.deleteMany({ userId: id });
+  await Post.deleteMany({ author: id });
+
+  const result = await User.deleteOne({ _id: id });
+
+  if (result.deletedCount === 0) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
 };
 
 const applyForWriter = async (token: ITokenPayload) => {
   const { email } = token;
-  const user = await User.findOne({
-    email: email,
-  });
+  const user = await User.findOne({ email: email });
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
   if (user.isApplyForWriter) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "You have already applied for writer!"
-    );
+    throw new ApiError(httpStatus.BAD_REQUEST, "You have already applied for writer!");
   }
   const result = await User.findOneAndUpdate(
     { email: email },
@@ -109,21 +150,6 @@ const approveWriterApplication = async (email: string) => {
         runValidators: true,
       }
     );
-    if (result) {
-      // const io = getIO();
-      // const notificationMessage = {
-      //   type: "success" as "success",
-      //   data: {
-      //     title: "Approval Notice",
-      //     message: "Your writer application has been approved.",
-      //   },
-      //   email,
-      // };
-      // io.on("adminMessage", async () => {
-      //   await NotificationService.createNotification(notificationMessage);
-      //   sendNotification("pushNotification", notificationMessage);
-      // });
-    }
     return result;
   } catch (error) {
     if (error instanceof Error) {
@@ -141,12 +167,22 @@ const getAllWriterApplicationUsers = async (): Promise<IUser[]> => {
 
 const getProfileInfo = async (token: ITokenPayload) => {
   const { email } = token;
-  const user = await User.findOne({
-    email: email,
-  });
+  const user = await User.findOne({ email: email });
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
+
+  const publishedPostsCount = await Post.countDocuments({
+    author: user._id,
+    isPublished: true,
+    isDeleted: { $ne: true },
+  });
+
+  if (user.postsCount !== publishedPostsCount) {
+    user.postsCount = publishedPostsCount;
+    await user.save();
+  }
+
   return user;
 };
 
@@ -164,7 +200,6 @@ const toggleFollow = async (token: ITokenPayload, authorId: string) => {
   const isFollowing = currentUser.following.includes(author._id);
 
   if (isFollowing) {
-    // Unfollow
     await User.findByIdAndUpdate(currentUser._id, {
       $pull: { following: author._id },
     });
@@ -173,7 +208,6 @@ const toggleFollow = async (token: ITokenPayload, authorId: string) => {
     });
     return { isFollowing: false };
   } else {
-    // Follow
     await User.findByIdAndUpdate(currentUser._id, {
       $addToSet: { following: author._id },
     });

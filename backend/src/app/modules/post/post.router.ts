@@ -1,9 +1,11 @@
 import express from "express";
 import { PostController } from "./post.controller";
+import auth from "../../middleware/auth.middleware";
+import checkRequestLimit from "../../middleware/check.request.limit";
 import validateRequest from "../../middleware/validate.request";
 import { PostValidator } from "./post.validation";
 import { ENUM_USER_ROLE } from "../../../enums/user";
-import auth from "../../middleware/auth.middleware";
+
 const router = express.Router();
 
 // Create a new post
@@ -20,23 +22,24 @@ router.post(
 );
 
 // Get Posts
-
 router.get("/lists", PostController.getPosts);
 router.get("/latest-lists", PostController.getLatestPosts);
+router.get("/latest-posts", PostController.getLatestPosts);
 router.get("/feature-lists", PostController.getFeaturedPosts);
+router.get("/featured-posts", PostController.getFeaturedPosts);
+router.get("/genres", PostController.getGenres);
 
-router.post(
-  "/:postId",
+router.patch(
+  "/featured/:postId",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
   PostController.doFeaturedPosts
 );
 
-
 router.get("/tag/:tag", PostController.getPostsByTag);
 router.get("/:id", PostController.getSinglePost);
 
-router.post(
-  "/:id/bookmark",
+router.patch(
+  "/bookmark/:id",
   auth(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
@@ -54,6 +57,7 @@ router.patch(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
+  validateRequest(PostValidator.updatePost),
   PostController.updatePost
 );
 
@@ -68,5 +72,29 @@ router.delete(
   PostController.deletePost
 );
 
-export const PostRouter = router;
+// AI variation routes
+router.post(
+  "/remix",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  checkRequestLimit,
+  PostController.remixStory
+);
 
+router.post(
+  "/translate",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  checkRequestLimit,
+  PostController.translateStory
+);
+
+export const PostRouter = router;

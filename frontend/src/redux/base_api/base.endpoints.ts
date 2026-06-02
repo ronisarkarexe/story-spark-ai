@@ -9,3 +9,6 @@ export const ANALYSIS_URL = "analysis";
 export const REACTION_URL = "reaction";
 export const NOTIFICATION_URL = "notifications";
 export const BOOKMARK_URL = "bookmarks";
+export const BUG_REPORT_URL = "bug-reports";
+export const STORY_VISUALIZER_URL = "story-visualizer";
+

@@ -1,4 +1,4 @@
-import { Post } from "../../../models/post";
+﻿import { Post } from "../../../models/post";
 import { useGetFeaturedListsQuery } from "../../../redux/apis/post.api";
 import { formatDateShort } from "../../../utils/time-formate";
 import LoadingAnimation from "../../loading/loading.component";
@@ -92,11 +92,11 @@ const FeatureComponent = () => {
                             </p>
 
                             <span className="text-slate-400 dark:text-gray-600 text-xs">
-                              •
+                              ΓÇó
                             </span>
 
                             <p className="text-xs text-purple-400 font-medium">
-                              ⏱️ {calculateReadingTime(post.content)} min read
+                              ΓÅ▒∩╕Å {calculateReadingTime(post.content)} min read
                             </p>
                           </div>
                         </div>
@@ -108,7 +108,6 @@ const FeatureComponent = () => {
                       >
                         <BookmarkButton
                           storyId={post._id}
-                          bookmarks={post.bookmarks}
                           className="p-1.5 rounded-full hover:bg-slate-700/40 text-slate-400 hover:text-purple-400 transition-colors"
                         />
                       </div>

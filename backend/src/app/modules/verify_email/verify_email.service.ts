@@ -6,6 +6,7 @@ import config from "../../../config";
 import httpStatus from "http-status";
 import { OTPModel } from "./otp.model";
 import crypto from "crypto";
+import { clearOtpAttempts } from "./otp.rate-limiter.middleware";
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -17,15 +18,9 @@ const transporter = nodemailer.createTransport({
 
 const VerifyEmail = async (payload: IEmailBody) => {
   try {
-    if (!config.verify_email || !config.verify_password) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "Email verification credentials are missing. Set VERIFY_EMAIL and VERIFY_PASSWORD in backend/.env."
-      );
-    }
-
     const { email, name } = payload;
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Use a cryptographically secure RNG so OTPs cannot be predicted.
+    const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
     
     // Delete any existing OTP for this email
@@ -39,6 +34,13 @@ const VerifyEmail = async (payload: IEmailBody) => {
       failedAttempts: 0,
       isVerified: false,
     });
+
+    if (!config.verify_email || !config.verify_password) {
+      console.log(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
+      return {
+        expiresAt,
+      };
+    }
     
     const mailOptions = {
       from: config.verify_email,
@@ -89,6 +91,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
       </html>
       `,
     };
+    
     await transporter.sendMail(mailOptions);
 
     return {
@@ -98,6 +101,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
     if (error instanceof ApiError) {
       throw error;
     }
+    console.error("Mail Error:", error);
     throw new ApiError(500, "Failed to send email");
   }
 };
@@ -161,6 +165,9 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   storedOtpRecord.verificationToken = verificationToken;
   storedOtpRecord.verificationTokenExpires = verificationTokenExpires;
   await storedOtpRecord.save();
+
+  // Clear memory rate limit attempts on success
+  clearOtpAttempts(email);
 
   return { 
     verified: true,

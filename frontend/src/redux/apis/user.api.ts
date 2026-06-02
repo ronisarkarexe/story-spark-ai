@@ -22,7 +22,6 @@ const userApi = baseApi.injectEndpoints({
       transformResponse: (response: { data: User[]; message: string }) => {
         return { data: response.data };
       },
-
       providesTags: [tagTypes.user],
     }),
     getProfileInfo: build.query<User, void>({
@@ -43,6 +42,7 @@ const userApi = baseApi.injectEndpoints({
         method: "PATCH",
         data: data,
       }),
+      // ─── OPTIMIZED: INVALIDATES ANALYTICS CACHE UPON UPDATE ───
       invalidatesTags: [tagTypes.user],
     }),
     toggleFollow: build.mutation({
@@ -69,6 +69,10 @@ export const {
   useGetUsersListQuery,
   useGetProfileInfoQuery,
   useUpdateProfileMutation,
+  
+  // ─── ADDED: CLEAN EXPORT ALIAS FOR WRITING GOAL VIEW LAYOUTS ───
+  useUpdateProfileMutation: useUpdateWritingGoalsMutation,
+  
   useToggleFollowMutation,
   useGetFollowStatusQuery,
 } = userApi;

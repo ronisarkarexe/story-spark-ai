@@ -15,7 +15,9 @@ import PostCommentComponent from "./post.comment.component";
 
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
+import ImageFallback from "../ImageFallback";
 import BookmarkButton from "../BookmarkButton";
+import AudioPlayer from "../AudioPlayer";
 
 import { formatDateShort } from "../../utils/time-formate";
 import { getUserInfo } from "../../services/auth.service";
@@ -30,6 +32,7 @@ import {
 import { toast } from "react-hot-toast";
 
 import { FaXTwitter } from "react-icons/fa6";
+
 
 interface IStoryVersion {
   _id: string;
@@ -51,18 +54,32 @@ const PostDetailsComponent = () => {
   const { data: post, isLoading } = useGetPostByIdQuery(id || "");
 
   const tag = post?.tag;
-  const { data: relatedPost } = useGetPostByTagQuery({
-    tag: tag || "",
-    excludeId: post?._id || "",
-  });
 
+  const { data: relatedPost } = useGetPostByTagQuery(
+    {
+      tag: tag || "",
+      excludeId: post?._id || "",
+    },
+    {
+      skip: !tag,
+    }
+  );
+  
+
+  console.log("Current Post:", post);
+  console.log("Tag:", tag);
+  console.log(
+  "Related Posts Full Data:",
+  JSON.stringify(relatedPost, null, 2)
+);
+  
   const [toggleReaction] = useToggleReactionMutation();
   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
   const currentUser = getUserInfo();
 
   const authorId = post?.author?._id;
   const isOwner = Boolean(
-    currentUser?.email && post?.author?.email === currentUser.email
+    currentUser?.userId && authorId === currentUser.userId
   );
 
   const { data: followData } = useGetFollowStatusQuery(authorId || "", {
@@ -155,45 +172,39 @@ const PostDetailsComponent = () => {
   const hasUserReacted = post?.reactions?.some((r) => {
     const userId = r.userId;
 
-    const email =
-      typeof userId === "object" &&
-      userId !== null &&
-      "email" in userId
-        ? userId.email
-        : undefined;
+    const reactorId =
+      typeof userId === "object" && userId !== null && "_id" in userId
+        ? userId._id
+        : userId;
 
-    return email === currentUser?.email;
+    return Boolean(currentUser?.userId) && reactorId === currentUser?.userId;
   });
 
-  const shareUrl = window.location.href;
-
-  const shareTitle = post?.title || "Check out this story!";
-
   const handleTwitterShare = () => {
+    const currentUrl = window.location.href;
+    const currentTitle = post?.title || "Check out this story!";
     const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-      shareUrl
-    )}&text=${encodeURIComponent(shareTitle)}`;
-
+      currentUrl
+    )}&text=${encodeURIComponent(currentTitle)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleLinkedInShare = () => {
+    const currentUrl = window.location.href;
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-      shareUrl
+      currentUrl
     )}`;
-
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleEmailShare = () => {
-    const subject = `Story Spark AI - ${shareTitle}`;
-
-    const body = `Check out this interesting story on Story Spark AI: "${shareTitle}"\n\nRead it here: ${shareUrl}`;
-
+    const currentUrl = window.location.href;
+    const currentTitle = post?.title || "Check out this story!";
+    const subject = `Story Spark AI - ${currentTitle}`;
+    const body = `Check out this interesting story on Story Spark AI: "${currentTitle}"\n\nRead it here: ${currentUrl}`;
     const url = `mailto:?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
-
     window.location.href = url;
   };
 
@@ -215,7 +226,6 @@ const PostDetailsComponent = () => {
       toast.error("Unable to remove this story. Please try again.");
     }
   };
-
   if (isLoading) {
     return <LoadingAnimation />;
   }
@@ -353,9 +363,9 @@ const PostDetailsComponent = () => {
                 )}
 
                 <div className="mb-12">
-                  <img
+                  <ImageFallback
                     src={post?.imageURL}
-                    alt={post?.title}
+                    alt={post?.title || "Story image"}
                     className="w-full h-[400px] object-cover rounded-lg shadow-md"
                   />
                 </div>
@@ -363,6 +373,12 @@ const PostDetailsComponent = () => {
                 <div className="prose max-w-none mb-12 text-slate-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-lg font-light">
                   <p>{post?.content}</p>
                 </div>
+
+                {post?.content && (
+                  <div className="mb-12">
+                    <AudioPlayer text={post.content} title={post.title} />
+                  </div>
+                )}
               </>
             )}
 
@@ -386,21 +402,20 @@ const PostDetailsComponent = () => {
                 {post && (
                   <BookmarkButton
                     storyId={post._id}
-                    bookmarks={post.bookmarks}
                     className="!border-none !px-0 bg-transparent hover:bg-transparent"
                   />
                 )}
               </div>
 
               <div className="flex items-center space-x-3 bg-slate-800/40 backdrop-blur-md px-4 py-2 rounded-full border border-slate-700/50 shadow-sm">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1 select-none">
-                  Share:
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 mr-1 select-none">
+                Share:
                 </span>
 
                 <button
                   id="share-twitter-btn"
                   onClick={handleTwitterShare}
-                  className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 hover:border-blue-400 hover:bg-blue-500/10 text-slate-400 hover:text-blue-400 flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
                   aria-label="Share on X"
                 >
                   <FaXTwitter className="text-sm" />
@@ -409,7 +424,7 @@ const PostDetailsComponent = () => {
                 <button
                   id="share-linkedin-btn"
                   onClick={handleLinkedInShare}
-                  className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 hover:border-indigo-400 hover:bg-indigo-500/10 text-slate-400 hover:text-indigo-400 flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
                   aria-label="Share on LinkedIn"
                 >
                   <i className="fab fa-linkedin text-sm"></i>
@@ -418,7 +433,7 @@ const PostDetailsComponent = () => {
                 <button
                   id="share-email-btn"
                   onClick={handleEmailShare}
-                  className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 hover:border-purple-400 hover:bg-purple-500/10 text-slate-400 hover:text-purple-400 flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
                   aria-label="Share via Email"
                 >
                   <i className="far fa-envelope text-sm"></i>
@@ -543,4 +558,3 @@ const PostDetailsComponent = () => {
 };
 
 export default PostDetailsComponent;
-

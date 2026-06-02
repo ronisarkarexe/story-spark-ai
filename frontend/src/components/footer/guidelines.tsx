@@ -1,17 +1,18 @@
+import { Link } from "react-router-dom";
+import { LucideIcon } from "lucide-react";
 import {
+  Handshake,
+  Sparkles,
+  Lightbulb,
+  FileText,
+  ArrowLeft,
+  MessageCircle,
+  GitPullRequestArrow,
+  Code2,
   Accessibility,
   Bug,
-  Code2,
-  GitPullRequestArrow,
   HeartHandshake,
-  Lightbulb,
-  MessageCircle,
-  ShieldCheck,
-  Sparkles,
-  UsersRound,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { Link } from "react-router-dom";
 
 type GuidelineSection = {
   title: string;
@@ -121,138 +122,93 @@ const workflowSteps = [
 
 const Guidelines = () => {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-950 transition-colors duration-300 dark:bg-gradient-to-b dark:from-[#070B18] dark:via-[#081022] dark:to-black dark:text-white">
-      <section className="relative overflow-hidden px-6 pb-12 pt-24 sm:pb-16 sm:pt-28 lg:pt-32">
-        <div className="absolute left-1/2 top-0 -z-10 h-[420px] w-[760px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[110px] dark:bg-blue-600/10" />
-        <div className="mx-auto max-w-6xl">
-          <div className="max-w-3xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-700 dark:text-blue-300">
-              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-              Community Guidelines
-            </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white">
+      <section className="relative overflow-hidden border-b border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white transition-all duration-300 text-sm font-medium"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </Link>
 
-            <h1 className="text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl">
-              Build, write, and collaborate with clarity.
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
-              These guidelines bring together the README, contributing guide, and code of conduct so new contributors can understand how to participate in StorySparkAI with confidence.
-            </p>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 mb-6 text-sm font-semibold">
+            <FileText className="w-4 h-4" />
+            COMMUNITY GUIDELINES
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {[
-              "Open-source creative platform",
-              "Respectful contributor community",
-              "Focused issues and pull requests",
-            ].map((item) => (
-              <div
-                key={item}
-                className="rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-medium text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:shadow-none"
-              >
-                {item}
-              </div>
-            ))}
-          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4">
+            Contributing to StorySparkAI
+          </h1>
+          <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            A set of shared norms that keep StorySparkAI a welcoming, productive,
+            and high-quality open-source community.
+          </p>
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-5 px-6 pb-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-stretch">
-        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-6 sm:p-7">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15 text-blue-700 dark:text-blue-300">
-            <UsersRound className="h-6 w-6" aria-hidden="true" />
-          </div>
-          <h2 className="mt-5 text-2xl font-bold text-slate-950 dark:text-white">Contributor promise</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-300">
-            No contribution is too small. The project welcomes learners and experienced contributors as long as everyone follows the code of conduct and keeps collaboration constructive.
-          </p>
+      <section className="max-w-6xl mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {guidelineSections.map((section) => {
+            const Icon = section.icon;
+            return (
+              <div
+                key={section.title}
+                className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                      {section.title}
+                    </h2>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                      {section.description}
+                    </p>
+                  </div>
+                </div>
+                <ul className="space-y-2 pl-1">
+                  {section.points.map((point) => (
+                    <li key={point} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
+      </section>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-slate-900/50 dark:shadow-none sm:p-7">
-          <h2 className="text-2xl font-bold text-slate-950 dark:text-white">Before you contribute</h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <section className="max-w-3xl mx-auto px-4 pb-20">
+        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-2xl p-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <Handshake className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              Contribution Workflow
+            </h2>
+          </div>
+          <ol className="space-y-3">
             {workflowSteps.map((step, index) => (
-              <div key={step} className="flex gap-3 rounded-xl bg-slate-100 p-4 dark:bg-white/[0.03]">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-500/15 text-sm font-bold text-blue-700 dark:text-blue-300">
+              <li key={step} className="flex items-start gap-4">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-sm font-bold flex items-center justify-center">
                   {index + 1}
                 </span>
-                <p className="text-sm leading-6 text-slate-700 dark:text-slate-300">{step}</p>
-              </div>
+                <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed pt-0.5">
+                  {step}
+                </p>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
-
-      <section className="mx-auto max-w-6xl px-6 pb-16">
-        <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
-              Community standards
-            </p>
-            <h2 className="mt-2 text-3xl font-bold text-slate-950 dark:text-white">How we work together</h2>
-          </div>
-          <p className="max-w-xl text-sm leading-7 text-slate-600 dark:text-slate-400">
-            Use these sections as a quick onboarding map for communication, issues, pull requests, code quality, accessibility, and review etiquette.
-          </p>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-2">
-          {guidelineSections.map(({ title, description, icon: Icon, points }) => (
-            <article
-              key={title}
-              className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-blue-400/40 dark:border-white/10 dark:bg-slate-900/50 dark:shadow-none dark:hover:border-blue-500/30 dark:hover:bg-slate-900/80"
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-700 transition-transform duration-300 group-hover:scale-105 dark:text-blue-300">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-950 dark:text-white">{title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">{description}</p>
-                </div>
-              </div>
-
-              <ul className="mt-5 space-y-3">
-                {points.map((point) => (
-                  <li key={point} className="flex gap-3 text-sm leading-6 text-slate-700 dark:text-slate-300">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500 dark:bg-blue-400" />
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gradient-to-br dark:from-blue-900/30 dark:via-slate-900 dark:to-black dark:shadow-none sm:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-2xl">
-              <h2 className="text-2xl font-bold text-slate-950 dark:text-white">Need help choosing the right next step?</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-300">
-                Start with the README for setup, use the contributing guide for Git and PR steps, and follow the code of conduct in every project interaction.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <a
-                href="https://github.com/ronisarkarexe/story-spark-ai/issues"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:border-blue-400/60 hover:bg-blue-50 dark:border-white/15 dark:text-white dark:hover:border-blue-400/40 dark:hover:bg-white/5"
-              >
-                View Issues
-              </a>
-              <Link
-                to="/"
-                className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-500"
-              >
-                Back to Home
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+    </div>
   );
 };
 

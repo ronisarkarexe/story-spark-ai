@@ -15,6 +15,15 @@ jest.mock("../../../../utils/generation_timeout", () => ({
   raceGenerationWithTimeout: jest.fn(),
 }));
 
+// Mock User to avoid DATABASE_URL check in config
+jest.mock("../../user/user.model", () => ({
+  User: {
+    findOne: jest.fn(),
+    findOneAndUpdate: jest.fn(),
+    updateOne: jest.fn(),
+  },
+}));
+
 const mockedGenerate = generateWithGeminiStories as jest.MockedFunction<
   typeof generateWithGeminiStories
 >;
@@ -31,18 +40,36 @@ const story = {
 describe("AiModelService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedRace.mockImplementation(async (operation) => operation({} as AbortSignal));
+    mockedRace.mockImplementation(async (operation) =>
+      operation({} as AbortSignal)
+    );
   });
 
   it("returns stories on success without empty-array masking", async () => {
     mockedGenerate.mockResolvedValue([story]);
 
     const result = await AiModelService.aiModelGenerate(
-      { prompt: "test", wordLength: 100, numStories: 1 },
-      { email: "user@example.com" } as never
+      { prompt: "test", wordLength: 100, numStories: 1 }
     );
 
     expect(result).toHaveLength(1);
+  });
+
+  it("passes the selected language through to story generation", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiModelGenerate(
+      { prompt: "test", wordLength: 100, numStories: 1, language: "Spanish" }
+    );
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      100,
+      1,
+      "Spanish",
+      expect.anything(),
+      undefined
+    );
   });
 
   it("throws BAD_GATEWAY when generation returns empty stories", async () => {
@@ -50,8 +77,7 @@ describe("AiModelService", () => {
 
     await expect(
       AiModelService.aiModelGenerate(
-        { prompt: "test", wordLength: 100, numStories: 1 },
-        { email: "user@example.com" } as never
+        { prompt: "test", wordLength: 100, numStories: 1 }
       )
     ).rejects.toMatchObject({ statusCode: httpStatus.BAD_GATEWAY });
   });
@@ -61,8 +87,7 @@ describe("AiModelService", () => {
 
     await expect(
       AiModelService.aiModelGenerate(
-        { prompt: "test", wordLength: 100, numStories: 1 },
-        { email: "user@example.com" } as never
+        { prompt: "test", wordLength: 100, numStories: 1 }
       )
     ).rejects.toMatchObject({ statusCode: httpStatus.BAD_GATEWAY });
   });
@@ -72,8 +97,7 @@ describe("AiModelService", () => {
 
     await expect(
       AiModelService.aiModelGenerate(
-        { prompt: "test", wordLength: 100, numStories: 1 },
-        { email: "user@example.com" } as never
+        { prompt: "test", wordLength: 100, numStories: 1 }
       )
     ).rejects.toMatchObject({ statusCode: httpStatus.GATEWAY_TIMEOUT });
   });
@@ -100,5 +124,83 @@ describe("AiModelService", () => {
         numStories: 1,
       })
     ).rejects.toMatchObject({ statusCode: httpStatus.GATEWAY_TIMEOUT });
+  });
+
+  // ── Tone selector tests ────────────────────────────────────────────────────
+
+  it("passes tone to generateWithGeminiStories when provided (authenticated)", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiModelGenerate(
+      { prompt: "test", wordLength: 100, numStories: 1, tone: "Dark" },
+      { email: "user@example.com" } as never
+    );
+
+    // The 6th argument to generateWithGeminiStories should be the tone string
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",   // prompt
+      100,      // wordLength
+      1,        // numStories
+      "English", // language default
+      expect.any(Object), // AbortSignal
+      "Dark"    // tone
+    );
+  });
+
+  it("passes tone to generateWithGeminiStories when provided (free/guest)", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiFreeModelGenerate({
+      prompt: "test",
+      wordLength: 150,
+      numStories: 1,
+      tone: "Humorous",
+    });
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      150,
+      1,
+      "English",
+      expect.any(Object),
+      "Humorous"
+    );
+  });
+
+  it("passes undefined tone when tone is omitted (authenticated)", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiModelGenerate(
+      { prompt: "test", wordLength: 100, numStories: 1 },
+      { email: "user@example.com" } as never
+    );
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      100,
+      1,
+      "English",
+      expect.any(Object),
+      undefined // no tone → undefined, so the util skips the directive
+    );
+  });
+
+  it("passes undefined tone when tone is omitted (free/guest)", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiFreeModelGenerate({
+      prompt: "test",
+      wordLength: 150,
+      numStories: 1,
+    });
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      150,
+      1,
+      "English",
+      expect.any(Object),
+      undefined
+    );
   });
 });

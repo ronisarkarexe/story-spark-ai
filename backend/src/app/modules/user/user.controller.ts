@@ -5,6 +5,7 @@ import { routeParam } from "../../../shared/route_param";
 import sendResponse from "../../../shared/send_response";
 import { getToken } from "../../middleware/token";
 import catchAsync from "../../../shared/catch_async";
+import ApiError from "../../../errors/api_error";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -61,23 +62,17 @@ const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-const deleteUser = async (req: Request, res: Response) => {
-  try {
-    const id = routeParam(req.params.id);
+const deleteUser = catchAsync(async (req: Request, res: Response) => {
+  const id = routeParam(req.params.id);
 
-    await UserService.deleteUser(id);
+  await UserService.deleteUser(id);
 
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "User deleted successfully!",
-    });
-  } catch (error) {
-    res.status(httpStatus.BAD_REQUEST).json({
-      message: "Fail to get users!",
-    });
-  }
-};
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User deleted successfully!",
+  });
+});
 
 const applyForWriter = catchAsync(async (req: Request, res: Response) => {
   const token = await getToken(req);
@@ -94,6 +89,15 @@ const applyForWriter = catchAsync(async (req: Request, res: Response) => {
 
 const approveWriterApplication = catchAsync(
   async (req: Request, res: Response) => {
+    // Defense-in-depth: verify caller is admin/super_admin at the controller level
+    const token = await getToken(req);
+    if (token.role !== "admin" && token.role !== "super_admin") {
+      throw new ApiError(
+        httpStatus.FORBIDDEN,
+        "Only administrators can approve writer applications!"
+      );
+    }
+
     const { email } = req.body;
 
     const result = await UserService.approveWriterApplication(email);

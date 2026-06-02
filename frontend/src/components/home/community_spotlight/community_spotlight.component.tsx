@@ -19,7 +19,7 @@ type SpotlightWriter = {
 
 const TOP_WRITERS_LIMIT = 3;
 
-const getBookmarkCount = (post: Post) => post.bookmarks?.length ?? 0;
+const getBookmarkCount = (post: Post) => post.bookmarksCount ?? 0;
 
 const getPostEngagementScore = (post: Post) =>
   (post.likesCount ?? 0) * 3 +
@@ -56,16 +56,18 @@ const formatMetric = (value: number) =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(value);
 
 const CommunitySpotlightComponent = () => {
-  const { data, isLoading, isError } = useGetLatestListsQuery(undefined);
+  const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
 
-  const topWriters = useMemo(() => {
+  const topWriters = useMemo<SpotlightWriter[]>(() => {
     const writers = new Map<string, Omit<SpotlightWriter, "engagementScore">>();
 
     data?.posts?.forEach((post: Post) => {
       if (!post.author) return;
 
       const authorKey = post.author._id || post.author.email || post.author.name;
+      if (!authorKey) return;
+
       const existingWriter = writers.get(authorKey);
       const postScore = getPostEngagementScore(post);
 
@@ -79,7 +81,6 @@ const CommunitySpotlightComponent = () => {
           bookmarksCount: getBookmarkCount(post),
           topPost: post,
         });
-
         return;
       }
 
@@ -100,27 +101,24 @@ const CommunitySpotlightComponent = () => {
         engagementScore: getWriterEngagementScore(writer),
       }))
       .sort((a, b) => b.engagementScore - a.engagementScore)
-      .slice(0, TOP_WRITERS_LIMIT);
+      .slice(0, TOP_WRITERS_LIMIT) as SpotlightWriter[];
   }, [data?.posts]);
 
-  if (isLoading) {
-    return <LoadingAnimation />;
-  }
+  if (isLoading) return <LoadingAnimation />;
 
   if (isError) {
     return (
-      <section className="px-5 py-10">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-200">
-            Community Spotlight
-          </h2>
-          <p className="mt-2 text-slate-600 dark:text-gray-400">
-            Top contributors loved by the Story Spark community
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-5 text-red-700 dark:border-red-900/70 dark:bg-red-900/20 dark:text-red-400">
-          Failed to load community spotlight writers. Please try again later.
+      <section className="story-section">
+        <div className="story-page-shell">
+          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-10 text-center text-red-200">
+            <p className="mb-3 font-semibold">Failed to load spotlight stories.</p>
+            <button
+              onClick={() => refetch()}
+              className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </section>
     );
@@ -158,9 +156,7 @@ const CommunitySpotlightComponent = () => {
               <button
                 key={writer.author._id || writer.author.email || writer.author.name}
                 type="button"
-                aria-label={`Read ${writer.topPost.title} by ${
-                  writer.author.name || "Unknown User"
-                }`}
+                aria-label={`Read ${writer.topPost.title} by ${writer.author.name || "Unknown User"}`}
                 onClick={() => navigate(`/post/${writer.topPost._id}`)}
                 className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-5 text-left shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700/60 dark:bg-slate-900/70 dark:hover:border-blue-400/50 dark:focus:ring-offset-slate-950"
               >
@@ -168,15 +164,9 @@ const CommunitySpotlightComponent = () => {
 
                 <div className="mb-6 flex items-start justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-4">
-                    <div
-                      className={`rounded-full ring-4 ${style.ring} transition-transform duration-300 group-hover:scale-105`}
-                    >
-                      <SSProfile
-                        name={writer.author.name || "Unknown User"}
-                        size="h-14 w-14"
-                      />
+                    <div className={`rounded-full ring-4 ${style.ring} transition-transform duration-300 group-hover:scale-105`}>
+                      <SSProfile name={writer.author.name || "Unknown User"} size="h-14 w-14" />
                     </div>
-
                     <div className="min-w-0">
                       <p className="truncate text-lg font-bold text-slate-900 dark:text-gray-100">
                         {writer.author.name || "Unknown User"}
@@ -186,10 +176,7 @@ const CommunitySpotlightComponent = () => {
                       </p>
                     </div>
                   </div>
-
-                  <span
-                    className={`shrink-0 rounded-full px-3 py-1 text-sm font-black shadow-lg ${style.badge}`}
-                  >
+                  <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-black shadow-lg ${style.badge}`}>
                     #{rank}
                   </span>
                 </div>
@@ -205,36 +192,20 @@ const CommunitySpotlightComponent = () => {
 
                 <div className="mt-auto grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-xl bg-blue-50 px-3 py-3 dark:bg-blue-500/10">
-                    <p className="text-lg font-bold text-blue-700 dark:text-blue-300">
-                      {formatMetric(writer.engagementScore)}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">
-                      Score
-                    </p>
+                    <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{formatMetric(writer.engagementScore)}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">Score</p>
                   </div>
                   <div className="rounded-xl bg-violet-50 px-3 py-3 dark:bg-violet-500/10">
-                    <p className="text-lg font-bold text-violet-700 dark:text-violet-300">
-                      {formatMetric(writer.storiesCount)}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">
-                      Stories
-                    </p>
+                    <p className="text-lg font-bold text-violet-700 dark:text-violet-300">{formatMetric(writer.storiesCount)}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">Stories</p>
                   </div>
                   <div className="rounded-xl bg-slate-100 px-3 py-3 dark:bg-slate-800">
-                    <p className="text-lg font-bold text-slate-800 dark:text-gray-200">
-                      {formatMetric(writer.likesCount)}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">
-                      Likes
-                    </p>
+                    <p className="text-lg font-bold text-slate-800 dark:text-gray-200">{formatMetric(writer.likesCount)}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">Likes</p>
                   </div>
                   <div className="rounded-xl bg-slate-100 px-3 py-3 dark:bg-slate-800">
-                    <p className="text-lg font-bold text-slate-800 dark:text-gray-200">
-                      {formatMetric(writer.viewsCount)}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">
-                      Views
-                    </p>
+                    <p className="text-lg font-bold text-slate-800 dark:text-gray-200">{formatMetric(writer.viewsCount)}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">Views</p>
                   </div>
                 </div>
 

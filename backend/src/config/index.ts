@@ -16,9 +16,22 @@ const parseCorsOrigins = (
 export default {
   env: process.env.NODE_ENV,
   port: process.env.PORT || "5000",
-  database_url: process.env.DATABASE_URL || "mongodb+srv://university_system:Y4K8t26J0a894hke@cluster0.v4fkr.mongodb.net/ai_storie_books?retryWrites=true&w=majority",
+  disable_logs: process.env.DISABLE_LOGS === "true" || process.env.VERCEL === "1",
+  database_url: (() => {
+    const url = process.env.DATABASE_URL?.trim();
+    if (!url) {
+      throw new Error(
+        "DATABASE_URL environment variable is required. See backend/.env.example for setup instructions."
+      );
+    }
+    return url;
+  })(),
   cors_origins: parseCorsOrigins(process.env.CORS_ORIGINS),
-  bcrypt_salt_rounds: process.env.SALT_ROUNDS,
+  bcrypt_salt_rounds: (() => {
+    const raw = process.env.SALT_ROUNDS;
+    const parsed = raw ? Number(raw) : NaN;
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : 10;
+  })(),
   jwt: {
     secret: process.env.JWT_SECRET,
     refresh_secret: process.env.JWT_REFRESH_SECRET,
@@ -27,10 +40,16 @@ export default {
   },
   default_admin_password: process.env.DEFAULT_ADMIN_PASSWORD,
   openai_key: process.env.OPEN_AI_KEY,
+  image_generation_provider: process.env.IMAGE_GENERATION_PROVIDER,
+  image_generation_api_key: process.env.IMAGE_GENERATION_API_KEY,
   unsplash_key_api: process.env.UNSPLASH_KEY_API,
   unsplash_secret_key_api: process.env.UNSPLASH_KEY_API_SECRET,
   gemini_api_key: process.env.GEMINI_API_KEY,
   verify_email: process.env.VERIFY_EMAIL,
   verify_password: process.env.VERIFY_PASSWORD,
   google_client_id: process.env.GOOGLE_CLIENT_ID,
+  github: {
+    token: process.env.GITHUB_TOKEN,
+    repo: process.env.GITHUB_REPO || "ronisarkarexe/story-spark-ai",
+  },
 };

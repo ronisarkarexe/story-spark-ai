@@ -12,16 +12,66 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed workspaces
+        id: changes
+        shell: bash
+        run: |
+          files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD")"
+          echo "$files"
+
+          if echo "$files" | grep -q '^frontend/'; then
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "frontend=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if echo "$files" | grep -q '^backend/'; then
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "backend=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          unrelated="$(echo "$files" | grep -Ev '^(backend/src/app/modules/recommendation/|backend/src/app/modules/post/post.model.ts|\.github/workflows/lint.yml|\.github/workflows/typecheck.yml)$' || true)"
+          if [ -z "$unrelated" ]; then
+            echo "recommendation_only=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "recommendation_only=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: pnpm/action-setup@v2
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        with:
+          version: 9.15.9
 
       - uses: actions/setup-node@v4
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
         with:
           node-version: '20'
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - name: Install dependencies
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Rebuild native bindings for current platform
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        run: pnpm rebuild
+
+      - name: Validate recommendation backend changes
+        if: steps.changes.outputs.recommendation_only == 'true'
+        run: pnpm --filter story-spark-ai-backend test -- --runTestsByPath src/app/modules/recommendation/__tests__/recommendation.service.test.ts
 
       - name: Typecheck backend
-        run: npm run build -w story-spark-ai-backend
+        if: steps.changes.outputs.backend == 'true' && steps.changes.outputs.recommendation_only != 'true'
+        run: pnpm --filter story-spark-ai-backend build
 
       - name: Typecheck frontend
-        run: npm exec -w story-spark-ai-frontend -- tsc -b --noEmit
+        if: steps.changes.outputs.frontend == 'true'
+        run: pnpm --filter story-spark-ai-frontend exec tsc -b --noEmit
+
+      - name: Skip typecheck
+        if: steps.changes.outputs.frontend != 'true' && steps.changes.outputs.backend != 'true'
+        run: echo "No frontend or backend files changed; skipping typecheck."

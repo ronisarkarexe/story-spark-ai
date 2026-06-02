@@ -1,6 +1,9 @@
 import { Model, Types } from "mongoose";
 import { SubscriptionType } from "../../../enums/subscription_type";
-
+export interface IWritingGoals {
+  dailyWordCount: number;
+  weeklyWordCount: number;
+}
 export interface IUser {
   name: string;
   email: string;
@@ -25,6 +28,20 @@ export interface IUser {
   lastRequestDate: Date;
   posts: Types.ObjectId[];
   isApplyForWriter: boolean;
+  tokenVersion?: number;
+  gamification: {
+    xp: number;
+    level: number;
+    streak: number;
+    lastActiveDate: Date | null;
+    badges: string[];
+  };
+  readingPreferences?: {
+    favoriteGenres: { name: string; count: number }[];
+    favoriteEmotions: { name: string; count: number }[];
+  };
+  readingHistory?: Types.ObjectId[];
+  writingGoals: IWritingGoals;
 }
 
 export type UserModel = Model<IUser, object>;

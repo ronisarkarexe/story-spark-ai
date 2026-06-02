@@ -5,6 +5,7 @@ import React, {
   useId,
   useImperativeHandle,
   useMemo,
+  useState,
 } from "react";
 import {
   AlertCircle,
@@ -13,10 +14,11 @@ import {
   Play,
   RotateCcw,
   Square,
-  Volume2,
+  Volume2
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../../hooks/useSpeechSynthesis";
+import { useVoiceFavorites } from "../../hooks/useVoiceFavorites";
 
 export type NarrationPlaybackState = "idle" | "playing" | "paused";
 
@@ -39,10 +41,25 @@ const controlButtonBaseClass =
 
 const StoryNarrator = forwardRef<StoryNarratorHandle, StoryNarratorProps>(
   ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
-    const speech = useSpeechSynthesis(text);
-    const speedSelectId = useId();
+    const [voiceGender] = useState<"female" | "male">("female");
+    const speech = useSpeechSynthesis(text, voiceGender);
+    const favorites = useVoiceFavorites();
+    const [showFavoritesOnly] = useState(false);
+
     const voiceSelectId = useId();
+
     const speedOptions = useMemo(() => [...SPEED_OPTIONS], []);
+
+    const filteredVoices = speech.voices.filter((voice) => voice.lang === speech.selectedLanguage);
+    const voiceOptions = filteredVoices.length > 0 ? filteredVoices : speech.voices;
+
+    const displayedVoices = useMemo(() => {
+      if (!showFavoritesOnly) {
+        return voiceOptions;
+      }
+      return voiceOptions.filter((voice) => favorites.isFavorite(voice.id));
+    }, [voiceOptions, showFavoritesOnly, favorites]);
+
     const isLoading = speech.isSupported && !speech.isReady;
     const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
 
@@ -97,6 +114,18 @@ const StoryNarrator = forwardRef<StoryNarratorHandle, StoryNarratorProps>(
 
       onPlaybackStateChange?.(nextState);
     }, [onPlaybackStateChange, speech.isPaused, speech.isPlaying]);
+
+    // Auto-select first voice when currently selected is filtered out
+    useEffect(() => {
+      if (showFavoritesOnly && displayedVoices.length > 0) {
+        const isCurrentVoiceStillAvailable = displayedVoices.some(
+          (v) => v.id === speech.selectedVoiceId
+        );
+        if (!isCurrentVoiceStillAvailable) {
+          speech.setSelectedVoiceId(displayedVoices[0].id);
+        }
+      }
+    }, [showFavoritesOnly, displayedVoices, speech]);
 
     const spokenWordCount =
       speech.progress.totalWords === 0
@@ -262,12 +291,12 @@ const StoryNarrator = forwardRef<StoryNarratorHandle, StoryNarratorProps>(
               </button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(180px,240px)] md:items-end">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(140px,160px)_minmax(160px,1fr)_minmax(160px,1fr)_minmax(200px,1fr)] lg:items-end">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>Progress</span>
                   <span aria-live="polite">
-                    {spokenWordCount} / {speech.progress.totalWords} words
+                    {speech.isPlaying || speech.isPaused ? spokenWordCount : 0} / {speech.progress.totalWords} words
                   </span>
                 </div>
                 <div
@@ -286,77 +315,35 @@ const StoryNarrator = forwardRef<StoryNarratorHandle, StoryNarratorProps>(
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-1">
-              <div className="space-y-2">
-                <label
-                  htmlFor={voiceSelectId}
-                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                  Voice
-                </label>
-                <select
-                  id={voiceSelectId}
-                  aria-label="Narration voice"
-                  value={speech.selectedVoiceURI}
-                  onChange={(event) => speech.setSelectedVoiceURI(event.target.value)}
-                  disabled={speech.voices.length === 0}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
-                >
-                  <option value="">System default</option>
-                  {speech.voices.map((voice) => (
-                    <option key={voice.voiceURI} value={voice.voiceURI}>
-                      {voice.name} ({voice.lang})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor={speedSelectId}
-                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                  Playback speed
-                </label>
-                <div className="relative">
-                  <select
-                    id={speedSelectId}
-                    aria-label="Playback speed"
-                    role="combobox"
-                    value={speech.rate}
-                    onChange={(event) => speech.setRate(Number(event.target.value))}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                <div className="space-y-2">
+                  <label
+                    htmlFor={voiceSelectId}
+                    className="text-sm font-medium text-slate-700 dark:text-slate-300"
                   >
-                    {speedOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option.toFixed(2).replace(/\.00$/, "")}&times;
+                    Voice
+                  </label>
+                  <select
+                    id={voiceSelectId}
+                    aria-label="Narration voice"
+                    value={speech.selectedVoiceId}
+                    onChange={(event) => speech.setSelectedVoiceId(event.target.value)}
+                    disabled={speech.voices.length === 0}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  >
+                    {displayedVoices.map((voice) => (
+                      <option key={voice.id} value={voice.id}>
+                        {voice.label}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
-              </div>
             </div>
-
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
-              <span>
-                {speech.isPlaying
-                  ? "Narration in progress"
-                  : speech.isPaused
-                    ? "Narration paused"
-                    : speech.currentWordIndex > 0
-                      ? "Narration completed"
-                      : "Ready to start"}
-              </span>
-              <span>{Math.round(speech.progress.percentage * 100)}%</span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Shortcuts: Space toggles narration. Arrow left and right adjust speed.
-            </p>
           </div>
         )}
       </section>
     );
-  },
+  }
 );
 
 StoryNarrator.displayName = "StoryNarrator";

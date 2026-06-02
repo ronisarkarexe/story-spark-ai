@@ -19,4 +19,9 @@ router.post(
   ReportController.createReport
 );
 
+router.get(
+  "/",
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  ReportController.getAllReports
+);
 export const ReportRouter = router;

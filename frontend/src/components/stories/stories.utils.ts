@@ -96,10 +96,7 @@ export const getWordCount = (str: string) => {
   if (typeof str !== "string" || !str.trim()) {
     return 0;
   }
-  return str
-    .trim()
-    .split(/\s+/)
-    .filter((word) => /^[a-zA-Z]+$/.test(word)).length;
+  return str.trim().split(/\s+/).length;
 };
 
 export const prompts = [

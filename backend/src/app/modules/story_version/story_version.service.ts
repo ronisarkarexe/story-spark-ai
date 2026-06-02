@@ -1,9 +1,16 @@
-import httpStatus from "http-status";
+import { enhancePromptWithGemini } from "./enhance_prompt.utils";
+import { raceGenerationWithTimeout, GenerationTimeoutError } from "../../../utils/generation_timeout";
 import ApiError from "../../../errors/api_error";
+import httpStatus from "http-status";
 import { Post } from "../post/post.model";
 import { StoryVersion } from "./story_version.model";
 import { IStoryVersion } from "./story_version.interface";
 import { IPost } from "../post/post.interface";
+import paginationHelper from "../../../utils/pagination_helper";
+import {
+  IPaginationOptions,
+  IGenericResponse,
+} from "../../../interfaces/pagination";
 
 const createVersionSnapshot = async (
   storyId: string,
@@ -56,8 +63,10 @@ const createVersionSnapshot = async (
 
 const getVersionsByStoryId = async (
   storyId: string,
-  userId: string
-): Promise<IStoryVersion[]> => {
+  userId: string,
+  pagination: IPaginationOptions
+): Promise<IGenericResponse<IStoryVersion[]>> => {
+  const { page, limit, skip } = paginationHelper(pagination);
   const post = await Post.findById(storyId);
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
@@ -68,7 +77,21 @@ const getVersionsByStoryId = async (
     throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story history!");
   }
 
-  return await StoryVersion.find({ storyId }).sort({ versionNumber: -1 });
+const data = await StoryVersion.find({ storyId })
+  .sort({ versionNumber: -1 })
+  .skip(skip)
+  .limit(limit);
+
+const total = await StoryVersion.countDocuments({ storyId });
+
+return {
+  meta: {
+    page,
+    limit,
+    total,
+  },
+  data,
+};
 };
 
 const getVersionById = async (
@@ -132,9 +155,45 @@ const restoreVersion = async (
   return post;
 };
 
+const ENHANCE_TIMEOUT_MS = 60000;
+
+const enhancePrompt = async (prompt: string): Promise<string> => {
+  try {
+    const enhanced = await raceGenerationWithTimeout(
+      (signal) => enhancePromptWithGemini(prompt, signal),
+      ENHANCE_TIMEOUT_MS
+    );
+
+    if (!enhanced || typeof enhanced !== "string" || enhanced.trim() === "") {
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        "Prompt enhancement returned empty result."
+      );
+    }
+
+    return enhanced.trim();
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+
+    if (error instanceof GenerationTimeoutError) {
+      throw new ApiError(
+        httpStatus.GATEWAY_TIMEOUT,
+        "Prompt enhancement timed out. Please try again."
+      );
+    }
+
+    const msg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.BAD_GATEWAY,
+      `Prompt enhancement failed. (${msg})`
+    );
+  }
+};
+
 export const StoryVersionService = {
   createVersionSnapshot,
   getVersionsByStoryId,
   getVersionById,
   restoreVersion,
+  enhancePrompt,
 };

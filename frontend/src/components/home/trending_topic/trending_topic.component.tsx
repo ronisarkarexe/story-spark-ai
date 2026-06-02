@@ -12,7 +12,7 @@ const TrendingTopicComponent = () => {
           <a
             key={index}
             href="#"
-            className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-sm hover:bg-blue-500/20 transition-colors"
+            className="story-chip px-3 py-1.5 text-sm font-semibold"
           >
             {topic.title}
           </a>
