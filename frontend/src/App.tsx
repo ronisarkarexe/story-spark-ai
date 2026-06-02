@@ -1,5 +1,4 @@
 import React from "react";
-
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
 
 import { USER_ROLE } from "./constants/role";
@@ -116,6 +115,7 @@ const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
+
   if (!allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;
   }
@@ -123,7 +123,13 @@ const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
   return element ? element : <Outlet />;
 };
 
-const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
+const ALL_ROLES = [
+  USER_ROLE.ADMIN,
+  USER_ROLE.SUPER_ADMIN,
+  USER_ROLE.WRITER,
+  USER_ROLE.USER,
+];
+
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
 
 const router = createBrowserRouter([
@@ -142,7 +148,15 @@ const router = createBrowserRouter([
       </>
     ),
     children: [
-      { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
+      {
+        index: true,
+        element: (
+          <>
+            <HeroSectionComponent />
+            <HomeComponent />
+          </>
+        ),
+      },
       { path: "templates", element: <TemplatesComponent /> },
       { path: "writing-assistant", element: <WritingAssistantComponent /> },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
@@ -166,7 +180,6 @@ const router = createBrowserRouter([
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "report-bug", element: <ReportBug /> },
 
-      // Protected routes (logged-in users)
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
@@ -178,7 +191,6 @@ const router = createBrowserRouter([
         ],
       },
 
-      // Story routes (token-protected)
       {
         path: "stories",
         element: (
@@ -246,6 +258,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+
   {
     path: "/dashboard",
     element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
@@ -274,7 +287,15 @@ const router = createBrowserRouter([
             children: [{ path: "analytics", element: <AnalyticsPage /> }],
           },
           {
-            element: <ProtectedRoute allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER]} />,
+            element: (
+              <ProtectedRoute
+                allowedRoles={[
+                  USER_ROLE.ADMIN,
+                  USER_ROLE.SUPER_ADMIN,
+                  USER_ROLE.WRITER,
+                ]}
+              />
+            ),
             children: [{ path: "post-lists", element: <PostListsComponent /> }],
           },
         ],
@@ -286,7 +307,6 @@ const router = createBrowserRouter([
 function App() {
   return <RouterProvider router={router} />;
 }
-
 
 export default App;
 

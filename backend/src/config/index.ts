@@ -40,6 +40,8 @@ export default {
   },
   default_admin_password: process.env.DEFAULT_ADMIN_PASSWORD,
   openai_key: process.env.OPEN_AI_KEY,
+  image_generation_provider: process.env.IMAGE_GENERATION_PROVIDER,
+  image_generation_api_key: process.env.IMAGE_GENERATION_API_KEY,
   unsplash_key_api: process.env.UNSPLASH_KEY_API,
   unsplash_secret_key_api: process.env.UNSPLASH_KEY_API_SECRET,
   gemini_api_key: process.env.GEMINI_API_KEY,
