@@ -20,6 +20,7 @@ import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
+import { useSavedWorkspacePreferences } from "../../hooks/useSavedWorkspacePreferences";
 
 // ─── Custom API Error Handlers ──────────────────────────────────────────────
 
@@ -415,6 +416,8 @@ const [, setShowRemix] = useState<boolean>(false);
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
 
+  const { aiProvider, targetLength, defaultGenre } = useSavedWorkspacePreferences();
+
   useEffect(() => {
     if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
       setOriginalStoryContent((prev) => ({ ...prev, [selectedStory.uuid]: selectedStory.content }));
@@ -437,11 +440,10 @@ const [, setShowRemix] = useState<boolean>(false);
       const payload = {
         title: selectedStory.title,
         content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
-        tag: selectedStory.tag,
+        tag: defaultGenre || selectedStory.tag,
         language: selectedStory.language || "English",
-
-        language: selectedStory.language || "English",
-
+        aiProvider: aiProvider,
+        targetLength: targetLength,
       };
       
       const generationRequest = isLogin
