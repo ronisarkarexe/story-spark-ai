@@ -100,10 +100,6 @@ const createComment = async (
 };
 
 const getCommentsByPostId = async (postId: string) => {
-  const comments = await Comment.find({ postId, isDeleted: { $ne: true } })
-    .populate("userId", "name profile.avatar")
-    .sort({ createdAt: -1 });
-  return comments;
   const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
@@ -126,21 +122,21 @@ const getCommentsByPostId = async (postId: string) => {
       replies: [],
     };
 
-if (!commentDTO.parentCommentId) {
-  topLevelComments.push(commentDTO);
-} else {
-  const parentIdStr = commentDTO.parentCommentId.toString();
-  if (!replyMap.has(parentIdStr)) {
-    replyMap.set(parentIdStr, []);
+    if (!commentDTO.parentCommentId) {
+      topLevelComments.push(commentDTO);
+    } else {
+      const parentIdStr = commentDTO.parentCommentId.toString();
+      if (!replyMap.has(parentIdStr)) {
+        replyMap.set(parentIdStr, []);
+      }
+      replyMap.get(parentIdStr)!.push(commentDTO);
+    }
   }
-  replyMap.get(parentIdStr)!.push(commentDTO);
-}
 
   for (const comment of topLevelComments) {
     const idStr = comment._id.toString();
     const replies = replyMap.get(idStr) || [];
 
-    // Sort replies in ascending chronological order, avoiding new Date allocation where possible
     replies.sort((a, b) => {
       const timeA =
         a.createdAt instanceof Date
@@ -158,7 +154,6 @@ if (!commentDTO.parentCommentId) {
 
   return { comments: topLevelComments, totalComments };
 };
-
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   const { _id, email } = token;
   const user = _id ? await User.findById(_id) : await User.findOne({ email });
