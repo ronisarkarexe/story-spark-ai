@@ -118,6 +118,7 @@ const LoginComponent = () => {
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 flex w-full max-w-md min-w-0 flex-col justify-center">
+      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4">
 
         <div className="mb-8 w-full min-w-0">
           <h2 className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-center text-4xl font-extrabold tracking-tight text-transparent drop-shadow-sm sm:text-5xl">
@@ -126,6 +127,7 @@ const LoginComponent = () => {
         </div>
 
         <div className="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/60 sm:p-8">
+        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden">
 
           <button
             onClick={() => window.location.href = "/"}
@@ -140,6 +142,7 @@ const LoginComponent = () => {
 
           <form
             className="w-full min-w-0 space-y-5"
+            className="space-y-5 w-full min-w-0 overflow-hidden"
             onSubmit={handleSubmit(onSubmit)}
           >
 

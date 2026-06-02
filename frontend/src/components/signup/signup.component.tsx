@@ -253,12 +253,17 @@ const SignUpComponent = () => {
       <div className="relative z-10 flex w-full max-w-md min-w-0 flex-col justify-center">
         <div className="mb-8 w-full min-w-0">
           <h2 className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-center text-4xl font-extrabold tracking-tight text-transparent drop-shadow-sm sm:text-5xl">
+      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
+          <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
         </div>
 
         <div className="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/60 sm:p-8">
           <h3 className="text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-200">
+        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden">
+          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
 
@@ -283,6 +288,7 @@ const SignUpComponent = () => {
 
           {!showOtpField ? (
             <form className="w-full min-w-0 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            <form className="space-y-5 w-full min-w-0 overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
               <SSInput
                 label="Name"
                 name="name"
@@ -332,6 +338,15 @@ const SignUpComponent = () => {
 
               {password?.length > 0 && (
                 <div className="-mt-2 w-full min-w-0 space-y-3">
+              <div className="space-y-3 -mt-2 min-w-0 overflow-hidden">
+                <div
+                  className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={passedChecks}
+                  aria-valuemin={0}
+                  aria-valuemax={PASSWORD_REQUIREMENTS.length}
+                  aria-label="Password strength"
+                >
                   <div
                     className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"
                     role="progressbar"
@@ -369,6 +384,31 @@ const SignUpComponent = () => {
                   </ul>
                 </div>
               )}
+
+                <p
+                  className={`text-sm font-medium truncate ${textColor}`}
+                  aria-live="polite"
+                >
+                  {strengthLabel} Password
+                </p>
+
+                <ul className="space-y-1 text-xs min-w-0">
+                  {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
+                    const met = passwordChecks[key];
+                    return (
+                      <li
+                        key={key}
+                        className={`${met ? "text-green-400" : "text-red-400"} truncate`}
+                        aria-label={`${label}: ${met ? "met" : "not met"}`}
+                      >
+                        <span aria-hidden="true">{met ? "Γ£à" : "Γ¥î"}</span>{" "}
+                        {label}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+)}
 
               <SSInput
                 label="Confirm Password"

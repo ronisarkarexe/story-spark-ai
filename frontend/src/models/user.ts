@@ -13,11 +13,6 @@ export interface UserProfile {
   bio?: string;
 }
 
-export interface WritingGoals {
-  dailyWordCount: number;
-  weeklyWordCount: number;
-}
-
 export interface User {
   _id: string;
   email: string;
@@ -36,5 +31,4 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   profile: UserProfile;
-  writingGoals?: WritingGoals;
 }

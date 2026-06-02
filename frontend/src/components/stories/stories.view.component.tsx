@@ -5,35 +5,31 @@ import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/p
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
 import StoryWorldMap from "../story-map/StoryWorldMap";
-import StoryRemix from "../remix/StoryRemix";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { setStory } from "../../redux/slices/storySlice";
-import ContinueStoryButton from "../story/ContinueStoryButton";
-
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
+import ImageFallback from "../ImageFallback";
+import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
 export interface IStories {
   uuid: string;
   title: string;
   content: string;
   tag: string;
+  emotions?: string[];
+  enhancedPrompt?: string;
   imageURL: string;
   language?: string;
-  emotions?: string[];
   genre?: string;
-  enhancedPrompt?: string;
 }
 
 interface IPost extends IStories {
   topic: ITopicData[];
-  isPublished?: boolean;
 }
 
 interface StoriesComponentProps {
@@ -93,7 +89,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 }) => {
   const location = useLocation();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
-  const dispatch = useDispatch();
 
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
@@ -103,7 +98,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
-  const [showRemix, setShowRemix] = useState<boolean>(false);
+const [, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -293,32 +288,16 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
   // Sync state instantly whenever a new template is submitted or selected
   useEffect(() => {
-  if (stories && stories.length > 0) {
-    setSelectedStory(stories[0]);
-
-    // Save story into Redux for continuation engine
-    dispatch(
-      setStory({
-        id: stories[0].uuid,
-        title: stories[0].title,
-        chapters: [
-          {
-            id: 1,
-            title: "Chapter 1",
-            content: stories[0].content,
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      })
-    );
-  } else {
-    setSelectedStory(null);
-  }
-
-  lastSavedContentRef.current = "";
-  hasSavedSessionRef.current = false;
-  savedPostIdRef.current = null;
-}, [stories, dispatch]);
+    if (stories && stories.length > 0) {
+      setSelectedStory(stories[0]);
+    } else {
+      setSelectedStory(null);
+    }
+    // Reset auto-save status for new story session
+    lastSavedContentRef.current = "";
+    hasSavedSessionRef.current = false;
+    savedPostIdRef.current = null;
+  }, [stories]);
 
   useEffect(() => {
     const autoSaveStory = async () => {
@@ -343,7 +322,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       const post: IPost = {
         ...selectedStory,
         topic: selectTopics,
-        isPublished: false,
       };
 
       try {
@@ -432,11 +410,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   };
 
   const handleExportPDF = async () => {
-    if (!selectedStory) {
-      toast.error("No story available to export.");
-      return;
-    }
-
+    if (!selectedStory) { toast.error("No story available to export."); return; }
+    if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
     const toastId = toast.loading("Preparing your premium PDF...");
 
     try {
@@ -658,53 +633,35 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     }
   };
 
-  const handleExportMarkdown = () => {
-    if (!selectedStory) {
-      toast.error("No story available to export.");
-      return;
-    }
+  const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 
+const getSafeFileName = (title: string, ext: string) => {
+  return `${title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.${ext}`;
+};
+
+const handleExportMarkdown = () => {
+    if (!selectedStory) { toast.error("No story available to export."); return; }
+    if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
     try {
       const title = selectedStory.title || "Story";
       const content = selectedStory.content || "";
       const tag = selectedStory.tag || "General";
       const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
       const isoDate = new Date().toISOString().split("T")[0];
-
-      const cleanTitle = title.replace(/"/g, '\\"');
-      const cleanTag = tag.replace(/"/g, '\\"');
-      const cleanAuthor = authorName.replace(/"/g, '\\"');
-
-      const markdownContent = `---
-title: "${cleanTitle}"
-tag: "${cleanTag}"
-author: "${cleanAuthor}"
-date: "${isoDate}"
----
-
-# ${title}
-
-${content}
-`;
-
+      const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
       const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      
-      const fileName = title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story";
-      link.setAttribute("download", `${fileName}.md`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
+      downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to export Markdown.");
-    }
+    } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
   };
+
   const handelPublishStory = async () => {
     if (!isLogin) {
       toast.error("Please login to publish the story.");
@@ -721,7 +678,6 @@ ${content}
     const post: IPost = {
       ...selectedStory,
       topic: selectTopics,
-      isPublished: true,
     };
     setLoading(true);
     try {
@@ -752,6 +708,7 @@ ${content}
   };
 
   const isNarrationActive = narrationState !== "idle";
+
 
 if (isLoading) {
   return (
@@ -838,7 +795,7 @@ if (isLoading) {
                   onClick={handleCopyStory}
                   disabled={!selectedStory}
                 >
-                  {isCopied ? "Γ£ô Copied" : "≡ƒôï Copy"}
+                  {isCopied ? "✓ Copied" : "📋 Copy"}
                 </button>
                 <button
                   type="button"
@@ -846,7 +803,7 @@ if (isLoading) {
                   onClick={handleExportPDF}
                   disabled={!selectedStory}
                 >
-                  ≡ƒôä Export PDF
+                  📄 Export PDF
                 </button>
                 <button
                   type="button"
@@ -854,7 +811,7 @@ if (isLoading) {
                   onClick={handleExportMarkdown}
                   disabled={!selectedStory}
                 >
-                  Γ¼ç∩╕Å Export Markdown
+                  ⬇️ Export Markdown
                 </button>
                 <button
                   type="button"
@@ -933,10 +890,6 @@ if (isLoading) {
                 onWordIndexChange={setNarrationWordIndex}
                 onPlaybackStateChange={setNarrationState}
               />
-            </div>
-            {/* Story Continuation Engine */}
-            <div className="mt-6">
-              <ContinueStoryButton />
             </div>
           </div>
           <div className="mt-7">
@@ -1113,7 +1066,7 @@ if (isLoading) {
                               <details className="group border border-slate-800 rounded-lg overflow-hidden bg-slate-950/20">
                                 <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none">
                                   <span>PREVIEW FULL STORY WITH THIS ENDING</span>
-                                  <span className="transition-transform duration-200 group-open:rotate-180">Γû╝</span>
+                                  <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
                                 </summary>
                                 <div className="p-4 border-t border-slate-800/80 text-xs text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
                                   {currentEndingData.fullStory}
@@ -1145,6 +1098,13 @@ if (isLoading) {
         </div>
 
         <div className="col-span-1 lg:col-span-4">
+          <GeneratedStoryTimeline
+            content={selectedStory.content}
+            title={selectedStory.title}
+            narrationState={narrationState}
+            narrationWordIndex={narrationWordIndex}
+          />
+
           <div className="mb-5">
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
               Preview
@@ -1153,7 +1113,7 @@ if (isLoading) {
           <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
             <div className="relative flex flex-col rounded-lg">
               <div className="relative m-3 overflow-hidden text-white rounded-xl">
-                <img
+                <ImageFallback
                   src={selectedStory.imageURL}
                   alt="card-image"
                   className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
@@ -1187,18 +1147,6 @@ if (isLoading) {
           </div>
         </div>
       </div>
-      {showRemix && selectedStory && (
-        <StoryRemix
-          story={selectedStory}
-          isLogin={isLogin}
-          onRemixComplete={(remixedStory) => {
-            setStories([remixedStory, ...stories]);
-            setSelectedStory(remixedStory);
-            setShowRemix(false);
-          }}
-          onClose={() => setShowRemix(false)}
-        />
-      )}
       {showWorldMap && selectedStory && (
         <StoryWorldMap
           story={selectedStory.content}

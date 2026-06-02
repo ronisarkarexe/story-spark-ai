@@ -157,20 +157,8 @@ const WriterFeedbackComponent = () => {
         </div>
 
         {/* Review Form Section */}
-        <div className="mt-20">
-          <div className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-white/60 p-8 shadow-xl backdrop-blur dark:bg-slate-900/60 md:p-10">
-            <div className="mb-8 text-center">
-              <h3 className="text-3xl font-bold text-slate-900 dark:text-white">
-                Share Your Experience
-              </h3>
-
-              <p className="mt-3 text-slate-600 dark:text-gray-400">
-                We'd love to hear your feedback and help inspire future writers.
-              </p>
-            </div>
-
-            <ReviewForm />
-          </div>
+        <div className="mt-10">
+          <ReviewForm />
         </div>
       </div>
     </section>
