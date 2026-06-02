@@ -10,12 +10,15 @@ import StoryRemix from "../remix/StoryRemix";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
+import StoryNarrator, {
+  type StoryNarratorHandle,
+  type NarrationPlaybackState,
+} from "./StoryNarrator";
 import ImageFallback from "../ImageFallback";
 export interface IStories {
   uuid: string;
@@ -38,44 +41,35 @@ interface StoriesComponentProps {
   isLoading?: boolean;
 }
 
-type StorySentenceSegment = {
+type StoryWordToken = {
   id: string;
   text: string;
-  startWordIndex: number;
-  endWordIndex: number;
+  wordIndex: number | null;
 };
 
-const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+const buildStoryWordTokens = (content: string): StoryWordToken[] => {
   if (!content.trim()) {
     return [];
   }
 
-  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
-  const segments: StorySentenceSegment[] = [];
+  const matches = content.match(/\S+|\s+/g) ?? [content];
+  const tokens: StoryWordToken[] = [];
   let wordCursor = 0;
 
-  sentenceMatches.forEach((sentence, index) => {
-    const trimmedSentence = sentence.trim();
-    if (!trimmedSentence) {
-      return;
-    }
-
-    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
-    const startWordIndex = wordCursor;
-    const endWordIndex =
-      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
-
-    segments.push({
-      id: `${index}-${startWordIndex}-${endWordIndex}`,
-      text: sentence,
-      startWordIndex,
-      endWordIndex,
+  matches.forEach((token, index) => {
+    const isWord = /\S/.test(token);
+    tokens.push({
+      id: `${index}-${wordCursor}`,
+      text: token,
+      wordIndex: isWord ? wordCursor : null,
     });
 
-    wordCursor += wordsInSentence;
+    if (isWord) {
+      wordCursor += 1;
+    }
   });
 
-  return segments;
+  return tokens;
 };
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
@@ -86,7 +80,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   onPublishSuccess,
 }) => {
   const location = useLocation();
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const storyNarratorRef = useRef<StoryNarratorHandle>(null);
 
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
@@ -120,6 +114,13 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   useEffect(() => {
   if (!selectedStory) return;
 
+<<<<<<< HEAD
+  const isNarrationActive = narrationState !== "idle";
+  const storyWordTokens = useMemo(() => {
+    return buildStoryWordTokens(selectedStory?.content ?? "");
+  }, [selectedStory?.content]);
+  
+=======
   const today = new Date().toDateString();
 
   const lastReadDate = localStorage.getItem("lastReadDate");
@@ -217,83 +218,12 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     toast.success("Reverted to original story ending!");
   };
 
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleTextToSpeech = () => {
-    if (!selectedStory?.content) return;
-
-    if (!("speechSynthesis" in window)) {
-      toast.error("Text-to-speech is not supported in this browser.");
-      return;
-    }
-
-    if (isPlayingAudio) {
-      if (isPausedAudio) {
-        window.speechSynthesis.resume();
-        setIsPausedAudio(false);
-        toast.success("Resumed reading story");
-      } else {
-        window.speechSynthesis.pause();
-        setIsPausedAudio(true);
-        toast.success("Paused reading story");
-      }
-    } else {
-      window.speechSynthesis.cancel();
-      const cleanContent = selectedStory.content.replace(/<[^>]*>/g, "");
-      const utterance = new SpeechSynthesisUtterance(cleanContent);
-      
-      utterance.onend = () => {
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      utterance.onerror = (e) => {
-        console.error("SpeechSynthesis error:", e);
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(
-        (v) => v.lang.startsWith("en-") && v.name.includes("Google")
-      ) || voices.find((v) => v.lang.startsWith("en-"));
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
-      setIsPlayingAudio(true);
-      setIsPausedAudio(false);
-      toast.success("Playing story audio");
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleStopAudio = () => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-    setIsPlayingAudio(false);
-    setIsPausedAudio(false);
-    toast.success("Stopped audio playback");
-  };
-
-  useEffect(() => {
-    return () => {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, []);
-
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
   }, [topics]);
 
   useEffect(() => {
-    const player = audioPlayerRef.current;
+    const player = storyNarratorRef.current;
     return () => {
       player?.stop();
     };
@@ -304,11 +234,20 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     setNarrationState("idle");
   }, [selectedStory?.uuid]);
 
-  const sentenceSegments = useMemo(() => {
-    return buildSentenceSegments(selectedStory?.content ?? "");
-  }, [selectedStory?.content]);
-
   // Sync state instantly whenever a new template is submitted or selected
+  useEffect(() => {
+    if (narrationState === "idle") {
+      return;
+    }
+
+    const activeWord = document.getElementById(`story-narration-word-${narrationWordIndex}`);
+    activeWord?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "nearest",
+    });
+  }, [narrationState, narrationWordIndex]);
+
   useEffect(() => {
     if (stories && stories.length > 0) {
       setSelectedStory(stories[0]);
@@ -911,23 +850,24 @@ if (isLoading) {
 
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
               <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence =
+                {storyWordTokens.length > 0 ? (
+                  storyWordTokens.map((token) => {
+                    const isActiveWord =
                       isNarrationActive &&
-                      narrationWordIndex >= segment.startWordIndex &&
-                      narrationWordIndex <= segment.endWordIndex;
+                      token.wordIndex !== null &&
+                      token.wordIndex === narrationWordIndex;
 
                     return (
                       <span
-                        key={segment.id}
+                        key={token.id}
+                        id={token.wordIndex !== null ? `story-narration-word-${token.wordIndex}` : undefined}
                         className={
-                          isActiveSentence
-                            ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-100 ring-1 ring-indigo-400/30"
+                          isActiveWord
+                            ? "rounded-md bg-indigo-500/30 px-0.5 py-0.5 text-indigo-50 ring-1 ring-indigo-300/40 transition-colors duration-200"
                             : undefined
                         }
                       >
-                        {segment.text}
+                        {token.text}
                       </span>
                     );
                   })
@@ -938,8 +878,8 @@ if (isLoading) {
             </div>
 
             <div className="relative z-10 mt-6">
-              <AudioPlayer
-                ref={audioPlayerRef}
+              <StoryNarrator
+                ref={storyNarratorRef}
                 text={selectedStory.content}
                 title={selectedStory.title}
                 onWordIndexChange={setNarrationWordIndex}
@@ -1009,6 +949,7 @@ if (isLoading) {
                 ) : (
                   <p className="text-gray-400">
                     No topics available. Please generate a story first.
+>>>>>>> upstream/main
                   </p>
                 )}
               </div>

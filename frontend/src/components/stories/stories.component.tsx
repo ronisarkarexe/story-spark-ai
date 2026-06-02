@@ -745,7 +745,7 @@ useEffect(() => {
   });
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 animate-gradient-slow transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
+    <div className="min-h-screen overflow-x-hidden bg-white text-slate-900 animate-gradient-slow transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
         <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
           <div className="pt-2 w-full md:w-auto flex justify-start">
@@ -1227,9 +1227,7 @@ useEffect(() => {
         onPublishSuccess={handlePublishSuccess}
         isLoading={loading}
       />
-
-      <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
-      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute top-[-200px] left-1/2 h-[350px] w-[800px] max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-full bg-blue-500/20 blur-3xl -z-10"></div>
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.15)] max-w-md w-full p-6 transform transition-all text-slate-900 dark:bg-[#0f172a] dark:border-white/10 dark:text-white dark:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
@@ -1291,4 +1289,8 @@ useEffect(() => {
   );
 };
 
+<<<<<<< HEAD
 export default StoriesComponent;
+=======
+export default StoriesComponent;
+>>>>>>> upstream/main
