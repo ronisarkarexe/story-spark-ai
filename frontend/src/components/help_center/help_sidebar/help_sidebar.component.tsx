@@ -11,14 +11,12 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { HELP_SECTIONS } from "../help_center.utils";
 
-const HelpSidebar = () => {
-  const [activeSection, setActiveSection] = useState<string>(
-    HELP_SECTIONS[0]?.id ?? "help-categories"
-  );
+const HelpSidebar: FC = () => {
+  const [activeSection, setActiveSection] = useState<string>(HELP_SECTIONS[0]?.id ?? "help-categories");
+  const mobileNavRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const sectionIds = HELP_SECTIONS.map((section) => section.id);
-
     const observer = new IntersectionObserver(
       (entries) => {
         const visibleSections = entries
@@ -30,8 +28,8 @@ const HelpSidebar = () => {
         }
       },
       {
-        rootMargin: "-15% 0px -45% 0px",
-        threshold: [0.1, 0.2, 0.4, 0.6],
+        rootMargin: "-20% 0px -55% 0px",
+        threshold: [0.1, 0.25, 0.5],
       }
     );
 
@@ -51,12 +49,24 @@ const HelpSidebar = () => {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("scroll", handleScroll);
-
     return () => {
       observer.disconnect();
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  useEffect(() => {
+    if (mobileNavRef.current) {
+      const activeButton = mobileNavRef.current.querySelector(`[data-section-id="${activeSection}"]`);
+      if (activeButton) {
+        (activeButton as HTMLElement).scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }
+  }, [activeSection]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -102,9 +112,7 @@ const HelpSidebar = () => {
               <div className="mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-200 dark:border-blue-500/20 mb-4">
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span className="text-xs font-semibold tracking-wide uppercase text-blue-700 dark:text-blue-300">
-                    Quick Navigation
-                  </span>
+                  <span className="text-xs font-semibold tracking-wide uppercase text-blue-700 dark:text-blue-300">Quick Navigation</span>
                 </div>
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Help Center</h2>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
@@ -152,13 +160,23 @@ const HelpSidebar = () => {
                           transition={{ type: "spring", stiffness: 260, damping: 24 }}
                         />
                       )}
-                      <div className="relative z-10 flex-1 text-left">
+
+                      <div className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 shrink-0 ${
+                        isActive
+                          ? `bg-gradient-to-br ${section.color} text-white shadow-md`
+                          : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 group-hover:text-blue-500"
+                      }`}>
+                        <i className={`fa-solid ${section.icon}`} aria-hidden="true" />
+                      </div>
+
+                      <div className="relative z-10 flex-1 min-w-0">
                         <p className={`font-semibold text-sm transition-colors duration-300 ${isActive ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
                           {section.label}
                         </p>
                       </div>
-                      <div className="relative z-10">
-                        <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isActive ? "bg-blue-500 scale-125 shadow-[0_0_12px_rgba(59,130,246,0.7)]" : "bg-slate-300 dark:bg-slate-700"}`} />
+
+                      <div className="relative z-10 shrink-0">
+                        <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isActive ? "bg-blue-500 scale-125 shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "bg-slate-300 dark:bg-slate-700"}`} />
                       </div>
                     </button>
                   );

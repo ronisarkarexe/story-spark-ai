@@ -87,11 +87,13 @@ const modules = [
     router: paymentRouter,
   },
   {
-    path: "/story",
+    path: "/story-version",
     router: StoryVersionRouter,
   },
-  {
-    path: "/analytics",
+  {    path: "/story-version",
+    router: StoryVersionRouter,
+  },
+  {    path: "/analytics",
     router: AnalyticsRouter,
   },
   {
