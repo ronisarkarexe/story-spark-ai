@@ -9,7 +9,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import httpStatus from "http-status";
-import cron from "node-cron";
+
 import cookieParser from "cookie-parser";
 import config from "./config";
 import { Routers } from "./router";
@@ -25,7 +25,7 @@ const limiter = rateLimit({
   max: 100,
   message: "Too many requests, please try again later.",
 });
-app.use(limiter as RequestHandler);
+app.use(limiter as unknown as RequestHandler);
 
 const defaultCorsOrigins = [
   "http://localhost:4001",
@@ -75,14 +75,5 @@ app.use((req: Request, res: Response, _next: NextFunction) => {
 
 app.use(globalErrorHandler);
 
-if (!process.env.VERCEL) {
-  cron.schedule("0 0 1 * *", async () => {
-    try {
-      await User.updateMany({}, { $set: { requestsThisMonth: 0 } });
-    } catch (error) {
-      console.error("Failed to reset request counts:", error);
-    }
-  });
-}
 
 export default app;

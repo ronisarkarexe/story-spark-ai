@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { FaXTwitter } from "react-icons/fa6";
 import logo from "../../assets/logoNew.png";
 
 const DEFAULT_GITHUB_ISSUES_URL = "https://github.com/ronisarkarexe/story-spark-ai/issues";
@@ -69,10 +70,10 @@ const FooterComponent = () => {
   ];
 
   const socialLinks = [
-    { icon: "fa-instagram", url: "https://www.instagram.com/" },
-    { icon: "fa-linkedin", url: "https://www.linkedin.com/" },
-    { icon: "fa-twitter", url: "https://x.com/" },
-    { icon: "fa-facebook", url: "https://www.facebook.com/" },
+    { icon: "fa-instagram", url: "https://www.instagram.com/", label: "Follow us on Instagram" },
+    { icon: "fa-linkedin", url: "https://www.linkedin.com/", label: "Connect with us on LinkedIn" },
+    { icon: "fa-twitter", url: "https://x.com/", label: "Follow us on X (Twitter)" },
+    { icon: "fa-facebook", url: "https://www.facebook.com/", label: "Follow us on Facebook" },
   ];
 
   const currentYear = new Date().getFullYear();
@@ -120,11 +121,10 @@ const FooterComponent = () => {
         }}
       />
 
-      <div className="relative z-10 max-w-[1450px] mx-auto px-8 lg:px-10 pt-10 pb-10">
-        <div className="grid grid-cols-12 gap-x-6 gap-y-6 items-start">
+      <div className="relative z-10 max-w-[1450px] mx-auto px-6 sm:px-8 lg:px-10 pt-12 pb-10">
+        <div className="grid grid-cols-12 gap-x-6 gap-y-10 items-start">
 
-          {/* Brand */}
-          <div className="col-span-12 md:col-span-4 flex flex-col gap-5">
+          <div className="col-span-12 lg:col-span-4 flex flex-col gap-5">
             <Link to="/" className="group inline-block w-fit">
               <img
                 src={logo}
@@ -136,13 +136,12 @@ const FooterComponent = () => {
               <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-blue-400 animate-pulse" />
               AI-powered storytelling ecosystem
             </div>
-            <p className="text-[14.5px] leading-[1.75] text-slate-300/90 max-w-[330px]">
+            <p className="text-[14.5px] leading-[1.75] text-slate-300/90 max-w-sm">
               Empowering voices through the art of writing. Connect, create, and inspire.
             </p>
           </div>
 
-          {/* Platform */}
-          <div className="col-span-6 md:col-span-2 flex flex-col gap-4">
+          <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Platform</h3>
             <ul className="flex flex-col gap-[12.5px]">
               {platformLinks.map(({ label, to }) => (
@@ -156,8 +155,7 @@ const FooterComponent = () => {
             </ul>
           </div>
 
-          {/* Resources */}
-          <div className="col-span-6 md:col-span-2 flex flex-col gap-4">
+          <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Resources</h3>
             <ul className="flex flex-col gap-[12.5px]">
               {resourceLinks.map(({ label, to }) => (
@@ -177,12 +175,11 @@ const FooterComponent = () => {
               ))}
             </ul>
           </div>
-          {/* Follow Us */}
-          <div className="col-span-6 md:col-span-2 flex flex-col gap-4">
+
+          <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
               Follow Us
             </h3>
-
             <ul className="flex flex-col gap-[12.5px]">
               {socialLinks.map((item) => (
                 <li key={item.icon}>
@@ -190,28 +187,54 @@ const FooterComponent = () => {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={item.label}
                     className="group flex items-center gap-2.5 text-[14px] text-slate-300/85 hover:text-blue-300 transition-all duration-200"
                   >
-                    <i
-                      className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
-                    />
-                    <span className="capitalize">{item.icon.replace("fa-", "")}</span>
+                    {item.icon === "fa-x-twitter" ? (
+                      <FaXTwitter className="text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors" />
+                    ) : (
+                      <i
+                        className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
+                      />
+                    )}
+                    <span className="capitalize">
+                      {item.icon === "fa-x-twitter" ? "X" : item.icon.replace("fa-", "")}
+                    </span>
                   </a>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Newsletter */}
-          <div className="col-span-12 md:col-span-2 flex flex-col gap-3">
+          <div className="col-span-12 sm:col-span-8 lg:col-span-2 flex flex-col gap-4">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Stay Updated</h3>
-            <p className="text-[13.5px] leading-[1.65] text-slate-300/80 max-w-[270px]">
+            <p className="text-[13.5px] leading-[1.65] text-slate-300/80 max-w-sm">
               Writing tips, product updates, and stories straight to your inbox.
             </p>
             <form
               onSubmit={handleSubscribe}
               noValidate
+
+              className="group/form mt-1 flex items-center rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-1 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
+            >
+              <span className="shrink-0 pl-3 text-slate-500 text-[13px]">
+                <i className="fa-solid fa-envelope" aria-hidden="true" />
+              </span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@storyspark.ai"
+                disabled={status === "loading"}
+                className="w-full min-w-0 bg-transparent pl-2.5 pr-1.5 py-2 text-[13px] text-white placeholder-slate-500 focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={status === "loading"}
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-[12px] font-semibold text-white tracking-wide hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60"
+
               className="mt-0.5 flex flex-col gap-2 rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-2 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
+
               >
                {/* Input */}
               <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
@@ -252,14 +275,22 @@ const FooterComponent = () => {
           }}
         />
 
-        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-slate-400/80">
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2.5 gap-y-1">
+        <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-slate-400/80">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 gap-y-1 text-center md:text-left">
             <span className="text-slate-400/80">&copy; {currentYear} StorySparkAI. All rights reserved.</span>
-            <span className="hidden sm:inline text-white/[0.12]">|</span>
-            <span className="italic text-slate-400/60">Crafted for storytellers</span>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
             {legalLinks.map(({ label, to }, i) => (
+
+              <React.Fragment key={label}>
+                <Link to={to} className="hover:text-blue-300 transition-colors">
+                  {label}
+                </Link>
+                {i < legalLinks.length - 1 && (
+                  <span className="text-white/[0.12]">|</span>
+                )}
+              </React.Fragment>
+
               <span key={label}>
                 <Link to={to}>
                   {label}
@@ -269,9 +300,9 @@ const FooterComponent = () => {
                   <span className="text-white/[0.12]">|</span>
                 )}
               </span>
+
             ))}
           </div>
-
         </div>
       </div>
     </footer>

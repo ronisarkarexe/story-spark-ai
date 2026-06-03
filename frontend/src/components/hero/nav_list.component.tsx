@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
 
@@ -22,9 +23,22 @@ const NavListComponent = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/90 backdrop-blur-md dark:border-white/10 dark:bg-[#0B1120]/80">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link to="/" className="text-lg font-bold text-slate-800 dark:text-white">
-          StorySparkAI
-        </Link>
+        <Link
+        to="/"
+        className="text-lg font-bold text-slate-800 dark:text-white"
+        onClick={(e) => {
+          if (window.location.pathname === "/") {
+            e.preventDefault();
+
+            window.scrollTo({
+              top: 0,
+              behavior: "smooth",
+            });
+          }
+        }}
+      >
+        Spark-Story-AI
+      </Link>
 
         <nav className="hidden items-center gap-2 lg:flex">
           <NavLink to="/" end className={linkClass}>
@@ -73,23 +87,24 @@ const NavListComponent = () => {
           </button>
         </div>
       </div>
-
-      {menuOpen && (
-        <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 lg:hidden dark:border-white/10">
-          <NavLink to="/" end className={linkClass}>
-            Home
-          </NavLink>
-          <NavLink to="/explore" className={linkClass}>
-            Explore
-          </NavLink>
-          <NavLink to="/story-inspiration" className={linkClass}>
-            Stories
-          </NavLink>
-          <NavLink to="/community" className={linkClass}>
-            Community
-          </NavLink>
-        </div>
-      )}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
+            className="overflow-hidden lg:hidden"
+          >
+            <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 dark:border-white/10">
+              <NavLink to="/" end className={linkClass}>Home</NavLink>
+              <NavLink to="/explore" className={linkClass}>Explore</NavLink>
+              <NavLink to="/story-inspiration" className={linkClass}>Stories</NavLink>
+              <NavLink to="/community" className={linkClass}>Community</NavLink>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

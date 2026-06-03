@@ -13,6 +13,11 @@ export interface UserProfile {
   bio?: string;
 }
 
+export interface WritingGoals {
+  dailyWordCount: number;
+  weeklyWordCount: number;
+}
+
 export interface User {
   _id: string;
   email: string;
@@ -41,11 +46,12 @@ export interface User {
   lastRequestDate: string | null;
   posts: string[];
   isApplyForWriter: boolean;
+  // Optional writing goals for analytics and user settings
+  writingGoals?: {
+    dailyWordCount?: number;
+    weeklyWordCount?: number;
+  };
   createdAt: string;
   updatedAt: string;
   profile: UserProfile;
-  writingGoals?: {
-    dailyWordCount: number;
-    weeklyWordCount: number;
-  };
 }
