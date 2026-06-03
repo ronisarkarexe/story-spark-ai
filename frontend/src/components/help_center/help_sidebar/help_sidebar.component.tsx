@@ -184,7 +184,7 @@ const HelpSidebar: FC = () => {
                         We're here to help
                       </p>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>

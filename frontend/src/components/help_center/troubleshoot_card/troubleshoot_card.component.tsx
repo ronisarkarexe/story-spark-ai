@@ -13,13 +13,6 @@ const TroubleshootCard: FC<TroubleshootCardProps> = ({ item }) => {
         <div
           className="flex-shrink-0 w-11 h-11 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 dark:text-red-400 border border-red-500/10 dark:border-red-500/20"
 
-    <article className="bg-white dark:bg-blue-500/10 border border-slate-200 dark:border-white/5 hover:border-red-500/30 p-6 rounded-xl shadow-sm transition-all duration-300 hover:scale-[1.01]">
-      
-      <div className="flex items-start gap-4">
-        
-        <div
-          className="flex-shrink-0 w-12 h-12 rounded-lg bg-red-100 dark:bg-red-500/10 flex items-center justify-center text-red-500 dark:text-red-400"
-
           aria-hidden="true"
         >
           <i className={`${item.icon} text-lg`}></i>

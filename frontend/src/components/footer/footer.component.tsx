@@ -233,8 +233,6 @@ const FooterComponent = () => {
                 disabled={status === "loading"}
                 className="shrink-0 inline-flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-[12px] font-semibold text-white tracking-wide hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60"
 
-              className="mt-0.5 flex flex-col gap-2 rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-2 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
-
               >
                {/* Input */}
               <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">

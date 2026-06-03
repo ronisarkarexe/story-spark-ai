@@ -81,17 +81,6 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
           {resultCount === 0
             ? "No results found — try filtering by different keywords"
             : `${resultCount} result${resultCount === 1 ? "" : "s"} uncovered inside ecosystem guides`}
-
-        <p
-          className="mt-3 text-sm text-slate-500 dark:text-gray-500 text-center"
-          aria-live="polite"
-        >
-          {resultCount === 0
-            ? "No results found — try different keywords"
-            : `${resultCount} result${
-                resultCount === 1 ? "" : "s"
-              } found`}
-
         </p>
       )}
     </form>

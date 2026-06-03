@@ -503,27 +503,12 @@ const [, setShowRemix] = useState<boolean>(false);
     setIsGeneratingEndings(true);
     const toastId = toast.loading("Generating alternate endings...");
     
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Generating alternate endings...");
     try {
       const payload = {
         title: selectedStory.title,
         content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
         tag: selectedStory.tag,
         language: selectedStory.language || "English",
-
-        language: selectedStory.language || "English",
-      };
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
-      const res = await generationRequest.unwrap();
-      if (res && res.data) {
-        setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
-
-
-        language: selectedStory.language || "English",
-
       };
       
       const generationRequest = isLogin

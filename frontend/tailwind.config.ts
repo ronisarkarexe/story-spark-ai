@@ -3,21 +3,13 @@ import forms from "@tailwindcss/forms";
 import containerQueries from "@tailwindcss/container-queries";
 
 const config: Config = {
-
-import forms from "@tailwindcss/forms";
-import containerQueries from "@tailwindcss/container-queries";
-
-/** @type {import('tailwindcss').Config} */
-export default {
   content: [
     "./index.html",
     "./login.html",
     "./signup.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-
   darkMode: "class",
-
   theme: {
     extend: {
       colors: {
@@ -69,69 +61,22 @@ export default {
         "secondary-fixed-dim": "#fbabff",
         "secondary-fixed": "#ffd6fd",
       },
-
       fontFamily: {
         "body-md": ["Inter"],
         "display-lg": ["Inter"],
         "label-caps": ["Inter"],
         "headline-md": ["Inter"],
       },
-
       fontSize: {
-        "body-md": [
-          "15px",
-          {
-            lineHeight: "1.6",
-            fontWeight: "400",
-          },
-        ],
-
-        "display-lg": [
-          "36px",
-          {
-            lineHeight: "1.15",
-            letterSpacing: "-0.02em",
-            fontWeight: "800",
-          },
-        ],
-
-        "display-lg-mobile": [
-          "26px",
-          {
-            lineHeight: "1.2",
-            letterSpacing: "-0.02em",
-            fontWeight: "800",
-          },
-        ],
-
-        "label-caps": [
-          "11px",
-          {
-            lineHeight: "1.0",
-            letterSpacing: "0.08em",
-            fontWeight: "600",
-          },
-        ],
-
-        "headline-md": [
-          "18px",
-          {
-            lineHeight: "1.3",
-            letterSpacing: "-0.01em",
-            fontWeight: "700",
-          },
-        ],
+        "body-md": ["15px", { lineHeight: "1.6", fontWeight: "400" }],
+        "display-lg": ["36px", { lineHeight: "1.15", letterSpacing: "-0.02em", fontWeight: "800" }],
+        "display-lg-mobile": ["26px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "800" }],
+        "label-caps": ["11px", { lineHeight: "1.0", letterSpacing: "0.08em", fontWeight: "600" }],
+        "headline-md": ["18px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "700" }],
       },
     },
   },
-
   plugins: [forms, containerQueries],
 };
 
 export default config;
-   plugins: [
-    forms,
-    containerQueries,
-  ],
- 
-}

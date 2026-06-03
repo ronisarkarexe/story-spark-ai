@@ -1,7 +1,7 @@
 import express from "express";
 import { PostController } from "./post.controller";
 import auth from "../../middleware/auth.middleware";
-import checkRequestLimit from "../../middleware/check.request.limit";
+import { enforceQuota } from "../../middleware/enforceQuota.middleware";
 import validateRequest from "../../middleware/validate.request";
 import { PostValidator } from "./post.validation";
 import { ENUM_USER_ROLE } from "../../../enums/user";
@@ -98,7 +98,7 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
-  checkRequestLimit,
+  enforceQuota("story_generate"),
   PostController.remixStory
 );
 
@@ -110,7 +110,7 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
-  checkRequestLimit,
+  enforceQuota("story_generate"),
   PostController.translateStory
 );
 

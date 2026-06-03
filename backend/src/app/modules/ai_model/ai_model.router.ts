@@ -2,7 +2,7 @@ import express from "express";
 import { AiModelController } from "./ai_model.controller";
 import validateRequest from "../../middleware/validate.request";
 import { AIModelValidator } from "./ai_model.validation";
-import checkRequestLimit from "../../middleware/check.request.limit";
+import { enforceQuota } from "../../middleware/enforceQuota.middleware";
 import auth from "../../middleware/auth.middleware";
 import freeAiRateLimiter from "../../middleware/free-ai.rate-limiter";
 import {
@@ -18,7 +18,7 @@ router.post(
   aiGenerationRateLimiter,
   auth(),
   validateRequest(AIModelValidator.aiModel),
-  checkRequestLimit(),
+  enforceQuota("story_generate"),
   AiModelController.aiModelGenerate
 );
 
@@ -46,7 +46,7 @@ router.post(
   aiGenerationRateLimiter,
   auth(),
   validateRequest(AIModelValidator.aiAlternateEndings),
-  checkRequestLimit(),
+  enforceQuota("story_continue"),
   AiModelController.aiModelAlternateEndings
 );
 
@@ -65,7 +65,7 @@ router.post(
   "/remix",
   aiGenerationRateLimiter,
   auth(),
-  checkRequestLimit(),
+  enforceQuota("story_generate"),
   validateRequest(AIModelValidator.aiRemix),
   AiModelController.aiModelRemix
 );
@@ -85,7 +85,7 @@ router.post(
   "/translate",
   aiGenerationRateLimiter,
   auth(),
-  checkRequestLimit(),
+  enforceQuota("story_generate"),
   validateRequest(AIModelValidator.aiTranslate),
   AiModelController.aiModelTranslate
 );
@@ -105,7 +105,7 @@ router.post(
   "/chat",
   auth(),
   validateRequest(AIModelValidator.aiChat),
-  checkRequestLimit(),
+  enforceQuota("story_generate"),
   AiModelController.aiModelChat
 );
 

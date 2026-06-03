@@ -302,9 +302,6 @@ const ReviewForm = () => {
             </button>
           </div>
         </div>
-<<<<<<< HEAD
-=======
-      )}
 
       {errors.submit && (
         <div aria-live="polite" className="mb-5 p-4 border border-red-500/20 bg-red-500/[0.02] text-red-600 dark:text-red-400 rounded-xl text-xs sm:text-sm font-semibold tracking-tight">

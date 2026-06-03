@@ -23,24 +23,6 @@ const HomeComponent = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 w-full box-border overflow-x-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-12 items-start gap-6 py-8 sm:py-12 lg:gap-8 lg:py-16 w-full box-border">
-        
-        <main className="col-span-12 lg:col-span-8 min-w-0 w-full box-border space-y-8 sm:space-y-12">
-          <FeatureComponent />
-          <LatestPostsComponent />
-        </main>
-
-        <aside className="col-span-12 lg:col-span-4 min-w-0 w-full box-border">
-          <div className="space-y-6 lg:sticky lg:top-24 w-full box-border">
-            {isLogin && <FeatureProfileComponent />}
-            {isLogin && <PersonalizedRecommendationsComponent />}
-            <TrendingTopicComponent />
-            <RecommendedWritersComponent />
-          </div>
-        </aside>
-
-    <motion.div 
       initial="hidden"
       animate="visible"
       variants={containerVariants}

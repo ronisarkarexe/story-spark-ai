@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-﻿import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Globe,
   GitPullRequest,
@@ -8,11 +7,9 @@ import {
   Sparkles,
   Trophy,
   Zap,
-} from "lucide-react";
   Star,
   ExternalLink,
   Code2,
-  Trophy,
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -406,38 +403,19 @@ const ContributorsComponent = () => {
           "https://api.github.com/repos/ronisarkarexe/story-spark-ai/contributors"
         );
 
-        const data: Contributor[] = await res.json();
-
-        const sorted = data
-          .filter((c) => c.contributions > 0)
-          .sort((a, b) => b.contributions - a.contributions);
-
-        setContributors(sorted);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const sorted = data
+            .filter((c: Contributor) => c.contributions > 0)
+            .sort((a: Contributor, b: Contributor) => b.contributions - a.contributions);
+          setContributors(sorted);
+        }
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
-
-  const top = contributors[0];
-
-  const totalContributions = contributors.reduce(
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          const filtered = data.filter(
-            (contributor: Contributor) => contributor.contributions >= 1
-          );
-          setContributors(filtered);
-        }
-      } catch (error) {
-        console.error("Failed to fetch contributors:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchContributors();
   }, []);
 
   const totalPRs = contributors.reduce(

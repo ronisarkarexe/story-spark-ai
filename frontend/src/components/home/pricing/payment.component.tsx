@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -142,6 +142,8 @@ const PaymentComponent = () => {
       console.error(error);
       alert("Something went wrong.");
     }
+  };
+
   const planPrice = searchParams.get("price") || "19.99";
 
   const [cardNumber, setCardNumber] = useState("");

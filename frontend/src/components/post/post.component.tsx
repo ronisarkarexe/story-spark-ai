@@ -375,7 +375,6 @@ const ExploreComponent = () => {
             )}
           </div>
         </div>
-      </div>
 
       <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
 

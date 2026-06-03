@@ -10,24 +10,7 @@ interface HelpHeroProps {
 }
 
 const HelpHero: FC<HelpHeroProps> = ({
-
   searchQuery,
-  onSearchChange,
-  resultCount,
-}) => {
-  return (
-    <section
-      id="help-hero"
-      className="relative overflow-hidden border-b border-slate-200/80 dark:border-white/10 bg-gradient-to-b from-slate-50 to-white dark:from-[#0B1120]/40 dark:to-transparent transition-colors duration-300 w-full box-border"
-      aria-labelledby="help-center-title"
-    >
-      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-        <div className="absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-100px] right-[-100px] w-[320px] h-[320px] bg-purple-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-[450px] h-[450px] -translate-x-1/2 -translate-y-1/2 bg-indigo-500/5 rounded-full blur-3xl" />
-      </div>
-
-  searchQuery = "",
   onSearchChange,
   resultCount,
 }) => {
@@ -40,9 +23,14 @@ const HelpHero: FC<HelpHeroProps> = ({
   return (
     <section
       id="help-hero"
-      className="relative overflow-hidden border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900"
+      className="relative overflow-hidden border-b border-slate-200/80 dark:border-white/10 bg-gradient-to-b from-slate-50 to-white dark:from-[#0B1120]/40 dark:to-transparent transition-colors duration-300 w-full box-border"
       aria-labelledby="help-center-title"
     >
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+        <div className="absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-100px] right-[-100px] w-[320px] h-[320px] bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-[450px] h-[450px] -translate-x-1/2 -translate-y-1/2 bg-indigo-500/5 rounded-full blur-3xl" />
+      </div>
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl -z-10"
         aria-hidden="true"

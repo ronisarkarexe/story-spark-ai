@@ -302,7 +302,7 @@ const HeroSectionComponent = () => {
             <span className="hero-gradient-text pb-2 block sm:inline">
               AI-Driven Storytelling
             </span>
-          </motion.h1>
+          </h1>
 
           <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
             Create, edit, and generate engaging multiple story variations from a single prompt.
