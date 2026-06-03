@@ -90,10 +90,8 @@ const modules = [
     path: "/story-version",
     router: StoryVersionRouter,
   },
-  {    path: "/story-version",
-    router: StoryVersionRouter,
-  },
-  {    path: "/analytics",
+  { 
+    path: "/analytics",
     router: AnalyticsRouter,
   },
   {

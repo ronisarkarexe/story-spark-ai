@@ -14,12 +14,13 @@ import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
 import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
-const MAX_SEARCH_TERM_LENGTH = 100;
+import { WritingStreakService } from "../gamification/writing_streak.service";
+
 
 const escapeRegex = (text: string): string => {
   return text.replace(/[-[\]{}()*+?.,\^$|#\s]/g, "\$&");
 };
-// const MAX_SEARCH_TERM_LENGTH = 100;
+const MAX_SEARCH_TERM_LENGTH = 100;
 
 interface ICursorPayload {
   value: string;
