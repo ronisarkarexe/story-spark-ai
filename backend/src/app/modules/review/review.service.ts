@@ -16,10 +16,12 @@ const createReview = async (payload: IReviewPayload, token: ITokenPayload) => {
   });
 
   // Invalidate cache (best-effort)
-  try {
-    await redis.del(PUBLISHED_REVIEWS_KEY);
-  } catch (err) {
-    console.warn("Redis DEL failed (createReview):", err);
+  if (redis.status === "ready") {
+    try {
+      await redis.del(PUBLISHED_REVIEWS_KEY);
+    } catch (err) {
+      console.warn("Redis DEL failed (createReview):", err);
+    }
   }
 
   return result;
@@ -27,13 +29,15 @@ const createReview = async (payload: IReviewPayload, token: ITokenPayload) => {
 
 const getPublishedReviews = async () => {
   // Try cache first
-  try {
-    const cached = await redis.get(PUBLISHED_REVIEWS_KEY);
-    if (cached) {
-      return JSON.parse(cached);
+  if (redis.status === "ready") {
+    try {
+      const cached = await redis.get(PUBLISHED_REVIEWS_KEY);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (err) {
+      console.warn("Redis GET failed (getPublishedReviews):", err);
     }
-  } catch (err) {
-    console.warn("Redis GET failed (getPublishedReviews):", err);
   }
 
   // Fallback to DB
@@ -42,10 +46,12 @@ const getPublishedReviews = async () => {
     .lean();
 
   // Populate cache (best-effort)
-  try {
-    await redis.set(PUBLISHED_REVIEWS_KEY, JSON.stringify(result), "EX", REVIEWS_CACHE_TTL);
-  } catch (err) {
-    console.warn("Redis SET failed (getPublishedReviews):", err);
+  if (redis.status === "ready") {
+    try {
+      await redis.set(PUBLISHED_REVIEWS_KEY, JSON.stringify(result), "EX", REVIEWS_CACHE_TTL);
+    } catch (err) {
+      console.warn("Redis SET failed (getPublishedReviews):", err);
+    }
   }
 
   return result;

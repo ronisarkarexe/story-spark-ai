@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getSocketIo, connectSocket } from "../../socket/socket.oi";
+import { connectSocket, getSocketIo } from "../../socket/socket.oi";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 
 interface Participant {
@@ -27,6 +27,20 @@ interface Room {
   createdAt: Date;
 }
 
+interface CollabRoomResponse {
+  room?: Room;
+  message?: string;
+}
+
+interface CollabStoryResponse {
+  story?: StoryChunk[];
+}
+
+/**
+ * Collab rooms required Socket.IO to `BACKEND_URL/collab`. That is disabled in the
+ * frontend (same as notification socket) to avoid slow loads and connection hangs.
+ * Restore the previous implementation from git history when you run a persistent backend.
+ */
 export default function CollabRoom() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -51,11 +65,10 @@ export default function CollabRoom() {
       }
 
       // Connect to collab namespace
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const collabSocket = (socket.io as any).of("/collab");
+      const collabSocket = socket.io.socket("/collab");
 
       // Request room info
-      collabSocket.emit("collab:get_room", { roomId }, (response: { room?: Room }) => {
+      collabSocket.emit("collab:get_room", { roomId }, (response: CollabRoomResponse) => {
         if (response && response.room) {
           setRoom(response.room);
           setError(null);
@@ -66,28 +79,31 @@ export default function CollabRoom() {
       });
 
       // Listen for room updates
-      const handleRoomUpdated = (data: { room?: Room }) => {
+      const handleRoomUpdated = (data: CollabRoomResponse) => {
         if (data && data.room) {
           setRoom(data.room);
         }
       };
 
-      const handleStoryUpdated = (data: { story?: StoryChunk[] }) => {
-        if (data) {
-          setRoom((prev) => (prev ? { ...prev, story: data.story || [] } : null));
+      const handleStoryUpdated = (data: CollabStoryResponse) => {
+        if (data && data.story) {
+          setRoom((prev) =>
+            prev && data.story ? { ...prev, story: data.story } : prev,
+          );
         }
       };
 
       collabSocket.on("collab:room_updated", handleRoomUpdated);
       collabSocket.on("collab:story_updated", handleStoryUpdated);
-      collabSocket.on("collab:error", (data: { message: string }) => {
-        setError(data.message);
+      collabSocket.on("collab:error", (data: CollabRoomResponse) => {
+        setError(data.message ?? "Collaboration error");
         setLoading(false);
       });
 
       return () => {
         collabSocket.off("collab:room_updated", handleRoomUpdated);
         collabSocket.off("collab:story_updated", handleStoryUpdated);
+        collabSocket.disconnect(); // Clean connection handle loop safely
       };
     } catch (err) {
       console.error("Collab error:", err);
@@ -96,14 +112,12 @@ export default function CollabRoom() {
     }
   }, [roomId, navigate]);
 
-  const handleAddText = () => {
+const handleAddText = () => {
     if (!newText.trim() || !user) return;
 
     const socket = getSocketIo();
     if (socket) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const collabSocket = (socket.io as any).of("/collab");
-      collabSocket.emit("collab:add_text", {
+      socket.io.socket("/collab").emit("collab:add_text", {
         roomId,
         userId: user.userId,
         text: newText,
@@ -115,9 +129,7 @@ export default function CollabRoom() {
   const handleAIContinue = () => {
     const socket = getSocketIo();
     if (socket) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const collabSocket = (socket.io as any).of("/collab");
-      collabSocket.emit("collab:ai_continue", { roomId });
+      socket.io.socket("/collab").emit("collab:ai_continue", { roomId });
     }
   };
 
@@ -151,14 +163,19 @@ export default function CollabRoom() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white p-4 transition-colors duration-300">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300">
+      <div className="text-center max-w-md">
+        <p className="text-red-500 dark:text-red-400 text-lg mb-2">Collaboration unavailable</p>
+        <p className="text-slate-600 dark:text-white/60 text-sm mb-6">
+          Real-time collab is turned off (Socket.IO disabled). Room{" "}
+          <span className="text-slate-800 dark:text-white/80 font-mono">{roomId}</span> cannot load.
+        </p>
         <button
           type="button"
           onClick={() => navigate("/collab")}
-          className="mb-6 px-4 py-2 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 transition-colors"
+          className="text-indigo-600 dark:text-indigo-400 underline"
         >
-          ← Back
+          Back to collab home
         </button>
 
         <div className="grid grid-cols-3 gap-6">
@@ -188,7 +205,7 @@ export default function CollabRoom() {
                   type="text"
                   value={newText}
                   onChange={(e) => setNewText(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleAddText()}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddText()}
                   placeholder="Add your story text..."
                   className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-white/10 rounded-lg focus:outline-none focus:border-indigo-500"
                 />

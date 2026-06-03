@@ -3,7 +3,7 @@ import config from "../../../config";
 import { fetchImageURL } from "../../../utils/image_generation";
 
 const openai = new OpenAI({
-  apiKey: config.openai_key,
+  apiKey: config.openai_key || "dummy_key",
 });
 
 export async function generateStories(prompt: string) {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, {
   forwardRef,
   useEffect,
@@ -45,7 +44,7 @@ const controlButtonBaseClass =
 const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
   ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
     const [voiceGender, setVoiceGender] = useState<"female" | "male">("female");
-    const speech: any = useSpeechSynthesis(text);
+    const speech = useSpeechSynthesis(text, voiceGender);
     const preview = useVoicePreview();
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -55,14 +54,14 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     const languageSelectId = useId();
     const voiceSelectId = useId();
 
-    const filteredVoices = speech.voices.filter((voice: any) => voice.lang === speech.selectedLanguage);
+    const filteredVoices = speech.voices.filter((voice) => voice.lang === speech.selectedLanguage);
     const voiceOptions = filteredVoices.length > 0 ? filteredVoices : speech.voices;
 
     const displayedVoices = useMemo(() => {
       if (!showFavoritesOnly) {
         return voiceOptions;
       }
-      return voiceOptions.filter((voice: any) => favorites.isFavorite(voice.id));
+      return voiceOptions.filter((voice) => favorites.isFavorite(voice.id));
     }, [voiceOptions, showFavoritesOnly, favorites]);
 
     useImperativeHandle(
@@ -92,7 +91,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     useEffect(() => {
       if (showFavoritesOnly && displayedVoices.length > 0) {
         const isCurrentVoiceStillAvailable = displayedVoices.some(
-          (v: any) => v.id === speech.selectedVoiceId
+          (v) => v.id === speech.selectedVoiceId
         );
         if (!isCurrentVoiceStillAvailable) {
           speech.setSelectedVoiceId(displayedVoices[0].id);
@@ -225,7 +224,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>Progress</span>
                   <span aria-live="polite">
-                    {spokenWordCount} / {speech.progress.totalWords} words
+                    {speech.isPlaying || speech.isPaused ? spokenWordCount : 0} / {speech.progress.totalWords} words
                   </span>
                 </div>
                 <div
@@ -260,7 +259,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                       onChange={(event) => speech.setRate(Number(event.target.value))}
                       className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                     >
-                      {SPEED_OPTIONS.map((option: any) => (
+                      {SPEED_OPTIONS.map((option) => (
                         <option key={option} value={option}>
                           {option.toFixed(2).replace(/\.00$/, "")}&times;
                         </option>
@@ -350,7 +349,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     onChange={(event) => speech.setSelectedLanguage(event.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                   >
-                    {speech.languageOptions.map((option: any) => (
+                    {speech.languageOptions.map((option) => (
                       <option key={option.lang} value={option.lang}>
                         {option.label} ({option.voiceCount})
                       </option>
@@ -392,7 +391,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                       {displayedVoices.length === 0 ? (
                         <option disabled>No favorites available</option>
                       ) : (
-                        displayedVoices.map((voice: any) => (
+                        displayedVoices.map((voice) => (
                           <option key={voice.id} value={voice.id}>
                             {voice.label}
                           </option>
@@ -412,7 +411,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     type="button"
                     onClick={() => {
                       const currentVoice = speech.voices.find(
-                        (v: any) => v.id === speech.selectedVoiceId,
+                        (v) => v.id === speech.selectedVoiceId,
                       );
                       if (currentVoice) {
                         preview.playPreview(currentVoice);

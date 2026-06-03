@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { useGetPostListsQuery } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
 import { Topic } from "../../../models/post";
@@ -109,111 +109,61 @@ const PostListsComponent: React.FC = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-800/60">
-          <thead className="bg-[#141624]/80 backdrop-blur-sm">
-            <tr>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Title
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Author
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Topics
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Status
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Stats
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Created
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-800/60 bg-transparent">
-            {isLoading ? (
-              [...Array(5)].map((_, idx) => (
-                <tr key={idx} className="animate-pulse bg-transparent border-b border-gray-800/40">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-11 w-11 mr-4 rounded-lg bg-gray-800/40" />
-                      <div className="space-y-1.5 flex-1">
-                        <div className="h-4 bg-gray-800/60 rounded-md w-32" />
-                        <div className="h-3 bg-gray-800/30 rounded-md w-16" />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="space-y-1.5">
-                      <div className="h-4 bg-gray-800/50 rounded-md w-24" />
-                      <div className="h-3 bg-gray-800/30 rounded-md w-32" />
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex gap-1.5">
-                      <div className="h-5 bg-gray-800/40 rounded-full w-14" />
-                      <div className="h-5 bg-gray-800/40 rounded-full w-16" />
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="h-5 bg-gray-800/50 rounded-full w-16" />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex space-x-5">
-                      <div className="text-center">
-                        <div className="h-4 bg-gray-800/40 rounded-md w-6 mx-auto" />
-                        <div className="h-2 bg-gray-800/20 rounded-md w-8 mt-1" />
-                      </div>
-                      <div className="text-center">
-                        <div className="h-4 bg-gray-800/40 rounded-md w-6 mx-auto" />
-                        <div className="h-2 bg-gray-800/20 rounded-md w-8 mt-1" />
-                      </div>
-                      <div className="text-center">
-                        <div className="h-4 bg-gray-800/40 rounded-md w-6 mx-auto" />
-                        <div className="h-2 bg-gray-800/20 rounded-md w-8 mt-1" />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="h-4 bg-gray-800/40 rounded-md w-20" />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex items-center space-x-2">
-                      <div className="h-8 bg-gray-800/40 rounded-md w-12" />
-                      <div className="h-8 bg-gray-800/40 rounded-md w-14" />
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              data?.posts?.map((post) => (
+      {isLoading ? (
+        <div className="p-12 flex justify-center items-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-800/60">
+            <thead className="bg-[#141624]/80 backdrop-blur-sm">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Title
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Author
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Topics
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Stats
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Created
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-800/60 bg-transparent">
+              {data?.posts?.map((post) => (
                 <tr key={post._id} className="hover:bg-gray-800/30 transition-colors duration-200 group">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -240,7 +190,8 @@ const PostListsComponent: React.FC = () => {
                     <div className="text-sm text-gray-200">
                       {post.author?.name || 'Unknown User'}
                     </div>
-                    <div className="text-xs text-gray-500">
+
+                    <div className="text-xs text-gray-400">
                       {post.author?.email || 'N/A'}
                     </div>
                   </td>
@@ -295,11 +246,11 @@ const PostListsComponent: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {data?.meta && (
         <div className="sticky bottom-0 bg-[#1a1d2d]/90 backdrop-blur-md border-t border-gray-800/60 z-10 mt-2">

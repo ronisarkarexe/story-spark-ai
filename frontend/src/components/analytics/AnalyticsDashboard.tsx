@@ -4,8 +4,9 @@ import {
   PieChart, Pie, Cell, CartesianGrid, LineChart, Line
 } from "recharts";
 import { Link } from "react-router-dom";
+import { getBaseUrl } from "../../helpers/config";
 
-const API_BASE = import.meta.env.VITE_BASE_URL || "http://localhost:5000/api/v1";
+const API_BASE = getBaseUrl();
 
 const COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#14b8a6"];
 
@@ -41,36 +42,58 @@ export default function AnalyticsDashboard() {
 
   const token = localStorage.getItem("token") || "";
 
-  const fetchData = async (endpoint: string) => {
-    const res = await fetch(`${API_BASE}/analytics/${endpoint}`, {
-      headers: { Authorization: token },
-    });
+  const fetchData = async (
+    endpoint: string,
+    signal: AbortSignal
+  ) => {
+    const res = await fetch(
+      `${API_BASE}/analytics/${endpoint}`,
+      {
+        headers: { Authorization: token },
+        signal,
+      }
+    );
+  
     const data = await res.json();
     return data.data;
   };
 
   useEffect(() => {
+    const controller = new AbortController();
+  
     const load = async () => {
       try {
         const [ov, hm, gn, wc, hr] = await Promise.all([
-          fetchData("overview"),
-          fetchData("heatmap"),
-          fetchData("genres"),
-          fetchData("wordcloud"),
-          fetchData("productive-hours"),
+          fetchData("overview", controller.signal),
+          fetchData("heatmap", controller.signal),
+          fetchData("genres", controller.signal),
+          fetchData("wordcloud", controller.signal),
+          fetchData("productive-hours", controller.signal),
         ]);
-        setOverview(ov);
-        setHeatmap(hm);
-        setGenres(gn);
-        setWordCloud(wc);
-        setHours(hr);
+  
+        if (!controller.signal.aborted) {
+          setOverview(ov);
+          setHeatmap(hm);
+          setGenres(gn);
+          setWordCloud(wc);
+          setHours(hr);
+        }
       } catch (e) {
-        console.error(e);
+        if ((e as Error).name !== "AbortError") {
+          console.error(e);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
+  
     load();
+  
+    return () => {
+      controller.abort();
+    };
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return (
