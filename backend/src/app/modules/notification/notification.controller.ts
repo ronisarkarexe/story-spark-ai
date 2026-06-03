@@ -8,12 +8,20 @@ import { ITokenPayload } from "../../../interfaces/token";
 
 const getUserNotifications = catchAsync(async (req: Request, res: Response) => {
   const token = req.user as ITokenPayload;
-  const result = await NotificationService.getUserNotifications(token);
+
+  // URL query string se page aur limit parameters parse kar rahe hain safely
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 20;
+
+  // Dono parameters ko token ke sath service layer me pass kar diya
+  const result = await NotificationService.getUserNotifications(token, page, limit);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Notifications fetched successfully!",
-    data: result,
+    meta: result.meta, // Humara bheja hua total, page, limit object yahan inject hoga
+    data: result.data, // Actual documents ki array
   });
 });
 

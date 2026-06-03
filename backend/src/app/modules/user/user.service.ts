@@ -99,11 +99,6 @@ const deleteUser = async (id: string): Promise<void> => {
   await Comment.deleteMany({ postId: { $in: postIds } });
   await Bookmark.deleteMany({ storyId: { $in: postIds } });
 
-  await Post.updateMany(
-    { bookmarks: id },
-    { $pull: { bookmarks: id } }
-  );
-
   await Bookmark.deleteMany({ userId: id });
   await Reaction.deleteMany({ userId: id });
   await Comment.deleteMany({ userId: id });

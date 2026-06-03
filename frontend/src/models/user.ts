@@ -3,12 +3,19 @@ export interface SocialLinks {
   twitter?: string;
   linkedin?: string;
   instagram?: string;
+  github?: string;
+  discord?: string;
 }
 
 export interface UserProfile {
   social: SocialLinks;
   avatar?: string;
   bio?: string;
+}
+
+export interface WritingGoals {
+  dailyWordCount: number;
+  weeklyWordCount: number;
 }
 
 export interface User {
@@ -20,12 +27,30 @@ export interface User {
   status: string;
   subscriptionType: string;
   postsCount: number;
-  followers: string[];
-  following: string[];
+  writingGoals?: {
+    dailyWordCount: number;
+    weeklyWordCount: number;
+  };
+  followers: {
+    _id: string;
+    username: string;
+    profilePicture: string;
+  }[];
+
+  following: {
+    _id: string;
+    username: string;
+    profilePicture: string;
+  }[];
   requestsThisMonth: number;
   lastRequestDate: string | null;
   posts: string[];
   isApplyForWriter: boolean;
+  // Optional writing goals for analytics and user settings
+  writingGoals?: {
+    dailyWordCount?: number;
+    weeklyWordCount?: number;
+  };
   createdAt: string;
   updatedAt: string;
   profile: UserProfile;

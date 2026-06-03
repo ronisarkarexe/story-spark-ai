@@ -48,4 +48,5 @@ const auth =
         next(err);
       }
     };
+
 export default auth;
