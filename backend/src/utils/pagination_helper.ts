@@ -3,6 +3,7 @@ import { SortOrder } from "mongoose";
 interface IOptions {
   page?: number;
   limit?: number;
+  cursor?: string;
   sortBy?: string;
   orderBy?: SortOrder;
   sortOrder?: SortOrder;
@@ -12,6 +13,7 @@ interface PGOptions {
   page: number;
   limit: number;
   skip: number;
+  cursor?: string;
   sortBy: string;
   orderBy: SortOrder;
 }
@@ -26,6 +28,7 @@ const paginationHelper = (option: IOptions): PGOptions => {
     page,
     limit,
     skip,
+    cursor: typeof option.cursor === "string" ? option.cursor : undefined,
     sortBy,
     orderBy,
   };

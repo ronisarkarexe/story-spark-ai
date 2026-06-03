@@ -48,6 +48,49 @@ FEATURE_KEYS = [
     "blocked_word_count",
 ]
 
+def _validate_session(session: list, idx: int | None = None) -> str | None:
+    """
+    Validate a single session before processing.
+    Returns an error message string if invalid, else None.
+
+    idx is included in the message for batch_detect() context.
+    """
+    label = f"Session[{idx}]" if idx is not None else "Session"
+
+    if not isinstance(session, list) or len(session) == 0:
+        return f"{label}: must be a non-empty list"
+
+    if len(session) < SEQ_LEN:
+        return f"{label}: needs at least {SEQ_LEN} entries, got {len(session)}"
+
+    window = session[-SEQ_LEN:]
+
+    if isinstance(window[0], dict):
+        missing_keys = [
+            i for i, s in enumerate(window)
+            if not all(k in s for k in FEATURE_KEYS)
+        ]
+        if missing_keys:
+            return f"{label}: entries at positions {missing_keys} are missing required keys"
+
+        non_numeric = [
+            i for i, s in enumerate(window)
+            if not all(isinstance(s.get(k, None), (int, float)) for k in FEATURE_KEYS)
+        ]
+        if non_numeric:
+            return f"{label}: entries at positions {non_numeric} have non-numeric values"
+
+    elif isinstance(window[0], (list, np.ndarray)):
+        wrong_len = [
+            i for i, s in enumerate(window)
+            if len(s) != N_FEATURES
+        ]
+        if wrong_len:
+            return f"{label}: entries at positions {wrong_len} must have {N_FEATURES} values"
+    else:
+        return f"{label}: entries must be dicts or lists, got {type(window[0]).__name__}"
+
+    return None
 
 def load_ml_assets_into_cache():
     """
@@ -172,10 +215,19 @@ def detect(session: list) -> dict:
     Returns
     -------
     dict : is_stuck, confidence, anomaly_score, threshold, suggestion
+
+    Raises
+    ------
+    ValueError        : if session is invalid
+    FileNotFoundError : if model artifacts are missing
     """
-    assets = load_ml_assets_into_cache()
-    model = assets["model"]
-    scaler = assets["scaler"]
+    error_msg = _validate_session(session)
+    if error_msg:
+        raise ValueError(error_msg)
+
+    assets    = load_ml_assets_into_cache()
+    model     = assets["model"]
+    scaler    = assets["scaler"]
     threshold = assets["threshold"]
 
     window = session[-SEQ_LEN:]
@@ -194,12 +246,12 @@ def detect(session: list) -> dict:
             f"got {session_raw.shape}. Check FEATURE_KEYS order."
         )
 
-    seq_scaled = scaler.transform(session_raw).reshape(1, SEQ_LEN, N_FEATURES)
+    seq_scaled    = scaler.transform(session_raw).reshape(1, SEQ_LEN, N_FEATURES)
     reconstructed = model.predict(seq_scaled, verbose=0)
     anomaly_score = float(np.mean((seq_scaled - reconstructed) ** 2))
 
     is_stuck = anomaly_score > threshold
-    ratio = anomaly_score / threshold
+    ratio    = anomaly_score / threshold
 
     if not is_stuck:
         confidence = "N/A"
@@ -211,11 +263,11 @@ def detect(session: list) -> dict:
         confidence = "Low"
 
     return {
-        "is_stuck": is_stuck,
-        "confidence": confidence,
+        "is_stuck":     is_stuck,
+        "confidence":   confidence,
         "anomaly_score": round(anomaly_score, 6),
-        "threshold": round(threshold, 6),
-        "suggestion": _get_unique_suggestion(_dominant_feature(session_raw)) if is_stuck else "",
+        "threshold":    round(threshold, 6),
+        "suggestion":   _get_unique_suggestion(_dominant_feature(session_raw)) if is_stuck else "",
     }
 
 
@@ -299,7 +351,7 @@ def batch_detect(sessions: list[list]) -> list[dict]:
     if not sessions:
         raise ValueError("sessions list must not be empty")
 
-    assets = load_ml_assets_into_cache()  # load once for all sessions
+    assets    = load_ml_assets_into_cache()  # load once for all sessions
     model     = assets["model"]
     scaler    = assets["scaler"]
     threshold = assets["threshold"]
@@ -307,6 +359,12 @@ def batch_detect(sessions: list[list]) -> list[dict]:
     results = []
 
     for idx, session in enumerate(sessions):
+        # ── validate before touching the model ───────────────────────────
+        error_msg = _validate_session(session, idx=idx)
+        if error_msg:
+            results.append({"index": idx, "error": error_msg})
+            continue
+
         try:
             window = session[-SEQ_LEN:]
 

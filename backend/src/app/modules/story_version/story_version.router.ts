@@ -17,6 +17,17 @@ router.get(
   StoryVersionController.getVersionsByStoryId
 );
 
+router.get(
+  "/:id/tree",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  StoryVersionController.getStoryTree
+);
+
 // Retrieve a specific version snapshot
 router.get(
   "/version/:versionId",
@@ -29,6 +40,28 @@ router.get(
   StoryVersionController.getVersionById
 );
 
+router.get(
+  "/version/:versionId/path",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  StoryVersionController.getBranchPath
+);
+
+router.post(
+  "/version/:versionId/branch",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  StoryVersionController.createBranchVersion
+);
+
 // Restore to a specific version snapshot
 router.post(
   "/version/:versionId/restore",
@@ -39,6 +72,18 @@ router.post(
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
   StoryVersionController.restoreVersion
+);
+
+// Enhance a story prompt using AI
+router.post(
+  "/enhance-prompt",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  StoryVersionController.enhancePrompt
 );
 
 export const StoryVersionRouter = router;

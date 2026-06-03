@@ -4,6 +4,8 @@ export interface IMeta {
   limit: number;
   page: number;
   total: number;
+  nextCursor?: string;
+  hasMore?: boolean;
 }
 
 export interface ResponseSuccessType<T = unknown> {
