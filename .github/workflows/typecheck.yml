@@ -42,22 +42,22 @@ jobs:
           fi
 
       - uses: pnpm/action-setup@v2
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        
         with:
           version: 9.15.9
 
       - uses: actions/setup-node@v4
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+      
         with:
           node-version: '20'
           cache: pnpm
 
       - name: Install dependencies
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+     
         run: pnpm install --no-frozen-lockfile
 
       - name: Rebuild native bindings for current platform
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        
         run: pnpm rebuild
 
       - name: Validate recommendation backend changes
