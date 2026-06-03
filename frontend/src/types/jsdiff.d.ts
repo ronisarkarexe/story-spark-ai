@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare module 'jsdiff' {
   export interface Change {
     value: string;

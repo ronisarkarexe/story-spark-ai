@@ -1,6 +1,5 @@
 import { io, Socket } from "socket.io-client";
-import { getFromLocalStorage } from "../utils/local-storage";
-import { AUTH_KEY } from "../constants/storage-key";
+import { getMemoryToken } from "../services/auth.service";
 import { resolveSocketUrl } from "../helpers/socket-url";
 
 let socketIoInstance: Socket | null = null;
@@ -20,7 +19,7 @@ export const connectSocket = (): Socket => {
     return null as unknown as Socket;
   }
 
-  const token = getFromLocalStorage(AUTH_KEY);
+  const token = getMemoryToken();
   if (!token) {
     console.warn("[Story Spark] User not authenticated. Cannot connect to Socket.IO.");
     return null as unknown as Socket;

@@ -12,7 +12,6 @@ import {
 } from "../../redux/apis/storyVersion.api";
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
-import { ComparisonMode } from "../story-comparison";
 
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
@@ -21,7 +20,6 @@ import BookmarkButton from "../BookmarkButton";
 import AudioPlayer from "../AudioPlayer";
 
 import { formatDateShort } from "../../utils/time-formate";
-import { formatReadingStats } from "../../utils/story-utils";
 import { getUserInfo } from "../../services/auth.service";
 
 import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
@@ -30,13 +28,6 @@ import {
   useToggleFollowMutation,
   useGetFollowStatusQuery,
 } from "../../redux/apis/user.api";
-
-import {
-  useGetVersionsByStoryIdQuery,
-  useRestoreVersionMutation,
-  useGetStoryTreeQuery,
-  useCreateBranchVersionMutation,
-} from "../../redux/apis/storyVersion.api";
 
 import { toast } from "react-hot-toast";
 
@@ -104,19 +95,12 @@ const PostDetailsComponent = () => {
   const [editedTitle, setEditedTitle] = useState("");
   const [editedContent, setEditedContent] = useState("");
   const [showTimeline, setShowTimeline] = useState(false);
-  const [showTree, setShowTree] = useState(false);
-  const [selectedVersionForBranch, setSelectedVersionForBranch] = useState<string | null>(null);
-  const [showComparison, setShowComparison] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
   const { data: versions, isLoading: isLoadingVersions } = useGetVersionsByStoryIdQuery(id || "", {
     skip: !id || !showTimeline,
   });
   const [restoreVersion, { isLoading: isRestoring }] = useRestoreVersionMutation();
-
-  const { data: storyTree } = useGetStoryTreeQuery(id || "", { skip: !id || !showTree,});
-
-  const [createBranchVersion] = useCreateBranchVersionMutation();
 
   const isAuthor = !!currentUser && authorId === currentUser?.userId;
 
@@ -184,25 +168,6 @@ const PostDetailsComponent = () => {
       toast.error("Failed to restore version.");
     }
   };
-
-  const handleCreateBranch = async (versionId: string) => {const branchName = window.prompt("Enter a branch name");
-
-  if (!branchName?.trim()) {
-    return;
-  }
-
-  try {
-    await createBranchVersion({versionId, branchName,}).unwrap();
-
-    toast.success("Branch created successfully!");
-  } catch (error) {
-    console.error(error);
-
-    toast.error(
-      "Failed to create branch"
-    );
-  }
-};
 
   const hasUserReacted = post?.reactions?.some((r) => {
     const userId = r.userId;
@@ -344,12 +309,6 @@ const PostDetailsComponent = () => {
                 >
                   ✨ Story Timeline & History
                 </button>
-                <button
-                  onClick={() => setShowComparison(true)}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:opacity-90 rounded-lg transition-all active:scale-95 cursor-pointer font-semibold shadow-md"
-                >
-                  📊 Compare Variations
-                </button>
               </div>
             )}
 
@@ -399,9 +358,6 @@ const PostDetailsComponent = () => {
                   <div className="flex gap-2 mb-6">
                     <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
                       🌐 {post.language}
-                    </span>
-                    <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
-                      📖 {formatReadingStats(post.content)}
                     </span>
                   </div>
                 )}
@@ -509,32 +465,18 @@ const PostDetailsComponent = () => {
       {showTimeline && (
         <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#0f172a]/95 backdrop-blur-xl border-l border-slate-700/60 shadow-2xl p-6 overflow-y-auto text-white animate-slide-in flex flex-col">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-800">
-            
+            <div>
+              <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400 flex items-center gap-2">
+                ✨ Story Timeline
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-1">Chronological creative iterations</p>
+            </div>
             <button
               onClick={() => setShowTimeline(false)}
               className="w-8 h-8 rounded-full bg-slate-850 border border-slate-750 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all cursor-pointer"
               aria-label="Close story timeline"
             >
               ✕
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between w-full mb-6">
-            <div>
-              <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400 flex items-center gap-2">
-                ✨ Story Timeline
-              </h3>
-
-              <p className="text-[11px] text-slate-400 mt-1">
-                Chronological creative iterations
-              </p>
-            </div>
-
-            <button
-              onClick={() => setShowTree(true)}
-              className="px-3 py-1 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 transition"
-            >
-              View Tree
             </button>
           </div>
 
@@ -569,24 +511,13 @@ const PostDetailsComponent = () => {
                               {v.generationType}
                             </span>
                           </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleRestore(v._id)}
-                              disabled={isRestoring}
-                              className="px-3 py-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold text-[10px] rounded transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-                            >
-                              Restore
-                            </button>
-
-                            <button
-                              onClick={() =>
-                                handleCreateBranch(v._id)
-                              }
-                              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] rounded transition-all"
-                            >
-                              Branch
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => handleRestore(v._id)}
+                            disabled={isRestoring}
+                            className="px-3 py-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold text-[10px] rounded transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                          >
+                            Restore
+                          </button>
                         </div>
 
                         <h4 className="text-sm font-bold text-slate-200 mb-1">{v.title}</h4>
@@ -615,56 +546,6 @@ const PostDetailsComponent = () => {
                 <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
                   Direct edits or alternate ending selections will create auto-snapshots here!
                 </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {showTree && (
-        <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-6">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-white">
-                Story Branch Tree
-              </h3>
-
-              <button
-                onClick={() => setShowTree(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-
-            {!storyTree ? (
-              <div className="text-slate-400">
-                Loading...
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {storyTree.nodes.map((node) => (
-                  <div
-                    key={node.id}
-                    className="border border-slate-700 rounded-lg p-3"
-                  >
-                    <div className="font-bold">
-                      Version #{node.versionNumber}
-                    </div>
-
-                    <div>
-                      {node.title}
-                    </div>
-
-                    {node.branchName && (
-                      <div className="text-purple-400 text-sm">
-                        Branch:
-                        {" "}
-                        {node.branchName}
-                      </div>
-                    )}
-                  </div>
-                ))}
               </div>
             )}
           </div>

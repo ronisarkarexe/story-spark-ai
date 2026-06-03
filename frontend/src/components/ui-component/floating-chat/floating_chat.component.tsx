@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useChatWithAiMutation } from "../../../redux/apis/chat.api";
 import { isLoggedIn } from "../../../services/auth.service";
-import toast from "react-hot-toast";
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface IMessage {
   role: "user" | "model" | "system";
   content: string;

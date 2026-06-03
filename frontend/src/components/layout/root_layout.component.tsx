@@ -16,7 +16,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
 
   return (
     <div className={`flex flex-col min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${!isAuthPage ? "pb-20 lg:pb-0" : ""}`}>
-      {!hideHeader && <NavListComponent />}
+      {!isAuthPage && <NavListComponent />}
 
       <CookieConsentBanner />
       <div className="flex-grow min-h-0">
@@ -32,7 +32,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
           </motion.div>
         </AnimatePresence>
       </div>
-      {!hideFooter && <FooterComponent />}
+      {!isAuthPage && <FooterComponent />}
       {!isAuthPage && <FloatingChatWidget />}
     </div>
   );

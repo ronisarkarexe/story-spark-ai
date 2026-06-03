@@ -103,7 +103,7 @@ const getKeyQuote = (content: string) => {
 };
 
 const getGenreLabel = (story: IStories) =>
-  cleanText(story.genre || story.tag || "Story").replace(/^[^\w]+/, "") ||
+  cleanText((story.genre as string) || story.tag || "Story").replace(/^[^\w]+/, "") ||
   "Story";
 
 interface StoryTradingCardProps {
@@ -240,7 +240,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
                 {genre}
               </span>
               <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold text-white">
-                {story.language || "English"}
+                {(story.language as string) || "English"}
               </span>
             </div>
           </div>
@@ -269,7 +269,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
                 </p>
               </div>
               <div className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
-                <p className="text-lg font-black">{story.tag.slice(0, 3).toUpperCase()}</p>
+                <p className="text-lg font-black">{(story.tag || "Story").slice(0, 3).toUpperCase()}</p>
                 <p className="text-[9px] uppercase tracking-wider text-white/45">
                   Class
                 </p>

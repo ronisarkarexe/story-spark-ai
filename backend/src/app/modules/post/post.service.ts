@@ -24,9 +24,7 @@ const MAX_SEARCH_TERM_LENGTH = 100;
 // import { QuotaService } from "../quota/quota.service";
 // import { AIModelService } from "../ai_model/ai_model.service";
 
-const MAX_SEARCH_TERM_LENGTH = 100;
-const escapeRegex = (str: string) =>
-  str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 interface ICursorPayload {
   value: string;
   id: string;

@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { isLoggedIn } from "../../../services/auth.service";
@@ -74,17 +74,7 @@ const RecommendedWritersComponent = () => {
                     {writer.role}
                   </p>
                 </div>
-                <button 
-                  disabled={isLoading} 
-                  onClick={() => toggleFollow(writer.id)} 
-                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-150 active:scale-[0.97] disabled:opacity-50 select-none cursor-pointer uppercase tracking-wider ${
-                    isFollowing
-                      ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
-                      : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-sm shadow-blue-500/10"
-                  }`}
-                >
-                  {isFollowing ? "Following" : "Follow"}
-                </button>
+
               </div>
 
               <button
