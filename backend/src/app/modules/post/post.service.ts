@@ -333,7 +333,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
     );
     return { message: "Bookmark removed", bookmarked: false };
   } else {
-    // Add bookmark atomically — $addToSet prevents duplicates
+    // Add bookmark atomically - $addToSet prevents duplicates
     await Post.updateOne(
       { _id: postId },
       { $addToSet: { bookmarks: user._id } }
