@@ -23,6 +23,7 @@ import { RecommendationRouter } from "../app/modules/recommendation/recommendati
 import { WriterApplicationRoutes } from "../app/modules/writer_application/writer_application.route";
 import { StoryVisualizerRouter } from "../app/modules/story_visualizer/story_visualizer.router";
 import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_inspiration.router";
+import { ChatRouter } from "../app/modules/chat/chat.router";
 
 const router = express.Router();
 
@@ -120,8 +121,8 @@ const modules = [
     router: WriterApplicationRoutes,
   },
   {
-    path: "/story-visualizer",
-    router: StoryVisualizerRouter,
+    path: "/chat",
+    router: ChatRouter,
   },
 ];
 

@@ -143,7 +143,7 @@ cp frontend/.env.example frontend/.env
 | `DATABASE_URL` | Yes | MongoDB connection string (local or [Atlas](https://www.mongodb.com/cloud/atlas)) |
 | `PORT` | No | API port (default `5000`) |
 | `NODE_ENV` | No | `development` or `production` |
-| `CORS_ORIGINS` | No | Comma-separated frontend URLs (e.g. `http://localhost:4001`) |
+| `CORS_ORIGINS` | No | Comma-separated frontend URLs allowed for CORS requests (e.g. `http://localhost:4001`) |
 | `SALT_ROUNDS` | Yes | Bcrypt cost factor (e.g. `10`) |
 | `JWT_SECRET` | Yes | Access token signing secret |
 | `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret |
@@ -157,7 +157,6 @@ cp frontend/.env.example frontend/.env
 | `VERIFY_EMAIL` | For email | SMTP sender address |
 | `VERIFY_PASSWORD` | For email | SMTP password or app password |
 | `GOOGLE_CLIENT_ID` | For login with google | https://console.cloud.google.com |
-| `CORS_ORIGINS` | For resolve cors |
 
 #### Frontend (`frontend/.env`)
 
@@ -189,51 +188,32 @@ Contributions make the open source community such an amazing place to learn, ins
 Thanks to everyone who has helped build **Story Spark AI**. This grid updates automatically from [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
 
 <a href="https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors">
-  <img
-    src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&columns=12"
-    alt="Contributors"
-  />
+  <img src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&max=500&columns=12" alt="Contributors" />
 </a>
-
-<p align="center">
-  <sub>Made with <a href="https://contrib.rocks">contrib.rocks</a></sub>
-</p>
 
 ## Maintainers
 
 <table>
   <tr>
-    <td align="center" width="200" style="border: 1px solid #30363d; border-radius: 8px; padding: 16px;">
+    <td align="center">
       <a href="https://github.com/ronisarkarexe">
-        <img
-          src="https://github.com/ronisarkarexe.png"
-          width="140"
-          height="140"
-          alt="Roni Sarkar"
-          style="border-radius: 6px; object-fit: cover;"
-        />
+        <img src="https://github.com/ronisarkarexe.png" width="120" height="120" alt="Roni Sarkar" style="border-radius: 6px; object-fit: cover;" />
       </a>
       <br /><br />
       <strong>Roni Sarkar</strong>
       <br />
-      <sub>@ronisarkarexe</sub>
+      <sub>Project Maintainer · <a href="https://github.com/ronisarkarexe">@ronisarkarexe</a></sub>
       <br /><br />
       <a href="https://github.com/ronisarkarexe" title="GitHub">
-        <img
-          src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg"
-          width="28"
-          height="28"
-          alt="GitHub"
-        />
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="28" height="28" alt="GitHub" />
       </a>
       &nbsp;
       <a href="https://www.linkedin.com/in/ronisarkarexe" title="LinkedIn">
-        <img
-          src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg"
-          width="28"
-          height="28"
-          alt="LinkedIn"
-        />
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" width="28" height="28" alt="LinkedIn" />
+      </a>
+      &nbsp;
+      <a href="https://x.com/ronisarkar_exe" title="X (Twitter)">
+        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/x.svg" width="28" height="28" alt="X" />
       </a>
     </td>
   </tr>

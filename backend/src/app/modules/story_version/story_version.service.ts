@@ -12,6 +12,25 @@ import {
   IGenericResponse,
 } from "../../../interfaces/pagination";
 
+interface IBranchTreeNode{
+  id: string;
+  parentId: string | null;
+  title: string;
+  versionNumber: number;
+  branchName: string | null;
+  branchDepth: number;
+}
+
+interface IBranchTreeEdge{
+  source: string;
+  target: string;
+}
+
+interface IStoryTreeResponse{
+  nodes: IBranchTreeNode[];
+  edges: IBranchTreeEdge[];
+}
+
 const createVersionSnapshot = async (
   storyId: string,
   userId: string,
@@ -59,6 +78,145 @@ const createVersionSnapshot = async (
     console.error("Story version snapshot creation failed:", error);
     return null;
   }
+};
+
+
+const createBranchVersion = async (
+  parentVersionId: string,
+  userId: string,
+  branchName: string
+): Promise<IStoryVersion> => {
+  const parentVersion = await StoryVersion.findById(parentVersionId);
+
+  if (!parentVersion) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Parent story version not found!"
+    );
+  }
+
+  const post = await Post.findById(parentVersion.storyId);
+
+  if (!post) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Associated story not found!"
+    );
+  }
+
+  if (post.author.toString() !== userId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have permission to create a branch for this story!"
+    );
+  }
+
+  const latestVersion = await StoryVersion.findOne({
+    storyId: parentVersion.storyId,
+  })
+    .sort({ versionNumber: -1 })
+    .select("versionNumber");
+
+  const nextVersionNumber = latestVersion
+    ? latestVersion.versionNumber + 1
+    : 1;
+
+  const branchVersion = await StoryVersion.create({
+    storyId: parentVersion.storyId,
+    content: parentVersion.content,
+    title: parentVersion.title,
+    prompt: parentVersion.prompt ?? "",
+    generationType: "branch",
+    versionNumber: nextVersionNumber,
+    createdBy: userId,
+    parentVersionId: parentVersion._id,
+    branchName: branchName.trim(),
+    branchDepth: (parentVersion.branchDepth ?? 0) + 1,
+  });
+
+  return branchVersion;
+};
+
+const getStoryTree = async (
+  storyId: string,
+  userId: string
+): Promise<IStoryTreeResponse> => {
+  const post = await Post.findById(storyId);
+
+  if (!post) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Story not found!"
+    );
+  }
+
+  if (post.author.toString() !== userId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have access to this story!"
+    );
+  }
+
+  const versions = await StoryVersion.find({ storyId }).sort({ versionNumber: 1 });
+  const nodes: IBranchTreeNode[] = [];
+  const edges: IBranchTreeEdge[] = [];
+
+  for (const version of versions) {
+    nodes.push({
+      id: version._id.toString(),
+      parentId: version.parentVersionId? version.parentVersionId.toString(): null,
+      title: version.title,
+      versionNumber: version.versionNumber,
+      branchName: version.branchName ?? null,
+      branchDepth: version.branchDepth ?? 0,
+    });
+
+    if (version.parentVersionId) {
+      edges.push({
+        source: version.parentVersionId.toString(),
+        target: version._id.toString(),
+      });
+    }
+  }
+
+  return {nodes,edges,};
+};
+
+const getBranchPath = async (
+  versionId: string,
+  userId: string
+): Promise<IStoryVersion[]> => {
+  const version = await StoryVersion.findById(versionId);
+
+  if (!version) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Story version not found!"
+    );
+  }
+
+  const post = await Post.findById(version.storyId);
+
+  if (!post || post.author.toString() !== userId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have access to this story!"
+    );
+  }
+
+  const path: IStoryVersion[] = [];
+  let current: IStoryVersion | null = version;
+
+  while (current) {
+    path.unshift(current);
+    if (!current.parentVersionId) {
+      break;
+    }
+
+    current = await StoryVersion.findById(current.parentVersionId);
+  }
+
+  return path;
 };
 
 const getVersionsByStoryId = async (
@@ -192,6 +350,9 @@ const enhancePrompt = async (prompt: string): Promise<string> => {
 
 export const StoryVersionService = {
   createVersionSnapshot,
+  createBranchVersion,
+  getStoryTree,
+  getBranchPath,
   getVersionsByStoryId,
   getVersionById,
   restoreVersion,

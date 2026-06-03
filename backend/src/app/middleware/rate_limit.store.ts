@@ -42,9 +42,11 @@ export interface ConsumeResult {
   retryAfterSec: number;
 }
 
+const STORE_ERROR_RETRY_AFTER_SEC = 60;
+
 // Atomically records one hit for a key and decides whether it is allowed.
 // The whole window-and-block state transition runs in a single pipeline update
-// so concurrent requests cannot race. Fails open on store errors.
+// so concurrent requests cannot race. Fails closed on store errors.
 export const consumeRateLimit = async (
   opts: ConsumeOptions
 ): Promise<ConsumeResult> => {
@@ -122,6 +124,6 @@ export const consumeRateLimit = async (
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`Rate limit store error for ${key}: ${message}`);
-    return { allowed: true, retryAfterSec: 0 };
+    return { allowed: false, retryAfterSec: STORE_ERROR_RETRY_AFTER_SEC };
   }
 };

@@ -16,7 +16,8 @@ import { OTPModel } from "../verify_email/otp.model";
 import { RefreshSession } from "./refresh_session.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 import { GamificationService } from "../gamification/gamification.service";
-
+import { USER_STATUS } from "../../../enums/user_status";
+import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
 const googleClient = new OAuth2Client(config.google_client_id);
 
 const validateUserStatus = (status?: string) => {
@@ -225,8 +226,17 @@ const logout = async (token?: string) => {
       config.jwt.refresh_secret as Secret
     );
     const jti = (verified as any).jti as string | undefined;
+    const userId = (verified as any)._id as string | undefined;
+
+    // Revoke the refresh token session.
     if (jti) {
       await RefreshSession.updateOne({ jti }, { revoked: true });
+    }
+
+    // Bump tokenVersion so every outstanding access token for this user is
+    // immediately rejected by auth.middleware.ts, even before its natural expiry.
+    if (userId) {
+      await User.updateOne({ _id: userId }, { $inc: { tokenVersion: 1 } });
     }
   } catch (error) {
     // Ignore invalid tokens on logout; the cookie is cleared either way.

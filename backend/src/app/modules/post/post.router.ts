@@ -6,7 +6,6 @@ import validateRequest from "../../middleware/validate.request";
 import { PostValidator } from "./post.validation";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 
-
 const router = express.Router();
 
 // Create a new post
@@ -22,14 +21,30 @@ router.post(
   PostController.createPost
 );
 
-// Get Posts
-router.get("/", PostController.getPosts);
-router.get("/lists", PostController.getPosts);
-router.get("/latest-lists", PostController.getLatestPosts);
-router.get("/latest-posts", PostController.getLatestPosts);
-router.get("/feature-lists", PostController.getFeaturedPosts);
-router.get("/featured-posts", PostController.getFeaturedPosts);
-router.get("/genres", PostController.getGenres);
+router.get(
+  "/",
+  PostController.getPosts
+);
+
+router.get(
+  "/latest-posts",
+  PostController.getLatestPosts
+);
+
+router.get(
+  "/latest-lists",
+  PostController.getLatestPosts
+);
+
+router.get(
+  "/featured-posts",
+  PostController.getFeaturedPosts
+);
+
+router.get(
+  "/feature-lists",
+  PostController.getFeaturedPosts
+);
 
 router.patch(
   "/featured/:postId",
