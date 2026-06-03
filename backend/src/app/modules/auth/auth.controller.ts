@@ -92,6 +92,7 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
     message: "Password changed successfully. All previous sessions have been invalidated.",
     data: null,
   });
+});
 
 const forgotPassword = catchAsync(async (req: Request, res: Response) => {
   const { email } = req.body;
@@ -119,7 +120,7 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-       message: "Password reset successfully!",
+    message: "Password reset successfully!",
     data: { accessToken },
   });
 });

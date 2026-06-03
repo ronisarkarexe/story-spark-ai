@@ -68,22 +68,22 @@ const getPosts = async (
     { isDeleted: { $ne: true } },
   ];
 
- if (searchTerm) {
-  const safeSearchTerm = escapeRegex(
-    searchTerm.trim().slice(0, MAX_SEARCH_TERM_LENGTH)
-  );
+  if (searchTerm) {
+    const safeSearchTerm = escapeRegex(
+      searchTerm.trim().slice(0, MAX_SEARCH_TERM_LENGTH)
+    );
 
-  if (safeSearchTerm) {
-    andCondition.push({
-      $or: postSearchFields.map((field) => ({
-        [field]: {
-          $regex: safeSearchTerm,
-          $options: "i",
-        },
-      })),
-    });
+    if (safeSearchTerm) {
+      andCondition.push({
+        $or: postSearchFields.map((field) => ({
+          [field]: {
+            $regex: safeSearchTerm,
+            $options: "i",
+          },
+        })),
+      });
+    }
   }
-}
 
   if (trendingTopic) {
     andCondition.push({
@@ -288,8 +288,7 @@ const getSinglePost = async (id: string) => {
   return postById;
 };
 
-  const getPostsByTag = async (tag: string, excludeId?: string) => {
-
+const getPostsByTag = async (tag: string, excludeId?: string) => {
   if (!tag) {
     return [];
   }
@@ -341,7 +340,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
     );
     return { message: "Bookmark added", bookmarked: true };
   }
-}
+};
 
 const updatePost = async (
   postId: string,
@@ -440,7 +439,7 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
   // Enforces data consistency by decrementing/reserving 1 credit balance mapping
   // If your project uses an external service class call, invoke it here:
   // await QuotaService.reserveUserQuota(user._id, 1);
-  
+
   // Place your real AI model generation text manipulation calls here
   const remixedContent = `[AI Remixed Version based on prompt: "${prompt}"]\n\n${originalPost.content}`;
 

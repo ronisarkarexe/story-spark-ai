@@ -38,7 +38,7 @@ const toggleReaction = async (
     // Remove reaction
     await Reaction.findByIdAndDelete(existingReaction._id);
 
-    // Update post counts and reactions list (Preserving upstream/main logic)
+    // Update post counts and reactions list
     post.likesCount = Math.max(0, (post.likesCount || 0) - 1);
     post.reactions = post.reactions || [];
     post.reactions = post.reactions.filter(
