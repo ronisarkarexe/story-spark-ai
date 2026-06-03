@@ -11,10 +11,12 @@ const auth =
   (...requiredRole: string[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const authHeader = (req.headers.authorization || '') as string;
-      const token = authHeader.startsWith('Bearer ')
+      const authHeader = (req.headers.authorization || "") as string;
+
+      const token = authHeader.startsWith("Bearer ")
         ? authHeader.slice(7).trim()
         : authHeader.trim();
+
       if (!token) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
@@ -42,8 +44,12 @@ const auth =
       );
 
       const user = await User.findById((verifiedUser as any)._id);
+
       if (!user) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "User not found"
+        );
       }
 
       if (user.tokenVersion !== (verifiedUser as any).tokenVersion) {
@@ -53,13 +59,22 @@ const auth =
         );
       }
 
-      if (requiredRole.length && !requiredRole.includes(verifiedUser.role)) {
-        throw new ApiError(httpStatus.FORBIDDEN, "Forbidden");
+      if (
+        requiredRole.length &&
+        !requiredRole.includes((verifiedUser as any).role)
+      ) {
+        throw new ApiError(
+          httpStatus.FORBIDDEN,
+          "Forbidden"
+        );
       }
+
       req.user = verifiedUser;
+
       next();
     } catch (err) {
       next(err);
     }
   };
+
 export default auth;

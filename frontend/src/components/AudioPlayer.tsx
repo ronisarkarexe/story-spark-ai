@@ -45,7 +45,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
   ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
     const [voiceGender, setVoiceGender] = useState<"female" | "male">("female");
     const speech = useSpeechSynthesis(text, voiceGender);
-    const speech = useSpeechSynthesis(text);
     const preview = useVoicePreview();
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -220,12 +219,16 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
               </button>
             </div>
 
+<<<<<<< HEAD
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(140px,180px)_minmax(180px,1fr)_minmax(180px,1fr)] lg:items-end">
+=======
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(140px,160px)_minmax(160px,1fr)_minmax(160px,1fr)_minmax(200px,1fr)] lg:items-end">
+>>>>>>> upstream/main
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>Progress</span>
                   <span aria-live="polite">
-                    {spokenWordCount} / {speech.progress.totalWords} words
+                    {speech.isPlaying || speech.isPaused ? spokenWordCount : 0} / {speech.progress.totalWords} words
                   </span>
                 </div>
                 <div

@@ -1,8 +1,8 @@
-// FAQ Structure
 export interface FAQItem {
+  id: string;
   question: string;
   answer: string;
-  keywords: string[]; // Strict type array prevents TS2488 Spread Iterator crash
+  keywords: string[];
 }
 
 export interface Support_Links {
@@ -21,35 +21,44 @@ export interface SetupStep {
   code?: string;
 }
 
-// HelpCategory Model
 export interface HelpCategory {
   id: string;
   title: string;
   description: string;
   icon: string;
   keywords: string[];
-  sectionId: string; // FIX: Resolves category.sectionId error
+  sectionId: string;
 }
 
-// TroubleshootItem Model
 export interface TroubleshootItem {
   id: string;
   title: string;
   description: string;
   keywords: string[];
-  icon: string;       // FIX: Resolves item.icon layout crash
-  symptoms: string;   // FIX: Resolves item.symptoms layout crash
-  solution: string;   // FIX: Resolves item.solution layout crash
+  icon: string;
+  symptoms: string;
+  solution: string;
 }
 
-// Data Sets
+export interface HelpSection {
+  id: string;
+  label: string;
+  icon: string;
+  color: string;
+}
+
+export type FaqItem = FAQItem;
+export type SupportLink = Support_Links;
+
 export const FAQ_ITEMS: FAQItem[] = [
   {
+    id: "faq-generate-stories",
     question: "How does StorySparkAI generate stories?",
     answer: "StorySparkAI uses advanced language models to interpret your prompt, style preferences, and narrative depth parameters to build a cohesive text layout structure automatically.",
     keywords: ["generate", "story", "ai", "how"]
   },
   {
+    id: "faq-export-stories",
     question: "Can I export my stories?",
     answer: "Yes, you can save and export your generated works into Markdown formatting or plain text documents directly from your workspace dashboard panel.",
     keywords: ["export", "download", "markdown", "save"]
@@ -96,7 +105,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Account & Billing",
     description: "Manage your profile settings, subscriptions, and security options.",
     icon: "fa-solid fa-user-gear",
-    sectionId: "account-billing-section", 
+    sectionId: "account-billing-section",
     keywords: ["profile", "password", "billing", "subscription", "plan"]
   },
   {
@@ -109,6 +118,13 @@ export const HELP_CATEGORIES: HelpCategory[] = [
   }
 ];
 
+// CORRECTED MAPPING: Changed 'title' to 'label' so the sidebar reads it correctly
+export const HELP_SECTIONS = HELP_CATEGORIES.map(category => ({
+  id: category.sectionId,
+  label: category.title,
+  icon: category.icon
+}));
+
 export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
   {
     id: "connection-lost",
@@ -119,6 +135,39 @@ export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
     solution: "Verify your local network availability, clear application session storage, or recreate the workspace instance.",
     keywords: ["network", "socket", "disconnect", "collab", "freeze"]
   }
+];
+
+export const HELP_SECTIONS: HelpSection[] = [
+  { 
+    id: "help-categories", 
+    label: "Categories", 
+    icon: "fa-layer-group", 
+    color: "from-blue-50 to-indigo-600" 
+  },
+  { 
+    id: "troubleshoot-section", 
+    label: "Troubleshooting", 
+    icon: "fa-screwdriver-wrench", 
+    color: "from-amber-500 to-orange-600" 
+  },
+  { 
+    id: "faq-section", 
+    label: "FAQ", 
+    icon: "fa-circle-question", 
+    color: "from-emerald-500 to-teal-600" 
+  },
+  { 
+    id: "developer-setup", 
+    label: "Setup Guide", 
+    icon: "fa-code", 
+    color: "from-purple-500 to-pink-600" 
+  },
+  { 
+    id: "support-links-section", 
+    label: "Support", 
+    icon: "fa-headset", 
+    color: "from-rose-500 to-red-600" 
+  },
 ];
 
 export const scrollToSection = (id: string) => {

@@ -22,7 +22,7 @@ const ReviewSchema = new mongoose_1.Schema({
     },
     imgSrc: {
         type: String,
-        required: true,
+        default: "",
     },
     rating: {
         type: Number,

@@ -26,6 +26,7 @@ const SSInput = <T extends FieldValues>({
   name,
   type = "text",
   placeholder,
+  required,
   icon,
   register,
   validation,
@@ -35,13 +36,8 @@ const SSInput = <T extends FieldValues>({
 }: SSInputProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
 
-
-
   const inputType =
-
     type === "password" ? (showPassword ? "text" : "password") : type;
-
-
 
   return (
     <div className="w-full box-border">
@@ -54,23 +50,10 @@ const SSInput = <T extends FieldValues>({
       <div className="relative mt-2 w-full box-border">
 
         {icon && (
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+          <span className="absolute left-3.5 flex items-center justify-center text-slate-400 z-10 pointer-events-none">
             <i className={icon}></i>
           </span>
         )}
-
-       <input
-  type={inputType}
-  id={name}
-  className={`w-full box-border pl-8 pr-10 py-1.5 text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border-0 sm:text-sm ${
-    error
-      ? "outline-red-500"
-      : "outline-gray-800 focus:outline-indigo-600"
-  }`}
-  placeholder={placeholder}
-  autoComplete={autoComplete}
-  {...register(name, validation)}
-/>
 
         <input
           type={inputType}
@@ -96,16 +79,24 @@ const SSInput = <T extends FieldValues>({
     aria-label={showPassword ? "Hide password" : "Show password"}
     title={showPassword ? "Hide password" : "Show password"}
 
-  >
-    <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
-  </button>
-)}
+        {type === "password" && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 z-10 focus:outline-none"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            title={showPassword ? "Hide password" : "Show password"}
+          >
+            <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
+          </button>
+        )}
       </div>
+
       {error && (
-        <p className="text-red-400 text-sm mt-1 w-full break-words overflow-hidden">
-        {error.message}
+        <p className="text-xs font-medium text-rose-500 mt-1.5 text-left w-full break-words overflow-hidden">
+          {error.message}
         </p>
-    )}
+      )}
     </div>
   );
 };
