@@ -73,10 +73,10 @@ const HelpCenterComponent = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        <div className="flex flex-col items-start lg:flex-row gap-8 lg:gap-10">
           <HelpSidebar />
 
-          <main className="flex-1 min-w-0 space-y-20">
+          <main className="w-full flex-1 min-w-0 space-y-20 lg:pl-1">
             <HelpCategories categories={filteredCategories} />
             <FAQAccordion items={filteredFaqs} />
             <Troubleshoot items={filteredTroubleshoot} />
