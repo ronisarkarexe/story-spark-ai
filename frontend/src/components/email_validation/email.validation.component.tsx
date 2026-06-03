@@ -13,7 +13,7 @@ interface Inputs {
 
 const EmailValidationComponent = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit, getValues } = useForm<Inputs>({
+  const { register, getValues } = useForm<Inputs>({
     mode: "onChange",
   });
   const [verifyOtp] = useVerifyOtpMutation();

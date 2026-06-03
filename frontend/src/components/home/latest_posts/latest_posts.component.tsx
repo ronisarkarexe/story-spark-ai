@@ -12,6 +12,17 @@ const LatestPostsComponent = () => {
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
+  // --- STRICT DEDUPLICATION FILTERING ---
+  const seenIds = new Set<string>();
+  const uniquePosts = (data?.posts ?? []).filter((post: Post) => {
+    if (!post?._id || seenIds.has(post._id)) return false;
+    seenIds.add(post._id);
+    return true;
+  }) as Post[];
+
+  const shouldShowLoadMore = uniquePosts.length > INITIAL_VISIBLE_COUNT;
+  const visiblePosts = showAllPosts || !shouldShowLoadMore ? uniquePosts : uniquePosts.slice(0, INITIAL_VISIBLE_COUNT);
+
   useEffect(() => {
     setShowAllPosts(false);
   }, [data?.posts]);
@@ -34,19 +45,6 @@ const LatestPostsComponent = () => {
       </section>
     );
   }
-
-  const seenIds = new Set<string>();
-  const uniquePosts = (data?.posts ?? []).filter((post: Post) => {
-    if (!post?._id || seenIds.has(post._id)) return false;
-    seenIds.add(post._id);
-    return true;
-  });
-
-  const shouldShowLoadMore = uniquePosts.length > INITIAL_VISIBLE_COUNT;
-  const visiblePosts =
-    showAllPosts || !shouldShowLoadMore
-      ? uniquePosts
-      : uniquePosts.slice(0, INITIAL_VISIBLE_COUNT);
 
   const toggleAccordion = (postId: string) => {
     setExpandedPostId((prevId) => (prevId === postId ? null : postId));

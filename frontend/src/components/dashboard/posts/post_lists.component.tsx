@@ -1,8 +1,9 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useGetPostListsQuery } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
-import { Topic } from "../../../models/post";
+import { Post, Topic } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
+import ImageFallback from "../../ImageFallback";
 
 const PostListsComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -30,12 +31,14 @@ const PostListsComponent: React.FC = () => {
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  setSearchTerm(e.target.value);
-  setPage(1);
-};
+    setSearchTerm(e.target.value);
+    setPage(1);
+  };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -44,6 +47,7 @@ const PostListsComponent: React.FC = () => {
   };
 
   const getTopicBadges = (topics: Topic[]) => {
+    if (!topics) return null;
     return topics.map((topic) => (
       <span
         key={topic._id}
@@ -59,16 +63,24 @@ const PostListsComponent: React.FC = () => {
     ));
   };
 
-  const getStatusBadge = (isPublished: boolean) => {
+  const getStatusBadge = (isPublished: boolean, isFeaturedPost?: boolean) => {
     return (
-      <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all ${isPublished
-            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
-            : "bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+      <div className="flex items-center gap-2">
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all ${
+            isPublished
+              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
+              : "bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
           }`}
-      >
-        {isPublished ? "Published" : "Draft"}
-      </span>
+        >
+          {isPublished ? "Published" : "Draft"}
+        </span>
+        {isFeaturedPost && (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]">
+            Featured
+          </span>
+        )}
+      </div>
     );
   };
 
@@ -163,13 +175,13 @@ const PostListsComponent: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800/60 bg-transparent">
-              {data?.posts?.map((post) => (
+              {data?.posts?.map((post: Post) => (
                 <tr key={post._id} className="hover:bg-gray-800/30 transition-colors duration-200 group">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {post.imageURL && (
                         <div className="flex-shrink-0 h-11 w-11 mr-4 relative">
-                          <img
+                          <ImageFallback
                             className="h-11 w-11 rounded-lg object-cover shadow-md ring-1 ring-white/10"
                             src={post.imageURL}
                             alt={post.title}
@@ -190,10 +202,6 @@ const PostListsComponent: React.FC = () => {
                     <div className="text-sm text-gray-200">
                       {post.author?.name || 'Unknown User'}
                     </div>
-
-                    <div className="text-xs text-gray-400">
-                      {post.author?.email || 'N/A'}
-                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-wrap gap-1.5 max-w-[200px]">
@@ -201,32 +209,25 @@ const PostListsComponent: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      {getStatusBadge(post.isPublished)}
-                      {post.isFeaturedPost && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]">
-                          Featured
-                        </span>
-                      )}
-                    </div>
+                    {getStatusBadge(post.isPublished, post.isFeaturedPost)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex space-x-5">
                       <div className="text-center group/stat">
                         <div className="text-sm font-semibold text-gray-300 group-hover/stat:text-rose-400 transition-colors">
-                          {post.likesCount}
+                          {post.likesCount || 0}
                         </div>
                         <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">Likes</div>
                       </div>
                       <div className="text-center group/stat">
                         <div className="text-sm font-semibold text-gray-300 group-hover/stat:text-blue-400 transition-colors">
-                          {post.commentsCount}
+                          {post.commentsCount || 0}
                         </div>
                         <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">Comments</div>
                       </div>
                       <div className="text-center group/stat">
                         <div className="text-sm font-semibold text-gray-300 group-hover/stat:text-emerald-400 transition-colors">
-                          {post.viewsCount}
+                          {post.viewsCount || 0}
                         </div>
                         <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">Views</div>
                       </div>

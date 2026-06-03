@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import NavListComponent from "../hero/nav_list.component";
 import CookieConsentBanner from "../cookie-consent/cookie-consent.component";
 import FooterComponent from "../footer/footer.component";
@@ -12,6 +11,8 @@ interface RootLayoutProps {
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
+  const hideHeader = pathname === "/login" || pathname === "/signup";
+  const hideFooter = pathname === "/login" || pathname === "/signup";
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 
   return (

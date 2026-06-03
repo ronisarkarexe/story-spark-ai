@@ -1,11 +1,6 @@
 import React from "react";
 
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
 
 import { USER_ROLE } from "./constants/role";
 import { getUserInfo } from "./services/auth.service";
@@ -37,9 +32,7 @@ import LoginComponent from "./components/login/login.component";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import NotFoundComponent from "./components/not-found.component";
 import PaymentComponent from "./components/home/pricing/payment.component";
-import PostDetailsComponent from "./components/post/post.details.component";
 import PostListsComponent from "./components/dashboard/posts/post_lists.component";
-import PricingComponent from "./components/pricing/pricing.component";
 import PrivacyPolicy from "./components/footer/Privacy.tsx";
 import ProfileComponent from "./components/dashboard/profile/profile.component";
 import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
@@ -59,6 +52,8 @@ import Terms from "./components/footer/terms.tsx";
 import UserComponent from "./components/dashboard/users/user.component";
 import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import PostDetailsComponent from "./components/post/post.details.component";
+import PricingComponent from "./components/pricing/pricing.component";
 
 type ProtectedRouteProps = {
   allowedRoles: string[];

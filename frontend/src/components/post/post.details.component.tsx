@@ -6,13 +6,8 @@ import {
   useGetPostByTagQuery,
   useUpdatePostMutation,
 } from "../../redux/apis/post.api";
-import {
-  useGetVersionsByStoryIdQuery,
-  useRestoreVersionMutation,
-} from "../../redux/apis/storyVersion.api";
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
-import { ComparisonMode } from "../story-comparison";
 
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
@@ -106,8 +101,6 @@ const PostDetailsComponent = () => {
   const [showTimeline, setShowTimeline] = useState(false);
   const [readProgress, setReadProgress] = useState(0);
   const [showTree, setShowTree] = useState(false);
-  const [selectedVersionForBranch, setSelectedVersionForBranch] = useState<string | null>(null);
-  const [showComparison, setShowComparison] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
   const { data: versions, isLoading: isLoadingVersions } = useGetVersionsByStoryIdQuery(id || "", {
@@ -363,12 +356,7 @@ const PostDetailsComponent = () => {
                 >
                   ✨ Story Timeline & History
                 </button>
-                <button
-                  onClick={() => setShowComparison(true)}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:opacity-90 rounded-lg transition-all active:scale-95 cursor-pointer font-semibold shadow-md"
-                >
-                  📊 Compare Variations
-                </button>
+
               </div>
             )}
 

@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -42,6 +42,21 @@ interface RazorpayWindow extends Window {
   Razorpay: new (options: object) => RazorpayInstance;
 }
 
+const formatCardNumber = (value: string) => {
+  return value
+    .replace(/\D/g, "")
+    .slice(0, 16)
+    .replace(/(.{4})/g, "$1 ")
+    .trim();
+};
+
+const formatExpiry = (value: string) => {
+  return value
+    .replace(/\D/g, "")
+    .slice(0, 4)
+    .replace(/^(\d{2})(\d)/, "$1/$2");
+};
+
 const PaymentComponent = () => {
   const navigate = useNavigate();
 
@@ -49,6 +64,12 @@ const PaymentComponent = () => {
   const [searchParams] = useSearchParams();
   const planName = searchParams.get("plan") || "Pro";
   const planPrice = Number(searchParams.get("price") || "19.99");
+
+  const [name, setName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Razorpay payment handler
   const handlePayment = async () => {
@@ -104,6 +125,7 @@ const PaymentComponent = () => {
 
             if (verifyData.success) {
               alert("Payment successful!");
+              navigate("/dashboard");
             } else {
               alert("Payment verification failed.");
             }
@@ -132,7 +154,6 @@ const PaymentComponent = () => {
         "payment.failed",
         (response: RazorpayFailureResponse) => {
           console.error(response.error);
-
           alert(response.error?.description || "Payment failed.");
         }
       );
@@ -142,31 +163,10 @@ const PaymentComponent = () => {
       console.error(error);
       alert("Something went wrong.");
     }
-  const planPrice = searchParams.get("price") || "19.99";
-
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const formatCardNumber = (value: string) => {
-    return value
-      .replace(/\D/g, "")
-      .slice(0, 16)
-      .replace(/(.{4})/g, "$1 ")
-      .trim();
-  };
-
-  const formatExpiry = (value: string) => {
-    return value
-      .replace(/\D/g, "")
-      .slice(0, 4)
-      .replace(/^(\d{2})(\d)/, "$1/$2");
   };
 
   const isFormValid =
-    name.trim() &&
+    name.trim() !== "" &&
     cardNumber.length === 19 &&
     expiry.length === 5 &&
     cvv.length === 3;
@@ -244,7 +244,7 @@ const PaymentComponent = () => {
             >
               {/* Cardholder Name */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-350">
                   Cardholder Name
                 </label>
 
@@ -253,13 +253,13 @@ const PaymentComponent = () => {
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                  className="w-full rounded-2xl border border-slate-300 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-900/70 px-4 py-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
                 />
               </div>
 
               {/* Card Number */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-350">
                   Card Number
                 </label>
 
@@ -276,7 +276,7 @@ const PaymentComponent = () => {
                     onChange={(e) =>
                       setCardNumber(formatCardNumber(e.target.value))
                     }
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 py-4 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                    className="w-full rounded-2xl border border-slate-300 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-900/70 py-4 pl-11 pr-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
                   />
                 </div>
               </div>
@@ -284,7 +284,7 @@ const PaymentComponent = () => {
               {/* Expiry + CVV */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-350">
                     Expiry Date
                   </label>
 
@@ -295,12 +295,12 @@ const PaymentComponent = () => {
                     onChange={(e) =>
                       setExpiry(formatExpiry(e.target.value))
                     }
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                    className="w-full rounded-2xl border border-slate-300 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-900/70 px-4 py-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-350">
                     CVC
                   </label>
 
@@ -313,7 +313,7 @@ const PaymentComponent = () => {
                         e.target.value.replace(/\D/g, "").slice(0, 3)
                       )
                     }
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                    className="w-full rounded-2xl border border-slate-300 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-900/70 px-4 py-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
                   />
                 </div>
               </div>
@@ -346,16 +346,25 @@ const PaymentComponent = () => {
                         d="M4 12a8 8 0 018-8v8z"
                       />
                     </svg>
-
                     Processing...
                   </>
                 ) : (
                   <>
                     <ShieldCheck size={18} />
-                    Pay Now ΓÇö ${planPrice}/mo
+                    Pay Now — ₹{planPrice}/mo
                   </>
                 )}
               </button>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={handlePayment}
+                  className="w-full rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-semibold py-4 border border-slate-700 flex items-center justify-center gap-2 transition cursor-pointer dark:bg-white/5 dark:hover:bg-white/10"
+                >
+                  <i className="fa-solid fa-credit-card"></i> Pay Securely with Razorpay UPI/Cards
+                </button>
+              </div>
 
               <p className="text-xs leading-5 text-slate-400">
                 Your payment information is protected with encrypted processing

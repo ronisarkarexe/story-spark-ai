@@ -3,8 +3,8 @@
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const openai = new OpenAI({ apiKey: process.env.OPEN_AI_KEY || "dummy_key" });
-const genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const openai = new OpenAI({ apiKey: process.env.OPEN_AI_KEY || "mock-key" });
+const genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "mock-key");
 
 export const GEMINI_MODEL = "gemini-2.5-flash";
 

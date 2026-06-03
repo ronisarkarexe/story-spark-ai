@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   useLoginUserMutation,
@@ -25,6 +23,7 @@ type Inputs = {
 const LoginComponent = () => {
   const [loginUser] = useLoginUserMutation();
   const [googleLogin] = useGoogleLoginMutation();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -88,7 +87,8 @@ const LoginComponent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 box-border">
+    <div className="min-h-screen flex items-center justify-center p-4 md:p-6 bg-[#050816] dark:bg-[#050816] bg-white text-black dark:text-white transition-all duration-300 relative overflow-hidden">
+      <Toaster position="top-right" reverseOrder={false} />
       {/* Background Glow */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
@@ -104,76 +104,94 @@ const LoginComponent = () => {
         className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" 
       />
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4"
-      >
-
-          <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-            <WandSparkles className="text-violet-600 shrink-0" />
-            <div>
-              <h2 className="font-bold">Smart writing</h2>
-              <p>AI that understands your ideas</p>
+      <main className="auth-container flex flex-col md:flex-row overflow-hidden rounded-3xl border border-white/10 dark:border-white/10 border-black/10 shadow-[0_0_40px_rgba(168,85,247,0.12)] w-full max-w-6xl bg-white dark:bg-[#0b1020] relative z-10">
+        
+        {/* Left Side: Brand & Hero */}
+        <section className="relative hidden md:flex md:w-[52%] flex-col justify-between p-12 overflow-hidden bg-slate-950">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.08)_0,transparent_60%)]"></div>
+          
+          <div className="relative z-10">
+            {/* Brand Logo */}
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                <span className="fi fi-rr-sparkles text-white text-sm"></span>
+              </div>
+              <span className="text-white text-sm tracking-[0.25em] font-bold uppercase">
+                Story Spark AI
+              </span>
             </div>
-          </div>
-
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden"
-        >
-
-            <button
-            onClick={() => window.location.href = "/"}
-            className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-                      >
-            ← Back to Home
-            </button>
-
-          <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400 text-sm">
-            Create, edit, and generate engaging multiple story variations from a
-            single prompt. Perfect for writers, creators, and enthusiasts
-            exploring the future of fiction.
-          </div>
-        </div>
-
-        {/* Right side — login form card */}
-        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
-          {/* Back to Home */}
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-          >
-            ← Back to Home
-          </button>
-
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
-              Welcome back
-            </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Sign in to your Story Spark AI account
+            
+            {/* Hero Text */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] text-white drop-shadow-xl">
+              One Spark.
+              <br />
+              <span className="bg-gradient-to-r from-purple-300 via-pink-300 to-orange-200 bg-clip-text text-transparent">
+                Infinite Stories.
+              </span>
+            </h1>
+            
+            <p className="mt-6 text-white/80 text-lg leading-relaxed max-w-md font-medium">
+              Turn your imagination into fully illustrated multi-variation AI stories.
             </p>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-            <SSInput
-              label="Email address"
-              name="email"
-              type="email"
-              placeholder="Enter your email"
-              required={true}
-              icon="fi fi-rr-envelope"
-              register={register}
-              validation={{ required: "Email is required" }}
-              error={errors.email}
-              autoComplete="email"
+          <div className="relative z-10 mt-12 flex flex-col gap-4">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+              <WandSparkles className="text-purple-400 shrink-0" size={24} />
+              <div>
+                <h4 className="font-semibold text-white text-sm">Smart Writing</h4>
+                <p className="text-xs text-white/60">AI that understands and adapts to your ideas</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+              <BookOpen className="text-pink-400 shrink-0" size={24} />
+              <div>
+                <h4 className="font-semibold text-white text-sm">Endless Creativity</h4>
+                <p className="text-xs text-white/60">Generate multiple story arcs and styles</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+              <UsersRound className="text-orange-400 shrink-0" size={24} />
+              <div>
+                <h4 className="font-semibold text-white text-sm">Built for Everyone</h4>
+                <p className="text-xs text-white/60">Writers, creators, and dreamers alike</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Right Side: Login Form */}
+        <section className="w-full md:w-[48%] flex items-center justify-center p-8 sm:p-12 bg-slate-50 dark:bg-slate-900/40 backdrop-blur-xl">
+          <div className="w-full max-w-md">
+            <button
+              onClick={() => navigate("/")}
+              className="mb-6 text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors duration-200 flex items-center gap-2 font-medium"
+            >
+              ← Back to Home
+            </button>
+
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+              Welcome Back
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-8">
+              Sign in to continue generating stories.
+            </p>
+
+            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+              <SSInput
+                label="Email address"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                required={true}
+                icon="fi fi-rr-envelope"
+                register={register}
+                validation={{ required: "Email is required" }}
+                error={errors.email}
               />
 
-            <div>
               <SSInput
                 label="Password"
                 name="password"
@@ -185,55 +203,54 @@ const LoginComponent = () => {
                 validation={{ required: "Password is required" }}
                 error={errors.password}
               />
-              <div className="flex justify-end pt-2">
+
+              <div className="flex justify-end -mt-2">
                 <Link
                   to="/forgot-password"
-                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+                  className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 hover:underline transition-colors"
                 >
                   Forgot Password?
                 </Link>
               </div>
+
+              <SSButton
+                text="Sign In"
+                type="submit"
+                isLoading={isBusy}
+              />
+            </form>
+
+            <div className="mt-6 relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400">
+                  OR
+                </span>
+              </div>
             </div>
 
-            <div className="pt-2">
-              <SSButton text="Sign In" type="submit" isLoading={isBusy} />
+            {/* Explicitly added list-none to prevent stray bullet point artifact on production build */}
+            <div className="mt-6 flex justify-center list-none w-full">
+              <GoogleLogin
+                onSuccess={handleGoogleLoginSuccess}
+                onError={handleGoogleLoginError}
+              />
             </div>
-          </form>
 
-          {/* Custom Form Divider */}
-          <div className="relative my-8 w-full box-border">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200 dark:border-slate-800" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-slate-900 px-4 text-slate-400 dark:text-slate-500 font-semibold tracking-wide">
-                Or
-              </span>
-            </div>
+            <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
+              >
+                Sign up for free
+              </Link>
+            </p>
           </div>
-
-          {/* Social Identity OAuth Block Container */}
-          <div className="flex justify-center list-none w-full box-border">
-            <GoogleLogin
-              onSuccess={handleGoogleLoginSuccess}
-              onError={handleGoogleLoginError}
-            />
-          </div>
-
-          <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="font-bold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
-            >
-              Sign up for free
-            </Link>
-          </p>
-        </div>
-
-      </div>
-
-      <Toaster position="top-right" reverseOrder={false} />
+        </section>
+      </main>
     </div>
   );
 };

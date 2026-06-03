@@ -8,7 +8,6 @@ import {
   Send,
   GitBranch,
   Sparkles,
-  AlertCircle,
   ArrowUpRight,
   Zap,
 } from "lucide-react";
@@ -55,35 +54,6 @@ const CONTACT_CHANNELS = [
   },
 ];
 
-const FORM_FIELDS = [
-  {
-    id: "contact-fullname",
-    name: "fullname" as FormField,
-    type: "text",
-    label: "Full Name",
-    placeholder: "Jane Smith",
-    icon: User,
-    autoComplete: "name",
-  },
-  {
-    id: "contact-email",
-    name: "email" as FormField,
-    type: "email",
-    label: "Email Address",
-    placeholder: "jane@example.com",
-    icon: Mail,
-    autoComplete: "email",
-  },
-  {
-    id: "contact-subject",
-    name: "subject" as FormField,
-    type: "text",
-    label: "Subject",
-    placeholder: "What's this about?",
-    icon: FileText,
-    autoComplete: "off",
-  },
-];
 
 export default function Contact() {
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);

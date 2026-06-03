@@ -15,7 +15,6 @@ const toggleReaction = async (
 ) => {
   const { email } = token;
 
-  const user = await User.findOne({ email });
   const user = await User.findOne({ email }).select("_id").lean();
 
   if (!user) {
@@ -25,8 +24,8 @@ const toggleReaction = async (
   const post = await Post.findOne({
     _id: postId,
     isDeleted: { $ne: true },
-  });
   }).select("likesCount reactions");
+
 
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");

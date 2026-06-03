@@ -114,12 +114,9 @@ Task:
 
       console.error("[StoryBranching] generation error:", detail);
 
-      sendResponse(res, {
-        success: false,
-        statusCode: 503,
+      return res.status(503).json({
         message:
           "Story generation is temporarily unavailable. Please try again later.",
-        data: null,
       });
     }
   },

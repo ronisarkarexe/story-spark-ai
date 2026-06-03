@@ -1,10 +1,10 @@
 import React from "react";
 import { Quote } from "lucide-react";
 import { useGetReviewsQuery } from "../../../redux/apis/review.api";
-import type { Review } from "../../../models/review";
 import defaultAvatar from "../../../assets/logoNew.png";
 import ImageFallback from "../../ImageFallback";
 import ReviewForm from "./ReviewForm";
+import { Review } from "../../../models/review";
 
 const WriterFeedbackComponent = () => {
   const { data: feedbackData = [], isLoading } = useGetReviewsQuery({});

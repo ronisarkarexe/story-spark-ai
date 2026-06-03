@@ -1,8 +1,9 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { isLoggedIn } from "../../../services/auth.service";
 import { useToggleFollowMutation } from "../../../redux/apis/user.api";
+import ImageFallback from "../../ImageFallback";
 
 const RecommendedWritersComponent = () => {
   const recommendedWriters = [
@@ -58,10 +59,10 @@ const RecommendedWritersComponent = () => {
 
         <div className="space-y-4">
           {recommendedWriters.map((writer, index) => (
-            <div key={writer.id} className="flex min-w-0 items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center">
-                <img
-                  className="h-10 w-10 shrink-0 rounded-full"
+            <div key={writer.id} className="flex items-center justify-between">
+              <div className="flex items-center">
+                <ImageFallback
+                  className="h-10 w-10 rounded-full object-cover"
                   src={writer.image}
                   alt={writer.name}
                 />
@@ -74,17 +75,6 @@ const RecommendedWritersComponent = () => {
                     {writer.role}
                   </p>
                 </div>
-                <button 
-                  disabled={isLoading} 
-                  onClick={() => toggleFollow(writer.id)} 
-                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-150 active:scale-[0.97] disabled:opacity-50 select-none cursor-pointer uppercase tracking-wider ${
-                    isFollowing
-                      ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
-                      : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-sm shadow-blue-500/10"
-                  }`}
-                >
-                  {isFollowing ? "Following" : "Follow"}
-                </button>
               </div>
 
               <button

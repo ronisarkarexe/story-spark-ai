@@ -42,7 +42,7 @@ const userApi = baseApi.injectEndpoints({
         method: "PATCH",
         data: data,
       }),
-      invalidatesTags: [tagTypes.user],
+      invalidatesTags: [tagTypes.user, tagTypes.analytics],
     }),
     updateWritingGoals: build.mutation({
       query: (data) => ({

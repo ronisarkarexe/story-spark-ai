@@ -1,338 +1,28 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import DOMPurify from "dompurify";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
-import StoryWorldMap from "../story-map/StoryWorldMap";
-import StoryRemix from "../remix/StoryRemix";
+import { Document, Packer, Paragraph, TextRun } from "docx";
+import { saveAs } from "file-saver";
+import JSZip from "jszip";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
+import ContinueStoryButton from "../story/ContinueStoryButton";
+import StoryCoverImage from "./StoryCoverImage";
+import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
-import ImageFallback from "../ImageFallback";
-import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
-import StoryRemix from "../remix/StoryRemix";
 import StoryWorldMap from "../story-map/StoryWorldMap";
+import StoryRemix from "../remix/StoryRemix";
 import StoryVisualizer from "../story-visualizer/StoryVisualizer";
-
-export class ApiError extends Error {
-  constructor(public readonly status: number, message: string) {
-    super(message);
-    this.name = "ApiError";
-  }
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    if (error.status === 429) {
-      return "The AI service is currently busy. Please wait a moment and try again.";
-    }
-    if ([502, 503, 504].includes(error.status)) {
-      return "The server took too long to respond. Please try again shortly.";
-    }
-    if (error.status >= 500) {
-      return "A server error occurred. Please try again later.";
-    }
-  }
-
-  if (error instanceof TypeError) {
-    return "Could not reach the server. Please check your connection and try again.";
-  }
-
-  return "An unexpected error occurred. Please try again.";
-}
-
-const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
-  title = "",
-  tag = "default",
-  size = "full",
-  className = "",
-  style = {},
-}) => {
-  const theme = getGenreTheme(tag);
-  const initials = getInitials(title);
-
-  if (size === "thumb") {
-    return (
-      <div
-        className={className}
-        style={{
-          width: "100%",
-          height: "100%",
-          borderRadius: "50%",
-          background: `linear-gradient(${theme.gradient})`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "1.1rem",
-          fontWeight: 700,
-          color: "#fff",
-          letterSpacing: "0.05em",
-          textShadow: "0 1px 4px rgba(0,0,0,0.4)",
-          userSelect: "none",
-          ...style,
-        }}
-      >
-        {initials}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={className}
-      style={{
-        width: "100%",
-        height: "100%",
-        minHeight: "192px",
-        position: "relative",
-        overflow: "hidden",
-        background: `linear-gradient(${theme.gradient})`,
-        borderRadius: "inherit",
-        ...style,
-      }}
-    >
-      <div style={{
-        position: "absolute", top: "-30%", right: "-15%",
-        width: "60%", height: "120%",
-        background: "rgba(255,255,255,0.08)",
-        borderRadius: "50%",
-        pointerEvents: "none",
-      }} />
-      <div style={{
-        position: "absolute", bottom: "-20%", left: "-10%",
-        width: "45%", height: "80%",
-        background: "rgba(0,0,0,0.12)",
-        borderRadius: "50%",
-        pointerEvents: "none",
-      }} />
-
-      <div style={{
-        position: "absolute", top: "12px", right: "16px",
-        fontSize: "3.5rem",
-        color: theme.accent,
-        opacity: 0.35,
-        lineHeight: 1,
-        userSelect: "none",
-        pointerEvents: "none",
-        fontWeight: 300,
-      }}>
-        {theme.icon}
-      </div>
-
-      <div style={{
-        position: "absolute", top: "14px", left: "14px",
-        background: "rgba(0,0,0,0.28)",
-        backdropFilter: "blur(6px)",
-        color: "#fff",
-        fontSize: "0.65rem",
-        fontWeight: 700,
-        letterSpacing: "0.12em",
-        textTransform: "uppercase",
-        padding: "3px 10px",
-        borderRadius: "999px",
-        border: `1px solid ${theme.accent}55`,
-        userSelect: "none",
-      }}>
-        {tag}
-      </div>
-
-      <div style={{
-        position: "absolute", inset: 0,
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <div style={{
-          fontSize: "5rem",
-          fontWeight: 900,
-          color: "rgba(255,255,255,0.12)",
-          letterSpacing: "-0.04em",
-          lineHeight: 1,
-          userSelect: "none",
-          pointerEvents: "none",
-        }}>
-          {initials}
-        </div>
-      </div>
-
-      <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0,
-        background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)",
-        padding: "32px 14px 12px",
-      }}>
-        <p style={{
-          margin: 0,
-          color: "#fff",
-          fontSize: "0.9rem",
-          fontWeight: 700,
-          lineHeight: 1.3,
-          textShadow: "0 1px 6px rgba(0,0,0,0.5)",
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-        }}>
-          {title}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-
-// ─── Main Component ─────────────────────────────────────────────────────────
-
-import ImageFallback from "../ImageFallback";
-
-
-import ImageFallback from "../ImageFallback";
-import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
-
-export interface IStories {
-  uuid: string;
-  title: string;
-  content: string;
-  tag: string;
-  imageURL: string;
-  language?: string;
-}
-
-interface IPost extends IStories {
-  topic: ITopicData[];
-}
-
-interface StoriesComponentProps {
-  stories: IStories[];
-  isLogin: boolean;
-  setStories: (stories: IStories[]) => void;
-  onPublishSuccess?: () => void;
-}
-
-interface IRelatedStoriesComponentProps {
-  posts: { _id: string; title: string; [key: string]: unknown }[];
-  currentPostId: string;
-}
-
-interface IPost extends IStories {
-  topic: ITopicData[];
-  isPublished?: boolean;
-}
-
-type StorySentenceSegment = {
-  id: string;
-  text: string;
-  startWordIndex: number;
-  endWordIndex: number;
-};
-
-const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
-  if (!content.trim()) {
-    return [];
-  }
-
-  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
-  const segments: StorySentenceSegment[] = [];
-  let wordCursor = 0;
-
-  sentenceMatches.forEach((sentence, index) => {
-    const trimmedSentence = sentence.trim();
-    if (!trimmedSentence) {
-      return;
-    }
-
-    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
-    const startWordIndex = wordCursor;
-    const endWordIndex =
-      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
-
-    segments.push({
-      id: `${index}-${startWordIndex}-${endWordIndex}`,
-      text: sentence,
-      startWordIndex,
-      endWordIndex,
-    });
-
-    wordCursor += wordsInSentence;
-  });
-
-  return segments;
-};
-
-const getSafeFileName = (title: string, extension: "md" | "docx"): string => {
-  const safeTitle = (title || "story")
-    .trim()
-    .replace(/[^a-z0-9]+/gi, "_")
-    .replace(/^_+|_+$/g, "")
-    .toLowerCase();
-
-  return `${safeTitle || "story"}.${extension}`;
-};
-
-const downloadBlob = (blob: Blob, fileName: string) => {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-
-  URL.revokeObjectURL(url);
-};
-
-const escapeHtml = (value: string): string =>
-  value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-
-const createDocxBlob = ({
-  title,
-  content,
-  tag,
-  author,
-}: {
-  title: string;
-  content: string;
-  tag: string;
-  author: string;
-}): Blob => {
-  const paragraphs = content
-    .split(/\n+/)
-    .map((paragraph) => `<p>${escapeHtml(paragraph.trim())}</p>`)
-    .join("");
-
-  const html = `<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>${escapeHtml(title)}</title>
-  <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; }
-    h1 { color: #312e81; }
-    .meta { color: #64748b; font-size: 12px; margin-bottom: 24px; }
-  </style>
-</head>
-<body>
-  <h1>${escapeHtml(title)}</h1>
-  <div class="meta">Tag: ${escapeHtml(tag)} | Author: ${escapeHtml(author)}</div>
-  ${paragraphs}
-</body>
-</html>`;
-
-  return new Blob([html], {
-    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8",
-  });
-};
+import { useGenerateStoryVisualsMutation, type StoryboardScene } from "../../redux/apis/story.visualizer.api";
 
 const StoryRemixModal = StoryRemix as unknown as React.ComponentType<{
   story?: string;
@@ -342,167 +32,112 @@ const StoryRemixModal = StoryRemix as unknown as React.ComponentType<{
   onApplyRemix?: (content: string) => void;
 }>;
 
-const StoryWorldMapModal = StoryWorldMap as React.ComponentType<{
-  story?: string;
-  storyContent?: string;
-  title?: string;
-  onClose: () => void;
-}>;
 
-export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
-  posts,
-  currentPostId,
-}) => {
-  const navigate = useNavigate();
-  const filteredPosts = posts.filter((post) => post._id !== currentPostId);
 
-  return (
-    <div className="mt-8">
-      <h4 className="text-lg font-bold text-slate-200 mb-4">Related Content</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredPosts.map((post) => (
-          <div
-            key={post._id}
-            onClick={() => navigate(`/stories/${post._id}`)}
-            className="p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/60 transition-colors"
-          >
-            <p className="text-sm font-semibold text-white truncate">{post.title}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+export interface IStories {
+  uuid: string;
+  title: string;
+  content: string;
+  tag: string;
+  emotions?: string[];
+  enhancedPrompt?: string;
+  imageURL: string;
+  language?: string;
+  genre?: string;
+}
 
-const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
-  stories,
-  isLogin,
-  setStories,
-  isLoading,
-  onPublishSuccess,
-}) => {
-  const location = useLocation();
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+interface IStoriesViewComponentProps {
+  stories: IStories[];
+  isLogin: boolean;
+  setStories: React.Dispatch<React.SetStateAction<IStories[]>>;
+  onPublishSuccess?: () => void;
+  isLoading: boolean;
+}
 
-  const { error, setError, clearError } = useApiError();
+interface StorySentenceSegment {
+  id: string;
+  text: string;
+  startWordIndex: number;
+  endWordIndex: number;
+}
 
-  if (!content.trim()) {
-    return [];
-  }
-
-  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
-  const segments: StorySentenceSegment[] = [];
-  let wordCursor = 0;
-
-  sentenceMatches.forEach((sentence, index) => {
-    const trimmedSentence = sentence.trim();
-    if (!trimmedSentence) {
-      return;
-    }
-
-    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
-    const startWordIndex = wordCursor;
-    const endWordIndex =
-      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
-
-    segments.push({
-      id: `${index}-${startWordIndex}-${endWordIndex}`,
+const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+  if (!content) return [];
+  const sentences = content.match(/[^.!?]+[.!?]+(\s*|$)/g) || [content];
+  let wordOffset = 0;
+  return sentences.map((sentence, idx) => {
+    const wordCount = sentence.trim().split(/\s+/).filter(Boolean).length;
+    const segment = {
+      id: `sentence-${idx}`,
       text: sentence,
-      startWordIndex,
-      endWordIndex,
-    });
-
-    wordCursor += wordsInSentence;
+      startWordIndex: wordOffset,
+      endWordIndex: wordOffset + wordCount - 1,
+    };
+    wordOffset += wordCount;
+    return segment;
   });
-
-  return segments;
 };
 
-const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
+const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
   stories,
   isLogin,
   setStories,
-  isLoading,
   onPublishSuccess,
+  isLoading,
 }) => {
-
-
-  const location = useLocation();
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
-  const dispatch = useDispatch();
-
-
   const location = useLocation();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
 
   // Start with a clean state that adapts dynamically
-
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
   const [newTopicTitle, setNewTopicTitle] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [showExportMenu, setShowExportMenu] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
-  const [showTranslator, setShowTranslator] = useState<boolean>(false);
-  
-  const [createPost] = useCreatePostMutation();
-  const [deletePost] = useDeletePostMutation();
-  const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
-  
-const [, setShowRemix] = useState<boolean>(false);
+  const [showStoryVisualizer, setShowStoryVisualizer] = useState<boolean>(false);
+  const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]);
+  const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>("");
 
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
+  const [generateStoryVisuals, { isLoading: isGeneratingVisuals }] = useGenerateStoryVisualsMutation();
+
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
+  
   const lastSavedContentRef = useRef<string>("");
   const isSavingRef = useRef<boolean>(false);
   const hasSavedSessionRef = useRef<boolean>(false);
   const savedPostIdRef = useRef<string | null>(null);
-
-  const [endingsCache, setEndingsCache] = useState<{
-    [uuid: string]: { style: string; ending: string; fullStory: string }[];
-  }>({});
-  const [originalStoryContent, setOriginalStoryContent] = useState<{ [uuid: string]: string }>({});
-
-  // Alternate ending state & hooks
+  
   const [endingsCache, setEndingsCache] = useState<{
     [uuid: string]: { style: string; ending: string; fullStory: string }[];
   }>({});
   const [originalStoryContent, setOriginalStoryContent] = useState<{
     [uuid: string]: string;
   }>({});
-
   const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
   const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
   const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
   const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
-  const [readingStreak, setReadingStreak] = useState<number>(0);
+
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
-  useEffect(() => {
-  if (!selectedStory) return;
 
   useEffect(() => {
     if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
-
-      setOriginalStoryContent((prev) => ({ ...prev, [selectedStory.uuid]: selectedStory.content }));
-
       setOriginalStoryContent((prev) => ({
         ...prev,
         [selectedStory.uuid]: selectedStory.content,
       }));
-
     }
   }, [selectedStory, originalStoryContent]);
 
   const handleGenerateAlternateEndings = async () => {
     if (!selectedStory) return;
-    clearError();
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Generating alternate endings...");
-    
     setIsGeneratingEndings(true);
     const toastId = toast.loading("Generating alternate endings...");
     try {
@@ -510,208 +145,21 @@ const [, setShowRemix] = useState<boolean>(false);
         title: selectedStory.title,
         content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
         tag: selectedStory.tag,
-        language: selectedStory.language || "English",
 
         language: selectedStory.language || "English",
+
       };
+      
       const generationRequest = isLogin
         ? generateAlternateEndings(payload)
         : generateFreeAlternateEndings(payload);
+        
       const res = await generationRequest.unwrap();
       if (res && res.data) {
         setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
-
-
-        language: selectedStory.language || "English",
-
-      };
-      
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
-        
-      const res = await generationRequest.unwrap();
-      
-      if (!res || !Array.isArray(res.data)) {
-        throw new Error("Unexpected response format from the AI service.");
-      }
-      
-      setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
-      toast.success("Alternate endings generated successfully!");
-    } catch (err: any) {
-      console.error("[StoriesView Alternate Ending Flow Failure]:", err);
-      const errorStatus = err?.status || err?.data?.status;
-      if (errorStatus) {
-        setError(getErrorMessage(new ApiError(errorStatus, err?.data?.message || "")));
-      } else {
-        setError(getErrorMessage(err));
-      }
-      toast.error("Failed to generate alternate endings.");
-    } finally {
-      toast.dismiss(toastId);
-      setIsGeneratingEndings(false);
-    }
-  };
-
-  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
-    if (!selectedStory) return;
-
-    const updatedStory = { ...selectedStory, content: endingData.fullStory };
-    setSelectedStory(updatedStory);
-    setStories(stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)));
-
-    const updatedStory = {
-      ...selectedStory,
-      content: endingData.fullStory,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-
-    toast.success(`${endingData.style} applied to story!`);
-  };
-
-  const handleResetEnding = () => {
-    if (!selectedStory) return;
-    const originalContent = originalStoryContent[selectedStory.uuid];
-    if (!originalContent) return;
-
-    const updatedStory = { ...selectedStory, content: originalContent };
-    setSelectedStory(updatedStory);
-    setStories(stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)));
-    toast.success("Reverted to original story ending!");
-  };
-
-
-    const updatedStory = {
-      ...selectedStory,
-      content: originalContent,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success("Reverted to original story ending!");
-  };
-
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleTextToSpeech = () => {
-    if (!selectedStory?.content) return;
-
-    if (!("speechSynthesis" in window)) {
-      toast.error("Text-to-speech is not supported in this browser.");
-      return;
-    }
-
-    if (isPlayingAudio) {
-      if (isPausedAudio) {
-        window.speechSynthesis.resume();
-        setIsPausedAudio(false);
-        toast.success("Resumed reading story");
-      } else {
-        window.speechSynthesis.pause();
-        setIsPausedAudio(true);
-        toast.success("Paused reading story");
-      }
-    } else {
-      window.speechSynthesis.cancel();
-      const cleanContent = selectedStory.content.replace(/<[^>]*>/g, "");
-      const utterance = new SpeechSynthesisUtterance(cleanContent);
-      
-      utterance.onend = () => {
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      utterance.onerror = (e) => {
-        console.error("SpeechSynthesis error:", e);
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(
-        (v) => v.lang.startsWith("en-") && v.name.includes("Google")
-      ) || voices.find((v) => v.lang.startsWith("en-"));
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
-      setIsPlayingAudio(true);
-      setIsPausedAudio(false);
-      toast.success("Playing story audio");
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleStopAudio = () => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-    setIsPlayingAudio(false);
-    setIsPausedAudio(false);
-    toast.success("Stopped audio playback");
-  };
-
-  const lastReadDate = localStorage.getItem("lastReadDate");
-  const streak = Number(localStorage.getItem("readingStreak") || "0");
-
-  if (lastReadDate !== today) {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    let newStreak = 1;
-
-    if (lastReadDate === yesterday.toDateString()) {
-      newStreak = streak + 1;
-    }
-
-    localStorage.setItem("readingStreak", String(newStreak));
-    localStorage.setItem("lastReadDate", today);
-
-    setReadingStreak(newStreak);
-  } else {
-    setReadingStreak(streak);
-  }
-}, [selectedStory]);
-  useEffect(() => {
-    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
-      setOriginalStoryContent((prev) => ({
-        ...prev,
-        [selectedStory.uuid]: selectedStory.content,
-      }));
-    }
-  }, [selectedStory, originalStoryContent]);
-
-  const handleGenerateAlternateEndings = async () => {
-    if (!selectedStory) return;
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Generating alternate endings...");
-    try {
-      const payload = {
-        title: selectedStory.title,
-        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
-        tag: selectedStory.tag,
-
-        language: selectedStory.language || "English",
-
-      };
-      
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
-        
-      const res = await generationRequest.unwrap();
-      if (res && res.data) {
-        setEndingsCache((prev) => ({
-          ...prev,
-          [selectedStory.uuid]: res.data,
-        }));
+        if (res.data.length > 0) {
+          setActiveEndingTab(res.data[0].style);
+        }
         toast.success("Alternate endings generated successfully!");
       } else {
         toast.error("Failed to generate alternate endings.");
@@ -824,40 +272,20 @@ const [, setShowRemix] = useState<boolean>(false);
     };
   }, []);
 
-
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
   }, [topics]);
 
   useEffect(() => {
     const player = audioPlayerRef.current;
-
-    return () => { player?.stop(); };
+    return () => {
+      player?.stop();
+    };
   }, [location.pathname]);
 
-  useEffect(() => { setNarrationWordIndex(0); setNarrationState("idle"); }, [selectedStory?.uuid]);
-
-  const sentenceSegments = useMemo(() => buildSentenceSegments(selectedStory?.content ?? ""), [selectedStory?.content]);
-
-  useEffect(() => {
-    if (stories && stories.length > 0) {
-      setSelectedStory(stories[0]);
-      dispatch(setStory({
-        id: stories[0].uuid,
-        title: stories[0].title,
-        chapters: [{ id: 1, title: "Chapter 1", content: stories[0].content, createdAt: new Date().toISOString() }],
-      }));
-    } else {
-      setSelectedStory(null);
-    }
-    lastSavedContentRef.current = "";
-    hasSavedSessionRef.current = false;
-    savedPostIdRef.current = null;
-  }, [stories, dispatch]);
-
-  useEffect(() => {
-    setNarrationWordIndex(0);
-    setNarrationState("idle");
+  useEffect(() => { 
+    setNarrationWordIndex(0); 
+    setNarrationState("idle"); 
   }, [selectedStory?.uuid]);
 
   const sentenceSegments = useMemo(() => {
@@ -896,18 +324,12 @@ const [, setShowRemix] = useState<boolean>(false);
       if (isSavingRef.current) return;
 
       isSavingRef.current = true;
-
-      const post: IPost = {
-        ...selectedStory,
-        topic: selectTopics,
-      };
-
+      const post: Record<string, unknown> = { ...selectedStory, topic: selectTopics, isPublished: false };
       try {
         const result = await createPost(post).unwrap();
         if (result && result.data && result.data._id) {
           savedPostIdRef.current = result.data._id;
         }
-
         lastSavedContentRef.current = selectedStory.content;
         hasSavedSessionRef.current = true;
         toast.success("Story auto-saved!");
@@ -917,39 +339,23 @@ const [, setShowRemix] = useState<boolean>(false);
         isSavingRef.current = false;
       }
     };
-
-    const timer = setTimeout(() => { autoSaveStory(); }, 1000);
+    const timer = setTimeout(() => { autoSaveStory(); }, 5000);
     return () => clearTimeout(timer);
   }, [selectedStory, selectedStory?.content, isLogin, selectTopics, createPost]);
 
-  const handelStorySelection = (story: IStories) => {
-    setSelectedStory(story);
+  const handelStorySelection = (story: IStories) => { 
+    setSelectedStory(story); 
   };
-
 
   const handleTopicClick = (index: number) => {
     setTopics((currentTopics) =>
       currentTopics.map((topic, topicIndex) =>
-
-        topicIndex === index ? { ...topic, selected: !topic.selected } : topic
-      )
-    );
-  };
-  const handleAddTopic = () => {
-    const title = newTopicTitle.trim();
-    if (!title) { toast.error("Please enter a topic."); return; }
-    const normalizedTitle = title.startsWith("#") ? title : `#${title}`;
-    const topicExists = topics.some((topic) => topic.title.toLowerCase() === normalizedTitle.toLowerCase());
-    if (topicExists) { toast.error("This topic already exists."); return; }
-    setTopics((currentTopics) => [...currentTopics, { title: normalizedTitle, className: SELECTED_TOPIC_CLASSES, color: SELECTED_TOPIC_CLASSES, selected: true }]);
-
         topicIndex === index
           ? { ...topic, selected: !topic.selected }
           : topic
       )
     );
   };
-
   const handleAddTopic = () => {
     const title = newTopicTitle.trim();
 
@@ -977,76 +383,32 @@ const [, setShowRemix] = useState<boolean>(false);
         selected: true,
       },
     ]);
-
     setNewTopicTitle("");
   };
 
-  const handleRemoveTopic = (index: number) => {
-    setTopics((currentTopics) =>
-      currentTopics.filter((_, topicIndex) => topicIndex !== index)
-    );
-  };
-  const handleCopyStory = async () => {
-    if (!selectedStory?.content) return;
 
-    await navigator.clipboard.writeText(selectedStory.content);
-    setIsCopied(true);
-    toast.success("Story copied!");
-    window.setTimeout(() => setIsCopied(false), 2000);
-  };
-
-  const handleGenerateAlternateEndings = async () => {
+  const handleGenerateVisuals = async () => {
     if (!selectedStory) return;
-
-    clearError();
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Generating alternate endings...");
-
+    const toastId = toast.loading("Generating story illustrations storyboard...");
     try {
-      const payload = {
+      const res = await generateStoryVisuals({
         title: selectedStory.title,
-        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
-        tag: selectedStory.tag,
+        content: selectedStory.content,
+        genre: selectedStory.tag,
         language: selectedStory.language || "English",
-      };
-
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
-
-      const res = await generationRequest.unwrap();
-
-      if (!res || !Array.isArray(res.data)) {
-        throw new Error("Unexpected response format from the AI service.");
+      }).unwrap();
+      if (res && res.data) {
+        setStoryboardScenes(res.data.scenes || []);
+        setStoryboardStyleGuide(res.data.styleGuide || "");
+        setShowStoryVisualizer(true);
+        toast.success("Storyboard visuals generated successfully!");
       }
-
-      setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
-      toast.success("Alternate endings generated successfully!");
-    } catch (err: unknown) {
-      console.error("[StoriesView Alternate Ending Flow Failure]:", err);
-      const errObj = err as Record<string, unknown>;
-      const errorStatus = (errObj?.status as number | undefined) || ((errObj?.data as Record<string, unknown>)?.status as number | undefined);
-      setError(
-        errorStatus
-          ? getErrorMessage(new ApiError(errorStatus, ((errObj?.data as Record<string, unknown>)?.message as string) || ""))
-          : getErrorMessage(err)
-      );
-      toast.error("Failed to generate alternate endings.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate storyboard visuals.");
     } finally {
       toast.dismiss(toastId);
-      setIsGeneratingEndings(false);
     }
-  };
-
-
-    if (topics.length <= 2) {
-      toast.error("At least 2 topics are required.");
-      return;
-    }
-
-    setTopics((currentTopics) =>
-      currentTopics.filter((_, topicIndex) => topicIndex !== index)
-    );
   };
 
   const handleCopyStory = async () => {
@@ -1056,28 +418,19 @@ const [, setShowRemix] = useState<boolean>(false);
       toast.success("Story copied!");
       setTimeout(() => setIsCopied(false), 2000);
     }
+  };
 
   const handleExportPDF = async () => {
     if (!selectedStory) { toast.error("No story available to export."); return; }
-
-    const toastId = toast.loading("Preparing your premium PDF...");
-    try {
-
     if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
     const toastId = toast.loading("Preparing your premium PDF...");
 
     try {
       // Helper to load image assets asynchronously with a safe timeout
-
       const loadImageWithTimeout = (src: string, timeoutMs: number = 3000): Promise<HTMLImageElement> => {
         return new Promise((resolve, reject) => {
           const img = new Image();
           img.crossOrigin = "anonymous";
-
-          const timeout = setTimeout(() => { img.src = ""; reject(new Error(`Timeout loading image: ${src}`)); }, timeoutMs);
-          img.onload = () => { clearTimeout(timeout); resolve(img); };
-          img.onerror = (e) => { clearTimeout(timeout); reject(e); };
-
           const timeout = setTimeout(() => {
             img.src = ""; // stop loading
             reject(new Error(`Timeout loading image: ${src}`));
@@ -1091,25 +444,11 @@ const [, setShowRemix] = useState<boolean>(false);
             clearTimeout(timeout);
             reject(e);
           };
-
           img.src = src;
         });
       };
 
       let logoImg: HTMLImageElement | null = null;
-
-      try { logoImg = await loadImageWithTimeout(logo); } catch (err) { console.warn("Failed to load logo", err); }
-
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const title = selectedStory.title || "Untitled Story";
-      const content = selectedStory.content || "";
-      const tag = (selectedStory.tag || "STORY").toUpperCase();
-      const leftMargin = 20, rightMargin = 20, topMargin = 20, bottomMargin = 20;
-      const printableWidth = 210 - leftMargin - rightMargin;
-      const maxY = 297 - bottomMargin - 10;
-      let yCursor = topMargin;
-
-
       let storyImg: HTMLImageElement | null = null;
 
       try {
@@ -1146,71 +485,16 @@ const [, setShowRemix] = useState<boolean>(false);
 
       let yCursor = topMargin;
 
-      let yCursor = topMargin;
-
       // 1. Header (Logo & Sub-header)
-
       if (logoImg) {
         const logoHeight = 8;
         const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
         doc.addImage(logoImg, "PNG", leftMargin, yCursor, logoWidth, logoHeight);
       } else {
-
-        doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(99, 102, 241);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(99, 102, 241); // Brand Indigo
         doc.text("StorySparkAI", leftMargin, yCursor + 6);
-      }
-      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
-      doc.text("PREMIUM AI GENERATED STORY", 190, yCursor + 5, { align: "right" });
-      yCursor += 10;
-      doc.setDrawColor(99, 102, 241); doc.setLineWidth(0.5); doc.line(leftMargin, yCursor, 190, yCursor);
-      yCursor += 8;
-
-      doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(30, 41, 59);
-      const splitTitle = doc.splitTextToSize(title, printableWidth);
-      splitTitle.forEach((line: string) => { doc.text(line, leftMargin, yCursor); yCursor += 9; });
-      yCursor += 1;
-
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
-      const formattedDate = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
-      doc.text(`Generated on ${formattedDate}`, leftMargin, yCursor);
-      doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
-      const tagWidth = doc.getTextWidth(tag);
-      const chipWidth = tagWidth + 5, chipHeight = 5, chipX = 190 - chipWidth, chipY = yCursor - 3.8;
-      doc.setFillColor(99, 102, 241); doc.roundedRect(chipX, chipY, chipWidth, chipHeight, 1, 1, "F");
-      doc.setTextColor(255, 255, 255); doc.text(tag, chipX + 2.5, chipY + 3.5);
-      yCursor += 4.5;
-      doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.2); doc.line(leftMargin, yCursor, 190, yCursor);
-      yCursor += 10;
-
-      const paragraphs = content.split(/\n+/);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(30, 41, 59);
-      paragraphs.forEach((para: string, pIdx: number) => {
-        const cleanPara = para.trim();
-        if (!cleanPara) return;
-        const lines = doc.splitTextToSize(cleanPara, printableWidth);
-        lines.forEach((line: string) => {
-          if (yCursor > maxY) { doc.addPage(); yCursor = 30; }
-          doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(30, 41, 59);
-          doc.text(line, leftMargin, yCursor); yCursor += 6.5;
-        });
-        if (pIdx < paragraphs.length - 1) yCursor += 4.5;
-      });
-
-      const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setDrawColor(241, 245, 249); doc.setLineWidth(0.25); doc.line(leftMargin, 280, 190, 280);
-        doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 116, 139);
-        doc.text("Generated with StorySparkAI", leftMargin, 285);
-        doc.text(`Page ${i} of ${totalPages}`, 190, 285, { align: "right" });
-        if (i > 1) {
-          doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(99, 102, 241);
-          doc.text("StorySparkAI", leftMargin, 14);
-          doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
-          const headerTitle = title.length > 50 ? title.substring(0, 50) + "..." : title;
-          doc.text(headerTitle, 190, 14, { align: "right" });
-          doc.setDrawColor(241, 245, 249); doc.setLineWidth(0.2); doc.line(leftMargin, 17, 190, 17);
-        }
       }
 
       doc.setFont("helvetica", "normal");
@@ -1349,35 +633,20 @@ const [, setShowRemix] = useState<boolean>(false);
       }
 
       // Save PDF with sanitized name
-
       const safeTitle = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
       doc.save(`${safeTitle}.pdf`);
       toast.dismiss(toastId);
       toast.success("Premium PDF downloaded!");
     } catch (error) {
-
-      console.error(error); toast.dismiss(toastId); toast.error("Failed to export PDF.");
+      console.error(error); 
+      toast.dismiss(toastId); 
+      toast.error("Failed to export PDF.");
     }
   };
 
-  const downloadBlob = (blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const getSafeFileName = (title: string, ext: string) => {
-    const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    return `${cleanTitle || "story"}.${ext}`;
-  };
-
-  const handleExportMarkdown = () => {
+const handleExportMarkdown = () => {
     if (!selectedStory) { toast.error("No story available to export."); return; }
     if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
-
     try {
       const title = selectedStory.title || "Story";
       const content = selectedStory.content || "";
@@ -1386,95 +655,146 @@ const [, setShowRemix] = useState<boolean>(false);
       const isoDate = new Date().toISOString().split("T")[0];
       const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
       const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}.md`);
-      document.body.appendChild(link); link.click();
-      document.body.removeChild(link); URL.revokeObjectURL(url);
-
-      downloadBlob(blob, getSafeFileName(title, "md"));
-
+      saveAs(blob, `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}.md`);
       toast.success("Markdown downloaded!");
-    } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
+    } catch (error) { 
+      console.error(error); 
+      toast.error("Failed to export Markdown."); 
+    }
   };
 
-  const handleExportDOCX = () => {
+  const handleExportDOCX = async () => {
     if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
+    const toastId = toast.loading("Preparing your DOCX file...");
     try {
-      const title = selectedStory.title || "Untitled Story";
-      const docxBlob = createDocxBlob({
-        title,
-        content: selectedStory.content || "",
-        tag: selectedStory.tag || "Story",
-        author: isLogin && profile?.name ? profile.name : "Anonymous",
+      const title = selectedStory.title || "Story";
+      const content = selectedStory.content || "";
+      const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
+      const isoDate = new Date().toISOString().split("T")[0];
+
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: [
+            new Paragraph({ children: [new TextRun({ text: title, bold: true, size: 32 })] }),
+            new Paragraph({ children: [new TextRun({ text: `Author: ${authorName}`, size: 24 })] }),
+            new Paragraph({ children: [new TextRun({ text: `Date: ${isoDate}`, size: 24 })] }),
+            new Paragraph({ text: "" }),
+            ...content.split(/\n+/).filter(para => para.trim() !== "").map(para => new Paragraph({
+              children: [new TextRun({ text: para.trim(), size: 24 })],
+              spacing: { after: 200 }
+            }))
+          ],
+        }],
       });
-      downloadBlob(docxBlob, getSafeFileName(title, "docx"));
+
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}.docx`);
+      toast.dismiss(toastId);
       toast.success("DOCX downloaded!");
     } catch (error) {
       console.error(error);
       toast.error("Failed to export DOCX.");
     }
   };
-  const handelPublishStory = async () => {
 
-    if (!isLogin) { toast.error("Please login to publish the story."); return; }
-    if (!selectedStory) { toast.error("No story available. Please generate a story first."); return; }
-    if (selectTopics.length < 2) { toast.error("Please select at least 2 topics."); return; }
-    const post: IPost = { ...selectedStory, topic: selectTopics, isPublished: true };
-    setLoading(true);
+  const handleExportTXT = () => {
+    if (!selectedStory) { toast.error("No story available to export."); return; }
     try {
-      if (savedPostIdRef.current) {
-        try { await deletePost(savedPostIdRef.current).unwrap(); }
-        catch (deleteError) { console.warn("Failed to delete draft:", deleteError); }
-      }
-      const result = await createPost(post).unwrap();
-      if (result) { toast.success("Story published successfully!"); setStories([]); setSelectedStory(null); onPublishSuccess?.(); }
-    } catch { toast.error("Something went wrong. Please try again."); }
-    finally { setLoading(false); }
+      const title = selectedStory.title || "Story";
+      const content = selectedStory.content || "";
+      const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
+      const isoDate = new Date().toISOString().split("T")[0];
+      const txtContent = `Title: ${title}\nAuthor: ${authorName}\nDate: ${isoDate}\n\n${content}\n`;
+      const blob = new Blob([txtContent], { type: "text/plain;charset=utf-8;" });
+      saveAs(blob, `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}.txt`);
+      toast.success("TXT downloaded!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to export TXT.");
+    }
   };
 
-  const calculateReadingTime = (content: string): number => Math.max(1, Math.ceil(getWordCount(content) / 200));
-  const isNarrationActive = narrationState !== "idle";
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <StoryGeneratingAnimation />
-      </div>
-    );
-  }
-
-  if (!stories || !stories.length) {
-    return (
-      <div className="w-full text-center text-slate-400 dark:text-slate-500 py-16">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-sm font-medium">
-          No stories generated yet. Start by entering a prompt ✨
-        </div>
-      </div>
-    );
-  }
-
-
-    if (!isLogin) {
-      toast.error("Please login to publish the story.");
-      return;
+  const handleExportEPUB = async () => {
+    if (!selectedStory) { toast.error("No story available to export."); return; }
+    try {
+      const zip = new JSZip();
+      zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
+      const containerXml = `<?xml version="1.0"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+  </rootfiles>
+</container>`;
+      zip.folder("META-INF")?.file("container.xml", containerXml);
+      const contentOpf = `<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" version="2.0">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>${selectedStory.title}</dc:title>
+    <dc:language>en</dc:language>
+    <dc:identifier id="bookid">urn:uuid:${selectedStory.uuid}</dc:identifier>
+  </metadata>
+  <manifest>
+    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+    <item id="content" href="content.html" media-type="application/xhtml+xml"/>
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="content"/>
+  </spine>
+</package>`;
+      const tocNcx = `<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+  <head>
+    <meta name="dtb:uid" content="urn:uuid:${selectedStory.uuid}"/>
+  </head>
+  <docTitle><text>${selectedStory.title}</text></docTitle>
+  <navMap>
+    <navPoint id="navpoint-1" playOrder="1">
+      <navLabel><text>${selectedStory.title}</text></navLabel>
+      <content src="content.html"/>
+    </navPoint>
+  </navMap>
+</ncx>`;
+      const contentHtml = `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>${selectedStory.title}</title>
+</head>
+<body>
+  <h1>${selectedStory.title}</h1>
+  ${selectedStory.content.split("\n").map(para => `<p>${para.trim()}</p>`).join("")}
+</body>
+</html>`;
+      const oebps = zip.folder("OEBPS");
+      oebps?.file("content.opf", contentOpf);
+      oebps?.file("toc.ncx", tocNcx);
+      oebps?.file("content.html", contentHtml);
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `${selectedStory.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}.epub`);
+      toast.success("EPUB downloaded!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to export EPUB.");
     }
-    if (!selectedStory) {
-      toast.error("No story available. Please generate a story first.");
-      return;
-    }
-    if (selectTopics.length < 2) {
-      toast.error("Please select at least 2 topics.");
-      return;
-    }
-    const post: IPost = {
-      ...selectedStory,
-      topic: selectTopics,
-    };
-    setLoading(true);
+  };
+
+  const handleShareStory = () => {
+    if (!selectedStory) return;
+    const postUrl = window.location.href;
+    const tweetText = `Check out this awesome story generated by StorySparkAI: "${selectedStory.title}"!`;
+    const shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(tweetText)}`;
+    window.open(shareUrl, "_blank");
+  };
+
+
+
+  const handelPublishStory = async () => {
+    if (!isLogin) { toast.error("Please login to publish the story."); return; }
+    if (!selectedStory) { toast.error("No story available. Please generate a story first."); return; }
+    if (selectTopics.length < 2) { toast.error("Please select at least 2 topics to publish."); return; }
+    const post: Record<string, unknown> = { ...selectedStory, topic: selectTopics, isPublished: true };
+    setIsPublishing(true);
     try {
       if (savedPostIdRef.current) {
         try {
@@ -1484,16 +804,16 @@ const [, setShowRemix] = useState<boolean>(false);
         }
       }
       const result = await createPost(post).unwrap();
-      if (result) {
-        toast.success("Story published successfully!");
-        setStories([]);
-        setSelectedStory(null);
-        onPublishSuccess?.();
+      if (result) { 
+        toast.success("Story published successfully!"); 
+        setStories([]); 
+        setSelectedStory(null); 
+        onPublishSuccess?.(); 
       }
-    } catch {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+    } catch { 
+      toast.error("Something went wrong. Please try again."); 
+    } finally { 
+      setIsPublishing(false); 
     }
   };
 
@@ -1504,6 +824,7 @@ const [, setShowRemix] = useState<boolean>(false);
 
   const isNarrationActive = narrationState !== "idle";
 
+
 if (isLoading) {
   return (
     <div className="flex items-center justify-center py-20">
@@ -1511,28 +832,9 @@ if (isLoading) {
     </div>
   );
 }
-
   if (!selectedStory) {
     return null;
   }
-
-
-  return (
-    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 pb-16 relative overflow-hidden box-border">
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start relative z-10 w-full box-border">
-        
-        {/* ── Left Column ── */}
-        <div className="col-span-1 lg:col-span-8 flex flex-col space-y-6 w-full box-border">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 w-full box-border border-b border-slate-200/60 dark:border-white/5 pb-6">
-            <div className="text-left">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
-
-  const navigate = useNavigate();
-  const filteredPosts=posts.filter((post)=>post._id!==currentPostId)
-
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
@@ -1547,53 +849,15 @@ if (isLoading) {
           }
         `}
       </style>
+      
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in-up">
+        {/* Left Column - Content & Controls */}
         <div className="col-span-1 lg:col-span-8 flex flex-col">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
               <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400 mb-2">
-
                 {selectedStory?.title}
               </h1>
-
-              <div className="flex flex-wrap gap-2 select-none">
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
-                  🎭 {selectedStory.tag}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-purple-500/5 text-purple-600 dark:text-purple-400 border border-purple-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
-                  🌐 {selectedStory.language || "English"}
-                </span>
-
-                {selectedStory.emotions && selectedStory.emotions.length > 0 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
-                    😊 {selectedStory.emotions.join(", ")}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Story selector thumbnails */}
-            <div className="flex justify-start sm:justify-end shrink-0 select-none">
-              <div className="flex -space-x-4">
-                {stories && stories.length > 0 && stories.map((story) => (
-                  <button
-                    key={story.uuid}
-                    className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 ${
-                      selectedStory?.uuid === story.uuid ? "border-blue-600 scale-110 z-10 shadow-md" : "border-white dark:border-slate-800"
-                    } hover:scale-110 hover:z-10 transition-all duration-150 focus:outline-none overflow-hidden cursor-pointer`}
-                    onClick={() => handelStorySelection(story)}
-                    title={story.title}
-                  >
-                    <StoryCoverImage
-                      title={story.title}
-                      tag={story.tag}
-                      size="thumb"
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </button>
-                ))}
-
-
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center rounded-full bg-purple-900/60 text-purple-300 border border-purple-700/50 py-1 px-3 text-xs font-semibold">
                   ≡ƒÄ¡ {selectedStory.tag}
@@ -1601,35 +865,16 @@ if (isLoading) {
                 <span className="inline-flex items-center rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
                   ≡ƒîÉ {selectedStory.language || "English"}
                 </span>
-                <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
-                  ≡ƒôû {formatReadingStats(selectedStory.content)}
-                </span>
                 {selectedStory.emotions && selectedStory.emotions.length > 0 && (
                   <span className="inline-flex items-center rounded-full bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 py-1 px-3 text-xs font-semibold">
                     ≡ƒÿè {selectedStory.emotions.join(", ")}
                   </span>
                 )}
-
               </div>
             </div>
+            
             <div className="flex justify-start sm:justify-end">
               <div className="flex -space-x-5">
-                {stories.map((story) => (
-                  <button
-                    key={story.uuid}
-                    type="button"
-                    className={`relative w-16 h-16 rounded-full border-2 ${
-                      selectedStory.uuid === story.uuid ? "border-blue-500 scale-110" : "border-white"
-                    } hover:scale-110 transition-transform duration-200 focus:outline-none`}
-                    onClick={() => handelStorySelection(story)}
-                  >
-                    <ImageFallback
-                      src={story.imageURL}
-                      alt={story.title}
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                  </button>
-                ))}
                 {stories && stories.length > 0 && (
                   stories.map((story) => (
                     <button
@@ -1649,180 +894,94 @@ if (isLoading) {
                     </button>
                   ))
                 )}
-
               </div>
             </div>
           </div>
-
-
-          {/* Story content card */}
-          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm w-full box-border text-left">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-white/5 select-none">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Workspace Blueprint</h3>
-              <div className="flex flex-wrap items-center gap-2">
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={handleCopyStory} disabled={!selectedStory}>
-                  {isCopied ? "✓ Copied" : "📋 Copy"}
-                </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={handleExportPDF} disabled={!selectedStory}>
-                  📄 PDF
-                </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={handleExportMarkdown} disabled={!selectedStory}>
-                  ⬇️ Markdown
-                </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowWorldMap(true)} disabled={!selectedStory}>
-                  🗺️ Map
-                </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowRemix(true)} disabled={!selectedStory}>
-                  🔀 Remix
-                </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowTranslator(true)} disabled={!selectedStory}>
-                  🌍 Translate
 
           <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
             <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <h3 className="text-xl font-bold text-slate-200 relative z-10">
-                Generated Story
-              </h3>
-              <div className="flex flex-wrap items-center gap-2 relative z-10">
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleCopyStory}
-                  disabled={!selectedStory}
-                >
+              <h3 className="text-xl font-bold text-slate-200 relative z-10">Generated Story</h3>
+              <div className="flex flex-wrap items-center gap-2 relative z-50">
+                <button type="button" className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleCopyStory} disabled={!selectedStory}>
                   {isCopied ? "✓ Copied" : "📋 Copy"}
                 </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportPDF}
-                  disabled={!selectedStory}
-                >
-                  📄 Export PDF
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportMarkdown}
-                  disabled={!selectedStory}
-                >
-                  ⬇️ Export Markdown
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-blue-700 text-slate-200 font-semibold cursor-pointer hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportDOCX}
-                  disabled={!selectedStory}
-                >
-
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    onClick={() => setShowExportMenu(!showExportMenu)}
+                    disabled={!selectedStory}
+                  >
+                    ⬇️ Export <i className="fa-solid fa-chevron-down text-xs ml-1"></i>
+                  </button>
+                  <div className={`absolute top-full mt-2 left-0 w-48 bg-slate-800/95 backdrop-blur-md border border-slate-700/80 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col transition-all duration-300 origin-top-left ${showExportMenu ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"}`}>
+                    <button type="button" className="w-full text-left px-4 py-3 text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50" onClick={() => { handleExportPDF(); setShowExportMenu(false); }}>
+                      📄 PDF
+                    </button>
+                    <button type="button" className="w-full text-left px-4 py-3 text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50" onClick={() => { handleExportDOCX(); setShowExportMenu(false); }}>
+                      📘 Word (DOCX)
+                    </button>
+                    <button type="button" className="w-full text-left px-4 py-3 text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50" onClick={() => { handleExportMarkdown(); setShowExportMenu(false); }}>
+                      Ⓜ️ Markdown
+                    </button>
+                    <button type="button" className="w-full text-left px-4 py-3 text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50" onClick={() => { handleExportTXT(); setShowExportMenu(false); }}>
+                      📝 Plain Text
+                    </button>
+                    <button type="button" className="w-full text-left px-4 py-3 text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3" onClick={() => { handleExportEPUB(); setShowExportMenu(false); }}>
+                      📚 EPUB
+                    </button>
+                  </div>
+                </div>
+                <button type="button" className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowWorldMap(true)} disabled={!selectedStory}>
                   🗺️ World Map
-
-
-                  ≡ƒù║∩╕Å World Map
+                </button>
+                <button type="button" className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowRemix(true)} disabled={!selectedStory}>
+                  🔀 Remix
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowWorldMap(true)}
+                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-slate-200 font-semibold cursor-pointer hover:from-emerald-500 hover:to-teal-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleGenerateVisuals}
+                  disabled={isGeneratingVisuals || !selectedStory}
+                >
+                  🎨 Visuals
+                </button>
+
+                <button
+                  type="button"
+                  className="rounded-lg px-4 py-2 bg-pink-600 text-slate-200 font-semibold cursor-pointer hover:bg-pink-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleShareStory}
                   disabled={!selectedStory}
                 >
-                  ≡ƒöÇ Remix
-
-                </button>
-                <button
-                  type="button"
-                  id="publish-story-btn"
-
-                  className="rounded-xl px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-50"
-
-                  className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
-                  }`}
-
-                  onClick={handelPublishStory}
-                  disabled={loading || !selectedStory}
-                >
-                  ≡ƒöÇ Remix
+                  🐦 Share
                 </button>
                 <button
                   type="button"
                   id="publish-story-btn"
                   className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
+                    isPublishing ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
                   }`}
                   onClick={handelPublishStory}
-                  disabled={loading || !selectedStory}
+                  disabled={isPublishing || !selectedStory}
                 >
-                  {loading ? "Publishing..." : "Publish"}
+                  {isPublishing ? "Publishing..." : "Publish"}
                 </button>
               </div>
             </div>
-
             {selectedStory.enhancedPrompt && (
               <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
                 <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
                   <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
                 </h4>
-                <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">
-                  {selectedStory.enhancedPrompt}
-                </p>
+                <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">{selectedStory.enhancedPrompt}</p>
               </div>
             )}
 
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
               <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence =
-                      isNarrationActive &&
-                      narrationWordIndex >= segment.startWordIndex &&
-                      narrationWordIndex <= segment.endWordIndex;
-
-                    return (
-                      <span
-                        key={segment.id}
-                        className={
-                          isActiveSentence
-                            ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-100 ring-1 ring-indigo-400/30"
-                            : undefined
-                        }
-                      >
-                        {DOMPurify.sanitize(segment.text)}
-                      </span>
-                    );
-                  })
-                ) : (
-                  DOMPurify.sanitize(selectedStory.content)
-                )}
-              </p>
-            </div>
-
-            <div className="relative z-10 mt-6">
-              <AudioPlayer
-                ref={audioPlayerRef}
-                text={selectedStory.content}
-                title={selectedStory.title}
-                onWordIndexChange={setNarrationWordIndex}
-                onPlaybackStateChange={setNarrationState}
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 pointer-events-none"></div>
-            </div>
-
-            {selectedStory.enhancedPrompt && (
-              <div className="mb-6 p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl">
-                <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-2 uppercase tracking-wider flex items-center gap-2 select-none">
-                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
-                </h4>
-                <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm italic break-words whitespace-pre-wrap m-0 leading-relaxed font-medium">{selectedStory.enhancedPrompt}</p>
-              </div>
-            )}
-
-            <div id="story-content" className="w-full text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed tracking-wide font-medium">
-              <p className="break-words whitespace-pre-wrap m-0">
                 {sentenceSegments.length > 0 ? (
                   sentenceSegments.map((segment: StorySentenceSegment) => {
                     const isActiveSentence = isNarrationActive && narrationWordIndex >= segment.startWordIndex && narrationWordIndex <= segment.endWordIndex;
@@ -1832,10 +991,6 @@ if (isLoading) {
                     let wordOffset = 0;
 
                     return (
-
-                      <span key={segment.id} className={isActiveSentence ? "rounded-lg bg-blue-500/10 dark:bg-blue-500/20 px-1 py-0.5 text-slate-900 dark:text-white font-semibold transition-all" : undefined}>
-                        {segment.text}
-
                       <span
                         key={segment.id}
                         className={isActiveSentence ? "transition-colors duration-300 text-slate-100" : undefined}
@@ -1868,7 +1023,6 @@ if (isLoading) {
                             </span>
                           );
                         })}
-
                       </span>
                     );
                   })
@@ -1907,259 +1061,6 @@ if (isLoading) {
                   })()
                 )}
               </p>
-
-
-            </div>
-
-
-            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border">
-              <AudioPlayer ref={audioPlayerRef} text={selectedStory.content} title={selectedStory.title} onWordIndexChange={setNarrationWordIndex} onPlaybackStateChange={setNarrationState} />
-            </div>
-            <div className="mt-4 w-full box-border"><ContinueStoryButton /></div>
-          </div>
-
-          {/* Topics management section */}
-          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm w-full box-border text-left">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4 select-none">Categorization Indexes</h3>
-            <div className="flex flex-col sm:flex-row gap-3 mb-5 select-none w-full box-border">
-              <input
-                type="text"
-                value={newTopicTitle}
-                onChange={(event) => setNewTopicTitle(event.target.value)}
-                onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); handleAddTopic(); } }}
-                placeholder="Add contextual keyword index tag..."
-                className="flex-1 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950/60 px-4 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500/40 focus:outline-none transition-colors"
-              />
-              <button type="button" className="rounded-xl px-4 py-2.5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors active:scale-[0.98] cursor-pointer" onClick={handleAddTopic}>
-                Add Tag
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2 w-full box-border">
-              {selectedStory ? (
-                topics.map((topic, index) => (
-                  <span key={index} className={`inline-flex items-center gap-2 px-3 py-1.5 ${topic.className} rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm border border-slate-100 dark:border-transparent select-none`}>
-                    <button type="button" className="cursor-pointer font-bold uppercase flex items-center gap-1.5" onClick={() => { handleTopicClick(index); }}>
-                      {topic.selected ? <i className="fa-solid fa-check" /> : <i className="fa-solid fa-plus" />}{topic.title}
-                    </button>
-                    <button type="button" className="cursor-pointer border-l border-current/20 pl-2 opacity-50 hover:opacity-100 disabled:cursor-not-allowed" onClick={() => handleRemoveTopic(index)} disabled={topics.length <= 2} aria-label={`Remove ${topic.title}`}>
-                      <i className="fa-solid fa-xmark" />
-                    </button>
-                  </span>
-                ))
-              ) : (
-                <p className="text-xs font-medium text-slate-400 dark:text-slate-500 m-0">No keyword topics registered.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Alternate endings control hub */}
-          {selectedStory && (
-            <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm w-full box-border text-left relative overflow-hidden">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 select-none w-full box-border">
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Narrative Path Modifications</h3>
-                  <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1.5">Branch out into unique storytelling variations.</p>
-                </div>
-                {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
-                  <button type="button" onClick={handleResetEnding} className="w-full sm:w-auto rounded-xl px-3.5 py-2 bg-red-500/5 hover:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/10 text-xs font-bold uppercase tracking-wider transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5">
-                    <i className="fa-solid fa-rotate-left" /> Revert to Original
-                  </button>
-                )}
-              </div>
-
-              {isGeneratingEndings ? (
-                <div className="flex flex-col items-center justify-center py-12 select-none w-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-300 border-t-blue-600 dark:border-white/10 dark:border-t-white mb-4"></div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 animate-pulse">Running variant projection logic...</p>
-                </div>
-              ) : endingsCache[selectedStory.uuid]?.length > 0 ? (
-                <div className="w-full box-border">
-                  <div className="flex border-b border-slate-100 dark:border-white/5 mb-5 overflow-x-auto whitespace-nowrap scrollbar-none select-none w-full box-border">
-                    {["Happy Ending", "Dark Ending", "Plot Twist Ending", "Open Ending", "Cliffhanger Ending"].map((name) => {
-                      const endingData = (endingsCache[selectedStory.uuid] || []).find((e) => e.style === name);
-                      const isApplied = endingData && selectedStory.content === endingData.fullStory;
-                      return (
-                        <button key={name} type="button" onClick={() => setActiveEndingTab(name)}
-                          className={`px-4 py-2.5 font-bold text-xs uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer ${activeEndingTab === name ? "border-blue-600 text-blue-600 dark:border-white dark:text-white bg-slate-50 dark:bg-white/5 rounded-t-xl" : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"}`}>
-                          <span>{name}</span>
-                          {isApplied && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {(() => {
-                    const currentEndingData = (endingsCache[selectedStory.uuid] || []).find((e) => e.style === activeEndingTab);
-                    if (!currentEndingData) return null;
-                    const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
-                    return (
-                      <div className="bg-slate-50/50 dark:bg-slate-950/30 rounded-xl p-5 border border-slate-200/60 dark:border-white/5 w-full box-border">
-                        <div className="flex justify-between items-center mb-4 select-none w-full box-border">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{activeEndingTab} Excerpt</h4>
-                          <div>
-                            {isCurrentlyApplied ? (
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
-                                <i className="fa-solid fa-circle-check" /> Active Node
-                              </span>
-                            ) : (
-                              <button type="button" onClick={() => handleApplyEnding(currentEndingData)} className="rounded-xl px-3.5 py-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider hover:bg-slate-800 dark:hover:bg-slate-100 transition-all active:scale-[0.98] cursor-pointer shadow-sm">
-                                Apply Branch
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        <div className="space-y-4 w-full box-border">
-                          <div className="bg-white dark:bg-[#111827]/40 p-4 rounded-xl border border-slate-200/80 dark:border-white/5 leading-relaxed text-slate-600 dark:text-slate-300 text-xs sm:text-sm italic shadow-inner whitespace-pre-wrap text-left font-medium">
-                            <p className="m-0">"{currentEndingData.ending}"</p>
-                          </div>
-                          <details className="group border border-slate-200/80 dark:border-white/5 rounded-xl overflow-hidden bg-white dark:bg-transparent">
-                            <summary className="list-none flex items-center justify-between p-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer select-none">
-                              <span>Preview Integrated Compounded Chronicle</span>
-                              <span className="transition-transform duration-150 group-open:rotate-180 text-[8px]">▼</span>
-                            </summary>
-                            <div className="p-4 border-t border-slate-200/60 dark:border-white/5 text-xs text-slate-400 dark:text-slate-500 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap text-left font-medium bg-slate-50/30 dark:bg-transparent">
-                              {currentEndingData.fullStory}
-                            </div>
-                          </details>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-10 bg-slate-50/50 dark:bg-white/[0.01] border border-dashed border-slate-200 dark:border-white/5 rounded-xl select-none w-full box-border">
-                  <button type="button" onClick={handleGenerateAlternateEndings} className="rounded-xl px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wider shadow-md shadow-blue-500/10 transition-all duration-150 hover:scale-105 active:scale-[0.98] flex items-center gap-2 cursor-pointer">
-                    <i className="fa-solid fa-shuffle text-xs" /> Transform Endings
-                  </button>
-                  <p className="text-[11px] text-slate-400 font-medium leading-relaxed mt-3.5 text-center max-w-sm px-4">
-                    Analyzes the current plot architecture to frame 5 distinct structural variations including Happy, Dark, Plot Twist, Open, and Cliffhanger resolutions.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* ── Right Column: Preview Panel ── */}
-        <div className="col-span-1 lg:col-span-4 w-full box-border lg:sticky lg:top-6">
-          <div className="mb-4 text-left select-none px-0.5">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              Compilation Preview
-            </h2>
-          </div>
-          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden group w-full box-border text-left">
-            <div className="flex flex-col w-full box-border">
-              <div className="relative p-3 overflow-hidden text-white w-full box-border" style={{ height: "192px" }}>
-                <StoryCoverImage
-                  title={selectedStory.title}
-                  tag={selectedStory.tag}
-                  className="transition-transform duration-500 group-hover:scale-[1.02]"
-                  style={{ width: "100%", height: "100%", borderRadius: "1rem" }}
-                />
-              </div>
-
-              <div className="p-5 sm:p-6 w-full box-border">
-                <div className="flex justify-between items-center mb-4 w-full box-border select-none">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <div className="inline-flex items-center rounded-lg bg-purple-500/10 border border-purple-500/10 py-1 px-2.5 text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                      {selectedStory.tag}
-                    </div>
-                    <div className="inline-flex items-center rounded-lg bg-blue-500/10 border border-blue-500/10 py-1 px-2.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                      {selectedStory.language || "English"}
-                    </div>
-                    <div className="inline-flex items-center rounded-lg bg-slate-100 dark:bg-white/5 py-1 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 gap-1">
-                      ⏱️ {calculateReadingTime(selectedStory.content)} Min Read
-                    </div>
-                  </div>
-                  <div className="shrink-0"><BookmarkButton storyId={selectedStory.uuid} /></div>
-                </div>
-                <h3 className="mb-2 text-slate-900 dark:text-slate-200 text-lg sm:text-xl font-extrabold tracking-tight leading-snug">{selectedStory.title}</h3>
-                <p className="text-slate-500 dark:text-slate-400 font-medium break-words text-xs sm:text-sm leading-relaxed m-0">{getShortenedText(selectedStory.content)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {showRemix && selectedStory && (
-        <StoryRemix
-          story={selectedStory}
-          isLogin={isLogin}
-          onRemixComplete={(remixedStory) => { setStories([remixedStory, ...stories]); setSelectedStory(remixedStory); setShowRemix(false); }}
-          onClose={() => setShowRemix(false)}
-        />
-
-          </div>
-
-        ))
-      ) : (
-        <p className="text-center text-slate-500 col-span-2 py-8">No related stories found.</p>
-
-
-          <div className="mt-7">
-            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
-              <h3 className="text-lg font-bold text-slate-200 mb-4">
-                Select Topics
-              </h3>
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <input
-                  type="text"
-                  value={newTopicTitle}
-                  onChange={(event) => setNewTopicTitle(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      handleAddTopic();
-                    }
-                  }}
-                  placeholder="Add related topic"
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                />
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-500 transition-colors"
-                  onClick={handleAddTopic}
-                >
-                  Add Topic
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedStory ? (
-                  <>
-                    {topics.map((topic, index) => (
-                      <span
-                        key={index}
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
-                      >
-                        <button
-                          type="button"
-                          className="cursor-pointer"
-                          onClick={() => handleTopicClick(index)}
-                        >
-                          {topic.selected ? (
-                            <i className="fa-solid fa-check"></i>
-                          ) : (
-                            <i className="fa-solid fa-plus"></i>
-                          )}{" "}
-                          {topic.title}
-                        </button>
-                        <button
-                          type="button"
-                          className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40"
-                          onClick={() => handleRemoveTopic(index)}
-                          disabled={topics.length <= 2}
-                          aria-label={`Remove ${topic.title}`}
-                        >
-                          <i className="fa-solid fa-xmark"></i>
-                        </button>
-                      </span>
-                    ))}
-                  </>
-                ) : (
-                  <p className="text-gray-400">
-                    No topics available. Please generate a story first.
-                  </p>
-                )}
-              </div>
             </div>
 
             {/* Alternate Endings Section */}
@@ -2297,10 +1198,158 @@ if (isLoading) {
                 )}
               </div>
             )}
+            <div className="relative z-10 mt-6">
+              <AudioPlayer
+                ref={audioPlayerRef}
+                text={selectedStory.content}
+                title={selectedStory.title}
+                onWordIndexChange={setNarrationWordIndex}
+                onPlaybackStateChange={setNarrationState}
+              />
+            </div>
           </div>
+
+          {/* Alternate Endings and Remixes Panel */}
+          <div className="mt-8 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl relative z-10">
+            <h4 className="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
+              🔀 Alternate Endings & Remixes
+            </h4>
+            
+            {!endingsCache[selectedStory.uuid] ? (
+              <div className="text-center py-4">
+                <p className="text-slate-400 text-sm mb-4">Want a different ending? AI can generate multiple alternative paths for this story.</p>
+                <button
+                  type="button"
+                  onClick={handleGenerateAlternateEndings}
+                  disabled={isGeneratingEndings}
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold rounded-lg text-sm shadow-md transition-all flex items-center gap-2 mx-auto cursor-pointer"
+                >
+                  {isGeneratingEndings ? (
+                    <>
+                      <i className="fas fa-spinner animate-spin"></i> Generating...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-wand-magic-sparkles"></i> Generate Alternate Endings
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex border-b border-slate-700 mb-4 overflow-x-auto">
+                  {endingsCache[selectedStory.uuid].map((ending) => (
+                    <button
+                      key={ending.style}
+                      type="button"
+                      onClick={() => setActiveEndingTab(ending.style)}
+                      className={`px-4 py-2 text-sm font-semibold border-b-2 whitespace-nowrap ${
+                        activeEndingTab === ending.style
+                          ? "border-indigo-500 text-indigo-400"
+                          : "border-transparent text-slate-400 hover:text-slate-300"
+                      }`}
+                    >
+                      {ending.style}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleResetEnding}
+                    className="ml-auto px-3 py-1.5 text-xs font-bold text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                  >
+                    Reset to Original
+                  </button>
+                </div>
+
+                {endingsCache[selectedStory.uuid]
+                  .filter((ending) => ending.style === activeEndingTab)
+                  .map((ending, index) => (
+                    <div key={index} className="space-y-4">
+                      <div className="p-4 bg-slate-900/40 rounded-xl border border-slate-700/30">
+                        <h5 className="font-bold text-slate-200 text-sm mb-2">{ending.style} Summary:</h5>
+                        <p className="text-slate-400 text-xs italic leading-relaxed">{ending.ending}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleApplyEnding(ending)}
+                        className="w-full py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 font-bold rounded-lg text-sm transition-all cursor-pointer"
+                      >
+                        Apply this Ending to Full Story
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+
+          {/* Continue Story Section */}
+          <div className="mt-8 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h4 className="text-lg font-bold text-slate-200 mb-1">Continue this Adventure</h4>
+              <p className="text-slate-400 text-sm">Want to write the next chapter? Let the AI continue the storyline from here.</p>
+            </div>
+            <ContinueStoryButton />
+          </div>
+
+          {/* Settings / Tags section for published post */}
+          {isLogin && (
+            <div className="mt-8 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl relative z-10">
+              <h4 className="text-lg font-bold text-slate-200 mb-4">Publish Story Settings</h4>
+              <div className="mb-4">
+                <label className="block text-sm text-slate-400 mb-2">Selected Topics (minimum 2):</label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {topics.map((topic, index) => (
+                    <button
+                      key={topic.title}
+                      type="button"
+                      onClick={() => handleTopicClick(index)}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all duration-200 cursor-pointer ${
+                        topic.selected
+                          ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/25"
+                          : "bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600"
+                      }`}
+                    >
+                      {topic.title}
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Add new topic..."
+                    value={newTopicTitle}
+                    onChange={(e) => setNewTopicTitle(e.target.value)}
+                    className="flex-1 px-3 py-1.5 bg-slate-750 border border-slate-600 rounded-lg text-slate-200 text-sm placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddTopic();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddTopic}
+                    className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-sm transition-all cursor-pointer"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* Right Column - Preview Card */}
         <div className="col-span-1 lg:col-span-4">
+          <GeneratedStoryTimeline
+            content={selectedStory.content}
+            title={selectedStory.title}
+            narrationState={narrationState}
+            narrationWordIndex={narrationWordIndex}
+          />
+
           <div className="mb-5">
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
               Preview
@@ -2308,17 +1357,17 @@ if (isLoading) {
           </div>
           <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
             <div className="relative flex flex-col rounded-lg">
-              console.log("selectedStory", selectedStory);
-              console.log("imageURL", selectedStory?.imageURL);
-              <div className="relative m-3 overflow-hidden text-white rounded-xl">
-                <ImageFallback
-                  src={selectedStory.imageURL}
-                  alt="card-image"
-                  className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+              <div className="relative m-3 overflow-hidden text-white rounded-xl" style={{ height: "192px" }}>
+                <StoryCoverImage
+                  title={selectedStory.title}
+                  tag={selectedStory.tag}
+                  className="transition-transform duration-500 group-hover:scale-105"
+                  style={{ width: "100%", height: "100%", borderRadius: "0.75rem" }}
                 />
               </div>
-              <div className="px-3 py-1">
-                <div className="flex justify-between items-center mb-2 w-full">
+
+              <div className="px-3 py-4">
+                <div className="flex justify-between items-center mb-3 w-full">
                   <div className="flex items-center gap-2">
                     <div className="inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
                       {selectedStory.tag.toUpperCase()}
@@ -2327,17 +1376,15 @@ if (isLoading) {
                       ≡ƒîÉ {(selectedStory.language || "English").toUpperCase()}
                     </div>
                     <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
-                      ≡ƒôû {formatReadingStats(selectedStory.content)}
+                      ΓÅ▒∩╕Å {calculateReadingTime(selectedStory.content)} min read
                     </div>
                   </div>
                   <div>
                     <BookmarkButton storyId={selectedStory.uuid} />
                   </div>
                 </div>
-                <h6 className="mb-1 text-gray-300 text-xl font-semibold">
-                  {selectedStory.title}
-                </h6>
-                <p className="text-gray-400 font-light breakwords text-sm sm:text-base">
+                <h6 className="mb-2 text-gray-200 text-xl font-bold">{selectedStory.title}</h6>
+                <p className="text-gray-400 font-light break-words text-sm sm:text-base leading-relaxed">
                   {getShortenedText(selectedStory.content)}
                 </p>
               </div>
@@ -2352,7 +1399,6 @@ if (isLoading) {
           title={selectedStory.title}
           onClose={() => setShowWorldMap(false)}
         />
-
       )}
 
       {showRemix && selectedStory && (
@@ -2378,11 +1424,9 @@ if (isLoading) {
           onClose={() => setShowStoryVisualizer(false)}
         />
       )}
-
-      <Toaster position="top-right" reverseOrder={false} />
     </div>
+
   );
 };
 
 export default StoriesViewComponent;
-

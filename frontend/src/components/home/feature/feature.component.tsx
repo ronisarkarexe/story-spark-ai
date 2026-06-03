@@ -1,9 +1,10 @@
-﻿import { Post } from "../../../models/post";
+import { Post } from "../../../models/post";
 import { useGetFeaturedListsQuery } from "../../../redux/apis/post.api";
 import { formatDateShort } from "../../../utils/time-formate";
-import LoadingAnimation from "../../loading/loading.component";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
+import ImageFallback from "../../ImageFallback";
 import { useNavigate } from "react-router-dom";
+
 import BookmarkButton from "../../BookmarkButton";
 import React, { useState } from "react";
 import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
@@ -15,21 +16,38 @@ const FeatureComponent = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const calculateReadingTime = (content: string): number => {
-    if (!content) return 1;
-    const words = content.trim().split(/\s+/).length;
-    return Math.max(1, Math.ceil(words / 200));
+    const wordsPerMinute = 200;
+    const words = content ? content.trim().split(/\s+/).length : 0;
+    return Math.max(1, Math.ceil(words / wordsPerMinute));
   };
 
-  const handleCopyLink = (e: React.MouseEvent, postId: string, postUrl: string) => {
+  const handleCopyLink = async (e: React.MouseEvent, postId: string, postUrl: string) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(postUrl).then(() => {
+    try {
+      await navigator.clipboard.writeText(postUrl);
       setCopiedId(postId);
       setTimeout(() => setCopiedId(null), 2000);
-    });
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+    }
   };
 
   if (isLoading) {
-    return <LoadingAnimation />;
+    return (
+      <div className="mb-12 text-slate-900 dark:text-slate-100">
+        <h2 className="text-2xl font-bold mb-6">
+          Featured Posts
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((item) => (
+            <div
+              key={item}
+              className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72"
+            ></div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (isError) {
@@ -62,15 +80,13 @@ const FeatureComponent = () => {
                 onClick={() => navigate(`/post/${post._id}`)}
                 className="motion-card h-full bg-blue-500/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-slate-700/40 cursor-pointer hover:bg-blue-500/20 hover:border-blue-400/30 flex flex-col group box-border w-full"
               >
-                {post.imageURL && (
-                  <div className="relative overflow-hidden h-48 w-full">
-                    <img
-                      className="motion-image h-full w-full object-cover"
-                      src={post.imageURL}
-                      alt={post.title || "Featured Post"}
-                    />
-                  </div>
-                )}
+                <div className="relative h-48 overflow-hidden sm:h-52">
+                  <ImageFallback
+                    className="motion-image h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    src={post.imageURL}
+                    alt={post.title || "Featured Post"}
+                  />
+                </div>
 
                 <div className="p-6 flex-1 flex flex-col justify-between box-border w-full">
                   <div>
@@ -186,7 +202,7 @@ const FeatureComponent = () => {
             <i className="fa-solid fa-star text-slate-400 dark:text-slate-500 text-xl" aria-hidden="true"></i>
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-            No featured nodes are highlighted inside the stream right now.
+            No featured posts are highlighted right now.
           </p>
         </div>
       )}

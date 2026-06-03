@@ -39,7 +39,7 @@ const AnalyticsPage = () => {
 
   const fetchData = async (
     endpoint: string,
-    signal: AbortSignal
+    signal?: AbortSignal
   ) => {
     const res = await fetch(
       `${API_BASE}/analytics/${endpoint}`,
