@@ -3,6 +3,8 @@ import { Link, Outlet, useLocation, useNavigate, Navigate } from "react-router-d
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo } from "../../services/auth.service";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
+import ImageFallback from "../ImageFallback";
+
 
 const DashboardLayout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);

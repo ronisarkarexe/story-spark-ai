@@ -27,6 +27,17 @@ interface Room {
   createdAt: Date;
 }
 
+interface CollabRoomResponse {
+  room?: Room;
+  message?: string;
+}
+
+interface CollabStoryResponse {
+  story?: StoryChunk[];
+  message?: string;
+}
+
+
 
 /**
  * Collab rooms required Socket.IO to `BACKEND_URL/collab`. That is disabled in the

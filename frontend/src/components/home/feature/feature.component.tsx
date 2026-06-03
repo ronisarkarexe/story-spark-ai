@@ -1,8 +1,10 @@
-﻿import { Post } from "../../../models/post";
+import { Post } from "../../../models/post";
 import { useGetFeaturedListsQuery } from "../../../redux/apis/post.api";
 import { formatDateShort } from "../../../utils/time-formate";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
+import ImageFallback from "../../ImageFallback";
 import { useNavigate } from "react-router-dom";
+
 import BookmarkButton from "../../BookmarkButton";
 import React, { useState } from "react";
 import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { motion } from "framer-motion";
 import {
   Globe,
   GitPullRequest,
@@ -9,7 +8,6 @@ import {
   Code2,
   Trophy,
 } from "lucide-react";
-import ImageFallback from "../ImageFallback";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 

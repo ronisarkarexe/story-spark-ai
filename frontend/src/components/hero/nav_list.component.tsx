@@ -1,8 +1,7 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
+import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
-import { USER_ROLE } from "../../constants/role";
 import { useNotifications } from "../../hooks/useNotifications";
 import NotificationComponent from "../notification/notification.component";
 
@@ -10,19 +9,13 @@ const NavListComponent = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
-  const notificationMenuRef = useRef<HTMLDivElement | null>(null);
-  
-  // Provide fallbacks in case useNotifications is not fully implemented
-  const notificationsHook = useNotifications ? useNotifications() : {} as any;
-  const notifications = notificationsHook.notifications || [];
-  const unreadCount = notificationsHook.unreadCount || 0;
-  const isOpen = notificationsHook.isOpen || false;
-  const toggle = notificationsHook.toggle || (() => {});
-  const close = notificationsHook.close || (() => {});
-  const markAsRead = notificationsHook.markAsRead || (() => {});
-
-  const user = getUserInfo();
-  const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
+  const {
+    notifications = [],
+    unreadCount = 0,
+    isOpen = false,
+    close = () => {},
+    markAsRead = () => {},
+  } = useNotifications();
 
   const handleLogout = () => {
     removeUserInfo();

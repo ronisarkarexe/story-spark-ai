@@ -112,10 +112,6 @@ Task:
       const detail =
         error instanceof Error ? error.message : String(error);
 
-    } catch (error) {
-      const detail =
-        error instanceof Error ? error.message : String(error);
-
       console.error("[StoryBranching] generation error:", detail);
 
       return res.status(503).json({
