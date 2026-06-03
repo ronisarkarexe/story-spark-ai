@@ -8,7 +8,7 @@ const reportSchema = new Schema<IReport>(
     targetId: { type: Schema.Types.ObjectId, required: true },
     targetType: { type: String, enum: Object.values(ReportTargetType), required: true },
     reason: { type: String, enum: Object.values(ReportReason), required: true },
-    description: { type: String },
+    description: { type: String, maxlength: 1000 },
     status: { type: String, enum: Object.values(ReportStatus), default: ReportStatus.PENDING },
   },
   { timestamps: true }
