@@ -7,12 +7,141 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import { loadRazorpayScript } from "../../../utils/loadRazorpay";
+
+interface RazorpayResponse {
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
+  razorpay_signature?: string;
+}
+
+interface RazorpayFailureResponse {
+  error?: {
+    description?: string;
+  };
+}
+
+interface RazorpayOrderResponse {
+  success: boolean;
+  order: {
+    id: string;
+    amount: number;
+    currency: string;
+  };
+}
+
+interface RazorpayInstance {
+  open: () => void;
+  on: (
+    event: string,
+    callback: (response: RazorpayFailureResponse) => void
+  ) => void;
+}
+
+interface RazorpayWindow extends Window {
+  Razorpay: new (options: object) => RazorpayInstance;
+}
+
 const PaymentComponent = () => {
   const navigate = useNavigate();
 
   // Read selected plan from pricing page
   const [searchParams] = useSearchParams();
   const planName = searchParams.get("plan") || "Pro";
+  const planPrice = Number(searchParams.get("price") || "19.99");
+
+  // Razorpay payment handler
+  const handlePayment = async () => {
+    // Load Razorpay SDK
+    const loaded = await loadRazorpayScript();
+
+    if (!loaded) {
+      alert("Failed to load Razorpay SDK.");
+      return;
+    }
+
+    try {
+      // Create order from backend
+      const res = await fetch("/api/v1/payment/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: Math.round(planPrice * 100), // Convert to paisa
+        }),
+      });
+
+      const data: RazorpayOrderResponse = await res.json();
+
+      if (!data.success) {
+        alert("Failed to create order.");
+        return;
+      }
+
+      // Razorpay options
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: data.order.amount,
+        currency: data.order.currency,
+        name: "StorySparkAI",
+        description: `${planName} Subscription`,
+        order_id: data.order.id,
+
+        handler: async (response: RazorpayResponse) => {
+          try {
+            // Verify payment
+            const verifyRes = await fetch("/api/v1/payment/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(response),
+            });
+
+            const verifyData: { success: boolean } =
+              await verifyRes.json();
+
+            if (verifyData.success) {
+              alert("Payment successful!");
+            } else {
+              alert("Payment verification failed.");
+            }
+          } catch (error) {
+            console.error(error);
+            alert("Verification failed.");
+          }
+        },
+
+        prefill: {
+          name: "",
+          email: "",
+          contact: "",
+        },
+
+        theme: {
+          color: "#06b6d4",
+        },
+      };
+
+      const paymentObject = new ((window as unknown) as RazorpayWindow).Razorpay(
+        options
+      );
+
+      paymentObject.on(
+        "payment.failed",
+        (response: RazorpayFailureResponse) => {
+          console.error(response.error);
+
+          alert(response.error?.description || "Payment failed.");
+        }
+      );
+
+      paymentObject.open();
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong.");
+    }
   const planPrice = searchParams.get("price") || "19.99";
 
   const [cardNumber, setCardNumber] = useState("");
