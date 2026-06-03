@@ -2,12 +2,14 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { storeUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import logo from "../../assets/logoNew.png";
+import { Link, useNavigate } from "react-router-dom";
+import { useGoogleLoginMutation, useRegisterUserMutation } from "../../redux/apis/auth.api";
 import {
   useEmailVerifyMutation,
   useVerifyOtpMutation,
 } from "../../redux/apis/otp.verify.api";
-import { useRegisterUserMutation } from "../../redux/apis/auth.api";
-import { useNavigate, Link } from "react-router-dom";
 import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
@@ -87,11 +89,14 @@ const SignUpComponent = () => {
   const [emailVerify] = useEmailVerifyMutation();
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerUser] = useRegisterUserMutation();
+  const [googleLogin] = useGoogleLoginMutation();
+
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    unregister,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
 
@@ -123,8 +128,7 @@ const SignUpComponent = () => {
 
   const passedChecks = Object.values(passwordChecks).filter(Boolean).length;
   const strengthLevel = getStrengthLevel(passedChecks);
-  const { label: strengthLabel, barColor, barWidth, textColor } =
-    PASSWORD_STRENGTH_CONFIG[strengthLevel];
+  const { label: strengthLabel, barColor, barWidth, textColor } = PASSWORD_STRENGTH_CONFIG[strengthLevel];
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
@@ -154,14 +158,15 @@ const SignUpComponent = () => {
           setExpiredAt(new Date(expiresAt).getTime());
           toast.success("OTP sent to your email");
           setRegisterInfo(user);
+          unregister("confirmPassword");
+          unregister("password");
+          unregister("name");
+          unregister("email");
           setShowOtpField(true);
           setCooldown(60);
         }
       } catch (error) {
-        const message =
-          (error as { data?: Array<{ message?: string }> })?.data?.[0]
-            ?.message ||
-          "Failed to send OTP. Check backend .env email credentials.";
+        const message = (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "Failed to send OTP. Check backend .env email credentials.";
         toast.error(message);
       } finally {
         setIsBusy(false);
@@ -205,9 +210,7 @@ const SignUpComponent = () => {
         throw new Error("No verification token received");
       }
     } catch (err: unknown) {
-      const message =
-        (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-        "OTP verification failed. Please check the code and try again.";
+      const message = (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "OTP verification failed. Please check the code and try again.";
       toast.error(message);
     } finally {
       setIsBusy(false);
@@ -235,20 +238,39 @@ const SignUpComponent = () => {
         setCooldown(60);
       }
     } catch (error) {
-      const message =
-        (error as { data?: Array<{ message?: string }> })?.data?.[0]
-          ?.message || "Failed to resend OTP. Please try again.";
+      const message = (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "Failed to resend OTP. Please try again.";
       toast.error(message);
     } finally {
       setIsBusy(false);
     }
   };
 
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    setIsBusy(true);
+    try {
+      const res = await googleLogin({
+        token: credentialResponse.credential,
+      }).unwrap();
+
+      if (res.data.accessToken) {
+        toast.success("User logged in successfully with Google!");
+        storeUserInfo({ accessToken: res.data.accessToken });
+        navigate("/");
+      }
+    } catch {
+      toast.error("Failed to login with Google. Please try again.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    toast.error("Google login failed. Please try again.");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 md:p-6 bg-[#050816] dark:bg-[#050816] bg-white text-black dark:text-white transition-all duration-300 relative overflow-hidden">
       <Toaster position="top-right" reverseOrder={false} />
-      
-      {/* Background Glow */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 

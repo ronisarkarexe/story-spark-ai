@@ -11,8 +11,11 @@ const WriterFeedbackComponent = () => {
 
   if (isLoading) {
     return (
-      <div className="py-10 text-center text-slate-600 dark:text-gray-400">
-        Loading reviews...
+      <div className="w-full text-center py-16">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-slate-500 dark:text-slate-400 text-sm font-medium">
+          <i className="fa-solid fa-circle-notch animate-spin"></i>
+          Loading user feedback modules...
+        </div>
       </div>
     );
   }

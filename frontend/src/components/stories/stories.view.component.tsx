@@ -19,6 +19,19 @@ import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
+import StoryWorldMap from "../story-map/StoryWorldMap";
+import StoryRemix from "../remix/StoryRemix";
+import StoryVisualizer from "../story-visualizer/StoryVisualizer";
+import { useGenerateStoryVisualsMutation, type StoryboardScene } from "../../redux/apis/story.visualizer.api";
+
+const StoryRemixModal = StoryRemix as unknown as React.ComponentType<{
+  story?: string;
+  title?: string;
+  selectedStory?: IStories;
+  onClose?: () => void;
+  onApplyRemix?: (content: string) => void;
+}>;
+
 
 
 export interface IStories {
@@ -83,8 +96,16 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showExportMenu, setShowExportMenu] = useState<boolean>(false);
+  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
+  const [showRemix, setShowRemix] = useState<boolean>(false);
+  const [showStoryVisualizer, setShowStoryVisualizer] = useState<boolean>(false);
+  const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]);
+  const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>("");
+
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
+  const [generateStoryVisuals, { isLoading: isGeneratingVisuals }] = useGenerateStoryVisualsMutation();
+
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
   
   const lastSavedContentRef = useRef<string>("");
@@ -363,6 +384,31 @@ const StoriesViewComponent: React.FC<IStoriesViewComponentProps> = ({
       },
     ]);
     setNewTopicTitle("");
+  };
+
+
+  const handleGenerateVisuals = async () => {
+    if (!selectedStory) return;
+    const toastId = toast.loading("Generating story illustrations storyboard...");
+    try {
+      const res = await generateStoryVisuals({
+        title: selectedStory.title,
+        content: selectedStory.content,
+        genre: selectedStory.tag,
+        language: selectedStory.language || "English",
+      }).unwrap();
+      if (res && res.data) {
+        setStoryboardScenes(res.data.scenes || []);
+        setStoryboardStyleGuide(res.data.styleGuide || "");
+        setShowStoryVisualizer(true);
+        toast.success("Storyboard visuals generated successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate storyboard visuals.");
+    } finally {
+      toast.dismiss(toastId);
+    }
   };
 
   const handleCopyStory = async () => {
@@ -889,12 +935,21 @@ if (isLoading) {
                     </button>
                   </div>
                 </div>
-                <button type="button" className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => console.log("World Map clicked")} disabled={!selectedStory}>
+                <button type="button" className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowWorldMap(true)} disabled={!selectedStory}>
                   🗺️ World Map
                 </button>
-                <button type="button" className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => console.log("Remix clicked")} disabled={!selectedStory}>
+                <button type="button" className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => setShowRemix(true)} disabled={!selectedStory}>
                   🔀 Remix
                 </button>
+                <button
+                  type="button"
+                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-slate-200 font-semibold cursor-pointer hover:from-emerald-500 hover:to-teal-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleGenerateVisuals}
+                  disabled={isGeneratingVisuals || !selectedStory}
+                >
+                  🎨 Visuals
+                </button>
+
                 <button
                   type="button"
                   className="rounded-lg px-4 py-2 bg-pink-600 text-slate-200 font-semibold cursor-pointer hover:bg-pink-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1337,7 +1392,40 @@ if (isLoading) {
           </div>
         </div>
       </div>
+
+      {showWorldMap && selectedStory && (
+        <StoryWorldMap
+          story={selectedStory.content}
+          title={selectedStory.title}
+          onClose={() => setShowWorldMap(false)}
+        />
+      )}
+
+      {showRemix && selectedStory && (
+        <StoryRemixModal
+          story={selectedStory.content}
+          title={selectedStory.title}
+          selectedStory={selectedStory}
+          onClose={() => setShowRemix(false)}
+          onApplyRemix={(content: string) => {
+            const updatedStory = { ...selectedStory, content };
+            setSelectedStory(updatedStory);
+            setStories(stories.map((story) => (story.uuid === selectedStory.uuid ? updatedStory : story)));
+            setShowRemix(false);
+          }}
+        />
+      )}
+
+      {showStoryVisualizer && storyboardScenes.length > 0 && (
+        <StoryVisualizer
+          title={selectedStory.title}
+          scenes={storyboardScenes}
+          styleGuide={storyboardStyleGuide}
+          onClose={() => setShowStoryVisualizer(false)}
+        />
+      )}
     </div>
+
   );
 };
 

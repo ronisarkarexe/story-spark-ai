@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
-import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   useLoginUserMutation,
   useGoogleLoginMutation,
@@ -35,33 +36,22 @@ const LoginComponent = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setIsBusy(true);
-
     try {
       const res = await loginUser({ ...data }).unwrap();
-
       if (res.data.accessToken) {
         toast.success("User logged in successfully!");
-
-        storeUserInfo({
-          accessToken: res.data.accessToken,
-        });
-
+        storeUserInfo({ accessToken: res.data.accessToken });
         setIsLoggedIn(true);
       }
     } catch {
-      toast.error(
-        "Login failed. Please check your credentials."
-      );
+      toast.error("Login failed. Please check your credentials.");
     } finally {
       setIsBusy(false);
     }
   };
 
-  const handleGoogleLoginSuccess = async (
-    credentialResponse: CredentialResponse
-  ) => {
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
     setIsBusy(true);
-
     try {
       const res = await googleLogin({
         token: credentialResponse.credential,
@@ -74,35 +64,24 @@ const LoginComponent = () => {
         setIsLoggedIn(true);
       }
     } catch {
-      toast.error(
-        "Failed to login with Google. Please try again."
-      );
+      toast.error("Failed to login with Google. Please try again.");
     } finally {
       setIsBusy(false);
     }
   };
 
   const handleGoogleLoginError = () => {
-    toast.error(
-      "Google login failed. Please try again."
-    );
+    toast.error("Google login failed. Please try again.");
   };
 
-  // Role-based redirect fix
   if (isLoggedIn) {
     const userInfo = getUserInfo();
-
     const isDashboardUser =
       userInfo?.role === USER_ROLE.ADMIN ||
       userInfo?.role === USER_ROLE.SUPER_ADMIN;
-
     return (
       <RedirectComponent
-        defaultPath={
-          isDashboardUser
-            ? "/dashboard"
-            : "/explore"
-        }
+        defaultPath={isDashboardUser ? "/dashboard" : "/explore"}
       />
     );
   }
@@ -110,11 +89,20 @@ const LoginComponent = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 md:p-6 bg-[#050816] dark:bg-[#050816] bg-white text-black dark:text-white transition-all duration-300 relative overflow-hidden">
       <Toaster position="top-right" reverseOrder={false} />
-      
       {/* Background Glow */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5 }}
+        className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" 
+      />
 
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5, delay: 0.2 }}
+        className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" 
+      />
 
       <main className="auth-container flex flex-col md:flex-row overflow-hidden rounded-3xl border border-white/10 dark:border-white/10 border-black/10 shadow-[0_0_40px_rgba(168,85,247,0.12)] w-full max-w-6xl bg-white dark:bg-[#0b1020] relative z-10">
         

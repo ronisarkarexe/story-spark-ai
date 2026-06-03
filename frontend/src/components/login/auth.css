@@ -339,6 +339,12 @@ input:focus {
     width: 100%;
 }
 
+/* Constrain the authentication card so inputs don't overflow their container */
+.auth-form-card {
+    max-width: var(--ds-card-max-width);
+    width: 100%;
+}
+
 /* ── Mobile Layout Media Queries ── */
 @media (max-width: 767px) {
     .auth-container {

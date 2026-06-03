@@ -156,17 +156,23 @@
                 <div>
                     <div class="flex justify-between mb-1.5">
                         <label class="field-label" for="password-field">Password</label>
-                        <a class="text-[12px] text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" id="forgot-password-link">Forgot password?</a>
+                        <a class="text-[12px] text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" id="forgot-password-link">checkout -b ?</a>
                     </div>
                     <div class="input-icon-wrapper">
                         <i class="fi fi-rr-lock input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••" type="password" required autocomplete="current-password"/>
+                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••"  required autocomplete="current-password"/>
                         <button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors p-1 rounded" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
                             <i class="fi fi-rr-eye-crossed text-[16px]" id="eye-icon"></i>
                         </button>
                     </div>
                     <span class="field-error-msg" id="password-error">Password must be at least 8 characters.</span>
-                </div>
+                    <p 
+                       id="login-caps-lock-warning" 
+                      class="hidden text-yellow-400 text-sm mt-2"
+                     >
+                      Caps Lock is ON
+                     </p>
+                    </div>
 
                 <div class="flex items-center gap-2.5 pt-1">
                     <input class="w-4 h-4 rounded border-white/10 bg-surface-container-high text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface" id="remember" type="checkbox"/>
