@@ -37,7 +37,11 @@ const userApi = baseApi.injectEndpoints({
       providesTags: [tagTypes.user],
     }),
     updateProfile: build.mutation({
-      // ─── OPTIMIZED: INVALIDATES ANALYTICS CACHE UPON UPDATE ───
+      query: (data) => ({
+        url: `/${USER_URL}/update`,
+        method: "PATCH",
+        data: data,
+      }),
       invalidatesTags: [tagTypes.user, tagTypes.analytics],
     }),
     updateWritingGoals: build.mutation({

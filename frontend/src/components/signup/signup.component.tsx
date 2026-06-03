@@ -2,10 +2,9 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { storeUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import logo from "../../assets/logoNew.png";
+
 import { Link, useNavigate } from "react-router-dom";
-import { useGoogleLoginMutation, useRegisterUserMutation } from "../../redux/apis/auth.api";
+import { useRegisterUserMutation } from "../../redux/apis/auth.api";
 import {
   useEmailVerifyMutation,
   useVerifyOtpMutation,
@@ -89,7 +88,7 @@ const SignUpComponent = () => {
   const [emailVerify] = useEmailVerifyMutation();
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerUser] = useRegisterUserMutation();
-  const [googleLogin] = useGoogleLoginMutation();
+
 
   const {
     register,
@@ -245,28 +244,6 @@ const SignUpComponent = () => {
     }
   };
 
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({
-        token: credentialResponse.credential,
-      }).unwrap();
-
-      if (res.data.accessToken) {
-        toast.success("User logged in successfully with Google!");
-        storeUserInfo({ accessToken: res.data.accessToken });
-        navigate("/");
-      }
-    } catch {
-      toast.error("Failed to login with Google. Please try again.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginError = () => {
-    toast.error("Google login failed. Please try again.");
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 md:p-6 bg-[#050816] dark:bg-[#050816] bg-white text-black dark:text-white transition-all duration-300 relative overflow-hidden">

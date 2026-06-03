@@ -14,37 +14,37 @@ declare module 'jsdiff' {
   export function diffWords(
     oldStr: string,
     newStr: string,
-    options?: any
+    options?: Record<string, unknown>
   ): Change[];
 
   export function diffLines(
     oldStr: string,
     newStr: string,
-    options?: any
+    options?: Record<string, unknown>
   ): Change[];
 
   export function diffSentences(
     oldStr: string,
     newStr: string,
-    options?: any
+    options?: Record<string, unknown>
   ): Change[];
 
   export function diffCss(
     oldStr: string,
     newStr: string,
-    options?: any
+    options?: Record<string, unknown>
   ): Change[];
 
   export function diffJson(
-    oldStr: any,
-    newStr: any,
-    options?: any
+    oldStr: unknown,
+    newStr: unknown,
+    options?: Record<string, unknown>
   ): Change[];
 
   export function diffArrays(
-    oldArr: any[],
-    newArr: any[],
-    options?: any
+    oldArr: unknown[],
+    newArr: unknown[],
+    options?: Record<string, unknown>
   ): Change[];
 
   export function createTwoFilesPatch(
@@ -54,7 +54,7 @@ declare module 'jsdiff' {
     newStr: string,
     oldHeader?: string,
     newHeader?: string,
-    options?: any
+    options?: Record<string, unknown>
   ): string;
 
   export function createPatch(
@@ -63,27 +63,27 @@ declare module 'jsdiff' {
     newStr: string,
     oldHeader?: string,
     newHeader?: string,
-    options?: any
+    options?: Record<string, unknown>
   ): string;
 
   export function applyPatch(
     source: string,
     uniDiff: string,
-    options?: any
+    options?: Record<string, unknown>
   ): string | false;
 
   export function applyPatches(
     uniDiff: string | string[],
-    options?: any
+    options?: Record<string, unknown>
   ): string;
 
   export function parsePatch(
     uniDiff: string | string[]
-  ): any[];
+  ): unknown[];
 
-  export function convertChangesToDMP(changes: Change[]): any;
+  export function convertChangesToDMP(changes: Change[]): unknown;
 
   export function convertChangesToXML(changes: Change[]): string;
 
-  export function canonicalize(obj: any): any;
+  export function canonicalize(obj: unknown): unknown;
 }
