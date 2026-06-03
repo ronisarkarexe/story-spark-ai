@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../models/post";
-import ImageFallback from "../ImageFallback";
-ImageFallback
 import BookmarkButton from "../BookmarkButton";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
+import { formatReadingStats } from "../../utils/story-utils";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
@@ -31,12 +30,6 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
       month: "short",
       day: "2-digit",
     });
-  };
-
-  const calculateReadingTime = (content: string): number => {
-    if (!content) return 1;
-    const words = content.trim().split(/\s+/).length;
-    return Math.max(1, Math.ceil(words / 200));
   };
 
   if (isLoading) {
@@ -82,24 +75,6 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
               onClick={() => navigate(`/post/${story._id}`)}
               className="cursor-pointer bg-gray-50 text-slate-900 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 overflow-hidden group flex flex-col h-full dark:bg-slate-900/60 dark:text-white dark:border-slate-800"
             >
-              <div className="relative overflow-hidden">
-                <ImageFallback
-                    src={story.imageURL}
-                    alt={`Cover image for ${story.title}`}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-100 to-transparent opacity-70 pointer-events-none dark:from-slate-900 dark:to-transparent dark:opacity-60"></div>
-
-                <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-md border border-gray-200 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg dark:bg-slate-900/80 dark:border-slate-600 dark:text-blue-300">
-                  {story.tag}
-                </span>
-                {/* Deep Gradient Wash */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#03050C] via-[#03050C]/20 to-transparent opacity-90" />
-                
-                {/* Floating Tags - Premium Styling */}
-                <div className="absolute top-6 left-6 flex gap-2">
-                  <span className="px-5 py-2 bg-blue-600/20 backdrop-blur-2xl border border-blue-500/30 text-blue-400 text-[10px] font-black uppercase tracking-[0.25em] rounded-full shadow-2xl">
               <div className="relative overflow-hidden bg-slate-200 dark:bg-slate-800">
                 {!imageErrors[story._id] && story.imageURL ? (
                   <img
@@ -120,7 +95,6 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                 <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
                   <BookmarkButton
                     storyId={story._id}
-                    bookmarks={story.bookmarks}
                     className="backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 hover:bg-white/30 p-2 !rounded-full shadow-lg hover:scale-110 transition-all duration-300"
                   />
                 </div>
@@ -166,7 +140,7 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                     </div>
 
                     <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400 px-2 py-1 rounded-md">
-                      {calculateReadingTime(story.content)} MIN READ
+                      {formatReadingStats(story.content).toUpperCase()}
                     </div>
                   </div>
 

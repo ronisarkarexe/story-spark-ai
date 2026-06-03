@@ -107,6 +107,21 @@ const getOverview = async (token: ITokenPayload | null) => {
   const totalLikes = posts.reduce((sum, p) => sum + (p.likesCount || 0), 0);
   const totalViews = posts.reduce((sum, p) => sum + (p.viewsCount || 0), 0);
 
+  let shortStories = 0;
+  let mediumStories = 0;
+  let longStories = 0;
+
+  posts.forEach(p => {
+    const wordCount = p.content?.split(/\s+/).length || 0;
+    if (wordCount < 500) {
+      shortStories++;
+    } else if (wordCount <= 2000) {
+      mediumStories++;
+    } else {
+      longStories++;
+    }
+  });
+
   return {
     totalStories,
     totalWords,
@@ -114,6 +129,11 @@ const getOverview = async (token: ITokenPayload | null) => {
     longestStreak,
     totalLikes,
     totalViews,
+    storyLengths: {
+      short: shortStories,
+      medium: mediumStories,
+      long: longStories
+    }
   };
 };
 

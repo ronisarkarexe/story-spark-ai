@@ -14,7 +14,7 @@ const emitAuthChange = () => {
   window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
 };
 
-type AuthUserInfo = {
+export type AuthUserInfo = {
   email: string;
   userId: string;
   name: string;
@@ -26,15 +26,33 @@ type AuthUserInfo = {
   avatar?: string;
 };
 
-const buildUserInfo = (decodedData: any): AuthUserInfo => ({
-  email: decodedData.email || "",
-  userId: decodedData.userId || decodedData._id || "",
-  name: decodedData.name || "",
-  postsCount: decodedData.postsCount || 0,
-  role: decodedData.role || "guest",
-  subscriptionType: decodedData.subscriptionType || "free",
-  exp: decodedData.exp || 0,
-  iat: decodedData.iat || 0,
+// Raw shape of the decoded JWT payload — fields are optional because
+// different token versions or providers may omit some of them
+interface RawJwtPayload {
+  email?: string;
+  userId?: string;
+  _id?: string;
+  name?: string;
+  postsCount?: number;
+  role?: string;
+  subscriptionType?: string;
+  exp?: number;
+  iat?: number;
+  avatar?: string;
+}
+
+// Maps raw JWT payload to a typed AuthUserInfo object
+// Uses optional chaining + fallbacks to safely handle any missing fields
+const buildUserInfo = (decodedData: RawJwtPayload): AuthUserInfo => ({
+  email: decodedData?.email || "",
+  userId: decodedData?.userId || decodedData?._id || "",
+  name: decodedData?.name || "",
+  postsCount: decodedData?.postsCount || 0,
+  role: decodedData?.role || "guest",
+  subscriptionType: decodedData?.subscriptionType || "free",
+  exp: decodedData?.exp || 0,
+  iat: decodedData?.iat || 0,
+  avatar: decodedData?.avatar || "",
 });
 
 const getValidDecodedToken = () => {
@@ -50,7 +68,7 @@ const getValidDecodedToken = () => {
       removeFromLocalStorage(AUTH_KEY);
       return null;
     }
-      return buildUserInfo(decodedData as AuthUserInfo);
+      return buildUserInfo(decodedData);
     } catch (error) {
       console.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);
@@ -69,6 +87,7 @@ export const storeUserInfo = ({ accessToken }: AccessToken) => {
 export const getUserInfo = (): AuthUserInfo | null => {
   return getValidDecodedToken();
 };
+
 export const isLoggedIn = () => {
   return !!getValidDecodedToken();
 };

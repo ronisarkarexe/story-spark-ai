@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './navbar.css';
 
 function Navbar() {
@@ -12,7 +13,13 @@ function Navbar() {
     <nav className="navbar">
       {/* Left Side: Brand Text */}
       <div className="navbar-left">
-        <span className="logo-brand-text">Spark-Story-AI</span>
+        <Link
+        to="/"
+        className="logo-brand-text"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
+          Spark-Story-AI
+        </Link>
       </div>
 
       {/* Right Side: Actions & Profile Logo */}

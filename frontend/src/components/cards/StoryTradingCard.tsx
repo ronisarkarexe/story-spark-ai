@@ -3,6 +3,7 @@ import html2canvas from "html2canvas";
 import toast from "react-hot-toast";
 import type { IStories } from "../stories/stories.view.component";
 import { getWordCount } from "../stories/stories.utils";
+import StoryCoverImage from "../stories/StoryCoverImage";
 
 export type StoryCardRarity = "Common" | "Rare" | "Epic" | "Legendary";
 
@@ -227,11 +228,11 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
           </div>
 
           <div className="relative m-3 h-40 overflow-hidden rounded-xl border border-white/10 bg-slate-900">
-            <img
-              src={story.imageURL}
-              alt={story.title}
-              className="h-full w-full object-cover"
-              crossOrigin="anonymous"
+            <StoryCoverImage
+              title={story.title}
+              tag={story.tag}
+              className="h-full w-full"
+              style={{ minHeight: "0", borderRadius: "0.75rem" }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">

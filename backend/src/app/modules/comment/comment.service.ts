@@ -43,7 +43,7 @@ const createComment = async (
 };
 
 const getCommentsByPostId = async (postId: string) => {
-main
+  return await Comment.find({ post: postId }).populate("author", "name profile.avatar").sort({ createdAt: -1 });
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {

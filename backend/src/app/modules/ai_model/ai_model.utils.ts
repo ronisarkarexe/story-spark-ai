@@ -10,6 +10,10 @@ import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
+import type {
+  IStoryVisualizerPayload,
+  IStoryVisualizerResult,
+} from "../story_visualizer/story_visualizer.interface";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -409,6 +413,73 @@ Write the remixed story in ${language}. Return a JSON object with this exact str
   }
 }
 
+export async function generateStoryContinuationWithGemini(
+  storyContext: string,
+  language: string = "English",
+  signal?: AbortSignal
+): Promise<{ continuation: string }> {
+  throwIfAborted(signal);
+  assertGeminiApiKeyConfigured();
+
+  try {
+    const chatSession = model.startChat({
+      generationConfig: {
+        ...generationConfig,
+        maxOutputTokens: 2048,
+      },
+      safetySettings,
+      history: [],
+    });
+
+    const response = await chatSession.sendMessage(
+      `You are an expert storyteller. The user has written the following story so far:
+
+"${storyContext}"
+
+Continue this story naturally with 2-4 paragraphs that maintain the same tone, style, and narrative direction. The continuation MUST be written entirely in ${language}.
+
+Return only valid JSON with this exact structure:
+{
+  "continuation": "your continuation text here"
+}`
+    );
+
+    throwIfAborted(signal);
+
+    const text = response.response.text();
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(sanitizeJsonText(text));
+    } catch (parseError: unknown) {
+      const parseErrorMsg = parseError instanceof Error ? parseError.message : String(parseError);
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        `Invalid AI response: failed to parse JSON (${parseErrorMsg})`
+      );
+    }
+
+    if (!parsed.continuation || typeof parsed.continuation !== "string") {
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        "Invalid AI response: Expected a continuation string."
+      );
+    }
+
+    return { continuation: parsed.continuation };
+  } catch (error: unknown) {
+    if (error instanceof ApiError || error instanceof GenerationAbortedError) {
+      throw error;
+    }
+
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.BAD_GATEWAY,
+      `AI story continuation failed: ${errorMsg}`
+    );
+  }
+}
+
 export async function translateStoryWithGemini(
   title: string,
   content: string,
@@ -456,3 +527,138 @@ Preserve the story's tone, style and meaning. Only translate — do not modify t
     );
   }
 }
+
+export async function generateStoryboardWithGemini(
+  payload: IStoryVisualizerPayload
+): Promise<IStoryVisualizerResult> {
+  assertGeminiApiKeyConfigured();
+
+  const { title, content, genre = "General", language = "English" } = payload;
+
+  const prompt = `You are a storyboard director for narrative visualization.
+
+Analyze the story below and extract 4 to 8 key visual scenes that represent the story's beginning, major turning points, climax, and ending.
+
+Title: ${title}
+Genre: ${genre}
+Language: ${language}
+Story:
+${content}
+
+Return only a valid JSON object with this exact structure:
+{
+  "scenes": [
+    {
+      "sceneNumber": 1,
+      "caption": "brief scene caption in ${language}",
+      "imagePrompt": "detailed visual prompt for a future image generator in ${language}"
+    }
+  ],
+  "styleGuide": "shared character, setting, mood, color palette, lighting, and visual style guide in ${language}"
+}
+
+Rules:
+- Include between 4 and 8 scenes.
+- Number scenes sequentially starting at 1.
+- Keep captions concise.
+- Image prompts must describe visible action, characters, setting, mood, camera framing, and important visual details.
+- The styleGuide must keep recurring characters, locations, wardrobe, atmosphere, and art direction consistent across future images.
+- Do not generate images or image URLs.`;
+
+  try {
+    const chatSession = model.startChat({
+      generationConfig: {
+        ...generationConfig,
+        maxOutputTokens: 4096,
+      },
+      safetySettings,
+      history: [],
+    });
+
+    const result = await chatSession.sendMessage(prompt);
+    const parsed = JSON.parse(sanitizeJsonText(result.response.text()));
+
+    const scenes = parsed?.scenes;
+
+    if (!Array.isArray(scenes) || scenes.length < 4 || scenes.length > 8) {
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        "Invalid AI response: Expected 4 to 8 storyboard scenes."
+      );
+    }
+
+    const normalizedScenes = scenes.map((scene: any, index: number) => {
+      if (
+        !scene ||
+        typeof scene !== "object" ||
+        typeof scene.caption !== "string" ||
+        typeof scene.imagePrompt !== "string"
+      ) {
+        throw new ApiError(
+          httpStatus.BAD_GATEWAY,
+          "Invalid AI response: Storyboard scenes are malformed."
+        );
+      }
+
+      return {
+        sceneNumber: index + 1,
+        caption: scene.caption.trim(),
+        imagePrompt: scene.imagePrompt.trim(),
+      };
+    });
+
+    if (typeof parsed?.styleGuide !== "string" || !parsed.styleGuide.trim()) {
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        "Invalid AI response: Style guide is missing."
+      );
+    }
+
+    return {
+      scenes: normalizedScenes,
+      styleGuide: parsed.styleGuide.trim(),
+    };
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    const errorMsg = error instanceof Error ? error.message : String(error);
+
+    throw new ApiError(
+      httpStatus.BAD_GATEWAY,
+      `AI storyboard generation failed: ${errorMsg}`
+    );
+  }
+}
+
+export async function chatWithGemini(
+  message: string,
+  history: { role: string; parts: { text: string }[] }[] = []
+): Promise<string> {
+  assertGeminiApiKeyConfigured();
+
+  try {
+    const chatSession = model.startChat({
+      generationConfig: {
+        ...generationConfig,
+        maxOutputTokens: 4096,
+        responseMimeType: "text/plain",
+      },
+      safetySettings,
+      history,
+    });
+
+    const result = await chatSession.sendMessage(message);
+
+    return result.response.text();
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `AI chat failed: ${errorMsg}`
+    );
+  }
+}
+

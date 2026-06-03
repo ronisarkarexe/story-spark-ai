@@ -3,7 +3,7 @@ Development — Local setup and onboarding
 
 Purpose
 -------
-This document provides a concise, step-by-step guide to set up, run, and test the project locally. It is intended for contributors preparing a development environment and does not replace higher-level documentation such as `README.md`, `CONTRIBUTING.md`, or `docs/ARCHITECTURE.md`.
+This document provides a concise, step-by-step guide to set up, run, and test the project locally. It is intended for contributors preparing a development environment and does not replace higher-level documentation such as `README.md`, `CONTRIBUTING.md`, or `ARCHITECTURE.md`.
 
 Prerequisites
 -------------
@@ -45,7 +45,7 @@ Project structure
 
 - `frontend/` — React + Vite application (UI)
 - `backend/` — Express API, services, and ML helpers
-- `docs/` — architecture and design documentation
+- `ARCHITECTURE.md` — architecture and design documentation
 
 Environment variables
 ---------------------
@@ -153,5 +153,5 @@ References
 
 - Project overview: `README.md`
 - Contribution guidelines: `CONTRIBUTING.md`
-- Architecture: `docs/ARCHITECTURE.md`
+- Architecture: `ARCHITECTURE.md`
 

@@ -35,6 +35,10 @@ router.post(
 // Refresh Token API route
 router.post("/refresh-token", AuthController.refreshToken);
 
+// Logout API route
+router.post("/logout", AuthController.logout);
+
+// Change Password API route
 // Change Password API route
 router.post(
   "/change-password",
@@ -46,6 +50,7 @@ router.post(
   ),
   AuthController.changePassword
 );
+  AuthController.changePassword
 
 // Forgot Password API route
 router.post(

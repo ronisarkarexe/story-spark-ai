@@ -29,6 +29,7 @@
 - [Environment variables](#environment-variables)
 - [Contributing 👨‍💻](#contributing-)
 - [Contributors 🤝](#contributors-)
+- [Maintainers](#maintainers)
 - [License](#license)
 - [Support 🙏](#support-)
 
@@ -142,7 +143,7 @@ cp frontend/.env.example frontend/.env
 | `DATABASE_URL` | Yes | MongoDB connection string (local or [Atlas](https://www.mongodb.com/cloud/atlas)) |
 | `PORT` | No | API port (default `5000`) |
 | `NODE_ENV` | No | `development` or `production` |
-| `CORS_ORIGINS` | No | Comma-separated frontend URLs (e.g. `http://localhost:4001`) |
+| `CORS_ORIGINS` | No | Comma-separated frontend URLs allowed for CORS requests (e.g. `http://localhost:4001`) |
 | `SALT_ROUNDS` | Yes | Bcrypt cost factor (e.g. `10`) |
 | `JWT_SECRET` | Yes | Access token signing secret |
 | `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret |
@@ -156,7 +157,6 @@ cp frontend/.env.example frontend/.env
 | `VERIFY_EMAIL` | For email | SMTP sender address |
 | `VERIFY_PASSWORD` | For email | SMTP password or app password |
 | `GOOGLE_CLIENT_ID` | For login with google | https://console.cloud.google.com |
-| `CORS_ORIGINS` | For resolve cors |
 
 #### Frontend (`frontend/.env`)
 
@@ -185,66 +185,39 @@ Contributions make the open source community such an amazing place to learn, ins
 
 ## Contributors 🤝
 
-<!-- CONTRIBUTORS:START -->
-Thanks to everyone who has helped build **Story Spark AI**. This section updates automatically when `contributors.json` changes. Merges entries from `contributors.json` with [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
+Thanks to everyone who has helped build **Story Spark AI**. This grid updates automatically from [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
+
+<a href="https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&max=500&columns=12" alt="Contributors" />
+</a>
+
+## Maintainers
 
 <table>
   <tr>
     <td align="center">
       <a href="https://github.com/ronisarkarexe">
-        <img src="https://github.com/ronisarkarexe.png" width="100" alt="ronisarkarexe" />
-        <br />
-        <sub><b>Roni Sarkar</b></sub>
+        <img src="https://github.com/ronisarkarexe.png" width="120" height="120" alt="Roni Sarkar" style="border-radius: 6px; object-fit: cover;" />
       </a>
+      <br /><br />
+      <strong>Roni Sarkar</strong>
       <br />
-      <sub>Maintainer</sub>
-    </td>
-    <td align="center">
-      <a href="https://github.com/mzl2233">
-        <img src="https://github.com/mzl2233.png" width="100" alt="mzl2233" />
-        <br />
-        <sub><b>mzl2233</b></sub>
+      <sub>Project Maintainer · <a href="https://github.com/ronisarkarexe">@ronisarkarexe</a></sub>
+      <br /><br />
+      <a href="https://github.com/ronisarkarexe" title="GitHub">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="28" height="28" alt="GitHub" />
       </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/amrendrasharma1328-a11y">
-        <img src="https://github.com/amrendrasharma1328-a11y.png" width="100" alt="amrendrasharma1328-a11y" />
-        <br />
-        <sub><b>amrendrasharma1328-a11y</b></sub>
+      &nbsp;
+      <a href="https://www.linkedin.com/in/ronisarkarexe" title="LinkedIn">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" width="28" height="28" alt="LinkedIn" />
       </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/Swetanegi05">
-        <img src="https://github.com/Swetanegi05.png" width="100" alt="Swetanegi05" />
-        <br />
-        <sub><b>Swetanegi05</b></sub>
+      &nbsp;
+      <a href="https://x.com/ronisarkar_exe" title="X (Twitter)">
+        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/x.svg" width="28" height="28" alt="X" />
       </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/rajdeep-yadav">
-        <img src="https://github.com/rajdeep-yadav.png" width="100" alt="rajdeep-yadav" />
-        <br />
-        <sub><b>Rajdeep</b></sub>
-      </a>
-    </td>
-    <td align="center">
-      <sub><b>P. Harshini Padmavathi</b></sub>
-    </td>
-    <td align="center">
-      <a href="https://github.com/charanbalaji2005">
-        <img src="https://github.com/charanbalaji2005.png" width="100" alt="charanbalaji2005" />
-        <br />
-        <sub><b>Charan Balaji</b></sub>
-      </a>
-      <br />
-      <sub>Contributor (ScrollFAB, Mobile Navigation, UI Components)</sub>
     </td>
   </tr>
 </table>
-
-<!-- CONTRIBUTORS:END -->
 
 <a id="license"></a>
 

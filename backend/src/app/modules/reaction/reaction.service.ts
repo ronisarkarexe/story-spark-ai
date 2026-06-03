@@ -6,17 +6,26 @@ import { Reaction } from "./reaction.model";
 import { Types } from "mongoose";
 import { Post } from "../post/post.model";
 
+type ReactionType = "like" | "love" | "laugh" | "angry" | "sad";
+
 const toggleReaction = async (
   postId: string,
-  type: string = "like",
+  type: ReactionType = "like",
   token: ITokenPayload
 ) => {
   const { email } = token;
-  const user = await User.findOne({ email });
+
+  const user = await User.findOne({ email }).select("_id").lean();
+
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+
+  const post = await Post.findOne({
+    _id: postId,
+    isDeleted: { $ne: true },
+  }).select("likesCount reactions");
+
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
@@ -45,16 +54,14 @@ const newReaction = await Reaction.create({
     return { message: "Reaction removed", likesCount: post.likesCount };
   } else {
     // Add reaction
+ main
     const newReaction = await Reaction.create({
       postId: new Types.ObjectId(postId),
       userId: user._id,
       type: type,
     });
-    post.likesCount = post.likesCount + 1;
-    post.reactions = post.reactions || [];
-    post.reactions.push(newReaction._id);
-    await post.save();
-    return { message: "Reaction added", likesCount: post.likesCount };
+ main
+    };
   }
 };
 
