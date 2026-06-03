@@ -8,6 +8,17 @@ importers:
 
   .:
     dependencies:
+<<<<<<< HEAD
+      '@flaticon/flaticon-uicons':
+        specifier: ^3.3.1
+        version: 3.3.1
+      bcryptjs:
+        specifier: ^3.0.3
+        version: 3.0.3
+      framer-motion:
+        specifier: ^12.40.0
+        version: 12.40.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+=======
       '@react-oauth/google':
         specifier: ^0.13.5
         version: 0.13.5(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -17,6 +28,7 @@ importers:
       express:
         specifier: ^5.2.1
         version: 5.2.1
+>>>>>>> origin/main
       jspdf:
         specifier: ^4.2.1
         version: 4.2.1
@@ -49,7 +61,7 @@ importers:
         specifier: ^2.8.5
         version: 2.8.6
       dotenv:
-        specifier: ^16.6.1
+        specifier: ^16.4.7
         version: 16.6.1
       express:
         specifier: ^4.21.1
@@ -85,7 +97,7 @@ importers:
         specifier: ^8.0.7
         version: 8.0.9
       openai:
-        specifier: ^4.104.0
+        specifier: ^4.86.1
         version: 4.104.0(ws@8.20.1)(zod@3.25.76)
       razorpay:
         specifier: ^2.9.6
@@ -708,6 +720,9 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@flaticon/flaticon-uicons@3.3.1':
+    resolution: {integrity: sha512-WN2zuECCdjuGBQrjzN0kpeSygzC5fgF8Q7pDR+FUuGtYWczSdIhIwoD+/fKBEfwqKfNIMZ1WouidevGQ4OJORg==}
+
   '@fortawesome/fontawesome-common-types@6.7.2':
     resolution: {integrity: sha512-Zs+YeHUC5fkt7Mg1l6XTniei3k4bwG/yo3iFUtZWd/pMx9g3fdvkSK9E0FOC+++phXOka78uJcYb8JaFkW52Xg==}
     engines: {node: '>=6'}
@@ -1272,9 +1287,12 @@ packages:
   '@types/express@4.17.25':
     resolution: {integrity: sha512-dVd04UKsfpINUnK0yBoYHDF3xu7xVH4BuDotC/xGuycx4CgbP48X/KF/586bcObxT0HENHXEU8Nqtu6NR+eKhw==}
 
+<<<<<<< HEAD
+=======
   '@types/express@5.0.6':
     resolution: {integrity: sha512-sKYVuV7Sv9fbPIt/442koC7+IIwK5olP1KWeD88e/idgoJqDm3JV/YUiPwkoKK92ylff2MGxSz1CSjsXelx0YA==}
 
+>>>>>>> origin/main
   '@types/file-saver@2.0.7':
     resolution: {integrity: sha512-dNKVfHd/jk0SkR/exKGj2ggkB45MAkzvWCaqLUUgkyjITkGNzH8H+yUwr+BLJUBjZOe9w8X3wgmXhZDRg1ED6A==}
 
@@ -2106,8 +2124,17 @@ packages:
     resolution: {integrity: sha512-ilXFf9Moz47ABjFpDiA5s1w9lpb4EFSp7+5iiJSbfyYDM+bpZdAgLlSr7fW4aXhVe/E+F6QCv0EvRVFEd5CsWg==}
     engines: {node: '>=10'}
 
+<<<<<<< HEAD
+  docx@9.7.1:
+    resolution: {integrity: sha512-ilXFf9Moz47ABjFpDiA5s1w9lpb4EFSp7+5iiJSbfyYDM+bpZdAgLlSr7fW4aXhVe/E+F6QCv0EvRVFEd5CsWg==}
+    engines: {node: '>=10'}
+
+  dompurify@3.4.5:
+    resolution: {integrity: sha512-OrwIBKsdNSVEeubdJ1HBv/wNENRM9ytAVCv7YXt//A3vPdVMNuACRqK9mXCGCBW2ln7BT/A4X0jXHo2Gu89miA==}
+=======
   dompurify@3.4.7:
     resolution: {integrity: sha512-2jBxDJY4RR06tQNy4w5FlFH7kfxsQZlufd0sbv+chfHCxeJwrFw2baUDsSwvBISD4K4RDbd0PTfy3uNXsR6siA==}
+>>>>>>> origin/main
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
@@ -2179,6 +2206,12 @@ packages:
 
   es-toolkit@1.47.0:
     resolution: {integrity: sha512-n1GuoD0WEQZMBk5tttoZSqwgyLx01oqa5XsBmCHwPyNe1S9jPBEmtR2pSgp2kJuWE3ciFZ6yRHmY4pM4C3OOkw==}
+
+  esbuild-linux-64@0.14.54:
+    resolution: {integrity: sha512-EgjAgH5HwTbtNsTqQOXWApBaPVdDn7XcK+/PtJwZLT1UmpLoznPd8c5CxqsH2dQK3j05YsB3L17T8vE7cp4cCg==}
+    engines: {node: '>=12'}
+    cpu: [x64]
+    os: [linux]
 
   esbuild@0.25.12:
     resolution: {integrity: sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg==}
@@ -2539,8 +2572,13 @@ packages:
   hash.js@1.1.7:
     resolution: {integrity: sha512-taOaskGt4z4SOANNseOviYDvjEJinIkRgmp7LbKP2YTTmVxWBl87s/uzK9r+44BclBSp2X7K1hqeNfz9JbBeXA==}
 
+<<<<<<< HEAD
+  hasown@2.0.3:
+    resolution: {integrity: sha512-ej4AhfhfL2Q2zpMmLo7U1Uv9+PyhIZpgQLGT1F9miIGmiCJIoCgSmczFdrc97mWT4kVY72KA+WnnhJ5pghSvSg==}
+=======
   hasown@2.0.4:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
+>>>>>>> origin/main
     engines: {node: '>= 0.4'}
 
   helmet@8.2.0:
@@ -3262,6 +3300,21 @@ packages:
     resolution: {integrity: sha512-v+KEsUv2ps74PaSKv0gHTxTCgMXOIfBEbaqa6w6ISIGC7ZsvHN4N9oJ8d4cmf0n5oTzQz2SLmThbQWhjd/8eKg==}
     engines: {node: ^18 || >=20}
     hasBin: true
+<<<<<<< HEAD
+
+  native-dns-cache@0.0.2:
+    resolution: {integrity: sha512-09HXHdb/updxfigaFbR53F8nCKqxM8WuHfTWBsusVlwSSZZ3qwWRdD6Kx2x8HBI1Q5IaycwcJOvBoXZWJNfVEg==}
+    engines: {node: '>= 0.5.0'}
+
+  native-dns-packet@0.1.1:
+    resolution: {integrity: sha512-j1XxnFFTUB7mujma468WyAOmyVtkuuLTelxJF13tSTIPO56X7bHALrG0G4jFQnvyTPCt4VnFiZezWpfKbaHc+g==}
+    engines: {node: '>= 0.5.0'}
+
+  native-dns@0.6.1:
+    resolution: {integrity: sha512-svX0dstdoFeEO1sD1Kkrrj/Ad7QfHuczp2YpRnBpjJHqh0dpYLZhLERbf76S6LMkLAT5eZ8tJrPwZciIX5pj6Q==}
+    engines: {node: '>= 0.5.0'}
+=======
+>>>>>>> origin/main
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
@@ -3714,6 +3767,9 @@ packages:
   serve-static@2.2.1:
     resolution: {integrity: sha512-xRXBn0pPqQTVQiC8wyQrKs2MOlX24zQ0POGaj0kultvoOCstBQM5yvOhAVSUwOMjQtTvsPWoNCHfPGwaaQJhTw==}
     engines: {node: '>= 18'}
+
+  setimmediate@1.0.5:
+    resolution: {integrity: sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA==}
 
   setimmediate@1.0.5:
     resolution: {integrity: sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA==}
@@ -4592,6 +4648,10 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
+  '@flaticon/flaticon-uicons@3.3.1':
+    optionalDependencies:
+      esbuild-linux-64: 0.14.54
+
   '@fortawesome/fontawesome-common-types@6.7.2': {}
 
   '@fortawesome/fontawesome-free@6.7.2': {}
@@ -5212,12 +5272,15 @@ snapshots:
       '@types/qs': 6.15.1
       '@types/serve-static': 1.15.10
 
+<<<<<<< HEAD
+=======
   '@types/express@5.0.6':
     dependencies:
       '@types/body-parser': 1.19.6
       '@types/express-serve-static-core': 5.1.1
       '@types/serve-static': 2.2.0
 
+>>>>>>> origin/main
   '@types/file-saver@2.0.7': {}
 
   '@types/geojson@7946.0.16': {}
@@ -6112,7 +6175,20 @@ snapshots:
       xml: 1.0.1
       xml-js: 1.6.11
 
+<<<<<<< HEAD
+  docx@9.7.1:
+    dependencies:
+      '@types/node': 25.9.1
+      hash.js: 1.1.7
+      jszip: 3.10.1
+      nanoid: 5.1.11
+      xml: 1.0.1
+      xml-js: 1.6.11
+
+  dompurify@3.4.5:
+=======
   dompurify@3.4.7:
+>>>>>>> origin/main
     optionalDependencies:
       '@types/trusted-types': 2.0.7
     optional: true
@@ -6201,6 +6277,9 @@ snapshots:
       hasown: 2.0.4
 
   es-toolkit@1.47.0: {}
+
+  esbuild-linux-64@0.14.54:
+    optional: true
 
   esbuild@0.25.12:
     optionalDependencies:
@@ -6671,7 +6750,11 @@ snapshots:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
 
+<<<<<<< HEAD
+  hasown@2.0.3:
+=======
   hasown@2.0.4:
+>>>>>>> origin/main
     dependencies:
       function-bind: 1.1.2
 
@@ -7542,6 +7625,25 @@ snapshots:
   nanoid@3.3.12: {}
 
   nanoid@5.1.11: {}
+<<<<<<< HEAD
+
+  native-dns-cache@0.0.2:
+    dependencies:
+      binaryheap: 0.0.3
+      native-dns-packet: 0.1.1
+
+  native-dns-packet@0.1.1:
+    dependencies:
+      buffercursor: 0.0.12
+      ipaddr.js: 1.9.1
+
+  native-dns@0.6.1:
+    dependencies:
+      ipaddr.js: 1.9.1
+      native-dns-cache: 0.0.2
+      native-dns-packet: 0.1.1
+=======
+>>>>>>> origin/main
 
   natural-compare@1.4.0: {}
 
@@ -8512,6 +8614,13 @@ snapshots:
   xml-js@1.6.11:
     dependencies:
       sax: 1.6.0
+<<<<<<< HEAD
+
+  xml@1.0.1: {}
+
+  xmlhttprequest-ssl@2.1.2: {}
+=======
+>>>>>>> origin/main
 
   xml@1.0.1: {}
 

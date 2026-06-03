@@ -17,7 +17,7 @@ import globalErrorHandler from "./app/middleware/global.error.handler";
 import { User } from "./app/modules/user/user.model";
 
 const app: Application = express();
-app.set("trust proxy", 1);
+app.set("trust proxy", 1); // Trust first proxy to securely read req.ip
 app.use(helmet());
 
 const limiter = rateLimit({

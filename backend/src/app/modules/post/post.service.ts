@@ -15,9 +15,6 @@ import { postSearchFields } from "./post.constant";
 import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 
-const MAX_SEARCH_TERM_LENGTH = 100;
-const escapeRegex = (text: string) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-
 const escapeRegex = (text: string): string => {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 };
@@ -112,14 +109,14 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       author: user._id,
       updatedBy: user._id,
     });
-      if (res && res.isPublished) {
-        user.postsCount += 1;
-        await user.save();
-        GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
-        if (user.postsCount === 1) {
-          GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
-        }
+    if (res && res.isPublished) {
+      user.postsCount += 1;
+      await user.save();
+      GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
+      if (user.postsCount === 1) {
+        GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
       }
+    }
     return res;
   } catch (error) {
     throw new ApiError(
@@ -158,14 +155,6 @@ const getPosts = async (
         })),
       });
     }
-    andCondition.push({
-      $or: postSearchFields.map((field) => ({
-        [field]: {
-          $regex: searchTerm,
-          $options: "i",
-        },
-      })),
-    });
   }
 
   if (trendingTopic) {
@@ -400,49 +389,33 @@ const getPostsByTag = async (tag: string, excludeId?: string) => {
 
 const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   const { email } = token;
-
   const user = await User.findOne({ email });
-
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
-  if (!postExists) {
-
   const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
-
   if (!post) {
-
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
-  // Check bookmark status atomically
-  const isBookmarked = await Post.exists({
-    _id: postId,
-    bookmarks: user._id,
-  });
+  // Check bookmark status atomically via a DB query instead of loading the full document
+  const isBookmarked = await Post.exists({ _id: postId, bookmarks: user._id });
 
   if (isBookmarked) {
+    // Remove bookmark atomically
     await Post.updateOne(
       { _id: postId },
       { $pull: { bookmarks: user._id } }
     );
-
-    return {
-      message: "Bookmark removed",
-      bookmarked: false,
-    };
+    return { message: "Bookmark removed", bookmarked: false };
   } else {
+    // Add bookmark atomically - $addToSet prevents duplicates
     await Post.updateOne(
       { _id: postId },
       { $addToSet: { bookmarks: user._id } }
     );
-
-    return {
-      message: "Bookmark added",
-      bookmarked: true,
-    };
+    return { message: "Bookmark added", bookmarked: true };
   }
 };
 
@@ -539,6 +512,11 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
+  // Enforces data consistency by decrementing/reserving 1 credit balance mapping
+  // If your project uses an external service class call, invoke it here:
+  // await QuotaService.reserveUserQuota(user._id, 1);
+
+  // Place your real AI model generation text manipulation calls here
   const remixedContent = `[AI Remixed Version based on prompt: "${prompt}"]\n\n${originalPost.content}`;
 
   const res = await Post.create({

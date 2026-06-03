@@ -14,7 +14,11 @@ const optionalTrimmedString = z.preprocess((value) => {
   const trimmedValue = value.trim();
 
   return trimmedValue ? trimmedValue : undefined;
-}, z.string().optional());
+}, 
+  z.string()
+    .max(100, "Must be at most 100 characters")
+    .optional()
+);
 
 const optionalEmail = z.preprocess((value) => {
   if (typeof value !== "string") {
@@ -26,24 +30,28 @@ const optionalEmail = z.preprocess((value) => {
   return trimmedValue ? trimmedValue : undefined;
 }, z.string().email("Invalid email address").optional());
 
-const requiredTrimmedString = (label: string) =>
+const requiredTrimmedString = (label: string, maxLength?: number) =>
   z.preprocess((value) => {
     if (typeof value !== "string") {
       return value;
     }
-
     return value.trim();
-  }, z.string().min(1, `${label} is required`));
+  }, 
+  maxLength 
+    ? z.string().min(1, `${label} is required`).max(maxLength, `${label} is too long`) 
+    : z.string().min(1, `${label} is required`)
+);
 
 const contactValidationSchema = z.object({
   body: z.object({
-    fullname: optionalTrimmedString,
+    fullname: optionalTrimmedString, 
     email: optionalEmail,
     feedbackType: z.enum(contactFeedbackTypes),
-    subject: requiredTrimmedString("Subject"),
-    message: requiredTrimmedString("Message"),
+    subject: requiredTrimmedString("Subject", 200),
+    message: requiredTrimmedString("Message", 2000),
   }),
 });
+
 
 export const ContactValidation = {
   contactValidationSchema,
