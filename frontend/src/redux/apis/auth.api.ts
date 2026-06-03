@@ -67,6 +67,13 @@ const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: [tagTypes.user],
     }),
+    logoutUser: build.mutation({
+      query: () => ({
+        url: `/${AUTH_URL}/logout`,
+        method: "POST",
+      }),
+      invalidatesTags: [tagTypes.user],
+    }),
   }),
 });
 
@@ -77,4 +84,5 @@ export const {
   useRegisterWithGoogleMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useLogoutUserMutation,
 } = authApi;
