@@ -1,0 +1,32 @@
+name: Notify assignee on assignment
+
+on:
+  issues:
+    types: [assigned]
+
+jobs:
+  notify-assignee:
+    # Skip when Issue Assignment Bot already posted (assigner is Actions bot)
+    if: github.event.assigner.login != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const assignee = context.payload.assignee?.login;
+            if (!assignee) return;
+
+            const body = [
+              `Hi @${assignee}, I've assigned this issue to you.`,
+              '',
+              'Please work on it and feel free to ask if you have any questions or need clarification. Thank you for contributing! 🎉',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

@@ -1,0 +1,149 @@
+:root {
+  --color-bg-card: #ffffff;
+  --color-border: #e4e4e7;
+  --color-text-title: #000000; /* Changed from dark charcoal to pure black */
+  --color-text-muted: #71717a;
+  --color-text-label: #000000; /* Changed to black for your bold input titles */
+  --color-text-input: #3f3f46;
+  --radius-card: 20px;
+  --radius-input: 12px;
+}
+
+.profile-card {
+  width: 100%;
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-card);
+  padding: 40px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.card-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text-title); /* Displays 'Welcome back User!' in solid black */
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+
+.card-subtitle {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-bottom: 20px;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-section-title {
+  font-size: 16px;
+  font-weight: 700;                /* Boosted to heavy bold weight */
+  color: var(--color-text-title); /* Displays 'Social Media Links' heading in black */
+  margin-bottom: 20px;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 8px;
+}
+
+/* Balanced 2-Column Responsive Grid system */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
+  row-gap: 24px;
+  margin-bottom: 24px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field.col-span-2 {
+  grid-column: span 2 / span 2;
+}
+
+.field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  height: 18px;
+}
+
+.field-label {
+  font-size: 14px;                 /* Slightly adjusted for better readability */
+  color: var(--color-text-label); /* Displays input titles in black */
+}
+
+.field-label strong {
+  font-weight: 700;                /* Explicit clean bold mapping */
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Simplified input boxes without excessive right padding */
+.custom-input, .custom-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--color-text-input);
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.custom-input:focus, .custom-textarea:focus {
+  border-color: #a1a1aa;
+}
+
+.custom-textarea {
+  resize: none;
+  line-height: 1.6;
+}
+
+/* Structural Section Divider lines */
+.section-divider {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: 0 0 32px 0;
+}
+
+/* Save Form Action Footer configuration */
+.form-actions-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.save-form-btn {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.save-form-btn:hover {
+  background-color: #1d4ed8;
+}
+
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-field.col-span-2 {
+    grid-column: span 1 / span 1;
+  }
+}

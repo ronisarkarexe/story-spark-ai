@@ -1,0 +1,39 @@
+name: "🐞 Bug Report"
+description: "Report something that is broken or not working as expected"
+title: "BUG: "
+labels: ["Bug"]
+body:
+  - type: checkboxes
+    attributes:
+      label: "Is there an existing issue for this?"
+      description: "Search open and closed issues before filing a new one."
+      options:
+        - label: "I have searched the existing issues"
+          required: true
+  - type: textarea
+    attributes:
+      label: "What happened?"
+      description: "What did you expect, and what happened instead?"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Steps to reproduce"
+      description: "Numbered steps so someone else can reproduce the bug."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Environment (if relevant)"
+      description: "Browser, OS, app version, or API surface."
+  - type: textarea
+    attributes:
+      label: "Screenshots or screen recording (if helpful)"
+      description: "Add visuals when they clarify the bug. Skip if not applicable."
+  - type: checkboxes
+    attributes:
+      label: "Record"
+      options:
+        - label: "I agree to follow this project's Code of Conduct"
+          required: true
+        - label: "I want to work on this issue"

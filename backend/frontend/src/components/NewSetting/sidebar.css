@@ -1,0 +1,115 @@
+:root {
+  --sidebar-bg: #141b2d;        /* Deep Midnight Slate/Navy from image */
+  --sidebar-border: #1f293d;    /* Subtle dark dividing line offset */
+  --text-inactive: #94a3b8;     /* Muted slate text layer */
+  --text-active: #ffffff;       /* Pure white text layer */
+  --bg-active: #232f4b;         /* Focused subtle blue-slate menu block highlight */
+  --radius-menu: 8px;           /* Crisp rounded corners */
+}
+
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  height: 100%;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* CHANGED: Decreased top padding from 32px to 12px to shift content upward */
+  padding: 12px 16px 32px 16px; 
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.sidebar-menu-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Sidebar Navigation Link Stack Layout */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Base Link Button Styling */
+.sidebar-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-menu);
+  color: var(--text-inactive);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+/* Hover Action Styling */
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: var(--text-active);
+}
+
+/* Active Highlight Menu Styling */
+.sidebar-link.active {
+  background-color: var(--bg-active);
+  color: var(--text-active);
+  font-weight: 600;
+}
+
+/* Icon Alignment and Vector Scaling */
+.sidebar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.sidebar-icon svg {
+  display: block;
+  opacity: 0.85;
+}
+
+.sidebar-link.active .sidebar-icon svg {
+  opacity: 1;
+}
+
+.sidebar-text {
+  letter-spacing: -0.1px;
+}
+
+/* Sidebar Footer Layout Section */
+.sidebar-footer {
+  padding-top: 16px;
+}
+
+/* Clean Iconless White Logout Button Style */
+.logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-menu);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  
+  background-color: #ffffff; 
+  color: #1e293b;            
+}
+
+.logout-btn:hover {
+  background-color: #f1f5f9; /* Soft ash grey transition upon hover */
+}

@@ -1,0 +1,62 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    restart: unless-stopped
+    expose:
+      - "27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      NODE_ENV: "production"
+      PORT: "5000"
+      DATABASE_URL: "mongodb://mongodb:27017/story_spark_ai"
+      CORS_ORIGINS: "http://localhost:4001"
+      SALT_ROUNDS: "${SALT_ROUNDS:-10}"
+      JWT_SECRET: "${JWT_SECRET}"
+      JWT_REFRESH_SECRET: "${JWT_REFRESH_SECRET}"
+      JWT_EXPIRES_IN: "${JWT_EXPIRES_IN:-60d}"
+      JWT_REFRESH_EXPIRES_IN: "${JWT_REFRESH_EXPIRES_IN:-120d}"
+      DEFAULT_ADMIN_PASSWORD: "${DEFAULT_ADMIN_PASSWORD}"
+      OPEN_AI_KEY: "${OPEN_AI_KEY:-}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      UNSPLASH_KEY_API: "${UNSPLASH_KEY_API:-}"
+      UNSPLASH_KEY_API_SECRET: "${UNSPLASH_KEY_API_SECRET:-}"
+      VERIFY_EMAIL: "${VERIFY_EMAIL:-}"
+      VERIFY_PASSWORD: "${VERIFY_PASSWORD:-}"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-}"
+      GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+      GITHUB_REPO: "${GITHUB_REPO:-Arpita2919/story-spark-ai}"
+      AI_API_KEYS: "${AI_API_KEYS:-}"
+      AI_CONCURRENCY: "${AI_CONCURRENCY:-3}"
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_BASE_URL: "${VITE_BASE_URL:-/api/v1}"
+        VITE_SOCKET_URL: "${VITE_SOCKET_URL:-http://localhost:4001}"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "4001:80"
+
+volumes:
+  mongodb_data:

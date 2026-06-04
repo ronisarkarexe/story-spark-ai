@@ -1,0 +1,33 @@
+name: "🔧 Improvement"
+description: "Suggest a better experience, performance, or quality change to something that already exists"
+title: "Improve: "
+labels: ["Improvement", "Needs Triage"]
+body:
+  - type: checkboxes
+    attributes:
+      label: "Is there an existing issue for this?"
+      description: "Search open and closed issues before filing a new one."
+      options:
+        - label: "I have searched the existing issues"
+          required: true
+  - type: textarea
+    attributes:
+      label: "What would you like to improve?"
+      description: "Describe the current behavior and what should work better."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Why does this matter?"
+      description: "Who benefits, pain points, or context for prioritization."
+  - type: textarea
+    attributes:
+      label: "Screenshots or screen recording (if applicable)"
+      description: "Add visuals for UI or flows. Skip if not relevant."
+  - type: checkboxes
+    attributes:
+      label: "Record"
+      options:
+        - label: "I agree to follow this project's Code of Conduct"
+          required: true
+        - label: "I want to work on this issue"

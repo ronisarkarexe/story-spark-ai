@@ -1,0 +1,60 @@
+/* Core Layout System Reset parameters */
+.app-canvas-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Lock page to exactly screen height */
+  width: 100vw;
+  overflow: hidden; /* Prevents double scrollbars on the main window */
+  background-color: #F4F5F7; /* Match your image's crisp off-white canvas */
+}
+
+/* Container directly beneath the 64px navbar */
+.dashboard-core-container {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 64px); /* Subtract navbar height exactly */
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Main window running to the right of your sidebar */
+.dashboard-main-content-view {
+  flex: 1;
+  padding: 40px; /* Generous clean breathing spacing around your profile card */
+  overflow-y: auto; /* Allows only the form content viewport to scroll */
+  display: flex;
+  justify-content: center; /* Center aligns the content section horizontally */
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+
+/* Keeps the profile content box bounded and crisp on ultra-wide screens */
+.content-max-width-restrictor {
+  width: 100%;
+  max-width: 890px;
+}
+
+/* Custom Uniform Scrollbar theme for the workspace */
+.dashboard-main-content-view::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-main-content-view::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dashboard-main-content-view::-webkit-scrollbar-thumb {
+  background: #E4E4E7;
+  border-radius: 999px;
+}
+
+.dashboard-main-content-view::-webkit-scrollbar-thumb:hover {
+  background: #D4D4D8;
+}
+
+/* Responsive collapse safety triggers for tablet/mobile viewing windows */
+@media (max-width: 768px) {
+  .dashboard-main-content-view {
+    padding: 20px;
+  }
+}

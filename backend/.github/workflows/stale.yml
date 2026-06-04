@@ -1,0 +1,42 @@
+name: 🗓️ Stale Issues & PRs
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v10
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-issue-stale: 30
+          days-before-issue-close: 14
+          days-before-pr-stale: 21
+          days-before-pr-close: 14
+          stale-issue-message: |
+            👋 This issue has been inactive for **30 days**. It will be automatically closed in 14 days if there's no further activity.
+
+            If you're still interested in working on this, please leave a comment!
+            For GSSoC'26 contributors: make sure to keep your assigned issues active.
+
+            ⭐ [Star Story Spark AI](https://github.com/ronisarkarexe/story-spark-ai) if you find it useful!
+          stale-pr-message: |
+            👋 This PR has been inactive for **21 days**. It will be automatically closed in 14 days if there's no further activity.
+
+            If you need help with this PR, please comment or ping a maintainer.
+            Make sure your branch is rebased onto `main` and all CI checks pass.
+          close-issue-message: |
+            🔒 Closing this issue due to inactivity. Feel free to reopen if you'd like to work on it!
+          close-pr-message: |
+            🔒 Closing this PR due to inactivity. Feel free to reopen and rebase onto `main` if you'd like to continue!
+          stale-issue-label: 'needs investigation'
+          stale-pr-label: 'needs-fixes'
+          exempt-issue-labels: 'pinned,security,priority: high'
+          exempt-pr-labels: 'merge-ready,gssoc:approved'

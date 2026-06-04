@@ -1,0 +1,179 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@100..900&family=Space+Grotesk:wght@300..700&display=swap");
+
+/* ================= ROOT & GLOBAL ================= */
+:root {
+  --header-height: 72px;
+
+  /* Consistent spacing system */
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  font-family: "Roboto Condensed", sans-serif;
+}
+
+/* Reset */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body */
+body {
+  min-width: 320px;
+  scroll-behavior: smooth;
+  color: #0f172a;
+  background: linear-gradient(180deg, #f8fafc, #eef2ff);
+}
+
+html.dark body {
+  background: #0b1120;
+  color: #f8fafc;
+}
+
+/* ================= LAYOUT SYSTEM ================= */
+
+.story-page-shell {
+  width: min(100% - 1.5rem, 1200px);
+  margin-inline: auto;
+}
+
+/* 🔥 Reduced excessive spacing */
+.story-section {
+  padding-block: clamp(1.5rem, 4vw, 3rem);
+}
+
+/* Consistent section spacing */
+section {
+  margin-bottom: var(--space-lg);
+}
+
+/* ================= TYPOGRAPHY ================= */
+
+.story-section-heading {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+}
+
+.story-section-copy {
+  font-size: clamp(1rem, 2vw, 1.1rem);
+  line-height: 1.6;
+}
+
+/* Better text spacing */
+p {
+  margin-bottom: var(--space-md);
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  flex-wrap: wrap;
+  gap: var(--space-md); /* 🔥 added */
+}
+
+.nav-links {
+  display: flex;
+  gap: var(--space-md);
+  list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: 0.3s ease;
+}
+
+.nav-links a:hover {
+  opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+}
+
+/* ================= CARDS ================= */
+
+.motion-card {
+  transition: 0.2s ease;
+}
+
+.motion-card:hover {
+  transform: translateY(-4px);
+}
+
+/* ================= CONTACT FORM ================= */
+
+.contact-section {
+  min-height: 100vh;
+  padding: var(--space-lg); /* reduced */
+}
+
+.contact-form-card {
+  padding: 1.5rem;
+  border-radius: 1rem;
+}
+
+/* Inputs */
+.contact-input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+}
+
+/* ================= BUTTON ================= */
+
+.contact-submit-btn {
+  padding: 0.75rem 1.2rem;
+  border-radius: 0.5rem;
+  transition: 0.2s ease;
+}
+
+.contact-submit-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* ================= SCROLL BUTTON ================= */
+
+.scroll-to-top-btn {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+
+/* ================= UTILITIES ================= */
+
+.container {
+  max-width: 1200px; /* 🔥 added */
+  margin: 0 auto;     /* 🔥 added */
+  padding: var(--space-md);
+}
+
+/* ================= REDUCED MOTION ================= */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
