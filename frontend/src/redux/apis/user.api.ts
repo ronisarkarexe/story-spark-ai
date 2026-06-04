@@ -42,8 +42,15 @@ const userApi = baseApi.injectEndpoints({
         method: "PATCH",
         data: data,
       }),
-      // ─── OPTIMIZED: INVALIDATES ANALYTICS CACHE UPON UPDATE ───
-      invalidatesTags: [tagTypes.user, tagTypes.analytics || "Analytics"],
+      invalidatesTags: [tagTypes.user],
+    }),
+    updateWritingGoals: build.mutation({
+      query: (data) => ({
+        url: `/${USER_URL}/update`,
+        method: "PATCH",
+        data: data,
+      }),
+      invalidatesTags: [tagTypes.user],
     }),
     toggleFollow: build.mutation({
       query: (authorId: string) => ({
@@ -69,10 +76,7 @@ export const {
   useGetUsersListQuery,
   useGetProfileInfoQuery,
   useUpdateProfileMutation,
-  
-  // ─── ADDED: CLEAN EXPORT ALIAS FOR WRITING GOAL VIEW LAYOUTS ───
-  useUpdateProfileMutation: useUpdateWritingGoalsMutation,
-  
+  useUpdateWritingGoalsMutation,
   useToggleFollowMutation,
   useGetFollowStatusQuery,
 } = userApi;

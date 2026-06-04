@@ -2,10 +2,10 @@ import { Application, Request, Response } from "express";
 import mongoose from "mongoose";
 import config from "./config";
 import app from "./app";
-import dns from "dns";
+import dns from "node:dns";
 import http from "http";
 import { Server } from "socket.io";
-import { JwtHalers } from "./utils/jwt.helper";
+import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
 
@@ -16,8 +16,6 @@ if (config.disable_logs) {
   console.log = noop;
   console.info = noop;
   console.debug = noop;
-  console.warn = noop;
-  console.error = noop;
 }
 
 async function connectDB() {
@@ -58,7 +56,7 @@ async function main() {
           return next(new Error("Unauthorized"));
         }
 
-        const verifiedUser = JwtHalers.verifyToken(
+        const verifiedUser = JwtHelpers.verifyToken(
           token,
           config.jwt.secret as Secret
         );

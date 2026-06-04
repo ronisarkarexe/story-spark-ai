@@ -5,7 +5,7 @@ import crypto from "crypto";
 import { OAuth2Client } from "google-auth-library";
 import { AuthModel } from "./auth.interface";
 import { User } from "../user/user.model";
-import { JwtHalers } from "../../../utils/jwt.helper";
+import { JwtHelpers } from "../../../utils/jwt.helper";
 import logger from "../../../utils/logger.util";
 import config from "../../../config";
 import ApiError from "../../../errors/api_error";
@@ -14,8 +14,18 @@ import { OTPModel } from "../verify_email/otp.model";
 import { RefreshSession } from "./refresh_session.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 import { GamificationService } from "../gamification/gamification.service";
-
+import { USER_STATUS } from "../../../enums/user_status";
+import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
 const googleClient = new OAuth2Client(config.google_client_id);
+
+const validateUserStatus = (status?: string) => {
+  if (status === USER_STATUS.BLOCKED) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Your account has been blocked.");
+  }
+  if (status === USER_STATUS.INACTIVE) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Your account is inactive.");
+  }
+};
 
 // Token claims; tokenVersion enables global session revocation.
 const buildClaims = (user: any) => ({
@@ -29,7 +39,7 @@ const buildClaims = (user: any) => ({
 });
 
 const issueAccessToken = (user: any, expiresIn?: string): string =>
-  JwtHalers.createToken(
+  JwtHelpers.createToken(
     buildClaims(user),
     config.jwt.secret as Secret,
     expiresIn ?? (config.jwt.expires_in as string)
@@ -38,7 +48,7 @@ const issueAccessToken = (user: any, expiresIn?: string): string =>
 // Issues a refresh token with a unique jti and records its session for rotation.
 const issueRefreshToken = async (user: any): Promise<string> => {
   const jti = crypto.randomBytes(16).toString("hex");
-  const token = JwtHalers.createToken(
+  const token = JwtHelpers.createToken(
     { ...buildClaims(user), jti },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
@@ -57,6 +67,8 @@ const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
   if (!isExistUser) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
+
+  validateUserStatus(isExistUser.status);
 
   // Check if user has password (Google users might not)
   if (!isExistUser.password) {
@@ -82,7 +94,6 @@ const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
 const register = async (payload: IUser & { verificationToken?: string; confirmPassword?: string }) => {
   const { email: userEmail, verificationToken } = payload;
   
-  // FIX #4: Verify that email was verified via OTP before allowing registration
   if (!verificationToken) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
@@ -90,7 +101,6 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
     );
   }
 
-  // Check if verification token is valid
   const otpRecord = await OTPModel.findOne({
     email: userEmail,
     isVerified: true,
@@ -104,7 +114,6 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
     );
   }
 
-  // Check if verification token has expired
   if (
     !otpRecord.verificationTokenExpires ||
     new Date() > otpRecord.verificationTokenExpires
@@ -128,6 +137,7 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
 
   const accessToken = issueAccessToken(result);
   const refreshToken = await issueRefreshToken(result);
+
   return {
     accessToken,
     refreshToken,
@@ -141,7 +151,7 @@ const refreshToken = async (token: string) => {
 
   let verifiedToken = null;
   try {
-    verifiedToken = JwtHalers.verifyToken(
+    verifiedToken = JwtHelpers.verifyToken(
       token,
       config.jwt.refresh_secret as Secret
     );
@@ -209,13 +219,22 @@ const refreshToken = async (token: string) => {
 const logout = async (token?: string) => {
   if (!token) return;
   try {
-    const verified = JwtHalers.verifyToken(
+    const verified = JwtHelpers.verifyToken(
       token,
       config.jwt.refresh_secret as Secret
     );
     const jti = (verified as any).jti as string | undefined;
+    const userId = (verified as any)._id as string | undefined;
+
+    // Revoke the refresh token session.
     if (jti) {
       await RefreshSession.updateOne({ jti }, { revoked: true });
+    }
+
+    // Bump tokenVersion so every outstanding access token for this user is
+    // immediately rejected by auth.middleware.ts, even before its natural expiry.
+    if (userId) {
+      await User.updateOne({ _id: userId }, { $inc: { tokenVersion: 1 } });
     }
   } catch (error) {
     // Ignore invalid tokens on logout; the cookie is cleared either way.
@@ -241,7 +260,6 @@ const googleLogin = async (payload: { token: string }) => {
       throw new ApiError(httpStatus.BAD_REQUEST, "Invalid Google token");
     }
 
-    // Reject unverified Google emails to prevent account takeover (CWE-287).
     if (!payload_data.email_verified) {
       throw new ApiError(httpStatus.UNAUTHORIZED, "Google email is not verified");
     }
@@ -249,11 +267,12 @@ const googleLogin = async (payload: { token: string }) => {
     const { email, name: googleName, picture } = payload_data;
     let user = await User.findOne({ email });
 
-    // If user doesn't exist, create a new user
     if (!user) {
       const newUser: Partial<IUser> = {
         email: email as string,
         name: (googleName || email || "Google User").slice(0, 100),
+        status: USER_STATUS.ACTIVE,
+        subscriptionType: SUBSCRIPTION_TYPE.FREE,
         profile: {
           avatar: (picture as string) || "",
           bio: "",
@@ -269,6 +288,8 @@ const googleLogin = async (payload: { token: string }) => {
       user = await User.create(newUser);
     }
 
+    validateUserStatus(user.status);
+
     const accessToken = issueAccessToken(user);
     const refreshTokenData = await issueRefreshToken(user);
 
@@ -282,7 +303,6 @@ const googleLogin = async (payload: { token: string }) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Google login error: ${errorMessage}`);
     
-    // If it's already an ApiError, re-throw it
     if (error instanceof ApiError) {
       throw error;
     }
@@ -327,18 +347,23 @@ const forgotPassword = async (email: string) => {
   if (!email) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email is required!");
   }
+
+  // Same response for real and unknown emails to prevent account enumeration.
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
   const user = await User.findOne({ email });
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  if (user) {
+    // Fire and forget so response timing does not vary with account existence.
+    VerifyEmailService.VerifyEmail({
+      email: user.email,
+      name: user.name || "User",
+    }).catch((err) => {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error(`forgotPassword OTP send failed for ${user.email}: ${message}`);
+    });
   }
-  
-  // Send OTP using VerifyEmailService
-  const result = await VerifyEmailService.VerifyEmail({
-    email: user.email,
-    name: user.name || "User",
-  });
-  
-  return result;
+
+  return { expiresAt };
 };
 
 const resetPassword = async (payload: {
@@ -355,7 +380,6 @@ const resetPassword = async (payload: {
     throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
   }
   
-  // Validate password strength using Zod schema's rules manually to return user-friendly errors
   const getPasswordError = (pwd: string) => {
     if (pwd.length < 8) return "Password must be at least 8 characters long";
     if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
@@ -374,7 +398,6 @@ const resetPassword = async (payload: {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
 
-  // Verify token against OTPModel
   const otpRecord = await OTPModel.findOne({
     email,
     isVerified: true,

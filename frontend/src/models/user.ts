@@ -3,6 +3,8 @@ export interface SocialLinks {
   twitter?: string;
   linkedin?: string;
   instagram?: string;
+  github?: string;
+  discord?: string;
 }
 
 export interface UserProfile {
@@ -25,8 +27,17 @@ export interface User {
   status: string;
   subscriptionType: string;
   postsCount: number;
-  followers: string[];
-  following: string[];
+  followers: {
+    _id: string;
+    username: string;
+    profilePicture: string;
+  }[];
+
+  following: {
+    _id: string;
+    username: string;
+    profilePicture: string;
+  }[];
   requestsThisMonth: number;
   lastRequestDate: string | null;
   posts: string[];

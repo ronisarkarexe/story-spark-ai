@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { connectSocket } from "../../socket/socket.oi";
+import { connectSocket, getSocketIo } from "../../socket/socket.oi";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
-import { io, Socket } from "socket.io-client"; // Imported Socket type and io helper safely
 
 interface Participant {
   userId: string;
@@ -28,11 +27,6 @@ interface Room {
   createdAt: Date;
 }
 
-/**
- * Collab rooms required Socket.IO to `BACKEND_URL/collab`. That is disabled in the
- * frontend (same as notification socket) to avoid slow loads and connection hangs.
- * Restore the previous implementation from git history when you run a persistent backend.
- */
 export default function CollabRoom() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -41,9 +35,6 @@ export default function CollabRoom() {
   const [error, setError] = useState<string | null>(null);
   const [newText, setNewText] = useState("");
   const user = getUserInfo();
-  
-  // FIX: Persistent reference holder for the custom workspace namespace connection
-  const collabSocketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -59,19 +50,14 @@ export default function CollabRoom() {
         return;
       }
 
-      // FIX: Establish dynamic or baseline safe namespace path target
-      const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
-      const collabSocket = io(`${socketUrl}/collab`, {
-        transports: ["websocket"]
-      });
-      
-      // Save reference to be used by click triggers safely elsewhere
-      collabSocketRef.current = collabSocket;
+      // Connect to collab namespace
+      const collabSocket = socket.io.socket("/collab");
 
       // Request room info
-      collabSocket.emit("collab:get_room", { roomId }, (response: { room?: Room } | null) => {
-        if (response && response.room) {
-          setRoom(response.room);
+      collabSocket.emit("collab:get_room", { roomId }, (response: unknown) => {
+        const res = response as { room: Room } | null | undefined;
+        if (res && res.room) {
+          setRoom(res.room);
           setError(null);
         } else {
           setError("Room not found");
@@ -80,22 +66,25 @@ export default function CollabRoom() {
       });
 
       // Listen for room updates
-      const handleRoomUpdated = (data: { room?: Room } | null) => {
-        if (data && data.room) {
-          setRoom(data.room);
+      const handleRoomUpdated = (data: unknown) => {
+        const res = data as { room: Room } | null | undefined;
+        if (res && res.room) {
+          setRoom(res.room);
         }
       };
 
-      const handleStoryUpdated = (data: { story?: StoryChunk[] } | null) => {
-        if (data && data.story) {
-          setRoom((prev) => (prev ? { ...prev, story: data.story! } : null));
+      const handleStoryUpdated = (data: unknown) => {
+        const res = data as { story: StoryChunk[] } | null | undefined;
+        if (res && res.story) {
+          setRoom((prev) => (prev ? { ...prev, story: res.story } : null));
         }
       };
 
       collabSocket.on("collab:room_updated", handleRoomUpdated);
       collabSocket.on("collab:story_updated", handleStoryUpdated);
-      collabSocket.on("collab:error", (data: { message?: string }) => {
-        setError(data.message || "An error occurred");
+      collabSocket.on("collab:error", (data: unknown) => {
+        const err = data as { message: string } | null | undefined;
+        setError(err?.message || "Unknown error");
         setLoading(false);
       });
 
@@ -114,9 +103,9 @@ export default function CollabRoom() {
   const handleAddText = () => {
     if (!newText.trim() || !user) return;
 
-    // FIX: Using persistent local ref to target the connection directly
-    if (collabSocketRef.current) {
-      collabSocketRef.current.emit("collab:add_text", {
+    const socket = getSocketIo();
+    if (socket) {
+      socket.io.socket("/collab").emit("collab:add_text", {
         roomId,
         userId: user.userId,
         text: newText,
@@ -126,9 +115,9 @@ export default function CollabRoom() {
   };
 
   const handleAIContinue = () => {
-    // FIX: Using persistent local ref to target the connection directly
-    if (collabSocketRef.current) {
-      collabSocketRef.current.emit("collab:ai_continue", { roomId });
+    const socket = getSocketIo();
+    if (socket) {
+      socket.io.socket("/collab").emit("collab:ai_continue", { roomId });
     }
   };
 

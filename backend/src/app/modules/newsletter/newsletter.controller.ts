@@ -54,8 +54,10 @@ export const verify = async (req: Request, res: Response) => {
 // Unsubscribe via token from the email link. Safe, no email enumeration.
 export const unsubscribeByToken = async (req: Request, res: Response) => {
   try {
-    const token = req.params.token as string;
-    const result = await newsletterService.unsubscribeByToken(token);
+    const { token } = req.params;
+    const safeToken = Array.isArray(token) ? token[0] : token;
+
+    const result = await newsletterService.unsubscribeByToken(safeToken);
     res.status(200).json(result);
   } catch (err: any) {
     res.status(400).json({ message: err.message });
