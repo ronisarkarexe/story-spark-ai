@@ -302,8 +302,6 @@ const ReviewForm = () => {
             </button>
           </div>
         </div>
-<<<<<<< HEAD
-=======
       )}
 
       {errors.submit && (
@@ -379,7 +377,6 @@ const ReviewForm = () => {
         >
           {isLoading ? "Submitting..." : "Submit Review"}
         </button>
->>>>>>> 12f5312 (#1358 fix: improve ReviewForm spacing and responsiveness)
       </div>
     </div>
   );
