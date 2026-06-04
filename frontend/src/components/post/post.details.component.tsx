@@ -12,12 +12,16 @@ import {
 } from "../../redux/apis/storyVersion.api";
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
+import { ComparisonMode } from "../story-comparison";
 
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
+import ImageFallback from "../ImageFallback";
 import BookmarkButton from "../BookmarkButton";
+import AudioPlayer from "../AudioPlayer";
 
 import { formatDateShort } from "../../utils/time-formate";
+import { formatReadingStats } from "../../utils/story-utils";
 import { getUserInfo } from "../../services/auth.service";
 
 import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
@@ -27,9 +31,17 @@ import {
   useGetFollowStatusQuery,
 } from "../../redux/apis/user.api";
 
+import {
+  useGetVersionsByStoryIdQuery,
+  useRestoreVersionMutation,
+  useGetStoryTreeQuery,
+  useCreateBranchVersionMutation,
+} from "../../redux/apis/storyVersion.api";
+
 import { toast } from "react-hot-toast";
 
 import { FaXTwitter } from "react-icons/fa6";
+
 
 interface IStoryVersion {
   _id: string;
@@ -51,18 +63,32 @@ const PostDetailsComponent = () => {
   const { data: post, isLoading } = useGetPostByIdQuery(id || "");
 
   const tag = post?.tag;
-  const { data: relatedPost } = useGetPostByTagQuery({
-    tag: tag || "",
-    excludeId: post?._id || "",
-  });
 
+  const { data: relatedPost } = useGetPostByTagQuery(
+    {
+      tag: tag || "",
+      excludeId: post?._id || "",
+    },
+    {
+      skip: !tag,
+    }
+  );
+  
+
+  console.log("Current Post:", post);
+  console.log("Tag:", tag);
+  console.log(
+  "Related Posts Full Data:",
+  JSON.stringify(relatedPost, null, 2)
+);
+  
   const [toggleReaction] = useToggleReactionMutation();
   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
   const currentUser = getUserInfo();
 
   const authorId = post?.author?._id;
   const isOwner = Boolean(
-    currentUser?.email && post?.author?.email === currentUser.email
+    currentUser?.userId && authorId === currentUser.userId
   );
 
   const { data: followData } = useGetFollowStatusQuery(authorId || "", {
@@ -78,12 +104,29 @@ const PostDetailsComponent = () => {
   const [editedTitle, setEditedTitle] = useState("");
   const [editedContent, setEditedContent] = useState("");
   const [showTimeline, setShowTimeline] = useState(false);
+  const [readProgress, setReadProgress] = useState(0);
+  const [showTree, setShowTree] = useState(false);
+  const [selectedVersionForBranch, setSelectedVersionForBranch] = useState<string | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
   const { data: versions, isLoading: isLoadingVersions } = useGetVersionsByStoryIdQuery(id || "", {
     skip: !id || !showTimeline,
   });
   const [restoreVersion, { isLoading: isRestoring }] = useRestoreVersionMutation();
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = document.documentElement;
+      const total = el.scrollHeight - el.clientHeight;
+      setReadProgress(total > 0 ? (el.scrollTop / total) * 100 : 0);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const { data: storyTree } = useGetStoryTreeQuery(id || "", { skip: !id || !showTree,});
+
+  const [createBranchVersion] = useCreateBranchVersionMutation();
 
   const isAuthor = !!currentUser && authorId === currentUser?.userId;
 
@@ -152,17 +195,34 @@ const PostDetailsComponent = () => {
     }
   };
 
+  const handleCreateBranch = async (versionId: string) => {const branchName = window.prompt("Enter a branch name");
+
+  if (!branchName?.trim()) {
+    return;
+  }
+
+  try {
+    await createBranchVersion({versionId, branchName,}).unwrap();
+
+    toast.success("Branch created successfully!");
+  } catch (error) {
+    console.error(error);
+
+    toast.error(
+      "Failed to create branch"
+    );
+  }
+};
+
   const hasUserReacted = post?.reactions?.some((r) => {
     const userId = r.userId;
 
-    const email =
-      typeof userId === "object" &&
-      userId !== null &&
-      "email" in userId
-        ? userId.email
-        : undefined;
+    const reactorId =
+      typeof userId === "object" && userId !== null && "_id" in userId
+        ? userId._id
+        : userId;
 
-    return email === currentUser?.email;
+    return Boolean(currentUser?.userId) && reactorId === currentUser?.userId;
   });
 
   const handleTwitterShare = () => {
@@ -193,75 +253,6 @@ const PostDetailsComponent = () => {
     window.location.href = url;
   };
 
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [isPausedAudio, setIsPausedAudio] = useState(false);
-
-  const handleTextToSpeech = () => {
-    if (!post?.content) return;
-
-    if (!("speechSynthesis" in window)) {
-      toast.error("Text-to-speech is not supported in this browser.");
-      return;
-    }
-
-    if (isPlayingAudio) {
-      if (isPausedAudio) {
-        window.speechSynthesis.resume();
-        setIsPausedAudio(false);
-        toast.success("Resumed reading story");
-      } else {
-        window.speechSynthesis.pause();
-        setIsPausedAudio(true);
-        toast.success("Paused reading story");
-      }
-    } else {
-      window.speechSynthesis.cancel();
-      const cleanContent = post.content.replace(/<[^>]*>/g, "");
-      const utterance = new SpeechSynthesisUtterance(cleanContent);
-      
-      utterance.onend = () => {
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      utterance.onerror = (e) => {
-        console.error("SpeechSynthesis error:", e);
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(
-        (v) => v.lang.startsWith("en-") && v.name.includes("Google")
-      ) || voices.find((v) => v.lang.startsWith("en-"));
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
-      setIsPlayingAudio(true);
-      setIsPausedAudio(false);
-      toast.success("Playing story audio");
-    }
-  };
-
-  const handleStopAudio = () => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-    setIsPlayingAudio(false);
-    setIsPausedAudio(false);
-    toast.success("Stopped audio playback");
-  };
-
-  useEffect(() => {
-    return () => {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, []);
-
   const handleDelete = async () => {
     if (
       !id ||
@@ -286,7 +277,16 @@ const PostDetailsComponent = () => {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white relative">
-
+      {/* Reading Progress Bar */}
+      <div
+        className="fixed top-0 left-0 z-50 h-1 bg-indigo-500 transition-all duration-100"
+        style={{ width: `${readProgress}%` }}
+        role="progressbar"
+        aria-valuenow={Math.round(readProgress)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Reading progress"
+      />
       <div className="max-w-6xl mx-auto px-4">
         <div className="py-6 flex justify-between">
           <div
@@ -363,6 +363,12 @@ const PostDetailsComponent = () => {
                 >
                   ✨ Story Timeline & History
                 </button>
+                <button
+                  onClick={() => setShowComparison(true)}
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:opacity-90 rounded-lg transition-all active:scale-95 cursor-pointer font-semibold shadow-md"
+                >
+                  📊 Compare Variations
+                </button>
               </div>
             )}
 
@@ -413,13 +419,16 @@ const PostDetailsComponent = () => {
                     <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
                       🌐 {post.language}
                     </span>
+                    <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
+                      📖 {formatReadingStats(post.content)}
+                    </span>
                   </div>
                 )}
 
                 <div className="mb-12">
-                  <img
+                  <ImageFallback
                     src={post?.imageURL}
-                    alt={post?.title}
+                    alt={post?.title || "Story image"}
                     className="w-full h-[400px] object-cover rounded-lg shadow-md"
                   />
                 </div>
@@ -427,6 +436,12 @@ const PostDetailsComponent = () => {
                 <div className="prose max-w-none mb-12 text-slate-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-lg font-light">
                   <p>{post?.content}</p>
                 </div>
+
+                {post?.content && (
+                  <div className="mb-12">
+                    <AudioPlayer text={post.content} title={post.title} />
+                  </div>
+                )}
               </>
             )}
 
@@ -450,37 +465,8 @@ const PostDetailsComponent = () => {
                 {post && (
                   <BookmarkButton
                     storyId={post._id}
-                    bookmarks={post.bookmarks}
                     className="!border-none !px-0 bg-transparent hover:bg-transparent"
                   />
-                )}
-                <button
-                  onClick={handleTextToSpeech}
-                  className={`flex items-center space-x-2 transition-colors cursor-pointer ${
-                    isPlayingAudio
-                      ? isPausedAudio
-                        ? "text-amber-500 hover:text-amber-400"
-                        : "text-green-500 hover:text-green-400"
-                      : "text-gray-600 hover:text-gray-400"
-                  }`}
-                  title={isPlayingAudio ? (isPausedAudio ? "Resume Story" : "Pause Story") : "Listen to Story"}
-                >
-                  <i
-                    className={`fas ${
-                      isPlayingAudio ? (isPausedAudio ? "fa-circle-play" : "fa-circle-pause") : "fa-volume-high"
-                    }`}
-                  ></i>
-                  <span>{isPlayingAudio ? (isPausedAudio ? "Resume" : "Pause") : "Listen"}</span>
-                </button>
-                {isPlayingAudio && (
-                  <button
-                    onClick={handleStopAudio}
-                    className="flex items-center space-x-2 text-red-500 hover:text-red-400 transition-colors cursor-pointer"
-                    title="Stop Audio"
-                  >
-                    <i className="fas fa-circle-stop"></i>
-                    <span>Stop</span>
-                  </button>
                 )}
               </div>
 
@@ -542,18 +528,32 @@ const PostDetailsComponent = () => {
       {showTimeline && (
         <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#0f172a]/95 backdrop-blur-xl border-l border-slate-700/60 shadow-2xl p-6 overflow-y-auto text-white animate-slide-in flex flex-col">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-800">
-            <div>
-              <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400 flex items-center gap-2">
-                ✨ Story Timeline
-              </h3>
-              <p className="text-[11px] text-slate-400 mt-1">Chronological creative iterations</p>
-            </div>
+            
             <button
               onClick={() => setShowTimeline(false)}
               className="w-8 h-8 rounded-full bg-slate-850 border border-slate-750 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all cursor-pointer"
               aria-label="Close story timeline"
             >
               ✕
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between w-full mb-6">
+            <div>
+              <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400 flex items-center gap-2">
+                ✨ Story Timeline
+              </h3>
+
+              <p className="text-[11px] text-slate-400 mt-1">
+                Chronological creative iterations
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowTree(true)}
+              className="px-3 py-1 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 transition"
+            >
+              View Tree
             </button>
           </div>
 
@@ -577,7 +577,6 @@ const PostDetailsComponent = () => {
                     <div key={v._id} className="relative group">
                       {/* Chronological marker dot */}
                       <div className="absolute left-[-21px] top-1.5 w-3.5 h-3.5 rounded-full bg-indigo-500 border-4 border-[#0f172a] group-hover:scale-125 transition-transform duration-200"></div>
-
                       <div className="bg-slate-900/55 border border-slate-800/80 rounded-xl p-4 hover:border-slate-700/80 transition-all duration-200">
                         <div className="flex justify-between items-start mb-2 gap-2">
                           <div>
@@ -588,13 +587,24 @@ const PostDetailsComponent = () => {
                               {v.generationType}
                             </span>
                           </div>
-                          <button
-                            onClick={() => handleRestore(v._id)}
-                            disabled={isRestoring}
-                            className="px-3 py-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold text-[10px] rounded transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-                          >
-                            Restore
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleRestore(v._id)}
+                              disabled={isRestoring}
+                              className="px-3 py-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold text-[10px] rounded transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                            >
+                              Restore
+                            </button>
+
+                            <button
+                              onClick={() =>
+                                handleCreateBranch(v._id)
+                              }
+                              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] rounded transition-all"
+                            >
+                              Branch
+                            </button>
+                          </div>
                         </div>
 
                         <h4 className="text-sm font-bold text-slate-200 mb-1">{v.title}</h4>
@@ -629,10 +639,59 @@ const PostDetailsComponent = () => {
         </div>
       )}
 
+      {showTree && (
+        <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-6">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-auto p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-white">
+                Story Branch Tree
+              </h3>
+
+              <button
+                onClick={() => setShowTree(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            {!storyTree ? (
+              <div className="text-slate-400">
+                Loading...
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {storyTree.nodes.map((node) => (
+                  <div
+                    key={node.id}
+                    className="border border-slate-700 rounded-lg p-3"
+                  >
+                    <div className="font-bold">
+                      Version #{node.versionNumber}
+                    </div>
+
+                    <div>
+                      {node.title}
+                    </div>
+
+                    {node.branchName && (
+                      <div className="text-purple-400 text-sm">
+                        Branch:
+                        {" "}
+                        {node.branchName}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
     </div>
   );
 };
 
 export default PostDetailsComponent;
-

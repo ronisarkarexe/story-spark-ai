@@ -7,15 +7,16 @@ import {
   Pencil,
   Send,
   GitBranch,
-  CheckCircle2,
+  Sparkles,
   AlertCircle,
   ArrowUpRight,
   Zap,
 } from "lucide-react";
 
-import { instance as axios } from "../../helpers/axios/axionInstance";
+import { instance as axios } from "../../helpers/axios/axiosInstance";
 import { getBaseUrl } from "../../helpers/config";
 import storybook from "../../assets/storybook.png";
+import { motion } from "framer-motion";
 
 type FormData = {
   fullname: string;
@@ -39,18 +40,18 @@ const CONTACT_CHANNELS = [
     label: "Email us",
     value: "ronichandrasarkar@gmail.com",
     href: "mailto:ronichandrasarkar@gmail.com",
-    color: "from-blue-500/20 to-cyan-500/20",
-    iconColor: "text-blue-400",
-    hoverBorder: "hover:border-blue-500/40",
+    color: "from-blue-500/10 to-cyan-500/10",
+    iconColor: "text-blue-500 dark:text-blue-400",
+    hoverBorder: "hover:border-blue-500/30",
   },
   {
     icon: GitBranch,
     label: "GitHub",
     value: "ronisarkarexe/story-spark-ai",
     href: "https://github.com/ronisarkarexe/story-spark-ai",
-    color: "from-purple-500/20 to-violet-500/20",
-    iconColor: "text-purple-400",
-    hoverBorder: "hover:border-purple-500/40",
+    color: "from-purple-500/10 to-violet-500/10",
+    iconColor: "text-purple-500 dark:text-purple-400",
+    hoverBorder: "hover:border-purple-500/30",
   },
 ];
 
@@ -157,62 +158,46 @@ export default function Contact() {
     <section
       id="contact"
       aria-labelledby="contact-heading"
-      className="contact-section relative overflow-hidden bg-[#020617] text-white"
+      className="relative overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 w-full box-border"
     >
-      {/* ── Layered background ── */}
-      <div aria-hidden="true" className="contact-bg-mesh" />
-      <div aria-hidden="true" className="contact-orb contact-orb-blue" />
-      <div aria-hidden="true" className="contact-orb contact-orb-purple" />
-      <div aria-hidden="true" className="contact-orb contact-orb-pink" />
-      <div aria-hidden="true" className="contact-grid-overlay" />
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
 
-      {/* ── Page content ── */}
-      <div className="contact-wrapper relative z-10 mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-18 lg:px-12 lg:py-20 xl:px-16">
-
-        {/* Mobile badge */}
-        <div className="mb-10 flex flex-col items-center text-center lg:hidden">
-          <span className="contact-badge inline-flex items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-300">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 box-border">
+        
+        <div className="mb-8 flex flex-col items-center text-center lg:hidden select-none">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/10 dark:border-white/10 bg-blue-500/5 text-blue-600 dark:text-blue-400 px-4 py-1.5 text-xs font-bold uppercase tracking-wider">
             <Zap className="h-3 w-3" aria-hidden="true" />
             Get in Touch
           </span>
         </div>
 
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-14 xl:gap-20">
+        <motion.div className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-12 xl:gap-16 w-full box-border">
 
-          {/* ── LEFT COLUMN ── */}
-          <div className="contact-col-left flex flex-col">
-
-            {/* Desktop badge */}
-            <span className="contact-badge mb-6 hidden w-fit items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-300 lg:inline-flex">
+          <div className="flex flex-col w-full box-border text-left">
+            <span className="mb-6 hidden w-fit items-center gap-1.5 rounded-full border border-blue-500/10 dark:border-white/10 bg-blue-500/5 text-blue-600 dark:text-blue-400 px-4 py-1.5 text-xs font-bold uppercase tracking-wider lg:inline-flex select-none">
               <Zap className="h-3 w-3" aria-hidden="true" />
               Get in Touch
             </span>
 
-            {/* Heading */}
             <h1
               id="contact-heading"
-              className="font-black leading-[0.9] tracking-tight"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              className="font-extrabold tracking-tight text-slate-900 dark:text-white text-3xl sm:text-5xl lg:text-6xl leading-tight"
             >
-              <span className="block text-[clamp(2.75rem,6vw,4.5rem)] text-white">
-                Let's Start a
-              </span>
-              <span className="contact-heading-gradient block text-[clamp(2.75rem,6vw,4.5rem)]">
+              Let's Start a <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400">
                 Conversation
               </span>
             </h1>
 
-            {/* Accent bar */}
-            <div aria-hidden="true" className="contact-accent-bar mt-5" />
+            <div aria-hidden="true" className="h-[2px] w-12 bg-gradient-to-r from-blue-600 to-indigo-600 mt-5 rounded-full select-none" />
 
-            {/* Description */}
-            <p className="mt-6 max-w-[38ch] text-[0.9375rem] leading-[1.8] text-slate-400 sm:text-base">
+            <p className="mt-5 max-w-md text-xs sm:text-sm lg:text-base font-medium leading-relaxed text-slate-600 dark:text-slate-400">
               Have a story idea, a feature suggestion, or just want to say
               hello? We read every message and respond within 24 hours.
             </p>
 
-            {/* Stats row */}
-            <div className="mt-8 grid grid-cols-3 gap-3 sm:gap-4">
+            <div className="mt-8 grid grid-cols-3 gap-3 sm:gap-4 select-none w-full box-border">
               {[
                 { value: "24h",   label: "Response time"  },
                 { value: "100%",  label: "Read rate"      },
@@ -220,40 +205,39 @@ export default function Contact() {
               ].map(({ value, label }) => (
                 <div
                   key={label}
-                  className="contact-stat-card rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3 text-center sm:p-4"
+                  className="rounded-xl sm:rounded-2xl border border-slate-200/80 bg-white dark:border-white/5 dark:bg-[#111827]/40 p-3 text-center sm:p-4 shadow-sm"
                 >
-                  <p className="text-lg font-black text-white sm:text-xl">{value}</p>
-                  <p className="mt-0.5 text-[0.65rem] font-medium uppercase tracking-wider text-slate-500 sm:text-xs">
+                  <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">{value}</p>
+                  <p className="mt-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     {label}
                   </p>
                 </div>
               ))}
             </div>
 
-            {/* Contact channels */}
-            <ul className="mt-7 space-y-2.5 sm:mt-8" aria-label="Contact channels">
+            <ul className="mt-6 sm:mt-8 space-y-3 list-none p-0 m-0 w-full box-border" aria-label="Contact channels">
               {CONTACT_CHANNELS.map(({ icon: Icon, label, value, href, color, iconColor, hoverBorder }) => (
-                <li key={label}>
+                <li key={label} className="w-full">
                   <a
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`${label}: ${value}`}
-                    className={`contact-channel-link group flex items-center gap-3.5 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3.5 backdrop-blur-sm ${hoverBorder}`}
+                    className={`group flex items-center gap-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111827]/30 p-3 sm:p-4 shadow-sm backdrop-blur-md transition-all duration-200 hover:scale-[1.005] hover:shadow-md ${hoverBorder}`}
                   >
-                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${color} ${iconColor}`}>
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-500/10 bg-gradient-to-br ${color} ${iconColor} select-none`}>
                       <Icon className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[0.65rem] font-bold uppercase tracking-widest text-slate-500">
+                      <span className="block text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 select-none">
                         {label}
                       </span>
-                      <span className="block truncate text-sm font-medium text-slate-300 group-hover:text-white">
+                      <span className="block truncate text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight">
                         {value}
                       </span>
                     </span>
                     <ArrowUpRight
-                      className="h-3.5 w-3.5 shrink-0 text-slate-600 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-400"
+                      className="h-4 w-4 shrink-0 text-slate-400 transition-all duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-600 dark:group-hover:text-slate-300 select-none"
                       aria-hidden="true"
                     />
                   </a>
@@ -261,158 +245,164 @@ export default function Contact() {
               ))}
             </ul>
 
-            {/* Illustration */}
-            <div aria-hidden="true" className="contact-illustration relative mt-10 hidden items-end lg:flex">
-              <div className="contact-illustration-glow" />
+            <div aria-hidden="true" className="relative mt-10 hidden items-end lg:flex select-none w-full box-border">
+              <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-3xl -z-10 opacity-40 pointer-events-none" />
               <img
                 src={storybook}
                 alt=""
-                className="relative z-10 w-full max-w-[340px] object-contain xl:max-w-[380px]"
+                className="relative z-10 w-full max-w-[280px] xl:max-w-[320px] object-contain drop-shadow-xl"
               />
             </div>
           </div>
 
-          {/* ── RIGHT COLUMN — FORM ── */}
-          <div className="contact-col-right w-full lg:sticky lg:top-24">
-            <div className="contact-form-shell">
-              <div aria-hidden="true" className="contact-form-glow-ring" />
+          {/* GLOW ELEMENT */}
+          <div className="relative mt-16 hidden items-center justify-center lg:flex">
+            <div className="h-[320px] w-[320px] animate-pulse rounded-full bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-3xl" />
 
-              <div className="contact-form-card">
-                <div aria-hidden="true" className="contact-form-top-line" />
-
-                {/* Form header */}
-                <div className="mb-7">
-                  <h2 className="text-xl font-bold text-white sm:text-2xl">
-                    Send a Message
-                  </h2>
-                  <p className="mt-1.5 text-sm text-slate-500">
-                    We'll get back to you within 24 hours.
-                  </p>
-                </div>
-
-                <form
-                  onSubmit={submitHandler}
-                  noValidate
-                  aria-label="Contact form"
-                  className="space-y-4"
-                >
-                  {/* Text inputs */}
-                  {FORM_FIELDS.map(({ id, name, type, label, placeholder, icon: Icon, autoComplete }) => (
-                    <div key={id} className="contact-field group">
-                      <label
-                        htmlFor={id}
-                        className="mb-1.5 block text-[0.7rem] font-bold uppercase tracking-widest text-slate-500"
-                      >
-                        {label}
-                      </label>
-                      <div className="relative">
-                        <Icon
-                          aria-hidden="true"
-                          className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-600 transition-colors duration-200 group-focus-within:text-purple-400"
-                        />
-                        <input
-                          id={id}
-                          type={type}
-                          name={name}
-                          placeholder={placeholder}
-                          value={formData[name]}
-                          onChange={changeHandler}
-                          required
-                          autoComplete={autoComplete}
-                          className="contact-input h-12 w-full rounded-xl pl-10 pr-4 text-sm text-white placeholder:text-slate-600 sm:h-[3.125rem] sm:text-base"
-                        />
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Message textarea */}
-                  <div className="contact-field group">
-                    <label
-                      htmlFor="contact-message"
-                      className="mb-1.5 block text-[0.7rem] font-bold uppercase tracking-widest text-slate-500"
-                    >
-                      Message
-                    </label>
-                    <div className="relative">
-                      <Pencil
-                        aria-hidden="true"
-                        className="pointer-events-none absolute left-3.5 top-4 h-4 w-4 text-slate-600 transition-colors duration-200 group-focus-within:text-purple-400"
-                      />
-                      <textarea
-                        id="contact-message"
-                        rows={5}
-                        name="message"
-                        placeholder="Tell us what's on your mind…"
-                        value={formData.message}
-                        onChange={changeHandler}
-                        required
-                        className="contact-input w-full resize-none rounded-xl pb-4 pl-10 pr-4 pt-4 text-sm text-white placeholder:text-slate-600 sm:text-base"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Submit button */}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    aria-busy={loading}
-                    aria-label={loading ? "Sending message…" : "Send message"}
-                    className="contact-submit-btn group relative mt-1 flex h-12 w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl text-sm font-bold text-white sm:h-[3.125rem] sm:text-base"
-                  >
-                    <span aria-hidden="true" className="contact-btn-gradient absolute inset-0" />
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.12] to-transparent transition-transform duration-700 group-hover:translate-x-full"
-                    />
-                    <span className="relative flex items-center gap-2.5">
-                      {loading ? (
-                        <>
-                          <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                          <span>Sending…</span>
-                        </>
-                      ) : (
-                        <>
-                          <Send
-                            className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                            aria-hidden="true"
-                          />
-                          <span>Send Message</span>
-                        </>
-                      )}
-                    </span>
-                  </button>
-
-                  {/* Success */}
-                  {success && (
-                    <div
-                      role="status"
-                      aria-live="polite"
-                      className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.07] px-4 py-3.5"
-                    >
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
-                      <p className="text-sm font-medium text-emerald-400">
-                        Message sent — we'll get back to you within 24 hours.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Error */}
-                  {error && (
-                    <div
-                      role="alert"
-                      aria-live="assertive"
-                      className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/[0.07] px-4 py-3.5"
-                    >
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" aria-hidden="true" />
-                      <p className="text-sm font-medium text-red-400">{error}</p>
-                    </div>
-                  )}
-                </form>
-              </div>
+            <div className="absolute flex h-44 w-44 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-xl">
+              <Sparkles className="h-20 w-20 text-purple-400" />
             </div>
           </div>
+        </motion.div>
 
-        </div>
+      {/* RIGHT */}
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="relative"
+        >
+          <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-20 blur-2xl" />
+
+        <form
+  onSubmit={submitHandler}
+  className="relative space-y-6 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.05] p-7 backdrop-blur-2xl transition-all duration-300 hover:border-purple-500/30 sm:p-10"
+>
+  {/* NAME */}
+  <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
+    <User className="h-5 w-5 flex-shrink-0 text-purple-300" />
+    <div className="flex w-full items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">      <label className="text-[10px] font-bold uppercase tracking-wider text-purple-300/80 mb-1 block">
+        Full Name
+      </label>
+       <input
+           type="text"
+           name="fullname"
+           value={formData.fullname}
+           onChange={changeHandler}
+           placeholder="John Doe"
+           required
+  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+/>
+    </div>
+  </div>
+
+  {/* EMAIL */}
+  <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-blue-400/40 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
+    <Mail className="h-5 w-5 flex-shrink-0 text-blue-300" />
+    <div className="flex flex-col flex-grow min-w-full">
+      <label className="text-[10px] font-bold uppercase tracking-wider text-blue-300/80 mb-1 block">
+        Email Address
+      </label>
+     <input
+  type="email"
+  name="email"
+  value={formData.email}
+  onChange={changeHandler}
+  placeholder="john@example.com"
+  required
+  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+/>
+    </div>
+  </div>
+
+  {/* SUBJECT */}
+  <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-pink-400/40 focus-within:border-pink-500 focus-within:ring-2 focus-within:ring-pink-500/20">
+    <FileText className="h-5 w-5 flex-shrink-0 text-pink-300" />
+    <div className="flex flex-col flex-grow min-w-full">
+      <label className="text-[10px] font-bold uppercase tracking-wider text-pink-300/80 mb-1 block">
+        Subject
+      </label>
+      <input
+  type="text"
+  name="subject"
+  value={formData.subject}
+  onChange={changeHandler}
+  placeholder="Project Collaboration"
+  required
+  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+/>
+    </div>
+  </div>
+
+  {/* MESSAGE */}
+  <div className="flex items-start gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-4 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
+    <Pencil className="mt-1 h-5 w-5 flex-shrink-0 text-purple-300" />
+    <div className="flex flex-col flex-grow min-w-full">
+      <label className="text-[10px] font-bold uppercase tracking-wider text-purple-300/80 mb-2 block">
+        Message
+      </label>
+      <textarea
+  rows={6}
+  name="message"
+  value={formData.message}
+  onChange={changeHandler}
+  placeholder="Tell us about your idea..."
+  maxLength={500}
+  required
+  className="w-full min-w-0 resize-none bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+/>
+<div className="mt-2 text-right text-xs text-slate-400">
+  {formData.message.length}/500
+</div>
+    </div>
+  </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  aria-busy={loading}
+                  aria-label={loading ? "Sending message…" : "Send message"}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3.5 px-4 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 select-none uppercase tracking-wider cursor-pointer mt-1 flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      <span>Sending…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+                      <span>Send Message</span>
+                    </>
+                  )}
+                </button>
+
+  {/* SUCCESS & ERROR MESSAGE BLOCKS */}
+  {success && (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-4"
+    >
+      <p className="text-center text-sm font-medium text-green-400 sm:text-base">
+      🎉 Thank you! Your message has been sent successfully.      </p>
+    </motion.div>
+  )}
+
+  {error && (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4"
+    >
+      <p className="text-center text-sm font-medium text-red-400 sm:text-base">
+        {error}
+      </p>
+    </motion.div>
+  )}
+</form>
+        </motion.div>
       </div>
     </section>
   );
