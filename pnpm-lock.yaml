@@ -8,30 +8,18 @@ importers:
 
   .:
     dependencies:
-      '@flaticon/flaticon-uicons':
-        specifier: ^3.3.1
-        version: 3.3.1
       '@react-oauth/google':
         specifier: ^0.13.5
         version: 0.13.5(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/canvas-confetti':
-        specifier: ^1.9.0
-        version: 1.9.0
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
-      canvas-confetti:
-        specifier: ^1.9.4
-        version: 1.9.4
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
       express:
         specifier: ^5.2.1
         version: 5.2.1
-      framer-motion:
-        specifier: ^12.40.0
-        version: 12.40.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       jspdf:
         specifier: ^4.2.1
         version: 4.2.1
@@ -750,9 +738,6 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@flaticon/flaticon-uicons@3.3.1':
-    resolution: {integrity: sha512-WN2zuECCdjuGBQrjzN0kpeSygzC5fgF8Q7pDR+FUuGtYWczSdIhIwoD+/fKBEfwqKfNIMZ1WouidevGQ4OJORg==}
 
   '@fortawesome/fontawesome-common-types@6.7.2':
     resolution: {integrity: sha512-Zs+YeHUC5fkt7Mg1l6XTniei3k4bwG/yo3iFUtZWd/pMx9g3fdvkSK9E0FOC+++phXOka78uJcYb8JaFkW52Xg==}
@@ -2242,12 +2227,6 @@ packages:
 
   es-toolkit@1.47.0:
     resolution: {integrity: sha512-n1GuoD0WEQZMBk5tttoZSqwgyLx01oqa5XsBmCHwPyNe1S9jPBEmtR2pSgp2kJuWE3ciFZ6yRHmY4pM4C3OOkw==}
-
-  esbuild-linux-64@0.14.54:
-    resolution: {integrity: sha512-EgjAgH5HwTbtNsTqQOXWApBaPVdDn7XcK+/PtJwZLT1UmpLoznPd8c5CxqsH2dQK3j05YsB3L17T8vE7cp4cCg==}
-    engines: {node: '>=12'}
-    cpu: [x64]
-    os: [linux]
 
   esbuild@0.25.12:
     resolution: {integrity: sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg==}
@@ -4667,10 +4646,6 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@flaticon/flaticon-uicons@3.3.1':
-    optionalDependencies:
-      esbuild-linux-64: 0.14.54
-
   '@fortawesome/fontawesome-common-types@6.7.2': {}
 
   '@fortawesome/fontawesome-free@6.7.2': {}
@@ -6301,9 +6276,6 @@ snapshots:
       hasown: 2.0.3
 
   es-toolkit@1.47.0: {}
-
-  esbuild-linux-64@0.14.54:
-    optional: true
 
   esbuild@0.25.12:
     optionalDependencies:
