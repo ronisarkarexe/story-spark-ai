@@ -13,6 +13,7 @@ const plans = [
     ],
     linkTo: "/signup",
     buttonLabel: "Get Started",
+    highlight: false,
   },
   {
     title: "Pro",
@@ -27,6 +28,7 @@ const plans = [
     ],
     linkTo: "/payment?plan=Pro&price=19",
     buttonLabel: "Start Pro Trial",
+    highlight: true,
   },
   {
     title: "Enterprise",
@@ -41,6 +43,7 @@ const plans = [
     ],
     linkTo: "/contact-us",
     buttonLabel: "Contact Sales",
+    highlight: false,
   },
 ];
 

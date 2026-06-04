@@ -6,10 +6,7 @@ import {
   useGetPostByTagQuery,
   useUpdatePostMutation,
 } from "../../redux/apis/post.api";
-import {
-  useGetVersionsByStoryIdQuery,
-  useRestoreVersionMutation,
-} from "../../redux/apis/storyVersion.api";
+
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
 import { ComparisonMode } from "../story-comparison";
@@ -106,12 +103,11 @@ const PostDetailsComponent = () => {
   const [showTimeline, setShowTimeline] = useState(false);
   const [readProgress, setReadProgress] = useState(0);
   const [showTree, setShowTree] = useState(false);
-  const [selectedVersionForBranch, setSelectedVersionForBranch] = useState<string | null>(null);
   const [showComparison, setShowComparison] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
   const { data: versions, isLoading: isLoadingVersions } = useGetVersionsByStoryIdQuery(id || "", {
-    skip: !id || !showTimeline,
+    skip: !id || (!showTimeline && !showComparison),
   });
   const [restoreVersion, { isLoading: isRestoring }] = useRestoreVersionMutation();
   useEffect(() => {
@@ -372,7 +368,15 @@ const PostDetailsComponent = () => {
               </div>
             )}
 
-            {isEditing ? (
+            {showComparison ? (
+              <div className="mb-12 bg-slate-900/40 border border-slate-700/50 rounded-xl p-6">
+                <ComparisonMode
+                  versions={versions || []}
+                  isLoadingVersions={isLoadingVersions}
+                  onClose={() => setShowComparison(false)}
+                />
+              </div>
+            ) : isEditing ? (
               <div className="space-y-4 mb-12 bg-slate-900/40 border border-slate-700/50 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-slate-200">✏️ Edit Story Iteration</h3>
                 <div>

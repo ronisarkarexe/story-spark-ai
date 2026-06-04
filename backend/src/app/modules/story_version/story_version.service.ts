@@ -312,7 +312,6 @@ const restoreVersion = async (
 
   return post;
 };
-
 const ENHANCE_TIMEOUT_MS = 60000;
 
 const enhancePrompt = async (prompt: string): Promise<string> => {

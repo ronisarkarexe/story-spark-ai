@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useChatWithAiMutation } from "../../../redux/apis/chat.api";
 import { isLoggedIn } from "../../../services/auth.service";
-import toast from "react-hot-toast";
 
 interface IMessage {
   role: "user" | "model" | "system";
@@ -87,7 +86,7 @@ export const FloatingChatWidget: React.FC = () => {
           { role: "model", content: response.data.content },
         ]);
       }
-    } catch (err: any) {
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       // Capture rate limit or API errors
       let errMsg = "Oops! Something went wrong. Please try again.";
       if (err?.data) {
