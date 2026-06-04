@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Secret } from "jsonwebtoken";
 import config from "../../../config";
-import { JwtHalers } from "../../../utils/jwt.helper";
+import { JwtHelpers } from "../../../utils/jwt.helper";
 import chatRateLimiter from "../../middleware/chat.rate-limiter";
 
 export const flexibleChatRateLimiter = async (req: Request, res: Response, next: NextFunction) => {
@@ -9,7 +9,7 @@ export const flexibleChatRateLimiter = async (req: Request, res: Response, next:
   if (token) {
     try {
       // Try to verify token. If successful, bypass guest rate limiting.
-      const verifiedUser = JwtHalers.verifyToken(
+      const verifiedUser = JwtHelpers.verifyToken(
         token,
         config.jwt.secret as Secret
       );
