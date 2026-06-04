@@ -55,6 +55,8 @@ app.use(
 );
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Keeps your extended payload parsing enabled
+app.use(cookieParser() as any);
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser() as unknown as RequestHandler);
 

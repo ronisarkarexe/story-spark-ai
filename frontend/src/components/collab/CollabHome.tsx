@@ -4,15 +4,21 @@ import { connectSocket } from "../../socket/socket.oi";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 import { io } from "socket.io-client";
 
+interface CreateRoomResponse {
+  roomId?: string;
+  message?: string;
+}
+
 export default function CollabHome() {
   const navigate = useNavigate();
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
   const user = getUserInfo();
 
   const createRoom = () => {
-    if (!isLoggedIn()) {
+    if (!isLoggedIn() || !user) {
       navigate("/login");
       return;
     }
@@ -21,6 +27,9 @@ export default function CollabHome() {
 
     try {
       setIsCreating(true);
+
+      const socket = connectSocket();
+
       connectSocket();
       const socket = getSocketIo();
       if (!socket) {
@@ -31,18 +40,20 @@ export default function CollabHome() {
         return;
       }
 
-      const collabSocket = socket.io.of("/collab");
-
-      collabSocket.emit(
+      socket.emit(
         "collab:create_room",
+        { userId: user.userId },
+        (response: CreateRoomResponse) => {
+          if (response.roomId) {
+            navigate(`/collab/${response.roomId}`);
         { userId: user?.userId, username: user?.name },
         (response: unknown) => {
           if (response && (response as { roomId: string }).roomId) {
             navigate(`/collab/${(response as { roomId: string }).roomId}`);
           } else {
-            setError("Failed to create room. Please try again.");
+            setError(response.message || "Failed to create room");
+            setIsCreating(false);
           }
-          setIsCreating(false);
         }
       );
     } catch (err) {
@@ -57,6 +68,7 @@ export default function CollabHome() {
       setError("Please enter a Room ID");
       return;
     }
+
     navigate(`/collab/${joinRoomId.trim()}`);
   };
 
@@ -71,6 +83,23 @@ export default function CollabHome() {
             onClick={() => navigate("/")}
             className="group inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors bg-transparent border-none outline-none cursor-pointer"
           >
+            <i className="fas fa-arrow-left text-sm transform group-hover:-translate-x-1 transition-transform"></i>
+            <span className="text-sm font-semibold tracking-wide">
+              Back to Home
+            </span>
+          </button>
+        </div>
+
+        <div className="text-center mb-12">
+          <div className="text-6xl mb-4">✍️</div>
+
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-3">
+            Story Collab Mode
+          </h1>
+
+          <p className="text-slate-600 dark:text-white/50 text-lg">
+            Co-write stories with friends in real time.
+            <br />
             <i className="fa-solid fa-arrow-left text-xs transform group-hover:-translate-x-0.5 transition-transform" />
             Back to Home
           </button>
@@ -85,6 +114,26 @@ export default function CollabHome() {
             Co-write stories with friends in real time. <br />
             AI joins in whenever you need inspiration!
           </p>
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-slate-200 dark:bg-white/10" />
+
+            <span className="text-slate-400 dark:text-white/30 text-sm">
+              or join existing
+            </span>
+
+            <div className="flex-1 h-px bg-slate-200 dark:bg-white/10" />
+          </div>
+
+          {/* Join Room */}
+          <div className="flex gap-3">
+            <input
+              value={joinRoomId}
+              onChange={(e) => setJoinRoomId(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && joinRoom()}
+              placeholder="Enter Room ID..."
+              className="flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 outline-none focus:border-indigo-500/50 text-sm"
+            />
 
           {error && (
             <div className="bg-red-500/5 border border-red-500/10 rounded-xl px-4 py-3 text-red-500 dark:text-red-400 text-xs font-semibold mb-6">
@@ -101,6 +150,22 @@ export default function CollabHome() {
               {isCreating ? "Creating Room..." : "✨ Create a New Story Room"}
             </button>
 
+        {/* Features */}
+        <div className="mt-12 grid grid-cols-3 gap-4 text-center">
+          {[
+            { icon: "🎨", label: "Color-coded writers" },
+            { icon: "⚡", label: "Real-time sync" },
+            { icon: "✨", label: "AI co-writer" },
+          ].map((f) => (
+            <div
+              key={f.label}
+              className="bg-white dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl p-3 shadow-sm dark:shadow-none"
+            >
+              <div className="text-2xl mb-1">{f.icon}</div>
+
+              <p className="text-xs text-slate-500 dark:text-white/40">
+                {f.label}
+              </p>
             <div className="relative my-6 select-none w-full box-border">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-100 dark:border-white/5" />
