@@ -421,14 +421,10 @@ const TonePicker: React.FC<TonePickerProps> = ({ selected, onChange }) => {
 // ---------------------------------------------------------------------------
 const StoriesComponent = () => {
   const [currentPage, setCurrentPage] = useState(1);
-const storiesPerPage = 10;
+  const storiesPerPage = 10;
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
-
-  
-
-
 
   const draft = useMemo(() => {
     try {
@@ -440,18 +436,20 @@ const storiesPerPage = 10;
   }, []);
 
   const [stories, setStories] = useState<IStories[]>(
-
-
-    draft?.stories?.length ? draft.stories : [{ uuid: "test-1", title: "The Wizard's Journey", content: "Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.", tag: "Fantasy", imageURL: "https://via.placeholder.com/400x300" }]
-
-    draft?.stories?.length ? draft.stories : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
-    [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:"https://via.placeholder.com/400x300"}]
-
-
-    draft?.stories?.length ? getUniqueStories(draft.stories) : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
-
+    draft?.stories?.length
+      ? draft.stories
+      : [
+          {
+            uuid: "test-1",
+            title: "The Wizard's Journey",
+            content:
+              "Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",
+            tag: "Fantasy",
+            imageURL: "https://via.placeholder.com/400x300",
+          },
+        ]
   );
-  
+
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
@@ -479,20 +477,15 @@ const storiesPerPage = 10;
       }
     });
   }, [stories, searchQuery, searchFilter]);
+
   const indexOfLastStory = currentPage * storiesPerPage;
-const indexOfFirstStory = indexOfLastStory - storiesPerPage;
+  const indexOfFirstStory = indexOfLastStory - storiesPerPage;
+  const currentStories = filteredStories.slice(indexOfFirstStory, indexOfLastStory);
+  const totalPages = Math.ceil(filteredStories.length / storiesPerPage);
 
-const currentStories = filteredStories.slice(
-  indexOfFirstStory,
-  indexOfLastStory
-);
-
-const totalPages = Math.ceil(
-  filteredStories.length / storiesPerPage
-);
-useEffect(() => {
-  setCurrentPage(1);
-}, [searchQuery, searchFilter]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, searchFilter]);
 
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
@@ -502,10 +495,10 @@ useEffect(() => {
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>(
-  draft?.genre
-    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
-    : "🧙 Fantasy",
-);
+    draft?.genre
+      ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
+      : "🧙 Fantasy"
+  );
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
   const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
   const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
@@ -522,7 +515,7 @@ useEffect(() => {
   const isGenerationInProgressRef = useRef(false);
   
   const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-    parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
+    parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
   );
   const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
   const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
@@ -530,9 +523,6 @@ useEffect(() => {
   
   const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
   const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
-
-
-  
 
   const playSoundtrack = (genre: string) => {
     const soundtrack = soundtrackMap[genre];
@@ -552,28 +542,12 @@ useEffect(() => {
     audioRef.current = audio;
   };
 
-
-
-  const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
-  const isGenerationInProgressRef = useRef(false);
-  const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-    parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
-  );
-  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
-  const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
-  const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
-  const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
-  const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
-
-
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      // stories intentionally excluded — API response, not user input
-      // including stories risks hitting localStorage quota (~5MB) silently
       const draftData = {
         prompt: textareaValue,
         genre: selectedGenre,
@@ -623,24 +597,19 @@ useEffect(() => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-useEffect(() => {
-  if (location.state) {
-    if (location.state.prompt) {
-      setTextareaValue(location.state.prompt);
+
+  useEffect(() => {
+    if (location.state) {
+      if (location.state.prompt) {
+        setTextareaValue(location.state.prompt);
+      }
+      if (location.state.genre) {
+        const matchedGenre = GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
+        setSelectedGenre(matchedGenre);
+      }
+      navigate(location.pathname, { replace: true, state: {} });
     }
-
-    if (location.state.genre) {
-  const matchedGenre =
-    GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
-  setSelectedGenre(matchedGenre);
-}
-
-    navigate(location.pathname, {
-      replace: true,
-      state: {},
-    });
-  }
-}, [location, navigate, setSelectedGenre, setTextareaValue]);
+  }, [location, navigate]);
 
   useEffect(() => {
     setValue("prompt", textareaValue);
@@ -666,23 +635,15 @@ useEffect(() => {
     }
 
     if (getWordCount(data.prompt) < 10) {
-
       toast.error("Please enter a prompt with at least 10 words to generate a story.");
-
-      toast.error(
-        "Please enter a prompt with at least 10 words to generate a story."
-      );
-
       return;
     }
 
     isGenerationInProgressRef.current = true;
     setLoading(true);
-
     let timeoutId: NodeJS.Timeout | null = null;
 
     try {
-      // 55-second client-side request timeout safeguard (before Axios 60s timeout)
       timeoutId = setTimeout(() => {
         if (isGenerationInProgressRef.current) {
           toast.error("Story generation timed out. Please try again.");
@@ -691,23 +652,12 @@ useEffect(() => {
       }, 55000);
 
       const payload = {
-
         prompt: selectedGenre ? `[Genre: ${selectedGenre}] ${data.prompt}` : data.prompt,
-        wordLength: selectedLength === "short" ? 150 : selectedLength === "long" ? 500 : 250,
-
-        prompt: selectedGenre
-          ? `[Genre: ${selectedGenre}] ${data.prompt}`
-          : data.prompt,
-        wordLength:
-          selectedLength === "short"
-            ? 175
-            : selectedLength === "long"
-            ? 800
-            : 450,
-
+        wordLength: selectedLength === "short" ? 175 : selectedLength === "long" ? 800 : 450,
         language: selectedLanguage,
         tone: selectedTone || undefined,
       };
+
       const generationRequest = login ? generateModel(payload) : generateFreeModel(payload);
       activeGenerationRef.current = generationRequest;
       const res = await generationRequest.unwrap();
@@ -734,9 +684,7 @@ useEffect(() => {
         toast.error(message);
       }
     } finally {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      if (timeoutId) clearTimeout(timeoutId);
       activeGenerationRef.current = null;
       isGenerationInProgressRef.current = false;
       setLoading(false);
@@ -777,9 +725,7 @@ useEffect(() => {
     onOpenHelp: () => setShowHelpModal(true),
     onCloseHelp: () => setShowHelpModal(false),
     onGenerate: () => {
-      if (isGenerateDisabled) {
-        return;
-      }
+      if (isGenerateDisabled) return;
       if (inputRef.current) {
         const form = inputRef.current.closest("form");
         if (form) form.requestSubmit();
@@ -829,7 +775,6 @@ useEffect(() => {
                 <span className="text-slate-400 font-medium lowercase tracking-normal">{text.perMonth}:</span>{" "}
                 {getRequestLimit(userRole?.subscriptionType as string)}
               </span>
-
               <span className="h-3.5 w-px bg-slate-200 dark:bg-white/10" />
               <Link to="/pricing" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 flex items-center gap-1.5">
                 <span>{text.upgrade}</span>
@@ -839,41 +784,19 @@ useEffect(() => {
             <div className="mt-2.5 text-[11px] font-semibold tracking-wide text-slate-400 dark:text-slate-500 text-center sm:text-right uppercase space-y-0.5">
               <div>{text.monthlyRequests}: {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}</div>
               <div>{text.totalPosts}: {login ? (data?.postsCount ?? 0) : 0}</div>
-
-              <Link to="/pricing" className="border-1 border-white/20 pl-2 text-gray-300">
-                {text.upgrade}
-              </Link>
-              <i className="fas fa-bolt text-yellow-400"></i>
-            </button>
-            <div className="mt-3 text-slate-500 text-xs text-center md:text-right dark:text-gray-500">
-              <span>
-                {text.monthlyRequests}:{" "}
-                {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}
-              </span>
-              <br />
-              <span>{text.totalPosts}: {login ? (data?.postsCount ?? 0) : 0}</span>
-
             </div>
           </div>
         </div>
-
 
         <div className="mb-12 max-w-3xl mx-auto text-center select-none">
           <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
             ✨ {text.titleStart}{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-
-        <div className="mt-11">
-          <h1 className="text-slate-900 dark:text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">
-            ✨ {text.titleStart}{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-
               {text.titleAccent}
             </span>{" "}
             ✨
           </h1>
         </div>
-
 
         <div className="max-w-3xl mx-auto w-full box-border space-y-6">
           <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-sm hover:shadow-xl transition-shadow duration-300 w-full box-border">
@@ -884,6 +807,7 @@ useEffect(() => {
                     <button
                       key={genre.value}
                       type="button"
+                      disabled={loading}
                       onClick={() => {
                         const newGenre = selectedGenre === genre.value ? "" : genre.value;
                         setSelectedGenre(newGenre);
@@ -898,7 +822,7 @@ useEffect(() => {
                         selectedGenre === genre.value
                           ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-transparent text-white shadow-md shadow-blue-500/10"
                           : "bg-slate-50 border-slate-200/60 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:border-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200"
-                      }`}
+                      } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <span className="mr-1">{genre.icon}</span>
                       <span>{genreLabels[genre.name]}</span>
@@ -907,6 +831,8 @@ useEffect(() => {
                 </div>
               </div>
 
+              <TonePicker selected={selectedTone} onChange={setSelectedTone} />
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-slate-100 dark:border-white/5 w-full box-border select-none">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1">📏 {text.length}:</span>
@@ -914,12 +840,13 @@ useEffect(() => {
                     <button
                       key={length}
                       type="button"
+                      disabled={loading}
                       onClick={() => setSelectedLength(length)}
                       className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide border transition-all duration-150 cursor-pointer ${
                         selectedLength === length
                           ? "bg-blue-600 border-transparent text-white shadow-sm"
                           : "bg-slate-50 border-slate-200/60 text-slate-500 hover:bg-slate-100 dark:bg-white/5 dark:border-white/5 dark:text-slate-400 dark:hover:bg-white/10"
-                      }`}
+                      } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       {text[length]}
                     </button>
@@ -932,8 +859,11 @@ useEffect(() => {
                     <button
                       key="lang-selector-btn"
                       type="button"
-                      onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                      className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-50 text-slate-600 border border-slate-200 dark:bg-white/5 dark:border-white/5 dark:text-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-150 cursor-pointer select-none"
+                      disabled={loading}
+                      onClick={() => !loading && setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                      className={`flex items-center gap-2 px-3.5 py-1.5 bg-slate-50 text-slate-600 border border-slate-200 dark:bg-white/5 dark:border-white/5 dark:text-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 select-none ${
+                        loading ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10"
+                      }`}
                     >
                       <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
                       <span className="text-slate-400 dark:text-slate-500 text-[9px]">▼</span>
@@ -972,6 +902,8 @@ useEffect(() => {
                     register("prompt").ref(el);
                     inputRef.current = el;
                   }}
+                  disabled={loading}
+                  aria-busy={loading}
                   className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-slate-800 dark:text-slate-200 focus:ring-0 text-sm sm:text-base leading-relaxed placeholder:italic placeholder:text-slate-400 dark:placeholder:text-slate-500 pr-12 transition-colors duration-200 ${
                     isOverLimit ? "ring-1 ring-red-500 rounded-lg p-2" : isNearLimit ? "ring-1 ring-yellow-400 rounded-lg p-2" : ""
                   }`}
@@ -982,6 +914,7 @@ useEffect(() => {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
+                      if (isGenerateDisabled) return;
                       const form = e.currentTarget.closest("form");
                       if (form) form.requestSubmit();
                     }
@@ -992,8 +925,9 @@ useEffect(() => {
                   {textareaValue.length > 0 && (
                     <button
                       type="button"
+                      disabled={loading}
                       onClick={handleClearPrompt}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 hover:text-red-500 dark:hover:text-red-400 shadow-sm transition-colors duration-150 cursor-pointer"
+                      className={`w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 transition-colors duration-150 ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:text-red-500 dark:hover:text-red-400 shadow-sm"}`}
                       aria-label={text.close}
                       title={text.close}
                     >
@@ -1005,401 +939,39 @@ useEffect(() => {
 
                   <button
                     type="button"
-                    onClick={() => setIsRecentPromptsOpen(!isRecentPromptsOpen)}
-                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm hover:bg-blue-500 transition-colors duration-150 cursor-pointer"
+                    disabled={loading}
+                    onClick={() => !loading && setIsRecentPromptsOpen(!isRecentPromptsOpen)}
+                    className={`w-7 h-7 flex items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm transition-colors duration-150 ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-blue-500"}`}
                     aria-label={text.recentPrompts}
                     title={text.recentPrompts}
-
-          <div className="max-w-3xl mx-auto px-4 sm:px-0">
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white overflow-hidden">
-              <div className="relative w-full">
-                <form className="space-y-4 w-full" onSubmit={handleSubmit(onSubmit)}>
-                  
-                  {/* ── Genre chips ── */}
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {GENRES.map((genre) => (
-                      <button
-                        key={genre.value}
-                        type="button"
-                        disabled={loading}
-                        onClick={() => {
-                          if (loading) return;
-                          const newGenre = selectedGenre === genre.value ? "" : genre.value;
-                          setSelectedGenre(newGenre);
-                          if (newGenre) {
-                            playSoundtrack(newGenre);
-                          } else if (audioRef.current) {
-                            audioRef.current.pause();
-                            audioRef.current.currentTime = 0;
-                          }
-                        }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                          selectedGenre === genre.value
-                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                            : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                        } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
-                      >
-                        {genre.icon} {genreLabels[genre.name]}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* ── NEW: Tone picker ── */}
-                  <TonePicker selected={selectedTone} onChange={setSelectedTone} />
-
-                  {/* ── Length + Language row ── */}
-                  <div className="flex flex-wrap items-center gap-4 mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400 mr-1">📏 {text.length}:</span>
-
-                      {(["short", "medium", "long"] as const).map((length) => (
-                        <button
-                          key={length}
-                          type="button"
-                          disabled={loading}
-                          onClick={() => setSelectedLength(length)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                            selectedLength === length
-                              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                          } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
-                        >
-                          {text[length]}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center gap-2 ml-0 sm:ml-auto">
-                      <span className="text-xs text-gray-400 mr-1">🌐 {text.language}:</span>
-                      <div className="relative" ref={languageDropdownRef}>
-                        <button
-                          key="lang-selector-btn"
-                          type="button"
-                          disabled={loading}
-                          onClick={() => !loading && setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                          className={`flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 ${
-                            loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                          }`}
-                        >
-                          <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
-                          <span className="text-gray-400 text-[10px]">▼</span>
-                        </button>
-
-                        {isLanguageDropdownOpen && (
-                          <ul className="absolute right-0 z-20 mt-1 max-h-48 w-36 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
-                            {LANGUAGES.map((lang) => (
-                              <li key={lang.code}>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedLanguage(lang.name);
-                                    setIsLanguageDropdownOpen(false);
-                                  }}
-                                  className={`w-full text-left px-3 py-2 text-xs transition-colors duration-150 cursor-pointer ${
-                                    selectedLanguage === lang.name
-                                      ? "bg-indigo-600 text-white font-bold"
-                                      : "text-gray-400 hover:bg-indigo-600/50 hover:text-white"
-                                  }`}
-                                >
-                                  {lang.name}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ── Prompt textarea ── */}
-                  <div className="relative w-full">
-                    <textarea
-                      {...register("prompt")}
-                      ref={(el) => {
-                        register("prompt").ref(el);
-                        inputRef.current = el;
-                      }}
-                      disabled={loading}
-                      aria-busy={loading}
-                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-12 transition-colors duration-200 box-border ${
-                        isOverLimit
-                          ? "ring-1 ring-red-500 rounded"
-                          : isNearLimit
-                          ? "ring-1 ring-yellow-400 rounded"
-                          : ""
-                      }`}
-                      placeholder={text.promptPlaceholder}
-                      value={textareaValue}
-                      maxLength={MAX_PROMPT_LENGTH}
-                      onChange={(e) => setTextareaValue(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          if (isGenerateDisabled) {
-                            return;
-                          }
-                          const form = e.currentTarget.closest("form");
-                          if (form) form.requestSubmit();
-                        }
-                      }}
-                    />
-
-                    {textareaValue.length > 0 && (
-                      <button
-                        type="button"
-                        disabled={loading}
-                        onClick={handleClearPrompt}
-                        className={`absolute right-2 top-2 text-gray-400 transition-colors duration-200 ${
-                          loading
-                            ? "cursor-not-allowed opacity-50"
-                            : "hover:text-red-500"
-                        }`}
-                        aria-label={text.close}
-                        title={text.close}
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      disabled={loading}
-                      onClick={() => !loading && setIsRecentPromptsOpen(!isRecentPromptsOpen)}
-                      className={`absolute right-2 top-12 bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2 ${
-                        loading
-                          ? "cursor-not-allowed opacity-60"
-                          : "hover:bg-indigo-700"
-                      }`}
-                      aria-label={text.recentPrompts}
-                      title={text.recentPrompts}
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      {text.recentPrompts}
-                    </button>
-
-                    <div className="flex items-center justify-between mt-1 px-1">
-                      {isOverLimit ? (
-                        <p className="text-xs text-red-400 flex items-center gap-1">
-                          <span>⚠</span> {text.characterLimit}
-                        </p>
-                      ) : isNearLimit ? (
-                        <p className="text-xs text-yellow-400 flex items-center gap-1">
-                          <span>⚠</span>{" "}
-                          {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-                        </p>
-                      ) : (
-                        <span />
-                      )}
-
-                      <span
-                        className={`text-xs tabular-nums ml-auto ${
-                          isOverLimit
-                            ? "text-red-400 font-medium"
-                            : isNearLimit
-                            ? "text-yellow-400"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {textareaValue.length} / {MAX_PROMPT_LENGTH}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-gray-500 mt-1 px-1">
-                    💡 <span className="font-medium">{text.keyboardTip}</span> {text.press}{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Enter
-                    </kbd>{" "}
-                    {text.toGenerate} &bull;{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Ctrl + Enter
-                    </kbd>{" "}
-                    {text.alsoWorks} &bull;{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Shift + Enter
-                    </kbd>{" "}
-                    {text.forNewLine}
-                  </p>
-
-                  {/* ── Generate button row ── */}
-                  <div className="flex items-center justify-between mt-2 w-full">
-                    {/* Active tone badge */}
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      {selectedTone && (
-                        <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 border border-white/10">
-                          {TONES.find((t) => t.label === selectedTone)?.emoji}{" "}
-                          <span className="font-medium">{selectedTone}</span>
-                          <button
-                            type="button"
-                            disabled={loading}
-                            onClick={() => setSelectedTone("")}
-                            className={`ml-1 text-gray-500 transition-colors ${
-                              loading
-                                ? "cursor-not-allowed opacity-50"
-                                : "hover:text-red-400"
-                            }`}
-                            aria-label="Remove tone"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      )}
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isGenerateDisabled}
-                      aria-busy={loading}
-                      aria-disabled={isGenerateDisabled}
-                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-                        isGenerateDisabled
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
-                      } transition-all duration-300 transform flex items-center space-x-2 group`}
-                    >
-                      {loading ? (
-                        <i className="fas fa-circle-notch text-xl animate-spin"></i>
-                      ) : (
-                        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
-                      )}
-                      <span>{loading ? text.generating : text.generate}</span>
-                    </button>
-                  </div>
-                  {loading && (
-                    <p className="text-sm text-indigo-300 mt-3 text-right" aria-live="polite">
-                      Your story is being generated. You can cancel the request if it takes too long.
-                    </p>
-                  )}
-                </form>
-              </div>
-            </div>
-
-            <div className="w-full max-w-2xl m-auto mt-4">
-              <h1 className="text-sm text-slate-500 mb-1 dark:text-gray-500">
-                {text.examples}
-              </h1>
-
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full p-3 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-between text-sm text-left transition-all duration-200"
-                >
-                  <span className="truncate pr-4">
-                    {selectedPrompt || text.selectPrompt}
-                  </span>
-                  <span
-                    className={`text-gray-300 transition-transform duration-200 ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
-
                   >
-
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </button>
-
                 </div>
 
-                <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-200/40 dark:border-white/5 select-none w-full box-border">
-                  <div className="flex-1 min-w-0 pr-4">
-                    {isOverLimit ? (
-                      <p className="text-[11px] font-semibold text-red-500 dark:text-red-400 flex items-center gap-1 truncate m-0">
-                        <span>⚠</span> {text.characterLimit}
-                      </p>
-                    ) : isNearLimit ? (
-                      <p className="text-[11px] font-semibold text-amber-500 dark:text-amber-400 flex items-center gap-1 truncate m-0">
-                        <span>⚠</span> {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <span className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
-                    isOverLimit ? "text-red-500 dark:text-red-400" : isNearLimit ? "text-amber-500" : "text-slate-400"
-                  }`}>
+                <div className="flex items-center justify-between mt-1 px-1">
+                  {isOverLimit ? (
+                    <p className="text-xs text-red-400 flex items-center gap-1">
+                      <span>⚠</span> {text.characterLimit}
+                    </p>
+                  ) : isNearLimit ? (
+                    <p className="text-xs text-yellow-400 flex items-center gap-1">
+                      <span>⚠</span> {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
+                    </p>
+                  ) : (
+                    <span />
+                  )}
+                  <span
+                    className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
+                      isOverLimit ? "text-red-500 dark:text-red-400" : isNearLimit ? "text-amber-500" : "text-slate-400"
+                    }`}
+                  >
                     {textareaValue.length} / {MAX_PROMPT_LENGTH}
                   </span>
                 </div>
               </div>
-
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      {/* Clear prompt button - next to language selector */}
-      {textareaValue.length > 0 && (
-        <button
-          type="button"
-          onClick={handleClearPrompt}
-          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200 border border-red-500/20"
-          aria-label={text.close}
-          title="Clear prompt"
-        >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Clear
-        </button>
-      )}
-    </div>
-
-    <div className="relative overflow-hidden">
-      <textarea
-  {...register("prompt")}
-  ref={(el) => {
-    register("prompt").ref(el);
-    inputRef.current = el;
-  }}
-        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-4 transition-colors duration-200 ${
-          isOverLimit
-            ? "ring-1 ring-red-500 rounded"
-            : isNearLimit
-            ? "ring-1 ring-yellow-400 rounded"
-            : ""
-        }`}
-        placeholder={text.promptPlaceholder}
-        value={textareaValue}
-        maxLength={MAX_PROMPT_LENGTH}
-        onChange={(e) => setTextareaValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            const form = e.currentTarget.closest("form");
-            if (form) form.requestSubmit();
-          }
-        }}
-        />
-
-
-
 
               <div className="text-[11px] font-medium leading-relaxed text-slate-400 dark:text-slate-500 select-none w-full box-border">
                 💡 <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">{text.keyboardTip}</span>
@@ -1411,17 +983,22 @@ useEffect(() => {
               <div className="flex justify-end pt-2 w-full box-border">
                 <button
                   type="submit"
-                  disabled={loading || isOverLimit}
+                  disabled={isGenerateDisabled}
                   aria-busy={loading}
-                  aria-disabled={loading || isOverLimit}
+                  aria-disabled={isGenerateDisabled}
                   className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
-                    loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                    isGenerateDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                   } group`}
                 >
                   <i className="fas fa-wand-magic-sparkles text-sm group-hover:scale-110 transition-transform duration-200" />
                   <span>{loading ? text.generating : text.generate}</span>
                 </button>
               </div>
+              {loading && (
+                <p className="text-sm text-indigo-400 mt-3 text-right" aria-live="polite">
+                  Your story is being generated. You can cancel the request if it takes too long.
+                </p>
+              )}
             </form>
           </div>
 
@@ -1429,7 +1006,6 @@ useEffect(() => {
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 select-none px-0.5">
               {text.examples}
             </h3>
-
 
             <div className="relative w-full" ref={dropdownRef}>
               <button
@@ -1464,33 +1040,6 @@ useEffect(() => {
                   ))}
                 </ul>
               )}
-
-
-                    â–¼
-                  </span>
-                </button>
-
-                {isDropdownOpen && (
-                  <ul className="relative z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
-                    {prompts.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedPrompt(item.prompt);
-                            setTextareaValue(item.prompt);
-                            setIsDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
-                        >
-                          {item.prompt}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
             </div>
           </div>
         </div>
@@ -1519,16 +1068,10 @@ useEffect(() => {
 
       {showHelpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-
           <div className="bg-white border border-slate-200 dark:border-white/10 rounded-2xl p-6 max-w-md w-full text-slate-900 dark:bg-slate-900 dark:text-white shadow-xl">
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 tracking-tight select-none border-b border-slate-100 dark:border-white/5 pb-2.5">
-
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md w-full text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
-            <h2 className="text-xl font-bold text-slate-900 mb-4 dark:text-white">
-
               {text.shortcuts}
             </h2>
-
             <div className="space-y-3.5 text-slate-600 text-xs sm:text-sm dark:text-slate-400 font-medium select-none">
               <div className="flex justify-between items-center"><span className="text-slate-400">{text.openHelp}</span> <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-white/10 rounded border border-slate-200 dark:border-white/10 text-[11px] font-bold shadow-sm">?</kbd></div>
               <div className="flex justify-between items-center"><span className="text-slate-400">{text.closeHelp}</span> <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-white/10 rounded border border-slate-200 dark:border-white/10 text-[11px] font-bold shadow-sm">Esc</kbd></div>
@@ -1536,67 +1079,50 @@ useEffect(() => {
               <div className="flex justify-between items-center"><span className="text-slate-400">{text.generateStory}</span> <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-white/10 rounded border border-slate-200 dark:border-white/10 text-[11px] font-bold shadow-sm">Ctrl + Enter</kbd></div>
               <div className="flex justify-between items-center"><span className="text-slate-400">{text.publishStory}</span> <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-white/10 rounded border border-slate-200 dark:border-white/10 text-[11px] font-bold shadow-sm">Ctrl + S</kbd></div>
             </div>
-
-
             <button
               onClick={() => setShowHelpModal(false)}
               className="mt-6 w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider py-2.5 rounded-xl transition-colors shadow-sm select-none cursor-pointer"
-
-        <button
-        onClick={() => setShowHelpModal(false)}
-        className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
-      >
-        {text.close}
-      </button>
-        </div>
-      </div>
-      )}
-
-      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
-
-      {/* Search UI */}
-      {stories.length > 0 && (
-        <div className="mb-6 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-4 rounded-2xl">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Search stories..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            <select
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-
             >
-              <option value="all">All Fields</option>
-              <option value="title">Title</option>
-              <option value="content">Content</option>
-              <option value="genre">Genre</option>
-            </select>
+              {text.close}
+            </button>
           </div>
-          {searchQuery && (
-            <div className="mt-2 text-sm text-slate-400">
-              Found {filteredStories.length} {filteredStories.length === 1 ? 'story' : 'stories'}
-            </div>
-          )}
         </div>
       )}
 
-
-
       {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
-      
 
-      {loading && (
-        <StoryGeneratingAnimation onCancel={handleCancelGeneration} />
+      {stories.length > 0 && (
+        <div className="mb-6 max-w-6xl mx-auto px-4 w-full">
+          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-4 rounded-2xl shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Search stories..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                />
+              </div>
+              <select
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                className="px-4 py-2 bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              >
+                <option value="all">All Fields</option>
+                <option value="title">Title</option>
+                <option value="content">Content</option>
+                <option value="genre">Genre</option>
+              </select>
+            </div>
+            {searchQuery && (
+              <div className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                Found {filteredStories.length} {filteredStories.length === 1 ? 'story' : 'stories'}
+              </div>
+            )}
+          </div>
+        </div>
       )}
-
-
 
       <StoriesViewComponent
         stories={currentStories}
@@ -1606,8 +1132,8 @@ useEffect(() => {
         isLoading={loading}
       />
 
-      <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
-      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
+      <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl max-w-md w-full p-6 text-slate-900 dark:bg-slate-900 dark:text-white">
@@ -1639,25 +1165,23 @@ useEffect(() => {
           </div>
         </div>
       )}
-     
+
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-6">
           <button
             onClick={() => setCurrentPage((p) => p - 1)}
             disabled={currentPage === 1}
-            className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50"
+            className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 disabled:opacity-50 transition-colors"
           >
             Previous
           </button>
-
-          <span>
+          <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
             Page {currentPage} of {totalPages}
           </span>
-
           <button
             onClick={() => setCurrentPage((p) => p + 1)}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50"
+            className="px-4 py-2 rounded-xl text-xs font-bold uppercase bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 disabled:opacity-50 transition-colors"
           >
             Next
           </button>

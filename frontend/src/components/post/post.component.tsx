@@ -108,7 +108,7 @@ const ExploreComponent = () => {
       },
       {
         rootMargin: "200px",
-      },
+      }
     );
 
     observer.observe(trigger);
@@ -167,9 +167,11 @@ const ExploreComponent = () => {
                 placeholder="Search title, tag..."
                 className="w-full pl-12 pr-4 py-3 text-base text-slate-900 placeholder:text-slate-400 bg-gray-100/80 backdrop-blur-md border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner dark:bg-slate-900/50 dark:text-white dark:placeholder:text-slate-400 dark:border-none"
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Main Layout */}
         <div className="flex flex-col md:flex-row gap-8">
@@ -215,7 +217,7 @@ const ExploreComponent = () => {
 
                 {/* Tags */}
                 <div>
-                    <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
                     Trending Tags
                   </h4>
 
