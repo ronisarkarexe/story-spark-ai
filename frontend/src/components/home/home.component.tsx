@@ -34,6 +34,7 @@ const itemVariants = {
     transition: { duration: 0.5, ease: [0.25, 1, 0.5, 1] as [number, number, number, number] } 
   },
 };
+import BackToTop from "../ScrollToTopButton";
 
 const HomeComponent = () => {
   const isLogin = isLoggedIn();

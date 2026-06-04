@@ -66,6 +66,7 @@ const FeatureProfileComponent = () => {
           {/* POSTS */}
           <button
             type="button"
+            aria-label={`View ${data.postsCount ?? 0} posts`}
             className="cursor-pointer hover:text-indigo-400 transition"
             onClick={() => {
               if ((data.postsCount ?? 0) > 0) {
@@ -84,6 +85,7 @@ const FeatureProfileComponent = () => {
           {/* FOLLOWERS */}
           <button
             type="button"
+            aria-label={`View ${data.followers?.length ?? 0} followers`}
             className="cursor-pointer hover:text-indigo-400 transition"
             onClick={() => setShowFollowers(true)}
           >
@@ -96,6 +98,7 @@ const FeatureProfileComponent = () => {
           {/* FOLLOWING */}
           <button
             type="button"
+            aria-label={`View ${data.following?.length ?? 0} accounts you're following`}
             className="cursor-pointer hover:text-indigo-400 transition"
             onClick={() => setShowFollowing(true)}
           >

@@ -61,21 +61,23 @@ const getValidDecodedToken = () => {
   if (authToken) {
     try {
       const decodedData = decodedToken(authToken);
-
-      if (!decodedData) {
-        removeFromLocalStorage(AUTH_KEY);
-        return null;
-      }
-
-      if (
-        typeof decodedData.exp === "number" &&
-        decodedData.exp <= Math.floor(Date.now() / 1000)
-      ) {
-        removeFromLocalStorage(AUTH_KEY);
-        return null;
-      }
-
-      return buildUserInfo(decodedData);
+          if (
+      typeof decodedData.exp === "number" &&
+      decodedData.exp <= Math.floor(Date.now() / 1000)
+    ) {
+      removeFromLocalStorage(AUTH_KEY);
+      return null;
+    }
+      return buildUserInfo({
+        email: decodedData.email ?? "",
+        role: decodedData.role ?? "",
+        userId: decodedData.userId ?? "",
+        name: decodedData.name ?? "",
+        postsCount: decodedData.postsCount ?? 0,
+        subscriptionType: decodedData.subscriptionType ?? "free",
+        exp: decodedData.exp ?? 0,
+        iat: decodedData.iat ?? 0,
+      });
     } catch (error) {
       console.error("Invalid auth token:", error);
       removeFromLocalStorage(AUTH_KEY);

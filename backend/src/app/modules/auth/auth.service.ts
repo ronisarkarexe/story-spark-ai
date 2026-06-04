@@ -225,8 +225,17 @@ const logout = async (token?: string) => {
       config.jwt.refresh_secret as Secret
     );
     const jti = (verified as any).jti as string | undefined;
+    const userId = (verified as any)._id as string | undefined;
+
+    // Revoke the refresh token session.
     if (jti) {
       await RefreshSession.updateOne({ jti }, { revoked: true });
+    }
+
+    // Bump tokenVersion so every outstanding access token for this user is
+    // immediately rejected by auth.middleware.ts, even before its natural expiry.
+    if (userId) {
+      await User.updateOne({ _id: userId }, { $inc: { tokenVersion: 1 } });
     }
   } catch (error) {
     // Ignore invalid tokens on logout; the cookie is cleared either way.

@@ -46,7 +46,7 @@ const LANGUAGES = [
   { code: "bn", name: "Bengali" },
   { code: "ta", name: "Tamil" },
   { code: "te", name: "Telugu" },
-  { code: "mr", name: "Marathi" },
+  { code: "mr", name: "Marathi" }
 ];
 
 const GENRES = [
@@ -111,6 +111,17 @@ const GENRE_LABELS: Record<string, Record<GenreName, string>> = {
     Drama: "नाटक", Comedy: "विनोद", Horror: "भयकथा", Romance: "प्रेमकथा",
     "Sci-Fi": "विज्ञानकथा", Fantasy: "कल्पनारम्य", Mystery: "रहस्य", Adventure: "साहस",
   },
+  Kannada: {
+  Drama: "ನಾಟಕ",
+  Comedy: "ಹಾಸ್ಯ",
+  Horror: "ಭಯಾನಕ",
+  Romance: "ಪ್ರೇಮಕಥೆ",
+  "Sci-Fi": "ವೈಜ್ಞಾನಿಕ ಕಾಲ್ಪನಿಕ",
+  Fantasy: "ಕಲ್ಪನಾ ಕಥೆ",
+  Mystery: "ರಹಸ್ಯ",
+  Adventure: "ಸಾಹಸ",
+},
+
 };
 
 type UiText = {
@@ -634,13 +645,13 @@ useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
 
     try {
-      // 60-second client-side request timeout safeguard
+      // 55-second client-side request timeout safeguard (before Axios 60s timeout)
       timeoutId = setTimeout(() => {
         if (isGenerationInProgressRef.current) {
           toast.error("Story generation timed out. Please try again.");
           handleCancelGeneration(true);
         }
-      }, 60000);
+      }, 55000);
 
       const payload = {
         prompt: selectedGenre

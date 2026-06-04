@@ -84,6 +84,11 @@ const RecommendedWritersComponent = () => {
                     ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
                     : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-sm shadow-blue-500/10"
                 }`}
+              <button
+                onClick={() => toggleFollow(index, writer.id)}
+                disabled={isLoading}
+                aria-label={following.includes(index) ? `Unfollow ${writer.name}` : `Follow ${writer.name}`}
+                className="!rounded-button text-indigo-600 text-sm font-medium hover:text-indigo-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {following.includes(index) ? "Following" : "Follow"}
               </button>

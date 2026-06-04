@@ -766,6 +766,14 @@ select:focus-visible {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
 *,
 *::before,
 *::after {
@@ -777,9 +785,17 @@ body {
   padding: 0;
   scroll-behavior: smooth;
   background:
+    radial-gradient(circle at 20% 0%, rgba(59, 130, 246, 0.12), transparent 28rem),
+    linear-gradient(180deg, #f8fafc 0%, #eef2ff 48%, #e2e8f0 100%);
+  color: #0f172a;
+  min-width: 320px;
+}
+
+html.dark body {
+  background:
     radial-gradient(circle at 20% 0%, rgba(37, 99, 235, 0.14), transparent 28rem),
     linear-gradient(180deg, #0b1120 0%, #111827 48%, #0f172a 100%);
-  min-width: 320px;
+  color: #f8fafc;
 }
 
 *,

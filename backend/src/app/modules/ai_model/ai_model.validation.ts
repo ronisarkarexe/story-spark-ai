@@ -15,8 +15,12 @@ const aiModel = z.object({
       .string({ required_error: "Prompt is required!" })
       .trim()
       .min(1, "Prompt cannot be empty or whitespace only!")
-      .max(2000, "Prompt must not exceed 2000 characters"),
-    language: z.string().max(50).optional(),
+      .refine((val) => {
+        // Remove [Genre: ...] if it exists to check the actual prompt content
+        const stripped = val.replace(/^\[Genre:.*?\]\s*/, '').trim();
+        return stripped.length > 0;
+      }, { message: "Prompt must contain actual story content, not just a genre." }),
+    language: z.string().optional(),
     tone: z
       .enum(VALID_TONES, {
         errorMap: () => ({

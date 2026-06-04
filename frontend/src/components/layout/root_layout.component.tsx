@@ -21,19 +21,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
       {!hideHeader && <NavListComponent />}
 
       <CookieConsentBanner />
-      <div className="flex-grow min-h-0">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+      <main className="flex-grow min-h-0">{children}</main>
       {!hideFooter && <FooterComponent />}
       {!isAuthPage && <FloatingChatWidget />}
     </div>

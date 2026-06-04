@@ -80,8 +80,8 @@ const AnalyticsDashboard: React.FC = () => {
   // Sync internal state inputs when user data updates safely
   useEffect(() => {
     if (user?.writingGoals) {
-      setDailyGoalInput(user.writingGoals.dailyWordCount);
-      setWeeklyGoalInput(user.writingGoals.weeklyWordCount);
+      setDailyGoalInput(user.writingGoals.dailyWordCount ?? 500);
+      setWeeklyGoalInput(user.writingGoals.weeklyWordCount ?? 2500);
     }
   }, [user]);
 

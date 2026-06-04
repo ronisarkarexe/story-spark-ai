@@ -31,6 +31,9 @@
   },
   "packageManager": "pnpm@9.15.9",
   "devDependencies": {
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@tailwindcss/forms": "^0.5.11",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "concurrently": "^9.1.2"
   },
@@ -41,9 +44,11 @@
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
+    "razorpay": "^2.9.6",
     "socket.io": "^4.8.3"
   }
 }

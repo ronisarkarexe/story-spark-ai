@@ -70,10 +70,10 @@ const FooterComponent = () => {
   ];
 
   const socialLinks = [
-    { icon: "fa-instagram", url: "https://www.instagram.com/" },
-    { icon: "fa-linkedin", url: "https://www.linkedin.com/" },
-    { icon: "fa-x-twitter", url: "https://x.com/" },
-    { icon: "fa-facebook", url: "https://www.facebook.com/" },
+    { icon: "fa-instagram", url: "https://www.instagram.com/", label: "Follow us on Instagram" },
+    { icon: "fa-linkedin", url: "https://www.linkedin.com/", label: "Connect with us on LinkedIn" },
+    { icon: "fa-twitter", url: "https://x.com/", label: "Follow us on X (Twitter)" },
+    { icon: "fa-facebook", url: "https://www.facebook.com/", label: "Follow us on Facebook" },
   ];
 
   const currentYear = new Date().getFullYear();
@@ -187,6 +187,7 @@ const FooterComponent = () => {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={item.label}
                     className="group flex items-center gap-2.5 text-[14px] text-slate-300/85 hover:text-blue-300 transition-all duration-200"
                   >
                     {item.icon === "fa-x-twitter" ? (

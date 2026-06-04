@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useDeletePostMutation,
@@ -100,6 +100,7 @@ const PostDetailsComponent = () => {
   const [editedTitle, setEditedTitle] = useState("");
   const [editedContent, setEditedContent] = useState("");
   const [showTimeline, setShowTimeline] = useState(false);
+  const [readProgress, setReadProgress] = useState(0);
   const [showTree, setShowTree] = useState(false);
   const [selectedVersionForBranch, setSelectedVersionForBranch] = useState<string | null>(null);
   const [showComparison, setShowComparison] = useState(false);
@@ -109,6 +110,15 @@ const PostDetailsComponent = () => {
     skip: !id || !showTimeline,
   });
   const [restoreVersion, { isLoading: isRestoring }] = useRestoreVersionMutation();
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = document.documentElement;
+      const total = el.scrollHeight - el.clientHeight;
+      setReadProgress(total > 0 ? (el.scrollTop / total) * 100 : 0);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const { data: storyTree } = useGetStoryTreeQuery(id || "", { skip: !id || !showTree,});
 
@@ -263,7 +273,16 @@ const PostDetailsComponent = () => {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white relative">
-
+      {/* Reading Progress Bar */}
+      <div
+        className="fixed top-0 left-0 z-50 h-1 bg-indigo-500 transition-all duration-100"
+        style={{ width: `${readProgress}%` }}
+        role="progressbar"
+        aria-valuenow={Math.round(readProgress)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Reading progress"
+      />
       <div className="max-w-6xl mx-auto px-4">
         <div className="py-6 flex justify-between">
           <div
@@ -554,7 +573,6 @@ const PostDetailsComponent = () => {
                     <div key={v._id} className="relative group">
                       {/* Chronological marker dot */}
                       <div className="absolute left-[-21px] top-1.5 w-3.5 h-3.5 rounded-full bg-indigo-500 border-4 border-[#0f172a] group-hover:scale-125 transition-transform duration-200"></div>
-
                       <div className="bg-slate-900/55 border border-slate-800/80 rounded-xl p-4 hover:border-slate-700/80 transition-all duration-200">
                         <div className="flex justify-between items-start mb-2 gap-2">
                           <div>

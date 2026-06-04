@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import DOMPurify from "dompurify";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
@@ -38,6 +39,16 @@ interface StoriesComponentProps {
   isLoading?: boolean;
 }
 
+interface IRelatedStoriesComponentProps {
+  posts: { _id: string; title: string; [key: string]: unknown }[];
+  currentPostId: string;
+}
+
+interface IPost extends IStories {
+  topic: ITopicData[];
+  isPublished?: boolean;
+}
+
 type StorySentenceSegment = {
   id: string;
   text: string;
@@ -46,6 +57,159 @@ type StorySentenceSegment = {
 };
 
 const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+  if (!content.trim()) {
+    return [];
+  }
+
+  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
+  const segments: StorySentenceSegment[] = [];
+  let wordCursor = 0;
+
+  sentenceMatches.forEach((sentence, index) => {
+    const trimmedSentence = sentence.trim();
+    if (!trimmedSentence) {
+      return;
+    }
+
+    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
+    const startWordIndex = wordCursor;
+    const endWordIndex =
+      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
+
+    segments.push({
+      id: `${index}-${startWordIndex}-${endWordIndex}`,
+      text: sentence,
+      startWordIndex,
+      endWordIndex,
+    });
+
+    wordCursor += wordsInSentence;
+  });
+
+  return segments;
+};
+
+const getSafeFileName = (title: string, extension: "md" | "docx"): string => {
+  const safeTitle = (title || "story")
+    .trim()
+    .replace(/[^a-z0-9]+/gi, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase();
+
+  return `${safeTitle || "story"}.${extension}`;
+};
+
+const downloadBlob = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  URL.revokeObjectURL(url);
+};
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+const createDocxBlob = ({
+  title,
+  content,
+  tag,
+  author,
+}: {
+  title: string;
+  content: string;
+  tag: string;
+  author: string;
+}): Blob => {
+  const paragraphs = content
+    .split(/\n+/)
+    .map((paragraph) => `<p>${escapeHtml(paragraph.trim())}</p>`)
+    .join("");
+
+  const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${escapeHtml(title)}</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; }
+    h1 { color: #312e81; }
+    .meta { color: #64748b; font-size: 12px; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(title)}</h1>
+  <div class="meta">Tag: ${escapeHtml(tag)} | Author: ${escapeHtml(author)}</div>
+  ${paragraphs}
+</body>
+</html>`;
+
+  return new Blob([html], {
+    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8",
+  });
+};
+
+const StoryRemixModal = StoryRemix as unknown as React.ComponentType<{
+  story?: string;
+  title?: string;
+  selectedStory?: IStories;
+  onClose?: () => void;
+  onApplyRemix?: (content: string) => void;
+}>;
+
+const StoryWorldMapModal = StoryWorldMap as React.ComponentType<{
+  story?: string;
+  storyContent?: string;
+  title?: string;
+  onClose: () => void;
+}>;
+
+export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
+  posts,
+  currentPostId,
+}) => {
+  const navigate = useNavigate();
+  const filteredPosts = posts.filter((post) => post._id !== currentPostId);
+
+  return (
+    <div className="mt-8">
+      <h4 className="text-lg font-bold text-slate-200 mb-4">Related Content</h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filteredPosts.map((post) => (
+          <div
+            key={post._id}
+            onClick={() => navigate(`/stories/${post._id}`)}
+            className="p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/60 transition-colors"
+          >
+            <p className="text-sm font-semibold text-white truncate">{post.title}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
+  stories,
+  isLogin,
+  setStories,
+  isLoading,
+  onPublishSuccess,
+}) => {
+  const location = useLocation();
+  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+
+  const { error, setError, clearError } = useApiError();
+
   if (!content.trim()) {
     return [];
   }
@@ -119,6 +283,201 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
 
+  useEffect(() => {
+    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
+
+      setOriginalStoryContent((prev) => ({ ...prev, [selectedStory.uuid]: selectedStory.content }));
+
+      setOriginalStoryContent((prev) => ({
+        ...prev,
+        [selectedStory.uuid]: selectedStory.content,
+      }));
+
+    }
+  }, [selectedStory, originalStoryContent]);
+
+  const handleGenerateAlternateEndings = async () => {
+    if (!selectedStory) return;
+    clearError();
+    setIsGeneratingEndings(true);
+    const toastId = toast.loading("Generating alternate endings...");
+    
+    setIsGeneratingEndings(true);
+    const toastId = toast.loading("Generating alternate endings...");
+    try {
+      const payload = {
+        title: selectedStory.title,
+        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
+        tag: selectedStory.tag,
+        language: selectedStory.language || "English",
+
+        language: selectedStory.language || "English",
+      };
+      const generationRequest = isLogin
+        ? generateAlternateEndings(payload)
+        : generateFreeAlternateEndings(payload);
+      const res = await generationRequest.unwrap();
+      if (res && res.data) {
+        setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
+
+
+        language: selectedStory.language || "English",
+
+      };
+      
+      const generationRequest = isLogin
+        ? generateAlternateEndings(payload)
+        : generateFreeAlternateEndings(payload);
+        
+      const res = await generationRequest.unwrap();
+      
+      if (!res || !Array.isArray(res.data)) {
+        throw new Error("Unexpected response format from the AI service.");
+      }
+      
+      setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
+      toast.success("Alternate endings generated successfully!");
+    } catch (err: any) {
+      console.error("[StoriesView Alternate Ending Flow Failure]:", err);
+      const errorStatus = err?.status || err?.data?.status;
+      if (errorStatus) {
+        setError(getErrorMessage(new ApiError(errorStatus, err?.data?.message || "")));
+      } else {
+        setError(getErrorMessage(err));
+      }
+      toast.error("Failed to generate alternate endings.");
+    } finally {
+      toast.dismiss(toastId);
+      setIsGeneratingEndings(false);
+    }
+  };
+
+  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
+    if (!selectedStory) return;
+
+    const updatedStory = { ...selectedStory, content: endingData.fullStory };
+    setSelectedStory(updatedStory);
+    setStories(stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)));
+
+    const updatedStory = {
+      ...selectedStory,
+      content: endingData.fullStory,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+
+    toast.success(`${endingData.style} applied to story!`);
+  };
+
+  const handleResetEnding = () => {
+    if (!selectedStory) return;
+    const originalContent = originalStoryContent[selectedStory.uuid];
+    if (!originalContent) return;
+
+    const updatedStory = { ...selectedStory, content: originalContent };
+    setSelectedStory(updatedStory);
+    setStories(stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)));
+    toast.success("Reverted to original story ending!");
+  };
+
+
+    const updatedStory = {
+      ...selectedStory,
+      content: originalContent,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success("Reverted to original story ending!");
+  };
+
+  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleTextToSpeech = () => {
+    if (!selectedStory?.content) return;
+
+    if (!("speechSynthesis" in window)) {
+      toast.error("Text-to-speech is not supported in this browser.");
+      return;
+    }
+
+    if (isPlayingAudio) {
+      if (isPausedAudio) {
+        window.speechSynthesis.resume();
+        setIsPausedAudio(false);
+        toast.success("Resumed reading story");
+      } else {
+        window.speechSynthesis.pause();
+        setIsPausedAudio(true);
+        toast.success("Paused reading story");
+      }
+    } else {
+      window.speechSynthesis.cancel();
+      const cleanContent = selectedStory.content.replace(/<[^>]*>/g, "");
+      const utterance = new SpeechSynthesisUtterance(cleanContent);
+      
+      utterance.onend = () => {
+        setIsPlayingAudio(false);
+        setIsPausedAudio(false);
+      };
+
+      utterance.onerror = (e) => {
+        console.error("SpeechSynthesis error:", e);
+        setIsPlayingAudio(false);
+        setIsPausedAudio(false);
+      };
+
+      const voices = window.speechSynthesis.getVoices();
+      const englishVoice = voices.find(
+        (v) => v.lang.startsWith("en-") && v.name.includes("Google")
+      ) || voices.find((v) => v.lang.startsWith("en-"));
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+      }
+
+      window.speechSynthesis.speak(utterance);
+      setIsPlayingAudio(true);
+      setIsPausedAudio(false);
+      toast.success("Playing story audio");
+    }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleStopAudio = () => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsPlayingAudio(false);
+    setIsPausedAudio(false);
+    toast.success("Stopped audio playback");
+  };
+
+  const lastReadDate = localStorage.getItem("lastReadDate");
+  const streak = Number(localStorage.getItem("readingStreak") || "0");
+
+  if (lastReadDate !== today) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    let newStreak = 1;
+
+    if (lastReadDate === yesterday.toDateString()) {
+      newStreak = streak + 1;
+    }
+
+    localStorage.setItem("readingStreak", String(newStreak));
+    localStorage.setItem("lastReadDate", today);
+
+    setReadingStreak(newStreak);
+  } else {
+    setReadingStreak(streak);
+  }
+}, [selectedStory]);
   useEffect(() => {
     if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
       setOriginalStoryContent((prev) => ({
@@ -275,6 +634,30 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     };
   }, [location.pathname]);
 
+
+    return () => { player?.stop(); };
+  }, [location.pathname]);
+
+  useEffect(() => { setNarrationWordIndex(0); setNarrationState("idle"); }, [selectedStory?.uuid]);
+
+  const sentenceSegments = useMemo(() => buildSentenceSegments(selectedStory?.content ?? ""), [selectedStory?.content]);
+
+  useEffect(() => {
+    if (stories && stories.length > 0) {
+      setSelectedStory(stories[0]);
+      dispatch(setStory({
+        id: stories[0].uuid,
+        title: stories[0].title,
+        chapters: [{ id: 1, title: "Chapter 1", content: stories[0].content, createdAt: new Date().toISOString() }],
+      }));
+    } else {
+      setSelectedStory(null);
+    }
+    lastSavedContentRef.current = "";
+    hasSavedSessionRef.current = false;
+    savedPostIdRef.current = null;
+  }, [stories, dispatch]);
+
   useEffect(() => {
     setNarrationWordIndex(0);
     setNarrationState("idle");
@@ -342,6 +725,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       autoSaveStory();
     }, 1000);
 
+    const timer = setTimeout(() => { autoSaveStory(); }, 1000);
     return () => clearTimeout(timer);
   }, [selectedStory, selectedStory?.content, isLogin, selectTopics, createPost]);
 
@@ -389,6 +773,63 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   };
 
   const handleRemoveTopic = (index: number) => {
+    setTopics((currentTopics) =>
+      currentTopics.filter((_, topicIndex) => topicIndex !== index)
+    );
+  };
+  const handleCopyStory = async () => {
+    if (!selectedStory?.content) return;
+
+    await navigator.clipboard.writeText(selectedStory.content);
+    setIsCopied(true);
+    toast.success("Story copied!");
+    window.setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleGenerateAlternateEndings = async () => {
+    if (!selectedStory) return;
+
+    clearError();
+    setIsGeneratingEndings(true);
+    const toastId = toast.loading("Generating alternate endings...");
+
+    try {
+      const payload = {
+        title: selectedStory.title,
+        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
+        tag: selectedStory.tag,
+        language: selectedStory.language || "English",
+      };
+
+      const generationRequest = isLogin
+        ? generateAlternateEndings(payload)
+        : generateFreeAlternateEndings(payload);
+
+      const res = await generationRequest.unwrap();
+
+      if (!res || !Array.isArray(res.data)) {
+        throw new Error("Unexpected response format from the AI service.");
+      }
+
+      setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
+      toast.success("Alternate endings generated successfully!");
+    } catch (err: unknown) {
+      console.error("[StoriesView Alternate Ending Flow Failure]:", err);
+      const errObj = err as Record<string, unknown>;
+      const errorStatus = (errObj?.status as number | undefined) || ((errObj?.data as Record<string, unknown>)?.status as number | undefined);
+      setError(
+        errorStatus
+          ? getErrorMessage(new ApiError(errorStatus, ((errObj?.data as Record<string, unknown>)?.message as string) || ""))
+          : getErrorMessage(err)
+      );
+      toast.error("Failed to generate alternate endings.");
+    } finally {
+      toast.dismiss(toastId);
+      setIsGeneratingEndings(false);
+    }
+  };
+
+
     if (topics.length <= 2) {
       toast.error("At least 2 topics are required.");
       return;
@@ -482,6 +923,63 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
         doc.setFontSize(14);
         doc.setTextColor(99, 102, 241); // Brand Indigo
         doc.text("StorySparkAI", leftMargin, yCursor + 6);
+      }
+
+        doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(99, 102, 241);
+        doc.text("StorySparkAI", leftMargin, yCursor + 6);
+      }
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
+      doc.text("PREMIUM AI GENERATED STORY", 190, yCursor + 5, { align: "right" });
+      yCursor += 10;
+      doc.setDrawColor(99, 102, 241); doc.setLineWidth(0.5); doc.line(leftMargin, yCursor, 190, yCursor);
+      yCursor += 8;
+
+      doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(30, 41, 59);
+      const splitTitle = doc.splitTextToSize(title, printableWidth);
+      splitTitle.forEach((line: string) => { doc.text(line, leftMargin, yCursor); yCursor += 9; });
+      yCursor += 1;
+
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+      const formattedDate = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+      doc.text(`Generated on ${formattedDate}`, leftMargin, yCursor);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
+      const tagWidth = doc.getTextWidth(tag);
+      const chipWidth = tagWidth + 5, chipHeight = 5, chipX = 190 - chipWidth, chipY = yCursor - 3.8;
+      doc.setFillColor(99, 102, 241); doc.roundedRect(chipX, chipY, chipWidth, chipHeight, 1, 1, "F");
+      doc.setTextColor(255, 255, 255); doc.text(tag, chipX + 2.5, chipY + 3.5);
+      yCursor += 4.5;
+      doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.2); doc.line(leftMargin, yCursor, 190, yCursor);
+      yCursor += 10;
+
+      const paragraphs = content.split(/\n+/);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(30, 41, 59);
+      paragraphs.forEach((para: string, pIdx: number) => {
+        const cleanPara = para.trim();
+        if (!cleanPara) return;
+        const lines = doc.splitTextToSize(cleanPara, printableWidth);
+        lines.forEach((line: string) => {
+          if (yCursor > maxY) { doc.addPage(); yCursor = 30; }
+          doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(30, 41, 59);
+          doc.text(line, leftMargin, yCursor); yCursor += 6.5;
+        });
+        if (pIdx < paragraphs.length - 1) yCursor += 4.5;
+      });
+
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setDrawColor(241, 245, 249); doc.setLineWidth(0.25); doc.line(leftMargin, 280, 190, 280);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 116, 139);
+        doc.text("Generated with StorySparkAI", leftMargin, 285);
+        doc.text(`Page ${i} of ${totalPages}`, 190, 285, { align: "right" });
+        if (i > 1) {
+          doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(99, 102, 241);
+          doc.text("StorySparkAI", leftMargin, 14);
+          doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
+          const headerTitle = title.length > 50 ? title.substring(0, 50) + "..." : title;
+          doc.text(headerTitle, 190, 14, { align: "right" });
+          doc.setDrawColor(241, 245, 249); doc.setLineWidth(0.2); doc.line(leftMargin, 17, 190, 17);
+        }
       }
 
       doc.setFont("helvetica", "normal");
@@ -644,7 +1142,25 @@ const getSafeFileName = (title: string, ext: string) => {
   return `${title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.${ext}`;
 };
 
-const handleExportMarkdown = () => {
+      console.error(error); toast.dismiss(toastId); toast.error("Failed to export PDF.");
+    }
+  };
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const getSafeFileName = (title: string, ext: string) => {
+    const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return `${cleanTitle || "story"}.${ext}`;
+  };
+
+  const handleExportMarkdown = () => {
     if (!selectedStory) { toast.error("No story available to export."); return; }
     if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
     try {
@@ -870,12 +1386,12 @@ if (isLoading) {
                             : undefined
                         }
                       >
-                        {segment.text}
+                        {DOMPurify.sanitize(segment.text)}
                       </span>
                     );
                   })
                 ) : (
-                  selectedStory.content
+                  DOMPurify.sanitize(selectedStory.content)
                 )}
               </p>
             </div>
@@ -1103,6 +1619,8 @@ if (isLoading) {
           </div>
           <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
             <div className="relative flex flex-col rounded-lg">
+              console.log("selectedStory", selectedStory);
+              console.log("imageURL", selectedStory?.imageURL);
               <div className="relative m-3 overflow-hidden text-white rounded-xl">
                 <ImageFallback
                   src={selectedStory.imageURL}
@@ -1138,6 +1656,7 @@ if (isLoading) {
           </div>
         </div>
       </div>
+
       {showWorldMap && selectedStory && (
         <StoryWorldMap
           story={selectedStory.content}
