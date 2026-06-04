@@ -14,6 +14,7 @@ import { storeUserInfo, getUserInfo } from "../../services/auth.service";
 import { USER_ROLE } from "../../constants/role";
 import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
+import { Link } from "react-router-dom";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
 
@@ -51,7 +52,7 @@ const LoginComponent = () => {
     }
   };
 
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse,) => {
     setIsBusy(true);
     try {
       const res = await googleLogin({
@@ -205,21 +206,21 @@ const LoginComponent = () => {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200 dark:border-slate-800" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-slate-900 px-4 text-slate-400 dark:text-slate-500 font-semibold tracking-wide">
-                Or
+
+            <div className="relative flex justify-center text-sm w-full">
+
+              <span className="bg-slate-50 dark:bg-slate-800 px-4 text-xs font-semibold tracking-wider uppercase text-slate-500">
+                Or continue with
               </span>
             </div>
           </div>
 
-          {/* Social Identity OAuth Block Container */}
-          <div className="flex justify-center list-none w-full box-border">
+          {/* Social Identity OAuth Block Container */}          <div className="flex justify-center w-full box-border">
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}
             />
           </div>
-
           <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
             Don't have an account?{" "}
             <Link
