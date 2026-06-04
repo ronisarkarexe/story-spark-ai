@@ -1,4 +1,4 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@100..900&family=Space+Grotesk:wght@300..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@100..900&family=Space+Grotesk:wght@300..700&display=swap");
 
 /* ================= ROOT & GLOBAL ================= */
 :root {
@@ -177,3 +177,190 @@ p {
     transition: none !important;
   }
 }
+
+/* ================= MODERN PREMIUM UI STYLING ================= */
+
+html.dark body {
+  background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.08), transparent 60%), #070913;
+  color: #f8fafc;
+}
+
+/* Premium glassmorphism containers */
+.glass-card {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+}
+
+/* Hover glow for premium elements */
+.glass-card-hover {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.glass-card-hover:hover {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.08), 0 0 0 1px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Sleek glass overlay badges */
+.glass-badge {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease !important;
+}
+
+.glass-badge:hover {
+  background: rgba(99, 102, 241, 0.2) !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  transform: scale(1.05);
+}
+
+/* Custom Checkbox Design */
+.custom-checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.custom-checkbox-container:hover .custom-checkbox-box {
+  border-color: rgba(99, 102, 241, 0.6);
+  background: rgba(99, 102, 241, 0.05);
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.2);
+}
+
+.custom-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.custom-checkbox-box {
+  height: 18px;
+  width: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.custom-checkbox-input:checked ~ .custom-checkbox-box {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+}
+
+.custom-checkbox-box::after {
+  content: "";
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  margin-bottom: 2px;
+}
+
+.custom-checkbox-input:checked ~ .custom-checkbox-box::after {
+  transform: rotate(45deg) scale(1);
+}
+
+/* Custom dropdown style */
+.glass-select {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #cbd5e1 !important;
+  transition: all 0.3s ease;
+}
+
+.glass-select:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background-color: rgba(15, 23, 42, 0.7) !important;
+}
+
+.glass-select:focus {
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+.glass-select option {
+  background-color: #0f172a !important;
+  color: #cbd5e1 !important;
+}
+
+/* Micro-Interactions Animations */
+@keyframes heartPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.animate-heartPulse {
+  transition: all 0.3s ease;
+}
+
+.animate-heartPulse:hover {
+  color: #f43f5e !important;
+  transform: scale(1.1);
+}
+
+.animate-heartPulse:hover i {
+  animation: heartPulse 0.6s ease-in-out infinite;
+  color: #f43f5e !important;
+}
+
+@keyframes commentWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
+}
+
+.animate-commentWiggle {
+  transition: all 0.3s ease;
+}
+
+.animate-commentWiggle:hover {
+  color: #3b82f6 !important;
+  transform: scale(1.1);
+}
+
+.animate-commentWiggle:hover i {
+  animation: commentWiggle 0.4s ease-in-out;
+  color: #3b82f6 !important;
+}
+
+@keyframes eyeExpand {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.animate-eyeExpand {
+  transition: all 0.3s ease;
+}
+
+.animate-eyeExpand:hover {
+  color: #10b981 !important;
+  transform: scale(1.1);
+}
+
+.animate-eyeExpand:hover i {
+  animation: eyeExpand 0.5s ease-in-out;
+  color: #10b981 !important;
+}
