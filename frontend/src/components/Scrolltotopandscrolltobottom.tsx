@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { ArrowUp, ArrowDown } from "lucide-react";
 
 export default function DualScrollButton() {
   const [scrollY, setScrollY] = useState(0);
@@ -13,11 +13,11 @@ export default function DualScrollButton() {
       setVisible(currentScroll > 50);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     handleScroll();
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -25,12 +25,12 @@ export default function DualScrollButton() {
     if (scrollY < 300) {
       window.scrollTo({
         top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     } else {
       window.scrollTo({
         top: 0,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   };
@@ -40,10 +40,10 @@ export default function DualScrollButton() {
   return (
     <button
       onClick={handleClick}
-      aria-label={isBottomMode ? 'Scroll to bottom' : 'Scroll to top'}
-      title={isBottomMode ? 'Scroll to bottom' : 'Scroll to top'}
+      aria-label={isBottomMode ? "Scroll to bottom" : "Scroll to top"}
+      title={isBottomMode ? "Scroll to bottom" : "Scroll to top"}
       className={`
-        fixed bottom-6 right-6 z-50
+        fixed bottom-40 right-6 z-50 lg:bottom-6
         flex items-center justify-center
         w-14 h-14 rounded-full
         text-white
@@ -55,13 +55,13 @@ export default function DualScrollButton() {
         active:scale-95
         ${
           isBottomMode
-            ? 'bg-gradient-to-br from-cyan-500 to-blue-500 shadow-[0_0_25px_rgba(6,182,212,0.45)] hover:shadow-[0_0_35px_rgba(59,130,246,0.65)]'
-            : 'bg-gradient-to-br from-violet-600 to-fuchsia-500 shadow-[0_0_25px_rgba(139,92,246,0.45)] hover:shadow-[0_0_35px_rgba(217,70,239,0.65)]'
+            ? "bg-gradient-to-br from-cyan-500 to-blue-500 shadow-[0_0_25px_rgba(6,182,212,0.45)] hover:shadow-[0_0_35px_rgba(59,130,246,0.65)]"
+            : "bg-gradient-to-br from-violet-600 to-fuchsia-500 shadow-[0_0_25px_rgba(139,92,246,0.45)] hover:shadow-[0_0_35px_rgba(217,70,239,0.65)]"
         }
         ${
           visible
-            ? 'opacity-100 translate-y-0'
-            : 'opacity-0 translate-y-4 pointer-events-none'
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4 pointer-events-none"
         }
       `}
     >

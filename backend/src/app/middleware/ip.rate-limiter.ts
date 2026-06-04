@@ -93,6 +93,16 @@ export const resetPasswordRateLimiter = createRateLimiter({
   actionLabel: "password reset",
 });
 
+
+export const aiGenerationRateLimiter = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 10,
+  blockTimeMs: 5 * 60 * 1000, // 5 minutes
+  keyPrefix: "ai_generation",
+  actionLabel: "AI generation",
+});
+
+
 /** Payment: 20 attempts per 15 minutes, 15-minute block */
 export const paymentRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,  // 15 minutes
@@ -100,6 +110,33 @@ export const paymentRateLimiter = createRateLimiter({
   blockTimeMs: 15 * 60 * 1000, // 15 minutes
   keyPrefix: "payment",
   actionLabel: "payment",
+});
+
+/** Bug report submit: 10 per hour, 1-hour block */
+export const bugReportRateLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000,  // 1 hour
+  maxRequests: 10,
+  blockTimeMs: 60 * 60 * 1000, // 1 hour
+  keyPrefix: "bug_report",
+  actionLabel: "bug report",
+});
+
+/** Contact form (sends email): 5 per hour, 1-hour block */
+export const contactRateLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000,  // 1 hour
+  maxRequests: 5,
+  blockTimeMs: 60 * 60 * 1000, // 1 hour
+  keyPrefix: "contact",
+  actionLabel: "contact",
+});
+
+/** Newsletter subscribe (sends email): 5 per hour, 1-hour block */
+export const newsletterRateLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000,  // 1 hour
+  maxRequests: 5,
+  blockTimeMs: 60 * 60 * 1000, // 1 hour
+  keyPrefix: "newsletter",
+  actionLabel: "newsletter subscription",
 });
 
 export default ipRateLimiter;

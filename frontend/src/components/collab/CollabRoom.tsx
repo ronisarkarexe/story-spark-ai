@@ -26,11 +26,7 @@ interface Room {
   story: StoryChunk[];
   createdAt: Date;
 }
-/**
- * Collab rooms required Socket.IO to `BACKEND_URL/collab`. That is disabled in the
- * frontend (same as notification socket) to avoid slow loads and connection hangs.
- * Restore the previous implementation from git history when you run a persistent backend.
- */
+
 export default function CollabRoom() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -39,7 +35,6 @@ export default function CollabRoom() {
   const [error, setError] = useState<string | null>(null);
   const [newText, setNewText] = useState("");
   const user = getUserInfo();
-  
 
   useEffect(() => {
     if (!isLoggedIn()) {

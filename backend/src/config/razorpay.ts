@@ -1,5 +1,5 @@
 // Initializes and exports the Razorpay instance using credentials from environment variables
-import Razorpay from "razorpay";
+const Razorpay = require("razorpay");
 
 let razorpayInstance: Razorpay | null = null;
 

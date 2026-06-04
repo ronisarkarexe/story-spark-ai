@@ -59,7 +59,7 @@ export const decodedToken = (token: string): CustomJwtPayload => {
     throw new Error("Token is missing a valid 'role' claim.");
   }
 
-  const validRoles = ["user", "admin", "guest"];
+  const validRoles = ["user", "admin", "super_admin", "writer", "guest"];
   if (!validRoles.includes(decoded.role)) {
     throw new Error(`Token 'role' claim must be one of: ${validRoles.join(", ")}`);
   }
@@ -69,7 +69,7 @@ export const decodedToken = (token: string): CustomJwtPayload => {
     throw new Error("Token is missing a valid 'subscriptionType' claim.");
   }
 
-  const validSubscriptions = ["free", "premium"];
+  const validSubscriptions = ["free", "pro", "premium"];
   if (!validSubscriptions.includes(decoded.subscriptionType)) {
     throw new Error(`Token 'subscriptionType' claim must be one of: ${validSubscriptions.join(", ")}`);
   }

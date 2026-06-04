@@ -1,6 +1,7 @@
-import { instance as apiClient } from "../helpers/axios/axionInstance";
-import { getBaseUrl } from "../helpers/config";
+import axios from "axios";
 import { Chapter } from "../types/story.types";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const continueStory = async (
   chapters: Chapter[]
@@ -9,8 +10,8 @@ export const continueStory = async (
     .map((chapter) => chapter.content)
     .join("\n\n");
 
-  const response = await apiClient.post(
-    `${getBaseUrl()}/story-continuation/continue`,
+  const response = await axios.post(
+    `${BASE_URL}/story-continuation/continue`,
     {
       prompt: `
 Continue this story naturally.
