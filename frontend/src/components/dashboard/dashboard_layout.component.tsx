@@ -177,11 +177,20 @@ import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo } from "../../services/auth.service";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 const DashboardLayout: React.FC = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
-
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Auto-expand parent groups whose sub-routes match the current path
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [expanded, setExpanded] = useState<{ [key: string]: boolean }>(() => {
+    const initial: { [key: string]: boolean } = {};
+    menuItems.forEach((item) => {
+      if (item.subRoutes?.some((sub) => location.pathname.startsWith(sub.path))) {
+        initial[item.name] = true;
+      }
+    });
+    return initial;
+  });
 
   const user = getUserInfo();
 

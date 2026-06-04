@@ -1,19 +1,17 @@
 import React from "react";
-
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
 
+// Services & helpers
 import { USER_ROLE } from "./constants/role";
 import { getUserInfo } from "./services/auth.service";
 
+// Layouts
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 
+// Public pages
 import AboutUsComponent from "./components/footer/about-us.tsx";
+import AnalyticsDashboard from "./components/analytics/AnalyticsDashboard";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import BlogComponent from "./components/footer/blog.tsx";
 import BookmarksComponent from "./components/post/bookmarks.component";
@@ -60,6 +58,9 @@ import UserComponent from "./components/dashboard/users/user.component";
 import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 
+// =========================================================================
+// 1. PROTECTED ROUTE GUARD
+// =========================================================================
 type ProtectedRouteProps = {
   allowedRoles: string[];
   element?: React.ReactElement;
@@ -78,6 +79,9 @@ const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
   return element ? element : <Outlet />;
 };
 
+// =========================================================================
+// 2. CENTRAL ROUTER MATRIX
+// =========================================================================
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
 
@@ -97,7 +101,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
       { path: "templates", element: <TemplatesComponent /> },
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
+      { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES} element={<WritingAssistantComponent />} /> },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
       { path: "login", element: <LoginComponent /> },
       { path: "signup", element: <SignUpComponent /> },
@@ -158,7 +162,7 @@ const router = createBrowserRouter([
     ],
   },
 
-  // Isolated layout branches
+  // Isolated layout branches (bypass public navigation)
   { path: "/auth/email-validation", element: <EmailValidationComponent /> },
   {
     element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
@@ -169,7 +173,7 @@ const router = createBrowserRouter([
     ],
   },
 
-  // Dashboard
+  // Dashboard infrastructure tree
   {
     path: "/dashboard",
     element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
@@ -178,6 +182,7 @@ const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           { index: true, element: <DashboardComponent /> },
+          { path: "generate", element: <StoriesComponent /> },
           { path: "profile", element: <ProfileComponent /> },
           {
             element: <ProtectedRoute allowedRoles={ELEVATED_ADMIN_ROLES} />,
@@ -194,17 +199,22 @@ const router = createBrowserRouter([
             ],
           },
           {
-            element: <ProtectedRoute allowedRoles={[USER_ROLE.WRITER]} />,
-            children: [{ path: "analytics", element: <AnalyticsPage /> }],
+            element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+            children: [{ path: "analytics", element: <AnalyticsDashboard /> }],
           },
           {
             element: <ProtectedRoute allowedRoles={[USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER]} />,
             children: [{ path: "post-lists", element: <PostListsComponent /> }],
           },
+          {
+            element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+            children: [{ path: "analytics-page", element: <AnalyticsPage /> }],
+          },
         ],
       },
     ],
   },
+  { path: "/analytics", element: <ProtectedRoute allowedRoles={ALL_ROLES} element={<AnalyticsDashboard />} /> },
 ]);
 
 function App() {

@@ -50,6 +50,7 @@ const ExploreComponent = () => {
   const { data: genres } = useGetGenresQuery();
 
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
+
   const querySignature = useMemo(
     () =>
       JSON.stringify({
@@ -135,8 +136,9 @@ const ExploreComponent = () => {
     );
   };
 
+  // Resolution: use accumulated `posts` (from `main`) but keep Set<string> typing (from `fix-dashboard-alignment`)
   const availableTags = Array.from(
-    new Set(
+    new Set<string>(
       posts
         .map((post: Post) => post.tag)
         .filter(Boolean)
@@ -169,7 +171,11 @@ const ExploreComponent = () => {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-
+                }}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Main Layout */}
         <div className="flex flex-col md:flex-row gap-8">
@@ -215,7 +221,7 @@ const ExploreComponent = () => {
 
                 {/* Tags */}
                 <div>
-                    <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
                     Trending Tags
                   </h4>
 
@@ -356,6 +362,7 @@ const ExploreComponent = () => {
               )}
             </div>
 
+            {/* Resolution: use infinite-scroll UI from `main`; drop the old pagination from `fix-dashboard-alignment` */}
             {!featuredPost && (
               <div className="mt-8">
                 <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-center">

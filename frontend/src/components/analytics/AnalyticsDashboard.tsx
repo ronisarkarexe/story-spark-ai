@@ -4,6 +4,7 @@ import {
   PieChart, Pie, Cell, CartesianGrid, LineChart, Line
 } from "recharts";
 import { Link } from "react-router-dom";
+import { getToken } from "../../services/auth.service";
 import { getBaseUrl } from "../../helpers/config";
 
 const API_BASE = getBaseUrl();
@@ -29,8 +30,8 @@ interface IGenre { genre: string; count: number; }
 interface IWordCloud { text: string; value: number; }
 interface IHour { hour: number; count: number; }
 
-const HOUR_LABELS = ["12am","1am","2am","3am","4am","5am","6am","7am","8am","9am","10am","11am",
-  "12pm","1pm","2pm","3pm","4pm","5pm","6pm","7pm","8pm","9pm","10pm","11pm"];
+const HOUR_LABELS = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am",
+  "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"];
 
 export default function AnalyticsDashboard() {
   const [overview, setOverview] = useState<IOverview | null>(null);
@@ -40,7 +41,7 @@ export default function AnalyticsDashboard() {
   const [hours, setHours] = useState<IHour[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem("token") || "";
+  const token = getToken() || "";
 
   const fetchData = async (
     endpoint: string,
@@ -127,24 +128,24 @@ export default function AnalyticsDashboard() {
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
-        {/* Header */}
-<div className="flex items-center justify-between mb-10">
-  <div>
-    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-      📊 Story Analytics
-    </h1>
-    <p className="text-white/40 mt-2">
-      Your personal writing insights and patterns
-    </p>
-  </div>
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              📊 Story Analytics
+            </h1>
+            <p className="text-white/40 mt-2">
+              Your personal writing insights and patterns
+            </p>
+          </div>
 
-  <Link
-   to="/"
-    className="px-4 py-2 rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/30 transition"
-  >
-    ← Back to Home
-  </Link>
-</div>
+          <Link
+            to="/"
+            className="px-4 py-2 rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/30 transition"
+          >
+            ← Back to Home
+          </Link>
+        </div>
+
         {/* Overview Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
           {[
@@ -214,6 +215,7 @@ export default function AnalyticsDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
           {/* Timeline */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <h2 className="text-lg font-semibold mb-4 text-indigo-300">📈 Creation Timeline</h2>

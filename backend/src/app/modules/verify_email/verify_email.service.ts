@@ -19,8 +19,7 @@ const transporter = nodemailer.createTransport({
 const VerifyEmail = async (payload: IEmailBody) => {
   try {
     const { email, name } = payload;
-    // Use a cryptographically secure RNG so OTPs cannot be predicted.
-    const otp = crypto.randomInt(100000, 1000000).toString();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
     
     // Delete any existing OTP for this email
@@ -92,7 +91,18 @@ const VerifyEmail = async (payload: IEmailBody) => {
       `,
     };
     
-    await transporter.sendMail(mailOptions);
+    if (!config.verify_email || !config.verify_password) {
+      console.log(`\n=========================================\n[DEV MODE] OTP for ${email} is: ${otp}\n=========================================\n`);
+    } else {
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (sendError) {
+        console.error(`[Email Service Error] Failed to send OTP to ${email}:`, sendError);
+        // Rollback OTP creation if email fails to send
+        await OTPModel.deleteOne({ email });
+        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to send OTP email. Please try again later.");
+      }
+    }
 
     return {
       expiresAt,
@@ -101,8 +111,8 @@ const VerifyEmail = async (payload: IEmailBody) => {
     if (error instanceof ApiError) {
       throw error;
     }
-    console.error("Mail Error:", error);
-    throw new ApiError(500, "Failed to send email");
+    console.error("[Email Service Unexpected Error]:", error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred while processing your request");
   }
 };
 

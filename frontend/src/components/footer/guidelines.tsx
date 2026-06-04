@@ -3,6 +3,8 @@ import { LucideIcon } from "lucide-react";
 import {
   Handshake,
   Sparkles,
+  Smile,
+  Ban,
   Lightbulb,
   FileText,
   ArrowLeft,
@@ -123,6 +125,8 @@ const workflowSteps = [
 const Guidelines = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white">
+
+      {/* Hero */}
       <section className="relative overflow-hidden border-b border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <Link
@@ -148,6 +152,7 @@ const Guidelines = () => {
         </div>
       </section>
 
+      {/* Guidelines Grid */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {guidelineSections.map((section) => {
@@ -184,6 +189,7 @@ const Guidelines = () => {
         </div>
       </section>
 
+      {/* Workflow Steps */}
       <section className="max-w-3xl mx-auto px-4 pb-20">
         <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-2xl p-8 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
@@ -207,7 +213,18 @@ const Guidelines = () => {
             ))}
           </ol>
         </div>
+
+        {/* Footer note */}
+        <div className="mt-10 text-center">
+          <div className="inline-flex items-center gap-2 text-slate-400 text-sm">
+            <Smile size={16} className="text-indigo-400" />
+            Thanks for helping make StorySparkAI a great place to contribute!
+            <Ban size={14} className="text-red-400/70" />
+            No spam, harassment, or bad vibes.
+          </div>
+        </div>
       </section>
+
     </div>
   );
 };

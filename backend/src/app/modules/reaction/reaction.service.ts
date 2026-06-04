@@ -15,9 +15,7 @@ const toggleReaction = async (
 ) => {
   const { email } = token;
 
-  const user = await User.findOne({ email });
   const user = await User.findOne({ email }).select("_id").lean();
-
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
@@ -25,9 +23,7 @@ const toggleReaction = async (
   const post = await Post.findOne({
     _id: postId,
     isDeleted: { $ne: true },
-  });
   }).select("likesCount reactions");
-
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
@@ -40,12 +36,18 @@ const toggleReaction = async (
 
   // Remove reaction if same type clicked again
   if (existingReaction && existingReaction.type === type) {
-    await Reaction.findByIdAndDelete(existingReaction._id);
-
+    await Reaction.deleteOne({ _id: existingReaction._id });
+    await Post.updateOne(
+      { _id: postId },
+      {
+        $pull: { reactions: existingReaction._id },
+        $inc: { likesCount: -1 },
+      }
+    );
     const likesCount = await Reaction.countDocuments({ postId });
-
     return {
-      message: "Reaction removed successfully",
+      message: "Reaction removed",
+      reaction: null,
       likesCount,
     };
   }
@@ -54,19 +56,31 @@ const toggleReaction = async (
   if (existingReaction) {
     existingReaction.type = type;
     await existingReaction.save();
-  } else {
-    // Create new reaction
-    await Reaction.create({
-      postId: new Types.ObjectId(postId),
-      userId: user._id,
-      type,
-    });
+    const likesCount = await Reaction.countDocuments({ postId });
+    return {
+      message: "Reaction updated",
+      reaction: existingReaction,
+      likesCount,
+    };
   }
 
+  // Create new reaction
+  const newReaction = await Reaction.create({
+    postId: new Types.ObjectId(postId),
+    userId: user._id,
+    type,
+  });
+  await Post.updateOne(
+    { _id: postId },
+    {
+      $addToSet: { reactions: newReaction._id },
+      $inc: { likesCount: 1 },
+    }
+  );
   const likesCount = await Reaction.countDocuments({ postId });
-
   return {
-    message: "Reaction updated successfully",
+    message: "Reaction added",
+    reaction: newReaction,
     likesCount,
   };
 };

@@ -1,9 +1,10 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import GenreCard from './genre_card.component';
 import { isLoggedIn } from '../../services/auth.service';
 import { genres as dataGenres, featuredWriters, resources, stats } from './community.data';
 import GithubcontributorsComponent from './Githubcontributors.component';
+import ImageFallback from "../ImageFallback";
 
 const CommunityComponent: React.FC = () => {
   const isLogin = isLoggedIn();
@@ -12,7 +13,7 @@ const CommunityComponent: React.FC = () => {
     {
       title: "Fantasy Hub",
       description: "From dragons to ancient magic, collaborate with fantasy writers and build immersive worlds together.",
-      count: "1.2K", // Changed from 'writers' to 'count'
+      count: "1.2K",
       icon: "fa-solid fa-wand-sparkles",
       color: "from-blue-500 to-indigo-600",
       bgLight: "bg-blue-500/5 dark:bg-blue-500/10",
@@ -23,7 +24,7 @@ const CommunityComponent: React.FC = () => {
     {
       title: "Sci‑Fi Nexus",
       description: "Explore futuristic civilizations, AI ethics, and space adventures with fellow sci‑fi creators.",
-      count: "980", // Changed from 'writers' to 'count'
+      count: "980",
       icon: "fa-solid fa-rocket",
       color: "from-purple-500 to-pink-500",
       bgLight: "bg-purple-500/5 dark:bg-purple-500/10",
@@ -34,7 +35,7 @@ const CommunityComponent: React.FC = () => {
     {
       title: "Mystery Lounge",
       description: "Craft suspenseful plots, hidden clues, and thrilling investigations with mystery enthusiasts.",
-      count: "760", // Changed from 'writers' to 'count'
+      count: "760",
       icon: "fa-solid fa-user-secret",
       color: "from-orange-500 to-yellow-500",
       bgLight: "bg-orange-500/5 dark:bg-orange-500/10",
@@ -48,6 +49,7 @@ const CommunityComponent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
+
       {/* Hero Section */}
       <section
         className="relative pb-20 overflow-hidden"
@@ -124,7 +126,7 @@ const CommunityComponent: React.FC = () => {
               <div key={idx} className="flex flex-col items-center text-center group">
                 <div className="relative mb-6">
                   <div className="absolute inset-0 bg-blue-500 rounded-full blur-2xl opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                  <img
+                  <ImageFallback
                     src={writer.avatar}
                     alt={writer.name}
                     className="w-24 h-24 rounded-full border-2 border-white/10 group-hover:border-blue-500 transition-colors relative z-10 object-cover"
@@ -202,6 +204,7 @@ const CommunityComponent: React.FC = () => {
           </Link>
         </div>
       </section>
+
     </div>
   );
 };

@@ -7,9 +7,7 @@ const ScrollToTopButton = () => {
     const handleScroll = () => {
       setIsVisible(window.scrollY > 200);
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
