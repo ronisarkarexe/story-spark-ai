@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import { Application, Request, Response } from "express";
 import mongoose from "mongoose";
 import config from "./config";

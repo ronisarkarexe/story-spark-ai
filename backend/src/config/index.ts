@@ -39,7 +39,7 @@ export default {
     refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
   },
   default_admin_password: process.env.DEFAULT_ADMIN_PASSWORD,
-  openai_key: process.env.OPEN_AI_KEY,
+  openai_key:  process.env.OPENAI_API_KEY,
   image_generation_provider: process.env.IMAGE_GENERATION_PROVIDER,
   image_generation_api_key: process.env.IMAGE_GENERATION_API_KEY,
   unsplash_key_api: process.env.UNSPLASH_KEY_API,

@@ -1,11 +1,64 @@
-# Covered by root .gitignore; kept for standalone tooling / clones of backend only
+# Dependencies
 node_modules/
+
+# Build output
+dist/
+dist-ssr/
+build/
+build_output.txt
+*_output.txt
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment (never commit secrets)
 .env
-# .gitignore
-.env
-backend/.env
-frontend/.env
+.env.*
+!.env.example
+!.env*.example
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE / editor
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local / misc
+*.local
+.cache/
+.turbo/
+.vercel/
+*.pem
+.claude
+.refact
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# TypeScript
+*.tsbuildinfo
+
+# Python / ML
+__pycache__/
+*.pyc
+backend/ml/__pycache__/
+backend/ml/my_tuner/
+backend/ml/saved/
 ml/saved_scorer/
 ml/scorer_venv/
-ml/__pycache__/
-dist/
