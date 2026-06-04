@@ -8,7 +8,9 @@ const ScrollToTopButton = () => {
       setIsVisible(window.scrollY > 200);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const scrollToTop = () => {
@@ -21,10 +23,10 @@ const ScrollToTopButton = () => {
       aria-label="Scroll to top"
       style={{
         position: "fixed",
-        bottom: "2rem",
-        right: "2rem",
-        width: "48px",
-        height: "48px",
+        bottom: "6rem",
+        right: "1.5rem",
+        width: "56px",
+        height: "56px",
         borderRadius: "50%",
         border: "none",
         cursor: "pointer",

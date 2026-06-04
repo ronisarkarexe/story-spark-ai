@@ -14,7 +14,13 @@ from tensorflow.keras.layers import (
     TimeDistributed, Input, Dropout
 )
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import (
+    EarlyStopping,
+    ModelCheckpoint,
+    Callback,
+)
+
+import os
 
 SEQ_LEN    = 10
 N_FEATURES = 8
@@ -98,7 +104,7 @@ def get_callbacks(
     checkpoint_path: str = "saved/model.keras",
     patience: int = 5,
     min_delta: float = 1e-4,
-) -> list:
+) -> list[Callback]:
     """
     Return standard training callbacks for the autoencoder.
 
@@ -128,8 +134,12 @@ def get_callbacks(
     """
     if patience < 1:
         raise ValueError(f"patience must be >= 1, got {patience}")
+    
     if min_delta < 0:
         raise ValueError(f"min_delta must be >= 0, got {min_delta}")
+    
+    if not isinstance(checkpoint_path, str) or not checkpoint_path.strip():
+        raise ValueError("checkpoint_path must be a non-empty string")
 
     early_stopping = EarlyStopping(
         monitor="val_loss",
@@ -139,11 +149,17 @@ def get_callbacks(
         verbose=1,
     )
 
+    # Ensure checkpoint directory exists before saving
+    checkpoint_dir = os.path.dirname(checkpoint_path)
+    
+    if checkpoint_dir:
+        os.makedirs(checkpoint_dir, exist_ok=True)
+    
     checkpoint = ModelCheckpoint(
-        filepath=checkpoint_path,
-        monitor="val_loss",
-        save_best_only=True,
-        verbose=1,
+    filepath=checkpoint_path,
+    monitor="val_loss",
+    save_best_only=True,
+    verbose=1,
     )
 
     return [early_stopping, checkpoint]

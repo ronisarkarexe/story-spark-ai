@@ -1,276 +1,146 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
-import { USER_ROLE } from "../../constants/role";
-import { useNotifications } from "../../hooks/useNotifications";
-import ThemeToggle from "../theme/theme_toggle.component";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Home,
-  Compass,
-  BarChart3,
-  Users,
-  MoreHorizontal,
-  Sparkles,
-  Mail,
-  HelpCircle,
-  Bookmark,
-  LayoutDashboard,
-  LogOut,
-  LogIn,
-  UserPlus,
-  X
-} from "lucide-react";
+import { FC } from "react";
+import { motion } from "framer-motion";
 
-const FloatingNavComponent: React.FC = () => {
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const [isLogin, setIsLogin] = useState(isLoggedIn());
-  const moreRef = useRef<HTMLDivElement>(null);
+interface HelpCategory {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  sectionId?: string;
+}
 
-  const { unreadCount } = useNotifications();
-  const user = getUserInfo();
-  const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
+interface HelpCategoriesProps {
+  categories: HelpCategory[];
+}
 
-  const handleLogout = () => {
-    removeUserInfo();
-    setIsLogin(false);
-    setIsMoreOpen(false);
-    navigate("/");
-  };
-
-  useEffect(() => {
-    setIsLogin(isLoggedIn());
-  }, [pathname]);
-
-  // Close "More" menu on click outside
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
-        setIsMoreOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
-
-  // Don't render floating nav on login/signup pages
-  if (pathname === "/login" || pathname === "/signup") {
-    return null;
-  }
-
-  const primaryItems = [
-    { to: "/", label: "Home", icon: Home },
-    { to: "/explore", label: "Explore", icon: Compass },
-    { to: "/analytics", label: "Analytics", icon: BarChart3 },
-    { to: "/collab", label: "Collab", icon: Users },
-  ];
-
+const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
   return (
-    <div className="lg:hidden fixed inset-0 z-50 pointer-events-none flex flex-col justify-end items-center pb-3">
-      {/* Backdrop Overlay */}
-      <AnimatePresence>
-        {isMoreOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsMoreOpen(false)}
-            className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 backdrop-blur-[2px] pointer-events-auto z-40"
-          />
-        )}
-      </AnimatePresence>
+    <motion.section
+      id="help-categories"
+      className="scroll-mt-28 transition-colors duration-300 w-full box-border"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.5 }}
+      aria-labelledby="categories-heading"
+    >
+      {/* Section Header */}
+      <div className="mb-10 text-center px-4">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400 mb-4 select-none">
+          <i className="fa-solid fa-layer-group" aria-hidden="true"></i>
+          <span className="text-xs sm:text-sm font-semibold uppercase tracking-wider">Help Categories</span>
+        </div>
 
-      {/* Menu & Nav Bar Container */}
-      <div className="w-[92%] max-w-[480px] pointer-events-auto z-50 relative flex flex-col gap-3">
-        {/* "More" Bottom Sheet/Popover */}
-        <AnimatePresence>
-          {isMoreOpen && (
+        <h2
+          id="categories-heading"
+          className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight"
+        >
+          Explore by Category
+        </h2>
+
+        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
+          Browse support topics designed to help you quickly understand
+          StorySparkAI features, workflows, and troubleshooting steps.
+        </p>
+      </div>
+
+      {/* Categories Grid */}
+      {!categories || categories.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-8 sm:p-12 text-center max-w-4xl mx-auto box-border">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto mb-5 border border-slate-200/60 dark:border-white/5">
+            <i className="fa-solid fa-magnifying-glass text-2xl sm:text-3xl text-slate-400 dark:text-slate-500" aria-hidden="true"></i>
+          </div>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2">
+            No Categories Found
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+            Try adjusting your search keywords to locate sections.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6 px-4 sm:px-0 w-full box-border">
+          {categories.map((category, index) => (
             <motion.div
-              ref={moreRef}
-              initial={{ y: 20, opacity: 0, scale: 0.96 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 20, opacity: 0, scale: 0.96 }}
-              transition={{ type: "spring", stiffness: 350, damping: 28 }}
-              className="p-5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-[0_-15px_35px_rgba(0,0,0,0.15)] dark:shadow-[0_-15px_35px_rgba(0,0,0,0.4)] text-slate-800 dark:text-slate-100"
+              key={category.id}
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{
+                duration: 0.45,
+                delay: Math.min(index * 0.08, 0.3),
+              }}
+              whileHover={{ y: -6 }}
+              className="
+                group relative overflow-hidden
+                rounded-2xl sm:rounded-3xl
+                border border-slate-200 dark:border-white/10
+                bg-white dark:bg-[#111827]/40
+                backdrop-blur-2xl
+                hover:border-blue-500/40 dark:hover:border-blue-500/30
+                transition-all duration-300
+                shadow-sm hover:shadow-xl
+                p-6 sm:p-7
+                w-full box-border flex flex-col justify-between
+              "
             >
-              {/* Header */}
-              <div className="flex justify-between items-center mb-4 border-b border-slate-100 dark:border-white/10 pb-3">
-                <span className="text-xs font-extrabold tracking-widest uppercase text-indigo-600 dark:text-blue-400">
-                  Menu
+              {/* Glow effects */}
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="relative z-10 w-full box-border">
+                {/* Icon */}
+                <div
+                  className="
+                    w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl
+                    bg-gradient-to-br from-blue-500/10 to-indigo-500/10
+                    border border-blue-500/20
+                    flex items-center justify-center
+                    text-xl sm:text-2xl text-blue-500 dark:text-blue-400
+                    mb-5 sm:mb-6 select-none
+                    group-hover:scale-105
+                    transition-transform duration-300
+                  "
+                >
+                  <i className={`fa-solid ${category.icon}`} aria-hidden="true"></i>
+                </div>
+
+                {/* Title & Description */}
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2 sm:mb-3 tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate max-w-full">
+                  {category.title}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-xs sm:text-sm font-medium">
+                  {category.description}
+                </p>
+              </div>
+
+              {/* Card Action */}
+              <div className="relative z-10 mt-6 flex items-center justify-between select-none">
+                <span className="text-blue-600 dark:text-blue-400 text-xs sm:text-sm font-bold tracking-tight">
+                  Learn More
                 </span>
-                <div className="flex items-center gap-3">
-                  <ThemeToggle />
-                  <button
-                    onClick={() => setIsMoreOpen(false)}
-                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 hover:text-slate-950 dark:hover:text-white transition-all cursor-pointer"
-                  >
-                    <X size={16} />
-                  </button>
+                <div
+                  className="
+                    w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl
+                    bg-slate-100 dark:bg-white/5
+                    border border-slate-200/60 dark:border-white/10
+                    flex items-center justify-center
+                    text-slate-400 text-xs sm:text-sm
+                    group-hover:text-white
+                    group-hover:bg-blue-500
+                    group-hover:border-blue-500/20
+                    transition-all duration-200
+                  "
+                >
+                  <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
                 </div>
               </div>
-
-              {/* Grid content */}
-              <div className="grid grid-cols-2 gap-3">
-                <Link
-                  to="/story-inspiration"
-                  onClick={() => setIsMoreOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-white/5 hover:border-indigo-500/30 dark:hover:border-blue-500/30 hover:bg-indigo-50/50 dark:hover:bg-blue-500/5 transition-all text-[14px] group"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-blue-500/10 flex items-center justify-center text-indigo-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                    <Sparkles size={18} />
-                  </div>
-                  <span className="font-medium">Inspirations</span>
-                </Link>
-
-                <Link
-                  to="/community"
-                  onClick={() => setIsMoreOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-white/5 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 transition-all text-[14px] group"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
-                    <Users size={18} />
-                  </div>
-                  <span className="font-medium">Community</span>
-                </Link>
-
-                <Link
-                  to="/contact-us"
-                  onClick={() => setIsMoreOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-white/5 hover:border-emerald-500/30 dark:hover:border-emerald-500/30 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/5 transition-all text-[14px] group"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-                    <Mail size={18} />
-                  </div>
-                  <span className="font-medium">Contact Us</span>
-                </Link>
-
-                <Link
-                  to="/help-center"
-                  onClick={() => setIsMoreOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-white/5 hover:border-amber-500/30 dark:hover:border-amber-500/30 hover:bg-amber-50/50 dark:hover:bg-amber-500/5 transition-all text-[14px] group"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
-                    <HelpCircle size={18} />
-                  </div>
-                  <span className="font-medium">Help Center</span>
-                </Link>
-
-                {isLogin ? (
-                  <>
-                    <Link
-                      to="/bookmarks"
-                      onClick={() => setIsMoreOpen(false)}
-                      className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-white/5 hover:border-rose-500/30 dark:hover:border-rose-500/30 hover:bg-rose-50/50 dark:hover:bg-rose-500/5 transition-all text-[14px] group"
-                    >
-                      <div className="w-9 h-9 rounded-lg bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">
-                        <Bookmark size={18} />
-                      </div>
-                      <span className="font-medium">Saved Stories</span>
-                    </Link>
-
-                      <Link
-                        to="/dashboard"
-                        onClick={() => setIsMoreOpen(false)}
-                        className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-white/5 hover:border-purple-500/30 dark:hover:border-purple-500/30 hover:bg-purple-50/50 dark:hover:bg-purple-500/5 transition-all text-[14px] group"
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
-                          <LayoutDashboard size={18} />
-                        </div>
-                        <span className="font-medium">Dashboard</span>
-                      </Link>
-
-                    <button
-                      onClick={handleLogout}
-                      className="col-span-2 mt-2 w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400 dark:hover:bg-rose-500/20 transition-all text-[14px] font-semibold cursor-pointer"
-                    >
-                      <LogOut size={16} />
-                      <span>Logout</span>
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/login"
-                      onClick={() => setIsMoreOpen(false)}
-                      className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-[14px] font-semibold text-slate-700 dark:text-slate-300"
-                    >
-                      <LogIn size={16} />
-                      <span>Login</span>
-                    </Link>
-
-                    <Link
-                      to="/signup"
-                      onClick={() => setIsMoreOpen(false)}
-                      className="flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 dark:from-blue-600 dark:to-indigo-600 dark:hover:from-blue-500 dark:hover:to-indigo-500 text-white shadow-lg shadow-indigo-600/15 dark:shadow-blue-600/10 transition-all text-[14px] font-semibold"
-                    >
-                      <UserPlus size={16} />
-                      <span>Sign Up</span>
-                    </Link>
-                  </>
-                )}
-              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Main Glass Floating Bar */}
-        <div className="flex items-center justify-around py-2.5 px-3 rounded-2xl bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border border-slate-200/50 dark:border-white/10 shadow-[0_10px_35px_-5px_rgba(0,0,0,0.1),0_0_15px_1px_rgba(99,102,241,0.05)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.5),0_0_20px_2px_rgba(59,130,246,0.1)] text-slate-500 dark:text-slate-400">
-          {primaryItems.map((item) => {
-            const isActive = pathname === item.to;
-            const IconComponent = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={`flex flex-col items-center justify-center gap-1 py-1.5 px-3.5 rounded-xl transition-all duration-300 relative z-10 ${isActive
-                    ? "text-indigo-600 dark:text-blue-400 scale-105 font-bold"
-                    : "hover:text-slate-800 dark:hover:text-white"
-                  }`}
-              >
-                <IconComponent size={20} className={isActive ? "stroke-[2.5px]" : "stroke-[2px]"} />
-                <span className="text-[9px] tracking-wider font-semibold uppercase">{item.label}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTabPill"
-                    className="absolute inset-0 bg-indigo-50/80 dark:bg-white/5 border border-indigo-100/20 dark:border-white/5 rounded-xl -z-10"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
-              </NavLink>
-            );
-          })}
-
-          {/* More Trigger */}
-          <button
-            onClick={() => setIsMoreOpen(!isMoreOpen)}
-            className={`flex flex-col items-center justify-center gap-1 py-1.5 px-3.5 rounded-xl transition-all duration-300 relative z-10 cursor-pointer ${isMoreOpen
-                ? "text-indigo-600 dark:text-blue-400 scale-105 font-bold"
-                : "hover:text-slate-800 dark:hover:text-white"
-              }`}
-          >
-            <div className="relative">
-              <MoreHorizontal size={20} className={isMoreOpen ? "stroke-[2.5px]" : "stroke-[2px]"} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full min-w-[14px] h-[14px] flex items-center justify-center shadow-lg border border-white dark:border-slate-950">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </div>
-            <span className="text-[9px] tracking-wider font-semibold uppercase">More</span>
-            {isMoreOpen && (
-              <motion.div
-                layoutId="activeTabPill"
-                className="absolute inset-0 bg-indigo-50/80 dark:bg-white/5 border border-indigo-100/20 dark:border-white/5 rounded-xl -z-10"
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              />
-            )}
-          </button>
+          ))}
         </div>
-      </div>
-    </div>
+      )}
+    </motion.section>
   );
 };
 
-export default FloatingNavComponent;
+export default HelpCategories;

@@ -121,16 +121,7 @@ const PostListsComponent: React.FC = () => {
     ));
   };
 
-  const getStatusBadge = (isPublished: boolean, isFeatured: boolean = false) => {
-    if (isFeatured) {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:shadow-[0_0_20px_rgba(168,85,247,0.35)] transition-all duration-300">
-          <i className="fas fa-star text-xs"></i>
-          Featured
-        </span>
-      );
-    }
-
+  const getStatusBadge = (isPublished: boolean) => {
     return (
       <span
         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-all ${
@@ -221,9 +212,8 @@ const PostListsComponent: React.FC = () => {
             <StatCard icon="fas fa-star" label="Featured" count={filterStats.featured} color="from-purple-600/20 to-purple-500/10" isActive={filterStatus === "featured"} />
           </div>
 
-          {/* Search and Actions Bar */}
+          {/* Search Bar */}
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-            {/* Search Bar */}
             <div className="flex-1 relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-300"></div>
               <div className="relative flex items-center bg-[#0f1119] border border-gray-700/50 rounded-xl px-4 py-3 focus-within:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all duration-300 hover:border-gray-600/50">
@@ -247,12 +237,6 @@ const PostListsComponent: React.FC = () => {
                 )}
               </div>
             </div>
-
-            {/* New Post Button */}
-            <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 flex items-center justify-center gap-2 whitespace-nowrap">
-              <i className="fas fa-plus"></i>
-              New Post
-            </button>
           </div>
         </div>
       </div>
@@ -334,7 +318,7 @@ const PostListsComponent: React.FC = () => {
                     <div className="flex items-center">
                       {post.imageURL && (
                         <div className="flex-shrink-0 h-11 w-11 mr-4 relative">
-                          <ImageFallback
+                          <img
                             className="h-11 w-11 rounded-lg object-cover shadow-md ring-1 ring-white/10"
                             src={post.imageURL}
                             alt={post.title}
@@ -356,7 +340,7 @@ const PostListsComponent: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm">
                       <p className="font-medium text-gray-300">{post.author?.name || "Unknown User"}</p>
-                      <p className="text-xs text-gray-500">{post.author?.email}</p>
+                      <p className="text-xs text-gray-500">{post.author?.email || "N/A"}</p>
                     </div>
                   </td>
 
@@ -370,35 +354,35 @@ const PostListsComponent: React.FC = () => {
                   {/* Status */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {getStatusBadge(post.isPublished, post.isFeaturedPost)}
-                      {post.isPublished && !post.isFeaturedPost && (
-                        <div className="text-xs px-2.5 py-1.5 rounded-full text-gray-400 bg-gray-800/40">
-                          {formatDate(post.createdAt)}
-                        </div>
+                      {getStatusBadge(post.isPublished)}
+                      {post.isFeaturedPost && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]">
+                          Featured
+                        </span>
                       )}
                     </div>
                   </td>
 
                   {/* Stats */}
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-6">
+                    <div className="flex space-x-5">
                       <div className="text-center group/stat">
-                        <div className="flex items-center justify-center gap-1.5 text-gray-300 group-hover/stat:text-rose-400 transition-colors">
-                          <i className="fas fa-heart text-sm"></i>
-                          <span className="text-sm font-semibold">{post.likesCount}</span>
+                        <div className="text-sm font-semibold text-gray-300 group-hover/stat:text-rose-400 transition-colors">
+                          {post.likesCount}
                         </div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">Likes</div>
                       </div>
                       <div className="text-center group/stat">
-                        <div className="flex items-center justify-center gap-1.5 text-gray-300 group-hover/stat:text-blue-400 transition-colors">
-                          <i className="fas fa-comment text-sm"></i>
-                          <span className="text-sm font-semibold">{post.commentsCount}</span>
+                        <div className="text-sm font-semibold text-gray-300 group-hover/stat:text-blue-400 transition-colors">
+                          {post.commentsCount}
                         </div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">Comments</div>
                       </div>
                       <div className="text-center group/stat">
-                        <div className="flex items-center justify-center gap-1.5 text-gray-300 group-hover/stat:text-emerald-400 transition-colors">
-                          <i className="fas fa-eye text-sm"></i>
-                          <span className="text-sm font-semibold">{post.viewsCount}</span>
+                        <div className="text-sm font-semibold text-gray-300 group-hover/stat:text-emerald-400 transition-colors">
+                          {post.viewsCount}
                         </div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-0.5 font-medium">Views</div>
                       </div>
                     </div>
                   </td>

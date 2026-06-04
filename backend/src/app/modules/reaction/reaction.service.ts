@@ -14,10 +14,12 @@ const toggleReaction = async (
   token: ITokenPayload
 ) => {
   const { email } = token;
+
   const user = await User.findOne({ email }).select("_id").lean();
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
+
   const post = await Post.findOne({
     _id: postId,
     isDeleted: { $ne: true },
@@ -25,40 +27,44 @@ const toggleReaction = async (
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
-  const existingReaction = await Reaction.findOne({
-    postId: new Types.ObjectId(postId),
-    userId: user._id,
-    type,
-  }).lean();
 
-  if (existingReaction) {
-    if (existingReaction.type === type) {
-      await Reaction.deleteOne({ _id: existingReaction._id });
-      await Post.updateOne(
-        { _id: postId },
-        {
-          $pull: { reactions: existingReaction._id },
-          $inc: { likesCount: -1 },
-        }
-      );
-      const updatedPost = await Post.findById(postId);
-      return {
-        message: "Reaction removed",
-        reaction: null,
-        likesCount: updatedPost?.likesCount || 0,
-      };
-    } else {
-      existingReaction.type = type;
-      await existingReaction.save();
-      const updatedPost = await Post.findById(postId);
-      return {
-        message: "Reaction updated",
-        reaction: existingReaction,
-        likesCount: updatedPost?.likesCount || 0,
-      };
-    }
+  // Check existing reaction
+  const existingReaction = await Reaction.findOne({
+    postId,
+    userId: user._id,
+  });
+
+  // Remove reaction if same type clicked again
+  if (existingReaction && existingReaction.type === type) {
+    await Reaction.deleteOne({ _id: existingReaction._id });
+    await Post.updateOne(
+      { _id: postId },
+      {
+        $pull: { reactions: existingReaction._id },
+        $inc: { likesCount: -1 },
+      }
+    );
+    const likesCount = await Reaction.countDocuments({ postId });
+    return {
+      message: "Reaction removed",
+      reaction: null,
+      likesCount,
+    };
   }
 
+  // Update existing reaction
+  if (existingReaction) {
+    existingReaction.type = type;
+    await existingReaction.save();
+    const likesCount = await Reaction.countDocuments({ postId });
+    return {
+      message: "Reaction updated",
+      reaction: existingReaction,
+      likesCount,
+    };
+  }
+
+  // Create new reaction
   const newReaction = await Reaction.create({
     postId: new Types.ObjectId(postId),
     userId: user._id,
@@ -71,11 +77,11 @@ const toggleReaction = async (
       $inc: { likesCount: 1 },
     }
   );
-  const updatedPost = await Post.findById(postId);
+  const likesCount = await Reaction.countDocuments({ postId });
   return {
     message: "Reaction added",
     reaction: newReaction,
-    likesCount: updatedPost?.likesCount || 0,
+    likesCount,
   };
 };
 

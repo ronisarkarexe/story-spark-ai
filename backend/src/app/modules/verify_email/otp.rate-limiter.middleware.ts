@@ -93,3 +93,11 @@ export const otpRateLimiter = (
 
   next();
 };
+
+export const clearOtpAttempts = (email: string) => {
+  const normalizedEmail = email.toString().toLowerCase().trim();
+  const key = `otp_${normalizedEmail}`;
+  if (rateLimitStore[key]) {
+    delete rateLimitStore[key];
+  }
+};

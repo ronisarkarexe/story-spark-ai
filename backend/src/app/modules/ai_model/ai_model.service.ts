@@ -16,6 +16,7 @@ import {
   generateAlternateEndingsWithGemini,
   generateWithGeminiStories,
   generateRemixWithGemini,
+  generateStoryContinuationWithGemini,
   translateStoryWithGemini,
   chatWithGemini,
 } from "./ai_model.utils";
@@ -197,6 +198,20 @@ const aiFreeModelTranslate = async (payload: ITranslatePayload) => {
   }
 };
 
+const aiFreeStoryContinuation = async (payload: { prompt: string; language?: string }) => {
+  const { prompt, language = "English" } = payload;
+
+  try {
+    const result = await raceGenerationWithTimeout(
+      (signal) => generateStoryContinuationWithGemini(prompt, language, signal),
+      FREE_GENERATION_TIMEOUT_MS
+    );
+    return result;
+  } catch (error) {
+    mapGenerationError(error, "Story continuation failed.");
+  }
+};
+
 const aiModelChat = async (payload: IChatPayload, _token?: ITokenPayload) => {
   const { message, history = [] } = payload;
 
@@ -244,6 +259,7 @@ export const AiModelService = {
   aiFreeModelRemix,
   aiModelTranslate,
   aiFreeModelTranslate,
+  aiFreeStoryContinuation,
   aiModelChat,
   aiFreeModelChat,
 };

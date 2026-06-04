@@ -66,6 +66,7 @@ router.post(
   aiGenerationRateLimiter,
   auth(),
   checkRequestLimit(),
+  validateRequest(AIModelValidator.aiRemix),
   AiModelController.aiModelRemix
 );
 
@@ -73,6 +74,7 @@ router.post(
 router.post(
   "/remix-free",
   freeAiRateLimiter,
+  validateRequest(AIModelValidator.aiRemix),
   AiModelController.aiFreeModelRemix
 );
 
@@ -84,6 +86,7 @@ router.post(
   aiGenerationRateLimiter,
   auth(),
   checkRequestLimit(),
+  validateRequest(AIModelValidator.aiTranslate),
   AiModelController.aiModelTranslate
 );
 
@@ -91,6 +94,7 @@ router.post(
 router.post(
   "/translate-free",
   freeAiRateLimiter,
+  validateRequest(AIModelValidator.aiTranslate),
   AiModelController.aiFreeModelTranslate
 );
 

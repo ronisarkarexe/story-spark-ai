@@ -26,7 +26,13 @@ const StoryGeneratingAnimation = ({ onCancel }: StoryGeneratingAnimationProps) =
   const dots = [0, 1, 2, 3, 4, 5, 6, 7];
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-8 text-white backdrop-blur-sm"
+      role="status"
+      aria-live="polite"
+      aria-label="Story generation in progress"
+    >
+      <div className="flex w-full max-w-md flex-col items-center justify-center rounded-2xl border border-white/10 bg-slate-900/95 px-6 py-10 shadow-2xl shadow-indigo-950/40">
       {/* Orbiting dots around book icon */}
       <div className="relative w-32 h-32 flex items-center justify-center mb-8">
         {dots.map((i) => (
@@ -105,6 +111,7 @@ const StoryGeneratingAnimation = ({ onCancel }: StoryGeneratingAnimationProps) =
           Cancel generation
         </button>
       )}
+      </div>
     </div>
   );
 };
