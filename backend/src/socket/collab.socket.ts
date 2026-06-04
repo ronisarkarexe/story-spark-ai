@@ -9,7 +9,6 @@ import { User } from "../app/modules/user/user.model";
 import { reserveUserQuota } from "../app/modules/ai_model/quota.service";
 import { createUserQuotaGuard, runWithQuotaCleanup } from "../app/modules/ai_model/quota.lifecycle";
 
-
 const COLORS = [
   "#FF6B6B",
   "#4ECDC4",
@@ -170,98 +169,98 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // AI continues the story
-socket.on("collab:ai_continue", async ({ roomId }) => {
-  const room = rooms.get(roomId);
+    socket.on("collab:ai_continue", async ({ roomId }) => {
+      const room = rooms.get(roomId);
 
-  if (!room) return;
+      if (!room) return;
 
-  const userId = socket.data.userId;
-  if (!userId) {
-    socket.emit("collab:error", { message: "Unauthorized" });
-    return;
-  }
-
-  const participant = room.participants.find((p) => p.userId === userId);
-  if (!participant) {
-    socket.emit("collab:error", {
-      message: "You are not a participant of this room",
-    });
-    return;
-  }
-
-  const user = await User.findById(userId);
-  if (!user) {
-    socket.emit("collab:error", { message: "User not found!" });
-    return;
-  }
-
-  try {
-    await reserveUserQuota(user.email);
-  } catch (error: any) {
-    const errorMsg =
-      error instanceof Error
-        ? error.message
-        : "Monthly request limit exceeded!";
-    socket.emit("collab:error", { message: errorMsg });
-    return;
-  }
-
-  const guard = createUserQuotaGuard(user.email);
-
-  try {
-    await runWithQuotaCleanup(guard, async () => {
-      collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
-
-      const storyContext = room.story
-        .map((chunk) => chunk.text)
-        .filter(Boolean)
-        .join("\n");
-
-      const prompt = storyContext
-        ? `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${storyContext}\n\nContinuation:`
-        : "Start a collaborative story naturally and creatively in 2-3 sentences. Return ONLY the story text, do not add any quotes, titles, JSON, formatting, or labels.";
-
-      const result = await AiModelService.aiFreeModelGenerate({
-        prompt,
-        wordLength: 120,
-        numStories: 1,
-        language: "English",
-      });
-
-      const continuationText = result?.[0]?.content?.trim();
-
-      if (!continuationText) {
-        throw new Error("Empty response from AI");
+      const userId = socket.data.userId;
+      if (!userId) {
+        socket.emit("collab:error", { message: "Unauthorized" });
+        return;
       }
 
-      const aiChunk: IStoryChunk = {
-        authorId: "ai",
-        authorName: "✨ AI",
-        color: "#d4af37",
-        text: continuationText,
-        isAI: true,
-        timestamp: new Date(),
-      };
+      const participant = room.participants.find((p) => p.userId === userId);
+      if (!participant) {
+        socket.emit("collab:error", {
+          message: "You are not a participant of this room",
+        });
+        return;
+      }
 
-      room.story.push(aiChunk);
+      const user = await User.findById(userId);
+      if (!user) {
+        socket.emit("collab:error", { message: "User not found!" });
+        return;
+      }
 
-      collabNamespace.to(roomId).emit("collab:story_updated", {
-        story: room.story,
-        newChunk: aiChunk,
-      });
-    });
-  } catch (error) {
-    logger.error("AI collaboration generation failed", error);
+      try {
+        await reserveUserQuota(user.email);
+      } catch (error: any) {
+        const errorMsg =
+          error instanceof Error
+            ? error.message
+            : "Monthly request limit exceeded!";
+        socket.emit("collab:error", { message: errorMsg });
+        return;
+      }
 
-    socket.emit("collab:error", {
-      message: "AI continuation failed. Please try again.",
+      const guard = createUserQuotaGuard(user.email);
+
+      try {
+        await runWithQuotaCleanup(guard, async () => {
+          collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
+
+          const storyContext = room.story
+            .map((chunk) => chunk.text)
+            .filter(Boolean)
+            .join("\n");
+
+          const prompt = storyContext
+            ? `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${storyContext}\n\nContinuation:`
+            : "Start a collaborative story naturally and creatively in 2-3 sentences. Return ONLY the story text, do not add any quotes, titles, JSON, formatting, or labels.";
+
+          const result = await AiModelService.aiFreeModelGenerate({
+            prompt,
+            wordLength: 120,
+            numStories: 1,
+            language: "English",
+          });
+
+          const continuationText = result?.[0]?.content?.trim();
+
+          if (!continuationText) {
+            throw new Error("Empty response from AI");
+          }
+
+          const aiChunk: IStoryChunk = {
+            authorId: "ai",
+            authorName: "✨ AI",
+            color: "#d4af37",
+            text: continuationText,
+            isAI: true,
+            timestamp: new Date(),
+          };
+
+          room.story.push(aiChunk);
+
+          collabNamespace.to(roomId).emit("collab:story_updated", {
+            story: room.story,
+            newChunk: aiChunk,
+          });
+        });
+      } catch (error) {
+        logger.error("AI collaboration generation failed", error);
+
+        socket.emit("collab:error", {
+          message: "AI continuation failed. Please try again.",
+        });
+      } finally {
+        collabNamespace.to(roomId).emit("collab:user_stop_typing", {
+          userId: "ai",
+        });
+      }
     });
-  } finally {
-    collabNamespace.to(roomId).emit("collab:user_stop_typing", {
-      userId: "ai",
-    });
-  }
-});
 
     // Typing indicator
     socket.on("collab:typing", ({ roomId }) => {

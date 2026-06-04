@@ -15,7 +15,6 @@ const toggleReaction = async (
 ) => {
   const { email } = token;
 
-  const user = await User.findOne({ email });
   const user = await User.findOne({ email }).select("_id").lean();
 
   if (!user) {
@@ -25,7 +24,6 @@ const toggleReaction = async (
   const post = await Post.findOne({
     _id: postId,
     isDeleted: { $ne: true },
-  });
   }).select("likesCount reactions");
 
   if (!post) {
@@ -42,6 +40,15 @@ const toggleReaction = async (
   if (existingReaction && existingReaction.type === type) {
     await Reaction.findByIdAndDelete(existingReaction._id);
 
+    // Update Post schema references atomically
+    await Post.updateOne(
+      { _id: postId },
+      {
+        $pull: { reactions: existingReaction._id },
+        $inc: { likesCount: -1 },
+      }
+    );
+
     const likesCount = await Reaction.countDocuments({ postId });
 
     return {
@@ -56,11 +63,20 @@ const toggleReaction = async (
     await existingReaction.save();
   } else {
     // Create new reaction
-    await Reaction.create({
+    const newReaction = await Reaction.create({
       postId: new Types.ObjectId(postId),
       userId: user._id,
       type,
     });
+
+    // Update Post schema references atomically
+    await Post.updateOne(
+      { _id: postId },
+      {
+        $addToSet: { reactions: newReaction._id },
+        $inc: { likesCount: 1 },
+      }
+    );
   }
 
   const likesCount = await Reaction.countDocuments({ postId });
