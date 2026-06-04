@@ -17,11 +17,14 @@ import { GamificationService } from "../gamification/gamification.service";
 import { WritingStreakService } from "../gamification/writing_streak.service";
 
 
+<<<<<<< HEAD
 const escapeRegex = (text: string): string => {
   return text.replace(/[-[\]{}()*+?.,\^$|#\s]/g, "\$&");
 };
 const MAX_SEARCH_TERM_LENGTH = 100;
 
+=======
+>>>>>>> 5f805a58 (fix: resolve TypeScript build errors)
 interface ICursorPayload {
   value: string;
   id: string;
@@ -409,6 +412,9 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
 
   const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
   if (!postExists) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
+  }
+
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 

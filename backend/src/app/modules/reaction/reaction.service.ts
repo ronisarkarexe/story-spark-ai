@@ -80,9 +80,8 @@ const toggleReaction = async (
       message: "Reaction added successfully",
       likesCount: post.likesCount,
     };
-  }
-};
-
+  }  
+  };
 export const ReactionService = {
   toggleReaction,
 };
