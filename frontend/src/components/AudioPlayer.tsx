@@ -183,7 +183,8 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
               </button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_180px] md:items-end">
+            {/* Fix 2: Added grid-cols-1 explicit rule for mobile stacking */}
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(140px,160px)_minmax(160px,1fr)_minmax(160px,1fr)_minmax(160px,1fr)_minmax(200px,1fr)] lg:items-end">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>Progress</span>
