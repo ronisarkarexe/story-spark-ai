@@ -40,7 +40,11 @@ class ErrorBoundary extends Component<Props, State> {
         message: error.toString(),
         stack: error.stack,
         componentStack: errorInfo.componentStack,
-        url: typeof window !== "undefined" ? window.location.href : "",
+        // Path only, no query string, so tokens or PII in params are not persisted.
+        url:
+          typeof window !== "undefined"
+            ? window.location.origin + window.location.pathname
+            : "",
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       };
 

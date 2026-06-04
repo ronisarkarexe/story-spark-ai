@@ -1,12 +1,33 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
-// Register the GSAP plugin
 gsap.registerPlugin(useGSAP);
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
+  },
+};
+
 const features = [
+// ... (rest of the features array remains the same)
   {
     title: "Infinite Variations",
     description: "Generate multiple unique branches of your story from a single starting prompt. Explore every creative possibility.",
@@ -59,7 +80,6 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
 
-      // Parallax effect on inner content
       gsap.to(contentRef.current, {
         x: x * 0.15,
         y: y * 0.15,
@@ -67,7 +87,6 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
         duration: 0.3
       });
 
-      // Slight 3D tilt on the card itself
       gsap.to(card, {
         rotateY: (x / rect.width) * 15,
         rotateX: -(y / rect.height) * 15,
@@ -103,26 +122,25 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
   }, { scope: cardRef });
 
   return (
-    <div style={{ perspective: "1000px" }} className="h-full">
+    <div style={{ perspective: "1000px" }} className="h-full w-full box-border">
       <div
         ref={cardRef}
-        className={`motion-card relative overflow-hidden backdrop-blur-xl border border-white/10 rounded-3xl p-8 transition-shadow duration-500 shadow-xl group cursor-pointer ${feature.bgClass} hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] h-full`}
+        className={`motion-card relative overflow-hidden backdrop-blur-xl border border-slate-200/50 dark:border-white/10 rounded-3xl p-6 sm:p-8 transition-shadow duration-500 shadow-sm group cursor-pointer ${feature.bgClass} hover:shadow-[0_0_40px_rgba(255,255,255,0.12)] h-full w-full box-border`}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
-        <div ref={contentRef} className="relative z-10 pointer-events-none">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 bg-white/10 shadow-lg group-hover:scale-110 transition-transform duration-300">
+        <div ref={contentRef} className="relative z-10 pointer-events-none w-full box-border">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-5 sm:mb-6 bg-white/10 shadow-md group-hover:scale-105 transition-transform duration-300 shrink-0">
             {feature.icon}
           </div>
-          <h3 className="text-xl font-bold text-white mb-3 group-hover:text-blue-100 transition-colors duration-300">{feature.title}</h3>
-          <p className="text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300">{feature.description}</p>
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-2.5 sm:mb-3 tracking-tight group-hover:text-blue-100 transition-colors duration-300 truncate max-w-full">{feature.title}</h3>
+          <p className="text-xs sm:text-sm text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300 font-medium">{feature.description}</p>
         </div>
       </div>
     </div>
   );
 };
 
-/* Ambient Particle System - GSAP powered */
 const PARTICLE_CONFIG = [
   { color: "#60a5fa", size: 14, left: "8%", top: "18%", xMove: 40, yMove: -60, dur: 5 },
   { color: "#a78bfa", size: 10, left: "22%", top: "55%", xMove: -30, yMove: -70, dur: 6 },
@@ -166,7 +184,7 @@ const HeroParticles = () => {
   }, { scope: containerRef });
 
   return (
-    <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 1 }} aria-hidden="true">
+    <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden select-none" style={{ zIndex: 1 }} aria-hidden="true">
       {PARTICLE_CONFIG.map((p, i) => (
         <span
           key={i}
@@ -194,12 +212,10 @@ const HeroSectionComponent = () => {
   const starTimers = useRef<number[]>([]);
   const badgeRef = useRef<HTMLDivElement>(null);
 
-  // GSAP badge float + glow + animated border
   useGSAP(() => {
     const badge = badgeRef.current;
     if (!badge) return;
 
-    // Side-to-side motion
     gsap.fromTo(badge,
       { x: -10 },
       {
@@ -211,28 +227,26 @@ const HeroSectionComponent = () => {
       }
     );
 
-    // Glowing box-shadow
     gsap.to(badge, {
-      boxShadow: "0 0 16px rgba(59, 130, 246, 0.45), 0 0 40px rgba(139, 92, 246, 0.2)",
+      boxShadow: "0 0 16px rgba(59, 130, 246, 0.2), 0 0 40px rgba(139, 92, 246, 0.1)",
       duration: 1.2,
       ease: "sine.inOut",
       yoyo: true,
       repeat: -1,
     });
 
-    // Color-changing moving border effect
     gsap.to(badge, {
-      borderColor: "rgba(244, 114, 182, 0.8)", // Pink
+      borderColor: "rgba(244, 114, 182, 0.6)",
       duration: 1,
       repeat: -1,
       yoyo: true,
       ease: "none",
       keyframes: {
-        "0%": { borderColor: "rgba(59, 130, 246, 0.8)" },  // Blue
-        "25%": { borderColor: "rgba(167, 139, 250, 0.8)" }, // Purple
-        "50%": { borderColor: "rgba(244, 114, 182, 0.8)" }, // Pink
-        "75%": { borderColor: "rgba(52, 211, 153, 0.8)" },  // Emerald
-        "100%": { borderColor: "rgba(59, 130, 246, 0.8)" }  // Blue
+        "0%": { borderColor: "rgba(59, 130, 246, 0.4)" },
+        "25%": { borderColor: "rgba(167, 139, 250, 0.4)" },
+        "50%": { borderColor: "rgba(244, 114, 182, 0.4)" },
+        "75%": { borderColor: "rgba(52, 211, 153, 0.4)" },
+        "100%": { borderColor: "rgba(59, 130, 246, 0.4)" }
       }
     });
   });
@@ -264,57 +278,58 @@ const HeroSectionComponent = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-300">
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-sky-200/55 dark:bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10 transition-colors duration-300" />
-      <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-fuchsia-200/45 dark:bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10 transition-colors duration-300" />
+    <div className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden transition-colors duration-300 w-full box-border">
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-sky-200/40 dark:bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-10 select-none transition-colors duration-300" />
+      <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-fuchsia-200/30 dark:bg-purple-600/10 rounded-full blur-[120px] pointer-events-none -z-10 select-none transition-colors duration-300" />
 
       <HeroParticles />
 
-      <div className="relative overflow-hidden" onMouseMove={handleMouseMove}>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20 text-center">
+      <div className="relative overflow-hidden w-full box-border" onMouseMove={handleMouseMove}>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border">
           <div
             ref={badgeRef}
-            className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 dark:bg-slate-800/60 border border-blue-400/30 dark:border-blue-500/30 backdrop-blur-md mb-8 shadow-sm cursor-pointer transition-all duration-300"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 backdrop-blur-md mb-8 shadow-sm cursor-pointer select-none"
           >
-            <span className="relative flex h-2.5 w-2.5">
+            <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </span>
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 tracking-wide">StorySparkAI v2.0 is live</span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">StorySparkAI v2.0 is live</span>
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none tracking-tight">
             Ignite Your Imagination With <br className="hidden sm:block" />
-            <span className="hero-gradient-text pb-2">
+            <span className="hero-gradient-text pb-2 block sm:inline">
               AI-Driven Storytelling
             </span>
-          </h1>
+          </motion.h1>
 
-          <p className="max-w-2xl mx-auto text-lg sm:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 transition-colors duration-300">
+          <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
             Create, edit, and generate engaging multiple story variations from a single prompt.
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
           </p>
-          <div className="flex-grow flex flex-col items-center justify-center">
-            <div className="relative max-w-3xl w-full">
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                <Link to="/stories">
-                  <button className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-md shadow-blue-500/15 dark:shadow-indigo-500/10 hover:shadow-lg hover:shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
-                    <i className="fa fa-wand-magic-sparkles"></i>
+          
+          <div className="w-full box-border flex flex-col items-center justify-center">
+            <div className="relative max-w-3xl w-full box-border">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
+                <Link to="/stories" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
+                    <i className="fa fa-wand-magic-sparkles text-sm"></i>
                     <span>Get Started</span>
                   </button>
                 </Link>
-                <Link to="/collab">
-                  <button className="relative px-8 py-3.5 rounded-xl bg-white/80 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white font-semibold shadow-md hover:bg-slate-50 dark:hover:bg-white/10 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
+                <Link to="/collab" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
                     <span>✍️</span>
                     <span>Collab Mode</span>
                   </button>
                 </Link>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
           <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
             {stars.map((star) => (
               <span
@@ -327,14 +342,14 @@ const HeroSectionComponent = () => {
         </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">
           {features.map((feature, index) => (
             <FeatureCard feature={feature} key={index} />
           ))}
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
