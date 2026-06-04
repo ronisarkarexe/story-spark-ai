@@ -35,6 +35,27 @@ const getPosts = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getPublishedPostsByAuthor = catchAsync(
+  async (req: Request, res: Response) => {
+    const token = await getToken(req);
+    const filters = pick(req.query, ["searchTerm"]);
+    const pagination = pick(req.query, paginationFields);
+    const result = await PostService.getPublishedPostsByAuthor(
+      token,
+      filters,
+      pagination
+    );
+
+    sendResponse<IPost[]>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Published stories fetched successfully!",
+      data: result.data,
+      meta: result.meta,
+    });
+  }
+);
+
 const getLatestPosts = catchAsync(async (req: Request, res: Response) => {
   const result = await PostService.getLatestPosts();
   sendResponse(res, {
@@ -126,9 +147,48 @@ const deletePost = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+/* ============================================================
+   PATCHED CONTROLLERS — GSSoC '26 QUOTA INTERCEPTION
+   ============================================================ */
+
+const remixStory = catchAsync(async (req: Request, res: Response) => {
+  const { postId, prompt } = req.body;
+  const token = await getToken(req);
+  const result = await PostService.remixStory(postId, prompt, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Story remixed successfully!",
+    data: result,
+  });
+});
+
+const translateStory = catchAsync(async (req: Request, res: Response) => {
+  const { postId, language } = req.body;
+  const token = await getToken(req);
+  const result = await PostService.translateStory(postId, language, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Story translated successfully!",
+    data: result,
+  });
+});
+
+const getGenres = catchAsync(async (_req: Request, res: Response) => {
+  const result = await PostService.getGenres();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Genres fetched successfully!",
+    data: result,
+  });
+});
+
 export const PostController = {
   createPost,
   getPosts,
+  getPublishedPostsByAuthor,
   getLatestPosts,
   getFeaturedPosts,
   doFeaturedPosts,
@@ -137,5 +197,7 @@ export const PostController = {
   toggleBookmark,
   updatePost,
   deletePost,
+  remixStory,
+  translateStory,
+  getGenres,
 };
-

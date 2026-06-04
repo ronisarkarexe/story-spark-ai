@@ -1,9 +1,13 @@
-import { useForm, SubmitHandler } from "react-hook-form";
+﻿import { useForm, SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { useState, useEffect } from "react";
 import { storeUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import logo from "../../assets/logoNew.png";
+import { Link } from "react-router-dom";
+import { useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import {
   useEmailVerifyMutation,
   useVerifyOtpMutation,
@@ -38,7 +42,6 @@ const getPasswordError = (password: string) => {
   if (!/[^A-Za-z0-9]/.test(password)) {
     return "Password must contain at least one special character";
   }
-
   return "";
 };
 
@@ -87,13 +90,17 @@ const SignUpComponent = () => {
   const [emailVerify] = useEmailVerifyMutation();
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerUser] = useRegisterUserMutation();
+  const [googleLogin] = useGoogleLoginMutation();
+
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    unregister,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
+
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [showOtpField, setShowOtpField] = useState<boolean>(false);
   const [registerInfo, setRegisterInfo] = useState<IRegisterInfo>();
@@ -119,12 +126,9 @@ const SignUpComponent = () => {
     special: /[^A-Za-z0-9]/.test(password || ""),
   };
 
-  const passedChecks =
-    Object.values(passwordChecks).filter(Boolean).length;
-
+  const passedChecks = Object.values(passwordChecks).filter(Boolean).length;
   const strengthLevel = getStrengthLevel(passedChecks);
-  const { label: strengthLabel, barColor, barWidth, textColor } =
-    PASSWORD_STRENGTH_CONFIG[strengthLevel];
+  const { label: strengthLabel, barColor, barWidth, textColor } = PASSWORD_STRENGTH_CONFIG[strengthLevel];
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
@@ -154,14 +158,15 @@ const SignUpComponent = () => {
           setExpiredAt(new Date(expiresAt).getTime());
           toast.success("OTP sent to your email");
           setRegisterInfo(user);
+          unregister("confirmPassword");
+          unregister("password");
+          unregister("name");
+          unregister("email");
           setShowOtpField(true);
           setCooldown(60);
         }
       } catch (error) {
-        const message =
-          (error as { data?: Array<{ message?: string }> })?.data?.[0]
-            ?.message ||
-          "Failed to send OTP. Check backend .env email credentials.";
+        const message = (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "Failed to send OTP. Check backend .env email credentials.";
         toast.error(message);
       } finally {
         setIsBusy(false);
@@ -205,9 +210,7 @@ const SignUpComponent = () => {
         throw new Error("No verification token received");
       }
     } catch (err: unknown) {
-      const message =
-        (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-        "OTP verification failed. Please check the code and try again.";
+      const message = (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "OTP verification failed. Please check the code and try again.";
       toast.error(message);
     } finally {
       setIsBusy(false);
@@ -235,54 +238,133 @@ const SignUpComponent = () => {
         setCooldown(60);
       }
     } catch (error) {
-      const message =
-        (error as { data?: Array<{ message?: string }> })?.data?.[0]
-          ?.message || "Failed to resend OTP. Please try again.";
+      const message = (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "Failed to resend OTP. Please try again.";
       toast.error(message);
     } finally {
       setIsBusy(false);
     }
   };
 
-  return (
-    <div className="min-h-[calc(100dvh-4.5rem)] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8">
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    setIsBusy(true);
+    try {
+      const res = await googleLogin({
+        token: credentialResponse.credential,
+      }).unwrap();
 
+      if (res.data.accessToken) {
+        toast.success("User logged in successfully with Google!");
+        storeUserInfo({ accessToken: res.data.accessToken });
+        navigate("/");
+      }
+    } catch {
+      toast.error("Failed to login with Google. Please try again.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    toast.error("Google login failed. Please try again.");
+  };
+
+  return (
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-12 relative overflow-hidden text-slate-900 dark:text-slate-100">
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10">
+      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4">
         <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
           <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
         </div>
 
-        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
-          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
+        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden">
+          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200">
+        <div className="flex justify-center items-center gap-40">
+        
+                <div className="flex flex-col gap-5">
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
+                    
+                    Turns Ideas into
+                    <br /> 
+                    unforgotable stories
+                    
+                    </h1>
+                  <p>AI powered storytelling that helps you
+                      <br />            
+                     create connect inspire.</p>
+        
+                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                      <div>
+                        <WandSparkles className="text-violet-600"/>
+                      </div>
+                      <div>
+                        <h1 className="font-bold">Smart writing</h1>
+                        <p>AI that understands your ideas</p>
+                      </div>
+                     </div>
+        
+        
+                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                      <div>
+                        <BookOpen className="text-violet-600"/>
+                      </div>
+                      <div>
+                        <h1 className="font-bold">Endless Creativity</h1>
+                        <p>Stories that captivate and inspire</p>
+                      </div>
+                     </div>
+        
+        
+                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                      <div>
+                        <UsersRound className="text-violet-600"/>
+                      </div>
+                      <div>
+                        <h1 className="font-bold">Built for everyone</h1>
+                        <p>Writers, Creaters and dreamers</p>
+                      </div>
+                     </div>
+                     <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                        Create, edit, and generate engaging multiple story
+                        <br />
+                         variations from a single prompt.
+                          <br />                
+                         Perfect for writers, creators, and enthusiasts 
+                         <br />
+                         exploring the future of fiction.
+                     </div>
+                </div>
+                <div className="w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl p-6 sm:p-8 shadow-2xl">
+          {" "}
+          <h3 className="text-center text-2xl md:text-3xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
+            {" "}
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
-
           {!showOtpField && (
-            <p className="mt-2 mb-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-2 mb-5 text-center text-sm text-slate-400">
+              {" "}
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
 
           {!showOtpField && (
-            <div className="relative mb-6">
+            <div className="relative my-6">
+              {" "}
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-700/50"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-white dark:bg-slate-800/60 text-slate-800 dark:text-slate-400 font-semibold">
+                <span className="px-4 bg-slate-800/60 text-slate-400 font-semibold">
                   SIGN UP WITH EMAIL
                 </span>
               </div>
             </div>
           )}
-
           {!showOtpField ? (
-            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            <form className="space-y-5 w-full min-w-0 overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
               <SSInput
                 label="Name"
                 name="name"
@@ -293,14 +375,13 @@ const SignUpComponent = () => {
                 autoComplete="name"
                 validation={{
                   required: "Name is required",
-                minLength: {
-                value: 2,
-                message: "Name must be at least 2 characters",
-                },
+                    minLength: {
+                        value: 2,
+                        message: "Name must be at least 2 characters",
+                    },
                   pattern: {
                     value: /^[A-Za-z0-9\s._]+$/,
-                    message:
-                      "Only letters, numbers, spaces, underscores, and dots are allowed",
+                    message: "Only letters, numbers, spaces, underscores, and dots are allowed",
                   },
                 }}
                 error={errors.name}
@@ -331,61 +412,66 @@ const SignUpComponent = () => {
               />
 
               {password?.length > 0 && (
-              <div className="space-y-3 -mt-2">
-                <div
-                  className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
-                  role="progressbar"
-                  aria-valuenow={passedChecks}
-                  aria-valuemin={0}
-                  aria-valuemax={PASSWORD_REQUIREMENTS.length}
-                  aria-label="Password strength"
-                >
+                <div className="space-y-3 -mt-2 min-w-0 overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
-                  ></div>
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden select-none"
+                    role="progressbar"
+                    aria-valuenow={passedChecks}
+                    aria-valuemin={0}
+                    aria-valuemax={PASSWORD_REQUIREMENTS.length}
+                    aria-label="Password strength"
+                  >
+                    <div className={`h-full transition-all duration-300 ${barColor} ${barWidth}`} />
+                  </div>
+
+                  <p className={`text-xs font-bold uppercase tracking-wider select-none ${textColor}`} aria-live="polite">
+                    {strengthLabel} Password
+                  </p>
+
+                  <ul className="space-y-1.5 list-none p-0 m-0 w-full box-border text-[11px] font-medium">
+                    {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
+                      const met = passwordChecks[key];
+                      return (
+                        <li
+                          key={key}
+                          className={`flex items-center gap-2 ${met ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-600"}`}
+                          aria-label={`${label}: ${met ? "met" : "not met"}`}
+                        >
+                          <i className={`fa-solid ${met ? "fa-circle-check" : "fa-circle-xmark"} text-xs shrink-0`} aria-hidden="true" />
+                          <span>{label}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
-
-                <p
-                  className={`text-sm font-medium ${textColor}`}
-                  aria-live="polite"
-                >
-                  {strengthLabel} Password
-                </p>
-
-                <ul className="space-y-1 text-xs">
-                  {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
-                    const met = passwordChecks[key];
-                    return (
-                      <li
-                        key={key}
-                        className={met ? "text-green-400" : "text-red-400"}
-                        aria-label={`${label}: ${met ? "met" : "not met"}`}
-                      >
-                        <span aria-hidden="true">{met ? "✅" : "❌"}</span>{" "}
-                        {label}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-)}
+              )}
 
               <SSInput
                 label="Confirm Password"
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
-                required={true}
+                required={!showOtpField}
                 icon="fi fi-rr-eye"
                 register={register}
                 autoComplete="new-password"
+                validation={{
+                  validate: (value) => {
+                    if (showOtpField) return true;
+                    if (!value) return "Confirm password is required";
+                    if (value !== password) return "Passwords do not match!";
+                    return true;
+                  }
+                }}
                 error={errors.confirmPassword}
               />
 
-              <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
+              <div className="pt-2">
+                <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
+              </div>
             </form>
           ) : (
-            <div className="space-y-5">
+            <div className="grid grid-cols-1 gap-4 w-full box-border">
               <SSInput
                 label="OTP"
                 name="otp"
@@ -418,29 +504,48 @@ const SignUpComponent = () => {
                 isLoading={isBusy}
               />
 
-              <div className="text-center mt-2">
+              <div className="text-center pt-2 select-none">
                 <button
                   type="button"
                   onClick={handleResendOtp}
                   disabled={cooldown > 0 || isBusy}
-                  className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-gray-500 transition-colors duration-200 focus:outline-none disabled:cursor-not-allowed"
+                  className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 disabled:text-slate-400 dark:disabled:text-slate-600 transition-colors duration-150 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
                 >
                   {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
                 </button>
               </div>
             </div>
           )}
-
           {!showOtpField && (
-            <p className="mt-8 text-center text-sm text-slate-400">
-              Already have an account?{" "}
-              <a
-                href="/login"
-                className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
-              >
-                Sign In
-              </a>
-            </p>
+            <>
+              <div className="relative my-8 w-full box-border">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white dark:bg-slate-900 px-4 text-slate-400 dark:text-slate-500 font-medium">
+                    Or
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-center w-full box-border">
+                <GoogleLogin
+                  onSuccess={handleGoogleLoginSuccess}
+                  onError={handleGoogleLoginError}
+                />
+              </div>
+
+              <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                Already have an account?{" "}
+                <Link
+                  to="/login"
+                  className="font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Sign In
+                </Link>
+              </p>
+            </>
           )}
         </div>
       </div>

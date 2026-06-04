@@ -175,7 +175,7 @@
                     <label class="block text-label-caps text-on-surface-variant mb-2" for="name-field">FULL NAME</label>
                     <div class="ds-input-group">
                         <i class="fi fi-rr-user ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full ds-input with-icon pl-11" placeholder="Alex Spark" type="text" id="name-field" name="name" autocomplete="name" required aria-describedby="name-help name-error" aria-invalid="false"/>
+                        <input class="auth-field w-full ds-input with-icon pl-11" placeholder="Alex Spark" type="text" id="name-field" name="name" autocomplete="name" required aria-describedby="name-help name-error" aria-invalid="false"/>
                     </div>
                     <p class="ds-help" id="name-help">This will be shown on your profile.</p>
                     <p class="ds-error" id="name-error" role="alert" aria-live="polite"></p>
@@ -184,7 +184,7 @@
                     <label class="block text-label-caps text-on-surface-variant mb-2" for="email-field">EMAIL ADDRESS</label>
                     <div class="ds-input-group">
                         <i class="fi fi-rr-envelope ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full ds-input with-icon pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required aria-describedby="email-help email-error" aria-invalid="false"/>
+                        <input class="auth-field w-full ds-input with-icon pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required aria-describedby="email-help email-error" aria-invalid="false"/>
                     </div>
                     <p class="ds-help" id="email-help">We’ll send account updates to this address.</p>
                     <p class="ds-error" id="email-error" role="alert" aria-live="polite"></p>
@@ -196,7 +196,7 @@
                     </div>
                     <div class="ds-input-group has-action">
                         <i class="fi fi-rr-lock ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full ds-input with-icon pl-11 pr-11" id="password-field" name="password" autocomplete="new-password" placeholder="At least 8 characters" type="password" required aria-describedby="password-help password-error password-strength" aria-invalid="false"/>
+                        <input class="auth-field w-full ds-input with-icon pl-11 pr-11" id="password-field" name="password" autocomplete="new-password" placeholder="At least 8 characters" type="password" required aria-describedby="password-help password-error password-strength" aria-invalid="false"/>
                         <button class="ds-input-action flex items-center justify-center" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
                             <i class="fi fi-rr-eye-crossed text-[16px]" id="eye-icon"></i>
                         </button>
@@ -205,6 +205,25 @@
                     <p class="ds-help" id="password-help">Use 8+ characters with a mix of letters and numbers.</p>
                     <p class="ds-help" id="password-strength"></p>
                     <p class="ds-error" id="password-error" role="alert" aria-live="polite"></p>
+                    <p 
+                 id="signup-caps-lock-warning" 
+                 class="hidden text-yellow-400 text-sm mt-2"
+                 >
+                 Caps Lock is ON
+                </p>
+                </div>
+                <div class="ds-field">
+                    <label class="block text-label-caps text-on-surface-variant mb-2" for="confirm-password-field">CONFIRM PASSWORD</label>
+                    <div class="ds-input-group has-action">
+                        <i class="fi fi-rr-lock ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
+                        <input class="w-full ds-input with-icon pl-11 pr-11" id="confirm-password-field" name="confirmPassword" autocomplete="new-password" placeholder="Re-enter your password" type="password" required aria-describedby="confirm-password-help confirm-password-error confirm-password-feedback" aria-invalid="false"/>
+                        <button class="ds-input-action flex items-center justify-center" onclick="toggleConfirmPasswordVisibility()" type="button" aria-label="Toggle confirm password visibility">
+                            <i class="fi fi-rr-eye-crossed text-[16px]" id="confirm-eye-icon"></i>
+                        </button>
+                    </div>
+                    <p class="ds-help" id="confirm-password-help">Passwords must match to create your account.</p>
+                    <p class="ds-feedback password-match-feedback" id="confirm-password-feedback" role="status" aria-live="polite"></p>
+                    <p class="ds-error" id="confirm-password-error" role="alert" aria-live="polite"></p>
                 </div>
                 <div class="flex items-center gap-2">
                     <input class="w-4 h-4 rounded border-white/10 bg-surface-container-high text-primary focus:ring-primary ring-offset-surface" id="remember" type="checkbox"/>
