@@ -6,10 +6,6 @@ import {
   useGetPostByTagQuery,
   useUpdatePostMutation,
 } from "../../redux/apis/post.api";
-import {
-  useGetVersionsByStoryIdQuery,
-  useRestoreVersionMutation,
-} from "../../redux/apis/storyVersion.api";
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
 import { ComparisonMode } from "../story-comparison";

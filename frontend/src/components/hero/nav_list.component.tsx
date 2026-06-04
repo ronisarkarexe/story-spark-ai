@@ -1,11 +1,6 @@
-import React, { useState, useRef } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import logo from "../../assets/logoNew.png";
 import ThemeToggle from "../theme/theme_toggle.component";
 import NotificationComponent from "../notification/notification.component";
@@ -321,4 +316,4 @@ const HeaderComponent: React.FC = () => {
   );
 };
 
-export default NavList;
+export default HeaderComponent;

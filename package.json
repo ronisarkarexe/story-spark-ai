@@ -35,7 +35,7 @@
     "concurrently": "^9.1.2"
   },
   "overrides": {
-    "@types/express": "^4.17.21",
+    "@types/express": "^5.0.6",
     "@types/express-serve-static-core": "^4.17.33"
   },
   "dependencies": {

@@ -213,7 +213,6 @@ const FooterComponent = () => {
             <form
               onSubmit={handleSubscribe}
               noValidate
-
               className="group/form mt-1 flex items-center rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-1 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
             >
               <span className="shrink-0 pl-3 text-slate-500 text-[13px]">
@@ -231,29 +230,6 @@ const FooterComponent = () => {
                 type="submit"
                 disabled={status === "loading"}
                 className="shrink-0 inline-flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-[12px] font-semibold text-white tracking-wide hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60"
-
-              className="mt-0.5 flex flex-col gap-2 rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-2 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
-
-              >
-               {/* Input */}
-              <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
-              <i className="fa-solid fa-envelope text-slate-500 text-[13px]" />
-
-              <input
-                  type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@storyspark.ai"
-                    disabled={status === "loading"}
-                    className="w-full h-full bg-transparent text-[13px] text-white placeholder-slate-500 focus:outline-none"
-                  />
-              </div>
-
-               {/* Small button below */}
-              <button
-                  type="submit"
-                  disabled={status === "loading"}
-                  className="self-start h-8 px-3 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 text-[11px] font-medium text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60"
               >
                   {status === "loading" ? "..." : "Subscribe"}
               </button>
@@ -280,7 +256,6 @@ const FooterComponent = () => {
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
             {legalLinks.map(({ label, to }, i) => (
-
               <React.Fragment key={label}>
                 <Link to={to} className="hover:text-blue-300 transition-colors">
                   {label}
@@ -289,17 +264,6 @@ const FooterComponent = () => {
                   <span className="text-white/[0.12]">|</span>
                 )}
               </React.Fragment>
-
-              <span key={label}>
-                <Link to={to}>
-                  {label}
-                </Link>
-
-                {i < legalLinks.length - 1 && (
-                  <span className="text-white/[0.12]">|</span>
-                )}
-              </span>
-
             ))}
           </div>
         </div>
