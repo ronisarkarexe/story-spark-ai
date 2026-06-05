@@ -20,14 +20,11 @@ const FooterComponent = () => {
     }
     setStatus("loading");
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/newsletter/subscribe`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_BASE_URL}/newsletter/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
       const data = await res.json();
       if (res.ok) {
         setStatus("success");
@@ -45,19 +42,17 @@ const FooterComponent = () => {
 
   const platformLinks = [
     { label: "About Us", to: "/about-us" },
-    { label: "Careers",  to: "/career"   },
-    { label: "Contact",  to: "/contact-us"},
+    { label: "Careers", to: "/career" },
+    { label: "Contact", to: "/contact-us" },
   ];
 
-  const githubIssuesUrl =
-    import.meta.env.VITE_GITHUB_REPO_ISSUES_URL || DEFAULT_GITHUB_ISSUES_URL;
+  const githubIssuesUrl = import.meta.env.VITE_GITHUB_REPO_ISSUES_URL || DEFAULT_GITHUB_ISSUES_URL;
 
   const resourceLinks = [
-    { label: "Blog",         to: "/blog"        },
-    { label: "Help Center",  to: "/help-center"    },
-    // ─── FIXED: Changed from "/community" to match the secure dashboard sub-route ───
-    { label: "Community",    to: "/dashboard/community" },
-    { label: "Contributors", to: "/contributors"},
+    { label: "Blog", to: "/blog" },
+    { label: "Help Center", to: "/help-center" },
+    { label: "Community", to: "/dashboard/community" },
+    { label: "Contributors", to: "/contributors" },
     { label: "Support / Feedback", to: "/contact-us" },
     { label: "GitHub Issues", to: githubIssuesUrl },
   ];
@@ -79,96 +74,44 @@ const FooterComponent = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative w-full bg-gradient-to-b from-[#090F24] via-[#080E22] to-[#060A18] overflow-hidden">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0"
-        style={{
-          height: "380px",
-          background: `radial-gradient(ellipse 75% 60% at 50% 0%,
-              rgba(56, 108, 220, 0.22) 0%,
-              rgba(79, 70, 229, 0.10) 45%,
-              transparent 80%)`,
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0"
-        style={{
-          height: "240px",
-          background: `radial-gradient(ellipse 50% 40% at 50% -5%,
-              rgba(99, 130, 255, 0.13) 0%,
-              rgba(79, 70, 229, 0.05) 50%,
-              transparent 80%)`,
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute right-[10%] top-[15%] w-[320px] h-[320px]"
-        style={{
-          background: `radial-gradient(circle,
-              rgba(56, 108, 220, 0.08) 0%,
-              rgba(79, 70, 229, 0.03) 50%,
-              transparent 75%)`,
-          filter: "blur(40px)",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{
-          background: "linear-gradient(90deg, transparent 0%, rgba(99,130,255,0.35) 35%, rgba(139,92,246,0.20) 65%, transparent 100%)",
-        }}
-      />
-
+    <footer className="relative w-full bg-gradient-to-b from-[#090F24] via-[#080E22] to-[#060A18] overflow-hidden text-slate-100">
       <div className="relative z-10 max-w-[1450px] mx-auto px-6 sm:px-8 lg:px-10 pt-12 pb-10">
-        <div className="grid grid-cols-12 gap-x-6 gap-y-10 items-start">
-
-          <div className="col-span-12 lg:col-span-4 flex flex-col gap-5">
-            <Link to="/" className="group inline-block w-fit">
-              <img
-                src={logo}
-                alt="StorySparkAI"
-                className="h-[38px] w-auto object-contain brightness-100 transition-all duration-300 group-hover:brightness-110"
-              />
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-4">
+            <Link to="/" className="inline-flex items-center gap-3">
+              <img src={logo} alt="StorySparkAI" className="h-10 w-auto" />
+              <span className="text-sm font-semibold">StorySparkAI</span>
             </Link>
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-blue-500/20 bg-blue-600/[0.10] px-3.5 py-1 text-[11.5px] font-medium tracking-[0.12em] text-blue-300/90 uppercase shadow-[0_0_14px_rgba(59,130,246,0.06)]">
-              <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-blue-400 animate-pulse" />
-              AI-powered storytelling ecosystem
-            </div>
-            <p className="text-[14.5px] leading-[1.75] text-slate-300/90 max-w-sm">
-              Empowering voices through the art of writing. Connect, create, and inspire.
+            <p className="mt-4 text-sm text-slate-300 max-w-sm">
+              Empowering voices through AI storytelling with collaborative tools and intuitive workflows.
             </p>
           </div>
 
-          <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
-            <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Platform</h3>
-            <ul className="flex flex-col gap-[12.5px]">
+          <div className="col-span-6 sm:col-span-4 lg:col-span-2">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Platform</h3>
+            <ul className="mt-4 space-y-3 text-sm text-slate-300">
               {platformLinks.map(({ label, to }) => (
                 <li key={to}>
-                  <Link to={to} className="group relative inline-flex text-[14px] leading-none text-slate-300/85 transition-colors duration-200 hover:text-blue-300">
+                  <Link to={to} className="hover:text-white transition-colors">
                     {label}
-                    <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" />
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
-            <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Resources</h3>
-            <ul className="flex flex-col gap-[12.5px]">
+          <div className="col-span-6 sm:col-span-4 lg:col-span-2">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Resources</h3>
+            <ul className="mt-4 space-y-3 text-sm text-slate-300">
               {resourceLinks.map(({ label, to }) => (
-                <li key={to}>
-                  {to && to.startsWith("http") ? (
-                    <a href={to} target="_blank" rel="noopener noreferrer" className="group relative inline-flex text-[14px] leading-none text-slate-300/85 transition-colors duration-200 hover:text-blue-300">
+                <li key={label}>
+                  {to.startsWith("http") ? (
+                    <a href={to} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
                       {label}
-                      <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" />
                     </a>
                   ) : (
-                    <Link to={to} className="group relative inline-flex text-[14px] leading-none text-slate-300/85 transition-colors duration-200 hover:text-blue-300">
+                    <Link to={to} className="hover:text-white transition-colors">
                       {label}
-                      <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" />
                     </Link>
                   )}
                 </li>
@@ -176,131 +119,37 @@ const FooterComponent = () => {
             </ul>
           </div>
 
-          <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
-            <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
-              Follow Us
-            </h3>
-            <ul className="flex flex-col gap-[12.5px]">
-              {socialLinks.map((item) => (
-                <li key={item.icon}>
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={item.label}
-                    className="group flex items-center gap-2.5 text-[14px] text-slate-300/85 hover:text-blue-300 transition-all duration-200"
-                  >
-                    {item.icon === "fa-x-twitter" ? (
-                      <FaXTwitter className="text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors" />
-                    ) : (
-                      <i
-                        className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
-                      />
-                    )}
-                    <span className="capitalize">
-                      {item.icon === "fa-x-twitter" ? "X" : item.icon.replace("fa-", "")}
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="col-span-12 sm:col-span-8 lg:col-span-2 flex flex-col gap-4">
-            <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Stay Updated</h3>
-            <p className="text-[13.5px] leading-[1.65] text-slate-300/80 max-w-sm">
-              Writing tips, product updates, and stories straight to your inbox.
-            </p>
-            <form
-              onSubmit={handleSubscribe}
-              noValidate
-
-              className="group/form mt-1 flex items-center rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-1 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
-            >
-              <span className="shrink-0 pl-3 text-slate-500 text-[13px]">
-                <i className="fa-solid fa-envelope" aria-hidden="true" />
-              </span>
+          <div className="col-span-12 sm:col-span-8 lg:col-span-2">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Stay Updated</h3>
+            <p className="mt-4 text-sm text-slate-300">Writing tips, product updates, and stories delivered to your inbox.</p>
+            <form onSubmit={handleSubscribe} className="mt-4 flex flex-col gap-3">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@storyspark.ai"
-                disabled={status === "loading"}
-                className="w-full min-w-0 bg-transparent pl-2.5 pr-1.5 py-2 text-[13px] text-white placeholder-slate-500 focus:outline-none"
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
               <button
                 type="submit"
-                disabled={status === "loading"}
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-[12px] font-semibold text-white tracking-wide hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60"
-
-              className="mt-0.5 flex flex-col gap-2 rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-2 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
-
+                className="rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-3 text-sm font-semibold text-white hover:opacity-90 transition"
               >
-               {/* Input */}
-              <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
-              <i className="fa-solid fa-envelope text-slate-500 text-[13px]" />
-
-              <input
-                  type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@storyspark.ai"
-                    disabled={status === "loading"}
-                    className="w-full h-full bg-transparent text-[13px] text-white placeholder-slate-500 focus:outline-none"
-                  />
-              </div>
-
-               {/* Small button below */}
-              <button
-                  type="submit"
-                  disabled={status === "loading"}
-                  className="self-start h-8 px-3 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 text-[11px] font-medium text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60"
-              >
-                  {status === "loading" ? "..." : "Subscribe"}
+                {status === "loading" ? "Subscribing..." : "Subscribe"}
               </button>
             </form>
-            <div aria-live="polite" role="status">
-              {status === "success" && <p className="text-[12.5px] text-green-400 mt-1">{message}</p>}
-              {status === "error" && <p className="text-[12.5px] text-red-400 mt-1">{message}</p>}
-              {status === "loading" && <p className="text-[12.5px] text-blue-400 mt-1">Subscribing...</p>}
-            </div>
+            {message && (
+              <p className={`mt-3 text-sm ${status === "success" ? "text-emerald-400" : "text-rose-400"}`}>{message}</p>
+            )}
           </div>
         </div>
 
-        <div
-          className="my-8"
-          style={{
-            height: "1px",
-            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 30%, rgba(255,255,255,0.07) 70%, transparent 100%)",
-          }}
-        />
-
-        <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-slate-400/80">
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 gap-y-1 text-center md:text-left">
-            <span className="text-slate-400/80">&copy; {currentYear} StorySparkAI. All rights reserved.</span>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
-            {legalLinks.map(({ label, to }, i) => (
-
-              <React.Fragment key={label}>
-                <Link to={to} className="hover:text-blue-300 transition-colors">
-                  {label}
-                </Link>
-                {i < legalLinks.length - 1 && (
-                  <span className="text-white/[0.12]">|</span>
-                )}
-              </React.Fragment>
-
-              <span key={label}>
-                <Link to={to}>
-                  {label}
-                </Link>
-
-                {i < legalLinks.length - 1 && (
-                  <span className="text-white/[0.12]">|</span>
-                )}
-              </span>
-
+        <div className="mt-8 border-t border-slate-700/40 pt-6 text-sm text-slate-400 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p>&copy; {currentYear} StorySparkAI. All rights reserved.</p>
+          <div className="flex flex-wrap items-center gap-3">
+            {legalLinks.map(({ label, to }) => (
+              <Link key={to} to={to} className="hover:text-white transition-colors">
+                {label}
+              </Link>
             ))}
           </div>
         </div>

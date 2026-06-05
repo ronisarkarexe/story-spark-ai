@@ -4,29 +4,22 @@ import { AUTH_KEY } from "../constants/storage-key";
 import { resolveSocketUrl } from "../helpers/socket-url";
 
 let socketIoInstance: Socket | null = null;
+let collabSocketIoInstance: Socket | null = null;
 
-export const getSocketIo = (): Socket | null => {
-  return socketIoInstance;
+const buildNamespaceUrl = (baseUrl: string, namespace: string): string => {
+  const normalizedBase = baseUrl.replace(/\/+$/, "");
+  const normalizedNamespace = namespace.startsWith("/") ? namespace : `/${namespace}`;
+  return `${normalizedBase}${normalizedNamespace}`;
 };
 
-export const connectSocket = (): Socket => {
-  if (socketIoInstance && socketIoInstance.connected) {
-    return socketIoInstance;
-  }
-
-  const socketUrl = resolveSocketUrl();
-  if (!socketUrl) {
-    console.warn("[Story Spark] Socket.IO URL not configured. Real-time notifications disabled.");
-    return null as unknown as Socket;
-  }
-
+const createSocketInstance = (url: string): Socket | null => {
   const token = getFromLocalStorage(AUTH_KEY);
   if (!token) {
     console.warn("[Story Spark] User not authenticated. Cannot connect to Socket.IO.");
-    return null as unknown as Socket;
+    return null;
   }
-socketIoInstance = io(socketUrl, {
-  
+
+  const socket = io(url, {
     transports: ["websocket", "polling"],
     autoConnect: false,
     reconnectionAttempts: 5,
@@ -35,25 +28,65 @@ socketIoInstance = io(socketUrl, {
     withCredentials: true,
   });
 
-  socketIoInstance.on("connect", () => {
-    console.log("[Story Spark] Socket.IO connected");
+  socket.on("connect", () => {
+    console.log("[Story Spark] Socket.IO connected:", url);
   });
 
-  socketIoInstance.on("disconnect", () => {
-    console.log("[Story Spark] Socket.IO disconnected");
+  socket.on("disconnect", () => {
+    console.log("[Story Spark] Socket.IO disconnected:", url);
   });
 
-  socketIoInstance.on("connect_error", (error) => {
+  socket.on("connect_error", (error) => {
     console.warn("[Story Spark] Socket.IO connection error:", error);
   });
 
-  socketIoInstance.connect();
+  socket.connect();
+  return socket;
+};
+
+export const getSocketIo = (): Socket | null => socketIoInstance;
+export const getCollabSocketIo = (): Socket | null => collabSocketIoInstance;
+
+export const connectSocket = (): Socket | null => {
+  if (socketIoInstance && socketIoInstance.connected) {
+    return socketIoInstance;
+  }
+
+  const socketUrl = resolveSocketUrl();
+  if (!socketUrl) {
+    console.warn("[Story Spark] Socket.IO URL not configured. Real-time notifications disabled.");
+    return null;
+  }
+
+  socketIoInstance = createSocketInstance(socketUrl);
   return socketIoInstance;
 };
 
+export const connectCollabSocket = (): Socket | null => {
+  if (collabSocketIoInstance && collabSocketIoInstance.connected) {
+    return collabSocketIoInstance;
+  }
+
+  const socketUrl = resolveSocketUrl();
+  if (!socketUrl) {
+    console.warn("[Story Spark] Socket.IO URL not configured. Collaboration disabled.");
+    return null;
+  }
+
+  collabSocketIoInstance = createSocketInstance(buildNamespaceUrl(socketUrl, "/collab"));
+  return collabSocketIoInstance;
+};
+
 export const disconnectSocket = (): void => {
-  if (socketIoInstance && socketIoInstance.connected) {
+  if (socketIoInstance) {
     socketIoInstance.disconnect();
     socketIoInstance = null;
+  }
+};
+
+export const disconnectCollabSocket = (): void => {
+  if (collabSocketIoInstance) {
+    collabSocketIoInstance.disconnect();
+    collabSocketIoInstance = null;
   }
 };

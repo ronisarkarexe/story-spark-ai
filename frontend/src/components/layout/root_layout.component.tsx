@@ -8,9 +8,11 @@ import { FloatingChatWidget } from "../ui-component/floating-chat/floating_chat.
 
 interface RootLayoutProps {
   children: ReactNode;
+  hideHeader?: boolean;
+  hideFooter?: boolean;
 }
 
-const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
+const RootLayout: React.FC<RootLayoutProps> = ({ children, hideHeader, hideFooter }) => {
   const { pathname } = useLocation();
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 

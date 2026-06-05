@@ -1,32 +1,27 @@
-import React, { useEffect, useState, useRef, FC } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { HELP_SECTIONS } from "../help_center.utils";
 
 const HelpSidebar: FC = () => {
-  const [activeSection, setActiveSection] = useState<string>(
+  const [activeSection, setActiveSection] = useState(
     HELP_SECTIONS[0]?.id ?? "help-categories"
   );
-
   const mobileNavRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const sectionIds = HELP_SECTIONS.map((section) => section.id);
-
     const observer = new IntersectionObserver(
       (entries) => {
-        const visibleSections = entries
+        const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-        if (visibleSections.length > 0) {
-          setActiveSection(visibleSections[0].target.id);
+        if (visible.length > 0) {
+          setActiveSection(visible[0].target.id);
         }
       },
       {
-
         rootMargin: "-20% 0px -55% 0px",
         threshold: [0.1, 0.25, 0.5],
-
       }
     );
 
@@ -38,14 +33,12 @@ const HelpSidebar: FC = () => {
     const handleScroll = () => {
       const scrollBottom = window.innerHeight + window.scrollY;
       const documentHeight = document.documentElement.scrollHeight;
-
       if (scrollBottom >= documentHeight - 80) {
         setActiveSection("support-links-section");
       }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-
     return () => {
       observer.disconnect();
       window.removeEventListener("scroll", handleScroll);
@@ -53,36 +46,29 @@ const HelpSidebar: FC = () => {
   }, []);
 
   useEffect(() => {
-    if (mobileNavRef.current) {
-      const activeButton = mobileNavRef.current.querySelector(
-        `[data-section-id="${activeSection}"]`
-      );
-      if (activeButton) {
-        activeButton.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center",
-        });
-      }
+    if (!mobileNavRef.current) return;
+    const activeButton = mobileNavRef.current.querySelector(
+      `[data-section-id="${activeSection}"]`
+    );
+    if (activeButton) {
+      (activeButton as HTMLElement).scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
     }
   }, [activeSection]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (!element) return;
-
     const yOffset = -100;
     const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-    
-    window.scrollTo({
-      top: y,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: y, behavior: "smooth" });
   };
 
   return (
     <>
-      {/* Desktop sticky sidebar */}
       <nav className="hidden lg:block w-72 flex-shrink-0" aria-label="Help center sections">
         <div className="sticky top-24 space-y-5">
           <motion.div
@@ -117,6 +103,7 @@ const HelpSidebar: FC = () => {
                       key={section.id}
                       type="button"
                       onClick={() => scrollToSection(section.id)}
+                      data-section-id={section.id}
                       className={`relative group w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 overflow-hidden border focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-left box-border ${
                         isActive
                           ? "border-blue-300 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/15 dark:to-indigo-500/15"
@@ -128,11 +115,7 @@ const HelpSidebar: FC = () => {
                         <motion.div
                           layoutId="sidebar-active-pill"
                           className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20"
-                          transition={{
-                            type: "spring",
-                            stiffness: 260,
-                            damping: 24,
-                          }}
+                          transition={{ type: "spring", stiffness: 260, damping: 24 }}
                         />
                       )}
 
@@ -152,20 +135,12 @@ const HelpSidebar: FC = () => {
                         }`}>
                           {section.label}
                         </p>
-                        {/* The 'Jump to section' text has been safely removed from here! */}
-                      </div>
-
-                      <div className="relative z-10 shrink-0">
-                        <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                          isActive ? "bg-blue-500 scale-125 shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "bg-slate-300 dark:bg-slate-700"
-                        }`} />
                       </div>
                     </button>
                   );
                 })}
               </div>
 
-              {/* Bottom Support CTA Card */}
               <motion.div
                 whileHover={{ y: -2 }}
                 className="relative overflow-hidden mt-6 rounded-2xl border border-blue-200 dark:border-indigo-500/20 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-indigo-500/10 dark:via-blue-500/10 dark:to-slate-900/30 p-5"
@@ -177,63 +152,19 @@ const HelpSidebar: FC = () => {
                       <i className="fa-solid fa-sparkles text-sm" aria-hidden="true" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-800 dark:text-white text-sm">
-                        Still Stuck?
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        We're here to help
-                      </p>
+                      <h3 className="font-bold text-slate-800 dark:text-white text-sm">Still Stuck?</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">We're here to help</p>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Support CTA Card */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              className="relative overflow-hidden mt-8 rounded-3xl border border-blue-200 dark:border-indigo-500/20 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-indigo-500/10 dark:via-blue-500/10 dark:to-slate-900/30 p-6"
-            >
-              <div className="absolute top-0 right-0 w-28 h-28 bg-blue-500/10 rounded-full blur-3xl" />
-              <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-lg">
-                    <i className="fa-solid fa-sparkles text-lg" aria-hidden="true" />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-slate-800 dark:text-white">Need More Help?</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Contact support</p>
-
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection("support-links-section")}
-                    className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 text-xs transition-all duration-300 shadow-md shadow-blue-500/10"
-                  >
-                    Open Support Hub
-                  </button>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-      </div>
-    </nav>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </nav>
 
-
-      {/* Mobile sticky nav */}
-      <nav className="lg:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 mb-8" aria-label="Help center sections">
-
-      {/* Mobile horizontal scroll nav */}
-      <nav
-        className="lg:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 mb-8 overflow-hidden select-none"
-        aria-label="Help center mobile navigation"
-      >
-        <div 
-          ref={mobileNavRef} 
-          className="flex gap-2 overflow-x-auto pb-1 scrollbar-none w-full items-center box-border touch-pan-x"
-        >
+      <nav className="lg:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 mb-8" aria-label="Help center mobile navigation">
+        <div ref={mobileNavRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-none w-full items-center box-border touch-pan-x">
           {HELP_SECTIONS.map((section) => {
             const isSelected = activeSection === section.id;
             return (

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
@@ -302,7 +302,7 @@ const HeroSectionComponent = () => {
             <span className="hero-gradient-text pb-2 block sm:inline">
               AI-Driven Storytelling
             </span>
-          </motion.h1>
+          </h1>
 
           <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
             Create, edit, and generate engaging multiple story variations from a single prompt.
@@ -326,7 +326,7 @@ const HeroSectionComponent = () => {
                 </Link>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
@@ -347,9 +347,9 @@ const HeroSectionComponent = () => {
           {features.map((feature, index) => (
             <FeatureCard feature={feature} key={index} />
           ))}
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

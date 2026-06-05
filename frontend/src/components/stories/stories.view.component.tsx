@@ -144,6 +144,7 @@ interface StoriesComponentProps {
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
   onPublishSuccess?: () => void;
+  isLoading?: boolean;
 }
 
 interface IRelatedStoriesComponentProps {
