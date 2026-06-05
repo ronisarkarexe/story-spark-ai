@@ -8,6 +8,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { useGoogleLoginMutation, useRegisterUserMutation } from "../../redux/apis/auth.api";
 import { useEmailVerifyMutation, useVerifyOtpMutation } from "../../redux/apis/otp.verify.api";
+import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
 
 interface IRegisterInfo {
   name: string;
@@ -277,26 +278,78 @@ const SignUpComponent = () => {
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-          <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
+      <div className="flex w-full max-w-md lg:max-w-5xl flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16 py-12 relative z-10 px-4">
+        {/* Left Column: Promo Info (lg screens only) */}
+        <div className="hidden lg:flex flex-col gap-5 max-w-md text-left shrink-0">
+          <h2 className="text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm mb-2">
             STORY SPARK AI
           </h2>
+          <h1 className="text-4xl font-extrabold tracking-tight leading-tight bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+            Turns Ideas into<br />unforgettable stories
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+            AI-powered storytelling that helps you create, connect, and inspire.
+          </p>
+
+          <div className="space-y-4 mt-2">
+            <div className="flex items-center gap-4 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                <WandSparkles size={20} />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">Smart writing</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">AI that understands your ideas</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                <BookOpen size={20} />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">Endless Creativity</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Stories that captivate and inspire</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                <UsersRound size={20} />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">Built for everyone</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Writers, creators, and dreamers</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-slate-200 dark:border-slate-800 p-4 rounded-xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-md text-xs font-semibold leading-relaxed text-slate-500 dark:text-slate-400">
+            Create, edit, and generate engaging multiple story variations from a single prompt. Perfect for writers, creators, and enthusiasts exploring the future of fiction.
+          </div>
         </div>
 
-        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl w-full min-w-0 overflow-hidden">
+        {/* Right Column: Signup Form Card */}
+        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl w-full min-w-0 overflow-hidden">
+          {/* Logo on mobile/tablet only */}
+          <div className="lg:hidden text-center mb-6">
+            <h2 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
+              STORY SPARK AI
+            </h2>
+          </div>
+
           <h3 className="text-center text-2xl font-bold tracking-tight text-slate-850 dark:text-slate-250">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
-
           {!showOtpField && (
-            <p className="mt-2 mb-6 text-center text-sm text-slate-400">
+            <p className="mt-2 mb-5 text-center text-sm text-slate-400">
+              {" "}
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
 
           {!showOtpField && (
-            <div className="relative mb-6">
+            <div className="relative my-6">
+              {" "}
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-700/50"></div>
               </div>
@@ -307,7 +360,6 @@ const SignUpComponent = () => {
               </div>
             </div>
           )}
-
           {!showOtpField ? (
             <form className="space-y-5 w-full min-w-0 overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
               <SSInput
@@ -320,10 +372,10 @@ const SignUpComponent = () => {
                 autoComplete="name"
                 validation={{
                   required: "Name is required",
-                  minLength: {
-                    value: 2,
-                    message: "Name must be at least 2 characters",
-                  },
+                    minLength: {
+                        value: 2,
+                        message: "Name must be at least 2 characters",
+                    },
                   pattern: {
                     value: /^[A-Za-z0-9\s._]+$/,
                     message: "Only letters, numbers, spaces, underscores, and dots are allowed",
@@ -416,7 +468,7 @@ const SignUpComponent = () => {
               </div>
             </form>
           ) : (
-            <div className="grid grid-cols-1 gap-5 w-full box-border">
+            <div className="grid grid-cols-1 gap-4 w-full box-border">
               <SSInput
                 label="OTP"
                 name="otp"
@@ -461,7 +513,6 @@ const SignUpComponent = () => {
               </div>
             </div>
           )}
-
           {!showOtpField && (
             <>
               <div className="relative my-8 w-full box-border">

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 import { RootState } from "../../redux/store";
 import { continueStory } from "../../services/continuation.service";
@@ -25,8 +26,12 @@ const ContinueStoryButton = () => {
       );
 
       dispatch(addChapter(nextChapter));
-    } catch (error) {
+      toast.success("New chapter generated successfully!");
+    } catch (error: unknown) {
       console.error(error);
+      const err = error as { message?: string };
+      const errorMsg = err?.message || "Failed to continue story. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

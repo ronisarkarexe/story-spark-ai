@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
@@ -11,10 +11,6 @@ const LatestPostsComponent = () => {
   const navigate = useNavigate();
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setShowAllPosts(false);
-  }, [data?.posts]);
 
   if (isLoading) return <LoadingAnimation />;
   if (isError) {
@@ -99,7 +95,9 @@ const LatestPostsComponent = () => {
           })
         ) : (
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400">
+            
             Posts are not available.
+          
           </div>
         )}
       </div>
