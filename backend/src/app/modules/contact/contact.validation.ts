@@ -6,7 +6,7 @@ const contactFeedbackTypes = [
   "general-feedback",
 ] as const;
 
-const optionalTrimmedString = z.preprocess((value) => {
+const optionalTrimmedString = z.preprocess((value: unknown) => {
   if (typeof value !== "string") {
     return undefined;
   }
@@ -16,7 +16,7 @@ const optionalTrimmedString = z.preprocess((value) => {
   return trimmedValue ? trimmedValue : undefined;
 }, z.string().optional());
 
-const optionalEmail = z.preprocess((value) => {
+const optionalEmail = z.preprocess((value: unknown) => {
   if (typeof value !== "string") {
     return undefined;
   }
@@ -27,7 +27,7 @@ const optionalEmail = z.preprocess((value) => {
 }, z.string().email("Invalid email address").optional());
 
 const requiredTrimmedString = (label: string) =>
-  z.preprocess((value) => {
+  z.preprocess((value: unknown) => {
     if (typeof value !== "string") {
       return value;
     }
@@ -37,11 +37,25 @@ const requiredTrimmedString = (label: string) =>
 
 const contactValidationSchema = z.object({
   body: z.object({
-    fullname: optionalTrimmedString,
-    email: optionalEmail,
+    fullname: z
+      .string({ required_error: "Full name is required" })
+      .trim()
+      .min(1, "Full name is required")
+      .max(100, "Full name must not exceed 100 characters"),
+    email: z
+      .string({ required_error: "Email is required" })
+      .trim()
+      .email("Invalid email address")
+      .max(100, "Email must not exceed 100 characters"),
     feedbackType: z.enum(contactFeedbackTypes),
-    subject: requiredTrimmedString("Subject"),
-    message: requiredTrimmedString("Message"),
+    subject: requiredTrimmedString("Subject").max(
+      200,
+      "Subject must not exceed 200 characters"
+    ),
+    message: requiredTrimmedString("Message").max(
+      5000,
+      "Message must not exceed 5000 characters"
+    ),
   }),
 });
 
