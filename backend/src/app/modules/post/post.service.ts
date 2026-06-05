@@ -16,12 +16,9 @@ import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 
 const MAX_SEARCH_TERM_LENGTH = 100;
-const escapeRegex = (text: string) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-
 const escapeRegex = (text: string): string => {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 };
-const MAX_SEARCH_TERM_LENGTH = 100;
 
 interface ICursorPayload {
   value: string;
@@ -406,9 +403,6 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
-
-  const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
-  if (!postExists) {
 
   const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
 

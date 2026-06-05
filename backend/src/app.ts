@@ -1,16 +1,8 @@
-import express, { Application, NextFunction, Request, Response, Router } from "express";
-import express, {
-  Application,
-  NextFunction,
-  Request,
-  Response,
-  RequestHandler,
-} from "express";
+import express, { Application, NextFunction, Request, Response, RequestHandler } from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import httpStatus from "http-status";
-
 import cookieParser from "cookie-parser";
 import config from "./config";
 import { Routers } from "./router";
@@ -61,6 +53,9 @@ app.use(cookieParser() as unknown as express.RequestHandler);
 app.use(cookieParser() as any);
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser() as unknown as RequestHandler);
+
+// app.use("/review", storyRoutes);
+
 
 app.use("/api/v1", Routers);
 
