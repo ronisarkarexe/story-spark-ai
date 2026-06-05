@@ -85,7 +85,7 @@ export const setupAxiosInterceptors = () => {
           errorMessages: [
             {
               path: "",
-              message: "Please check your internet connection and try again",
+              message: "Unable to connect to the server. Please check your internet connection or try again later.",
             },
           ],
         };

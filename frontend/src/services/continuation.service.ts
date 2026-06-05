@@ -1,7 +1,8 @@
 import { instance as axios } from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
+import { getBaseUrl } from "../helpers/config";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = getBaseUrl();
 
 export const continueStory = async (
   chapters: Chapter[]

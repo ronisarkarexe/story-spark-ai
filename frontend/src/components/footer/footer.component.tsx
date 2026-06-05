@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaXTwitter } from "react-icons/fa6";
 import logo from "../../assets/logoNew.png";
+import { getBaseUrl } from "../../helpers/config";
 
 const DEFAULT_GITHUB_ISSUES_URL = "https://github.com/ronisarkarexe/story-spark-ai/issues";
 
@@ -21,7 +22,7 @@ const FooterComponent = () => {
     setStatus("loading");
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/newsletter/subscribe`,
+        `${getBaseUrl()}/newsletter/subscribe`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

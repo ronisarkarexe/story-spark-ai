@@ -147,15 +147,15 @@ const ExploreComponent = () => {
   const availableGenres = genres ?? [];
 
   return (
-    <div className="pt-0 min-h-screen bg-white text-slate-900 relative overflow-hidden transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
+    <div className="pt-0 min-h-screen bg-[#f8fafc] text-slate-900 relative overflow-hidden transition-colors duration-300 dark:bg-gradient-to-br dark:from-[#090d1c] dark:via-[#0d1527] dark:to-[#070913] dark:text-white">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         {/* Top Section */}
         <div className="pt-2 pb-6 flex flex-col md:flex-row gap-4 md:gap-8">
           <div className="w-full md:w-64">
             <Link to="/">
-              <div className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded border border-gray-200 dark:border-white/10">
-                <i className="fa-solid fa-left-long"></i>
-                BACK
+              <div className="!rounded-button group bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/5 hover:border-slate-300 dark:hover:border-white/20 px-4 py-2.5 flex items-center gap-3 transition-all duration-300 rounded-xl shadow-sm">
+                <i className="fa-solid fa-chevron-left text-xs transition-transform group-hover:-translate-x-1"></i>
+                <span className="font-semibold text-xs tracking-wider">BACK</span>
               </div>
             </Link>
           </div>
@@ -164,18 +164,23 @@ const ExploreComponent = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search title, tag..."
-                className="w-full pl-12 pr-4 py-3 text-base text-slate-900 placeholder:text-slate-400 bg-gray-100/80 backdrop-blur-md border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner dark:bg-slate-900/50 dark:text-white dark:placeholder:text-slate-400 dark:border-none"
+                placeholder="Search stories by title, tag..."
+                className="w-full pl-12 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 bg-white/60 dark:bg-[#0f172a]/40 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-xl focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 transition-all shadow-sm dark:text-white dark:placeholder:text-slate-500"
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                <i className="fas fa-search text-sm"></i>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Main Layout */}
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar */}
           <div className="w-full md:w-64 flex-shrink-0">
-            <div className="sticky top-4 bg-gray-50 border border-gray-200 text-slate-900 backdrop-blur-xl rounded-2xl p-6 shadow-xl z-10 transition-colors duration-300 dark:bg-slate-900/50 dark:border-none dark:text-white">
+            <div className="sticky top-6 bg-white/80 border border-slate-200/60 text-slate-900 rounded-2xl p-6 shadow-lg z-10 transition-colors duration-300 dark:glass-card dark:text-white">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   Filters
@@ -183,7 +188,7 @@ const ExploreComponent = () => {
 
                 <button
                   onClick={resetAllStates}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400 dark:hover:text-blue-300"
+                  className="text-xs font-semibold uppercase tracking-wider text-indigo-600 hover:text-indigo-500 transition-colors dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                   Reset
                 </button>
@@ -196,16 +201,17 @@ const ExploreComponent = () => {
                     Genres
                   </h4>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {availableGenres.map((genre) => (
-                      <label key={genre} className="flex items-center">
+                      <label key={genre} className="custom-checkbox-container flex items-center group py-0.5">
                         <input
                           type="checkbox"
-                          className="rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500 cursor-pointer transition-all dark:border-slate-600 dark:bg-slate-700/50 dark:text-blue-500"
+                          className="custom-checkbox-input"
                           checked={selectedTags.includes(genre.toLowerCase())}
                           onChange={() => handleTagClick(genre.toLowerCase())}
                         />
-                        <span className="ml-3 text-sm text-slate-600 cursor-pointer hover:text-slate-900 transition-colors dark:text-slate-400 dark:hover:text-slate-300">
+                        <span className="custom-checkbox-box"></span>
+                        <span className="ml-3 text-sm font-medium text-slate-600 group-hover:text-slate-950 dark:text-slate-400 dark:group-hover:text-slate-200 transition-colors">
                           {genre}
                         </span>
                       </label>
@@ -215,24 +221,27 @@ const ExploreComponent = () => {
 
                 {/* Tags */}
                 <div>
-                    <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
                     Trending Tags
                   </h4>
 
                   <div className="flex flex-wrap gap-2">
-                    {availableTags.map((tag) => (
-                      <span
-                        key={tag}
-                        onClick={() => handleTagClick(tag)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 shadow-sm ${
-                          selectedTags.includes(tag)
-                            ? "bg-blue-600 text-white shadow-blue-500/25"
-                            : "bg-white border border-gray-200 text-slate-700 hover:bg-gray-100 hover:text-slate-900 dark:bg-slate-700/60 dark:border-slate-600/50 dark:text-slate-300 dark:hover:bg-slate-600 dark:hover:text-white"
-                        }`}
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                    {availableTags.map((tag) => {
+                      const isSelected = selectedTags.includes(tag);
+                      return (
+                        <span
+                          key={tag}
+                          onClick={() => handleTagClick(tag)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-300 shadow-sm ${
+                            isSelected
+                              ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-indigo-500/25 hover:shadow-indigo-500/35 scale-[1.03]"
+                              : "bg-white/60 border border-slate-200/80 text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:bg-white/5 dark:border-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                          }`}
+                        >
+                          {tag}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -245,7 +254,7 @@ const ExploreComponent = () => {
                     onChange={(e) => {
                       setSortBy(e.target.value);
                     }}
-                    className="w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 text-slate-900 p-2.5 outline-none transition-all cursor-pointer appearance-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200"
+                    className="w-full border border-slate-200 dark:border-white/5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white dark:glass-select text-slate-700 dark:text-slate-200 p-2.5 outline-none transition-all cursor-pointer appearance-none shadow-sm"
                   >
                     <option value="createdAt">Latest</option>
                     <option value="viewsCount">Most Popular</option>
@@ -263,7 +272,7 @@ const ExploreComponent = () => {
                     onChange={(e) => {
                       setSortOrder(e.target.value);
                     }}
-                    className="w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 text-slate-900 p-2.5 outline-none transition-all cursor-pointer appearance-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200"
+                    className="w-full border border-slate-200 dark:border-white/5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white dark:glass-select text-slate-700 dark:text-slate-200 p-2.5 outline-none transition-all cursor-pointer appearance-none shadow-sm"
                   >
                     <option value="desc">Descending</option>
                     <option value="asc">Ascending</option>
