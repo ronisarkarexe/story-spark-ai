@@ -23,13 +23,41 @@ const SSButton: FC<SSButtonProps> = ({
     <button
       type={type}
       onClick={onClick}
-      className={`motion-cta flex w-full h-11 items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
-        isDisabled
-          ? "cursor-not-allowed opacity-50"
-          : "hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30 active:scale-[0.98]"
-      } ${className}`}
       disabled={isDisabled}
       aria-busy={isLoading}
+      className={`
+        motion-cta
+        flex
+        w-full
+        h-11
+        items-center
+        justify-center
+        rounded-xl
+        bg-indigo-600
+        px-4
+        text-sm
+        font-semibold
+        text-white
+        shadow-md
+        shadow-indigo-500/20
+        transition-all
+        duration-200
+        ease-out
+
+        focus:outline-none
+        focus:ring-2
+        focus:ring-indigo-500
+        focus:ring-offset-2
+        dark:focus:ring-offset-slate-900
+
+        ${
+          isDisabled
+            ? "cursor-not-allowed opacity-60"
+            : "hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/30 active:scale-[0.98]"
+        }
+
+        ${className}
+      `}
     >
       {isLoading ? (
         <div className="flex items-center gap-2">

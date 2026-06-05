@@ -221,14 +221,12 @@ socket.on("collab:ai_continue", async ({ roomId }) => {
         ? `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${storyContext}\n\nContinuation:`
         : "Start a collaborative story naturally and creatively in 2-3 sentences. Return ONLY the story text, do not add any quotes, titles, JSON, formatting, or labels.";
 
-      const result = await AiModelService.aiFreeModelGenerate({
+      const result = await AiModelService.aiFreeStoryContinuation({
         prompt,
-        wordLength: 120,
-        numStories: 1,
         language: "English",
       });
 
-      const continuationText = result?.[0]?.content?.trim();
+      const continuationText = result?.continuation?.trim();
 
       if (!continuationText) {
         throw new Error("Empty response from AI");

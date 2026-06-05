@@ -604,3 +604,16 @@ body {
 @media (max-width: 480px) {
   .ds-subtext { font-size: 14px; }
 }
+/* Custom Background for Writing Feel */
+.ChatFrame, .chat-container, body { 
+    background-image: url('images/backgroundimg.jpg') !important;
+    background-attachment: scroll; /* Makes the image move as you scroll */
+    background-repeat: repeat;    /* Tiles the texture seamlessly */
+    background-size: auto;        /* Keeps the texture's original detail */
+}
+
+/* Optional: Make the prompt area slightly transparent to see the texture */
+.prompt-area, .message-box {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    border-radius: 8px;
+}
