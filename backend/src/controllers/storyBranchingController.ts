@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { generateStory } from "../services/ai.service";
 import sendResponse from "../shared/send_response";
+import { storyQueue } from "../services/storyRequestQueue";
 
 const sanitizeJsonText = (rawText: string): string => {
   const trimmed = rawText.trim();
@@ -53,7 +54,7 @@ Task:
 }
 `;
 
-      const result = await generateStory(prompt);
+      const result = await storyQueue.enqueue(() => generateStory(prompt));
 
       let parsed: { storySegment: string; choices: string[] };
       try {

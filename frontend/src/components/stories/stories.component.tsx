@@ -416,9 +416,8 @@ const TonePicker: React.FC<TonePickerProps> = ({ selected, onChange }) => {
   );
 };
 
-// ---------------------------------------------------------------------------
-// Main StoriesComponent
-// ---------------------------------------------------------------------------
+import { useDebounce } from "../../hooks/useDebounce";
+
 const StoriesComponent = () => {
   const [currentPage, setCurrentPage] = useState(1);
 const storiesPerPage = 10;
@@ -456,10 +455,12 @@ const storiesPerPage = 10;
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
 
+  const debouncedSearchQuery = useDebounce(searchQuery, 350);
+
   const filteredStories = useMemo(() => {
-    if (!searchQuery.trim()) return stories;
+    if (!debouncedSearchQuery.trim()) return stories;
     
-    const query = searchQuery.toLowerCase();
+    const query = debouncedSearchQuery.toLowerCase();
     
     return stories.filter((story) => {
       switch (searchFilter) {
@@ -478,7 +479,7 @@ const storiesPerPage = 10;
           );
       }
     });
-  }, [stories, searchQuery, searchFilter]);
+  }, [stories, debouncedSearchQuery, searchFilter]);
   const indexOfLastStory = currentPage * storiesPerPage;
 const indexOfFirstStory = indexOfLastStory - storiesPerPage;
 
@@ -492,7 +493,7 @@ const totalPages = Math.ceil(
 );
 useEffect(() => {
   setCurrentPage(1);
-}, [searchQuery, searchFilter]);
+}, [debouncedSearchQuery, searchFilter]);
 
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
@@ -501,14 +502,11 @@ useEffect(() => {
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string>(
-  draft?.genre
-    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
-    : "🧙 Fantasy",
-);
-  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
-  const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
+  const [selectedGenre, setSelectedGenre] = useState<string>("");
+  const [selectedLength, setSelectedLength] = useState<string>("medium");
+  const [textareaValue, setTextareaValue] = useState<string>("");
+  const DRAFT_KEY = "storyspark_story_draft_v1";
+  const [draftStatus, setDraftStatus] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(draft?.language || "English");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
@@ -525,50 +523,15 @@ useEffect(() => {
     parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
   );
   const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
-  const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
-  const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
-  
-  const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
-  const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
-
-
-  
-
-  const playSoundtrack = (genre: string) => {
-    const soundtrack = soundtrackMap[genre];
-    if (!soundtrack) return;
-
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-
-    const audio = new Audio(soundtrack);
-    audio.loop = true;
-    audio.volume = 0.3;
-    audio.play().catch((err) => {
-      console.log("Audio playback failed:", err);
-    });
-    audioRef.current = audio;
-  };
-
-
-
-  const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
-  const isGenerationInProgressRef = useRef(false);
-  const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-    parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
-  );
-  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
-  const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
-  const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
-  const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
-  const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
-
+  const [showRestorePrompt, setShowRestorePrompt] = useState(false);
+ 
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -646,6 +609,42 @@ useEffect(() => {
     setValue("prompt", textareaValue);
   }, [textareaValue, setValue]);
 
+useEffect(() => {
+  const savedDraft = localStorage.getItem(DRAFT_KEY);
+
+  if (savedDraft && savedDraft.trim().length > 0) {
+    setShowRestorePrompt(true);
+  }
+}, []);
+
+
+const handleRestoreDraft = () => {
+  const savedDraft = localStorage.getItem(DRAFT_KEY);
+
+  if (savedDraft) {
+    setTextareaValue(savedDraft);
+    setDraftStatus("Draft Restored");
+  }
+
+  setShowRestorePrompt(false);
+};
+
+const handleDiscardDraft = () => {
+  localStorage.removeItem(DRAFT_KEY);
+  setShowRestorePrompt(false);
+};
+
+useEffect(() => {
+  if (!textareaValue.trim()) return;
+
+  const timer = setTimeout(() => {
+    localStorage.setItem(DRAFT_KEY, textareaValue);
+    setDraftStatus("Draft Saved");
+  }, 2000);
+
+  return () => clearTimeout(timer);
+}, [textareaValue]);
+
   useEffect(() => {
     return () => {
       activeGenerationRef.current?.abort();
@@ -718,10 +717,11 @@ useEffect(() => {
         setStories(res.data as IStories[]);
         setTextareaValue("");
         setSelectedPrompt("");
+        setTextareaValue("");
         setValue("prompt", "");
-        if (selectedGenre) {
-          playSoundtrack(selectedGenre);
-        }
+        localStorage.removeItem(DRAFT_KEY);
+        setDraftStatus("");
+        reset();
         if (!login) {
           const newCount = guestRequestCount + 1;
           setGuestRequestCount(newCount);
@@ -757,6 +757,9 @@ useEffect(() => {
     setTextareaValue("");
     setSelectedPrompt("");
     setValue("prompt", "");
+    localStorage.removeItem(DRAFT_KEY);
+    setDraftStatus("");
+
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -764,8 +767,11 @@ useEffect(() => {
 
   const handlePublishSuccess = () => {
     setTextareaValue("");
-    setSelectedPrompt("");
-    setValue("prompt", "");
+  setSelectedPrompt("");
+  setValue("prompt", "");
+
+  localStorage.removeItem(DRAFT_KEY);
+  setDraftStatus("");
     reset();
   };
 
@@ -1370,8 +1376,32 @@ useEffect(() => {
         </button>
       )}
     </div>
+    {showRestorePrompt && (
+  <div className="mb-3 p-3 rounded-lg border border-indigo-500/40 bg-indigo-500/10">
+    <p className="text-sm text-gray-300 mb-2">
+      📄 A previously saved draft was found. Restore it?
+    </p>
 
-    <div className="relative overflow-hidden">
+    <div className="flex gap-2">
+      <button
+        type="button"
+        onClick={handleRestoreDraft}
+        className="px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-sm"
+      >
+        Restore
+      </button>
+
+      <button
+        type="button"
+        onClick={handleDiscardDraft}
+        className="px-3 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm"
+      >
+        Discard
+      </button>
+    </div>
+  </div>
+)}
+    <div className="relative">
       <textarea
   {...register("prompt")}
   ref={(el) => {
@@ -1388,7 +1418,9 @@ useEffect(() => {
         placeholder={text.promptPlaceholder}
         value={textareaValue}
         maxLength={MAX_PROMPT_LENGTH}
-        onChange={(e) => setTextareaValue(e.target.value)}
+        onChange={(e) => {
+          setTextareaValue(e.target.value);
+    }}
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -1399,7 +1431,76 @@ useEffect(() => {
         />
 
 
+      <div className="flex items-center justify-between mt-1 px-1">
+        {isOverLimit ? (
+          <p className="text-xs text-red-400 flex items-center gap-1">
+            <span>⚠</span> Character limit reached — generate is disabled
+          </p>
+        ) : isNearLimit ? (
+          <p className="text-xs text-yellow-400 flex items-center gap-1">
+            <span>⚠</span>{" "}
+            {MAX_PROMPT_LENGTH - textareaValue.length} characters remaining
+          </p>
+        ) : (
+          <span />
+        )}
 
+        <span
+          className={`text-xs tabular-nums ml-auto ${
+            isOverLimit
+              ? "text-red-400 font-medium"
+              : isNearLimit
+              ? "text-yellow-400"
+              : "text-gray-500"
+          }`}
+        >
+          {textareaValue.length} / {MAX_PROMPT_LENGTH}
+        </span>
+      </div>
+    </div>
+    
+
+{draftStatus && (
+   <p className="text-xs text-green-500 mt-2 px-1">
+    💾 {draftStatus}
+   </p>
+)}
+    
+    <p className="text-xs text-gray-500 mt-1 px-1">
+      💡  <span className="font-medium">Keyboard tip:</span> Press{" "}
+      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+        Enter
+      </kbd>{" "}
+      to generate &bull;{" "}
+      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+        Ctrl + Enter
+      </kbd>{" "}
+      also works &bull;{" "}
+      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+        Shift + Enter
+      </kbd>{" "}
+      for new line
+    </p>
+
+    <div className="flex justify-end mt-2 w-full">
+      <button
+        type="submit"
+        disabled={loading || isOverLimit}
+        aria-busy={loading}
+        aria-disabled={loading || isOverLimit}
+        className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
+          loading || isOverLimit
+            ? "opacity-50 cursor-not-allowed"
+            : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
+        } transition-all duration-300 transform flex items-center space-x-2 group`}
+      >
+        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
+        {loading ? "Generating..." : "Generate"}
+      </button>
+    </div>
+  </form>
+</div>
+            </div>
 
               <div className="text-[11px] font-medium leading-relaxed text-slate-400 dark:text-slate-500 select-none w-full box-border">
                 💡 <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">{text.keyboardTip}</span>
