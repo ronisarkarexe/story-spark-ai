@@ -36,7 +36,12 @@ async function main() {
       cors: {
         origin: config.cors_origins?.length
           ? config.cors_origins
-          : ["http://localhost:4001", "https://storysparkai-five.vercel.app"],
+          : [
+              "http://localhost:4001",
+              "http://localhost:4002",
+              "https://storysparkai-five.vercel.app",
+              "https://storysparkai.vercel.app",
+            ],
         credentials: true,
       },
     });
@@ -95,6 +100,15 @@ export default async function handler(req: Request, res: Response) {
     await connectDB();
   } catch (error) {
     logger.error("Error connecting to the database:", error);
+    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Cookie");
+    
+    if (req.method === "OPTIONS") {
+      res.status(200).end();
+      return;
+    }
     res.status(500).json({
       success: false,
       message: "Database unavailable",
