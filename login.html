@@ -3,16 +3,36 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-    <title>Login | Story Spark AI</title>
-    <meta name="description" content="Sign in or create an account for Story Spark AI — turn your imagination into fully illustrated multi-variation AI stories."/>
+    <title>Login | StorySparkAI</title>
+    <meta name="description" content="Sign in or create an account for StorySparkAI — turn your imagination into fully illustrated multi-variation AI stories."/>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css" rel="stylesheet"/>
     
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'background': '#121212',
+                        'surface': '#1e1e1e',
+                        'surface-container-lowest': '#0f0f0f',
+                        'surface-container-high': '#282828',
+                        'on-surface': '#e6e6e6',
+                        'on-surface-variant': '#cacaca',
+                        'primary': '#d0bcff',
+                        'secondary': '#ccc2dc',
+                        'tertiary': '#efb8c8',
+                        'outline': '#938f99'
+                    }
+                }
+            }
+        }
+    </script>
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
     <link href="auth.css" rel="stylesheet"/>
 </head>
 <body class="bg-background text-on-surface font-body-md selection:bg-primary/30">
@@ -30,7 +50,7 @@
                     <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/30">
                         <span class="fi fi-rr-sparkles text-white text-[14px]"></span>
                     </div>
-                    <span class="text-sm font-bold tracking-widest text-primary uppercase opacity-80">Story Spark AI</span>
+                    <span class="text-sm font-bold tracking-widest text-primary uppercase opacity-80">StorySparkAI</span>
                 </div>
                 <h1 class="font-display-lg mb-4 leading-tight text-display-lg-mobile md:text-display-lg">
                     One Spark.<br/>
@@ -61,9 +81,18 @@
     <section class="w-full md:w-1/2 flex items-center justify-center p-4 md:p-10 bg-surface z-10">
         <div class="auth-form-card glass-panel p-6 md:p-8 rounded-2xl relative">
 
+            <!-- Close button — returns user to previous page -->
+            <button
+                onclick="handleClose()"
+                class="absolute right-4 top-4 text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/10"
+                aria-label="Close and go back"
+                title="Go back">
+                <i class="fi fi-rr-cross-small text-[18px]"></i>
+            </button>
+
             <div class="flex justify-center mb-5 md:hidden">
                 <div class="font-display-lg text-[18px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary">
-                    Story Spark AI
+                    StorySparkAI
                 </div>
             </div>
 
@@ -104,7 +133,7 @@
                 <div class="auth-divider-line"></div>
             </div>
             
-            <form class="space-y-4" id="auth-form" novalidate>
+            <form class="space-y-4" id="auth-form" onsubmit="event.preventDefault()" novalidate>
 
                 <div class="hidden animate-in fade-in duration-500" id="signup-fields">
                     <label class="field-label" for="name-field">Full Name</label>
@@ -119,7 +148,7 @@
                     <label class="field-label" for="email-field">Email Address</label>
                     <div class="input-icon-wrapper">
                         <i class="fi fi-rr-envelope input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" required autocomplete="email" value="admin@gmail.com"/>
+                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" required autocomplete="email"/>
                     </div>
                     <span class="field-error-msg" id="email-error">Please enter a valid email address.</span>
                 </div>
@@ -127,17 +156,23 @@
                 <div>
                     <div class="flex justify-between mb-1.5">
                         <label class="field-label" for="password-field">Password</label>
-                        <a class="text-[12px] text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" id="forgot-password-link">Forgot password?</a>
+                        <a class="text-[12px] text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" id="forgot-password-link">checkout -b ?</a>
                     </div>
                     <div class="input-icon-wrapper">
                         <i class="fi fi-rr-lock input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••" type="password" required autocomplete="current-password" value="admin@123"/>
+                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••"  required autocomplete="current-password"/>
                         <button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors p-1 rounded" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
                             <i class="fi fi-rr-eye-crossed text-[16px]" id="eye-icon"></i>
                         </button>
                     </div>
                     <span class="field-error-msg" id="password-error">Password must be at least 8 characters.</span>
-                </div>
+                    <p 
+                       id="login-caps-lock-warning" 
+                      class="hidden text-yellow-400 text-sm mt-2"
+                     >
+                      Caps Lock is ON
+                     </p>
+                    </div>
 
                 <div class="flex items-center gap-2.5 pt-1">
                     <input class="w-4 h-4 rounded border-white/10 bg-surface-container-high text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface" id="remember" type="checkbox"/>
@@ -146,7 +181,7 @@
 
                 <button class="ds-btn-submit mt-2 hover:scale-105 transition-all duration-300 rounded-xl" id="submit-btn" type="submit">
                     <span class="btn-spinner" id="btn-spinner"></span>
-                    <span class="btn-label" id="btn-label">Log In to Story Spark</span>
+                    <span class="btn-label" id="btn-label">Log In to StorySparkAI</span>
                 </button>
             </form>
             

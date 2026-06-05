@@ -1,9 +1,8 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import logo from "../../assets/logo.png";
-import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
-function TopHeaderComponent() {
+
+const TopHeaderComponent = () => {
   const [, setShowNotification] = useState<boolean>(false);
-  const { data } = useGetProfileInfoQuery();
   return (
     <div className="sticky top-0 z-50">
       <div className="relative z-10 mx-auto max-w-8xl px-6 py-4 gradient-bg">
@@ -59,10 +58,10 @@ function TopHeaderComponent() {
                     className="!rounded-button bg-white flex text-sm rounded-full focus:outline-none"
                   >
                     <img
-                     className="h-8 w-8 rounded-full"
-                     src={data?.profile?.avatar || "https://ui-avatars.com/api/?name=User"}
-                     alt="profile"
-                      />
+                      className="h-8 w-8 rounded-full"
+                      src="https://avatars.githubusercontent.com/u/76697055?v=4"
+                      alt="profile"
+                    />
                   </button>
                 </div>
               </div>
@@ -73,6 +72,6 @@ function TopHeaderComponent() {
       </div>
     </div>
   );
-}
+};
 
 export default TopHeaderComponent;

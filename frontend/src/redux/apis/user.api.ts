@@ -22,7 +22,6 @@ const userApi = baseApi.injectEndpoints({
       transformResponse: (response: { data: User[]; message: string }) => {
         return { data: response.data };
       },
-
       providesTags: [tagTypes.user],
     }),
     getProfileInfo: build.query<User, void>({
@@ -38,6 +37,14 @@ const userApi = baseApi.injectEndpoints({
       providesTags: [tagTypes.user],
     }),
     updateProfile: build.mutation({
+      query: (data) => ({
+        url: `/${USER_URL}/update`,
+        method: "PATCH",
+        data: data,
+      }),
+      invalidatesTags: [tagTypes.user],
+    }),
+    updateWritingGoals: build.mutation({
       query: (data) => ({
         url: `/${USER_URL}/update`,
         method: "PATCH",
@@ -69,6 +76,7 @@ export const {
   useGetUsersListQuery,
   useGetProfileInfoQuery,
   useUpdateProfileMutation,
+  useUpdateWritingGoalsMutation,
   useToggleFollowMutation,
   useGetFollowStatusQuery,
 } = userApi;

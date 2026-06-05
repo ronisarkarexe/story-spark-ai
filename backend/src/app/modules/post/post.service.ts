@@ -4,6 +4,7 @@ import { User } from "../user/user.model";
 import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
 import { Post } from "./post.model";
+import { Bookmark } from "../bookmark/bookmark.model";
 import { StoryVersionService } from "../story_version/story_version.service";
 import {
   IGenericResponse,
@@ -11,12 +12,87 @@ import {
 } from "../../../interfaces/pagination";
 import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
-import { SortOrder } from "mongoose";
+import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 
-// Assuming your project has AI and Quota modules structured like this:
-// import { QuotaService } from "../quota/quota.service";
-// import { AIModelService } from "../ai_model/ai_model.service";
+const MAX_SEARCH_TERM_LENGTH = 100;
+const escapeRegex = (text: string) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
+const escapeRegex = (text: string): string => {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+};
+const MAX_SEARCH_TERM_LENGTH = 100;
+
+interface ICursorPayload {
+  value: string;
+  id: string;
+}
+
+const encodeCursor = (item: IPost, sortBy: string) => {
+  const rawValue = item[sortBy as keyof IPost];
+  const value = rawValue instanceof Date ? rawValue.toISOString() : String(rawValue ?? "");
+  return Buffer.from(JSON.stringify({ value, id: item._id?.toString() })).toString("base64");
+};
+
+const decodeCursor = (cursor?: string): ICursorPayload | null => {
+  if (!cursor) {
+    return null;
+  }
+
+  try {
+    const decoded = Buffer.from(cursor, "base64").toString("utf-8");
+    const parsed = JSON.parse(decoded);
+    if (!parsed?.id || parsed.value === undefined) {
+      return null;
+    }
+    return parsed as ICursorPayload;
+  } catch {
+    return null;
+  }
+};
+
+const getCursorCondition = (
+  sortBy: string,
+  orderBy: SortOrder,
+  cursor?: string,
+) => {
+  const parsed = decodeCursor(cursor);
+  if (!parsed) {
+    return null;
+  }
+
+  const { value: rawValue, id } = parsed;
+  let value: string | number | Date = rawValue;
+
+  if (sortBy === "createdAt" || sortBy === "publishedAt") {
+    value = new Date(rawValue);
+  } else if (
+    ["likesCount", "commentsCount", "viewsCount", "bookmarksCount"].includes(
+      sortBy,
+    )
+  ) {
+    value = Number(rawValue);
+  }
+
+  const compareOperator = orderBy === "asc" ? "$gt" : "$lt";
+  const objectId = Types.ObjectId.isValid(id) ? new Types.ObjectId(id) : id;
+
+  return {
+    $or: [
+      {
+        [sortBy]: {
+          [compareOperator]: value,
+        },
+      },
+      {
+        [sortBy]: value,
+        _id: {
+          [compareOperator]: objectId,
+        },
+      },
+    ],
+  };
+};
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
   const { email, role } = token;
@@ -36,14 +112,14 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       author: user._id,
       updatedBy: user._id,
     });
-    if (res && res.isPublished) {
-      user.postsCount += 1;
-      await user.save();
-      GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
-      if (user.postsCount === 1) {
-        GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
+      if (res && res.isPublished) {
+        user.postsCount += 1;
+        await user.save();
+        GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
+        if (user.postsCount === 1) {
+          GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
+        }
       }
-    }
     return res;
   } catch (error) {
     throw new ApiError(
@@ -57,29 +133,40 @@ const getPosts = async (
   filters: IPostSearchFields,
   pagination: IPaginationOptions
 ): Promise<IGenericResponse<IPost[]>> => {
-  const { page, limit, skip, sortBy, orderBy } = paginationHelper(pagination);
+  const { page, limit, cursor, sortBy, orderBy } = paginationHelper(
+    pagination,
+  );
   const { searchTerm, trendingTopic, sortFilter, genres, ...filterData } =
     filters;
   const andCondition: Record<string, unknown>[] = [
     { isDeleted: { $ne: true } },
+    { isPublished: true },
   ];
 
- if (searchTerm) {
-  const safeSearchTerm = escapeRegex(
-    searchTerm.trim().slice(0, MAX_SEARCH_TERM_LENGTH)
-  );
+  if (searchTerm) {
+    const safeSearchTerm = escapeRegex(
+      searchTerm.trim().slice(0, MAX_SEARCH_TERM_LENGTH)
+    );
 
-  if (safeSearchTerm) {
+    if (safeSearchTerm) {
+      andCondition.push({
+        $or: postSearchFields.map((field) => ({
+          [field]: {
+            $regex: safeSearchTerm,
+            $options: "i",
+          },
+        })),
+      });
+    }
     andCondition.push({
       $or: postSearchFields.map((field) => ({
         [field]: {
-          $regex: safeSearchTerm,
+          $regex: searchTerm,
           $options: "i",
         },
       })),
     });
   }
-}
 
   if (trendingTopic) {
     andCondition.push({
@@ -114,7 +201,7 @@ const getPosts = async (
     });
   }
 
-  const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
+  const countCondition = andCondition.length > 0 ? { $and: andCondition } : {};
 
   // sort condition
   const sortCondition: { [key: string]: SortOrder } = {};
@@ -125,23 +212,34 @@ const getPosts = async (
   if (sortBy && orderBy) {
     sortCondition[sortBy] = orderBy === "asc" ? 1 : -1;
   }
+  sortCondition._id = orderBy === "asc" ? 1 : -1;
+
+  const cursorCondition = getCursorCondition(sortBy, orderBy, cursor);
+  if (cursorCondition) {
+    andCondition.push(cursorCondition);
+  }
+
+  const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
 
   const result = await Post.find(whereCondition)
     .sort(sortCondition)
-    .skip(skip)
     .limit(limit)
-    .populate("author", "name email createdAt profile.bio")
+    .populate("author", "name email createdAt")
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "email" },
     })
     .populate("bookmarks", "email");
-  const total = await Post.countDocuments(whereCondition);
+  const total = await Post.countDocuments(countCondition);
+  const nextCursor = result.length === limit ? encodeCursor(result[result.length - 1], sortBy) : undefined;
+
   return {
     meta: {
       page,
       limit,
       total,
+      nextCursor,
+      hasMore: Boolean(nextCursor),
     },
     data: result,
   };
@@ -189,12 +287,11 @@ const getPublishedPostsByAuthor = async (
     .sort(sortCondition)
     .skip(skip)
     .limit(limit)
-    .populate("author", "name email createdAt")
+    .populate("author", "name createdAt")
     .populate({
       path: "reactions",
-      populate: { path: "userId", select: "email" },
-    })
-    .populate("bookmarks", "email");
+      populate: { path: "userId", select: "_id" },
+    });
   const total = await Post.countDocuments(whereCondition);
 
   return {
@@ -209,10 +306,10 @@ const getPublishedPostsByAuthor = async (
 
 const getLatestPosts = async () => {
   try {
-    const res = await Post.find({ isDeleted: { $ne: true } })
+    const res = await Post.find({ isDeleted: { $ne: true }, isPublished: true })
       .sort({ createdAt: -1 })
       .limit(50)
-      .populate("author", "name email createdAt profile.bio")
+      .populate("author", "name email createdAt")
       .populate({
         path: "reactions",
         populate: { path: "userId", select: "email" },
@@ -232,10 +329,11 @@ const getFeaturedPosts = async () => {
     const res = await Post.find({
       isFeaturedPost: true,
       isDeleted: { $ne: true },
+      isPublished: true,
     })
       .sort({ createdAt: -1, updatedBy: -1 })
       .limit(10)
-      .populate("author", "name email createdAt profile.bio")
+      .populate("author", "name email createdAt")
       .populate({
         path: "reactions",
         populate: { path: "userId", select: "email" },
@@ -268,7 +366,7 @@ const doFeaturedPosts = async (postId: string) => {
 
 const getSinglePost = async (id: string) => {
   const postById = await Post.findOne({ _id: id, isDeleted: { $ne: true } })
-    .populate("author", "name email createdAt profile.bio")
+    .populate("author", "name email createdAt")
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "email" },
@@ -281,13 +379,17 @@ const getSinglePost = async (id: string) => {
 };
 
 const getPostsByTag = async (tag: string, excludeId?: string) => {
+  if (!tag) {
+    return [];
+  }
+
   const query: any = { tag, isDeleted: { $ne: true } };
   if (excludeId) {
     query._id = { $ne: excludeId };
   }
   const result = await Post.find(query)
     .limit(2)
-    .populate("author", "name email createdAt profile.bio")
+    .populate("author", "name email createdAt")
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "email" },
@@ -298,33 +400,51 @@ const getPostsByTag = async (tag: string, excludeId?: string) => {
 
 const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   const { email } = token;
+
   const user = await User.findOne({ email });
+
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
+
+  const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
+  if (!postExists) {
+
   const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+
   if (!post) {
+
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
-  // Check bookmark status atomically via a DB query instead of loading the full document
-  const isBookmarked = await Post.exists({ _id: postId, bookmarks: user._id });
+
+  // Check bookmark status atomically
+  const isBookmarked = await Post.exists({
+    _id: postId,
+    bookmarks: user._id,
+  });
 
   if (isBookmarked) {
-    // Remove bookmark atomically
     await Post.updateOne(
       { _id: postId },
       { $pull: { bookmarks: user._id } }
     );
-    return { message: "Bookmark removed", bookmarked: false };
+
+    return {
+      message: "Bookmark removed",
+      bookmarked: false,
+    };
   } else {
-    // Add bookmark atomically — $addToSet prevents duplicates
     await Post.updateOne(
       { _id: postId },
       { $addToSet: { bookmarks: user._id } }
     );
-    return { message: "Bookmark added", bookmarked: true };
+
+    return {
+      message: "Bookmark added",
+      bookmarked: true,
+    };
   }
-}
+};
 
 const updatePost = async (
   postId: string,
@@ -402,12 +522,11 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
     await user.save();
   }
 
+  // Clean up associated bookmarks when story post is soft-deleted
+  await Bookmark.deleteMany({ storyId: postId });
+
   return post;
 };
-
-/* ============================================================
-   PATCHED SERVICES — GSSoC '26 AI VARIATION SYSTEM & QUOTAS
-   ============================================================ */
 
 const remixStory = async (postId: string, prompt: string, token: ITokenPayload) => {
   const user = await User.findOne({ email: token.email });
@@ -420,11 +539,6 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
-  // Enforces data consistency by decrementing/reserving 1 credit balance mapping
-  // If your project uses an external service class call, invoke it here:
-  // await QuotaService.reserveUserQuota(user._id, 1);
-  
-  // Place your real AI model generation text manipulation calls here
   const remixedContent = `[AI Remixed Version based on prompt: "${prompt}"]\n\n${originalPost.content}`;
 
   const res = await Post.create({
@@ -454,10 +568,6 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
-  // Decrement/Reserve quota allocation block
-  // await QuotaService.reserveUserQuota(user._id, 1);
-
-  // Place your real language model translation core handler services here
   const translatedContent = `[Translated to ${language}]\n\n${originalPost.content}`;
 
   const res = await Post.create({
@@ -476,6 +586,11 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
   return res;
 };
 
+const getGenres = async (): Promise<string[]> => {
+  const genres = await Post.distinct("tag", { isDeleted: { $ne: true }, tag: { $nin: [null, ""] } });
+  return genres.sort();
+};
+
 export const PostService = {
   createPost,
   getPosts,
@@ -490,4 +605,5 @@ export const PostService = {
   deletePost,
   remixStory,       // Exposed service for AI story variations
   translateStory,   // Exposed service for localized modifications
+  getGenres,
 };

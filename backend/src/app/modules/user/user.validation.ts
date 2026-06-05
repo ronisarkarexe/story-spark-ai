@@ -11,15 +11,13 @@ const passwordSchema = z
 const register = z.object({
   body: z.object({
     email: z.string({ required_error: "Email is required" }),
-    name: z.string({ required_error: "Name is required" }),
+    name: z
+      .string({ required_error: "Name is required" })
+      .min(3, "Name must be at least 3 characters long"),
     password: passwordSchema,
-    confirmPassword: z.string({ required_error: "Confirm password is required" }),
     verificationToken: z
       .string({ required_error: "Verification token is required" })
       .min(1, "Verification token is required"),
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
   }),
 });
 
@@ -61,12 +59,15 @@ const updateUser = z.object({
               instagram: z.string().optional(),
             })
             .partial()
+            .strict()
             .optional(),
         })
         .partial()
+        .strict()
         .optional(),
     })
-    .partial(),
+    .partial()
+    .strict(),
 });
 
 export const UserValidator = {

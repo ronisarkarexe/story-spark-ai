@@ -10,6 +10,18 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 let isSubmitting = false;
 
+/**
+ * Close the login/signup page and return the user to their previous location.
+ * Falls back to the home page ('/') if there is no browser history to go back to.
+ */
+function handleClose() {
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = '/';
+    }
+}
+
 /* ── DOM Init & Global Handler Registrations ── */
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Detect initial auth page mode based on filename
@@ -357,8 +369,9 @@ function toggleAuthMode(mode) {
     setTimeout(() => {
         const signupFields = document.getElementById('signup-fields');
         const nameField = document.getElementById('name-field');
+        const passwordField = document.getElementById('password-field'); // Added for auto-fill fix
         const submitBtn = document.getElementById('submit-btn');
-        const submitBtnText = document.getElementById('submit-btn-text');
+        const submitBtnText = document.getElementById('btn-label'); // Updated target matching your HTML ID
         const tabSignin = document.getElementById('tab-signin');
         const tabSignup = document.getElementById('tab-signup');
         const forgotPass = document.getElementById('forgot-password-link') || document.querySelector('a[href="#"]');
@@ -369,47 +382,58 @@ function toggleAuthMode(mode) {
             if (signupFields) signupFields.classList.remove('hidden');
             if (nameField) nameField.required = true;
             if (forgotPass) forgotPass.classList.add('invisible');
-            if (submitBtnText) submitBtnText.innerText = 'Create Account';
-            else if (submitBtn) submitBtn.innerText = 'Create Account';
-            if (googleBtnText) googleBtnText.innerText = 'sign in with Google';
+            
+            // Safe Text Target updates to avoid destroying spinner nodes
+            if (submitBtnText) submitBtnText.textContent = 'Sign Up Free';
+            if (googleBtnText) googleBtnText.textContent = 'Continue with Google';
+            
+            // FIX: Dynamic autocomplete switch for password managers
+            if (passwordField) passwordField.setAttribute('autocomplete', 'new-password');
             
             // Tabs styling
             if (tabSignup) tabSignup.className = "flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300";
             if (tabSignin) tabSignin.className = "flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
             
-            // Bottom link toggle content
+            // FIX: Use javascript void anchors to prevent hard page refreshes on interaction links
             if (navToggle) {
-                navToggle.innerHTML = `Already have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold" href="login.html">Log In</a>`;
+                navToggle.innerHTML = `Already have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signin')">Log In</a>`;
             }
             
-            // Push address bar quietly without reload
             window.history.replaceState(null, '', 'signup.html');
         } else {
             if (signupFields) signupFields.classList.add('hidden');
-            if (nameField) nameField.required = false;
+            if (nameField) {
+                nameField.required = false;
+                nameField.value = ''; // Clear out stale text data
+            }
             if (forgotPass) forgotPass.classList.remove('invisible');
-            if (submitBtnText) submitBtnText.innerText = 'Log In to Story Spark';
-            else if (submitBtn) submitBtn.innerText = 'Log In to Story Spark';
-            if (googleBtnText) googleBtnText.innerText = 'Sign in with Google';
+            
+            // Safe Text Target updates to avoid destroying spinner nodes
+            if (submitBtnText) submitBtnText.textContent = 'Log In to StorySparkAI';
+            if (googleBtnText) googleBtnText.textContent = 'Continue with Google';
+            
+            // FIX: Dynamic autocomplete switch for password managers
+            if (passwordField) passwordField.setAttribute('autocomplete', 'current-password');
             
             // Tabs styling
             if (tabSignin) tabSignin.className = "flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300";
             if (tabSignup) tabSignup.className = "flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
             
-            // Bottom link toggle content
+            // FIX: Use javascript void anchors to prevent hard page refreshes on interaction links
             if (navToggle) {
-                navToggle.innerHTML = `Don't have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold" href="signup.html">Sign Up</a>`;
+                navToggle.innerHTML = `Don't have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signup')">Sign up free</a>`;
             }
             
-            // Push address bar quietly without reload
             window.history.replaceState(null, '', 'login.html');
         }
 
+        // Clean layout state tracking elements
         setAlert('', '');
         setFieldError('name-field', 'name-error', '');
         setFieldError('email-field', 'email-error', '');
         setFieldError('password-field', 'password-error', '');
         setFieldError('confirm-password-field', 'confirm-password-error', '');
+        
         const feedbackEl = document.getElementById('confirm-password-feedback');
         if (feedbackEl) {
             feedbackEl.classList.remove('is-visible', 'match', 'mismatch');
@@ -491,14 +515,35 @@ function toggleConfirmPasswordVisibility() {
     }
 }
 
+/* caps-lock-warning */
+const passwordField = document.getElementById("password-field");
+
+if (passwordField) {
+  passwordField.addEventListener("keyup", (event) => {
+    const loginCapsWarning = document.getElementById("login-caps-lock-warning");
+    const signupCapsWarning = document.getElementById("signup-caps-lock-warning");
+
+    const isCapsLockOn = event.getModifierState("CapsLock");
+
+    if (loginCapsWarning) {
+      loginCapsWarning.classList.toggle("hidden", !isCapsLockOn);
+    }
+
+    if (signupCapsWarning) {
+      signupCapsWarning.classList.toggle("hidden", !isCapsLockOn);
+    }
+  });
+}
+
 /* ── Form Submission handling ── */
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
     e.preventDefault();
     if (isSubmitting) return;
 
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
+    const rememberCheckbox = document.getElementById('remember');
     const confirmPasswordField = document.getElementById('confirm-password-field');
     if (!emailField) return;
 
@@ -521,20 +566,47 @@ function handleFormSubmit(e) {
 
     const email = (emailField.value || '').trim();
     const name = (nameField && nameField.value ? nameField.value.trim() : '');
+    const password = (passwordField && passwordField.value ? passwordField.value : '');
+    const rememberMe = rememberCheckbox ? rememberCheckbox.checked : false;
 
     setSubmitting(true);
     setAlert('info', currentMode === 'signup' ? 'Creating your account…' : 'Signing you in…');
 
-    window.setTimeout(() => {
-        setSubmitting(false);
+    try {
+        const endpoint = currentMode === 'signup' ? '/api/auth/register' : '/api/auth/login';
+        const body = currentMode === 'signup'
+            ? { email, name, password }
+            : { email, password, rememberMe };
+
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            setAlert('error', data.message || 'Something went wrong. Please try again.');
+            setSubmitting(false);
+            return;
+        }
+
+        localStorage.setItem('accessToken', data.data.accessToken);
+
         if (currentMode === 'signin') {
-            setAlert('success', `Signed in as <span class="font-semibold">${escapeHtml(email)}</span>.`);
+            setAlert('success', `Signed in as <span class="font-semibold">${escapeHtml(email)}</span>. Redirecting…`);
+            setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
         } else {
             const greeting = name ? `Welcome, <span class="font-semibold">${escapeHtml(name)}</span>!` : 'Welcome!';
             setAlert('success', `${greeting} Your account is ready. Redirecting to sign in…`);
-            window.setTimeout(() => toggleAuthMode('signin'), 900);
+            setTimeout(() => toggleAuthMode('signin'), 900);
         }
-    }, 900);
+    } catch (err) {
+        setAlert('error', 'Network error. Please check your connection and try again.');
+    }
+
+    setSubmitting(false);
 }
 
 function escapeHtml(text) {
@@ -562,10 +634,48 @@ function initGoogleAuth() {
 }
 
 function decodeJwt(token) {
+    if (!token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+
     try {
-        const base64Url = token.split('.')[1];
+        const base64Url = parts[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        return JSON.parse(atob(base64));
+        const decoded = JSON.parse(atob(base64));
+
+        if (!decoded || typeof decoded !== 'object') return null;
+
+        // Required userId validation
+        if (typeof decoded.userId !== 'string' || decoded.userId.trim() === '') return null;
+
+        // Required email validation with format regex
+        if (typeof decoded.email !== 'string' || decoded.email.trim() === '') return null;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(decoded.email)) return null;
+
+        // Required role validation
+        if (typeof decoded.role !== 'string' || decoded.role.trim() === '') return null;
+        const validRoles = ['user', 'admin', 'guest'];
+        if (!validRoles.includes(decoded.role)) return null;
+
+        // Required subscriptionType validation
+        if (typeof decoded.subscriptionType !== 'string' || decoded.subscriptionType.trim() === '') return null;
+        const validSubscriptions = ['free', 'premium'];
+        if (!validSubscriptions.includes(decoded.subscriptionType)) return null;
+
+        // Required exp (expiration) validation
+        if (typeof decoded.exp !== 'number' || decoded.exp <= Math.floor(Date.now() / 1000)) return null;
+
+        // Required iat validation
+        if (typeof decoded.iat !== 'number') return null;
+
+        // Optional name validation
+        if (decoded.name !== undefined && typeof decoded.name !== 'string') return null;
+
+        // Optional postsCount validation
+        if (decoded.postsCount !== undefined && typeof decoded.postsCount !== 'number') return null;
+
+        return decoded;
     } catch (e) {
         return null;
     }

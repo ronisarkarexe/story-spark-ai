@@ -43,56 +43,7 @@ const createComment = async (
 };
 
 const getCommentsByPostId = async (postId: string) => {
-  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
-  if (!post) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
-  }
-
-  const allComments = (await Comment.find({ postId })
-    .populate("userId", "name email")
-    .populate("likes")
-    .sort({ createdAt: -1 })
-    .lean()) as unknown as ILeanComment[];
-
-  const totalComments = allComments.length;
-
-  const topLevelComments: ICommentDTO[] = [];
-  const replyMap = new Map<string, ICommentDTO[]>();
-
-  // Distribute comments into top-level list and replies map
-  for (const comment of allComments) {
-    const commentDTO: ICommentDTO = {
-      ...comment,
-      replies: [],
-    };
-
-    if (!commentDTO.parentCommentId) {
-      topLevelComments.push(commentDTO);
-    } else {
-      const parentIdStr = commentDTO.parentCommentId.toString();
-      if (!replyMap.has(parentIdStr)) {
-        replyMap.set(parentIdStr, []);
-      }
-      replyMap.get(parentIdStr)!.push(commentDTO);
-    }
-  }
-
-  // Attach replies to their corresponding top-level comments and sort them chronologically (createdAt: 1)
-  for (const comment of topLevelComments) {
-    const idStr = comment._id.toString();
-    const replies = replyMap.get(idStr) || [];
-    
-    // Sort replies in ascending chronological order, avoiding new Date allocation where possible
-    replies.sort((a, b) => {
-      const timeA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
-      const timeB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
-      return timeA - timeB;
-    });
-    
-    comment.replies = replies;
-  }
-
-  return { comments: topLevelComments, totalComments };
+  return await Comment.find({ post: postId }).populate("author", "name profile.avatar").sort({ createdAt: -1 });
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {

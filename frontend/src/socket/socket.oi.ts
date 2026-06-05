@@ -27,8 +27,8 @@ export const connectSocket = (): Socket | null => {
     return null;
     return null as unknown as Socket;
   }
-
-  socketIoInstance = io(socketUrl, {
+socketIoInstance = io(socketUrl, {
+  
     transports: ["websocket", "polling"],
     autoConnect: false,
     reconnectionAttempts: 5,
