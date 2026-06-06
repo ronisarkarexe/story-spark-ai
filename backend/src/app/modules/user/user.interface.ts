@@ -36,6 +36,12 @@ export interface IUser {
     lastActiveDate: Date | null;
     badges: string[];
   };
+  writingStreak: {
+    currentStreak: number;
+    longestStreak: number;
+    lastActiveDate: Date | null;
+    totalWritingDays: number;
+  };
   readingPreferences?: {
     favoriteGenres: { name: string; count: number }[];
     favoriteEmotions: { name: string; count: number }[];

@@ -3,6 +3,7 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 export interface CustomJwtPayload extends JwtPayload {
   email?: string | undefined;
   userId?: string | undefined;
+  _id?: string | undefined;
   name?: string | undefined;
   postsCount?: number | undefined;
   role?: string | undefined;
@@ -36,6 +37,15 @@ export const decodedToken = (token: string): CustomJwtPayload => {
 
   if (!decoded || typeof decoded !== "object") {
     throw new Error("Token payload is not a valid object.");
+  }
+
+  // Backend tokens use MongoDB `_id`; normalize to `userId` for client auth state.
+  if (
+    (typeof decoded.userId !== "string" || decoded.userId.trim() === "") &&
+    typeof decoded._id === "string" &&
+    decoded._id.trim() !== ""
+  ) {
+    decoded.userId = decoded._id;
   }
 
   // 1. Validate required userId claim

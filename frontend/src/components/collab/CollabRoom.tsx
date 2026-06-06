@@ -36,11 +36,6 @@ interface CollabStoryResponse {
   story?: StoryChunk[];
 }
 
-/**
- * Collab rooms required Socket.IO to `BACKEND_URL/collab`. That is disabled in the
- * frontend (same as notification socket) to avoid slow loads and connection hangs.
- * Restore the previous implementation from git history when you run a persistent backend.
- */
 export default function CollabRoom() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -65,7 +60,10 @@ export default function CollabRoom() {
     }
 
     try {
-      const socket = connectSocket();
+      let socket = getSocketIo();
+      if (!socket) {
+        socket = connectSocket();
+      }
 
       if (!socket) {
         setError(
@@ -76,57 +74,33 @@ export default function CollabRoom() {
       }
 
       // Request room info
-      socket.emit("collab:get_room", { roomId }, (response: any) => {
-        if (response?.room) {
-      collabSocket.emit("collab:get_room", { roomId }, (response: CollabRoomResponse) => {
+      socket.emit("collab:get_room", { roomId }, (response: CollabRoomResponse) => {
         if (response && response.room) {
           setRoom(response.room);
           setError(null);
         } else {
-          setError("Room not found");
+          setError(response.message || "Room not found");
         }
-
         setLoading(false);
       });
 
       // Listeners
-      const handleRoomUpdated = (data: any) => {
-        if (data?.room) {
-      // Listen for room updates
       const handleRoomUpdated = (data: CollabRoomResponse) => {
         if (data && data.room) {
           setRoom(data.room);
         }
       };
 
-      const handleStoryUpdated = (data: any) => {
-        if (data?.story) {
-          setRoom((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  story: data.story,
-                }
-              : null
-          );
-        }
-      };
-
-      const handleError = (data: any) => {
-        setError(data?.message || "Something went wrong");
       const handleStoryUpdated = (data: CollabStoryResponse) => {
         if (data && data.story) {
           setRoom((prev) =>
-            prev && data.story ? { ...prev, story: data.story } : prev,
+            prev ? { ...prev, story: data.story! } : null
           );
         }
       };
 
-      collabSocket.on("collab:room_updated", handleRoomUpdated);
-      collabSocket.on("collab:story_updated", handleStoryUpdated);
-      collabSocket.on("collab:error", (data: CollabRoomResponse) => {
-        setError(data.message ?? "Collaboration error");
-        setLoading(false);
+      const handleError = (data: { message: string }) => {
+        setError(data.message || "Collaboration error");
       };
 
       socket.on("collab:room_updated", handleRoomUpdated);
@@ -134,12 +108,9 @@ export default function CollabRoom() {
       socket.on("collab:error", handleError);
 
       return () => {
-        socket.off("collab:room_updated", handleRoomUpdated);
-        socket.off("collab:story_updated", handleStoryUpdated);
-        socket.off("collab:error", handleError);
-        collabSocket.off("collab:room_updated", handleRoomUpdated);
-        collabSocket.off("collab:story_updated", handleStoryUpdated);
-        collabSocket.disconnect(); // Clean connection handle loop safely
+        socket?.off("collab:room_updated", handleRoomUpdated);
+        socket?.off("collab:story_updated", handleStoryUpdated);
+        socket?.off("collab:error", handleError);
       };
     } catch (err) {
       console.error("Collab error:", err);
@@ -150,27 +121,21 @@ export default function CollabRoom() {
 
   const handleAddText = () => {
     if (!newText.trim() || !user || !roomId) return;
-const handleAddText = () => {
-    if (!newText.trim() || !user) return;
 
     const socket = getSocketIo();
-
     if (socket) {
       socket.emit("collab:add_text", {
         roomId,
         userId: user.userId,
         text: newText,
       });
-
       setNewText("");
     }
   };
 
   const handleAIContinue = () => {
     if (!roomId) return;
-
     const socket = getSocketIo();
-
     if (socket) {
       socket.emit("collab:ai_continue", { roomId });
     }
@@ -191,14 +156,8 @@ const handleAddText = () => {
     return (
       <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300">
         <div className="text-center max-w-md">
-          <p className="text-red-500 dark:text-red-400 text-lg mb-2">
-            Error
-          </p>
-
-          <p className="text-slate-600 dark:text-white/60 text-sm mb-6">
-            {error}
-          </p>
-
+          <p className="text-red-500 dark:text-red-400 text-lg mb-2">Error</p>
+          <p className="text-slate-600 dark:text-white/60 text-sm mb-6">{error}</p>
           <button
             type="button"
             onClick={() => navigate("/collab")}
@@ -212,50 +171,28 @@ const handleAddText = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300">
-      <div className="text-center max-w-md">
-        <p className="text-red-500 dark:text-red-400 text-lg mb-2">Collaboration unavailable</p>
-        <p className="text-slate-600 dark:text-white/60 text-sm mb-6">
-          Real-time collab is turned off (Socket.IO disabled). Room{" "}
-          <span className="text-slate-800 dark:text-white/80 font-mono">{roomId}</span> cannot load.
-        </p>
-        <button
-          type="button"
-          onClick={() => navigate("/collab")}
-          className="text-indigo-600 dark:text-indigo-400 underline"
-        >
-          Back to collab home
-        </button>
-
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center py-12 px-4 transition-colors duration-300">
+      <div className="max-w-6xl w-full">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Story */}
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6 mb-6">
-              <h1 className="text-2xl font-bold mb-4">
-                Room: {roomId}
-              </h1>
+              <h1 className="text-2xl font-bold mb-4">Room: {roomId}</h1>
 
               <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 min-h-64 max-h-96 overflow-y-auto mb-4">
                 {room?.story?.length ? (
                   <div className="space-y-3">
                     {room.story.map((chunk, idx) => (
                       <div key={idx} className="text-sm">
-                        <span
-                          style={{ color: chunk.color }}
-                          className="font-semibold"
-                        >
+                        <span style={{ color: chunk.color }} className="font-semibold">
                           {chunk.authorName}:
                         </span>{" "}
-                        <span className="text-slate-600 dark:text-slate-300">
-                          {chunk.text}
-                        </span>
+                        <span className="text-slate-600 dark:text-slate-300">{chunk.text}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-400">
-                    Story is empty. Start writing!
-                  </p>
+                  <p className="text-slate-400 text-center py-20">Story is empty. Start writing!</p>
                 )}
               </div>
 
@@ -264,14 +201,9 @@ const handleAddText = () => {
                   type="text"
                   value={newText}
                   onChange={(e) => setNewText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleAddText();
-                    }
-                  }}
                   onKeyDown={(e) => e.key === "Enter" && handleAddText()}
                   placeholder="Add your story text..."
-                  className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-white/10 rounded-lg focus:outline-none focus:border-indigo-500"
+                  className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors"
                 />
 
                 <button
@@ -309,7 +241,6 @@ const handleAddText = () => {
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: p.color }}
                   />
-
                   <span className="text-sm">{p.username}</span>
                 </div>
               ))}
