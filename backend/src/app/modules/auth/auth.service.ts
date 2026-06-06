@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+import * as bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import jwt, { Secret } from "jsonwebtoken";
 import crypto from "crypto";
@@ -20,10 +20,10 @@ import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
 const googleClient = new OAuth2Client(config.google_client_id);
 
 const validateUserStatus = (status?: string) => {
-  if (status === USER_STATUS.BLOCKED) {
+  if (status === "Blocked") {
     throw new ApiError(httpStatus.FORBIDDEN, "Your account has been blocked.");
   }
-  if (status === USER_STATUS.INACTIVE) {
+  if (status === "Inactive") {
     throw new ApiError(httpStatus.FORBIDDEN, "Your account is inactive.");
   }
 };
@@ -272,8 +272,8 @@ const googleLogin = async (payload: { token: string }) => {
       const newUser: Partial<IUser> = {
         email: email as string,
         name: (googleName || email || "Google User").slice(0, 100),
-        status: USER_STATUS.ACTIVE,
-        subscriptionType: SUBSCRIPTION_TYPE.FREE,
+        status: "Active",
+        subscriptionType: "Free",
         profile: {
           avatar: (picture as string) || "",
           bio: "",

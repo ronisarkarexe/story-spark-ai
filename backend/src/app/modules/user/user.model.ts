@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IUser, UserModel } from "./user.interface";
-import bcrypt from "bcryptjs";
+import * as bcrypt from "bcryptjs";
 import config from "../../../config";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
@@ -35,8 +35,8 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
         twitter: { type: String, default: "" },
         linkedin: { type: String, default: "" },
         instagram: { type: String, default: "" },
-        github:    { type: String, default: '' },
-        discord:   { type: String, default: '' },
+        github: { type: String, default: '' },
+        discord: { type: String, default: '' },
       },
     },
     subscriptionType: {
@@ -84,6 +84,10 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
       ],
     },
     readingHistory: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    writingGoals: {
+      dailyWordCount: { type: Number, default: 0 },
+      weeklyWordCount: { type: Number, default: 0 },
+    },
   },
   {
     timestamps: true,
@@ -95,7 +99,7 @@ UserSchema.pre("save", async function (next) {
   if (!user.isModified("password")) {
     return next();
   }
-  
+
   // Only hash password if it exists, is not empty, and has been modified (for password-based auth)
   // Skip for Google OAuth users who don't have passwords
   if (user.isModified("password") && user.password && user.password.trim() !== "") {
@@ -104,7 +108,7 @@ UserSchema.pre("save", async function (next) {
       Number(config.bcrypt_salt_rounds)
     );
   }
-  
+
   next();
 });
 

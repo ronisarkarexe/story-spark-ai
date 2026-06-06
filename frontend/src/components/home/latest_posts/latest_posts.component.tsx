@@ -22,7 +22,7 @@ const LatestPostsComponent = () => {
 
   if (isError) {
     return (
-      <section className="mb-12 text-slate-100">
+      <section className="mb-12 text-slate-900 dark:text-slate-100">
         <h2 className="mb-6 text-2xl font-bold">Latest Posts</h2>
         <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-center text-red-200">
           <p className="mb-3 font-semibold">Failed to load latest posts.</p>
@@ -55,7 +55,7 @@ const LatestPostsComponent = () => {
   };
 
   return (
-    <section className="w-full min-w-0 max-w-full text-slate-100">
+    <section className="w-full min-w-0 max-w-full text-slate-900 dark:text-slate-100">
       <h2 className="mb-6 text-2xl font-bold">Latest Posts</h2>
       <div className="max-w-full space-y-3">
         {visiblePosts.length > 0 ? (
@@ -65,25 +65,25 @@ const LatestPostsComponent = () => {
             return (
               <div
                 key={post._id}
-                className="motion-card-subtle story-panel w-full max-w-full rounded-lg overflow-hidden border border-slate-700/30 bg-[#252b3d]/40 transition-all duration-200"
+                className="motion-card-subtle story-panel w-full max-w-full rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700/30 transition-all duration-200"
               >
                 <button
                   onClick={() => toggleAccordion(post._id)}
-                  className="flex w-full min-w-0 items-center justify-between p-4 text-left font-bold text-slate-100 hover:bg-slate-700/20 transition-colors"
+                  className="flex w-full min-w-0 items-center justify-between p-4 text-left font-bold text-slate-900 dark:text-slate-100 hover:bg-slate-700/5 dark:hover:bg-slate-700/20 transition-colors"
                 >
                   <span className="min-w-0 pr-4 text-lg break-words md:text-xl">{post.title}</span>
-                  <span className="shrink-0 text-slate-400 font-mono text-sm transition-transform duration-200 select-none">
+                  <span className="shrink-0 text-slate-500 dark:text-slate-400 font-mono text-sm transition-transform duration-200 select-none">
                     {isExpanded ? "▼" : "▶"}
                   </span>
                 </button>
 
                 <div
                   className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isExpanded ? "max-h-[500px] border-t border-slate-700/30" : "max-h-0"
+                    isExpanded ? "max-h-[500px] border-t border-slate-200 dark:border-slate-700/30" : "max-h-0"
                   }`}
                 >
-                  <div className="min-w-0 p-5 bg-[#1e2330]/30">
-                    <p className="text-slate-400 text-sm md:text-base leading-relaxed mb-4 whitespace-pre-wrap break-words">
+                  <div className="min-w-0 p-5 bg-slate-50/50 dark:bg-[#1e2330]/30">
+                    <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed mb-4 whitespace-pre-wrap break-words">
                       {post.content || "No preview content available."}
                     </p>
 

@@ -35,7 +35,6 @@ export interface IPost extends IPostPayload {
   attachments?: string[];
   comments?: Types.ObjectId[];
   reactions?: Types.ObjectId[];
-  bookmarksCount: number;
   bookmarks?: Types.ObjectId[];
 }
 

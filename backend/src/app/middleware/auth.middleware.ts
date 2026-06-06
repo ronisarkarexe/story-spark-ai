@@ -64,7 +64,7 @@ const auth =
         );
       }
 
-      req.user = verifiedUser;
+      (req as any).user = verifiedUser;
 
       next();
     } catch (err) {

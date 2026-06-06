@@ -114,7 +114,5 @@ export default {
       },
     },
   },
-  plugins: [forms, containerQueries],
 };
 
-export default config;

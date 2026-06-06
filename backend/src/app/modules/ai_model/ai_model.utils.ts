@@ -4,6 +4,7 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { fetchImageURL } from "../../../utils/image_generation";
+import { generateStoryboardImage } from "../../../utils/storyboard_image_generation";
 import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
@@ -193,6 +194,27 @@ export async function generateWithGeminiStories(
         return "";
       }
     });
+
+    // Fetch cover images for stories sequentially
+    const coverImages: string[] = [];
+    for (const story of stories) {
+      try {
+        const promptTitle = story?.title ? story.title : story?.tag ? story.tag : "Untitled";
+        const promptTag = story?.tag || "General";
+        const generated = await generateStoryboardImage(`Cover illustration for a book titled: ${promptTitle}. Theme: ${promptTag}. Style: cinematic, detailed`);
+        if (generated) {
+          coverImages.push(generated);
+          continue;
+        }
+        const imageResponse = await fetchImageURL(String(story?.title ?? story?.tag ?? ""));
+        coverImages.push(imageResponse?.imageUrl || "");
+      } catch (e) {
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        const logTitle = story?.title || story?.tag || "Unknown Story";
+        console.error(`[AI] Failed to generate cover image for "${logTitle}": ${errorMsg}`);
+        coverImages.push("");
+      }
+    }
     
     const imageUrls = await Promise.all(imagePromises);
 
@@ -200,6 +222,7 @@ export async function generateWithGeminiStories(
       ...story,
       language,
       imageURL: imageUrls[index],
+      coverImage: coverImages[index],
       uuid: uuidv4(),
     }));
   } catch (error: unknown) {

@@ -12,6 +12,7 @@ Place at: story-spark-ai/ml/detect.py
 
 import os
 import json
+from pathlib import Path
 import numpy as np
 import joblib
 import random
@@ -21,12 +22,11 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 from tensorflow.keras.models import load_model
 from model import SEQ_LEN, N_FEATURES
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SAVE_DIR = os.path.join(BASE_DIR, "saved")
-
-MODEL_PATH = os.path.join(SAVE_DIR, "model.keras")
-SCALER_PATH = os.path.join(SAVE_DIR, "scaler.pkl")
-THRESHOLD_PATH = os.path.join(SAVE_DIR, "threshold.json")
+from pathlib import Path
+ML_DIR = Path(__file__).resolve().parent
+MODEL_PATH = ML_DIR / "saved" / "model.keras"
+SCALER_PATH = ML_DIR / "saved" / "scaler.pkl"
+THRESHOLD_PATH = ML_DIR / "saved" / "threshold.json"
 
 _ML_ASSETS_CACHE = None
 
@@ -108,11 +108,11 @@ def load_ml_assets_into_cache():
         return _ML_ASSETS_CACHE
 
     for path in (MODEL_PATH, SCALER_PATH, THRESHOLD_PATH):
-        if not os.path.exists(path):
+        if not path.exists():
             raise FileNotFoundError(f"{path} not found — run train.py first.")
 
-    model = load_model(MODEL_PATH)
-    scaler = joblib.load(SCALER_PATH)
+    model = load_model(str(MODEL_PATH))
+    scaler = joblib.load(str(SCALER_PATH))
 
     with open(THRESHOLD_PATH, "r", encoding="utf-8") as f:
         threshold_data = json.load(f)
