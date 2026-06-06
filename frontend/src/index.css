@@ -115,10 +115,10 @@ p {
   transition: 0.2s ease;
 }
 
-.motion-card:hover {
+.motion-card:hover,
+.motion-card:focus-visible {
   transform: translateY(-4px);
 }
-
 /* ================= CONTACT FORM ================= */
 
 .contact-section {
@@ -146,8 +146,15 @@ p {
   transition: 0.2s ease;
 }
 
-.contact-submit-btn:hover {
+.contact-submit-btn:hover,
+.contact-submit-btn:focus-visible {
   transform: translateY(-2px);
+}
+
+.motion-card:focus-visible,
+.contact-submit-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 /* ================= SCROLL BUTTON ================= */
@@ -172,8 +179,14 @@ p {
 /* ================= REDUCED MOTION ================= */
 
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
+  html {
+    scroll-behavior: auto;
+  }
+
+  .motion-card,
+  .contact-submit-btn,
+  .scroll-to-top-btn {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }

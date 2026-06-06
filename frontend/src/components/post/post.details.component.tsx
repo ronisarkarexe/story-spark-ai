@@ -19,6 +19,8 @@ import SSProfile from "../ui-component/ss-profile/ss-profile";
 import ImageFallback from "../ImageFallback";
 import BookmarkButton from "../BookmarkButton";
 import AudioPlayer from "../AudioPlayer";
+import ReaderPreferencesPanel from "../reader-preferences/ReaderPreferences";
+import { useReaderPreferences } from "../reader-preferences/useReaderPreferences";
 
 import { formatDateShort } from "../../utils/time-formate";
 import { formatReadingStats } from "../../utils/story-utils";
@@ -110,6 +112,7 @@ const PostDetailsComponent = () => {
   const [showComparison, setShowComparison] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
+  const readerPreferences = useReaderPreferences();
   const { data: versions, isLoading: isLoadingVersions } = useGetVersionsByStoryIdQuery(id || "", {
     skip: !id || !showTimeline,
   });
@@ -433,7 +436,12 @@ const PostDetailsComponent = () => {
                   />
                 </div>
 
-                <div className="prose max-w-none mb-12 text-slate-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-lg font-light">
+                <ReaderPreferencesPanel
+                  {...readerPreferences}
+                  className="mb-6"
+                />
+
+                <div className={`prose mx-auto mb-12 whitespace-pre-wrap break-words text-slate-700 dark:text-gray-300 ${readerPreferences.readerClassName}`}>
                   <p>{post?.content}</p>
                 </div>
 

@@ -6,6 +6,8 @@ import sendResponse from "../../../shared/send_response";
 import { IUser } from "../user/user.interface";
 import catchAsync from "../../../shared/catch_async";
 import { setRefreshTokenCookie, clearRefreshTokenCookie } from "../../../utils/cookie.util";
+import jwt from "jsonwebtoken";
+import { TokenBlacklist } from "./tokenBlacklist.model";
 
 const login = catchAsync(async (req: Request, res: Response) => {
   const body: AuthModel = req.body;
@@ -54,14 +56,40 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 });
 
 const logout = catchAsync(async (req: Request, res: Response) => {
-  const token = req.cookies?.refreshToken as string | undefined;
-  await AuthService.logout(token);
+  const authHeader = req.headers.authorization;
+  let activeToken = "";
+  if (authHeader) {
+    activeToken = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : authHeader.trim();
+  } else {
+    activeToken = req.cookies?.accessToken || req.cookies?.token || "";
+  }
+
+  if (activeToken) {
+    try {
+      const decoded = jwt.decode(activeToken) as jwt.JwtPayload | null;
+      const expiresAt = decoded && decoded.exp 
+        ? new Date(decoded.exp * 1000) 
+        : new Date(Date.now() + 24 * 60 * 60 * 1000); // fallback if no exp is present
+
+      await TokenBlacklist.create({
+        token: activeToken,
+        expiresAt,
+      });
+    } catch (err) {
+      console.error("Error blacklisting token on logout:", err);
+    }
+  }
+
+  const refreshToken = req.cookies?.refreshToken as string | undefined;
+  if (refreshToken) {
+    await AuthService.logout(refreshToken);
+  }
   clearRefreshTokenCookie(res);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Logged out successfully",
-    data: null,
+
+  res.status(httpStatus.OK).json({
+    message: "Logged out successfully. Session revoked securely."
   });
 });
 

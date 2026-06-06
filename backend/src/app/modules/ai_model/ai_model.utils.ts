@@ -7,7 +7,7 @@ import { fetchImageURL } from "../../../utils/image_generation";
 import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
-import { IAlternateEnding } from "./ai_model.interface";
+import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import type {
@@ -126,6 +126,14 @@ const sanitizeJsonText = (rawText: string): string => {
     .trim();
 };
 
+const buildCharactersInstruction = (characters?: ICharacter[]): string => {
+  if (!characters || characters.length === 0) return "";
+  const charsString = characters
+    .map((c) => `- Name: ${c.name}, Role: ${c.role}, Personality/Traits: ${c.personality}`)
+    .join("\n");
+  return `Cast of Characters (You MUST incorporate these characters into all generated stories and maintain their roles, relationship dynamics, and traits consistently):\n${charsString}\n\n`;
+};
+
 export async function generateWithGeminiStories(
   prompt: string,
   wordLength: number = 250,
@@ -134,6 +142,7 @@ export async function generateWithGeminiStories(
   signal?: AbortSignal,
   tone?: string, // NEW: optional tone parameter
   genre?: string, // NEW: optional genre parameter
+  characters?: ICharacter[],
 ): Promise<Story[]> {
   throwIfAborted(signal);
 
@@ -149,9 +158,10 @@ export async function generateWithGeminiStories(
     // NEW: Prepend the tone instruction block to the Gemini prompt when a tone is selected.
     const toneInstruction = buildToneInstruction(tone);
     const genreInstruction = buildGenreInstruction(genre);
+    const charactersInstruction = buildCharactersInstruction(characters);
 
     const response = await chatSession.sendMessage(
-      `${genreInstruction}${toneInstruction}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+      `${genreInstruction}${toneInstruction}${charactersInstruction}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
       First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
       Then, generate ${numStories} different short stories based on this ENHANCED prompt.
       The stories MUST be written entirely in the ${language} language.

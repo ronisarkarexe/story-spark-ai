@@ -46,11 +46,7 @@ export interface User {
   lastRequestDate: string | null;
   posts: string[];
   isApplyForWriter: boolean;
-  // Optional writing goals for analytics and user settings
-  writingGoals?: {
-    dailyWordCount?: number;
-    weeklyWordCount?: number;
-  };
+
   createdAt: string;
   updatedAt: string;
   profile: UserProfile;
