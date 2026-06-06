@@ -10,4 +10,5 @@ export interface IBugReport {
   status: "Open" | "In Progress" | "Resolved" | "Closed";
   createdAt?: Date;
   updatedAt?: Date;
+  screenshotUrl?: string;
 }

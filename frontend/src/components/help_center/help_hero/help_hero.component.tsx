@@ -32,6 +32,14 @@ const HelpHero: FC<HelpHeroProps> = ({
         <div className="absolute top-1/2 left-1/2 w-[450px] h-[450px] -translate-x-1/2 -translate-y-1/2 bg-indigo-500/5 rounded-full blur-3xl" />
       </div>
 
+      <div
+        className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03] pointer-events-none select-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 lg:pt-12 lg:pb-16 box-border w-full">
         <motion.div
           initial={{ opacity: 0, x: -16 }}
@@ -50,7 +58,7 @@ const HelpHero: FC<HelpHeroProps> = ({
         {/* Main Content */}
         <div className="text-center max-w-4xl mx-auto">
           <motion.div
-            className="inline-flex items-center justify-center mx-auto px-4 py-1.5 mb-6 rounded-full border border-blue-200 dark:border-white/20 bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-white shadow-sm dark:shadow-none transition-colors duration-300"
+            className="inline-flex items-center justify-center mx-auto px-4 py-1.5 mb-5 sm:mb-6 rounded-full border border-blue-500/10 dark:border-white/10 bg-blue-500/5 text-blue-600 dark:text-blue-400 select-none shadow-sm dark:shadow-none transition-colors duration-300"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}

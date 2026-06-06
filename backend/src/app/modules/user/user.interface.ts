@@ -22,6 +22,8 @@ export interface IUser {
       twitter: string;
       linkedin: string;
       instagram: string;
+      github?: string;
+      discord?: string;
     };
   };
   requestsThisMonth: number;
@@ -35,6 +37,12 @@ export interface IUser {
     streak: number;
     lastActiveDate: Date | null;
     badges: string[];
+  };
+  writingStreak: {
+    currentStreak: number;
+    longestStreak: number;
+    lastActiveDate: Date | null;
+    totalWritingDays: number;
   };
   readingPreferences?: {
     favoriteGenres: { name: string; count: number }[];

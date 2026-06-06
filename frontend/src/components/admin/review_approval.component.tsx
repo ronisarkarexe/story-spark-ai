@@ -7,8 +7,6 @@ import {
   useGetPendingReviewsQuery,
 } from "../../redux/apis/review.api";
 import { Review } from "../../models/review";
-import defaultAvatar from "../../assets/logoNew.png";
-import ImageFallback from "../ImageFallback";
 
 const ReviewApprovalComponent = () => {
   const { data: reviews = [], isLoading } = useGetPendingReviewsQuery({});
@@ -18,7 +16,7 @@ const ReviewApprovalComponent = () => {
     try {
       await approveReview(id).unwrap();
       toast.success("Review approved successfully!");
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error("Failed to approve review. Please try again.");
       console.error(error);
     }
@@ -39,7 +37,7 @@ const ReviewApprovalComponent = () => {
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 px-4 py-12 relative overflow-hidden w-full box-border">
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
-      
+
       <Toaster position="top-right" reverseOrder={false} />
 
       <div className="max-w-6xl mx-auto relative z-10 w-full box-border">

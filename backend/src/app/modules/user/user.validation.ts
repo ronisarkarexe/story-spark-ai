@@ -70,10 +70,18 @@ const updateUser = z.object({
     .strict(),
 });
 
+const changePassword = z.object({
+  body: z.object({
+    oldPassword: z.string({ required_error: "Old password is required" }),
+    newPassword: passwordSchema,
+  }),
+});
+
 export const UserValidator = {
   register,
   login,
   forgotPassword,
   resetPassword,
   updateUser,
+  changePassword,
 };

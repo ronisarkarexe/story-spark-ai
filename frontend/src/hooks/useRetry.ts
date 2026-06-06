@@ -13,7 +13,7 @@ export interface UseRetryReturn {
   countdown: number;       // seconds remaining before next retry allowed
   MAX_RETRIES: number;
   setIsTimeout: (v: boolean) => void;
-  handleRetry: (triggerFn: () => void) => void;
+  handleRetry: (triggerFn: () => void | Promise<void>) => void;
   resetRetry: () => void;
 }
 
@@ -46,7 +46,7 @@ export function useRetry({
   );
 
   const handleRetry = useCallback(
-    (triggerFn: () => void) => {
+    (triggerFn: () => void | Promise<void>) => {
       // Prevent multiple simultaneous retries (issue requirement #4)
       if (isRetrying || countdown > 0) return;
       if (retryCount >= maxRetries) return;
@@ -58,15 +58,23 @@ export function useRetry({
       // Exponential backoff delay: 0s, 2s, 4s for retries 1, 2, 3
       const delaySeconds = baseDelay > 0 ? baseDelay * nextCount : 0;
 
+      const executeTrigger = async () => {
+        try {
+          await triggerFn();
+        } finally {
+          setIsRetrying(false);
+        }
+      };
+
       if (delaySeconds > 0) {
         setIsRetrying(false); // not retrying yet, counting down
         startCountdown(delaySeconds, () => {
           setIsRetrying(true);
-          triggerFn();
+          executeTrigger();
         });
       } else {
         setIsRetrying(true);
-        triggerFn();
+        executeTrigger();
       }
     },
     [isRetrying, countdown, retryCount, maxRetries, baseDelay, startCountdown]

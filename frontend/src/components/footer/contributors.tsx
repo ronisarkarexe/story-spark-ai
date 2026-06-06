@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-﻿import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Globe,
   GitPullRequest,
@@ -186,19 +184,19 @@ const ContributorCard = ({
     {
       glow: "rgba(251,191,36,0.3)",
       badge: "bg-gradient-to-r from-amber-400 to-yellow-500",
-      label: "≡ƒÑç",
+      label: "\uD83E\uDD47",
       borderColor: "rgba(251,191,36,0.4)",
     },
     {
       glow: "rgba(148,163,184,0.3)",
       badge: "bg-gradient-to-r from-slate-300 to-gray-400",
-      label: "≡ƒÑê",
+      label: "\uD83E\uDD48",
       borderColor: "rgba(148,163,184,0.3)",
     },
     {
       glow: "rgba(251,146,60,0.25)",
       badge: "bg-gradient-to-r from-orange-400 to-amber-600",
-      label: "≡ƒÑë",
+      label: "\uD83E\uDD49",
       borderColor: "rgba(251,146,60,0.3)",
     },
   ];
@@ -854,7 +852,7 @@ const ContributorsComponent = () => {
           </div>
 
           <p className="hero-subtitle mt-8 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            The brilliant minds behind StorySparkAI ΓÇö building, iterating, and
+            The brilliant minds behind StorySparkAI - building, iterating, and
             pushing the boundaries of AI-powered storytelling.
           </p>
 

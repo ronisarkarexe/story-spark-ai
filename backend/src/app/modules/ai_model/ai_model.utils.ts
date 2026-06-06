@@ -4,10 +4,11 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { fetchImageURL } from "../../../utils/image_generation";
+import { generateStoryboardImage } from "../../../utils/storyboard_image_generation";
 import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
-import { IAlternateEnding } from "./ai_model.interface";
+import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import type {
@@ -126,6 +127,14 @@ const sanitizeJsonText = (rawText: string): string => {
     .trim();
 };
 
+const buildCharactersInstruction = (characters?: ICharacter[]): string => {
+  if (!characters || characters.length === 0) return "";
+  const charsString = characters
+    .map((c) => `- Name: ${c.name}, Role: ${c.role}, Personality/Traits: ${c.personality}`)
+    .join("\n");
+  return `Cast of Characters (You MUST incorporate these characters into all generated stories and maintain their roles, relationship dynamics, and traits consistently):\n${charsString}\n\n`;
+};
+
 export async function generateWithGeminiStories(
   prompt: string,
   wordLength: number = 250,
@@ -134,6 +143,7 @@ export async function generateWithGeminiStories(
   signal?: AbortSignal,
   tone?: string, // NEW: optional tone parameter
   genre?: string, // NEW: optional genre parameter
+  characters?: ICharacter[],
 ): Promise<Story[]> {
   throwIfAborted(signal);
 
@@ -149,9 +159,10 @@ export async function generateWithGeminiStories(
     // NEW: Prepend the tone instruction block to the Gemini prompt when a tone is selected.
     const toneInstruction = buildToneInstruction(tone);
     const genreInstruction = buildGenreInstruction(genre);
+    const charactersInstruction = buildCharactersInstruction(characters);
 
     const response = await chatSession.sendMessage(
-      `${genreInstruction}${toneInstruction}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+      `${genreInstruction}${toneInstruction}${charactersInstruction}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
       First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
       Then, generate ${numStories} different short stories based on this ENHANCED prompt.
       The stories MUST be written entirely in the ${language} language.
@@ -183,6 +194,27 @@ export async function generateWithGeminiStories(
         return "";
       }
     });
+
+    // Fetch cover images for stories sequentially
+    const coverImages: string[] = [];
+    for (const story of stories) {
+      try {
+        const promptTitle = story?.title ? story.title : story?.tag ? story.tag : "Untitled";
+        const promptTag = story?.tag || "General";
+        const generated = await generateStoryboardImage(`Cover illustration for a book titled: ${promptTitle}. Theme: ${promptTag}. Style: cinematic, detailed`);
+        if (generated) {
+          coverImages.push(generated);
+          continue;
+        }
+        const imageResponse = await fetchImageURL(String(story?.title ?? story?.tag ?? ""));
+        coverImages.push(imageResponse?.imageUrl || "");
+      } catch (e) {
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        const logTitle = story?.title || story?.tag || "Unknown Story";
+        console.error(`[AI] Failed to generate cover image for "${logTitle}": ${errorMsg}`);
+        coverImages.push("");
+      }
+    }
     
     const imageUrls = await Promise.all(imagePromises);
 
@@ -190,6 +222,7 @@ export async function generateWithGeminiStories(
       ...story,
       language,
       imageURL: imageUrls[index],
+      coverImage: coverImages[index],
       uuid: uuidv4(),
     }));
   } catch (error: unknown) {

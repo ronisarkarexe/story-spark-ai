@@ -29,6 +29,15 @@ export interface AudioPlayerHandle {
   currentWordIndex: number;
 }
 
+export interface Review {
+  _id?: string;
+  name: string;
+  role: string;
+  feedback: string;
+  imgSrc?: string;
+  rating: number;
+}
+
 interface AudioPlayerProps {
   text: string;
   title?: string;
@@ -218,12 +227,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 Stop
               </button>
             </div>
-
-<<<<<<< HEAD
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(140px,180px)_minmax(180px,1fr)_minmax(180px,1fr)] lg:items-end">
-=======
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(140px,160px)_minmax(160px,1fr)_minmax(160px,1fr)_minmax(200px,1fr)] lg:items-end">
->>>>>>> upstream/main
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>Progress</span>
@@ -374,11 +378,10 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     type="button"
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                     title={showFavoritesOnly ? "Show all voices" : "Show favorites only"}
-                    className={`rounded-xl border px-2.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
-                      showFavoritesOnly
+                    className={`rounded-xl border px-2.5 py-2.5 text-sm font-semibold transition-all duration-200 ${showFavoritesOnly
                         ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
                         : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
-                    }`}
+                      }`}
                     aria-label={showFavoritesOnly ? "Show all voices" : "Show favorites only"}
                   >
                     <Star className="h-4 w-4" fill={showFavoritesOnly ? "currentColor" : "none"} />
@@ -426,11 +429,10 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     }
                     title="Listen to current voice preview"
                     aria-label="Play voice preview"
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-950 ${
-                      preview.isPreviewPlaying
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-950 ${preview.isPreviewPlaying
                         ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
                         : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                    }`}
+                      }`}
                   >
                     <Volume className="h-4 w-4" />
                     Preview
@@ -449,11 +451,10 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                         ? "Remove from favorites"
                         : "Add to favorites"
                     }
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-950 ${
-                      favorites.isFavorite(speech.selectedVoiceId)
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-950 ${favorites.isFavorite(speech.selectedVoiceId)
                         ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
                         : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                    }`}
+                      }`}
                   >
                     <Star
                       className="h-4 w-4"

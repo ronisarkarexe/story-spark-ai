@@ -6,7 +6,7 @@
 let currentMode = 'signin';
 
 // ── Google Identity Services (GIS) Client ID ──
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_ID = (typeof window !== 'undefined' && window.VITE_GOOGLE_CLIENT_ID) ? window.VITE_GOOGLE_CLIENT_ID : 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
 
 let isSubmitting = false;
 
@@ -242,17 +242,26 @@ function setSubmitting(submitting) {
     isSubmitting = submitting;
     const submitBtn = document.getElementById('submit-btn');
     const spinner = document.getElementById('submit-btn-spinner');
+    const submitBtnText = document.getElementById('submit-btn-text'); 
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
     const confirmPasswordField = document.getElementById('confirm-password-field');
 
-    if (submitBtn) submitBtn.disabled = submitting;
+    if (submitBtn) {
+    submitBtn.disabled = submitting;
+    submitBtn.classList.toggle('opacity-70', submitting);
+    submitBtn.classList.toggle('cursor-not-allowed', submitting);}
     if (spinner) spinner.classList.toggle('hidden', !submitting);
+    if (submitBtnText) {
+    submitBtnText.textContent = submitting
+        ? 'Processing...'
+        : 'Create Account';}
     if (emailField) emailField.disabled = submitting;
     if (nameField) nameField.disabled = submitting;
     if (passwordField) passwordField.disabled = submitting;
     if (confirmPasswordField) confirmPasswordField.disabled = submitting;
+    
 }
 
 /* ── Advanced Particle System (Canvas + Mouse Interactions) ── */

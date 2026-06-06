@@ -5,8 +5,9 @@ import * as newsletterService from "./newsletter.service";
 export const subscribe = async (req: Request, res: Response) => {
   try {
     const { email, name, source } = req.body;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!email || !email.includes("@")) {
+    if (!email || !emailRegex.test(String(email).trim())) {
       return res.status(400).json({ message: "Valid email is required." });
     }
 
@@ -36,6 +37,7 @@ export const subscribe = async (req: Request, res: Response) => {
     });
   }
 };
+
 // Verify newsletter subscription token
 export const verify = async (req: Request, res: Response) => {
   try {

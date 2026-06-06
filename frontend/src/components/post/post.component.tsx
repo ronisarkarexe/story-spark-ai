@@ -18,7 +18,7 @@ const ExploreComponent = () => {
 
   const debounceTerm = useDebounced({
     searchQuery: searchTerm,
-    daley: 600,
+    delay: 600,
   });
 
   const normalizedSearchTerm = debounceTerm?.trim() ?? "";
