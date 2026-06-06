@@ -19,7 +19,26 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught runtime error caught by ErrorBoundary:", error, errorInfo);
+    // Console logging
+    console.error("Error caught by ErrorBoundary:", error, errorInfo);
+
+    // Structured error logging - could be sent to Sentry or similar service
+    try {
+      const errorLog = {
+        timestamp: new Date().toISOString(),
+        message: error.toString(),
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        url: typeof window !== "undefined" ? window.location.origin + window.location.pathname : "",
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+      };
+
+      const existing = JSON.parse(localStorage.getItem("app_error_log") || "[]");
+      existing.unshift(errorLog);
+      localStorage.setItem("app_error_log", JSON.stringify(existing.slice(0, 10)));
+    } catch {
+      // Fail silently if localStorage is unavailable
+    }
   }
 
   public render() {
@@ -39,3 +58,5 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export default ErrorBoundary;
