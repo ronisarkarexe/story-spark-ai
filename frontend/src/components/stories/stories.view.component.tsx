@@ -155,6 +155,7 @@ interface StoriesComponentProps {
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
   onPublishSuccess?: () => void;
+  isLoading?: boolean;
 }
 
 interface IRelatedStoriesComponentProps {
@@ -193,7 +194,7 @@ const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
   return segments;
 };
 
-const getSafeFileName = (title: string, extension: "md" | "docx"): string => {
+const getSafeFileName = (title: string, extension: "md" | "docx" | "pdf"): string => {
   const safeTitle = (title || "story")
     .trim()
     .replace(/[^a-z0-9]+/gi, "_")

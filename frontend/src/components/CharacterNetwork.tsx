@@ -15,11 +15,11 @@ import RelationshipEdge from "./RelationshipEdge";
 import GraphFilters from "./GraphFilters";
 import CharacterDetailsPanel from "./CharacterDetailsPanel";
 
-const nodeTypes = {
+const nodeTypes: any = {
   character: CharacterNode,
 };
 
-const edgeTypes = {
+const edgeTypes: any = {
   relationship: RelationshipEdge,
 };
 
@@ -39,8 +39,8 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<any>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
 
   // Clear filters
   const handleClearFilters = useCallback(() => {

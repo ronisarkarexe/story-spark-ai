@@ -13,8 +13,7 @@ import StartWritingComponent from "./start_writing/start_writing.component";
 import Contactus from "../contactus/contactus";
 import PersonalizedRecommendationsComponent from "./personalized_recommendations/personalized_recommendations.component";
 import { isLoggedIn } from "../../services/auth.service";
-import ScrollToTopButton from "../ScrollToTopButton";
-import BackToTop from "../back_home/back_to_top.component";
+import BackToTop from "../ScrollToTopButton";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -34,7 +33,6 @@ const itemVariants = {
     transition: { duration: 0.5, ease: [0.25, 1, 0.5, 1] as [number, number, number, number] } 
   },
 };
-import BackToTop from "../ScrollToTopButton";
 
 const HomeComponent = () => {
   const isLogin = isLoggedIn();

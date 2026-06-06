@@ -836,7 +836,7 @@ const StoriesComponent = () => {
                 <span>{text.upgrade}</span>
                 <i className="fas fa-bolt text-amber-400 text-[11px]" />
               </Link>
-            </div>
+            </button>
             <div className="mt-2.5 text-[11px] font-semibold tracking-wide text-slate-400 dark:text-slate-500 text-center sm:text-right uppercase space-y-0.5">
               <div>{text.monthlyRequests}: {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}</div>
               <div>{text.totalPosts}: {login ? (data?.postsCount ?? 0) : 0}</div>
@@ -1061,24 +1061,7 @@ const StoriesComponent = () => {
                     </p>
                   </div>
 
-                      <span
-  className={`text-xs tabular-nums ml-auto flex gap-2 ${
-    isOverLimit
-      ? "text-red-400 font-medium"
-      : isNearLimit
-      ? "text-yellow-400"
-      : "text-gray-500"
-  }`}
->
-  <span>
-    {textareaValue.trim() === "" ? 0 : textareaValue.trim().split(/\s+/).length} words
-  </span>
-  <span className="opacity-40">·</span>
-  <span>{textareaValue.length} / {MAX_PROMPT_LENGTH} chars</span>
-</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
+                  <div className="space-y-4">
                       {characters.map((char, index) => (
                         <div
                           key={char.id}
@@ -1146,9 +1129,8 @@ const StoriesComponent = () => {
                           <i className="fas fa-plus" />
                           <span>Add Another Character</span>
                         </button>
-                      </div>
                     </div>
-                  )}
+                    </div>
 
                   <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5 w-full box-border select-none">
                     <button
