@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { useState } from "react";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   useLoginUserMutation,
@@ -88,7 +86,7 @@ const LoginComponent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 box-border">
+    <div className="min-h-screen bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden p-4 sm:p-8 box-border">
       {/* Background Glow */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
@@ -104,12 +102,16 @@ const LoginComponent = () => {
         className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" 
       />
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4"
-      >
+      {/* Main Grid Layout Container */}
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 box-border">
+        
+        {/* Left Column — Informational Cards */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
+        >
 
           <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
             <WandSparkles className="text-violet-600 shrink-0" />
@@ -119,29 +121,26 @@ const LoginComponent = () => {
             </div>
           </div>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden"
-        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 box-border"
+          >
+            <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400 text-sm">
+              Create, edit, and generate engaging multiple story variations from a
+              single prompt. Perfect for writers, creators, and enthusiasts
+              exploring the future of fiction.
+            </div>
+          </motion.div>
+        </motion.div>
 
-            <button
-            onClick={() => window.location.href = "/"}
-            className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-                      >
-            ← Back to Home
-            </button>
+        {/* Right Column — Login Form */}
+        <div className="flex justify-center w-full box-border">
 
-          <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400 text-sm">
-            Create, edit, and generate engaging multiple story variations from a
-            single prompt. Perfect for writers, creators, and enthusiasts
-            exploring the future of fiction.
-          </div>
-        </div>
 
         {/* Right side — login form card */}
-        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
+        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl relative z-10 box-border">
           {/* Back to Home */}
           <button
             onClick={() => (window.location.href = "/")}
@@ -159,7 +158,7 @@ const LoginComponent = () => {
             </p>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-5 w-full min-w-0 box-border" onSubmit={handleSubmit(onSubmit)}>
             <SSInput
               label="Email address"
               name="email"
@@ -230,7 +229,7 @@ const LoginComponent = () => {
             </Link>
           </p>
         </div>
-
+        </div>
       </div>
 
       <Toaster position="top-right" reverseOrder={false} />
