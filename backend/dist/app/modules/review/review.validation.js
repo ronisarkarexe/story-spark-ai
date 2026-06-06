@@ -15,9 +15,7 @@ const createReview = zod_1.z.object({
             required_error: "Feedback is required!",
         })
             .min(10, "Feedback must be at least 10 characters long"),
-        imgSrc: zod_1.z.string({
-            required_error: "Image is required!",
-        }),
+        imgSrc: zod_1.z.string().optional(),
         rating: zod_1.z.number().min(1).max(5).optional(),
     }),
 });

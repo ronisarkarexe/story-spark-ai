@@ -2,10 +2,10 @@ import { Application, Request, Response } from "express";
 import mongoose from "mongoose";
 import config from "./config";
 import app from "./app";
-import dns from "dns";
+import dns from "node:dns";
 import http from "http";
 import { Server } from "socket.io";
-import { JwtHalers } from "./utils/jwt.helper";
+import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
 
@@ -16,28 +16,37 @@ if (config.disable_logs) {
   console.log = noop;
   console.info = noop;
   console.debug = noop;
-  console.warn = noop;
-  console.error = noop;
 }
 
 async function connectDB() {
   if (mongoose.connection.readyState === 1) return;
   // config.database_url is guaranteed non-empty by config/index.ts — it throws at
   // module load time if DATABASE_URL is missing, so no runtime guard is needed here.
-  await mongoose.connect(config.database_url);
+  await mongoose.connect(config.database_url as string);
 }
 
 async function main() {
   try {
-    await connectDB();
+    await connectDB().catch((error) => {
+      logger.error("Error connecting to the database on startup:", error);
+    });
+
     const httpServer = http.createServer(app);
+    const defaultCorsOrigins =
+      process.env.NODE_ENV === "development"
+      ? ["http://localhost:4001", "http://localhost:4002"]
+      : [];
+
+    const socketCorsOrigins =
+      config.cors_origins && config.cors_origins.length > 0
+      ? config.cors_origins
+      : defaultCorsOrigins;
+
     const io = new Server(httpServer, {
-      cors: {
-        origin: config.cors_origins?.length
-          ? config.cors_origins
-          : ["http://localhost:4001", "https://storysparkai.vercel.app"],
-        credentials: true,
-      },
+        cors: {
+          origin: socketCorsOrigins,
+          credentials: true,
+        },
     });
 
     const [{ setNotificationSocket }, { setupCollabSocket }] = await Promise.all([
@@ -55,11 +64,11 @@ async function main() {
           return next(new Error("Unauthorized"));
         }
 
-        const verifiedUser = JwtHalers.verifyToken(
+        const verifiedUser = JwtHelpers.verifyToken(
           token,
           config.jwt.secret as Secret
         );
-        const userId = verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
+        const userId = verifiedUser._id || verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
         if (!userId) {
           return next(new Error("Unauthorized"));
         }
@@ -82,7 +91,7 @@ async function main() {
       logger.info(`Story-Spark-AI app listening on port ${config.port}`);
     });
   } catch (error) {
-    logger.error("Error connecting to the database:", error);
+    logger.error("Error in main startup sequence:", error);
   }
 }
 

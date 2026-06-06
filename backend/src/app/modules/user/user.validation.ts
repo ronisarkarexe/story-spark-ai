@@ -11,7 +11,9 @@ const passwordSchema = z
 const register = z.object({
   body: z.object({
     email: z.string({ required_error: "Email is required" }),
-    name: z.string({ required_error: "Name is required" }),
+    name: z
+      .string({ required_error: "Name is required" })
+      .min(3, "Name must be at least 3 characters long"),
     password: passwordSchema,
     verificationToken: z
       .string({ required_error: "Verification token is required" })
@@ -44,7 +46,7 @@ const resetPassword = z.object({
 const updateUser = z.object({
   body: z
     .object({
-      name: z.string().optional(),
+      name: z.string().trim().min(1, "Full Name cannot be empty.").optional(),
       profile: z
         .object({
           avatar: z.string().optional(),
@@ -57,12 +59,15 @@ const updateUser = z.object({
               instagram: z.string().optional(),
             })
             .partial()
+            .strict()
             .optional(),
         })
         .partial()
+        .strict()
         .optional(),
     })
-    .partial(),
+    .partial()
+    .strict(),
 });
 
 export const UserValidator = {

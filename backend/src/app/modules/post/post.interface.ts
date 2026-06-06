@@ -19,10 +19,12 @@ export interface IPostPayload {
 }
 
 export interface IPost extends IPostPayload {
+  _id?: Types.ObjectId;
   author: Types.ObjectId;
   likesCount: number;
   commentsCount: number;
   viewsCount: number;
+  bookmarksCount: number;  
   isPublished: boolean;
   isFeaturedPost?: boolean;
   isDeleted?: boolean;
@@ -33,6 +35,7 @@ export interface IPost extends IPostPayload {
   attachments?: string[];
   comments?: Types.ObjectId[];
   reactions?: Types.ObjectId[];
+  bookmarksCount: number;
   bookmarks?: Types.ObjectId[];
 }
 
