@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo } from "../../services/auth.service";
-// Imported the local ErrorBoundary component to satisfy issue #1326
 import { ErrorBoundary } from "../ErrorBoundary";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 
@@ -14,18 +13,17 @@ const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
 
   const user = getUserInfo();
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
 
-  // Single hook call with skip condition - must be called unconditionally
+  // Unconditional hook initialization with explicit rule-safe execution criteria
   const { data: userProfile } = useGetProfileInfoQuery(undefined, {
     skip: !user,
   });
 
+  // Early exit redirection happens immediately after hook registers
   if (!user) {
     return <Navigate to="/login" replace />;
   }
+
   const currentPage = menuItems
     .flatMap((item) => (item.subRoutes ? [item, ...item.subRoutes] : [item]))
     .find(
@@ -174,7 +172,7 @@ const DashboardLayout: React.FC = () => {
           </div>
         </aside>
 
-        {/* Main Content Viewports wrapped with ErrorBoundary */}
+        {/* Main Content Viewports */}
         <main className="flex-1 overflow-auto p-6 bg-white text-slate-900 dark:bg-[#070c18] dark:text-white">
           <ErrorBoundary>
             <Outlet />
