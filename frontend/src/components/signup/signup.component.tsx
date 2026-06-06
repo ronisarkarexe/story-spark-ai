@@ -9,7 +9,8 @@ import {
   useVerifyOtpMutation,
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 interface IRegisterInfo {
   name: string;
@@ -22,28 +23,9 @@ interface Inputs extends IRegisterInfo {
   otp: string;
 }
 
-const getPasswordError = (password: string) => {
-  if (password.length < 8) {
-    return "Password must be at least 8 characters long";
-  }
-  if (!/[A-Z]/.test(password)) {
-    return "Password must contain at least one uppercase letter";
-  }
-  if (!/[a-z]/.test(password)) {
-    return "Password must contain at least one lowercase letter";
-  }
-  if (!/[0-9]/.test(password)) {
-    return "Password must contain at least one number";
-  }
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    return "Password must contain at least one special character";
-  }
-  return "";
-};
-
 type StrengthLevel = "weak" | "medium" | "strong";
 
-const PASSWORD_STRENGTH_CONFIG: Record<
+const PASSWORD_STRENGTH_CONFIG: Record
   StrengthLevel,
   { label: string; barColor: string; barWidth: string; textColor: string }
 > = {
@@ -86,6 +68,7 @@ const SignUpComponent = () => {
   const [emailVerify] = useEmailVerifyMutation();
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerUser] = useRegisterUserMutation();
+
   const {
     register,
     handleSubmit,
@@ -93,6 +76,7 @@ const SignUpComponent = () => {
     setValue,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
+
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [showOtpField, setShowOtpField] = useState<boolean>(false);
   const [registerInfo, setRegisterInfo] = useState<IRegisterInfo>();
@@ -110,6 +94,7 @@ const SignUpComponent = () => {
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
   const otp = watch("otp");
+
   const passwordChecks = {
     length: password?.length >= 8,
     uppercase: /[A-Z]/.test(password || ""),
@@ -124,45 +109,34 @@ const SignUpComponent = () => {
     PASSWORD_STRENGTH_CONFIG[strengthLevel];
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    if (data) {
-      const user = {
-        name: data.name,
-        email: data.email,
-        password: data.password,
-      };
-      const otpPayload = {
-        name: data.name,
-        email: data.email,
-      };
-      if (password !== confirmPassword) {
-        toast.error("Passwords do not match!");
-        return;
+    const user = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+    };
+    const otpPayload = {
+      name: data.name,
+      email: data.email,
+    };
+
+    setIsBusy(true);
+    try {
+      const res = await emailVerify({ ...otpPayload }).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        toast.success("OTP sent to your email");
+        setRegisterInfo(user);
+        setShowOtpField(true);
+        setCooldown(60);
       }
-      const passwordError = getPasswordError(data.password);
-      if (passwordError) {
-        toast.error(passwordError);
-        return;
-      }
-      setIsBusy(true);
-      try {
-        const res = await emailVerify({ ...otpPayload }).unwrap();
-        if (res?.data) {
-          const { expiresAt } = res.data;
-          setExpiredAt(new Date(expiresAt).getTime());
-          toast.success("OTP sent to your email");
-          setRegisterInfo(user);
-          setShowOtpField(true);
-          setCooldown(60);
-        }
-      } catch (error) {
-        const message =
-          (error as { data?: Array<{ message?: string }> })?.data?.[0]
-            ?.message ||
-          "Failed to send OTP. Check backend .env email credentials.";
-        toast.error(message);
-      } finally {
-        setIsBusy(false);
-      }
+    } catch (error) {
+      const message =
+        (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
+        "Failed to send OTP. Check backend .env email credentials.";
+      toast.error(message);
+    } finally {
+      setIsBusy(false);
     }
   };
 
@@ -194,9 +168,9 @@ const SignUpComponent = () => {
         }).unwrap();
 
         if (res.data.accessToken) {
-          toast.success("OTP validated successfully!");
+          toast.success("Registration successful! Welcome to Story Spark AI!");
           storeUserInfo({ accessToken: res.data.accessToken });
-          navigate("/");
+          navigate("/explore");
         }
       } else {
         throw new Error("No verification token received");
@@ -219,11 +193,10 @@ const SignUpComponent = () => {
     }
     setIsBusy(true);
     try {
-      const otpPayload = {
+      const res = await emailVerify({
         name: registerInfo.name,
         email: registerInfo.email,
-      };
-      const res = await emailVerify({ ...otpPayload }).unwrap();
+      }).unwrap();
       if (res?.data) {
         const { expiresAt } = res.data;
         setExpiredAt(new Date(expiresAt).getTime());
@@ -233,8 +206,8 @@ const SignUpComponent = () => {
       }
     } catch (error) {
       const message =
-        (error as { data?: Array<{ message?: string }> })?.data?.[0]
-          ?.message || "Failed to resend OTP. Please try again.";
+        (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
+        "Failed to resend OTP. Please try again.";
       toast.error(message);
     } finally {
       setIsBusy(false);
@@ -242,36 +215,62 @@ const SignUpComponent = () => {
   };
 
   return (
-    <div className="min-h-[calc(100dvh-4.5rem)] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8">
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen w-full bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-x-hidden px-4 py-8 box-border">
+      {/* Background Glow */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5 }}
+        className="absolute top-[-10%] left-[-10%] w-72 h-72 sm:w-96 sm:h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5, delay: 0.2 }}
+        className="absolute bottom-[-10%] right-[-10%] w-72 h-72 sm:w-96 sm:h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"
+      />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-          <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="flex w-full max-w-md flex-col justify-center gap-4 relative z-10"
+      >
+        {/* Header */}
+        <div className="text-center">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Create your account and start your creative journey
+          </p>
         </div>
 
-        <div className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
-          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
+        {/* Card */}
+        <div className="w-full bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-10 shadow-2xl">
+
+          {/* Back to Home — only on registration step */}
+          {!showOtpField && (
+            <button
+              onClick={() => (window.location.href = "/")}
+              className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
+            >
+              ← Back to Home
+            </button>
+          )}
+
+          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200 mb-6">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
 
           {!showOtpField && (
-            <p className="mt-2 mb-6 text-center text-sm text-slate-500 dark:text-slate-400">
-              Join StorySparkAI and begin your creative journey.
-            </p>
-          )}
-
-          {!showOtpField && (
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-700/50"></div>
+                <div className="w-full border-t border-slate-300 dark:border-slate-700"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-white dark:bg-slate-800/60 text-slate-800 dark:text-slate-400 font-semibold">
-                  SIGN UP WITH EMAIL
+                <span className="bg-slate-50 dark:bg-slate-800/60 px-3 text-slate-500 dark:text-slate-400 font-semibold text-xs tracking-wider uppercase">
+                  Sign up with email
                 </span>
               </div>
             </div>
@@ -311,6 +310,13 @@ const SignUpComponent = () => {
                 icon="fi fi-rr-envelope"
                 register={register}
                 autoComplete="email"
+                validation={{
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Please enter a valid email address",
+                  },
+                }}
                 error={errors.email}
               />
 
@@ -323,13 +329,24 @@ const SignUpComponent = () => {
                 icon="fi fi-rr-lock"
                 register={register}
                 autoComplete="new-password"
+                validation={{
+                  required: "Password is required",
+                  validate: (value: string) => {
+                    if (value.length < 8) return "Password must be at least 8 characters long";
+                    if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter";
+                    if (!/[a-z]/.test(value)) return "Password must contain at least one lowercase letter";
+                    if (!/[0-9]/.test(value)) return "Password must contain at least one number";
+                    if (!/[^A-Za-z0-9]/.test(value)) return "Password must contain at least one special character";
+                    return true;
+                  },
+                }}
                 error={errors.password}
               />
 
               {password?.length > 0 && (
                 <div className="space-y-3 -mt-2">
                   <div
-                    className="w-full h-2 bg-slate-700 rounded-full overflow-hidden"
+                    className="w-full h-2 bg-slate-300 dark:bg-slate-700 rounded-full overflow-hidden"
                     role="progressbar"
                     aria-valuenow={passedChecks}
                     aria-valuemin={0}
@@ -340,14 +357,9 @@ const SignUpComponent = () => {
                       className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
                     ></div>
                   </div>
-
-                  <p
-                    className={`text-sm font-medium ${textColor}`}
-                    aria-live="polite"
-                  >
+                  <p className={`text-sm font-medium ${textColor}`} aria-live="polite">
                     {strengthLabel} Password
                   </p>
-
                   <ul className="space-y-1 text-xs">
                     {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
                       const met = passwordChecks[key];
@@ -366,15 +378,21 @@ const SignUpComponent = () => {
                 </div>
               )}
 
+              {/* ✅ Phase 1 Fix: inline confirm password match validation */}
               <SSInput
                 label="Confirm Password"
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
                 required={true}
-                icon="fi fi-rr-eye"
+                icon="fi fi-rr-lock"
                 register={register}
                 autoComplete="new-password"
+                validation={{
+                  required: "Please confirm your password",
+                  validate: (value: string) =>
+                    value === password || "Passwords do not match",
+                }}
                 error={errors.confirmPassword}
               />
 
@@ -388,23 +406,24 @@ const SignUpComponent = () => {
                 handleOtpValidation();
               }}
             >
+              <p className="text-sm text-center text-slate-500 dark:text-slate-400 mb-2">
+                We sent a 6-digit OTP to{" "}
+                <span className="font-semibold text-indigo-400">
+                  {registerInfo?.email}
+                </span>
+              </p>
+
               <SSInput
                 label="OTP"
                 name="otp"
-                placeholder="Enter your OTP"
+                placeholder="Enter 6-digit OTP"
                 required={true}
                 icon="fi fi-rr-key"
                 register={register}
                 validation={{
                   required: "Please enter OTP",
-                  minLength: {
-                    value: 6,
-                    message: "OTP must be 6 digits",
-                  },
-                  maxLength: {
-                    value: 6,
-                    message: "OTP must be 6 digits",
-                  },
+                  minLength: { value: 6, message: "OTP must be 6 digits" },
+                  maxLength: { value: 6, message: "OTP must be 6 digits" },
                   pattern: {
                     value: /^[0-9]{6}$/,
                     message: "OTP must contain only numbers",
@@ -413,11 +432,7 @@ const SignUpComponent = () => {
                 error={errors.otp}
               />
 
-              <SSButton
-                text="Verify OTP"
-                type="submit"
-                isLoading={isBusy}
-              />
+              <SSButton text="Verify OTP" type="submit" isLoading={isBusy} />
 
               <div className="text-center mt-2">
                 <button
@@ -433,18 +448,18 @@ const SignUpComponent = () => {
           )}
 
           {!showOtpField && (
-            <p className="mt-8 text-center text-sm text-slate-400">
+            <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
               Already have an account?{" "}
-              <a
-                href="/login"
-                className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+              <Link
+                to="/login"
+                className="font-bold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
               >
                 Sign In
-              </a>
+              </Link>
             </p>
           )}
         </div>
-      </div>
+      </motion.div>
 
       <Toaster position="top-right" reverseOrder={false} />
     </div>
@@ -452,6 +467,3 @@ const SignUpComponent = () => {
 };
 
 export default SignUpComponent;
-
-
-
