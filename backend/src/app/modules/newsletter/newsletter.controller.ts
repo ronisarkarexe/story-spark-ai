@@ -58,8 +58,6 @@ export const unsubscribeByToken = async (req: Request, res: Response) => {
     const safeToken = Array.isArray(token) ? token[0] : token;
 
     const result = await newsletterService.unsubscribeByToken(safeToken);
-    const token = req.params.token as string;
-    const result = await newsletterService.unsubscribeByToken(token);
     res.status(200).json(result);
   } catch (err: any) {
     res.status(400).json({ message: err.message });
