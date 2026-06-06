@@ -27,6 +27,7 @@
 - [Features 💪](#features-)
 - [Local development (monorepo)](#local-development-monorepo)
 - [Environment variables](#environment-variables)
+- [Troubleshooting](#troubleshooting)
 - [Contributing 👨‍💻](#contributing-)
 - [Contributors 🤝](#contributors-)
 - [Maintainers](#maintainers)
@@ -138,33 +139,98 @@ cp frontend/.env.example frontend/.env
 
 #### Backend (`backend/.env`)
 
+Variables marked **Yes** are required for local development. Variables marked **No** are optional and can usually use the default value. Variables marked for a feature are only required when you use that feature.
+
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DATABASE_URL` | Yes | MongoDB connection string (local or [Atlas](https://www.mongodb.com/cloud/atlas)) |
-| `PORT` | No | API port (default `5000`) |
-| `NODE_ENV` | No | `development` or `production` |
-| `CORS_ORIGINS` | No | Comma-separated frontend URLs allowed for CORS requests (e.g. `http://localhost:4001`) |
-| `SALT_ROUNDS` | Yes | Bcrypt cost factor (e.g. `10`) |
-| `JWT_SECRET` | Yes | Access token signing secret |
-| `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret |
-| `JWT_EXPIRES_IN` | Yes | Access token lifetime (e.g. `60d`) |
-| `JWT_REFRESH_EXPIRES_IN` | Yes | Refresh token lifetime (e.g. `120d`) |
-| `DEFAULT_ADMIN_PASSWORD` | Yes | Initial admin password on seed |
-| `OPEN_AI_KEY` | For OpenAI | [OpenAI API key](https://platform.openai.com/api-keys) |
-| `GEMINI_API_KEY` | For Gemini | [Google AI Studio key](https://aistudio.google.com/apikey) |
-| `UNSPLASH_KEY_API` | For images | [Unsplash Access Key](https://unsplash.com/developers) |
-| `UNSPLASH_KEY_API_SECRET` | For images | Unsplash secret |
-| `VERIFY_EMAIL` | For email | SMTP sender address |
-| `VERIFY_PASSWORD` | For email | SMTP password or app password |
-| `GOOGLE_CLIENT_ID` | For login with google | https://console.cloud.google.com |
+| `DATABASE_URL` | Yes | MongoDB connection string. Use a local URI such as `mongodb://localhost:27017/storysparkai` or an Atlas URI. |
+| `PORT` | No | API port number. Defaults to `5000` if unset. |
+| `NODE_ENV` | No | Runtime mode, usually `development` locally or `production` in deploys. |
+| `CORS_ORIGINS` | No | Comma-separated frontend URLs allowed for CORS requests, e.g. `http://localhost:4001`. |
+| `SALT_ROUNDS` | Yes | Bcrypt cost factor as a number, e.g. `10`. |
+| `JWT_SECRET` | Yes | Access token signing secret, e.g. `your-jwt-secret`. Use a strong random value outside local testing. |
+| `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret, e.g. `your-refresh-secret`. Use a different strong value from `JWT_SECRET`. |
+| `JWT_EXPIRES_IN` | Yes | Access token lifetime, e.g. `60d`, `24h`, or another valid duration string. |
+| `JWT_REFRESH_EXPIRES_IN` | Yes | Refresh token lifetime, e.g. `120d`, `30d`, or another valid duration string. |
+| `DEFAULT_ADMIN_PASSWORD` | Yes | Initial admin password used during seeding, e.g. `admin123` for local development only. |
+| `OPEN_AI_KEY` | For OpenAI | [OpenAI API key](https://platform.openai.com/api-keys), required only when using OpenAI-backed features. |
+| `GEMINI_API_KEY` | For Gemini | [Google AI Studio key](https://aistudio.google.com/apikey), required only when using Gemini-backed features. |
+| `UNSPLASH_KEY_API` | For images | [Unsplash Access Key](https://unsplash.com/developers), required only for Unsplash image features. |
+| `UNSPLASH_KEY_API_SECRET` | For images | Unsplash secret, required only for Unsplash image features that need it. |
+| `VERIFY_EMAIL` | For email | SMTP sender address, required only for email verification or email notifications. |
+| `VERIFY_PASSWORD` | For email | SMTP password or app password, required only for email verification or email notifications. |
+| `GOOGLE_CLIENT_ID` | For login with google | Google OAuth client ID from https://console.cloud.google.com, required only for Google login. |
+
+Example backend `.env`:
+
+```env
+DATABASE_URL=mongodb://localhost:27017/storysparkai
+PORT=5000
+NODE_ENV=development
+CORS_ORIGINS=http://localhost:4001
+SALT_ROUNDS=10
+JWT_SECRET=your-jwt-secret
+JWT_REFRESH_SECRET=your-refresh-secret
+JWT_EXPIRES_IN=60d
+JWT_REFRESH_EXPIRES_IN=120d
+DEFAULT_ADMIN_PASSWORD=admin123
+```
 
 #### Frontend (`frontend/.env`)
 
+Variables prefixed with `VITE_` are exposed to the frontend by Vite. `VITE_SOCKET_URL` is optional if you are not testing real-time notifications locally.
+
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_BASE_URL` | Yes | API base URL, e.g. `http://localhost:5000/api/v1` |
-| `VITE_SOCKET_URL` | No | Socket.IO URL for real-time notifications (optional) |
-| `VITE_GOOGLE_CLIENT_ID` | Yes | https://console.cloud.google.com |
+| `VITE_BASE_URL` | Yes | Backend API base URL, e.g. `http://localhost:5000/api/v1` for local development. |
+| `VITE_SOCKET_URL` | No | Socket.IO server URL, e.g. `http://localhost:5000`. Optional unless you are using real-time notifications. |
+| `VITE_GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID from https://console.cloud.google.com. |
+
+Example frontend `.env`:
+
+```env
+VITE_BASE_URL=http://localhost:5000/api/v1
+VITE_SOCKET_URL=http://localhost:5000
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
+```
+
+### Troubleshooting
+
+#### MongoDB connection errors
+
+- **Problem:** The backend starts with database connection errors or cannot load API data.
+- **Possible cause:** `DATABASE_URL` is missing, incorrect, points to the wrong database, or MongoDB is not running.
+- **Suggested solution:** Check `backend/.env` and verify `DATABASE_URL` matches your local MongoDB or Atlas URI. If you use local MongoDB, make sure the MongoDB service is running before starting the backend.
+
+#### Missing environment variables
+
+- **Problem:** The backend or frontend fails to start, or features break during development.
+- **Possible cause:** Required values are missing from `backend/.env` or `frontend/.env`.
+- **Suggested solution:** Compare your local `.env` files with `backend/.env.example` and `frontend/.env.example`, then add any missing variables.
+
+#### Port conflicts
+
+- **Problem:** The frontend or backend cannot start because a port is already in use.
+- **Possible cause:** Another process is already using port **4001** for the frontend or **5000** for the backend.
+- **Suggested solution:** Find and stop the conflicting process, then restart the app. On Windows, run `netstat -ano | findstr :5000` or `netstat -ano | findstr :4001`, then stop the process with `taskkill /PID <PID> /F`. If needed, change the backend `PORT` in `backend/.env` or update the frontend dev server port in the frontend configuration.
+
+#### Dependency installation issues
+
+- **Problem:** `npm install` fails or installed packages behave unexpectedly.
+- **Possible cause:** Cached dependencies, a stale lock file, or an incomplete install.
+- **Suggested solution:** Delete `node_modules` and the lock file, then reinstall dependencies from the repository root with `npm install`.
+
+#### Admin seeding issues
+
+- **Problem:** Admin user creation fails when running `npx ts-node scripts/seed-admin.ts`.
+- **Possible cause:** Admin credentials are missing or the backend cannot connect to MongoDB.
+- **Suggested solution:** Verify `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in `backend/.env`, then confirm `DATABASE_URL` is valid and MongoDB is running.
+
+#### Socket connection issues
+
+- **Problem:** Real-time notifications do not connect or the browser shows Socket.IO errors.
+- **Possible cause:** `VITE_SOCKET_URL` is incorrect, missing, or the backend/socket service is not running.
+- **Suggested solution:** Check `frontend/.env` and verify `VITE_SOCKET_URL` points to the active socket service. Make sure the backend/socket service is running, then check the browser console for connection errors.
 
 ### Contributing workflow
 
@@ -175,6 +241,76 @@ cp frontend/.env.example frontend/.env
 
 
 <a id="contributing"></a>
+## Troubleshooting 🛠️
+
+Running into issues during setup? Here are the most common errors and how to fix them.
+
+---
+
+### 1. `npm error Override for @types/express conflicts with direct dependency`
+
+**Cause:** There's a version mismatch in the root `package.json` — `@types/express` is set to `^5.0.6` in `devDependencies`, which conflicts with what the project expects.
+
+**Fix:** Open your root `package.json` and change the `@types/express` version under `devDependencies`:
+
+```json
+// ❌ Before
+"@types/express": "^5.0.6"
+
+// ✅ After
+"@types/express": "^4.17.21"
+```
+
+Then re-run:
+```bash
+npm install
+```
+
+---
+
+### 2. `docker: The term 'docker' is not recognized`
+
+**Cause:** Docker Desktop is not installed or not added to your system PATH.
+
+**Fix:** Download and install Docker Desktop from the official site:
+👉 https://www.docker.com/products/docker-desktop/
+
+After installation, restart your terminal and verify with:
+```bash
+docker --version
+```
+
+---
+
+### 3. `WSL needs updating` error in Docker Desktop
+
+**Cause:** Your Windows Subsystem for Linux (WSL) version is outdated and incompatible with the current Docker Desktop.
+
+**Fix:** Run the following command in your terminal (as Administrator if needed):
+```bash
+wsl --update
+```
+Once the update completes, click **Try Again** in Docker Desktop. If the issue persists, restart your machine.
+
+---
+
+### 4. `npm ci` fails inside Docker with missing or out-of-sync `package-lock.json`
+
+**Cause:** The `package-lock.json` is either missing or out of sync with `package.json`, causing `npm ci` to fail.
+
+**Fix:** At the **repo root**, regenerate the lockfile:
+```bash
+npm install
+```
+Then commit the updated `package-lock.json` before rebuilding your Docker image:
+```bash
+git add package-lock.json
+git commit -m "chore: regenerate package-lock.json"
+```
+
+---
+
+> > 💡 **Still stuck?** Open an issue or check existing ones — your problem may already have a solution!
 
 ## Contributing 👨‍💻
 

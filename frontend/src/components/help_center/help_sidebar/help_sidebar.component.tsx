@@ -203,17 +203,16 @@ const HelpSidebar: FC = () => {
                   <div>
                     <h3 className="font-bold text-slate-800 dark:text-white">Need More Help?</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">Contact support</p>
-
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection("support-links-section")}
-                    className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 text-xs transition-all duration-300 shadow-md shadow-blue-500/10"
-                  >
-                    Open Support Hub
-                  </button>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("support-links-section")}
+                  className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 text-sm transition-all duration-300 shadow-md shadow-blue-500/10"
+                >
+                  Open Support Hub
+                </button>
               </div>
             </motion.div>
           </div>
@@ -222,12 +221,10 @@ const HelpSidebar: FC = () => {
     </nav>
 
 
-      {/* Mobile sticky nav */}
-      <nav className="lg:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 mb-8" aria-label="Help center sections">
-
       {/* Mobile horizontal scroll nav */}
       <nav
         className="lg:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 mb-8 overflow-hidden select-none"
+
         aria-label="Help center mobile navigation"
       >
         <div 

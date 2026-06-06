@@ -21,39 +21,21 @@ router.post(
   PostController.createPost
 );
 
-router.get(
-  "/",
-  PostController.getPosts
-);
+router.get("/tag/:tag", PostController.getPostsByTag);
 
-router.get(
-  "/latest-posts",
-  PostController.getLatestPosts
-);
+router.get("/latest-posts", PostController.getLatestPosts);
 
-router.get(
-  "/latest-lists",
-  PostController.getLatestPosts
-);
+router.get("/latest-lists", PostController.getLatestPosts);
 
-router.get(
-  "/featured-posts",
-  PostController.getFeaturedPosts
-);
+router.get("/featured-posts", PostController.getFeaturedPosts);
 
-router.get(
-  "/feature-lists",
-  PostController.getFeaturedPosts
-);
+router.get("/feature-lists", PostController.getFeaturedPosts);
 
 router.patch(
   "/featured/:postId",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
   PostController.doFeaturedPosts
 );
-
-router.get("/tag/:tag", PostController.getPostsByTag);
-router.get("/:id", PostController.getSinglePost);
 
 router.patch(
   "/bookmark/:id",
@@ -113,5 +95,8 @@ router.post(
   enforceQuota("story_generate"),
   PostController.translateStory
 );
+
+// Single post by ID — keep last to avoid shadowing named routes above
+router.get("/:id", PostController.getSinglePost);
 
 export const PostRouter = router;

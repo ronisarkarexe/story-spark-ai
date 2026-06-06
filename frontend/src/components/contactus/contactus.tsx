@@ -300,7 +300,7 @@ export default function Contact() {
   {/* EMAIL */}
   <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-blue-400/40 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
     <Mail className="h-5 w-5 flex-shrink-0 text-blue-300" />
-    <div className="flex flex-col flex-grow min-w-full">
+    <div className="flex flex-col flex-grow min-w-0">
       <label className="text-[10px] font-bold uppercase tracking-wider text-blue-300/80 mb-1 block">
         Email Address
       </label>
@@ -319,7 +319,7 @@ export default function Contact() {
   {/* SUBJECT */}
   <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-pink-400/40 focus-within:border-pink-500 focus-within:ring-2 focus-within:ring-pink-500/20">
     <FileText className="h-5 w-5 flex-shrink-0 text-pink-300" />
-    <div className="flex flex-col flex-grow min-w-full">
+    <div className="flex flex-col flex-grow min-w-0">
       <label className="text-[10px] font-bold uppercase tracking-wider text-pink-300/80 mb-1 block">
         Subject
       </label>
@@ -338,7 +338,7 @@ export default function Contact() {
   {/* MESSAGE */}
   <div className="flex items-start gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-4 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
     <Pencil className="mt-1 h-5 w-5 flex-shrink-0 text-purple-300" />
-    <div className="flex flex-col flex-grow min-w-full">
+    <div className="flex flex-col flex-grow min-w-0">
       <label className="text-[10px] font-bold uppercase tracking-wider text-purple-300/80 mb-2 block">
         Message
       </label>

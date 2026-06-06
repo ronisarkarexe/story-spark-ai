@@ -37,13 +37,29 @@ const StoryInspirationPage: React.FC = () => {
         value={intro}
         onChange={e => setIntro(e.target.value)}
       />
-      <button
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        onClick={fetchIdeas}
-        disabled={loading || !intro.trim()}
-      >
-        {loading ? 'Generating...' : 'Get Ideas'}
-      </button>
+    <div className="flex gap-2">
+  <button
+    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+    onClick={fetchIdeas}
+    disabled={loading || !intro.trim()}
+  >
+    {loading ? 'Generating...' : 'Get Ideas'}
+  </button>
+
+  {intro.trim() && (
+    <button
+      type="button"
+      onClick={() => {
+        setIntro('');
+        setIdeas([]);
+        setError('');
+      }}
+      className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+    >
+      Clear Prompt
+    </button>
+  )}
+</div>
       {error && <div className="text-red-600 mt-4">{error}</div>}
       {ideas.length > 0 && (
         <div className="mt-6">

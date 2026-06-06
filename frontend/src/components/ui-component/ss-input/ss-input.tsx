@@ -32,7 +32,7 @@ const SSInput = <T extends FieldValues>({
   validation,
   error,
   autoComplete,
-  autoFocus
+  autoFocus,
 }: SSInputProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -41,66 +41,51 @@ const SSInput = <T extends FieldValues>({
 
   return (
     <div className="w-full max-w-full flex flex-col box-border">
-      <label 
-        htmlFor={name} 
+      <label
+        htmlFor={name}
         className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 text-left"
       >
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
-      
+
       <div className="relative w-full max-w-full flex items-center box-border">
         {icon && (
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+          <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 pointer-events-none">
             <i className={icon}></i>
           </span>
         )}
 
-       <input
-  type={inputType}
-  id={name}
-  className={`w-full box-border pl-8 pr-10 py-1.5 text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border-0 sm:text-sm ${
-    error
-      ? "outline-red-500"
-      : "outline-gray-800 focus:outline-indigo-600"
-  }`}
-  placeholder={placeholder}
-  autoComplete={autoComplete}
-  {...register(name, validation)}
-/>
-
         <input
-  type={inputType}
-  id={name}
-  className={`block w-full max-w-full box-border pl-8 ${
-    type === "password" ? "pr-0" : "pr-0"
-  } py-1.5 text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border rounded-md sm:text-sm ${
-    error
-      ? "border-red-500"
-      : "border-gray-300 focus:outline-indigo-600"
-  }`}
-  placeholder={placeholder}
-  autoComplete={autoComplete}
-  {...register(name, validation)}
-/>
+          type={inputType}
+          id={name}
+          autoFocus={autoFocus}
+          className={`block w-full box-border ${icon ? "pl-9" : "pl-3"} ${
+            type === "password" ? "pr-10" : "pr-3"
+          } py-2.5 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 border rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 ${
+            error
+              ? "border-rose-500 focus:ring-rose-500/30"
+              : "border-slate-300 dark:border-slate-600 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500/20"
+          }`}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          {...register(name, validation)}
+        />
+
         {type === "password" && (
-  <button
-    type="button"
-    onClick={() => setShowPassword(!showPassword)}
-
-    className="absolute inset-y-0 right-2 flex items-center text-gray-500"
-
-    
-    aria-label={showPassword ? "Hide password" : "Show password"}
-    title={showPassword ? "Hide password" : "Show password"}
-
-  >
-    <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
-  </button>
-)}
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors duration-150"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            title={showPassword ? "Hide password" : "Show password"}
+          >
+            <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
+          </button>
+        )}
       </div>
 
       {error && (
-        <p className="text-xs font-medium text-rose-500 mt-1.5 text-left w-full break-words overflow-hidden">
+        <p className="text-xs font-medium text-rose-500 mt-1.5 text-left w-full break-words">
           {error.message}
         </p>
       )}

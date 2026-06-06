@@ -1,4 +1,4 @@
-﻿import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { useState, useEffect } from "react";
@@ -166,9 +166,14 @@ const SignUpComponent = () => {
           setCooldown(60);
         }
       } catch (error) {
-        const message = (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "Failed to send OTP. Check backend .env email credentials.";
-        toast.error(message);
-      } finally {
+  const err = error as { data?: Array<{ message?: string }>; message?: string };
+  const message =
+    err?.data?.[0]?.message ||
+    err?.message ||
+    "Something went wrong. Please try again.";
+  toast.error(message);
+  console.log("error: ", error);
+} finally {
         setIsBusy(false);
       }
     }
@@ -209,56 +214,14 @@ const SignUpComponent = () => {
       } else {
         throw new Error("No verification token received");
       }
-    } catch (err: unknown) {
-      const message = (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "OTP verification failed. Please check the code and try again.";
-      toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (cooldown > 0 || isBusy) return;
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const otpPayload = {
-        name: registerInfo.name,
-        email: registerInfo.email,
-      };
-      const res = await emailVerify({ ...otpPayload }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
-        setValue("otp", "");
-        setCooldown(60);
-      }
-    } catch (error) {
-      const message = (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "Failed to resend OTP. Please try again.";
-      toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({
-        token: credentialResponse.credential,
-      }).unwrap();
-
-      if (res.data.accessToken) {
-        toast.success("User logged in successfully with Google!");
-        storeUserInfo({ accessToken: res.data.accessToken });
-        navigate("/");
-      }
-    } catch {
-      toast.error("Failed to login with Google. Please try again.");
+} catch (err: unknown) {
+  const e = err as { data?: Array<{ message?: string }>; message?: string };
+  const message =
+    e?.data?.[0]?.message ||
+    e?.message ||
+    "OTP verification failed. Please check the code and try again.";
+  toast.error(message);
+      console.log("error: ", err);
     } finally {
       setIsBusy(false);
     }
@@ -281,7 +244,7 @@ const SignUpComponent = () => {
         </div>
 
         <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden">
-          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200">
+          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200"></h3>
         <div className="flex justify-center items-center gap-40">
         
                 <div className="flex flex-col gap-5">

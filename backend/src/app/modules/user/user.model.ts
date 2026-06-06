@@ -63,6 +63,12 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
       lastActiveDate: { type: Date, default: null },
       badges: [{ type: String }],
     },
+    writingStreak: {
+      currentStreak: { type: Number, default: 0 },
+      longestStreak: { type: Number, default: 0 },
+      lastActiveDate: { type: Date, default: null },
+      totalWritingDays: { type: Number, default: 0 },
+    },
     readingPreferences: {
       favoriteGenres: [
         {

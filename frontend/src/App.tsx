@@ -1,26 +1,27 @@
 import React from "react";
-
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTopButton from "./components/ScrollToTopButton";
+import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import NotFoundComponent from "./components/not-found.component";
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import StoryWorkspace from "./components/story/StoryWorkspace";
+import StoriesComponent from "./components/stories/stories.component";
+import BranchingStory from "./components/stories/BranchingStory";
+import TemplatesComponent from "./components/templates/templates.component";
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
-
 import { USER_ROLE } from "./constants/role";
 import { getUserInfo } from "./services/auth.service";
-
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
-
+import SimpleProtectedRoute from "./components/ProtectedRoute";
 import AboutUsComponent from "./components/footer/about-us.tsx";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import BlogComponent from "./components/footer/blog.tsx";
 import BookmarksComponent from "./components/post/bookmarks.component";
-import BranchingStory from "./components/stories/BranchingStory";
 import CareerComponent from "./components/footer/career.tsx";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
 import CommunityComponent from "./components/community/community.component";
 import Contact from "./components/contactus/contactus";
 import ContributorsComponent from "./components/footer/contributors";
@@ -34,8 +35,6 @@ import HelpCenterComponent from "./components/help_center/help_center.component"
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import LoginComponent from "./components/login/login.component";
-import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
-import NotFoundComponent from "./components/not-found.component";
 import PaymentComponent from "./components/home/pricing/payment.component";
 import PostDetailsComponent from "./components/post/post.details.component";
 import PostListsComponent from "./components/dashboard/posts/post_lists.component";
@@ -47,18 +46,11 @@ import ReportBug from "./components/report-bug/ReportBug";
 import ResourceDetailComponent from "./components/community/resource_detail.component";
 import ResourcesListComponent from "./components/community/resources_list.component";
 import ScrollToTop from "./components/ScrollToTop";
-import ScrollToTopButton from "./components/ScrollToTopButton";
 import SettingComponent from "./components/dashboard/settings/settings.component";
 import SignUpComponent from "./components/signup/signup.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
-import StoriesComponent from "./components/stories/stories.component";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import StoryWorkspace from "./components/story/StoryWorkspace";
-import TemplatesComponent from "./components/templates/templates.component";
 import Terms from "./components/footer/terms.tsx";
 import UserComponent from "./components/dashboard/users/user.component";
 import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
@@ -86,7 +78,7 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <>
-        <ScrollToTopButton />
+        
         <MagicCursorComponent />
         <ScrollToTop />
         <RootLayout>
