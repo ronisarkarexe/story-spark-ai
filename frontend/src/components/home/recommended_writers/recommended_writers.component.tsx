@@ -26,24 +26,23 @@ const RecommendedWritersComponent = () => {
     },
   ];
 
-  const [following, setFollowing] = useState<number[]>([]);
+  // ✅ Fix: use string IDs instead of index numbers
+  const [following, setFollowing] = useState<string[]>([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [toggleFollowMutation, { isLoading }] = useToggleFollowMutation();
 
-  const toggleFollow = async (index: number, authorId: string) => {
+  const toggleFollow = async (writerId: string) => {
     if (!isLoggedIn()) {
       setShowLoginModal(true);
       return;
     }
-
     try {
-      await toggleFollowMutation(authorId).unwrap();
-
-      if (following.includes(index)) {
-        setFollowing(following.filter((id) => id !== index));
-      } else {
-        setFollowing([...following, index]);
-      }
+      await toggleFollowMutation(writerId).unwrap();
+      setFollowing((prev) =>
+        prev.includes(writerId)
+          ? prev.filter((id) => id !== writerId)
+          : [...prev, writerId]
+      );
     } catch (error) {
       console.error("Failed to toggle follow:", error);
     }
@@ -57,26 +56,40 @@ const RecommendedWritersComponent = () => {
         </h3>
 
         <div className="space-y-4">
-          {recommendedWriters.map((writer, index) => (
-            <div key={writer.id} className="flex min-w-0 items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center">
-                <img
-                  className="h-10 w-10 shrink-0 rounded-full"
-                  src={writer.image}
-                  alt={writer.name}
-                />
+          {recommendedWriters.map((writer) => {
+            // ✅ Fix: derive isFollowing per writer from string ID array
+            const isFollowing = following.includes(writer.id);
 
-                <div className="ml-3 min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-700 dark:text-gray-400">
-                    {writer.name}
-                  </p>
-                  <p className="truncate text-xs text-slate-500 dark:text-gray-500">
-                    {writer.role}
-                  </p>
+            return (
+              <div
+                key={writer.id}
+                className="flex min-w-0 items-center justify-between gap-3"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <img
+                    className="h-10 w-10 shrink-0 rounded-full"
+                    src={writer.image}
+                    alt={writer.name}
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-slate-700 dark:text-gray-400">
+                      {writer.name}
+                    </p>
+                    <p className="truncate text-xs text-slate-500 dark:text-gray-500">
+                      {writer.role}
+                    </p>
+                  </div>
                 </div>
-                <button 
-                  disabled={isLoading} 
-                  onClick={() => toggleFollow(writer.id)} 
+
+                {/* ✅ Fix: single Follow button, no duplicate */}
+                <button
+                  disabled={isLoading}
+                  onClick={() => toggleFollow(writer.id)}
+                  aria-label={
+                    isFollowing
+                      ? `Unfollow ${writer.name}`
+                      : `Follow ${writer.name}`
+                  }
                   className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-150 active:scale-[0.97] disabled:opacity-50 select-none cursor-pointer uppercase tracking-wider ${
                     isFollowing
                       ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
@@ -86,17 +99,8 @@ const RecommendedWritersComponent = () => {
                   {isFollowing ? "Following" : "Follow"}
                 </button>
               </div>
-
-              <button
-                onClick={() => toggleFollow(index, writer.id)}
-                disabled={isLoading}
-                aria-label={following.includes(index) ? `Unfollow ${writer.name}` : `Follow ${writer.name}`}
-                className="!rounded-button text-indigo-600 text-sm font-medium hover:text-indigo-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {following.includes(index) ? "Following" : "Follow"}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -112,22 +116,24 @@ const RecommendedWritersComponent = () => {
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              transition={{ type: "spring", damping: 30, stiffness: 200, mass: 0.8 }}
+              transition={{
+                type: "spring",
+                damping: 30,
+                stiffness: 200,
+                mass: 0.8,
+              }}
               className="bg-[#0f172a] border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.5)] max-w-md w-full p-6 overflow-hidden"
             >
               <div className="text-center">
                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <i className="fas fa-user-lock text-2xl text-blue-400"></i>
                 </div>
-
                 <h3 className="text-2xl font-bold text-gray-200 mb-2">
                   Authentication Required
                 </h3>
-
                 <p className="text-gray-400 mb-6 leading-relaxed">
                   You need to log in or sign up to follow writers.
                 </p>
-
                 <div className="flex flex-col gap-3">
                   <Link
                     to="/login"
@@ -135,14 +141,12 @@ const RecommendedWritersComponent = () => {
                   >
                     Log In
                   </Link>
-
                   <Link
                     to="/signup"
                     className="bg-white/5 hover:bg-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all border border-white/10"
                   >
                     Sign Up
                   </Link>
-
                   <button
                     onClick={() => setShowLoginModal(false)}
                     className="bg-transparent hover:bg-white/5 text-gray-400 hover:text-gray-300 font-medium py-3 px-4 rounded-xl transition-all mt-1"

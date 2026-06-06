@@ -4,6 +4,7 @@ import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
 import CommunitySpotlightSkeleton from "../community_spotlight/CommunitySpotlightSkeleton";
+
 type SpotlightWriter = {
   author: Post["author"];
   storiesCount: number;
@@ -25,7 +26,9 @@ const getPostEngagementScore = (post: Post) =>
   getBookmarkCount(post) * 2 +
   (post.viewsCount ?? 0);
 
-const getWriterEngagementScore = (writer: Omit<SpotlightWriter, "engagementScore">) =>
+const getWriterEngagementScore = (
+  writer: Omit<SpotlightWriter, "engagementScore">
+) =>
   writer.likesCount * 3 +
   writer.commentsCount * 2 +
   writer.bookmarksCount * 2 +
@@ -58,12 +61,16 @@ const CommunitySpotlightComponent = () => {
   const navigate = useNavigate();
 
   const topWriters = useMemo<SpotlightWriter[]>(() => {
-    const writers = new Map<string, Omit<SpotlightWriter, "engagementScore">>();
+    const writers = new Map
+      string,
+      Omit<SpotlightWriter, "engagementScore">
+    >();
 
     data?.posts?.forEach((post: Post) => {
       if (!post.author) return;
 
-      const authorKey = post.author._id || post.author.email || post.author.name;
+      const authorKey =
+        post.author._id || post.author.email || post.author.name;
       if (!authorKey) return;
 
       const existingWriter = writers.get(authorKey);
@@ -103,20 +110,18 @@ const CommunitySpotlightComponent = () => {
   }, [data?.posts]);
 
   if (isLoading) {
-  return (
-    <section className="px-5 py-10 text-slate-100">
-      <h2 className="mb-6 text-3xl font-bold">
-        Community Spotlight
-      </h2>
+    return (
+      <section className="px-5 py-10 text-slate-100">
+        <h2 className="mb-6 text-3xl font-bold">Community Spotlight</h2>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <CommunitySpotlightSkeleton key={index} />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <CommunitySpotlightSkeleton key={index} />
-        ))}
-      </div>
-    </section>
-  );
-}
   if (isError) {
     return (
       <div className="w-full max-w-7xl mx-auto px-4 py-8 box-border">
@@ -136,13 +141,16 @@ const CommunitySpotlightComponent = () => {
         <div className="mb-10 max-w-2xl text-left px-0.5">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/10 dark:border-white/10 bg-blue-500/5 text-blue-600 dark:text-blue-400 mb-4 select-none shadow-sm dark:shadow-none">
             <i className="fa-solid fa-star text-xs" aria-hidden="true"></i>
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Curated Showcase</span>
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+              Curated Showcase
+            </span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
             Community Spotlight
           </h2>
           <p className="mt-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-            Explore highly engaging interactive story modules written by collaborative system authors.
+            Explore highly engaging interactive story modules written by
+            collaborative system authors.
           </p>
         </div>
 
@@ -159,7 +167,11 @@ const CommunitySpotlightComponent = () => {
 
                 return (
                   <button
-                    key={writer.author._id || writer.author.email || writer.author.name}
+                    key={
+                      writer.author._id ||
+                      writer.author.email ||
+                      writer.author.name
+                    }
                     type="button"
                     aria-label={`Read ${writer.topPost.title} by ${writer.author.name || "Unknown User"}`}
                     onClick={() => navigate(`/post/${writer.topPost._id}`)}
@@ -169,8 +181,13 @@ const CommunitySpotlightComponent = () => {
 
                     <div className="mb-6 flex items-start justify-between gap-4 w-full box-border">
                       <div className="flex min-w-0 items-center gap-4">
-                        <div className={`rounded-full ring-4 ${style.ring} transition-transform duration-300 group-hover:scale-105 shrink-0`}>
-                          <SSProfile name={writer.author.name || "Unknown User"} size="h-14 w-14" />
+                        <div
+                          className={`rounded-full ring-4 ${style.ring} transition-transform duration-300 group-hover:scale-105 shrink-0`}
+                        >
+                          <SSProfile
+                            name={writer.author.name || "Unknown User"}
+                            size="h-14 w-14"
+                          />
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-lg font-bold text-slate-900 dark:text-gray-100">
@@ -181,7 +198,9 @@ const CommunitySpotlightComponent = () => {
                           </p>
                         </div>
                       </div>
-                      <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-black shadow-lg ${style.badge}`}>
+                      <span
+                        className={`shrink-0 rounded-full px-3 py-1 text-sm font-black shadow-lg ${style.badge}`}
+                      >
                         #{rank}
                       </span>
                     </div>
@@ -195,28 +214,54 @@ const CommunitySpotlightComponent = () => {
                       </h4>
                     </div>
 
+                    {/* ✅ Phase 2 Fix: conditionally render zero-value metrics */}
                     <div className="mt-auto grid grid-cols-2 gap-3 text-sm w-full box-border">
                       <div className="rounded-xl bg-blue-50 px-3 py-3 dark:bg-blue-500/10">
-                        <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{formatMetric(writer.engagementScore)}</p>
-                        <p className="text-xs text-slate-500 dark:text-gray-400">Score</p>
+                        <p className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                          {formatMetric(writer.engagementScore)}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400">
+                          Score
+                        </p>
                       </div>
                       <div className="rounded-xl bg-violet-50 px-3 py-3 dark:bg-violet-500/10">
-                        <p className="text-lg font-bold text-violet-700 dark:text-violet-300">{formatMetric(writer.storiesCount)}</p>
-                        <p className="text-xs text-slate-500 dark:text-gray-400">Stories</p>
+                        <p className="text-lg font-bold text-violet-700 dark:text-violet-300">
+                          {formatMetric(writer.storiesCount)}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400">
+                          Stories
+                        </p>
                       </div>
                       <div className="rounded-xl bg-slate-100 px-3 py-3 dark:bg-slate-800">
-                        <p className="text-lg font-bold text-slate-800 dark:text-gray-200">{formatMetric(writer.likesCount)}</p>
-                        <p className="text-xs text-slate-500 dark:text-gray-400">Likes</p>
+                        <p className="text-lg font-bold text-slate-800 dark:text-gray-200">
+                          {/* ✅ hide zero likes */}
+                          {writer.likesCount > 0
+                            ? formatMetric(writer.likesCount)
+                            : "—"}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400">
+                          Likes
+                        </p>
                       </div>
                       <div className="rounded-xl bg-slate-100 px-3 py-3 dark:bg-slate-800">
-                        <p className="text-lg font-bold text-slate-800 dark:text-gray-200">{formatMetric(writer.viewsCount)}</p>
-                        <p className="text-xs text-slate-500 dark:text-gray-400">Views</p>
+                        <p className="text-lg font-bold text-slate-800 dark:text-gray-200">
+                          {/* ✅ hide zero views */}
+                          {writer.viewsCount > 0
+                            ? formatMetric(writer.viewsCount)
+                            : "—"}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400">
+                          Views
+                        </p>
                       </div>
                     </div>
 
                     <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition-colors group-hover:text-blue-700 dark:text-blue-300 dark:group-hover:text-blue-200">
                       Read top story
-                      <i className="fas fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true"></i>
+                      <i
+                        className="fas fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1"
+                        aria-hidden="true"
+                      ></i>
                     </div>
                   </button>
                 );
@@ -264,7 +309,10 @@ const CommunitySpotlightComponent = () => {
                     </div>
                     <div className="mt-5 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center gap-1 text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider select-none">
                       Read Story
-                      <i className="fa-solid fa-arrow-right text-[10px] transition-transform group-hover:translate-x-0.5" aria-hidden="true"></i>
+                      <i
+                        className="fa-solid fa-arrow-right text-[10px] transition-transform group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      ></i>
                     </div>
                   </button>
                 );
@@ -273,13 +321,17 @@ const CommunitySpotlightComponent = () => {
           ) : (
             <div className="rounded-2xl sm:rounded-3xl border border-dashed border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-10 sm:p-14 text-center box-border max-w-full">
               <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto mb-5 border border-slate-200/60 dark:border-white/5 select-none">
-                <i className="fa-solid fa-layer-group text-slate-400 dark:text-slate-500 text-xl" aria-hidden="true"></i>
+                <i
+                  className="fa-solid fa-layer-group text-slate-400 dark:text-slate-500 text-xl"
+                  aria-hidden="true"
+                ></i>
               </div>
               <h4 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-1.5 tracking-tight">
                 No Spotlight Stories available
               </h4>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium max-w-sm mx-auto leading-normal">
-                Check back shortly as system engines process content records into the stream.
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium max-w-sm mx-auto leading-normal">
+                Check back shortly as system engines process content records
+                into the stream.
               </p>
             </div>
           )}

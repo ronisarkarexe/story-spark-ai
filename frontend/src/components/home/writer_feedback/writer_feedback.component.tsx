@@ -31,9 +31,12 @@ const WriterFeedbackComponent = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12 text-center">
-          <span className="inline-flex items-center rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-600 dark:text-yellow-500">
-            ⭐ 4.9/5 Average Rating
-          </span>
+          {/* ✅ Phase 2 Fix: only show rating badge when reviews exist */}
+          {feedbackData.length > 0 && (
+            <span className="inline-flex items-center rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-600 dark:text-yellow-500">
+              ⭐ 4.9/5 Average Rating
+            </span>
+          )}
 
           <h2 className="mt-6 text-4xl font-bold text-slate-900 dark:text-white">
             What Our Writers Say
@@ -61,21 +64,45 @@ const WriterFeedbackComponent = () => {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
-            <h3 className="text-3xl font-bold text-purple-600 dark:text-purple-500">
-              {feedbackData.length}+
-            </h3>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              Reviews Submitted
-            </p>
-          </div>
+          {/* ✅ Phase 2 Fix: hide Reviews count when zero */}
+          {feedbackData.length > 0 ? (
+            <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
+              <h3 className="text-3xl font-bold text-purple-600 dark:text-purple-500">
+                {feedbackData.length}+
+              </h3>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                Reviews Submitted
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
+              <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">
+                —
+              </p>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                Reviews Submitted
+              </p>
+            </div>
+          )}
 
-          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
-            <h3 className="text-3xl font-bold text-yellow-600 dark:text-yellow-500">4.9★</h3>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              Average Rating
-            </p>
-          </div>
+          {/* ✅ Phase 2 Fix: only show rating when backed by real reviews */}
+          {feedbackData.length > 0 ? (
+            <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
+              <h3 className="text-3xl font-bold text-yellow-600 dark:text-yellow-500">4.9★</h3>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                Average Rating
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
+              <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">
+                Be the first to review!
+              </p>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                Average Rating
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Featured Testimonial */}
@@ -104,12 +131,10 @@ const WriterFeedbackComponent = () => {
                   alt={featuredReview.name}
                   className="h-16 w-16 rounded-full object-cover ring-2 ring-blue-300/30"
                 />
-
                 <div>
                   <h3 className="font-semibold text-slate-900 dark:text-white">
                     {featuredReview.name}
                   </h3>
-
                   <p className="text-slate-600 dark:text-slate-400">
                     {featuredReview.role}
                   </p>
@@ -120,44 +145,57 @@ const WriterFeedbackComponent = () => {
         )}
 
         {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {feedbackData.map((writer: Review, index: number) => {
-            const avatarSrc = writer.imgSrc?.trim()
-              ? writer.imgSrc
-              : defaultAvatar;
+        {feedbackData.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {feedbackData.map((writer: Review, index: number) => {
+              const avatarSrc = writer.imgSrc?.trim()
+                ? writer.imgSrc
+                : defaultAvatar;
 
-            return (
-              <div
-                key={writer._id ?? writer.name ?? index}
-                className="group rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-7 backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 dark:bg-slate-900/60"
-              >
-                <Quote size={36} className="mb-4 text-blue-500 dark:text-blue-400 opacity-60" />
+              return (
+                <div
+                  key={writer._id ?? writer.name ?? index}
+                  className="group rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-7 backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 dark:bg-slate-900/60"
+                >
+                  <Quote size={36} className="mb-4 text-blue-500 dark:text-blue-400 opacity-60" />
 
-                <p className="mb-6 leading-relaxed text-slate-600 dark:text-slate-300">
-                  "{writer.feedback}"
-                </p>
+                  <p className="mb-6 leading-relaxed text-slate-600 dark:text-slate-300">
+                    "{writer.feedback}"
+                  </p>
 
-                <div className="flex items-center">
-                  <ImageFallback
-                    className="h-14 w-14 rounded-full object-cover ring-2 ring-blue-300/25"
-                    src={avatarSrc}
-                    alt={writer.name}
-                  />
-
-                  <div className="ml-4">
-                    <h4 className="font-semibold text-slate-800 dark:text-white">
-                      {writer.name}
-                    </h4>
-
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {writer.role}
-                    </p>
+                  <div className="flex items-center">
+                    <ImageFallback
+                      className="h-14 w-14 rounded-full object-cover ring-2 ring-blue-300/25"
+                      src={avatarSrc}
+                      alt={writer.name}
+                    />
+                    <div className="ml-4">
+                      <h4 className="font-semibold text-slate-800 dark:text-white">
+                        {writer.name}
+                      </h4>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {writer.role}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* ✅ Phase 2 Fix: empty state when no reviews exist */
+          <div className="rounded-2xl border border-dashed border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-10 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto mb-4 border border-slate-200/60 dark:border-white/5">
+              <Quote size={24} className="text-slate-400 dark:text-slate-500" />
+            </div>
+            <h4 className="text-base font-bold text-slate-900 dark:text-white mb-1">
+              No reviews yet
+            </h4>
+            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+              Be the first to share your experience with the community!
+            </p>
+          </div>
+        )}
 
         {/* Review Form Section */}
         <div className="mt-10">
