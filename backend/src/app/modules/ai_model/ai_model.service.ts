@@ -201,6 +201,23 @@ const aiFreeModelTranslate = async (payload: ITranslatePayload) => {
   }
 };
 
+const aiModelStoryContinuation = async (
+  payload: { prompt: string; language?: string },
+  _token?: ITokenPayload
+) => {
+  const { prompt, language = "English" } = payload;
+
+  try {
+    const result = await raceGenerationWithTimeout(
+      (signal) => generateStoryContinuationWithGemini(prompt, language, signal),
+      AUTHENTICATED_GENERATION_TIMEOUT_MS
+    );
+    return result;
+  } catch (error) {
+    mapGenerationError(error, "Story continuation failed.");
+  }
+};
+
 const aiFreeStoryContinuation = async (payload: { prompt: string; language?: string }) => {
   const { prompt, language = "English" } = payload;
 
@@ -262,6 +279,7 @@ export const AiModelService = {
   aiFreeModelRemix,
   aiModelTranslate,
   aiFreeModelTranslate,
+  aiModelStoryContinuation,
   aiFreeStoryContinuation,
   aiModelChat,
   aiFreeModelChat,

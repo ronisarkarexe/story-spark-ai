@@ -1,4 +1,14 @@
-﻿import React, { useState } from "react";
+
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/store";
+import { getBaseUrl } from "../../../helpers/config";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -21,168 +31,127 @@ interface RazorpayFailureResponse {
   };
 }
 
-interface RazorpayOrderResponse {
-  success: boolean;
-  order: {
-    id: string;
-    amount: number;
-    currency: string;
+const API_BASE_URL = getBaseUrl();
+
+interface PaymentProps {
+  plan: "basic" | "pro" | "premium";
+  planLabel: string;
+  displayAmount: string; // e.g. "₹499"
+}
+
+export const PaymentComponent = ({ plan, planLabel, displayAmount }: PaymentProps) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const user = useSelector((state: RootState) => state.auth.user);
+
+  // Load Razorpay script dynamically if not already present
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
   };
-}
 
-interface RazorpayInstance {
-  open: () => void;
-  on: (
-    event: string,
-    callback: (response: RazorpayFailureResponse) => void
-  ) => void;
-}
-
-interface RazorpayWindow extends Window {
-  Razorpay: new (options: object) => RazorpayInstance;
-}
-
-const PaymentComponent = () => {
-  const navigate = useNavigate();
-
-  // Read selected plan from pricing page
-  const [searchParams] = useSearchParams();
-  const planName = searchParams.get("plan") || "Pro";
-  const planPrice = Number(searchParams.get("price") || "19.99");
-
-  // Razorpay payment handler
   const handlePayment = async () => {
-    // Load Razorpay SDK
-    const loaded = await loadRazorpayScript();
-
-    if (!loaded) {
-      alert("Failed to load Razorpay SDK.");
-      return;
-    }
+    setError(null);
+    setLoading(true);
 
     try {
-      // Create order from backend
-      const res = await fetch("/api/v1/payment/create-order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: Math.round(planPrice * 100), // Convert to paisa
-        }),
-      });
-
-      const data: RazorpayOrderResponse = await res.json();
-
-      if (!data.success) {
-        alert("Failed to create order.");
+      // 1. Load Razorpay SDK
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        setError("Failed to load payment gateway. Please try again.");
+        setLoading(false);
         return;
       }
 
-      // Razorpay options
+      // 2. Create order on backend — send plan name, NOT amount
+      const orderRes = await fetch(`${API_BASE_URL}/api/v1/payment/create-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ plan }),
+      });
+
+      if (!orderRes.ok) {
+        const data = await orderRes.json();
+        setError(data.message || "Could not initiate payment.");
+        setLoading(false);
+        return;
+      }
+
+      const { orderId, amount, currency } = await orderRes.json();
+
+      // 3. Open Razorpay checkout — Razorpay handles card details securely
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: data.order.amount,
-        currency: data.order.currency,
-        name: "StorySparkAI",
-        description: `${planName} Subscription`,
-        order_id: data.order.id,
-
-        handler: async (response: RazorpayResponse) => {
-          try {
-            // Verify payment
-            const verifyRes = await fetch("/api/v1/payment/verify", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(response),
-            });
-
-            const verifyData: { success: boolean } =
-              await verifyRes.json();
-
-            if (verifyData.success) {
-              alert("Payment successful!");
-            } else {
-              alert("Payment verification failed.");
-            }
-          } catch (error) {
-            console.error(error);
-            alert("Verification failed.");
-          }
-        },
-
+        amount,
+        currency,
+        name: "Story Spark AI",
+        description: `${planLabel} Plan`,
+        order_id: orderId,
         prefill: {
-          name: "",
-          email: "",
-          contact: "",
+          name: user?.name ?? "",
+          email: user?.email ?? "",
         },
+        handler: async (response: {
+          razorpay_order_id: string;
+          razorpay_payment_id: string;
+          razorpay_signature: string;
+        }) => {
+          // 4. Verify payment on backend
+          const verifyRes = await fetch(`${API_BASE_URL}/api/v1/payment/verify`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
 
-        theme: {
-          color: "#06b6d4",
+          const verifyData = await verifyRes.json();
+
+          if (verifyData.success) {
+            // Subscription upgraded — reload user session or redirect
+            window.location.href = "/dashboard?upgraded=true";
+          } else {
+            setError("Payment verification failed. Please contact support.");
+          }
+          setLoading(false);
         },
+        modal: {
+          ondismiss: () => setLoading(false),
+        },
+        theme: { color: "#7c3aed" },
       };
 
-      const paymentObject = new ((window as unknown) as RazorpayWindow).Razorpay(
-        options
-      );
-
-      paymentObject.on(
-        "payment.failed",
-        (response: RazorpayFailureResponse) => {
-          console.error(response.error);
-
-          alert(response.error?.description || "Payment failed.");
-        }
-      );
-
-      paymentObject.open();
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong.");
-    }
-  const planPrice = searchParams.get("price") || "19.99";
-
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const formatCardNumber = (value: string) => {
-    return value
-      .replace(/\D/g, "")
-      .slice(0, 16)
-      .replace(/(.{4})/g, "$1 ")
-      .trim();
-  };
-
-  const formatExpiry = (value: string) => {
-    return value
-      .replace(/\D/g, "")
-      .slice(0, 4)
-      .replace(/^(\d{2})(\d)/, "$1/$2");
-  };
-
-  const isFormValid =
-    name.trim() &&
-    cardNumber.length === 19 &&
-    expiry.length === 5 &&
-    cvv.length === 3;
-
-  const handlePay = () => {
-    if (!isFormValid) return;
-
-    setLoading(true);
-
-    setTimeout(() => {
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error("Payment error:", err);
+      setError("An unexpected error occurred. Please try again.");
       setLoading(false);
-      navigate("/dashboard");
-    }, 2000);
+    }
   };
 
   return (
+    <div className="flex flex-col items-center gap-3">
+      {error && (
+        <p className="text-sm text-red-500 text-center">{error}</p>
+      )}
+      <button
+        onClick={handlePayment}
+        disabled={loading}
+        className="w-full py-2 px-6 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {loading ? "Processing…" : `Pay ${displayAmount}`}
+      </button>
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 px-4 py-10 relative overflow-hidden transition-colors duration-300 w-full box-border sm:px-6 lg:px-8">
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none select-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none select-none" />
@@ -352,7 +321,7 @@ const PaymentComponent = () => {
                 ) : (
                   <>
                     <ShieldCheck size={18} />
-                    Pay Now ΓÇö ${planPrice}/mo
+                    Pay Now - ${planPrice}/mo
                   </>
                 )}
               </button>
@@ -438,5 +407,3 @@ const PaymentComponent = () => {
     </div>
   );
 };
-
-export default PaymentComponent;

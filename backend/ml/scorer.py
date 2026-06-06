@@ -138,7 +138,7 @@ def score(story_text: str, prompt_text: str) -> dict:
         "overall": round((coherence + creativity + relevance) / 3, 3),
     }
     
-def batch_score(stories: list[dict], prompt_text: str) -> list[dict]:
+def score_story(stories: list[dict], prompt_text: str) -> list[dict]:
     """
     Score multiple stories in a single model forward pass.
     Much faster than calling score() in a loop for large batches.

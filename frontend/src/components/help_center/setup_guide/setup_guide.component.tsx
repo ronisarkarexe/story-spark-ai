@@ -1,4 +1,4 @@
-﻿import { FC } from "react";
+import { FC } from "react";
 import { motion } from "framer-motion";
 import { SetupStep } from "../help_center.utils";
 

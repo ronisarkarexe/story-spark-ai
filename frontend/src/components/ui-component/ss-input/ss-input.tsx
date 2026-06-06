@@ -34,61 +34,96 @@ const SSInput = <T extends FieldValues>({
   autoComplete,
   autoFocus,
 }: SSInputProps<T>) => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showLocalPassword, setShowLocalPassword] = useState(false);
 
-  const inputType =
-    type === "password" ? (showPassword ? "text" : "password") : type;
+
+
+
+
+
+  const inputType = type === "password" ? (showPassword ? "text" : "password") : type;
 
   return (
-    <div className="w-full max-w-full flex flex-col box-border">
-      <label
-        htmlFor={name}
-        className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2 text-left"
-      >
-        {label} {required && <span className="text-rose-500">*</span>}
-      </label>
+    <div className="w-full min-w-0 box-border">
+      <label htmlFor={name} className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
 
-      <div className="relative w-full max-w-full flex items-center box-border">
+        {label}
+      </label>
+      <div className="relative w-full box-border">
+        {/* Left Icon */}
         {icon && (
-          <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 pointer-events-none">
+
+          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-500 pointer-events-none">
+
+
+
+
+
             <i className={icon}></i>
           </span>
         )}
 
+
+
+
+
+        {/* The SINGLE Corrected Input Field with Bulletproof Padding and Inline Styles */}
         <input
           type={inputType}
           id={name}
-          autoFocus={autoFocus}
-          className={`block w-full box-border ${icon ? "pl-9" : "pl-3"} ${
-            type === "password" ? "pr-10" : "pr-3"
-          } py-2.5 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 border rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 ${
-            error
-              ? "border-rose-500 focus:ring-rose-500/30"
-              : "border-slate-300 dark:border-slate-600 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500/20"
-          }`}
+
           placeholder={placeholder}
           autoComplete={autoComplete}
+          autoFocus={autoFocus}
           {...register(name, validation)}
+
+          className={`w-full max-w-full h-11 block rounded-xl border bg-transparent text-sm transition-all duration-200 focus:outline-none focus:ring-2 ${
+            icon ? "pl-10" : "px-4"
+          } ${type === "password" ? "pr-10" : "pr-4"} ${
+            error
+              ? "border-rose-500 focus:ring-rose-500/20 focus:border-rose-500 text-rose-900 dark:text-rose-200"
+              : "border-slate-200 dark:border-slate-700 text-gray-900 dark:text-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+          }`}
+          style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
         />
 
+
+
+
+        {/* Right Password Eye Toggle */}
+
         {type === "password" && (
+
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors duration-150"
+
+            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
             aria-label={showPassword ? "Hide password" : "Show password"}
-            title={showPassword ? "Hide password" : "Show password"}
+
+
+
           >
-            <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
+            <i className={showLocalPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
           </button>
         )}
+
+
       </div>
 
+      {/* Error Message */}
       {error && (
-        <p className="text-xs font-medium text-rose-500 mt-1.5 text-left w-full break-words">
-          {error.message}
-        </p>
+
+
+
+        <p className="text-red-500 text-sm mt-2">{error.message}</p>
+
       )}
+
+
+
+
+
     </div>
   );
 };

@@ -669,6 +669,8 @@ const StoriesComponent = () => {
           setGuestRequestCount(newCount);
           localStorage.setItem("guestRequestCount", String(newCount));
         }
+        // Scroll back to top after story generation
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (error: unknown) {
       const message = getErrorMessage(error);
@@ -1039,18 +1041,21 @@ const StoriesComponent = () => {
                     </p>
                   </div>
 
-                  {/* Characters list */}
-                  {characters.length === 0 ? (
-                    <div className="py-8 text-center border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl select-none">
-                      <p className="text-sm text-slate-400 dark:text-slate-500 mb-3">No characters added yet. Leave it empty to let Gemini generate the character cast automatically.</p>
-                      <button
-                        type="button"
-                        onClick={handleAddCharacter}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold uppercase tracking-wider bg-blue-600/5 hover:bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 dark:bg-blue-500/5 dark:hover:bg-blue-500/10 dark:border-blue-500/20 rounded-xl transition-all active:scale-[0.97] cursor-pointer"
-                      >
-                        <i className="fas fa-plus" />
-                        <span>Add First Character</span>
-                      </button>
+                      <span
+  className={`text-xs tabular-nums ml-auto flex gap-2 ${
+    isOverLimit
+      ? "text-red-400 font-medium"
+      : isNearLimit
+      ? "text-yellow-400"
+      : "text-gray-500"
+  }`}
+>
+  <span>
+    {textareaValue.trim() === "" ? 0 : textareaValue.trim().split(/\s+/).length} words
+  </span>
+  <span className="opacity-40">·</span>
+  <span>{textareaValue.length} / {MAX_PROMPT_LENGTH} chars</span>
+</span>
                     </div>
                   ) : (
                     <div className="space-y-4">
