@@ -154,7 +154,6 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
               </button>
 
               <AnimatePresence initial={false}>
-              <AnimatePresence initial={false}>
                 {isOpen && (
                   <motion.div
                     key={panelId}
@@ -167,9 +166,6 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden px-6 pb-6"
                   >
-                    <div className="px-5 pb-5 sm:px-6 sm:pb-6 overflow-hidden">
-                      <div className="rounded-xl bg-slate-50/60 dark:bg-slate-900/40 border border-slate-100 dark:border-white/5 p-4">
-                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
 
                     <div className="px-6 pb-6">
                       <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5 p-4 mt-2">

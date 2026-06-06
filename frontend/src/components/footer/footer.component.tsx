@@ -16,6 +16,7 @@ const FooterComponent = () => {
     e.preventDefault();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!email || !emailRegex.test(email)) {
       setStatus("error");
       setMessage("Please enter a valid email.");
@@ -29,7 +30,9 @@ const FooterComponent = () => {
         `${import.meta.env.VITE_BASE_URL}/newsletter/subscribe`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({ email }),
         }
       );

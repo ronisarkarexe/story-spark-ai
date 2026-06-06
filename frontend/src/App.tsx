@@ -109,7 +109,7 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <>
-        <ScrollToTopButton />
+        
         <MagicCursorComponent />
         <ScrollToTop />
         <RootLayout>

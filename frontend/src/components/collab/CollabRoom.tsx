@@ -140,11 +140,16 @@ export default function CollabRoom() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-center">
-        <div>
-          <p className="text-red-500">{error}</p>
-          <button onClick={() => navigate("/collab")}>
-            Back
+      <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300">
+        <div className="text-center max-w-md">
+          <p className="text-red-500 dark:text-red-400 text-lg mb-2">Error</p>
+          <p className="text-slate-600 dark:text-white/60 text-sm mb-6">{error}</p>
+          <button
+            type="button"
+            onClick={() => navigate("/collab")}
+            className="text-indigo-600 dark:text-indigo-400 underline"
+          >
+            Back to collab home
           </button>
         </div>
       </div>
@@ -154,43 +159,80 @@ export default function CollabRoom() {
   if (!room) return null;
 
   return (
-    <div className="min-h-screen p-6">
-      <h1 className="text-2xl font-bold">Room: {roomId}</h1>
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center py-12 px-4 transition-colors duration-300">
+      <div className="max-w-6xl w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Story */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6 mb-6">
+              <h1 className="text-2xl font-bold mb-4">Room: {roomId}</h1>
 
-      {/* Story */}
-      <div className="mt-4 p-4 border rounded">
-        {room.story.length === 0 ? (
-          <p>No story yet</p>
-        ) : (
-          room.story.map((c, i) => (
-            <p key={i}>
-              <b style={{ color: c.color }}>{c.authorName}:</b>{" "}
-              {c.text}
-            </p>
-          ))
-        )}
-      </div>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 min-h-64 max-h-96 overflow-y-auto mb-4">
+                {room?.story?.length ? (
+                  <div className="space-y-3">
+                    {room.story.map((chunk, idx) => (
+                      <div key={idx} className="text-sm">
+                        <span style={{ color: chunk.color }} className="font-semibold">
+                          {chunk.authorName}:
+                        </span>{" "}
+                        <span className="text-slate-600 dark:text-slate-300">{chunk.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-slate-400 text-center py-20">Story is empty. Start writing!</p>
+                )}
+              </div>
 
-      {/* Input */}
-      <div className="flex gap-2 mt-4">
-        <input
-          value={newText}
-          onChange={(e) => setNewText(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAddText()}
-          className="border p-2 flex-1"
-          placeholder="Write something..."
-        />
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={newText}
+                  onChange={(e) => setNewText(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddText()}
+                  placeholder="Add your story text..."
+                  className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors"
+                />
 
-        <button onClick={handleAddText}>Add</button>
-        <button onClick={handleAIContinue}>AI ✨</button>
-      </div>
+                <button
+                  type="button"
+                  onClick={handleAddText}
+                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Add
+                </button>
 
-      {/* Participants */}
-      <div className="mt-6">
-        <h2>Participants ({room.participants.length})</h2>
-        {room.participants.map((p) => (
-          <div key={p.userId}>
-            <span style={{ color: p.color }}>●</span> {p.username}
+                <button
+                  type="button"
+                  onClick={handleAIContinue}
+                  className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  AI ✨
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Participants */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6 h-fit">
+            <h2 className="text-lg font-bold mb-4">
+              Participants ({room?.participants?.length || 0})
+            </h2>
+
+            <div className="space-y-2">
+              {room?.participants?.map((p) => (
+                <div
+                  key={p.userId}
+                  className="px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center gap-2"
+                >
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: p.color }}
+                  />
+                  <span className="text-sm">{p.username}</span>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>

@@ -18,7 +18,6 @@ const toggleReaction = async (
   const { email } = token;
 
   const user = await User.findOne({ email }).select("_id").lean();
-
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
@@ -32,43 +31,53 @@ const toggleReaction = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
-  // Check existing reaction
   const existingReaction = await Reaction.findOne({
-    postId,
+    postId: post._id,
     userId: user._id,
   });
 
-  // Remove reaction if same type clicked again
-  if (existingReaction && existingReaction.type === type) {
-    await Reaction.findByIdAndDelete(existingReaction._id);
-
-    const likesCount = await Reaction.countDocuments({ postId });
-
-    return {
-      message: "Reaction removed successfully",
-      likesCount,
-    };
-  }
-
-  // Update existing reaction
   if (existingReaction) {
-    existingReaction.type = type;
-    await existingReaction.save();
+    if (existingReaction.type === type) {
+      // Remove reaction if the same type is toggled
+      await Reaction.findByIdAndDelete(existingReaction._id);
+      post.reactions = (post.reactions || []).filter(
+        (id) => id && id.toString() !== existingReaction._id.toString()
+      );
+      post.likesCount = Math.max(0, (post.likesCount || 0) - 1);
+      await post.save();
+
+      return {
+        message: "Reaction removed successfully",
+        likesCount: post.likesCount,
+      };
+    } else {
+      // Update reaction to new type
+      existingReaction.type = type;
+      await existingReaction.save();
+
+      return {
+        message: "Reaction updated successfully",
+        likesCount: post.likesCount,
+      };
+    }
   } else {
     // Create new reaction
-    await Reaction.create({
-      postId: new Types.ObjectId(postId),
+    const newReaction = await Reaction.create({
+      postId: post._id,
       userId: user._id,
-      type,
+      type: type,
     });
+
+    post.reactions = post.reactions || [];
+    post.reactions.push(newReaction._id);
+    post.likesCount = (post.likesCount || 0) + 1;
+    await post.save();
+
+    return {
+      message: "Reaction added successfully",
+      likesCount: post.likesCount,
+    };
   }
-
-  const likesCount = await Reaction.countDocuments({ postId });
-
-  return {
-    message: "Reaction updated successfully",
-    likesCount,
-  };
 };
 
 export const ReactionService = {

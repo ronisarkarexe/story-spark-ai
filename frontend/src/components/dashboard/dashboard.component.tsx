@@ -7,11 +7,22 @@ import LoadingAnimation from "../loading/loading.component";
 import { getUserInfo } from "../../services/auth.service";
 import { USER_ROLE } from "../../constants/role";
 import GamificationCard from "./gamification_card.component";
+import StreakCard from "../StreakCard";
+import AchievementsGrid from "../AchievementsGrid";
+import WritingStatsPanel from "../WritingStatsPanel";
+import { useGetWritingStreakQuery, useGetAchievementsQuery } from "../../redux/apis/gamification.api";
 
 const DashboardComponent = () => {
   const { data, isLoading } = useGetDashboardAnalysisQuery(undefined);
   const userInfo = getUserInfo();
   const role = userInfo?.role;
+
+  const { data: streakData, isLoading: isStreakLoading } = useGetWritingStreakQuery(undefined, {
+    skip: role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN,
+  });
+  const { data: achievementsData, isLoading: isAchievementsLoading } = useGetAchievementsQuery(undefined, {
+    skip: role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN,
+  });
 
   if (isLoading) {
     return <LoadingAnimation />;
@@ -274,9 +285,27 @@ const DashboardComponent = () => {
           {/* Writer Layout */}
           {role === USER_ROLE.WRITER && (
             <div className="space-y-6">
-              {/* Gamification Banner */}
-              <div className="mb-6">
-                <GamificationCard data={data.writerStats?.gamification} />
+              {/* Gamification Hub */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                  <StreakCard streak={streakData} isLoading={isStreakLoading} />
+                </div>
+                <div className="lg:col-span-2">
+                  <WritingStatsPanel
+                    totalStories={achievementsData?.achievements.find((a) => a.id === "story_1")?.progress || 0}
+                    totalWords={achievementsData?.achievements.find((a) => a.id === "words_1000")?.progress || 0}
+                    activeDays={streakData?.totalWritingDays || 0}
+                    longestStreak={streakData?.longestStreak || 0}
+                    monthlyActivity={data.posts?.perMonth}
+                    isLoading={isStreakLoading || isAchievementsLoading}
+                  />
+                </div>
+              </div>
+
+              {/* Achievements Showcase */}
+              <div className="rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01] p-6">
+                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-4">Writing Achievements</h3>
+                <AchievementsGrid achievements={achievementsData?.achievements} isLoading={isAchievementsLoading} />
               </div>
               
               {/* Writer Charts */}
@@ -330,9 +359,27 @@ const DashboardComponent = () => {
           {/* Normal User Layout */}
           {role === USER_ROLE.USER && (
             <div className="space-y-6">
-              {/* Gamification Banner */}
-              <div className="mb-6">
-                <GamificationCard data={data.userStats?.gamification} />
+              {/* Gamification Hub */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                  <StreakCard streak={streakData} isLoading={isStreakLoading} />
+                </div>
+                <div className="lg:col-span-2">
+                  <WritingStatsPanel
+                    totalStories={achievementsData?.achievements.find((a) => a.id === "story_1")?.progress || 0}
+                    totalWords={achievementsData?.achievements.find((a) => a.id === "words_1000")?.progress || 0}
+                    activeDays={streakData?.totalWritingDays || 0}
+                    longestStreak={streakData?.longestStreak || 0}
+                    monthlyActivity={data.posts?.perMonth}
+                    isLoading={isStreakLoading || isAchievementsLoading}
+                  />
+                </div>
+              </div>
+
+              {/* Achievements Showcase */}
+              <div className="rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01] p-6">
+                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-4">Writing Achievements</h3>
+                <AchievementsGrid achievements={achievementsData?.achievements} isLoading={isAchievementsLoading} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
