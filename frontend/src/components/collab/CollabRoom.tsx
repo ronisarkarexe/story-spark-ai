@@ -59,95 +59,81 @@ export default function CollabRoom() {
       return;
     }
 
-    try {
-      let socket = getSocketIo();
-      if (!socket) {
-        socket = connectSocket();
-      }
+    const socket = connectSocket();
 
-      if (!socket) {
-        setError(
-          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
-        );
-        setLoading(false);
-        return;
-      }
-
-      // Request room info
-      socket.emit("collab:get_room", { roomId }, (response: CollabRoomResponse) => {
-        if (response && response.room) {
-          setRoom(response.room);
-          setError(null);
-        } else {
-          setError(response.message || "Room not found");
-        }
-        setLoading(false);
-      });
-
-      // Listeners
-      const handleRoomUpdated = (data: CollabRoomResponse) => {
-        if (data && data.room) {
-          setRoom(data.room);
-        }
-      };
-
-      const handleStoryUpdated = (data: CollabStoryResponse) => {
-        if (data && data.story) {
-          setRoom((prev) =>
-            prev ? { ...prev, story: data.story! } : null
-          );
-        }
-      };
-
-      const handleError = (data: { message: string }) => {
-        setError(data.message || "Collaboration error");
-      };
-
-      socket.on("collab:room_updated", handleRoomUpdated);
-      socket.on("collab:story_updated", handleStoryUpdated);
-      socket.on("collab:error", handleError);
-
-      return () => {
-        socket?.off("collab:room_updated", handleRoomUpdated);
-        socket?.off("collab:story_updated", handleStoryUpdated);
-        socket?.off("collab:error", handleError);
-      };
-    } catch (err) {
-      console.error("Collab error:", err);
-      setError("Failed to initialize collaboration");
+    if (!socket) {
+      setError("Socket connection failed");
       setLoading(false);
+      return;
     }
+
+    socket.emit(
+      "collab:get_room",
+      { roomId },
+      (response: CollabRoomResponse) => {
+        if (response?.room) {
+          setRoom(response.room);
+        } else {
+          setError(response?.message || "Room not found");
+        }
+        setLoading(false);
+      }
+    );
+
+    const handleRoomUpdated = (data: CollabRoomResponse) => {
+      if (data?.room) setRoom(data.room);
+    };
+
+    const handleStoryUpdated = (data: CollabStoryResponse) => {
+      if (data?.story) {
+        setRoom((prev) =>
+          prev ? { ...prev, story: data.story! } : prev
+        );
+      }
+    };
+
+    const handleError = (data: CollabRoomResponse) => {
+      setError(data?.message || "Collaboration error");
+    };
+
+    socket.on("collab:room_updated", handleRoomUpdated);
+    socket.on("collab:story_updated", handleStoryUpdated);
+    socket.on("collab:error", handleError);
+
+    return () => {
+      socket.off("collab:room_updated", handleRoomUpdated);
+      socket.off("collab:story_updated", handleStoryUpdated);
+      socket.off("collab:error", handleError);
+      socket.disconnect();
+    };
   }, [roomId, navigate]);
 
   const handleAddText = () => {
     if (!newText.trim() || !user || !roomId) return;
 
     const socket = getSocketIo();
-    if (socket) {
-      socket.emit("collab:add_text", {
-        roomId,
-        userId: user.userId,
-        text: newText,
-      });
-      setNewText("");
-    }
+    if (!socket) return;
+
+    socket.emit("collab:add_text", {
+      roomId,
+      userId: user.userId,
+      text: newText,
+    });
+
+    setNewText("");
   };
 
   const handleAIContinue = () => {
-    if (!roomId) return;
     const socket = getSocketIo();
-    if (socket) {
-      socket.emit("collab:ai_continue", { roomId });
-    }
+    if (!socket || !roomId) return;
+
+    socket.emit("collab:ai_continue", { roomId });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p>Loading collaboration room...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
       </div>
     );
   }
@@ -169,6 +155,8 @@ export default function CollabRoom() {
       </div>
     );
   }
+
+  if (!room) return null;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center py-12 px-4 transition-colors duration-300">
@@ -246,7 +234,7 @@ export default function CollabRoom() {
               ))}
             </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

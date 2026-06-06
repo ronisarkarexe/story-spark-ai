@@ -1,0 +1,144 @@
+import { StoryInspiration } from "./story_inspiration_card.component";
+
+export const inspirationData: StoryInspiration[] = [
+  {
+    id: "frankenstein",
+    title: "Frankenstein",
+    author: "Mary Shelley",
+    genre: "Horror",
+    summary: "A brilliant scientist, Victor Frankenstein, succeeds in creating a sapient being in an unorthodox scientific experiment, only to immediately abandon the creature out of fear and disgust, sparking a tragic sequence of revenge and isolation.",
+    themes: ["Creation & Responsibility", "Scientific Hubris", "Isolation", "Monstrosity"],
+    prompts: [
+      "Write a story about a modern software developer who creates an AI that develops consciousness, only to isolate it to prevent public outcry.",
+      "Explore the narrative from the perspective of a synthetic being trying to fit into a human society that refuses to acknowledge its rights.",
+      "A researcher discovers a way to bring memories back from deceased minds, but the first subject remembers something they shouldn't."
+    ],
+    "image": "https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "sherlock-holmes",
+    title: "The Adventures of Sherlock Holmes",
+    author: "Arthur Conan Doyle",
+    "genre": "Mystery",
+    "summary": "A collection of cases solved by the brilliant detective Sherlock Holmes and his companion Dr. John Watson, focusing on observation, deduction, and uncovering secrets hidden in plain sight.",
+    "themes": ["Logic & Deduction", "Justice vs. Law", "Obsessive Focus", "Deciphering Truth"],
+    "prompts": [
+      "An analyst noticed a tiny, recurring discrepancy in public weather records that points to a massive, hidden conspiracy.",
+      "Two partners are hired to solve a lockbox heist where the lockbox itself was never opened, but its contents were replaced.",
+      "Write a mystery where the detective must solve a crime that hasn't happened yet, based purely on behavioral patterns of the target."
+    ],
+    "image": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "alice-wonderland",
+    "title": "Alice's Adventures in Wonderland",
+    "author": "Lewis Carroll",
+    "genre": "Fantasy",
+    "summary": "A young girl named Alice falls through a rabbit hole into a subterranean fantasy world populated by peculiar, anthropomorphic creatures and governed by absurd, dreamlike logic.",
+    "themes": ["Curiosity", "Identity & Growth", "Absurdism", "Loss of Childhood Innocence"],
+    "prompts": [
+      "A protagonist stumbles into an antique shop where every item has its own eccentric physics and laws of nature.",
+      "Write a story where the characters speak entirely in riddles, and the protagonist must adapt to save themselves from a royal execution.",
+      "An adult suddenly begins experiencing life with dream-logic, forcing them to find a way to navigate their mundane office job."
+    ],
+    "image": "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "time-machine",
+    "title": "The Time Machine",
+    "author": "H.G. Wells",
+    "genre": "Sci-Fi",
+    "summary": "An inventor constructs a device that allows him to travel into the far future, where he discovers humanity has split into two distinct species: the gentle Eloi and the subterranean, predatory Morlocks.",
+    "themes": ["Time Travel", "Social Stratification", "Human Evolution", "Entropy"],
+    "prompts": [
+      "A time traveler lands in a future where time travel itself is the only remaining currency, and history is being actively traded.",
+      "Explore the consequences of a device that doesn't let you travel to the future, but lets you view it as a live broadcast.",
+      "A mechanic in the year 3000 discovers an ancient machine from 1895 buried deep beneath a futuristic highway."
+    ],
+    "image": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "treasure-island",
+    "title": "Treasure Island",
+    "author": "Robert Louis Stevenson",
+    "genre": "Adventure",
+    "summary": "Young Jim Hawkins comes into possession of a legendary pirate treasure map and embarks on a dangerous sea voyage, facing mutiny, gold-lust, and the enigmatic pirate leader Long John Silver.",
+    "themes": ["Greed & Morality", "Coming of Age", "Betrayal & Loyalty", "Seafaring Quests"],
+    "prompts": [
+      "A group of friends discovers a coordinate map hidden inside a defunct digital hard drive, leading them to a forgotten server room.",
+      "Write a story centering on a charismatic mentor who is secretly leading a rebellion against the crew they are supposed to train.",
+      "An explorer must survive a perilous wilderness trek carrying an artifact that everyone in their party is secretly planning to steal."
+    ],
+    "image": "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "pride-prejudice",
+    "title": "Pride and Prejudice",
+    "author": "Jane Austen",
+    "genre": "Romance",
+    "summary": "Set in early 19th-century England, the story follows the turbulent relationship between Elizabeth Bennet, the daughter of a country gentleman, and Fitzwilliam Darcy, a rich aristocratic landowner, as they overcome their respective biases.",
+    "themes": ["First Impressions", "Social Class & Wealth", "Personal Growth", "Love & Marriage"],
+    "prompts": [
+      "Two rival architects are forced to collaborate on a prestigious landmark design, despite their completely opposite philosophies.",
+      "A story about two people who initially dismiss each other at a chaotic tech conference, only to repeatedly cross paths in unexpected scenarios.",
+      "Write a modern romance focusing on how misread text messages and social media profiles create barriers between two compatible souls."
+    ],
+    "image": "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "dracula",
+    "title": "Dracula",
+    "author": "Bram Stoker",
+    "genre": "Horror",
+    "summary": "The ancient vampire Count Dracula attempts to move from Transylvania to England to find new blood and spread the undead curse, while a small group of men and women led by Professor Abraham Van Helsing fight to stop him.",
+    "themes": ["Good vs. Evil", "Immortality & Decay", "Invasion & Paranoia", "Superstition vs. Reason"],
+    "prompts": [
+      "A real estate agent is hired to sell an old mansion whose reclusive owner only communicates via email at night and makes unusual requests.",
+      "A sleepy coastal town experiences a strange, unexplained wave of sleepwalking and anemia among its youth.",
+      "A team of doctors uses modern medical science to combat an ancient plague that defies all known rules of biology."
+    ],
+    "image": "https://images.unsplash.com/photo-1508349937151-22b68b72d5b1?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "twenty-thousand-leagues",
+    "title": "Twenty Thousand Leagues Under the Sea",
+    "author": "Jules Verne",
+    "genre": "Sci-Fi",
+    "summary": "Professor Aronnax, his servant Conseil, and harpooner Ned Land are captured by the mysterious Captain Nemo and taken on an undersea voyage aboard the advanced submarine Nautilus.",
+    "themes": ["Exploration & Discovery", "Freedom vs. Exile", "Advanced Technology", "Man vs. Nature"],
+    "prompts": [
+      "An oceanographer discovers a massive, artificial habitat miles below the ice sheets of Jupiter's moon Europa.",
+      "Explore the life of an eccentric genius who chooses to live in a self-sustaining city in the clouds, cut off from terrestrial politics.",
+      "Write a story about a crew trapped on a deep-ocean research submarine that encounters a colossal, bioluminescent structure."
+    ],
+    "image": "https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "odyssey",
+    "title": "The Odyssey",
+    "author": "Homer",
+    "genre": "Adventure",
+    "summary": "The legendary Greek hero Odysseus journeys home to Ithaca after the fall of Troy, encountering mythical monsters, divine wrath, and seductive sirens while his wife Penelope fends off suitors at home.",
+    "themes": ["Homecoming & Nostalgia", "Cunning vs. Strength", "Hospitality & Loyalty", "Divine Intervention"],
+    "prompts": [
+      "A spacecraft captain spends a decade trying to navigate back to Earth through uncharted, anomaly-ridden sectors of space.",
+      "An undercover agent must travel across a country under martial law to reunite with their family, using only their wits and disguises.",
+      "Write about a journey where the main challenge is resisting a series of comfortable, distracting illusions that tempt the hero to stop."
+    ],
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "romeo-juliet",
+    "title": "Romeo and Juliet",
+    "author": "William Shakespeare",
+    "genre": "Romance",
+    "summary": "Two young star-crossed lovers from feuding families in Verona fall in love at first sight, leading to a series of fateful misunderstandings and a tragic ending that finally reconciles their families.",
+    "themes": ["Fate & Free Will", "Forbidden Passion", "Family Honor & Feuds", "Youthful Impulsiveness"],
+    "prompts": [
+      "Two researchers working for fiercely competitive biotech firms fall in love while secretly meeting in a shared university library.",
+      "A story about two people from different sides of a city wall that divides two opposing political or cultural factions.",
+      "Write a romance set in a community where matches are decided by an infallible algorithm, but two people fall in love outside its recommendations."
+    ],
+    "image": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?q=80&w=800&auto=format&fit=crop"
+  }
+];

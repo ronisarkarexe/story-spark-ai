@@ -1,0 +1,32 @@
+name: Thank contributor on merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  thank-contributor:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const author = context.payload.pull_request.user.login;
+            const body = [
+              `Congratulations, @${author}! 🎉`,
+              '',
+              'Your pull request has been merged into **Story Spark AI**. Thank you for your contribution — it helps our open-source storytelling community grow.',
+              '',
+              'We appreciate your effort and hope to see you contribute again soon. Should you have any questions, feel free to ask.',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

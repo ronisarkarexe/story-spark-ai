@@ -1,0 +1,29 @@
+name: "📑 Documentation"
+description: "Fix gaps, errors, or missing docs"
+title: "DOC: "
+labels: ["DOC", "Needs Triage"]
+body:
+  - type: checkboxes
+    attributes:
+      label: "Is there an existing issue for this?"
+      description: "Search open and closed issues before filing a new one."
+      options:
+        - label: "I have searched the existing issues"
+          required: true
+  - type: textarea
+    attributes:
+      label: "What is wrong or missing?"
+      description: "Which page, file, or section; what to add, fix, or remove."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Screenshots (if applicable)"
+      description: "Show the current docs UI or errors. Skip if not relevant."
+  - type: checkboxes
+    attributes:
+      label: "Record"
+      options:
+        - label: "I agree to follow this project's Code of Conduct"
+          required: true
+        - label: "I want to work on this issue"

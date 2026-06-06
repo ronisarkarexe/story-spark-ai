@@ -1,0 +1,89 @@
+name: Auto Label
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply keyword and size labels
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const isPR = context.eventName === 'pull_request_target';
+
+            const number = isPR
+              ? context.payload.pull_request.number
+              : context.payload.issue.number;
+            const title = isPR
+              ? context.payload.pull_request.title
+              : context.payload.issue.title;
+            const body = (isPR
+              ? context.payload.pull_request.body
+              : context.payload.issue.body) || '';
+
+            const text = `${title} ${body}`.toLowerCase();
+            const labelsToAdd = new Set();
+
+            // Keyword → type label
+            const keywordMap = [
+              [/\bbug\b|\bfix(es|ed)?\b|\bbroken\b|\bcrash\b|\berror\b/, 'type:bug'],
+              [/\bfeature\b|\benhancement\b/, 'type:feature'],
+              [/\bdocs?\b|\bdocumentation\b|\breadme\b/, 'type:docs'],
+              [/\bsecurity\b|\bvulnerabilit|\bcve\b/, 'type:security'],
+              [/\bperformance\b|\boptimi[sz]e?\b|\bslow\b|\bspeed\b|\blatency\b/, 'type:performance'],
+              [/\bdesign\b|\bui\b|\bux\b|\bstyle\b|\bcsss?\b|\blayout\b/, 'type:design'],
+              [/\brefactor\b|\bclean.?up\b|\brestructure\b/, 'type:refactor'],
+              [/\btest(ing|s)?\b|\bspec\b|\bunit\b|\be2e\b/, 'type:testing'],
+            ];
+
+            for (const [pattern, label] of keywordMap) {
+              if (pattern.test(text)) labelsToAdd.add(label);
+            }
+
+            // Line-count → level label (PRs only — issues have no diff)
+            if (isPR) {
+              let totalLines = 0;
+              let page = 1;
+              while (true) {
+                const { data: files } = await github.rest.pulls.listFiles({
+                  owner, repo, pull_number: number, per_page: 100, page
+                });
+                totalLines += files.reduce((sum, f) => sum + f.additions + f.deletions, 0);
+                if (files.length < 100) break;
+                page++;
+              }
+
+              if (totalLines < 50) labelsToAdd.add('level:beginner');
+              else if (totalLines <= 200) labelsToAdd.add('level:intermediate');
+              else labelsToAdd.add('level:advanced');
+            }
+
+            if (labelsToAdd.size === 0) {
+              core.info('No labels matched. Skipping.');
+              return;
+            }
+
+            core.info(`Applying labels: ${Array.from(labelsToAdd).join(', ')}`);
+            try {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: number,
+                labels: Array.from(labelsToAdd)
+              });
+            } catch (e) {
+              core.warning(`Failed to add labels: ${e?.message}`);
+            }

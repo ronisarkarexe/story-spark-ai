@@ -17,9 +17,13 @@ import { GamificationService } from "../gamification/gamification.service";
 import { WritingStreakService } from "../gamification/writing_streak.service";
 
 const MAX_SEARCH_TERM_LENGTH = 100;
+
+
 const escapeRegex = (text: string): string => {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 };
+
+
 interface ICursorPayload {
   value: string;
   id: string;
@@ -394,7 +398,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
   if (!postExists) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
-  }
+  }}
 
   // Check bookmark status atomically
   const isBookmarked = await Post.exists({

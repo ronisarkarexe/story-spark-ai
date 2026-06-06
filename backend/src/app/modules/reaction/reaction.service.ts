@@ -1,10 +1,12 @@
 import ApiError from "../../../errors/api_error";
-import { ITokenPayload } from "../../../interfaces/token";
-import { User } from "../user/user.model";
 import httpStatus from "http-status";
-import { Reaction } from "./reaction.model";
 import { Types } from "mongoose";
+
+import { User } from "../user/user.model";
 import { Post } from "../post/post.model";
+import { Reaction } from "./reaction.model";
+
+import { ITokenPayload } from "../../../interfaces/token";
 
 type ReactionType = "like" | "love" | "laugh" | "angry" | "sad";
 

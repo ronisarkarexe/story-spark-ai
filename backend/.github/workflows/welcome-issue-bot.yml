@@ -1,0 +1,64 @@
+name: 👋 Issue Welcome Bot
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome new issue reporters
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const username = issue.user.login;
+
+            if (issue.user.type === 'Bot') return;
+
+            const MARKER = '<!-- issue-welcome-story-spark-ai-v1 -->';
+            const { data: existing } = await github.rest.issues.listComments({
+              owner, repo, issue_number: issue.number, per_page: 10
+            });
+            if (existing.some(c => c.body.includes(MARKER))) return;
+
+            const body = [
+              MARKER,
+              `## 👋 Thanks for opening an issue, @${username}!`,
+              ``,
+              `Our maintainers will review this shortly 🚀`,
+              ``,
+              `### Before you start working`,
+              ``,
+              `- 📖 Read the [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md) guide`,
+              `- 💬 To get assigned: check **"I want to work on this issue"** when creating the issue (auto-assign), or comment \`/assign\` on an existing issue`,
+              `- 🔍 Search for [existing issues](https://github.com/${owner}/${repo}/issues) to avoid duplicates`,
+              `- 📝 **Reporting bugs or ideas?** You can always open a new issue — no assignment needed for that!`,
+              ``,
+              `### For GSSoC'26 contributors`,
+              ``,
+              `If you're contributing under **GirlScript Summer of Code 2026**, please mention it in your comment when requesting assignment:`,
+              ``,
+              `> *"I'd like to work on this — contributing under GSSoC'26"*`,
+              ``,
+              `### Project notes`,
+              ``,
+              `**Story Spark AI** is an npm workspaces monorepo:`,
+              `- \`frontend/\` — React + Vite + TypeScript (story UI)`,
+              `- \`backend/\` — Express + MongoDB API (auth, stories, AI)`,
+              ``,
+              `Local setup: \`npm install\`, copy \`backend/.env.example\` and \`frontend/.env.example\`, then \`npm run dev\`.`,
+              ``,
+              `Happy contributing! ⭐ [Star the repo](https://github.com/${owner}/${repo}) if you find it useful!`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: issue.number, body
+            });

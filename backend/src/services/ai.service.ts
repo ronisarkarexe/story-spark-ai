@@ -1,5 +1,3 @@
-// backend/src/services/ai.service.ts
-
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -72,55 +70,51 @@ function isRetryableError(error: unknown): boolean {
       msg.includes("500"))             return true;
   if (msg.includes("empty response"))  return true;
 
-  // Bad API key → don't bother falling back (won't help)
-  if (msg.includes("401") || 
-      msg.includes("invalid api key")) return false;
-
-  return true; // fallback by default
-}
-
-// ─── Main exported function ───────────────────────────────────────────────────
-
-export async function generateStory(prompt: string): Promise<AIResponse> {
-  // ── Try OpenAI first ──────────────────────────────────────────────────────
-  try {
-    const story = await generateWithOpenAI(prompt);
-    console.log("[AI] Story generated successfully via OpenAI");
-
-    return { story, provider: "openai", fallbackUsed: false };
-
-  } catch (openAIError) {
-    console.warn(
-      "[AI] OpenAI failed:",
-      openAIError instanceof Error ? openAIError.message : openAIError
-    );
-
-    // Only fall back if the error type warrants it
-    if (!isRetryableError(openAIError)) {
-      throw new Error(
-        "OpenAI request failed with a non-retryable error. Please check your API key."
-      );
-    }
-
-    console.log("[AI] Falling back to Gemini...");
+  if (!key) {
+    throw new Error("OPENAI_API_KEY is missing in environment variables");
   }
 
-  // ── Try Gemini as fallback ────────────────────────────────────────────────
+  return new OpenAI({ apiKey: key });
+}
+
+const genAI = new GoogleGenerativeAI(
+  process.env.GEMINI_API_KEY as string
+);
+
+export const GEMINI_MODEL = "gemini-2.5-flash";
+
+console.log("OPENAI KEY:", process.env.OPENAI_API_KEY ? "LOADED" : "MISSING");
+console.log("GEMINI KEY:", process.env.GEMINI_API_KEY ? "LOADED" : "MISSING");
+
+
+// ✅ ADD THIS FUNCTION (THIS FIXES YOUR ERROR)
+export async function generateStory(prompt: string) {
   try {
-    const story = await generateWithGemini(prompt);
-    console.log("[AI] Story generated successfully via Gemini (fallback)");
+    const openai = getOpenAIClient();
 
-    return { story, provider: "gemini", fallbackUsed: true };
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 1000,
+    });
 
-  } catch (geminiError) {
-    console.error(
-      "[AI] Gemini also failed:",
-      geminiError instanceof Error ? geminiError.message : geminiError
-    );
+    return {
+      story: response.choices[0]?.message?.content || "",
+      provider: "openai",
+      fallbackUsed: false,
+    };
 
-    // Both failed — throw a clean user-facing error
-    throw new Error(
-      "Story generation failed. Both AI providers are currently unavailable. Please try again later."
-    );
+  } catch (err) {
+    console.log("OpenAI failed, switching to Gemini...");
+
+    const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+
+    return {
+      story: text,
+      provider: "gemini",
+      fallbackUsed: true,
+    };
   }
 }

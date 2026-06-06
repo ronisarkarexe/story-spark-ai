@@ -1,0 +1,7 @@
+# Covered by root .gitignore; kept for standalone tooling / clones of frontend only
+node_modules/
+dist/
+dist-ssr/
+.env
+.env.*
+!.env.example

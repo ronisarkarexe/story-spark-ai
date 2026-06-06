@@ -51,34 +51,27 @@ const generateWithOpenAI = async (prompt: string): Promise<string | null> => {
   }).finally(() => clearTimeout(timeoutId));
 
   if (!response.ok) {
-    return null;
-  }
-
-  const data = (await response.json()) as OpenAIImageResponse;
-  const image = data.data?.[0];
-  if (image?.url) {
-    return image.url;
-  }
-
-  if (image?.b64_json) {
-    return `data:image/png;base64,${image.b64_json}`;
-  }
-
+  const errorText = await response.text().catch(() => "");
+  console.error("OpenAI Image API Error:", response.status, errorText);
   return null;
-};
+}
 
-export const generateStoryboardImage = async (
-  prompt: string
-): Promise<string | null> => {
-  const provider = getProvider();
+let data: OpenAIImageResponse;
 
-  if (!provider) {
-    return null;
-  }
-
-  if (provider === "openai") {
-    return generateWithOpenAI(prompt);
-  }
-
+try {
+  data = await response.json();
+} catch (err) {
+  console.error("Failed to parse OpenAI response JSON");
   return null;
+}
+
+const image = Array.isArray(data.data) ? data.data[0] : undefined;
+
+if (image?.url) return image.url;
+
+if (image?.b64_json) {
+  return `data:image/png;base64,${image.b64_json}`;
+}
+
+return null;
 };

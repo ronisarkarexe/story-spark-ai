@@ -1,73 +1,76 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { connectSocket, getSocketIo } from "../../socket/socket.oi";
-import { getUserInfo, isLoggedIn } from "../../services/auth.service";
+import { useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
-interface CreateRoomResponse {
-  roomId?: string;
-  message?: string;
-}
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
 export default function CollabHome() {
-  const navigate = useNavigate();
-  const [joinRoomId, setJoinRoomId] = useState("");
+  const socketRef = useRef<Socket | null>(null);
+  const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
 
-  const user = getUserInfo();
-
-  const createRoom = () => {
-    if (!isLoggedIn() || !user) {
-      navigate("/login");
+  useEffect(() => {
+    if (!SOCKET_URL) {
+      setError("VITE_SOCKET_URL is missing in .env file");
       return;
     }
+
+    // Prevent duplicate socket connections (VERY IMPORTANT)
+    if (socketRef.current) return;
 
     try {
-      setIsCreating(true);
-      setError("");
+      const socket: Socket = io(SOCKET_URL, {
+        transports: ["websocket"],
+        autoConnect: true,
+      });
 
-      let socket = getSocketIo();
-      if (!socket) {
-        socket = connectSocket();
-      }
+      socketRef.current = socket;
 
-      if (!socket) {
+      socket.on("connect", () => {
+        setConnected(true);
+        setError("");
+        console.log("Socket connected:", socket.id);
+      });
+
+      socket.on("disconnect", () => {
+        setConnected(false);
+        console.log("Socket disconnected");
+      });
+
+      socket.on("connect_error", () => {
         setError(
-          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
+          "Socket connection failed. Check backend or VITE_SOCKET_URL."
         );
-        setIsCreating(false);
-        return;
-      }
-
-      socket.emit(
-        "collab:create_room",
-        { userId: user.userId, username: user.name },
-        (response: CreateRoomResponse) => {
-          if (response.roomId) {
-            navigate(`/collab/${response.roomId}`);
-          } else {
-            setError(response.message || "Failed to create room");
-            setIsCreating(false);
-          }
-        }
-      );
+      });
     } catch (err) {
-      console.error("Create room error:", err);
-      setError("Error creating room. Please try again.");
-      setIsCreating(false);
-    }
-  };
-
-  const joinRoom = () => {
-    if (!joinRoomId.trim()) {
-      setError("Please enter a Room ID");
-      return;
+      console.error(err);
+      setError("Socket initialization failed");
     }
 
-    navigate(`/collab/${joinRoomId.trim()}`);
-  };
+    // Cleanup on unmount
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []);
 
   return (
+    <div className="p-6 text-white">
+      <h1 className="text-2xl font-bold mb-4">Collaboration Room</h1>
+
+      <p className="mb-2">
+        Status:{" "}
+        <span className={connected ? "text-green-400" : "text-red-400"}>
+          {connected ? "Connected" : "Disconnected"}
+        </span>
+      </p>
+
+      {error && (
+        <p className="text-red-400 text-sm bg-red-500/10 p-2 rounded">
+          {error}
+        </p>
+      )}
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300 w-full box-border relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
