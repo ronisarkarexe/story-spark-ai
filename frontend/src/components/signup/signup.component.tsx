@@ -1,4 +1,4 @@
-﻿import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { useState, useEffect } from "react";
@@ -166,9 +166,14 @@ const SignUpComponent = () => {
           setCooldown(60);
         }
       } catch (error) {
-        const message = (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "Failed to send OTP. Check backend .env email credentials.";
-        toast.error(message);
-      } finally {
+  const err = error as { data?: Array<{ message?: string }>; message?: string };
+  const message =
+    err?.data?.[0]?.message ||
+    err?.message ||
+    "Something went wrong. Please try again.";
+  toast.error(message);
+  console.log("error: ", error);
+} finally {
         setIsBusy(false);
       }
     }
@@ -209,56 +214,14 @@ const SignUpComponent = () => {
       } else {
         throw new Error("No verification token received");
       }
-    } catch (err: unknown) {
-      const message = (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "OTP verification failed. Please check the code and try again.";
-      toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (cooldown > 0 || isBusy) return;
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const otpPayload = {
-        name: registerInfo.name,
-        email: registerInfo.email,
-      };
-      const res = await emailVerify({ ...otpPayload }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
-        setValue("otp", "");
-        setCooldown(60);
-      }
-    } catch (error) {
-      const message = (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "Failed to resend OTP. Please try again.";
-      toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({
-        token: credentialResponse.credential,
-      }).unwrap();
-
-      if (res.data.accessToken) {
-        toast.success("User logged in successfully with Google!");
-        storeUserInfo({ accessToken: res.data.accessToken });
-        navigate("/");
-      }
-    } catch {
-      toast.error("Failed to login with Google. Please try again.");
+} catch (err: unknown) {
+  const e = err as { data?: Array<{ message?: string }>; message?: string };
+  const message =
+    e?.data?.[0]?.message ||
+    e?.message ||
+    "OTP verification failed. Please check the code and try again.";
+  toast.error(message);
+      console.log("error: ", err);
     } finally {
       setIsBusy(false);
     }
@@ -281,18 +244,78 @@ const SignUpComponent = () => {
         </div>
 
         <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden">
-          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200">
+          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200"></h3>
+        <div className="flex justify-center items-center gap-40">
+        
+                <div className="flex flex-col gap-5">
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
+                    
+                    Turns Ideas into
+                    <br /> 
+                    unforgotable stories
+                    
+                    </h1>
+                  <p>AI powered storytelling that helps you
+                      <br />            
+                     create connect inspire.</p>
+        
+                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                      <div>
+                        <WandSparkles className="text-violet-600"/>
+                      </div>
+                      <div>
+                        <h1 className="font-bold">Smart writing</h1>
+                        <p>AI that understands your ideas</p>
+                      </div>
+                     </div>
+        
+        
+                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                      <div>
+                        <BookOpen className="text-violet-600"/>
+                      </div>
+                      <div>
+                        <h1 className="font-bold">Endless Creativity</h1>
+                        <p>Stories that captivate and inspire</p>
+                      </div>
+                     </div>
+        
+        
+                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                      <div>
+                        <UsersRound className="text-violet-600"/>
+                      </div>
+                      <div>
+                        <h1 className="font-bold">Built for everyone</h1>
+                        <p>Writers, Creaters and dreamers</p>
+                      </div>
+                     </div>
+                     <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+                        Create, edit, and generate engaging multiple story
+                        <br />
+                         variations from a single prompt.
+                          <br />                
+                         Perfect for writers, creators, and enthusiasts 
+                         <br />
+                         exploring the future of fiction.
+                     </div>
+                </div>
+                <div className="w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl p-6 sm:p-8 shadow-2xl">
+          {" "}
+          <h3 className="text-center text-2xl md:text-3xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
+            {" "}
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
-
           {!showOtpField && (
-            <p className="mt-2 mb-6 text-center text-sm text-slate-400">
+            <p className="mt-2 mb-5 text-center text-sm text-slate-400">
+              {" "}
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
 
           {!showOtpField && (
-            <div className="relative mb-6">
+            <div className="relative my-6">
+              {" "}
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-700/50"></div>
               </div>
@@ -303,7 +326,6 @@ const SignUpComponent = () => {
               </div>
             </div>
           )}
-
           {!showOtpField ? (
             <form className="space-y-5 w-full min-w-0 overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
               <SSInput
@@ -316,10 +338,10 @@ const SignUpComponent = () => {
                 autoComplete="name"
                 validation={{
                   required: "Name is required",
-                  minLength: {
-                    value: 2,
-                    message: "Name must be at least 2 characters",
-                  },
+                    minLength: {
+                        value: 2,
+                        message: "Name must be at least 2 characters",
+                    },
                   pattern: {
                     value: /^[A-Za-z0-9\s._]+$/,
                     message: "Only letters, numbers, spaces, underscores, and dots are allowed",
@@ -412,7 +434,7 @@ const SignUpComponent = () => {
               </div>
             </form>
           ) : (
-            <div className="grid grid-cols-1 gap-5 w-full box-border">
+            <div className="grid grid-cols-1 gap-4 w-full box-border">
               <SSInput
                 label="OTP"
                 name="otp"
@@ -457,7 +479,6 @@ const SignUpComponent = () => {
               </div>
             </div>
           )}
-
           {!showOtpField && (
             <>
               <div className="relative my-8 w-full box-border">

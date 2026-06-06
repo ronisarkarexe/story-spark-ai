@@ -60,6 +60,13 @@ app.use(cookieParser() as any);
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser() as unknown as RequestHandler);
 
+app.use((req, res, next) => {
+  if (req.method === "GET" && /^\/api\/story\/[a-f0-9]{24}\/character-network$/i.test(req.path)) {
+    req.url = req.url.replace(/^\/api\/story\//, "/api/v1/story/");
+  }
+  next();
+});
+
 app.use("/api/v1", Routers);
 
 app.use((req: Request, res: Response, _next: NextFunction) => {

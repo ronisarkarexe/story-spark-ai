@@ -38,7 +38,7 @@ const PublishedStoriesComponent: React.FC = () => {
 
   const debounceTerm = useDebounced({
     searchQuery: searchTerm,
-    daley: 500,
+    delay: 500,
   });
 
   const query = useMemo(() => {

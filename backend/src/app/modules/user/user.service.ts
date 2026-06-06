@@ -172,17 +172,9 @@ const getProfileInfo = async (token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const publishedPostsCount = await Post.countDocuments({
-    author: user._id,
-    isPublished: true,
-    isDeleted: { $ne: true },
-  });
-
-  if (user.postsCount !== publishedPostsCount) {
-    user.postsCount = publishedPostsCount;
-    await user.save();
-  }
-
+  // postsCount is kept in sync via event-driven increments in createPost and
+  // decrements in deletePost. We do NOT repair it here to keep this GET
+  // endpoint side-effect-free and idempotent (fixes write-on-read anti-pattern).
   return user;
 };
 

@@ -1,18 +1,13 @@
 import React from "react";
-
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
-
 import { USER_ROLE } from "./constants/role";
 import { getUserInfo } from "./services/auth.service";
-
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
-
 import AboutUsComponent from "./components/footer/about-us.tsx";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import BlogComponent from "./components/footer/blog.tsx";
@@ -47,7 +42,6 @@ import ReportBug from "./components/report-bug/ReportBug";
 import ResourceDetailComponent from "./components/community/resource_detail.component";
 import ResourcesListComponent from "./components/community/resources_list.component";
 import ScrollToTop from "./components/ScrollToTop";
-import ScrollToTopButton from "./components/ScrollToTopButton";
 import SettingComponent from "./components/dashboard/settings/settings.component";
 import SignUpComponent from "./components/signup/signup.component";
 import SimpleProtectedRoute from "./components/ProtectedRoute";
@@ -86,7 +80,7 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <>
-        <ScrollToTopButton />
+        
         <MagicCursorComponent />
         <ScrollToTop />
         <RootLayout>

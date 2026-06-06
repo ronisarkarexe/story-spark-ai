@@ -12,9 +12,11 @@ const LatestPostsComponent = () => {
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
-  useEffect(() => {
-    setShowAllPosts(false);
-  }, [data?.posts]);
+
+  // Remove duplicate posts based on _id
+  const uniquePosts = Array.from(
+    new Map((data?.posts ?? []).map((post) => [post._id, post])).values(),
+  );
 
   if (isLoading) return <LoadingAnimation />;
 
@@ -100,7 +102,9 @@ const LatestPostsComponent = () => {
           })
         ) : (
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400">
+            
             Posts are not available.
+          
           </div>
         )}
       </div>

@@ -34,7 +34,6 @@
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/forms": "^0.5.11",
     "@types/cookie-parser": "^1.4.10",
-    "@types/express": "^5.0.6",
     "concurrently": "^9.1.2"
   },
   "overrides": {
@@ -48,6 +47,7 @@
     "express": "^5.2.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
+    "pnpm": "^11.5.2",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.3"
   }
