@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { storeUserInfo } from "../../services/auth.service";
@@ -91,7 +92,6 @@ const SignUpComponent = () => {
     register,
     handleSubmit,
     watch,
-    setValue,
     unregister,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
@@ -161,7 +161,11 @@ const SignUpComponent = () => {
           setCooldown(60);
         }
       } catch (error) {
-        const message = (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "Failed to send OTP. Check backend email credentials.";
+        const err = error as { data?: Array<{ message?: string }>; message?: string };
+        const message =
+          err?.data?.[0]?.message ||
+          err?.message ||
+          "Failed to send OTP. Check backend email credentials.";
         toast.error(message);
       } finally {
         setIsBusy(false);
@@ -205,36 +209,13 @@ const SignUpComponent = () => {
         throw new Error("No verification token received");
       }
     } catch (err: unknown) {
-      const message = (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "OTP verification failed. Please check the code and try again.";
+      const e = err as { data?: Array<{ message?: string }>; message?: string };
+      const message =
+        e?.data?.[0]?.message ||
+        e?.message ||
+        "OTP verification failed. Please check the code and try again.";
       toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (cooldown > 0 || isBusy) return;
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const otpPayload = {
-        name: registerInfo.name,
-        email: registerInfo.email,
-      };
-      const res = await emailVerify({ ...otpPayload }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
-        setValue("otp", "");
-        setCooldown(60);
-      }
-    } catch (error) {
-      const message = (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message || "Failed to resend OTP. Please try again.";
-      toast.error(message);
+      console.log("error: ", err);
     } finally {
       setIsBusy(false);
     }
@@ -242,6 +223,7 @@ const SignUpComponent = () => {
 
   const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
     setIsBusy(true);
+
     try {
       const res = await googleLogin({
         token: credentialResponse.credential,
@@ -249,7 +231,9 @@ const SignUpComponent = () => {
 
       if (res.data.accessToken) {
         toast.success("User logged in successfully with Google!");
-        storeUserInfo({ accessToken: res.data.accessToken });
+        storeUserInfo({
+          accessToken: res.data.accessToken,
+        });
         navigate("/");
       }
     } catch {
@@ -261,6 +245,28 @@ const SignUpComponent = () => {
 
   const handleGoogleLoginError = () => {
     toast.error("Google login failed. Please try again.");
+  };
+
+  const handleResendOtp = async () => {
+    if (!registerInfo) return;
+    setIsBusy(true);
+    try {
+      const res = await emailVerify({
+        name: registerInfo.name,
+        email: registerInfo.email,
+      }).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        toast.success("OTP resent to your email");
+        setCooldown(60);
+      }
+    } catch (error) {
+      const err = error as { data?: Array<{ message?: string }>; message?: string };
+      toast.error(err?.data?.[0]?.message || err?.message || "Failed to resend OTP");
+    } finally {
+      setIsBusy(false);
+    }
   };
 
   return (
@@ -337,81 +343,85 @@ const SignUpComponent = () => {
             </h2>
           </div>
 
-          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-850 dark:text-slate-250">
+          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-850 dark:text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
           {!showOtpField && (
-            <p className="mt-2 mb-5 text-center text-sm text-slate-400">
-              {" "}
+            <p className="mt-2 mb-6 text-center text-xs sm:text-sm text-slate-400 px-1">
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
 
           {!showOtpField && (
-            <div className="relative my-6">
-              {" "}
+            <div className="relative mb-6 w-full box-border">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-700/50"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-slate-50 dark:bg-slate-800/60 text-slate-800 dark:text-slate-450 font-semibold">
+              <div className="relative flex justify-center text-xs">
+                <span className="px-4 bg-slate-50 dark:bg-slate-800/60 text-slate-800 dark:text-slate-400 font-semibold tracking-wide rounded-md">
                   SIGN UP WITH EMAIL
                 </span>
               </div>
             </div>
           )}
           {!showOtpField ? (
-            <form className="space-y-5 w-full min-w-0 overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
-              <SSInput
-                label="Name"
-                name="name"
-                placeholder="Enter your name"
-                required={true}
-                icon="fi fi-rr-user"
-                register={register}
-                autoComplete="name"
-                validation={{
-                  required: "Name is required",
+            <form className="space-y-5 w-full min-w-0 block box-border overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="Name"
+                  name="name"
+                  placeholder="Enter your name"
+                  required={true}
+                  icon="fi fi-rr-user"
+                  register={register}
+                  autoComplete="name"
+                  validation={{
+                    required: "Name is required",
                     minLength: {
-                        value: 2,
-                        message: "Name must be at least 2 characters",
+                      value: 2,
+                      message: "Name must be at least 2 characters",
                     },
-                  pattern: {
-                    value: /^[A-Za-z0-9\s._]+$/,
-                    message: "Only letters, numbers, spaces, underscores, and dots are allowed",
-                  },
-                }}
-                error={errors.name}
-              />
+                    pattern: {
+                      value: /^[A-Za-z0-9\s._]+$/,
+                      message: "Only letters, numbers, spaces, underscores, and dots are allowed",
+                    },
+                  }}
+                  error={errors.name}
+                />
+              </div>
 
-              <SSInput
-                label="Email address"
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                required={true}
-                icon="fi fi-rr-envelope"
-                register={register}
-                autoComplete="email"
-                error={errors.email}
-              />
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="Email address"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  required={true}
+                  icon="fi fi-rr-envelope"
+                  register={register}
+                  autoComplete="email"
+                  error={errors.email}
+                />
+              </div>
 
-              <SSInput
-                label="Password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                required={true}
-                icon="fi fi-rr-lock"
-                register={register}
-                autoComplete="new-password"
-                error={errors.password}
-              />
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="Password"
+                  name="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  required={true}
+                  icon="fi fi-rr-lock"
+                  register={register}
+                  autoComplete="new-password"
+                  error={errors.password}
+                />
+              </div>
 
               {password?.length > 0 && (
-                <div className="space-y-3 -mt-2 min-w-0 overflow-hidden">
+                <div className="space-y-3 -mt-1 w-full min-w-0 overflow-hidden box-border">
                   <div
-                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden select-none"
+                    className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden select-none"
                     role="progressbar"
                     aria-valuenow={passedChecks}
                     aria-valuemin={0}
@@ -431,7 +441,7 @@ const SignUpComponent = () => {
                       return (
                         <li
                           key={key}
-                          className={`flex items-center gap-2 ${met ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-650"}`}
+                          className={`flex items-center gap-2 ${met ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500"}`}
                           aria-label={`${label}: ${met ? "met" : "not met"}`}
                         >
                           <i className={`fa-solid ${met ? "fa-circle-check" : "fa-circle-xmark"} text-xs shrink-0`} aria-hidden="true" />
@@ -443,70 +453,67 @@ const SignUpComponent = () => {
                 </div>
               )}
 
-              <SSInput
-                label="Confirm Password"
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                required={!showOtpField}
-                icon="fi fi-rr-eye"
-                register={register}
-                autoComplete="new-password"
-                validation={{
-                  validate: (value) => {
-                    if (showOtpField) return true;
-                    if (!value) return "Confirm password is required";
-                    if (value !== password) return "Passwords do not match!";
-                    return true;
-                  }
-                }}
-                error={errors.confirmPassword}
-              />
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="Confirm Password"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  required={!showOtpField}
+                  icon="fi fi-rr-lock"
+                  register={register}
+                  autoComplete="new-password"
+                  validation={{
+                    validate: (value) => {
+                      if (showOtpField) return true;
+                      if (!value) return "Confirm password is required";
+                      if (value !== password) return "Passwords do not match!";
+                      return true;
+                    }
+                  }}
+                  error={errors.confirmPassword}
+                />
+              </div>
 
-              <div className="pt-2">
+              <div className="pt-2 w-full box-border">
                 <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
               </div>
             </form>
           ) : (
-            <div className="grid grid-cols-1 gap-4 w-full box-border">
-              <SSInput
-                label="OTP"
-                name="otp"
-                placeholder="Enter your OTP"
-                required={true}
-                icon="fi fi-rr-key"
-                register={register}
-                validation={{
-                  required: "Please enter OTP",
-                  minLength: {
-                    value: 6,
-                    message: "OTP must be 6 digits",
-                  },
-                  maxLength: {
-                    value: 6,
-                    message: "OTP must be 6 digits",
-                  },
-                  pattern: {
-                    value: /^[0-9]{6}$/,
-                    message: "OTP must contain only numbers",
-                  },
-                }}
-                error={errors.otp}
-              />
+            <div className="grid grid-cols-1 gap-5 w-full min-w-0 box-border">
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="OTP"
+                  name="otp"
+                  placeholder="Enter your OTP"
+                  required={true}
+                  icon="fi fi-rr-key"
+                  register={register}
+                  validation={{
+                    required: "Please enter OTP",
+                    minLength: { value: 6, message: "OTP must be 6 digits" },
+                    maxLength: { value: 6, message: "OTP must be 6 digits" },
+                    pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
+                  }}
+                  error={errors.otp}
+                />
+              </div>
 
-              <SSButton
-                text="Verify OTP"
-                type="button"
-                onClick={handleOtpValidation}
-                isLoading={isBusy}
-              />
+              <div className="w-full box-border">
+                <SSButton
+                  text="Verify OTP"
+                  type="button"
+                  onClick={handleOtpValidation}
+                  isLoading={isBusy}
+                />
+              </div>
 
-              <div className="text-center pt-2 select-none">
+              <div className="text-center pt-1 select-none">
                 <button
                   type="button"
                   onClick={handleResendOtp}
                   disabled={cooldown > 0 || isBusy}
-                  className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 disabled:text-slate-400 dark:disabled:text-slate-650 transition-colors duration-150 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
+                  className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 disabled:text-slate-400 dark:disabled:text-slate-600 transition-colors duration-150 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
                 >
                   {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
                 </button>
@@ -514,35 +521,35 @@ const SignUpComponent = () => {
             </div>
           )}
           {!showOtpField && (
-            <>
-              <div className="relative my-8 w-full box-border">
+            <div className="w-full min-w-0 box-border">
+              <div className="relative my-6 w-full box-border">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+                  <div className="w-full border-t border-slate-700/50" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-slate-50 dark:bg-slate-800 px-4 text-slate-450 dark:text-slate-500 font-medium">
+                  <span className="bg-slate-50 dark:bg-slate-800 px-4 text-slate-500 dark:text-slate-400 font-medium rounded-md">
                     Or
                   </span>
                 </div>
               </div>
 
-              <div className="flex justify-center w-full box-border">
+              <div className="flex justify-center w-full box-border overflow-hidden max-w-full">
                 <GoogleLogin
                   onSuccess={handleGoogleLoginSuccess}
                   onError={handleGoogleLoginError}
                 />
               </div>
 
-              <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-6 text-center text-sm text-slate-400">
                 Already have an account?{" "}
                 <Link
                   to="/login"
-                  className="font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                  className="font-semibold text-blue-400 hover:underline transition-colors"
                 >
                   Sign In
                 </Link>
               </p>
-            </>
+            </div>
           )}
         </div>
       </div>

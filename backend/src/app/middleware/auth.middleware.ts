@@ -5,6 +5,7 @@ import { Secret } from "jsonwebtoken";
 import ApiError from "../../errors/api_error";
 import { JwtHelpers } from "../../utils/jwt.helper";
 import { User } from "../modules/user/user.model";
+import { TokenBlacklist } from "../modules/auth/tokenBlacklist.model";
 
 const auth =
   (...requiredRole: string[]) =>
@@ -21,6 +22,14 @@ const auth =
           httpStatus.UNAUTHORIZED,
           "You are not authorized to access"
         );
+      }
+
+      // Query the TokenBlacklist collection using the incoming token
+      const isBlacklisted = await TokenBlacklist.findOne({ token });
+      if (isBlacklisted) {
+        return res.status(401).json({
+          message: "Token has been revoked. Please log in again.",
+        });
       }
 
       // verify token

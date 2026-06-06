@@ -203,17 +203,29 @@ function setSubmitting(submitting) {
     isSubmitting = submitting;
     const submitBtn = document.getElementById('submit-btn');
     const spinner = document.getElementById('submit-btn-spinner') || document.getElementById('btn-spinner');
+    const submitBtnText = document.getElementById('submit-btn-text'); 
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
     const otpField = document.getElementById('otp-field');
     const remember = document.getElementById('remember');
 
-    if (submitBtn) submitBtn.disabled = submitting;
+    if (submitBtn) {
+        submitBtn.disabled = submitting;
+        submitBtn.classList.toggle('opacity-70', submitting);
+        submitBtn.classList.toggle('cursor-not-allowed', submitting);
+    }
     if (spinner) spinner.classList.toggle('hidden', !submitting);
+    if (submitBtnText) {
+        submitBtnText.textContent = submitting
+            ? 'Processing...'
+            : 'Create Account';
+    }
     if (emailField) emailField.disabled = submitting;
     if (nameField) nameField.disabled = submitting;
     if (passwordField) passwordField.disabled = submitting;
+    if (confirmPasswordField) confirmPasswordField.disabled = submitting;
     if (otpField) otpField.disabled = submitting;
     if (remember) remember.disabled = submitting;
 }

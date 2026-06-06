@@ -118,7 +118,6 @@ const config: Config = {
       },
     },
   },
-
   plugins: [forms, containerQueries],
 };
 

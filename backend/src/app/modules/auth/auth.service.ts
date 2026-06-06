@@ -16,6 +16,7 @@ import { VerifyEmailService } from "../verify_email/verify_email.service";
 import { GamificationService } from "../gamification/gamification.service";
 import { USER_STATUS } from "../../../enums/user_status";
 import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
+
 const googleClient = new OAuth2Client(config.google_client_id);
 
 const validateUserStatus = (status?: string) => {

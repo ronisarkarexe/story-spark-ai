@@ -11,6 +11,7 @@ import {
   IPaginationOptions,
   IGenericResponse,
 } from "../../../interfaces/pagination";
+import { analyzeCharacterNetwork, ICharacterNetworkResponse } from "./character_network.utils";
 
 interface IBranchTreeNode{
   id: string;
@@ -347,6 +348,22 @@ const enhancePrompt = async (prompt: string): Promise<string> => {
   }
 };
 
+const getCharacterNetwork = async (
+  storyId: string,
+  userId: string
+): Promise<ICharacterNetworkResponse> => {
+  const post = await Post.findById(storyId);
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
+  }
+
+  if (post.author.toString() !== userId) {
+    throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story history!");
+  }
+
+  return await analyzeCharacterNetwork(post.content || "");
+};
+
 export const StoryVersionService = {
   createVersionSnapshot,
   createBranchVersion,
@@ -356,4 +373,5 @@ export const StoryVersionService = {
   getVersionById,
   restoreVersion,
   enhancePrompt,
+  getCharacterNetwork,
 };

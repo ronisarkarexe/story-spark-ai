@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
+import { useAntiGravityScroll } from "../../hooks/useAntiGravityScroll";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
+
 import StoryWorldMap from "../story-map/StoryWorldMap";
 import StoryRemix from "../remix/StoryRemix";
 import StoryTranslator from "../translate/StoryTranslator";
@@ -207,6 +209,8 @@ const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
   return segments;
 };
 
+
+
 export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
   const navigate = useNavigate();
   const filteredPosts = posts.filter((post) => post._id !== currentPostId);
@@ -239,12 +243,19 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 }) => {
   const location = useLocation();
   const dispatch = useDispatch();
+
+  const storyScrollContainerRef = useRef<HTMLDivElement>(null);
+    useAntiGravityScroll(storyScrollContainerRef);
+
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
 
   // Error handling states
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
+
+
+  // Standard functional states
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
@@ -276,6 +287,10 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+
+
+
+
 
   useEffect(() => {
     if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
@@ -967,7 +982,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       {showWorldMap && selectedStory && (
         <StoryWorldMap story={selectedStory.content} title={selectedStory.title} onClose={() => setShowWorldMap(false)} />
       )}
-
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

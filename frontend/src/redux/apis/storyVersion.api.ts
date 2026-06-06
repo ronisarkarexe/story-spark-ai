@@ -20,6 +20,22 @@ export interface StoryTreeResponse {
   edges: StoryTreeEdge[];
 }
 
+export interface ICharacterNetworkNode {
+  id: string;
+  name: string;
+  appearanceCount: number;
+  importanceScore: number;
+}
+
+export interface ICharacterNetworkEdge {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  strength: number;
+  interactionCount: number;
+}
+
 const storyVersionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getVersionsByStoryId: build.query({
@@ -73,6 +89,20 @@ const storyVersionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.StoryVersion],
     }),
+
+    getCharacterNetwork: build.query<
+      { characters: ICharacterNetworkNode[]; relationships: ICharacterNetworkEdge[] },
+      string
+    >({
+      query: (storyId: string) => ({
+        url: `/story/${storyId}/character-network`,
+        method: "GET",
+      }),
+      transformResponse: (response: {
+        data: { characters: ICharacterNetworkNode[]; relationships: ICharacterNetworkEdge[] };
+      }) => response.data,
+      providesTags: [tagTypes.StoryVersion],
+    }),
   }),
 });
 
@@ -82,5 +112,6 @@ export const {
   useGetStoryTreeQuery,
   useGetBranchPathQuery,
   useCreateBranchVersionMutation,
+  useGetCharacterNetworkQuery,
 } = storyVersionApi;
 

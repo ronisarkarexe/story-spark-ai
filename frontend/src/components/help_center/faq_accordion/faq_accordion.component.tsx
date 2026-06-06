@@ -68,7 +68,7 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
                 </span>
               </button>
 
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {isOpen && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
