@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-﻿import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Globe,
   GitPullRequest,
@@ -8,11 +7,9 @@ import {
   Sparkles,
   Trophy,
   Zap,
-} from "lucide-react";
   Star,
   ExternalLink,
   Code2,
-  Trophy,
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -26,8 +23,7 @@ interface Contributor {
   contributions: number;
 }
 
-export default function ContributorsComponent() {
-/* ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ Floating Particles Background ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
+/* ───────────────────────────── Floating Particles Background ───────────────────────────── */
 const ParticleField = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -88,7 +84,6 @@ const ParticleField = () => {
         ctx.fill();
       });
 
-      // connection lines
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -125,7 +120,7 @@ const ParticleField = () => {
   );
 };
 
-/* ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ Animated Number Counter ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
+/* ───────────────────────────── Animated Number Counter ───────────────────────────── */
 const AnimatedCounter = ({
   value,
   suffix = "",
@@ -167,7 +162,7 @@ const AnimatedCounter = ({
   return <span ref={ref}>0{suffix}</span>;
 };
 
-/* ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ Contributor Card with 3D Tilt ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
+/* ───────────────────────────── Contributor Card with 3D Tilt ───────────────────────────── */
 const ContributorCard = ({
   contributor,
   index,
@@ -186,19 +181,19 @@ const ContributorCard = ({
     {
       glow: "rgba(251,191,36,0.3)",
       badge: "bg-gradient-to-r from-amber-400 to-yellow-500",
-      label: "≡ƒÑç",
+      label: "🥇",
       borderColor: "rgba(251,191,36,0.4)",
     },
     {
       glow: "rgba(148,163,184,0.3)",
       badge: "bg-gradient-to-r from-slate-300 to-gray-400",
-      label: "≡ƒÑê",
+      label: "🥈",
       borderColor: "rgba(148,163,184,0.3)",
     },
     {
       glow: "rgba(251,146,60,0.25)",
       badge: "bg-gradient-to-r from-orange-400 to-amber-600",
-      label: "≡ƒÑë",
+      label: "🥉",
       borderColor: "rgba(251,146,60,0.3)",
     },
   ];
@@ -211,7 +206,6 @@ const ContributorCard = ({
     100
   )}%`;
 
-  // Animate bar on scroll
   useEffect(() => {
     if (!barRef.current || hasBarAnimated.current) return;
     const observer = new IntersectionObserver(
@@ -301,7 +295,6 @@ const ContributorCard = ({
         transition: "box-shadow 0.3s ease",
       }}
     >
-      {/* Magnetic Glow */}
       <div
         ref={glowRef}
         className="pointer-events-none absolute w-[200px] h-[200px] rounded-full opacity-0"
@@ -313,7 +306,6 @@ const ContributorCard = ({
         }}
       />
 
-      {/* Rank Badge for Top 3 */}
       {isTop3 && (
         <div
           className={`absolute -top-3 -right-3 ${rank!.badge} text-slate-950 rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg shadow-lg z-10`}
@@ -322,7 +314,6 @@ const ContributorCard = ({
         </div>
       )}
 
-      {/* Avatar */}
       <div className="relative mb-5" style={{ transform: "translateZ(30px)" }}>
         <div
           className={`absolute inset-[-4px] rounded-full transition-opacity duration-500 ${
@@ -345,7 +336,6 @@ const ContributorCard = ({
         </div>
       </div>
 
-      {/* Username */}
       <h3
         className="text-lg font-bold text-white mb-1 transition-colors group-hover:text-indigo-300"
         style={{ transform: "translateZ(20px)" }}
@@ -353,7 +343,6 @@ const ContributorCard = ({
         @{contributor.login}
       </h3>
 
-      {/* Contributions Bar */}
       <div
         className="w-full mt-3 mb-4"
         style={{ transform: "translateZ(15px)" }}
@@ -373,7 +362,6 @@ const ContributorCard = ({
         </div>
       </div>
 
-      {/* Footer */}
       <div
         className="flex items-center gap-2 text-sm text-slate-500 group-hover:text-indigo-400 transition-all duration-300"
         style={{ transform: "translateZ(10px)" }}
@@ -388,48 +376,26 @@ const ContributorCard = ({
   );
 };
 
-/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-   MAIN COMPONENT
-   ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
-const ContributorsComponent = () => {
+/* ───────────────────────────── MAIN COMPONENT ───────────────────────────── */
+export default function ContributorsComponent() {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(true);
   const heroRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    (async () => {
+    const fetchContributors = async () => {
       try {
-        const res = await fetch(
+        const response = await fetch(
           "https://api.github.com/repos/ronisarkarexe/story-spark-ai/contributors"
         );
-
-        const data: Contributor[] = await res.json();
-
-        const sorted = data
-          .filter((c) => c.contributions > 0)
-          .sort((a, b) => b.contributions - a.contributions);
-
-        setContributors(sorted);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  const top = contributors[0];
-
-  const totalContributions = contributors.reduce(
         const data = await response.json();
         if (Array.isArray(data)) {
-          const filtered = data.filter(
-            (contributor: Contributor) => contributor.contributions >= 1
-          );
-          setContributors(filtered);
+          const sorted = data
+            .filter((c: Contributor) => c.contributions >= 1)
+            .sort((a, b) => b.contributions - a.contributions);
+          setContributors(sorted);
         }
       } catch (error) {
         console.error("Failed to fetch contributors:", error);
@@ -440,188 +406,19 @@ const ContributorsComponent = () => {
     fetchContributors();
   }, []);
 
-  const totalPRs = contributors.reduce(
+  const totalContributions = contributors.reduce(
     (acc, c) => acc + c.contributions,
     0
   );
 
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-[#020617] text-white">
-
-      {/* Ambient Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.15),transparent_50%)]" />
-      <div className="absolute top-0 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
-      <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-indigo-500/10 blur-3xl" />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
-
-        {/* HERO */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-white/10 bg-white/5 text-blue-300 text-sm backdrop-blur-xl">
-            <Sparkles size={14} />
-            Open Source Contributors
-          </div>
-
-          <h1 className="mt-8 text-5xl md:text-7xl font-black tracking-tight">
-            Meet the
-            <span className="block bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
-              Builders
-            </span>
-          </h1>
-
-          <p className="mt-6 text-slate-400 max-w-2xl mx-auto">
-            Every commit shapes the future of StorySpark AI.
-          </p>
-        </motion.div>
-
-        {/* TOP CONTRIBUTOR */}
-        {top && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-16 flex justify-center"
-          >
-            <div className="relative w-full max-w-md group">
-
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-yellow-400/10 via-blue-500/10 to-indigo-500/10 blur-2xl opacity-70 group-hover:opacity-100 transition" />
-
-              <div className="relative rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-8 text-center overflow-hidden">
-
-                <Trophy className="mx-auto text-yellow-400 mb-4" />
-
-                <img
-                  src={top.avatar_url}
-                  className="h-28 w-28 mx-auto rounded-full border-4 border-yellow-400/30 transition-transform group-hover:scale-105"
-                />
-
-                <h2 className="mt-4 text-2xl font-bold">{top.login}</h2>
-
-                <p className="text-slate-400 text-sm">Top Contributor</p>
-
-                <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-400/10 text-yellow-300 border border-yellow-400/20">
-                  <Zap size={14} />
-                  {top.contributions} contributions
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* STATS */}
-        <div className="grid md:grid-cols-3 gap-6 mt-20">
-          {[
-            {
-              icon: Users,
-              label: "Contributors",
-              value: contributors.length,
-            },
-            {
-              icon: GitPullRequest,
-              label: "Total Contributions",
-              value: totalContributions,
-            },
-            {
-              icon: Globe,
-              label: "Global Reach",
-              value: "Worldwide",
-            },
-          ].map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ y: -6 }}
-              className="relative p-7 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl overflow-hidden group"
-            >
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-blue-500/10 to-indigo-500/10" />
-
-              <s.icon className="text-blue-400 mb-3" />
-
-              <p className="text-slate-400 text-sm">{s.label}</p>
-              <h3 className="text-3xl font-bold mt-2">{s.value}</h3>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* CONTRIBUTORS GRID */}
-        <div className="mt-24 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-
-          {loading
-            ? Array.from({ length: 8 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-72 rounded-2xl bg-white/5 animate-pulse border border-white/10"
-                />
-              ))
-            : contributors.map((c, i) => (
-                <motion.a
-                  key={c.login}
-                  href={c.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  whileHover={{ scale: 1.06, y: -10 }}
-                  className="group relative rounded-2xl overflow-hidden border border-white/10 bg-white/5 p-6 text-center"
-                >
-                  {/* hover glow */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-gradient-to-b from-white/10 via-transparent to-transparent" />
-
-                  {/* rank */}
-                  <div className="absolute top-3 left-3 text-xs px-2 py-1 rounded-full bg-white/10 border border-white/10">
-                    #{i + 1}
-                  </div>
-
-                  {/* avatar */}
-                  <img
-                    src={c.avatar_url}
-                    className="h-24 w-24 mx-auto rounded-full border border-white/10 group-hover:border-blue-400 transition-transform group-hover:scale-105"
-                  />
-
-                  <h3 className="mt-4 font-semibold">{c.login}</h3>
-
-                  <p className="text-xs text-slate-400">
-                    Open Source Contributor
-                  </p>
-
-                  {/* contribution bar */}
-                  <div className="mt-4 h-1 w-full bg-white/10 rounded overflow-hidden">
-                    <div
-                      className="h-full bg-blue-400/70 group-hover:bg-blue-300 transition-all"
-                      style={{
-                        width: `${Math.min(c.contributions, 100)}%`,
-                      }}
-                    />
-                  </div>
-
-                  <p className="mt-3 text-xs text-slate-400">
-                    {c.contributions} contributions
-                  </p>
-
-                  <div className="mt-5 text-slate-400 group-hover:text-white transition flex items-center justify-center gap-1">
-                    <GitPullRequest size={14} />
-                    View Profile
-                  </div>
-                </motion.a>
-              ))}
   const maxContributions = contributors.length
     ? Math.max(...contributors.map((c) => c.contributions))
     : 1;
 
-  /* ΓöÇΓöÇ GSAP scroll animations ΓöÇΓöÇ */
   useEffect(() => {
     if (loading) return;
 
-    // Small delay to let the DOM settle after state change
     const timer = setTimeout(() => {
-      // HERO animations
       if (heroRef.current) {
         const badges = heroRef.current.querySelectorAll(".hero-badge");
         const titles = heroRef.current.querySelectorAll(".hero-title-line");
@@ -685,7 +482,6 @@ const ContributorsComponent = () => {
         }
       }
 
-      // STATS animations
       if (statsRef.current) {
         const cards = statsRef.current.querySelectorAll(".stat-card");
         if (cards.length) {
@@ -707,7 +503,6 @@ const ContributorsComponent = () => {
             }
           );
 
-          // Idle floating
           cards.forEach((card, i) => {
             gsap.to(card, {
               y: -5,
@@ -721,7 +516,6 @@ const ContributorsComponent = () => {
         }
       }
 
-      // GRID animations
       if (gridRef.current) {
         const items = gridRef.current.children;
         if (items.length) {
@@ -747,43 +541,6 @@ const ContributorsComponent = () => {
           );
         }
       }
-
-      // CTA animations
-      if (ctaRef.current) {
-        const container = ctaRef.current.querySelector(".cta-container");
-        const orbs = ctaRef.current.querySelectorAll(".cta-orb");
-
-        if (container) {
-          gsap.fromTo(
-            container,
-            { y: 40, opacity: 0 },
-            {
-              y: 0,
-              opacity: 1,
-              duration: 0.7,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: ctaRef.current,
-                start: "top 90%",
-                toggleActions: "play none none none",
-              },
-            }
-          );
-        }
-
-        // Floating orbs
-        orbs.forEach((orb, i) => {
-          gsap.to(orb, {
-            y: -12 + i * 4,
-            x: 8 - i * 6,
-            duration: 3 + i * 0.5,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-            delay: i * 0.3,
-          });
-        });
-      }
     }, 100);
 
     return () => {
@@ -800,10 +557,8 @@ const ContributorsComponent = () => {
           "linear-gradient(180deg, #030712 0%, #0c0a1f 35%, #0f172a 65%, #030712 100%)",
       }}
     >
-      {/* Particle Field */}
       <ParticleField />
 
-      {/* Ambient Glow Orbs */}
       <div
         className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none"
         style={{
@@ -818,16 +573,9 @@ const ContributorsComponent = () => {
           filter: "blur(100px)",
         }}
       />
-      <div
-        className="absolute bottom-0 left-0 w-[350px] h-[350px] rounded-full pointer-events-none"
-        style={{
-          background: "rgba(59,130,246,0.05)",
-          filter: "blur(100px)",
-        }}
-      />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 md:py-28">
-        {/* ΓöÇΓöÇΓöÇ HERO ΓöÇΓöÇΓöÇ */}
+        {/* HERO */}
         <div ref={heroRef} className="text-center mb-20 md:mb-28">
           <div className="hero-badge inline-flex items-center gap-2.5 rounded-full border border-indigo-500/20 bg-indigo-500/5 px-5 py-2 text-sm text-indigo-300 mb-8">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -845,7 +593,6 @@ const ContributorsComponent = () => {
                   backgroundImage:
                     "linear-gradient(135deg, #818cf8 0%, #a78bfa 25%, #c084fc 50%, #e879f9 75%, #818cf8 100%)",
                   backgroundSize: "200% 100%",
-                  animation: "contributorsGradientShift 4s ease infinite",
                 }}
               >
                 Contributors
@@ -854,7 +601,7 @@ const ContributorsComponent = () => {
           </div>
 
           <p className="hero-subtitle mt-8 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            The brilliant minds behind StorySparkAI ΓÇö building, iterating, and
+            The brilliant minds behind StorySparkAI — building, iterating, and
             pushing the boundaries of AI-powered storytelling.
           </p>
 
@@ -872,7 +619,7 @@ const ContributorsComponent = () => {
           </div>
         </div>
 
-        {/* ΓöÇΓöÇΓöÇ STATS ΓöÇΓöÇΓöÇ */}
+        {/* STATS */}
         <div
           ref={statsRef}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-20 md:mb-28"
@@ -890,7 +637,7 @@ const ContributorsComponent = () => {
             {
               icon: <GitPullRequest size={22} />,
               label: "Total Commits",
-              value: totalPRs,
+              value: totalContributions,
               suffix: "+",
               gradient: "from-indigo-500 to-violet-400",
               iconBg: "bg-indigo-500/10",
@@ -947,7 +694,7 @@ const ContributorsComponent = () => {
           ))}
         </div>
 
-        {/* ΓöÇΓöÇΓöÇ SECTION HEADER ΓöÇΓöÇΓöÇ */}
+        {/* SECTION HEADER */}
         <div className="flex items-center gap-4 mb-12">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
           <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
@@ -957,7 +704,7 @@ const ContributorsComponent = () => {
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
         </div>
 
-        {/* ΓöÇΓöÇΓöÇ CONTRIBUTORS GRID ΓöÇΓöÇΓöÇ */}
+        {/* CONTRIBUTORS GRID */}
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {[...Array(8)].map((_, i) => (
@@ -981,95 +728,19 @@ const ContributorsComponent = () => {
         ) : (
           <div
             ref={gridRef}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
           >
-            {contributors.map((contributor, index) => (
+            {contributors.map((c, i) => (
               <ContributorCard
-                key={contributor.login}
-                contributor={contributor}
-                index={index}
+                key={c.login}
+                contributor={c}
+                index={i}
                 maxContributions={maxContributions}
               />
             ))}
           </div>
         )}
-
-        {/* ΓöÇΓöÇΓöÇ CTA ΓöÇΓöÇΓöÇ */}
-        <div ref={ctaRef} className="mt-24 md:mt-32">
-          <div
-            className="cta-container relative rounded-3xl p-10 md:p-14 overflow-hidden text-center"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(30,27,75,0.6) 0%, rgba(15,23,42,0.8) 100%)",
-              border: "1px solid rgba(129,140,248,0.15)",
-            }}
-          >
-            {/* Decorative orbs */}
-            <div className="cta-orb absolute top-6 left-10 w-20 h-20 rounded-full bg-indigo-500/10 blur-2xl" />
-            <div className="cta-orb absolute bottom-8 right-14 w-28 h-28 rounded-full bg-purple-500/10 blur-2xl" />
-            <div className="cta-orb absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-fuchsia-500/5 blur-3xl" />
-
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/5 px-4 py-1.5 text-sm text-indigo-300 mb-6">
-                <Globe size={14} />
-                Join the community
-              </div>
-
-              <h3 className="text-3xl md:text-5xl font-black text-white mb-5">
-                Ready to{" "}
-                <span
-                  className="bg-clip-text text-transparent"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(135deg, #818cf8, #e879f9)",
-                  }}
-                >
-                  Contribute
-                </span>
-                ?
-              </h3>
-
-              <p className="text-slate-400 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-                Fork the repo, pick an issue, and make your first PR. Every line
-                of code makes a difference.
-              </p>
-
-              <a
-                href="https://github.com/ronisarkarexe/story-spark-ai"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-white text-lg transition-all duration-300 hover:scale-105"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
-                  boxShadow: "0 8px 32px rgba(99,102,241,0.3)",
-                }}
-              >
-                <Code2
-                  size={20}
-                  className="transition-transform duration-300 group-hover:rotate-12"
-                />
-                Start Contributing
-                <ExternalLink
-                  size={16}
-                  className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-                />
-              </a>
-            </div>
-          </div>
-        </div>
       </div>
-
-      {/* Keyframes */}
-      <style>{`
-        @keyframes contributorsGradientShift {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-      `}</style>
     </div>
   );
 }
-};
-
-export default ContributorsComponent;

@@ -50,6 +50,12 @@ const PaymentComponent = () => {
   const planName = searchParams.get("plan") || "Pro";
   const planPrice = Number(searchParams.get("price") || "19.99");
 
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+
   // Razorpay payment handler
   const handlePayment = async () => {
     // Load Razorpay SDK
@@ -132,7 +138,6 @@ const PaymentComponent = () => {
         "payment.failed",
         (response: RazorpayFailureResponse) => {
           console.error(response.error);
-
           alert(response.error?.description || "Payment failed.");
         }
       );
@@ -142,13 +147,7 @@ const PaymentComponent = () => {
       console.error(error);
       alert("Something went wrong.");
     }
-  const planPrice = searchParams.get("price") || "19.99";
-
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
+  }; // <-- Properly closing the handlePayment block here
 
   const formatCardNumber = (value: string) => {
     return value
@@ -339,20 +338,18 @@ const PaymentComponent = () => {
                         stroke="currentColor"
                         strokeWidth="4"
                       />
-
                       <path
                         className="opacity-75"
                         fill="currentColor"
                         d="M4 12a8 8 0 018-8v8z"
                       />
                     </svg>
-
                     Processing...
                   </>
                 ) : (
                   <>
                     <ShieldCheck size={18} />
-                    Pay Now ΓÇö ${planPrice}/mo
+                    Pay Now — ₹{planPrice}/mo
                   </>
                 )}
               </button>

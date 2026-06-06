@@ -291,9 +291,6 @@ importers:
       '@eslint/js':
         specifier: ^9.19.0
         version: 9.39.4
-      '@tailwindcss/container-queries':
-        specifier: ^0.1.1
-        version: 0.1.1(tailwindcss@4.3.0)
       '@tailwindcss/forms':
         specifier: ^0.5.11
         version: 0.5.11(tailwindcss@4.3.0)

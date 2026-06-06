@@ -25,10 +25,9 @@ const itemVariants = {
     y: 0, 
     transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
   },
-};
+} as const;
 
 const features = [
-// ... (rest of the features array remains the same)
   {
     title: "Infinite Variations",
     description: "Generate multiple unique branches of your story from a single starting prompt. Explore every creative possibility.",
@@ -76,7 +75,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
     const card = cardRef.current;
     if (!card) return;
 
-    const handleMouseMove = (e: globalThis.MouseEvent) => {
+    const handleMouseMove = (e: MouseEvent) => {
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
@@ -113,11 +112,11 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
       });
     };
 
-    card.addEventListener("mousemove", handleMouseMove);
+    card.addEventListener("mousemove", handleMouseMove as any);
     card.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
-      card.removeEventListener("mousemove", handleMouseMove);
+      card.removeEventListener("mousemove", handleMouseMove as any);
       card.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, { scope: cardRef });
@@ -285,7 +284,20 @@ const HeroSectionComponent = () => {
 
       <HeroParticles />
 
-      <div className="relative overflow-hidden w-full box-border" onMouseMove={handleMouseMove}>
+      <div className="relative overflow-hidden w-full box-border z-10" onMouseMove={handleMouseMove}>
+        {/* Dynamic Trail Stars Area */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+          <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
+            {stars.map((star) => (
+              <span
+                key={star.id}
+                className={`hero-cursor-star ${star.size > 12 ? "hero-cursor-star-large" : ""}`}
+                style={{ position: "absolute", left: star.x, top: star.y, width: star.size, height: star.size }}
+              />
+            ))}
+          </div>
+        </div>
+
         <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border">
           <div
             ref={badgeRef}
@@ -298,7 +310,7 @@ const HeroSectionComponent = () => {
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">StorySparkAI v2.0 is live</span>
           </div>
 
-          <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none tracking-tight">
+          <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none">
             Ignite Your Imagination With <br className="hidden sm:block" />
             <span className="hero-gradient-text pb-2">
               <Typewriter
@@ -333,21 +345,11 @@ const HeroSectionComponent = () => {
                 </Link>
               </div>
             </div>
-          </motion.div>
-
-        <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
-          <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
-            {stars.map((star) => (
-              <span
-                key={star.id}
-                className={`hero-cursor-star ${star.size > 12 ? "hero-cursor-star-large" : ""}`}
-                style={{ left: star.x, top: star.y, width: star.size, height: star.size }}
-              />
-            ))}
           </div>
-        </div>
-        </div>
+        </motion.div>
+      </div>
 
+      {/* Feature Section Cards Container */}
       <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">
           {features.map((feature, index) => (

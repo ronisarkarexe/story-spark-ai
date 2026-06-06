@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
-import { ..., Image as ImageIcon, X } from "lucide-react";
+import { Image as ImageIcon, X } from "lucide-react";
 import { 
   Bug, 
   Send, 
@@ -388,18 +388,21 @@ const ReportBug = () => {
                         </div>
                       )}
 
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp,image/gif"
-                        className="hidden"
-                        {...register("screenshot")}
-                        onChange={(e) => {
-                          register("screenshot").onChange(e);
-                          const file = e.target.files?.[0];
-                          if (file) handleFileSelect(file);
+                       <input
+                         type="file"
+                         accept="image/png,image/jpeg,image/webp,image/gif"
+                         className="hidden"
+                         {...register("screenshot", {
+                           onChange: (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileSelect(file);
+                          }
+                        })}
+                        ref={(e) => {
+                          register("screenshot").ref(e);
+                          fileInputRef.current = e;
                         }}
-                      />
+                       />  
                       {fileError && <p className="mt-2 text-sm text-red-500 ml-1">{fileError}</p>}
                     </div>
                     <label htmlFor="email" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">

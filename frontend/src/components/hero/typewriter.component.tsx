@@ -27,46 +27,49 @@ const Typewriter: React.FC<TypewriterProps> = ({
     return () => window.clearInterval(id);
   }, []);
 
+  // Main typewriter loop logic
   useEffect(() => {
     if (!phrases || phrases.length === 0) return;
 
     const current = phrases[phraseIndex];
-    let timer = 0 as unknown as number;
+    let timer: NodeJS.Timeout | number;
 
     if (!isDeleting) {
-      // Typing
+      // Typing mode
       if (charIndex < current.length) {
         timer = window.setTimeout(() => {
           setCharIndex((i) => i + 1);
           setDisplay(current.slice(0, charIndex + 1));
         }, typingSpeed);
       } else {
-        // Pause at end before deleting
+        // Finished typing -> pause then start deleting
         timer = window.setTimeout(() => setIsDeleting(true), pause);
       }
     } else {
-      // Deleting
+      // Deleting mode
       if (charIndex > 0) {
         timer = window.setTimeout(() => {
           setCharIndex((i) => i - 1);
           setDisplay(current.slice(0, charIndex - 1));
         }, deletingSpeed);
       } else {
-        // Move to next phrase
+        // Finished deleting -> cycle to the next phrase
         setIsDeleting(false);
         setPhraseIndex((i) => (i + 1) % phrases.length);
         setCharIndex(0);
       }
     }
 
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => window.clearTimeout(timer as number);
   }, [charIndex, isDeleting, phraseIndex, phrases, typingSpeed, deletingSpeed, pause]);
 
   return (
     <span className={className} aria-live="polite">
       {display}
-      <span aria-hidden style={{ opacity: blink ? 1 : 0, display: "inline-block", marginLeft: 2 }}>
+      <span 
+        aria-hidden 
+        style={{ opacity: blink ? 1 : 0, display: "inline-block", marginLeft: 2 }}
+      >
         ▌
       </span>
     </span>

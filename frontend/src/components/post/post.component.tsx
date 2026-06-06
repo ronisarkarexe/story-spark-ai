@@ -169,7 +169,11 @@ const ExploreComponent = () => {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-
+                }} // <-- Fixed the cutoff target value event handler
+              />
+            </div>
+          </div>
+        </div> {/* <-- Fixed closing tag for Top Section container */}
 
         {/* Main Layout */}
         <div className="flex flex-col md:flex-row gap-8">
@@ -215,7 +219,7 @@ const ExploreComponent = () => {
 
                 {/* Tags */}
                 <div>
-                    <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
                     Trending Tags
                   </h4>
 
@@ -378,7 +382,6 @@ const ExploreComponent = () => {
       </div>
 
       <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
-
       <div className="fixed bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
     </div>
   );
