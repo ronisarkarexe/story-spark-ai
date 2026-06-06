@@ -165,30 +165,6 @@ const HelpSidebar: FC = () => {
                 })}
               </div>
 
-              {/* Bottom Support CTA Card */}
-              <motion.div
-                whileHover={{ y: -2 }}
-                className="relative overflow-hidden mt-6 rounded-2xl border border-blue-200 dark:border-indigo-500/20 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-indigo-500/10 dark:via-blue-500/10 dark:to-slate-900/30 p-5"
-              >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
-                      <i className="fa-solid fa-sparkles text-sm" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-800 dark:text-white text-sm">
-                        Still Stuck?
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        We're here to help
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
             {/* Support CTA Card */}
             <motion.div
               whileHover={{ y: -2 }}
@@ -203,17 +179,16 @@ const HelpSidebar: FC = () => {
                   <div>
                     <h3 className="font-bold text-slate-800 dark:text-white">Need More Help?</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">Contact support</p>
-
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection("support-links-section")}
-                    className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 text-xs transition-all duration-300 shadow-md shadow-blue-500/10"
-                  >
-                    Open Support Hub
-                  </button>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("support-links-section")}
+                  className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 text-sm transition-all duration-300 shadow-md shadow-blue-500/10"
+                >
+                  Open Support Hub
+                </button>
               </div>
             </motion.div>
           </div>
@@ -222,12 +197,10 @@ const HelpSidebar: FC = () => {
     </nav>
 
 
-      {/* Mobile sticky nav */}
-      <nav className="lg:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 mb-8" aria-label="Help center sections">
-
       {/* Mobile horizontal scroll nav */}
       <nav
         className="lg:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 mb-8 overflow-hidden select-none"
+
         aria-label="Help center mobile navigation"
       >
         <div 

@@ -22,8 +22,13 @@ router.post(
 );
 
 router.get(
-  "/",
-  PostController.getPosts
+  "/tag/:tag",
+  PostController.getPostsByTag
+);
+
+router.get(
+  "/:id",
+  PostController.getSinglePost
 );
 
 router.get(

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { motion } from "framer-motion";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
+
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
-import { useState } from "react";
-import { motion } from "framer-motion";
 import {
   useLoginUserMutation,
   useGoogleLoginMutation,
@@ -13,9 +15,7 @@ import {
 import { storeUserInfo, getUserInfo } from "../../services/auth.service";
 import { USER_ROLE } from "../../constants/role";
 import RedirectComponent from "../redirect.component";
-import toast, { Toaster } from "react-hot-toast";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
+
 
 type Inputs = {
   email: string;
@@ -51,7 +51,7 @@ const LoginComponent = () => {
     }
   };
 
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse,) => {
     setIsBusy(true);
     try {
       const res = await googleLogin({
@@ -76,13 +76,9 @@ const LoginComponent = () => {
   };
 
   if (isLoggedIn) {
-    const userInfo = getUserInfo();
-    const isDashboardUser =
-      userInfo?.role === USER_ROLE.ADMIN ||
-      userInfo?.role === USER_ROLE.SUPER_ADMIN;
     return (
       <RedirectComponent
-        defaultPath={isDashboardUser ? "/dashboard" : "/explore"}
+        defaultPath="/dashboard"
       />
     );
   }
@@ -119,26 +115,7 @@ const LoginComponent = () => {
             </div>
           </div>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden"
-        >
 
-            <button
-            onClick={() => window.location.href = "/"}
-            className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-                      >
-            ← Back to Home
-            </button>
-
-          <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400 text-sm">
-            Create, edit, and generate engaging multiple story variations from a
-            single prompt. Perfect for writers, creators, and enthusiasts
-            exploring the future of fiction.
-          </div>
-        </div>
 
         {/* Right side — login form card */}
         <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
@@ -205,21 +182,21 @@ const LoginComponent = () => {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200 dark:border-slate-800" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-slate-900 px-4 text-slate-400 dark:text-slate-500 font-semibold tracking-wide">
-                Or
+
+            <div className="relative flex justify-center text-sm w-full">
+
+              <span className="bg-slate-50 dark:bg-slate-800 px-4 text-xs font-semibold tracking-wider uppercase text-slate-500">
+                Or continue with
               </span>
             </div>
           </div>
 
-          {/* Social Identity OAuth Block Container */}
-          <div className="flex justify-center list-none w-full box-border">
+          {/* Social Identity OAuth Block Container */}          <div className="flex justify-center w-full box-border">
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}
             />
           </div>
-
           <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
             Don't have an account?{" "}
             <Link
@@ -231,7 +208,7 @@ const LoginComponent = () => {
           </p>
         </div>
 
-      </div>
+      </motion.div>
 
       <Toaster position="top-right" reverseOrder={false} />
     </div>

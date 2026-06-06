@@ -28,6 +28,15 @@ const aiModel = z.object({
         }),
       })
       .optional(),
+    characters: z
+      .array(
+        z.object({
+          name: z.string({ required_error: "Name is required" }).trim().min(1),
+          role: z.string({ required_error: "Role is required" }).trim().min(1),
+          personality: z.string({ required_error: "Personality/Traits are required" }).trim().min(1),
+        })
+      )
+      .optional(),
   }),
 });
 

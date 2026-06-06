@@ -15,9 +15,7 @@ const toggleReaction = async (
 ) => {
   const { email } = token;
 
-  const user = await User.findOne({ email });
   const user = await User.findOne({ email }).select("_id").lean();
-
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
@@ -25,7 +23,6 @@ const toggleReaction = async (
   const post = await Post.findOne({
     _id: postId,
     isDeleted: { $ne: true },
-  });
   }).select("likesCount reactions");
 
   if (!post) {

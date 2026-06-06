@@ -149,6 +149,22 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getCharacterNetwork = catchAsync(async (req: Request, res: Response) => {
+  const id = routeParam(req.params.id);
+  const user = req.user;
+  if (!user) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "User is not authorized");
+  }
+
+  const result = await StoryVersionService.getCharacterNetwork(id, user._id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Character relationship network retrieved successfully!",
+    data: result,
+  });
+});
+
 export const StoryVersionController = {
   createBranchVersion,
   getStoryTree,
@@ -157,4 +173,5 @@ export const StoryVersionController = {
   getVersionById,
   restoreVersion,
   enhancePrompt,
+  getCharacterNetwork,
 };
