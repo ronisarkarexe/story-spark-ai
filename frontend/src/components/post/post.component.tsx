@@ -169,7 +169,11 @@ const ExploreComponent = () => {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-
+                }}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Main Layout */}
         <div className="flex flex-col md:flex-row gap-8">

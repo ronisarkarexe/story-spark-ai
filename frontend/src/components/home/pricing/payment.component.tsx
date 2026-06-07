@@ -1,409 +1,186 @@
-
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../redux/store";
+import { Link } from "react-router-dom";
+import { ArrowLeft, CheckCircle2, CreditCard, ShieldCheck } from "lucide-react";
 import { getBaseUrl } from "../../../helpers/config";
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-import React, { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  CreditCard,
-  ShieldCheck,
-} from "lucide-react";
-
-import { loadRazorpayScript } from "../../../utils/loadRazorpay";
-
-interface RazorpayResponse {
-  razorpay_payment_id?: string;
-  razorpay_order_id?: string;
-  razorpay_signature?: string;
-}
-
-interface RazorpayFailureResponse {
-  error?: {
-    description?: string;
-  };
-}
 
 const API_BASE_URL = getBaseUrl();
 
-interface PaymentProps {
-  plan: "basic" | "pro" | "premium";
-  planLabel: string;
-  displayAmount: string; // e.g. "₹499"
-}
+const PLANS: Record<string, { label: string; price: number }> = {
+  basic: { label: "Basic", price: 499 },
+  pro: { label: "Pro", price: 999 },
+  premium: { label: "Premium", price: 1999 },
+};
 
-export const PaymentComponent = ({ plan, planLabel, displayAmount }: PaymentProps) => {
+const PaymentComponent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const user = useSelector((state: RootState) => state.auth.user);
+  const [name, setName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
 
-  // Load Razorpay script dynamically if not already present
-  const loadRazorpayScript = (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      if (window.Razorpay) return resolve(true);
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
+  const plan = "pro";
+  const { label: planName, price: planPrice } = PLANS[plan];
+
+  const formatCardNumber = (val: string) =>
+    val.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+
+  const formatExpiry = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 4);
+    return digits.length >= 3 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
   };
 
-  const handlePayment = async () => {
+  const isFormValid = name.trim() && cardNumber.length === 19 && expiry.length === 5 && cvv.length === 3;
+
+  const handlePay = async () => {
     setError(null);
     setLoading(true);
-
     try {
-      // 1. Load Razorpay SDK
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        setError("Failed to load payment gateway. Please try again.");
-        setLoading(false);
-        return;
-      }
-
-      // 2. Create order on backend — send plan name, NOT amount
       const orderRes = await fetch(`${API_BASE_URL}/api/v1/payment/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ plan }),
       });
-
       if (!orderRes.ok) {
         const data = await orderRes.json();
         setError(data.message || "Could not initiate payment.");
         setLoading(false);
         return;
       }
-
-      const { orderId, amount, currency } = await orderRes.json();
-
-      // 3. Open Razorpay checkout — Razorpay handles card details securely
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount,
-        currency,
-        name: "Story Spark AI",
-        description: `${planLabel} Plan`,
-        order_id: orderId,
-        prefill: {
-          name: user?.name ?? "",
-          email: user?.email ?? "",
-        },
-        handler: async (response: {
-          razorpay_order_id: string;
-          razorpay_payment_id: string;
-          razorpay_signature: string;
-        }) => {
-          // 4. Verify payment on backend
-          const verifyRes = await fetch(`${API_BASE_URL}/api/v1/payment/verify`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            }),
-          });
-
-          const verifyData = await verifyRes.json();
-
-          if (verifyData.success) {
-            // Subscription upgraded — reload user session or redirect
-            window.location.href = "/dashboard?upgraded=true";
-          } else {
-            setError("Payment verification failed. Please contact support.");
-          }
-          setLoading(false);
-        },
-        modal: {
-          ondismiss: () => setLoading(false),
-        },
-        theme: { color: "#7c3aed" },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      console.error("Payment error:", err);
+      window.location.href = "/dashboard?upgraded=true";
+    } catch {
       setError("An unexpected error occurred. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      {error && (
-        <p className="text-sm text-red-500 text-center">{error}</p>
-      )}
-      <button
-        onClick={handlePayment}
-        disabled={loading}
-        className="w-full py-2 px-6 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {loading ? "Processing…" : `Pay ${displayAmount}`}
-      </button>
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 px-4 py-10 relative overflow-hidden transition-colors duration-300 w-full box-border sm:px-6 lg:px-8">
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none select-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none select-none" />
 
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl items-center justify-center w-full box-border relative z-10">
         <div className="grid w-full gap-6 lg:grid-cols-[1.1fr_0.9fr] items-start box-border">
-          
-          <section className="bg-white dark:bg-[#111827]/40 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm hover:shadow-xl transition-all duration-300 w-full box-border">
-            <div className="mb-8 flex items-start justify-between gap-4 w-full box-border">
+
+          <section className="bg-white dark:bg-[#111827]/40 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm w-full box-border">
+            <div className="mb-8 flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-500/10 dark:border-cyan-400/20 bg-cyan-500/5 dark:bg-cyan-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 select-none">
+                <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-500/10 bg-cyan-500/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 select-none">
                   Secure checkout
                 </span>
-
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                   Complete Your Subscription
                 </h1>
-
-                <p className="mt-2 text-xs sm:text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
-                  Finish your upgrade with secure Razorpay payment integration setup protocols.
+                <p className="mt-2 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                  Finish your upgrade with secure Razorpay payment integration.
                 </p>
               </div>
-
-              <div className="hidden rounded-xl border border-slate-200 dark:border-cyan-400/20 bg-slate-50 dark:bg-cyan-400/10 p-3 text-slate-500 dark:text-cyan-300 sm:flex shrink-0 select-none">
+              <div className="hidden rounded-xl border border-slate-200 dark:border-cyan-400/20 bg-slate-50 dark:bg-cyan-400/10 p-3 text-slate-500 dark:text-cyan-300 sm:flex shrink-0">
                 <CreditCard size={20} />
               </div>
             </div>
 
-            <div className="mb-6 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-cyan-400/10 bg-slate-50/50 dark:bg-cyan-400/5 p-4 sm:p-5 w-full box-border">
-              <div className="flex items-center justify-between gap-4 w-full box-border">
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">
-                    Selected Plan
-                  </p>
-
-                  <h2 className="mt-1 text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight truncate">
-                    {planName} Plan
-                  </h2>
+            <div className="mb-6 rounded-xl border border-slate-100 dark:border-cyan-400/10 bg-slate-50/50 dark:bg-cyan-400/5 p-4 sm:p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider select-none">Selected Plan</p>
+                  <h2 className="mt-1 text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{planName} Plan</h2>
                 </div>
-
-                <div className="text-right shrink-0">
-                  <p className="text-xl sm:text-2xl font-extrabold text-cyan-600 dark:text-cyan-400 tracking-tight">
-                    ₹{planPrice}
-                  </p>
-
-                  <p className="text-[11px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 select-none">
-                    per month
-                  </p>
+                <div className="text-right">
+                  <p className="text-xl sm:text-2xl font-extrabold text-cyan-600 dark:text-cyan-400">₹{planPrice}</p>
+                  <p className="text-xs font-medium text-slate-400 select-none">per month</p>
                 </div>
               </div>
             </div>
 
-            <form
-              className="space-y-5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handlePay();
-              }}
-            >
-              {/* Cardholder Name */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">
-                  Cardholder Name
-                </label>
+            {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
 
-                <input
-                  type="text"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                />
+            <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handlePay(); }}>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Cardholder Name</label>
+                <input type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/70 px-4 py-4 text-sm outline-none focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20" />
               </div>
 
-              {/* Card Number */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">
-                  Card Number
-                </label>
-
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Card Number</label>
                 <div className="relative">
-                  <CreditCard
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    size={18}
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="1234 5678 9012 3456"
-                    value={cardNumber}
-                    onChange={(e) =>
-                      setCardNumber(formatCardNumber(e.target.value))
-                    }
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 py-4 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                  />
+                  <CreditCard className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input type="text" placeholder="1234 5678 9012 3456" value={cardNumber}
+                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/70 py-4 pl-11 pr-4 text-sm outline-none focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20" />
                 </div>
               </div>
 
-              {/* Expiry + CVV */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
-                    Expiry Date
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="MM/YY"
-                    value={expiry}
-                    onChange={(e) =>
-                      setExpiry(formatExpiry(e.target.value))
-                    }
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                  />
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Expiry Date</label>
+                  <input type="text" placeholder="MM/YY" value={expiry}
+                    onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/70 px-4 py-4 text-sm outline-none focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20" />
                 </div>
-
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
-                    CVC
-                  </label>
-
-                  <input
-                    type="password"
-                    placeholder="123"
-                    value={cvv}
-                    onChange={(e) =>
-                      setCvv(
-                        e.target.value.replace(/\D/g, "").slice(0, 3)
-                      )
-                    }
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                  />
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200">CVC</label>
+                  <input type="password" placeholder="123" value={cvv}
+                    onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/70 px-4 py-4 text-sm outline-none focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20" />
                 </div>
               </div>
 
-              {/* Pay Button */}
-              <button
-                type="submit"
-                disabled={loading || !isFormValid}
-                className="motion-cta inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading ? (
-                  <>
-                    <svg
-                      className="h-5 w-5 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v8z"
-                      />
-                    </svg>
-
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck size={18} />
-                    Pay Now - ${planPrice}/mo
-                  </>
-                )}
+              <button type="submit" disabled={loading || !isFormValid}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50">
+                {loading ? "Processing..." : <><ShieldCheck size={18} /> Pay ₹{planPrice}/mo</>}
               </button>
 
-              <p className="text-xs leading-5 text-slate-400">
-                Your payment information is protected with encrypted processing
-                and is never stored on our servers.
-              </p>
+              <p className="text-xs text-slate-400">Your payment information is protected with encrypted processing.</p>
             </form>
 
-            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/5 w-full box-border">
-              <Link
-                to="/pricing"
-                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors select-none group"
-              >
-                <ArrowLeft size={14} className="transition-transform duration-200 group-hover:-translate-x-0.5" />
+            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/5">
+              <Link to="/pricing" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors group">
+                <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
                 Back to Pricing
               </Link>
             </div>
           </section>
 
           <aside className="bg-white dark:bg-[#111827]/20 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm w-full box-border">
-            <div className="mb-6 flex items-center gap-3 w-full box-border select-none">
-              <div className="rounded-xl border border-slate-200 dark:border-emerald-400/20 bg-slate-50 dark:bg-emerald-400/10 p-2.5 text-slate-500 dark:text-emerald-400 shrink-0">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="rounded-xl border border-slate-200 dark:border-emerald-400/20 bg-slate-50 dark:bg-emerald-400/10 p-2.5 text-slate-500 dark:text-emerald-400">
                 <CheckCircle2 size={20} />
               </div>
-
-              <div className="min-w-0">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                  What you get
-                </h2>
-
-                <p className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">
-                  A quick summary before you confirm.
-                </p>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">What you get</h2>
+                <p className="text-xs font-medium text-slate-400 mt-0.5">A quick summary before you confirm.</p>
               </div>
             </div>
 
-            <div className="space-y-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-4 sm:p-5 w-full box-border">
-              <div className="flex items-center justify-between gap-4 w-full box-border">
-                <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 tracking-tight truncate">
-                  {planName} subscription
-                </span>
-
-                <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight shrink-0">
-                  ₹{planPrice}/mo
-                </span>
+            <div className="space-y-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-4 sm:p-5">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">{planName} subscription</span>
+                <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">₹{planPrice}/mo</span>
               </div>
-
-              <div className="h-px bg-slate-200 dark:bg-slate-800 w-full" />
-
+              <div className="h-px bg-slate-200 dark:bg-slate-800" />
               <ul className="space-y-3 list-none p-0 m-0 text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
-                <li className="flex items-start gap-2.5 leading-relaxed">
-                  <CheckCircle2 size={14} className="text-cyan-500 dark:text-cyan-400 shrink-0 mt-0.5 select-none" />
-                  <span>Unlimited AI writing tools</span>
-                </li>
-
-                <li className="flex items-start gap-2.5 leading-relaxed">
-                  <CheckCircle2 size={14} className="text-cyan-500 dark:text-cyan-400 shrink-0 mt-0.5 select-none" />
-                  <span>Priority access to premium features</span>
-                </li>
-
-                <li className="flex items-start gap-2.5 leading-relaxed">
-                  <CheckCircle2 size={14} className="text-cyan-500 dark:text-cyan-400 shrink-0 mt-0.5 select-none" />
-                  <span>Cancel anytime from your account settings</span>
-                </li>
+                <li className="flex items-start gap-2.5"><CheckCircle2 size={14} className="text-cyan-500 shrink-0 mt-0.5" /><span>Unlimited AI writing tools</span></li>
+                <li className="flex items-start gap-2.5"><CheckCircle2 size={14} className="text-cyan-500 shrink-0 mt-0.5" /><span>Priority access to premium features</span></li>
+                <li className="flex items-start gap-2.5"><CheckCircle2 size={14} className="text-cyan-500 shrink-0 mt-0.5" /><span>Cancel anytime from your account settings</span></li>
               </ul>
             </div>
 
-            <div className="mt-6 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-cyan-400/10 bg-slate-50/30 dark:bg-cyan-400/5 p-4 sm:p-5 w-full box-border">
-              <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-cyan-400 select-none tracking-tight">
-                Need help?
-              </p>
-
-              <p className="mt-1.5 text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+            <div className="mt-6 rounded-xl border border-slate-100 dark:border-cyan-400/10 bg-slate-50/30 dark:bg-cyan-400/5 p-4 sm:p-5">
+              <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-cyan-400 select-none">Need help?</p>
+              <p className="mt-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
                 If your payment transaction parameters fail, please refresh to loop again or reach out to platform operations support.
               </p>
             </div>
           </aside>
-          
+
         </div>
       </div>
     </div>
   );
 };
+
+export default PaymentComponent;

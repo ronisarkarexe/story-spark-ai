@@ -12,12 +12,6 @@ const LatestPostsComponent = () => {
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
-
-  // Remove duplicate posts based on _id
-  const uniquePosts = Array.from(
-    new Map((data?.posts ?? []).map((post) => [post._id, post])).values(),
-  );
-
   if (isLoading) return <LoadingAnimation />;
 
   if (isError) {

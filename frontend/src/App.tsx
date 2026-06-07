@@ -1,21 +1,16 @@
 import React from "react";
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
-import ScrollToTopButton from "./components/ScrollToTopButton";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import NotFoundComponent from "./components/not-found.component";
 import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import StoryWorkspace from "./components/story/StoryWorkspace";
-import StoriesComponent from "./components/stories/stories.component";
 import BranchingStory from "./components/stories/BranchingStory";
-import TemplatesComponent from "./components/templates/templates.component";
 import CollabHome from "./components/collab/CollabHome";
 import CollabRoom from "./components/collab/CollabRoom";
 import { USER_ROLE } from "./constants/role";
 import { getUserInfo } from "./services/auth.service";
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
 import AboutUsComponent from "./components/footer/about-us.tsx";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import BlogComponent from "./components/footer/blog.tsx";
@@ -83,7 +78,7 @@ const router = createBrowserRouter([
       <>
         
         <MagicCursorComponent />
-        <ScrollToTop />
+        <ScrollToTopButton />
         <RootLayout>
           <Outlet />
         </RootLayout>

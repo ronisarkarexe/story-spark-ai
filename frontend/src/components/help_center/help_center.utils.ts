@@ -137,39 +137,6 @@ export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
   }
 ];
 
-export const HELP_SECTIONS: HelpSection[] = [
-  { 
-    id: "help-categories", 
-    label: "Categories", 
-    icon: "fa-layer-group", 
-    color: "from-blue-50 to-indigo-600" 
-  },
-  { 
-    id: "troubleshoot-section", 
-    label: "Troubleshooting", 
-    icon: "fa-screwdriver-wrench", 
-    color: "from-amber-500 to-orange-600" 
-  },
-  { 
-    id: "faq-section", 
-    label: "FAQ", 
-    icon: "fa-circle-question", 
-    color: "from-emerald-500 to-teal-600" 
-  },
-  { 
-    id: "developer-setup", 
-    label: "Setup Guide", 
-    icon: "fa-code", 
-    color: "from-purple-500 to-pink-600" 
-  },
-  { 
-    id: "support-links-section", 
-    label: "Support", 
-    icon: "fa-headset", 
-    color: "from-rose-500 to-red-600" 
-  },
-];
-
 export const scrollToSection = (id: string) => {
   const element = document.getElementById(id);
   if (element) {

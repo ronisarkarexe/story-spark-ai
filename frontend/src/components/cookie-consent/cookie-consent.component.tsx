@@ -106,4 +106,4 @@ const CookieConsentBanner: FC = () => {
   );
 };
 
-export default CookieCon
+export default CookieConsentBanner;

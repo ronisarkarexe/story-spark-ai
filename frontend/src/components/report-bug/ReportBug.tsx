@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
-import { ..., Image as ImageIcon, X } from "lucide-react";
+import { Image as ImageIcon, X } from "lucide-react";
 import { 
   Bug, 
   Send, 
