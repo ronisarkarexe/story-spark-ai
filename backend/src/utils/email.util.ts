@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import config from "../config";
 
-const escapeHtml = (unsafe: string): string => {
+export const escapeHtml = (unsafe: string): string => {
   return unsafe
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

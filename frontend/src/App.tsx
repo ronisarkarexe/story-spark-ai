@@ -1,13 +1,6 @@
 import React, { lazy, Suspense } from "react";
-
-import React from "react";
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
-import StoriesComponent from "./components/stories/stories.component";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import HeroSectionComponent from "./components/hero/hero_section.component";
@@ -41,6 +34,7 @@ const HelpCenterComponent = lazy(() => import("./components/help_center/help_cen
 const GuidelinesComponent = lazy(() => import("./components/footer/guidelines.tsx"));
 const ContributorsComponent = lazy(() => import("./components/footer/contributors.tsx"));
 const ReportBug = lazy(() => import("./components/report-bug/ReportBug"));
+const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 
 // Protected routes (logged-in users)
 const ExploreComponent = lazy(() => import("./components/post/post.component"));
@@ -56,7 +50,6 @@ const StoryWorkspace = lazy(() => import("./components/story/StoryWorkspace"));
 
 // Collab routes
 const CollabHome = lazy(() => import("./components/collab/CollabHome"));
-const CollabRoom = lazy(() => import("./components/collab/CollabRoom"));
 
 // Dashboard routes
 const DashboardComponent = lazy(() => import("./components/dashboard/dashboard.component"));
@@ -67,61 +60,6 @@ const SettingComponent = lazy(() => import("./components/dashboard/settings/sett
 const PublishedStoriesComponent = lazy(() => import("./components/dashboard/posts/published_stories.component"));
 const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analytics.page"));
 const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
-import NotFoundComponent from "./components/not-found.component";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import StoryWorkspace from "./components/story/StoryWorkspace";
-import StoriesComponent from "./components/stories/stories.component";
-import BranchingStory from "./components/stories/BranchingStory";
-import TemplatesComponent from "./components/templates/templates.component";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
-import { USER_ROLE } from "./constants/role";
-import { getUserInfo } from "./services/auth.service";
-import RootLayout from "./components/layout/root_layout.component";
-import DashboardLayout from "./components/dashboard/dashboard_layout.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
-import AboutUsComponent from "./components/footer/about-us.tsx";
-import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
-import BlogComponent from "./components/footer/blog.tsx";
-import BookmarksComponent from "./components/post/bookmarks.component";
-import CareerComponent from "./components/footer/career.tsx";
-import CommunityComponent from "./components/community/community.component";
-import Contact from "./components/contactus/contactus";
-import ContributorsComponent from "./components/footer/contributors";
-import CookiePolicy from "./components/footer/cookie-policy.tsx";
-import DashboardComponent from "./components/dashboard/dashboard.component";
-import EmailValidationComponent from "./components/email_validation/email.validation.component";
-import ExploreComponent from "./components/post/post.component";
-import ForgotPasswordComponent from "./components/login/forgot_password.component";
-import GuidelinesComponent from "./components/footer/guidelines.tsx";
-import HelpCenterComponent from "./components/help_center/help_center.component";
-import HeroSectionComponent from "./components/hero/hero_section.component";
-import HomeComponent from "./components/home/home.component";
-import LoginComponent from "./components/login/login.component";
-import PaymentComponent from "./components/home/pricing/payment.component";
-import PostDetailsComponent from "./components/post/post.details.component";
-import PostListsComponent from "./components/dashboard/posts/post_lists.component";
-import PricingComponent from "./components/pricing/pricing.component";
-import PrivacyPolicy from "./components/footer/Privacy.tsx";
-import ProfileComponent from "./components/dashboard/profile/profile.component";
-import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
-import ReportBug from "./components/report-bug/ReportBug";
-import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
-import StoryWorkspace from "./components/story/StoryWorkspace";
-import ResourceDetailComponent from "./components/community/resource_detail.component";
-import ResourcesListComponent from "./components/community/resources_list.component";
-import ScrollToTopButton from "./components/ScrollToTopButton";
-import SettingComponent from "./components/dashboard/settings/settings.component";
-import SignUpComponent from "./components/signup/signup.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
-import StoriesComponent from "./components/stories/stories.component";
-import StoryWorkspace from "./components/story/StoryWorkspace";
-import TemplatesComponent from "./components/templates/templates.component";
-import Terms from "./components/footer/terms.tsx";
-import UserComponent from "./components/dashboard/users/user.component";
-import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
-
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
@@ -152,8 +90,6 @@ const router = createBrowserRouter([
     element: (
       <Suspense fallback={<LoadingAnimation />}>
         <ScrollToTopButton />
-      <>
-        
         <MagicCursorComponent />
         <ScrollToTop />
         <RootLayout>
@@ -180,8 +116,7 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
-      { path: "contributors", element: <ContributorsComponent /> },
-      { path: "community", element: <CommunityComponent /> },
+      { path: "contributors", element: <SafeContributorsComponent /> },
       { path: "report-bug", element: <ReportBug /> },
 
       // Protected routes (logged-in users)
@@ -190,6 +125,7 @@ const router = createBrowserRouter([
         children: [
           { path: "explore", element: <ExploreComponent /> },
           { path: "bookmarks", element: <BookmarksComponent /> },
+          { path: "community", element: <CommunityComponent /> },
           { path: "resources", element: <ResourcesListComponent /> },
           { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
         ],
@@ -224,6 +160,8 @@ const router = createBrowserRouter([
       { path: "*", element: <NotFoundComponent /> },
     ],
   },
+
+  { path: "/auth/email-validation", element: <EmailValidationComponent /> },
 
   // Isolated layout branches
   {
