@@ -6,6 +6,8 @@ interface ThemeContextValue {
   theme: Theme;
   isDark: boolean;
   toggleTheme: () => void;
+  glowEnabled: boolean;
+  toggleGlow: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -19,8 +21,14 @@ const getInitialTheme = (): Theme => {
   return "light";
 };
 
+const getInitialGlow = (): boolean => {
+  const storedGlow = localStorage.getItem("cursorGlow");
+  return storedGlow !== "false";
+};
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const [glowEnabled, setGlowEnabled] = useState<boolean>(getInitialGlow);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -28,13 +36,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  useEffect(() => {
+    localStorage.setItem("cursorGlow", glowEnabled ? "true" : "false");
+  }, [glowEnabled]);
+
   const value = useMemo(
     () => ({
       theme,
       isDark: theme === "dark",
       toggleTheme: () => setTheme((prev) => (prev === "dark" ? "light" : "dark")),
+      glowEnabled,
+      toggleGlow: () => setGlowEnabled((prev) => !prev),
     }),
-    [theme],
+    [theme, glowEnabled],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

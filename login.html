@@ -10,9 +10,29 @@
     <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css" rel="stylesheet"/>
     
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'background': '#121212',
+                        'surface': '#1e1e1e',
+                        'surface-container-lowest': '#0f0f0f',
+                        'surface-container-high': '#282828',
+                        'on-surface': '#e6e6e6',
+                        'on-surface-variant': '#cacaca',
+                        'primary': '#d0bcff',
+                        'secondary': '#ccc2dc',
+                        'tertiary': '#efb8c8',
+                        'outline': '#938f99'
+                    }
+                }
+            }
+        }
+    </script>
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
     <link href="auth.css" rel="stylesheet"/>
 </head>
 <body class="bg-background text-on-surface font-body-md selection:bg-primary/30">
@@ -61,6 +81,15 @@
     <section class="w-full md:w-1/2 flex items-center justify-center p-4 md:p-10 bg-surface z-10">
         <div class="auth-form-card glass-panel p-6 md:p-8 rounded-2xl relative">
 
+            <!-- Close button — returns user to previous page -->
+            <button
+                onclick="handleClose()"
+                class="absolute right-4 top-4 text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/10"
+                aria-label="Close and go back"
+                title="Go back">
+                <i class="fi fi-rr-cross-small text-[18px]"></i>
+            </button>
+
             <div class="flex justify-center mb-5 md:hidden">
                 <div class="font-display-lg text-[18px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary">
                     StorySparkAI
@@ -90,7 +119,7 @@
             </div>
             
             <div id="google-auth-status" class="hidden mb-4 p-3 rounded-xl border border-primary/20 bg-primary/5 flex items-center gap-3">
-                <img id="google-user-avatar" class="w-8 h-8 rounded-full border border-white/10" src="" alt=""/>
+                <img loading="lazy" id="google-user-avatar" class="w-8 h-8 rounded-full border border-white/10" src="" alt=""/>
                 <div class="flex-1 min-w-0">
                     <div class="text-sm font-semibold text-on-surface truncate" id="google-user-name"></div>
                     <div class="text-xs text-on-surface-variant truncate" id="google-user-email"></div>
@@ -104,7 +133,7 @@
                 <div class="auth-divider-line"></div>
             </div>
             
-            <form class="space-y-4" id="auth-form" novalidate>
+            <form class="space-y-4" id="auth-form" onsubmit="event.preventDefault()" novalidate>
 
                 <div class="hidden animate-in fade-in duration-500" id="signup-fields">
                     <label class="field-label" for="name-field">Full Name</label>
@@ -127,17 +156,23 @@
                 <div>
                     <div class="flex justify-between mb-1.5">
                         <label class="field-label" for="password-field">Password</label>
-                        <a class="text-[12px] text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" id="forgot-password-link">Forgot password?</a>
+                        <a class="text-[12px] text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" id="forgot-password-link" href="/forgot-password">Forgot Password?</a>
                     </div>
                     <div class="input-icon-wrapper">
                         <i class="fi fi-rr-lock input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••" type="password" required autocomplete="current-password"/>
+                        <input class="auth-field w-full bg-surface-container-high border border-white/10 text-on-surface placeholder:text-outline focus:border-primary transition-all pl-11 pr-11" id="password-field" placeholder="••••••••"  required autocomplete="current-password"/>
                         <button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors p-1 rounded" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
                             <i class="fi fi-rr-eye-crossed text-[16px]" id="eye-icon"></i>
                         </button>
                     </div>
                     <span class="field-error-msg" id="password-error">Password must be at least 8 characters.</span>
-                </div>
+                    <p 
+                       id="login-caps-lock-warning" 
+                      class="hidden text-yellow-400 text-sm mt-2"
+                     >
+                      Caps Lock is ON
+                     </p>
+                    </div>
 
                 <div class="flex items-center gap-2.5 pt-1">
                     <input class="w-4 h-4 rounded border-white/10 bg-surface-container-high text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface" id="remember" type="checkbox"/>

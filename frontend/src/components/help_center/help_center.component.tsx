@@ -65,18 +65,20 @@ const HelpCenterComponent = () => {
   }, [searchQuery, filteredCategories, filteredFaqs, filteredTroubleshoot]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
       <HelpHero
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        resultCount={resultCount}
+        resultCount={resultCount ?? 0}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
-          <HelpSidebar />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 box-border">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start w-full max-w-full block box-border">
+          <div className="w-full lg:w-64 shrink-0 block box-border lg:sticky lg:top-24">
+            <HelpSidebar />
+          </div>
 
-          <main className="flex-1 min-w-0 space-y-20">
+          <main className="flex-1 min-w-0 w-full space-y-16 sm:space-y-20 block box-border">
             <HelpCategories categories={filteredCategories} />
             <FAQAccordion items={filteredFaqs} />
             <Troubleshoot items={filteredTroubleshoot} />

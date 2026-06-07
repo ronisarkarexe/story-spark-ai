@@ -1,24 +1,44 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.tsx";
 import { Provider } from "react-redux";
-import { store } from "./redux/store.ts";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import App from "./App.tsx";
+import { store } from "./redux/store.ts";
 import { ThemeProvider } from "./components/theme/theme.context";
+import "./index.css";
+
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
+if (!GOOGLE_CLIENT_ID) {
+  console.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will not function.");
+}
 
-createRoot(document.getElementById("root")!).render(
+const container = document.getElementById("root");
+
+if (!container) {
+  throw new Error("Failed to find the root element. Ensure index.html has <div id='root'></div>");
+}
+
+createRoot(container).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId={googleClientId}>
+    {GOOGLE_CLIENT_ID ? (
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <Provider store={store}>
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
+        </Provider>
+      </GoogleOAuthProvider>
+    ) : (
       <Provider store={store}>
         <ThemeProvider>
           <App />
         </ThemeProvider>
       </Provider>
-    </GoogleOAuthProvider>
+    )}
   </StrictMode>
 );

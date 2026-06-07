@@ -1,15 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ExploreViewListComponent from "./post.view.list.component";
 import { Post } from "../../models/post";
 import { useGetMyBookmarksQuery } from "../../redux/apis/bookmark.api";
 import PaginationComponent from "../pagination/pagination.component";
+import { getSessionBookmarks } from "../../utils/session-bookmarks";
+import StoryTradingCard from "../cards/StoryTradingCard";
+import { IStories } from "../stories/stories.view.component";
 
 const BookmarksComponent = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [size, setSize] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
+  const [sortBy, setSortBy] = useState<string>("newest");
 
   const query: Record<string, string | number> = {
     page,
@@ -25,6 +29,27 @@ const BookmarksComponent = () => {
 
   const allPosts: Post[] = (data?.posts ?? []) as Post[];
 
+  const [activeTab, setActiveTab] = useState<"posts" | "generated">("posts");
+  const [sessionStories, setSessionStories] = useState<IStories[]>(() => getSessionBookmarks());
+
+  useEffect(() => {
+    const handleBookmarkChange = () => {
+      setSessionStories(getSessionBookmarks());
+    };
+    window.addEventListener("session_bookmarks_changed", handleBookmarkChange);
+    return () => {
+      window.removeEventListener("session_bookmarks_changed", handleBookmarkChange);
+    };
+  }, []);
+
+  const filteredSessionStories = sessionStories.filter(
+    (story: IStories) =>
+      story &&
+      ((story.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (story.tag?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
+  );
+
   // Implement client-side instant search for bookmarks
   const filteredPosts = allPosts.filter(
     (story: Post) =>
@@ -33,6 +58,25 @@ const BookmarksComponent = () => {
         (story.tag?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
   );
+
+  // Sort posts client-side
+  const sortedPosts = [...filteredPosts].sort((a, b) => {
+    switch (sortBy) {
+      case "oldest":
+        return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+      case "title-asc":
+        return (a.title || "").localeCompare(b.title || "");
+      case "title-desc":
+        return (b.title || "").localeCompare(a.title || "");
+      case "length-asc":
+        return (a.content || "").length - (b.content || "").length;
+      case "length-desc":
+        return (b.content || "").length - (a.content || "").length;
+      case "newest":
+      default:
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    }
+  });
 
   return (
     <div className="pt-0 min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
@@ -81,7 +125,7 @@ const BookmarksComponent = () => {
                   Stories you've saved for later inspiration
                 </p>
               </div>
-              {allPosts.length > 0 && (
+              {activeTab === "posts" && allPosts.length > 0 && (
                 <div className="flex items-center space-x-4">
                   <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
                   <select
@@ -98,41 +142,135 @@ const BookmarksComponent = () => {
                     <option value={100}>100</option>
                   </select>
                   <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
+              {allPosts.length > 0 && (
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center space-x-2">
+                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Sort By</label>
+                    <select
+                      className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                    >
+                      <option value="newest">Newest Bookmarked</option>
+                      <option value="oldest">Oldest Bookmarked</option>
+                      <option value="title-asc">Alphabetical (A-Z)</option>
+                      <option value="title-desc">Alphabetical (Z-A)</option>
+                      <option value="length-asc">Shortest First</option>
+                      <option value="length-desc">Longest First</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
+                    <select
+                      className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                      value={size}
+                      onChange={(e) => {
+                        setSize(Number(e.target.value));
+                        setPage(1);
+                      }}
+                    >
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
+                  </div>
                 </div>
               )}
             </div>
 
+            {/* Tabs for Published vs Generated */}
+            <div className="flex gap-4 mb-8 border-b border-slate-200/50 dark:border-slate-700/50 pb-3">
+              <button
+                type="button"
+                onClick={() => setActiveTab("posts")}
+                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
+                  activeTab === "posts"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                }`}
+              >
+                Published Stories ({allPosts.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("generated")}
+                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
+                  activeTab === "generated"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                }`}
+              >
+                Generated Drafts ({sessionStories.length})
+              </button>
+            </div>
+
             {/* Content Rendering */}
             <div className="flex-grow">
-              {!isLoading && allPosts.length === 0 ? (
-                /* Elegant Responsive Empty State */
-                <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-[2.5rem] border border-slate-200/60 shadow-xl backdrop-blur-md dark:bg-[#0f172a]/60 dark:border-white/5 dark:text-white">
-                  <div className="w-24 h-24 rounded-full bg-indigo-50 dark:bg-blue-500/10 flex items-center justify-center mb-8 text-indigo-500 dark:text-blue-400 border border-indigo-100/50 dark:border-blue-500/10 shadow-inner">
-                    <i className="far fa-bookmark text-4xl"></i>
+              {activeTab === "posts" ? (
+                !isLoading && allPosts.length === 0 ? (
+                  /* Elegant Responsive Empty State */
+                  <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-[2.5rem] border border-slate-200/60 shadow-xl backdrop-blur-md dark:bg-[#0f172a]/60 dark:border-white/5 dark:text-white">
+                    <div className="w-24 h-24 rounded-full bg-indigo-50 dark:bg-blue-500/10 flex items-center justify-center mb-8 text-indigo-500 dark:text-blue-400 border border-indigo-100/50 dark:border-blue-500/10 shadow-inner">
+                      <i className="far fa-bookmark text-4xl"></i>
+                    </div>
+                    <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight dark:text-gray-200">
+                      Your collection is waiting
+                    </h3>
+                    <p className="text-slate-500 max-w-sm mb-10 text-lg leading-relaxed dark:text-gray-400">
+                      Whenever you find a story that moves you, save it here to build your personal library of inspiration.
+                    </p>
+                    <button
+                      onClick={() => navigate("/explore")}
+                      className="cursor-pointer !rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 py-4 shadow-lg shadow-slate-200 transition-all duration-300 hover:-translate-y-1 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:shadow-none"
+                    >
+                      Explore Stories
+                    </button>
                   </div>
-                  <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight dark:text-gray-200">
-                    Your collection is waiting
-                  </h3>
-                  <p className="text-slate-500 max-w-sm mb-10 text-lg leading-relaxed dark:text-gray-400">
-                    Whenever you find a story that moves you, save it here to build your personal library of inspiration.
-                  </p>
-                  <button
-                    onClick={() => navigate("/explore")}
-                    className="cursor-pointer !rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 py-4 shadow-lg shadow-slate-200 transition-all duration-300 hover:-translate-y-1 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:shadow-none"
-                  >
-                    Explore Stories
-                  </button>
-                </div>
+                ) : (
+                  <ExploreViewListComponent
+                    posts={filteredPosts}
+                    isLoading={isLoading}
+                  />
+                )
               ) : (
+                sessionStories.length === 0 ? (
+                  /* Elegant Responsive Empty State for Generated Drafts */
+                  <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-[2.5rem] border border-slate-200/60 shadow-xl backdrop-blur-md dark:bg-[#0f172a]/60 dark:border-white/5 dark:text-white">
+                    <div className="w-24 h-24 rounded-full bg-indigo-50 dark:bg-blue-500/10 flex items-center justify-center mb-8 text-indigo-500 dark:text-blue-400 border border-indigo-100/50 dark:border-blue-500/10 shadow-inner">
+                      <i className="far fa-bookmark text-4xl"></i>
+                    </div>
+                    <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight dark:text-gray-200">
+                      No saved drafts yet
+                    </h3>
+                    <p className="text-slate-500 max-w-sm mb-10 text-lg leading-relaxed dark:text-gray-400">
+                      Generate stories and bookmark them to build a collection of your favorite drafts for this session.
+                    </p>
+                    <button
+                      onClick={() => navigate("/stories")}
+                      className="cursor-pointer !rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 py-4 shadow-lg shadow-slate-200 transition-all duration-300 hover:-translate-y-1 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:shadow-none"
+                    >
+                      Create a Story
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
+                    {filteredSessionStories.map((story) => (
+                      <StoryTradingCard key={story.uuid} story={story} />
+                    ))}
+                  </div>
+                )
                 <ExploreViewListComponent
-                  posts={filteredPosts}
+                  posts={sortedPosts}
                   isLoading={isLoading}
                 />
               )}
             </div>
 
             {/* Pagination Component */}
-            {allPosts.length > 0 && data?.meta && (
+            {activeTab === "posts" && allPosts.length > 0 && data?.meta && (
               <div className="sticky bottom-4 bg-white/80 backdrop-blur-xl border border-slate-200 rounded-3xl z-10 mt-12 py-5 px-6 shadow-xl shadow-slate-200/50 dark:bg-gray-950/80 dark:border-gray-800 dark:shadow-none">
                 <PaginationComponent
                   current={page}

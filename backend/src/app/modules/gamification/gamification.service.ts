@@ -1,5 +1,7 @@
 import { User } from "../user/user.model";
 
+const DAILY_LOGIN_XP = 10;
+
 const calculateLevel = (xp: number) => {
   return Math.floor(Math.sqrt(xp / 100)) + 1;
 };
@@ -9,18 +11,20 @@ const updateDailyStreak = async (userId: string) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-
     const now = new Date();
 
-    const user = await User.findById(userId).select("gamification.lastActiveDate");
+    const user = await User.findById(userId).select(
+      "gamification.lastActiveDate gamification.xp gamification.level"
+    );
     if (!user) return;
+
+    const currentXp = user.gamification?.xp || 0;
+    const newLevel = calculateLevel(currentXp + DAILY_LOGIN_XP);
 
     const lastActive = user.gamification?.lastActiveDate;
 
     if (!lastActive) {
-      const updatedUser = await User.findOneAndUpdate(
+      await User.findOneAndUpdate(
         {
           _id: userId,
           $or: [
@@ -33,18 +37,15 @@ const updateDailyStreak = async (userId: string) => {
             "gamification.streak": 1,
             "gamification.lastActiveDate": now,
           },
+          $inc: { "gamification.xp": DAILY_LOGIN_XP },
+          $max: { "gamification.level": newLevel },
           $setOnInsert: {
             "gamification.xp": 0,
             "gamification.level": 1,
             "gamification.badges": [],
           },
-        },
-        { new: true }
+        }
       );
-
-      if (updatedUser) {
-        await addXp(userId, 10, "First login");
-      }
 
       return;
     }
@@ -56,39 +57,35 @@ const updateDailyStreak = async (userId: string) => {
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 1) {
-      const updatedUser = await User.findOneAndUpdate(
+      await User.findOneAndUpdate(
         {
           _id: userId,
           "gamification.lastActiveDate": lastActive,
         },
         {
-          $inc: { "gamification.streak": 1 },
+          $inc: {
+            "gamification.streak": 1,
+            "gamification.xp": DAILY_LOGIN_XP,
+          },
           $set: { "gamification.lastActiveDate": now },
-        },
-        { new: true }
+          $max: { "gamification.level": newLevel },
+        }
       );
-
-      if (updatedUser) {
-        await addXp(userId, 10, "Daily Streak XP");
-      }
     } else if (diffDays > 1) {
-      const updatedUser = await User.findOneAndUpdate(
+      await User.findOneAndUpdate(
         {
           _id: userId,
           "gamification.lastActiveDate": lastActive,
         },
         {
+          $inc: { "gamification.xp": DAILY_LOGIN_XP },
           $set: {
             "gamification.streak": 1,
             "gamification.lastActiveDate": now,
           },
-        },
-        { new: true }
+          $max: { "gamification.level": newLevel },
+        }
       );
-
-      if (updatedUser) {
-        await addXp(userId, 10, "Daily Login XP");
-      }
     }
   } catch (error) {
     console.error("Error updating daily streak:", error);
@@ -97,24 +94,26 @@ const updateDailyStreak = async (userId: string) => {
 
 const addXp = async (userId: string, amount: number, reason: string) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        $inc: { "gamification.xp": amount },
-      },
-      { new: true }
+    await User.updateOne(
+      { _id: userId },
+      [
+        {
+          $set: {
+            "gamification.xp": { $add: [{ $ifNull: ["$gamification.xp", 0] }, amount] }
+          }
+        },
+        {
+          $set: {
+            "gamification.level": {
+              $max: [
+                { $ifNull: ["$gamification.level", 1] },
+                { $add: [{ $floor: { $sqrt: { $divide: ["$gamification.xp", 100] } } }, 1] }
+              ]
+            }
+          }
+        }
+      ]
     );
-
-    if (!updatedUser?.gamification) return;
-
-    const newXp = updatedUser.gamification.xp || 0;
-    const newLevel = calculateLevel(newXp);
-
-    if (newLevel > (updatedUser.gamification.level || 1)) {
-      await User.findByIdAndUpdate(userId, {
-        $max: { "gamification.level": newLevel },
-      });
-    }
   } catch (error) {
     console.error(`Error adding XP for ${reason}:`, error);
   }

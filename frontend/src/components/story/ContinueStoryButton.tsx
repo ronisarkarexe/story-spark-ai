@@ -1,5 +1,7 @@
+/* eslint-disable */
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 import { RootState } from "../../redux/store";
 import { continueStory } from "../../services/continuation.service";
@@ -25,8 +27,11 @@ const ContinueStoryButton = () => {
       );
 
       dispatch(addChapter(nextChapter));
-    } catch (error) {
+      toast.success("New chapter generated successfully!");
+    } catch (error: any) {
       console.error(error);
+      const errorMsg = error?.message || "Failed to continue story. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

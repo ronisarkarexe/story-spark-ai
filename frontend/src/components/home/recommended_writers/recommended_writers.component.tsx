@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { isLoggedIn } from "../../../services/auth.service";
 import { useToggleFollowMutation } from "../../../redux/apis/user.api";
-import ImageFallback from "../../ImageFallback";
-ImageFallback
 
 const RecommendedWritersComponent = () => {
   const recommendedWriters = [
@@ -61,13 +59,12 @@ const RecommendedWritersComponent = () => {
           {recommendedWriters.map((writer, index) => (
             <div key={writer.id} className="flex items-center justify-between">
               <div className="flex items-center">
-                <ImageFallback
-                  className="h-10 w-10 rounded-full"
                 <img
-                  className="h-10 w-10 rounded-full object-cover"
+                  className="h-10 w-10 rounded-full"
                   src={writer.image}
                   alt={writer.name}
                 />
+
                 <div className="ml-3">
                   <p className="text-sm font-medium text-slate-700 dark:text-gray-400">
                     {writer.name}
@@ -77,7 +74,12 @@ const RecommendedWritersComponent = () => {
                   </p>
                 </div>
               </div>
-              <button disabled={isLoading} onClick={() => toggleFollow(index, writer.id)} className="motion-cta rounded-full px-3 py-1.5 text-sm text-white font-semibold disabled:opacity-50">
+
+              <button
+                onClick={() => toggleFollow(index, writer.id)}
+                disabled={isLoading}
+                className="!rounded-button text-indigo-600 text-sm font-medium hover:text-indigo-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 {following.includes(index) ? "Following" : "Follow"}
               </button>
             </div>

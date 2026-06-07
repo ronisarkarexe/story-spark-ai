@@ -1,33 +1,64 @@
 import express from "express";
+import { AiModelService } from "../app/modules/ai_model/ai_model.service";
+import { ReviewController } from "../app/modules/review/review.controller";
+import { AIModelValidator } from "../app/modules/ai_model/ai_model.validation";
+import { ReviewValidator } from "../app/modules/review/review.validation";
+import validateRequest from "../app/middleware/validate.request";
+import auth from "../app/middleware/auth.middleware";
+import freeAiRateLimiter from "../app/middleware/free-ai.rate-limiter";
+import { ENUM_USER_ROLE } from "../enums/user";
+import catchAsync from "../shared/catch_async";
+import sendResponse from "../shared/send_response";
+import httpStatus from "http-status";
+import { Request, Response } from "express";
+import piiScrubberMiddleware from "../app/middleware/pii_scrubber";
 
 const router = express.Router();
 
-router.post("/continue", async (req, res) => {
-  try {
-    const { prompt } = req.body;
-
-    // Replace this with existing AI generation logic
-    const generatedText =
-      "This is the generated continuation chapter.";
-
-    res.json({
-      text: generatedText,
+/**
+ * STORY CONTINUATION
+ * POST /api/v1/story-continuation/continue
+ *
+ * Previously returned a hardcoded string and never called the AI.
+ * Now validates the request body, applies a rate limit, and delegates
+ * to AiModelService.aiFreeStoryContinuation which calls Gemini.
+ */
+router.post(
+  "/continue",
+  freeAiRateLimiter,
+  piiScrubberMiddleware,
+  validateRequest(AIModelValidator.aiStoryContinuation),
+  catchAsync(async (req: Request, res: Response) => {
+    const { prompt, language } = req.body as { prompt: string; language?: string };
+    const result = await AiModelService.aiFreeStoryContinuation({ prompt, language });
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Story continuation generated successfully!",
+      data: result,
     });
-  } catch (error) {
-    res.status(500).json({
-      error: "Failed to continue story",
-    });
-  }
-});
-// Add this new route to handle reviews
-// Since app.ts already adds "/review", the full path becomes "/review/create"
-router.post("/create", async (req, res) => {
-    try {
-        console.log("Data received:", req.body);
-        res.status(201).json({ message: "Review submitted successfully!" });
-    } catch (error) {
-        res.status(500).json({ error: "Failed to save" });
-    }
-});
+  })
+);
+
+/**
+ * CREATE REVIEW
+ * POST /api/v1/story-continuation/create
+ *
+ * Previously was a no-op stub that always returned 201 without
+ * authentication, validation, or a database write.
+ * Now requires authentication, validates the request body, and
+ * persists the review via ReviewController.createReview.
+ */
+router.post(
+  "/create",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  validateRequest(ReviewValidator.createReview),
+  ReviewController.createReview
+);
 
 export default router;

@@ -35,6 +35,7 @@ router.post(
   "/generate-model-stream",
   auth(),
   validateRequest(AIModelValidator.aiModel),
+  checkRequestLimit(),
   AiModelController.aiModelGenerateStream
 );
 
@@ -66,6 +67,7 @@ router.post(
   aiGenerationRateLimiter,
   auth(),
   checkRequestLimit(),
+  validateRequest(AIModelValidator.aiRemix),
   AiModelController.aiModelRemix
 );
 
@@ -73,6 +75,7 @@ router.post(
 router.post(
   "/remix-free",
   freeAiRateLimiter,
+  validateRequest(AIModelValidator.aiRemix),
   AiModelController.aiFreeModelRemix
 );
 
@@ -84,6 +87,7 @@ router.post(
   aiGenerationRateLimiter,
   auth(),
   checkRequestLimit(),
+  validateRequest(AIModelValidator.aiTranslate),
   AiModelController.aiModelTranslate
 );
 
@@ -91,14 +95,37 @@ router.post(
 router.post(
   "/translate-free",
   freeAiRateLimiter,
+  validateRequest(AIModelValidator.aiTranslate),
   AiModelController.aiFreeModelTranslate
+);
+
+// ========== STORY CONTINUATION ==========
+
+// Continue Story - PROTECTED
+router.post(
+  "/continue-story",
+  aiGenerationRateLimiter,
+  auth(),
+  validateRequest(AIModelValidator.aiStoryContinuation),
+  checkRequestLimit(),
+  AiModelController.aiStoryContinuation
+);
+
+// Continue Story Free - PUBLIC
+router.post(
+  "/continue-story-free",
+  validateRequest(AIModelValidator.aiStoryContinuation),
+  freeAiRateLimiter,
+  AiModelController.aiFreeStoryContinuation
 );
 
 // ========== AI CHAT ==========
 
 // AI Chat - PROTECTED
+
 router.post(
   "/chat",
+  aiGenerationRateLimiter,
   auth(),
   validateRequest(AIModelValidator.aiChat),
   checkRequestLimit(),

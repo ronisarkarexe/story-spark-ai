@@ -10,7 +10,7 @@ import {
   useForgotPasswordMutation,
   useResetPasswordMutation,
 } from "../../redux/apis/auth.api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 interface Inputs {
   email: string;
@@ -362,9 +362,9 @@ const ForgotPasswordComponent = () => {
           )}
 
           <div className="text-center text-sm text-indigo-600">
-            <a href="/login" className="block text-custom hover:underline">
+            <Link to="/login" className="block text-custom hover:underline">
               Back to Sign In
-            </a>
+            </Link>
           </div>
         </div>
       </AuthLayout>

@@ -28,12 +28,32 @@ const resolveUserId = async (token: ITokenPayload) => {
   return user._id.toString();
 };
 
-const getUserNotifications = async (token: ITokenPayload) => {
+const getUserNotifications = async (
+  token: ITokenPayload,
+  page: number = 1,
+  limit: number = 20
+) => {
   const userId = await resolveUserId(token);
-  const notifications = await Notification.find({ userId }).sort({
-    createdAt: -1,
-  });
-  return notifications;
+  const skip = (page - 1) * limit;
+
+  // Promise.all use karke concurrent fetch aur count operation chalayenge performance ke liye
+  const [notifications, total] = await Promise.all([
+    Notification.find({ userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Notification.countDocuments({ userId }),
+  ]);
+
+  return {
+    data: notifications,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
 };
 
 const markNotificationAsRead = async (
@@ -56,9 +76,25 @@ const markNotificationAsRead = async (
   return notification;
 };
 
+const markAllNotificationsAsRead = async (token: ITokenPayload) => {
+  const userId = await resolveUserId(token);
+  await Notification.updateMany({ userId, isRead: false }, { isRead: true });
+  emitNotificationStateToUser(userId, "notification:all-read", {});
+  return { message: "All notifications marked as read!" };
+};
+
+const deleteAllNotifications = async (token: ITokenPayload) => {
+  const userId = await resolveUserId(token);
+  await Notification.deleteMany({ userId });
+  emitNotificationStateToUser(userId, "notification:all-cleared", {});
+  return { message: "All notifications cleared!" };
+};
+
 export const NotificationService = {
   createNotification,
   getUserNotifications,
   markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteAllNotifications,
   resolveUserId,
 };
