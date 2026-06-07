@@ -47,6 +47,7 @@
     "express": "^5.2.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
+    "pnpm": "^11.5.2",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.3"
   }

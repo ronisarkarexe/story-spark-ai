@@ -61,7 +61,6 @@ const getValidDecodedToken = () => {
   if (authToken) {
     try {
       const decodedData = decodedToken(authToken);
-      
       // Safety check to ensure decodedData exists before parsing properties
       if (!decodedData) {
         removeFromLocalStorage(AUTH_KEY);

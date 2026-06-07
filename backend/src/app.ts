@@ -3,7 +3,6 @@ import express, {
   NextFunction,
   Request,
   Response,
-  RequestHandler,
 } from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -26,14 +25,15 @@ const limiter = rateLimit({
   max: 100,
   message: "Too many requests, please try again later.",
 });
-app.use(limiter as unknown as RequestHandler);
 
-const defaultCorsOrigins = [
-  "http://localhost:4001",
-  "http://localhost:4002",
-  "https://storysparkai-five.vercel.app",
-  "https://storysparkai.vercel.app",
-];
+app.use(limiter);
+
+
+
+const defaultCorsOrigins =
+  process.env.NODE_ENV === "development"
+  ? ["http://localhost:4001", "http://localhost:4002"]
+  : [];
 
 const corsOrigins =
   config.cors_origins && config.cors_origins.length > 0
@@ -43,6 +43,10 @@ const corsOrigins =
 app.use(
   cors({
     origin: (origin, callback) => {
+      if (!origin && process.env.NODE_ENV === 'production') {
+        return callback(new Error('Origin header required in production'));
+      }
+
       if (!origin || corsOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -56,10 +60,15 @@ app.use(
 );
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Keeps your extended payload parsing enabled
-app.use(cookieParser() as any);
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser() as unknown as RequestHandler);
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+  if (req.method === "GET" && /^\/api\/story\/[a-f0-9]{24}\/character-network$/i.test(req.path)) {
+    req.url = req.url.replace(/^\/api\/story\//, "/api/v1/story/");
+  }
+  next();
+});
 
 app.use("/api/v1", Routers);
 

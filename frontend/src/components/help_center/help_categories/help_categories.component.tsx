@@ -10,17 +10,22 @@ interface HelpCategory {
 interface HelpCategoriesProps {
   categories: HelpCategory[];
 }
-
 const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
   return (
-    <section
+    <motion.section
       id="help-categories"
-      className="scroll-mt-28 transition-colors duration-300"
+      className="scroll-mt-28 transition-colors duration-300 w-full box-border"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.5 }}
+      aria-labelledby="categories-heading"
     >
-      <div className="mb-10 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-300 mb-4">
+      {/* Section Header */}
+      <div className="mb-12 text-center px-4">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-300 mb-4 select-none">
           <i className="fa-solid fa-layer-group"></i>
-          <span className="text-sm font-semibold">HELP CATEGORIES</span>
+          <span className="text-xs sm:text-sm font-semibold uppercase tracking-wider">Help Categories</span>
         </div>
 
         <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">
@@ -124,7 +129,7 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
           ))}
         </div>
       )}
-    </section>
+    </motion.section>
   );
 };
 

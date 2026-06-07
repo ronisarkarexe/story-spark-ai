@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { connectSocket } from "../../socket/socket.oi";
+import { connectSocket, getSocketIo } from "../../socket/socket.oi";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 interface CreateRoomResponse {
@@ -24,8 +24,12 @@ export default function CollabHome() {
 
     try {
       setIsCreating(true);
+      setError("");
 
-      const socket = connectSocket();
+      let socket = getSocketIo();
+      if (!socket) {
+        socket = connectSocket();
+      }
       if (!socket) {
         setError(
           "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
@@ -36,7 +40,7 @@ export default function CollabHome() {
 
       socket.emit(
         "collab:create_room",
-        { userId: user.userId },
+        { userId: user.userId, username: user.name },
         (response: CreateRoomResponse) => {
           if (response.roomId) {
             navigate(`/collab/${response.roomId}`);

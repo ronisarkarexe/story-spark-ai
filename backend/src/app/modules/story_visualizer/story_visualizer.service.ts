@@ -13,7 +13,6 @@ import {
 import { generateStoryboardImage } from "../../../utils/storyboard_image_generation";
 
 const STORY_VISUALIZER_TIMEOUT_MS = 90000;
-const MAX_IMAGES_PER_STORYBOARD = 2;
 
 const mapStoryVisualizerError = (error: unknown): never => {
   if (error instanceof ApiError) {
@@ -52,38 +51,26 @@ const attachSceneImages = async (
   scenes: IStoryboardScene[],
   styleGuide: string
 ): Promise<IStoryboardScene[]> => {
-  const scenesWithImages: IStoryboardScene[] = [];
-
-  for (let index = 0; index < scenes.length; index += 1) {
-    const scene = scenes[index];
-
-    if (index >= MAX_IMAGES_PER_STORYBOARD) {
-      scenesWithImages.push({
-        ...scene,
-        imageStatus: "pending",
-      });
-      continue;
-    }
-
+  const promises = scenes.map(async (scene) => {
     try {
       const imageUrl = await generateStoryboardImage(
         buildStoryboardImagePrompt(styleGuide, scene.imagePrompt)
       );
 
-      scenesWithImages.push({
+      return {
         ...scene,
         ...(imageUrl ? { imageUrl } : {}),
-        imageStatus: imageUrl ? "generated" : "failed",
-      });
+        imageStatus: imageUrl ? ("generated" as const) : ("failed" as const),
+      };
     } catch (error) {
-      scenesWithImages.push({
+      return {
         ...scene,
-        imageStatus: "failed",
-      });
+        imageStatus: "failed" as const,
+      };
     }
-  }
+  });
 
-  return scenesWithImages;
+  return Promise.all(promises);
 };
 
 const generateStoryboard = async (

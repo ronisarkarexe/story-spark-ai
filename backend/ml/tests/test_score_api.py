@@ -1,7 +1,7 @@
 """
 tests/test_score_api.py
 -----------------------
-Unit tests for the /score and /health endpoints.
+Unit tests for the /score, /health, /detect and /detect/batch endpoints.
 
 Run with:
     pytest backend/ml/tests/test_score_api.py -v
@@ -9,7 +9,7 @@ Run with:
 
 import pytest
 from unittest.mock import patch
-from app import create_app  # adjust import to match your Flask app factory
+from app import create_app
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ def client():
         yield client
 
 
-# ── /health ──────────────────────────────────────────────────────────────────
+# ── /health ───────────────────────────────────────────────────────────────────
 
 def test_health_returns_ok(client):
     res = client.get("/health")
@@ -62,7 +62,7 @@ def test_oversized_batch_returns_413(client):
 # ── /score – validation errors land in results, not as HTTP errors ────────────
 
 def test_missing_content_field_produces_per_story_error(client):
-    stories = [{"uuid": "abc", "title": "t"}]  # content missing
+    stories = [{"uuid": "abc", "title": "t"}]
     res = client.post("/score", json={"stories": stories, "prompt": "test"})
     assert res.status_code == 200
     result = res.get_json()["scores"][0]
@@ -80,12 +80,13 @@ def test_empty_content_produces_per_story_error(client):
 
 # ── /score – happy path ───────────────────────────────────────────────────────
 
-@patch("score_api.score_story")
-def test_valid_story_returns_scores(mock_score, client):
-    mock_score.return_value = {
+@patch("score_api.batch_score")                      # ← fixed: was score_story
+def test_valid_story_returns_scores(mock_batch, client):
+    mock_batch.return_value = [{
+        "uuid": "abc",
         "coherence": 0.8, "creativity": 0.7,
-        "relevance": 0.9, "overall": 0.8
-    }
+        "relevance": 0.9, "overall": 0.8,
+    }]
     stories = [{"uuid": "abc", "title": "Title", "content": "Once upon a time..."}]
     res = client.post("/score", json={"stories": stories, "prompt": "a fairy tale"})
 
@@ -95,15 +96,15 @@ def test_valid_story_returns_scores(mock_score, client):
     assert data["scores"][0]["coherence"] == 0.8
 
 
-@patch("score_api.score_story")
-def test_meta_counts_are_correct(mock_score, client):
-    mock_score.return_value = {
-        "coherence": 0.8, "creativity": 0.7,
-        "relevance": 0.9, "overall": 0.8
-    }
+@patch("score_api.batch_score")                      # ← fixed: was score_story
+def test_meta_counts_are_correct(mock_batch, client):
+    mock_batch.return_value = [
+        {"uuid": "1", "coherence": 0.8, "creativity": 0.7, "relevance": 0.9, "overall": 0.8},
+        {"uuid": "3", "coherence": 0.7, "creativity": 0.6, "relevance": 0.8, "overall": 0.7},
+    ]
     stories = [
         {"uuid": "1", "title": "t", "content": "valid story"},
-        {"uuid": "2", "title": "t"},          # missing content → fails
+        {"uuid": "2", "title": "t"},             # missing content → pre-error
         {"uuid": "3", "title": "t", "content": "another valid story"},
     ]
     res = client.post("/score", json={"stories": stories, "prompt": "test"})
@@ -114,17 +115,13 @@ def test_meta_counts_are_correct(mock_score, client):
     assert meta["failed"] == 1
 
 
-# ── /score – error isolation ──────────────────────────────────────────────────
-
-@patch("score_api.score_story", side_effect=FileNotFoundError("model.pkl not found"))
-def test_model_unavailable_does_not_abort_batch(mock_score, client):
+@patch("score_api.batch_score", side_effect=FileNotFoundError("model.keras not found"))
+def test_model_unavailable_returns_503(mock_batch, client):
     stories = [
         {"uuid": "1", "title": "t", "content": "story one"},
         {"uuid": "2", "title": "t", "content": "story two"},
     ]
     res = client.post("/score", json={"stories": stories, "prompt": "test"})
 
-    assert res.status_code == 200
-    scores = res.get_json()["scores"]
-    assert len(scores) == 2                          # both returned, not aborted
-    assert all(r["error_code"] == "MODEL_UNAVAILABLE" for r in scores)
+    assert res.status_code == 503
+    assert res.get_json()["error_code"] == "MODEL_UNAVAILABLE"

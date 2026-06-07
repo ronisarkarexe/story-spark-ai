@@ -42,6 +42,7 @@ export interface User {
   lastRequestDate: string | null;
   posts: string[];
   isApplyForWriter: boolean;
+
   createdAt: string;
   updatedAt: string;
   profile: UserProfile;

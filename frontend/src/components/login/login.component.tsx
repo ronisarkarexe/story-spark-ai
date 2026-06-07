@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { WandSparkles } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
+
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import {
@@ -11,9 +15,6 @@ import {
 import { storeUserInfo, getUserInfo } from "../../services/auth.service";
 import { USER_ROLE } from "../../constants/role";
 import RedirectComponent from "../redirect.component";
-import toast, { Toaster } from "react-hot-toast";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { WandSparkles } from "lucide-react";
 
 type Inputs = {
   email: string;
@@ -55,7 +56,7 @@ const LoginComponent = () => {
     }
   };
 
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse,) => {
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
     setIsBusy(true);
 
     try {
@@ -200,7 +201,8 @@ const LoginComponent = () => {
             </div>
           </div>
 
-          {/* Social Identity OAuth Block Container */}          <div className="flex justify-center w-full box-border">
+          {/* Social Identity OAuth Block Container */}
+          <div className="flex justify-center w-full box-border">
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}

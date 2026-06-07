@@ -6,4 +6,3 @@ export interface Review {
   imgSrc?: string;
   rating?: number;
 }
-

@@ -1,3 +1,4 @@
+// Initializes and exports the Razorpay instance using credentials from environment variables
 import Razorpay from "razorpay";
 
 let razorpayInstance: Razorpay | null = null;
