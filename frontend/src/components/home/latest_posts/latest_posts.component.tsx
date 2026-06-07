@@ -12,12 +12,6 @@ const LatestPostsComponent = () => {
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
-
-  // Remove duplicate posts based on _id
-  const uniquePosts = Array.from(
-    new Map((data?.posts ?? []).map((post) => [post._id, post])).values(),
-  );
-
   if (isLoading) return <LoadingAnimation />;
 
   if (isError) {
@@ -37,6 +31,7 @@ const LatestPostsComponent = () => {
     );
   }
 
+  // Consolidated Single Deduplication Layer
   const seenIds = new Set<string>();
   const uniquePosts = (data?.posts ?? []).filter((post: Post) => {
     if (!post?._id || seenIds.has(post._id)) return false;
@@ -102,9 +97,7 @@ const LatestPostsComponent = () => {
           })
         ) : (
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400">
-            
             Posts are not available.
-          
           </div>
         )}
       </div>

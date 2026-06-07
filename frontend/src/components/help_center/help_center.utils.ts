@@ -137,7 +137,7 @@ export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
   }
 ];
 
-export const HELP_SECTIONS: HelpSection[] = [
+  export const HELP_SECTIONS_STATIC: HelpSection[] = [
   { 
     id: "help-categories", 
     label: "Categories", 

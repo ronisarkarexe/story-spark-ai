@@ -139,7 +139,7 @@ const HelpSidebar: FC = () => {
                       <div
                         className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 shrink-0 ${
                           isActive
-                            ? `bg-gradient-to-br ${section.color} text-white shadow-md`
+                            ? `bg-gradient-to-br ${(section as any).color || 'from-blue-500 to-indigo-600'} text-white shadow-md`
                             : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 group-hover:text-blue-500"
                         }`}
                       >

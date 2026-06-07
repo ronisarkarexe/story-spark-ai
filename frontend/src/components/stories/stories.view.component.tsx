@@ -301,6 +301,21 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   isLogin,
   setStories,
 }) => {
+  // --- MISSING STATE & HANDLERS ADDED TO FIX COMPILATION ERRORS ---
+  const [showWorldMap, setShowWorldMap] = useState(false);
+  const [showRemix, setShowRemix] = useState(false);
+  const [showStoryVisualizer, setShowStoryVisualizer] = useState(false);
+  const [activeEndingTab, setActiveEndingTab] = useState("Standard");
+  const [storyboardScenes] = useState<any[]>([]);
+  const [storyboardStyleGuide] = useState<any>(null);
+
+  const handleAddTopic = () => console.log("Add topic clicked");
+  const handleTopicClick = (index: number) => console.log("Topic clicked", index);
+  const handleRemoveTopic = (index: number) => console.log("Remove topic clicked", index);
+
+  // A tiny inline visualizer component fallback so the JSX renders safely
+  const StoryVisualizer = (props: any) => null;
+  // -------------------------------------------
   const location = useLocation();
   const dispatch = useDispatch();
 

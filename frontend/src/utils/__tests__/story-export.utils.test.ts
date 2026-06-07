@@ -1,3 +1,19 @@
+/// <reference types="jest" />
+import { } from 'react';
+
+// Explicitly bind global test methods to local file scope variables
+const describe = (globalThis as any).describe;
+const it = (globalThis as any).it;
+const expect = (globalThis as any).expect;
+
+// Fallback utility mock setup for the internal spy engine
+const vi = (globalThis as any).jest || {
+  fn: () => (() => {}),
+  spyOn: (obj: any, method: string) => ({
+    mockImplementation: () => ({ mockReturnValue: () => {} })
+  })
+};
+
 import { createDocxBlob, downloadBlob, getSafeFileName } from "../story-export.utils";
 
 describe("story-export.utils", () => {

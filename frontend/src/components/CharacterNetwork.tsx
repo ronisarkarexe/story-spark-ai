@@ -39,8 +39,9 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  // React Flow State Engine
+  const [nodes, setNodes, onNodesChange] = useNodesState<any>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
 
   // Clear filters
   const handleClearFilters = useCallback(() => {
@@ -81,25 +82,20 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
 
     // 2. Filter relationships
     const filteredRelationships = rawRelationships.filter((rel) => {
-      // Connects visible characters
       const matchesChars = matchedCharIds.has(rel.source) && matchedCharIds.has(rel.target);
-      // Matches type if any selected
       const matchesType = selectedTypes.length === 0 || selectedTypes.includes(rel.type);
-      // Matches min strength
       const matchesStrength = rel.strength >= minStrength;
 
       return matchesChars && matchesType && matchesStrength;
     });
 
-    // 3. To prevent lonely nodes when searching (unless searched directly), we keep characters that have at least one visible relationship,
-    // or if search query is active we keep matching nodes.
+    // 3. Track active visible relationships
     const activeCharIds = new Set<string>();
     filteredRelationships.forEach((rel) => {
       activeCharIds.add(rel.source);
       activeCharIds.add(rel.target);
     });
 
-    // Final list of characters to display: matched by search, or participating in active relationships
     const finalCharacters = rawCharacters.filter((char) => {
       if (searchLower) {
         return char.name.toLowerCase().includes(searchLower);
@@ -124,7 +120,6 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
       return;
     }
 
-    // Positions layout: circular
     const radius = Math.max(160, chars.length * 28);
     const cx = 350;
     const cy = 250;
@@ -159,7 +154,7 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
           strength: rel.strength,
           interactionCount: rel.interactionCount,
         },
-        animated: rel.strength > 70, // Animate strong relations for dynamic feel
+        animated: rel.strength > 70,
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 12,
@@ -248,7 +243,7 @@ const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
           onNodeClick={onNodeClick}
           onEdgeClick={onEdgeClick}
           onPaneClick={onPaneClick}
-          nodeTypes={nodeTypes}
+          nodeTypes={nodeTypes as any}
           edgeTypes={edgeTypes}
           fitView
           fitViewOptions={{ padding: 0.2 }}

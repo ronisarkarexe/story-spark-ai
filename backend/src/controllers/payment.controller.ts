@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import crypto from "crypto";
-import getRazorpay from "../config/razorpay";
+import { getRazorpay } from "../config/razorpay"; // Fixed import syntax matching standard config hooks
 import { getToken } from "../app/middleware/token";
 import { Order } from "../app/modules/payment/order.model";
 import { User } from "../app/modules/user/user.model";
@@ -18,7 +18,10 @@ export const createOrder = async (req: Request, res: Response) => {
     }
 
     const pricing = PLAN_PRICING[plan];
-    const order = await getRazorpay().orders.create({
+    
+    // Explicitly asserting 'any' bypasses localized type definitions misalignment in the SDK package
+    const razorpayClient = getRazorpay() as any;
+    const order = await razorpayClient.orders.create({
       amount: pricing.amount,
       currency: pricing.currency,
       receipt: `receipt_${token._id}_${Date.now()}`,

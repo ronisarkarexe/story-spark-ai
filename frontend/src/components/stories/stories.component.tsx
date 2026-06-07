@@ -410,9 +410,16 @@ const StoriesComponent = () => {
     }
   }, []);
 
-  const [stories, setStories] = useState<IStories[]>(
-    draft?.stories?.length ? getUniqueStories(draft.stories) : []
-  );
+ // Define this function right above your state hooks so it's ready to use!
+function getUniqueStories(stories: any[]) {
+  const seen = new Set();
+  return stories.filter(s => s?._id && !seen.has(s._id) && seen.add(s._id));
+}
+
+// Now your state hook can safely call it without crashing:
+const [stories, setStories] = useState<IStories[]>(
+  draft?.stories?.length ? getUniqueStories(draft.stories) : []
+);
   
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -1276,7 +1283,7 @@ const StoriesComponent = () => {
         isLogin={login}
         setStories={setStories}
         onPublishSuccess={handlePublishSuccess}
-        isLoading={loading}
+        
       />
 
       <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>

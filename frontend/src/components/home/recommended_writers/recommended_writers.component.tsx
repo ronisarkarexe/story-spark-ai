@@ -57,46 +57,44 @@ const RecommendedWritersComponent = () => {
         </h3>
 
         <div className="space-y-4">
-          {recommendedWriters.map((writer, index) => (
-            <div key={writer.id} className="flex min-w-0 items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center">
-                <img
-                  className="h-10 w-10 shrink-0 rounded-full"
-                  src={writer.image}
-                  alt={writer.name}
-                />
+          {recommendedWriters.map((writer, index) => {
+            // Check if this specific writer index is inside our state tracking array
+            const isFollowingWriter = following.includes(index);
 
-                <div className="ml-3 min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-700 dark:text-gray-400">
-                    {writer.name}
-                  </p>
-                  <p className="truncate text-xs text-slate-500 dark:text-gray-500">
-                    {writer.role}
-                  </p>
+            return (
+              <div key={writer.id} className="flex min-w-0 items-center justify-between gap-3">
+                <div className="flex min-w-0 flex-1 items-center">
+                  <img
+                    className="h-10 w-10 shrink-0 rounded-full"
+                    src={writer.image}
+                    alt={writer.name}
+                  />
+
+                  <div className="ml-3 min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-700 dark:text-gray-400">
+                      {writer.name}
+                    </p>
+                    <p className="truncate text-xs text-slate-500 dark:text-gray-500">
+                      {writer.role}
+                    </p>
+                  </div>
                 </div>
+
                 <button 
                   disabled={isLoading} 
-                  onClick={() => toggleFollow(writer.id)} 
+                  onClick={() => toggleFollow(index, writer.id)} 
+                  aria-label={isFollowingWriter ? `Unfollow ${writer.name}` : `Follow ${writer.name}`}
                   className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-150 active:scale-[0.97] disabled:opacity-50 select-none cursor-pointer uppercase tracking-wider ${
-                    isFollowing
+                    isFollowingWriter
                       ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
                       : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-sm shadow-blue-500/10"
                   }`}
                 >
-                  {isFollowing ? "Following" : "Follow"}
+                  {isFollowingWriter ? "Following" : "Follow"}
                 </button>
               </div>
-
-              <button
-                onClick={() => toggleFollow(index, writer.id)}
-                disabled={isLoading}
-                aria-label={following.includes(index) ? `Unfollow ${writer.name}` : `Follow ${writer.name}`}
-                className="!rounded-button text-indigo-600 text-sm font-medium hover:text-indigo-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {following.includes(index) ? "Following" : "Follow"}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -131,7 +129,7 @@ const RecommendedWritersComponent = () => {
                 <div className="flex flex-col gap-3">
                   <Link
                     to="/login"
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-500 hover:to-indigo-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
                   >
                     Log In
                   </Link>

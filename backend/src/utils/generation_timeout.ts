@@ -33,7 +33,7 @@ export const raceGenerationWithTimeout = async <T>(
         controller.abort();
         resolve(result);
       })
-     export const raceGenerationWithTimeout = async <T>(
+     const raceGenerationWithTimeout = async <T>(
   operation: (signal: AbortSignal) => Promise<T>,
   timeLimitMs: number
 ): Promise<T> => {
