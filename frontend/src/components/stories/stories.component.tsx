@@ -499,7 +499,7 @@ useEffect(() => {
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const timeoutRef = useRef<any>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const debouncedPrompt = useDebounce(textareaValue, 500);
   
   const playSoundtrack = (genre: string) => {
@@ -788,9 +788,6 @@ useEffect(() => {
     setIsRecentPromptsOpen((prev) => !prev);
   }, []);
 
-  const handleToggleDropdown = useCallback(() => {
-    setIsDropdownOpen((prev) => !prev);
-  }, []);
 
   const recentPromptsText = useMemo(() => ({
     recentPrompts: text.recentPrompts,

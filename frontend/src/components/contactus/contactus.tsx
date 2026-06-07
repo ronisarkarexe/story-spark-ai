@@ -7,7 +7,6 @@ import {
   Pencil,
   Send,
   GitBranch,
-  Sparkles,
   CheckCircle2,
   AlertCircle,
   ArrowUpRight,
