@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
@@ -194,6 +195,10 @@ const HeroSectionComponent = () => {
   const nextStarId = useRef(1);
   const starTimers = useRef<number[]>([]);
   const badgeRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  const hoverScale = shouldReduceMotion ? 1 : 1.03;
+  const tapScale = shouldReduceMotion ? 1 : 0.97;
 
   // GSAP badge float + glow + animated border
   useGSAP(() => {
@@ -265,6 +270,14 @@ const HeroSectionComponent = () => {
   }, []);
 
   return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden transition-colors duration-300 w-full box-border"
+    >
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-sky-200/40 dark:bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-10 select-none transition-colors duration-300" />
+      <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-fuchsia-200/30 dark:bg-purple-600/10 rounded-full blur-[120px] pointer-events-none -z-10 select-none transition-colors duration-300" />
     <div className="relative min-h-screen bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-300">
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-sky-200/55 dark:bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10 transition-colors duration-300" />
       <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-fuchsia-200/45 dark:bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10 transition-colors duration-300" />
@@ -284,6 +297,10 @@ const HeroSectionComponent = () => {
             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 tracking-wide">StorySparkAI v2.0 is live</span>
           </div>
 
+          <motion.h1
+            variants={itemVariants}
+            className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none"
+          >
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             Ignite Your Imagination With <br className="hidden sm:block" />
             <span className="hero-gradient-text pb-2">
@@ -295,6 +312,20 @@ const HeroSectionComponent = () => {
             Create, edit, and generate engaging multiple story variations from a single prompt.
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
           </p>
+          
+          <motion.div
+            variants={itemVariants}
+            className="w-full box-border flex flex-col items-center justify-center"
+          >
+            <div className="relative max-w-3xl w-full box-border">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
+                <Link to="/stories" className="w-full sm:w-auto focus:outline-none" tabIndex={-1}>
+                  <motion.button
+                    whileHover={{ scale: hoverScale, y: shouldReduceMotion ? 0 : -2 }}
+                    whileTap={{ scale: tapScale }}
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/25 transition-[colors,box-shadow] duration-200 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
+                  >
+                    <i className="fa fa-wand-magic-sparkles text-sm"></i>
           <div className="flex-grow flex flex-col items-center justify-center">
             <div className="relative max-w-3xl w-full before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-purple-500/20 before:via-indigo-500/20 before:to-blue-500/20 before:blur-xl before:animate-pulse">
               <div className="flex flex-wrap items-center justify-center gap-4">
@@ -302,13 +333,19 @@ const HeroSectionComponent = () => {
                   <button className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-blue-500/25 dark:shadow-indigo-500/15 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
                     <i className="fa fa-wand-magic-sparkles"></i>
                     <span>Get Started</span>
-                  </button>
+                  </motion.button>
                 </Link>
+                <Link to="/collab" className="w-full sm:w-auto focus:outline-none" tabIndex={-1}>
+                  <motion.button
+                    whileHover={{ scale: hoverScale, y: shouldReduceMotion ? 0 : -2 }}
+                    whileTap={{ scale: tapScale }}
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:shadow-md transition-[colors,box-shadow] duration-200 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
+                  >
                 <Link to="/collab">
                   <button className="relative px-8 py-3.5 rounded-xl bg-white/80 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white font-semibold shadow-md hover:bg-slate-50 dark:hover:bg-white/10 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
                     <span>✍️</span>
                     <span>Collab Mode</span>
-                  </button>
+                  </motion.button>
                 </Link>
               </div>
             </div>
@@ -328,6 +365,11 @@ const HeroSectionComponent = () => {
         </div>
       </div>
 
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
+        <motion.div
+          variants={itemVariants}
+          className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border"
+        >
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((feature, index) => (

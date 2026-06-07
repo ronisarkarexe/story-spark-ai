@@ -1,59 +1,66 @@
-import React, { Suspense } from "react";
+import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTopButton from "./components/ScrollToTopButton";
+import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import HeroSectionComponent from "./components/hero/hero_section.component";
+import HomeComponent from "./components/home/home.component";
+import NotFoundComponent from "./components/not-found.component";
+import SimpleProtectedRoute from "./components/ProtectedRoute";
+import RootLayout from "./components/layout/root_layout.component";
+import DashboardLayout from "./components/dashboard/dashboard_layout.component";
+import LoadingAnimation from "./components/loading/loading.component";
+import CollabRoom from "./components/collab/CollabRoom";
 
 import { USER_ROLE } from "./constants/role";
 import { getUserInfo } from "./services/auth.service";
 
-import RootLayout from "./components/layout/root_layout.component";
-import DashboardLayout from "./components/dashboard/dashboard_layout.component";
-import AboutUsComponent from "./components/footer/about-us.tsx";
-import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
-import BlogComponent from "./components/footer/blog.tsx";
-import BookmarksComponent from "./components/post/bookmarks.component";
-import BranchingStory from "./components/stories/BranchingStory";
-import CareerComponent from "./components/footer/career.tsx";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
-import CommunityComponent from "./components/community/community.component";
-import Contact from "./components/contactus/contactus";
-import ContributorsComponent from "./components/footer/contributors";
-import CookiePolicy from "./components/footer/cookie-policy.tsx";
-import DashboardComponent from "./components/dashboard/dashboard.component";
+// Lazy loaded page components
+const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
+const WritingAssistantComponent = lazy(() => import("./components/writing-assistant/writing_assistant.component"));
+const StoryInspirationWrapper = lazy(() => import("./components/StoryInspirationWrapper"));
+const LoginComponent = lazy(() => import("./components/login/login.component"));
+const SignUpComponent = lazy(() => import("./components/signup/signup.component"));
+const ForgotPasswordComponent = lazy(() => import("./components/login/forgot_password.component"));
+const PricingComponent = lazy(() => import("./components/pricing/pricing.component"));
+const PostDetailsComponent = lazy(() => import("./components/post/post.details.component"));
+const Contact = lazy(() => import("./components/contactus/contactus"));
+const AboutUsComponent = lazy(() => import("./components/footer/about-us.tsx"));
+const CareerComponent = lazy(() => import("./components/footer/career.tsx"));
+const BlogComponent = lazy(() => import("./components/footer/blog.tsx"));
+const PrivacyPolicy = lazy(() => import("./components/footer/Privacy.tsx"));
+const CookiePolicy = lazy(() => import("./components/footer/cookie-policy.tsx"));
+const Terms = lazy(() => import("./components/footer/terms.tsx"));
+const HelpCenterComponent = lazy(() => import("./components/help_center/help_center.component"));
+const GuidelinesComponent = lazy(() => import("./components/footer/guidelines.tsx"));
+const ContributorsComponent = lazy(() => import("./components/footer/contributors"));
+const ReportBug = lazy(() => import("./components/report-bug/ReportBug"));
+const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 
-import ExploreComponent from "./components/post/post.component";
-import ForgotPasswordComponent from "./components/login/forgot_password.component";
-import GuidelinesComponent from "./components/footer/guidelines.tsx";
-import HelpCenterComponent from "./components/help_center/help_center.component";
-import HeroSectionComponent from "./components/hero/hero_section.component";
-import HomeComponent from "./components/home/home.component";
-import LoginComponent from "./components/login/login.component";
-import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
-import NotFoundComponent from "./components/not-found.component";
+// Protected routes (logged-in users)
+const ExploreComponent = lazy(() => import("./components/post/post.component"));
+const BookmarksComponent = lazy(() => import("./components/post/bookmarks.component"));
+const CommunityComponent = lazy(() => import("./components/community/community.component"));
+const ResourcesListComponent = lazy(() => import("./components/community/resources_list.component"));
+const ResourceDetailComponent = lazy(() => import("./components/community/resource_detail.component"));
 
-import PostDetailsComponent from "./components/post/post.details.component";
-import PostListsComponent from "./components/dashboard/posts/post_lists.component";
-import PricingComponent from "./components/pricing/pricing.component";
-import PrivacyPolicy from "./components/footer/Privacy.tsx";
-import ProfileComponent from "./components/dashboard/profile/profile.component";
-import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
-import ReportBug from "./components/report-bug/ReportBug";
-import StoryWorkspace from "./components/story/StoryWorkspace";
-import ResourceDetailComponent from "./components/community/resource_detail.component";
-import ResourcesListComponent from "./components/community/resources_list.component";
-import SettingComponent from "./components/dashboard/settings/settings.component";
-import SignUpComponent from "./components/signup/signup.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
+// Story generation routes
+const StoriesComponent = lazy(() => import("./components/stories/stories.component"));
+const BranchingStory = lazy(() => import("./components/stories/BranchingStory"));
+const StoryWorkspace = lazy(() => import("./components/story/StoryWorkspace"));
 
-import ScrollToTop from "./components/ScrollToTop";
-import ScrollToTopButton from "./components/ScrollToTopButton";
-import StoriesComponent from "./components/stories/stories.component";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import TemplatesComponent from "./components/templates/templates.component";
-import Terms from "./components/footer/terms.tsx";
-import UserComponent from "./components/dashboard/users/user.component";
-import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import LoadingAnimation from "./components/loading/loading.component";
+// Collab routes
+const CollabHome = lazy(() => import("./components/collab/CollabHome"));
+
+// Dashboard routes
+const DashboardComponent = lazy(() => import("./components/dashboard/dashboard.component"));
+const ProfileComponent = lazy(() => import("./components/dashboard/profile/profile.component"));
+const WriterApplicationComponent = lazy(() => import("./components/dashboard/writers/writer_application.component"));
+const UserComponent = lazy(() => import("./components/dashboard/users/user.component"));
+const SettingComponent = lazy(() => import("./components/dashboard/settings/settings.component"));
+const PublishedStoriesComponent = lazy(() => import("./components/dashboard/posts/published_stories.component"));
+const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analytics.page"));
+const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
@@ -155,6 +162,8 @@ const router = createBrowserRouter([
       { path: "*", element: <NotFoundComponent /> },
     ],
   },
+
+  { path: "/auth/email-validation", element: <EmailValidationComponent /> },
 
   // Isolated layout branches
   {

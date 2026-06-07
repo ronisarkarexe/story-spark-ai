@@ -67,7 +67,7 @@
 2. **Install dependencies** (single install at the repo root — npm workspaces)
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Environment files**
@@ -93,11 +93,11 @@
    - **Both** (two terminals or one combined process):
 
      ```bash
-     npm run dev
+     pnpm dev
      ```
 
-   - **Backend only:** `npm run dev:backend` — API (default port **5000** if `PORT` is unset).
-   - **Frontend only:** `npm run dev:frontend` — Vite dev server on **http://localhost:4001**
+   - **Backend only:** `pnpm dev:backend` — API (default port **5000** if `PORT` is unset).
+   - **Frontend only:** `pnpm dev:frontend` — Vite dev server on **http://localhost:4001**
 
 6. **Production builds**
 
@@ -216,9 +216,9 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 #### Dependency installation issues
 
-- **Problem:** `npm install` fails or installed packages behave unexpectedly.
+- **Problem:** `pnpm install` fails or installed packages behave unexpectedly.
 - **Possible cause:** Cached dependencies, a stale lock file, or an incomplete install.
-- **Suggested solution:** Delete `node_modules` and the lock file, then reinstall dependencies from the repository root with `npm install`.
+- **Suggested solution:** Delete `node_modules` and the lock file, then reinstall dependencies from the repository root with `pnpm install`.
 
 #### Admin seeding issues
 
@@ -236,7 +236,7 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 1. Fork the repository and clone your fork.
 2. Create a branch: `git checkout -b your-feature-branch`
-3. Install with `npm install` at the repo root, configure `.env` files, then `git add`, `git commit`, `git push`, and open a pull request.
+3. Install with `pnpm install` at the repo root, configure `.env` files, then `git add`, `git commit`, `git push`, and open a pull request.
 
 
 
@@ -263,7 +263,7 @@ Running into issues during setup? Here are the most common errors and how to fix
 
 Then re-run:
 ```bash
-npm install
+pnpm install
 ```
 
 ---
@@ -300,7 +300,7 @@ Once the update completes, click **Try Again** in Docker Desktop. If the issue p
 
 **Fix:** At the **repo root**, regenerate the lockfile:
 ```bash
-npm install
+pnpm install
 ```
 Then commit the updated `package-lock.json` before rebuilding your Docker image:
 ```bash

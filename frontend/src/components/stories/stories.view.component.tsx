@@ -24,6 +24,8 @@ import {
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
 
+
+
 // --- Custom Error Classes & Helper Types ---
 export class ApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -287,6 +289,10 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+
+
+
+
 
 
 
@@ -885,6 +891,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
               </div>
             )}
           </div>
+
         </div>
 
         {/* ── Right column: Preview ── */}
