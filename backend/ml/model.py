@@ -14,6 +14,13 @@ from tensorflow.keras.layers import (
     TimeDistributed, Input, Dropout
 )
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import (
+    EarlyStopping,
+    ModelCheckpoint,
+    Callback,
+)
+
+import os
 
 SEQ_LEN    = 10
 N_FEATURES = 8
@@ -91,6 +98,71 @@ def build_model(
     )
 
     return model
+
+
+def get_callbacks(
+    checkpoint_path: str = "saved/model.keras",
+    patience: int = 5,
+    min_delta: float = 1e-4,
+) -> list[Callback]:
+    """
+    Return standard training callbacks for the autoencoder.
+
+    Includes:
+    - EarlyStopping  : stops training when val_loss stops improving,
+                       restores the best weights automatically
+    - ModelCheckpoint: saves the best model to disk during training
+
+    Parameters
+    ----------
+    checkpoint_path : path to save the best model (default saved/model.keras)
+    patience        : epochs to wait before early stopping (default 5)
+    min_delta       : minimum improvement to count as progress (default 1e-4)
+
+    Returns
+    -------
+    list of Keras callbacks ready to pass to model.fit()
+
+    Example
+    -------
+    model.fit(
+        X_train, X_train,
+        validation_split=0.1,
+        epochs=100,
+        callbacks=get_callbacks(),
+    )
+    """
+    if patience < 1:
+        raise ValueError(f"patience must be >= 1, got {patience}")
+    
+    if min_delta < 0:
+        raise ValueError(f"min_delta must be >= 0, got {min_delta}")
+    
+    if not isinstance(checkpoint_path, str) or not checkpoint_path.strip():
+        raise ValueError("checkpoint_path must be a non-empty string")
+
+    early_stopping = EarlyStopping(
+        monitor="val_loss",
+        patience=patience,
+        min_delta=min_delta,
+        restore_best_weights=True,
+        verbose=1,
+    )
+
+    # Ensure checkpoint directory exists before saving
+    checkpoint_dir = os.path.dirname(checkpoint_path)
+    
+    if checkpoint_dir:
+        os.makedirs(checkpoint_dir, exist_ok=True)
+    
+    checkpoint = ModelCheckpoint(
+    filepath=checkpoint_path,
+    monitor="val_loss",
+    save_best_only=True,
+    verbose=1,
+    )
+
+    return [early_stopping, checkpoint]
 
 
 def model_summary() -> None:

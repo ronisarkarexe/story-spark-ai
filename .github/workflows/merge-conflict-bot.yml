@@ -1,0 +1,169 @@
+name: 🔀 Merge Conflict Bot
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  check-conflicts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for merge conflicts
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const number = context.payload.pull_request.number;
+            const username = context.payload.pull_request.user.login;
+
+            if (context.payload.pull_request.user.type === 'Bot') return;
+
+            // Retrieve PR details to get mergeable status (GitHub calculates this asynchronously)
+            let pr;
+            let retries = 5;
+            while (retries > 0) {
+              const res = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: number,
+              });
+              pr = res.data;
+              
+              if (pr.mergeable !== null) {
+                break;
+              }
+              
+              core.info('Mergeability status is null, waiting 5 seconds...');
+              await new Promise(resolve => setTimeout(resolve, 5000));
+              retries--;
+            }
+
+            core.info(`PR #${number} Mergeable Status: ${pr.mergeable}`);
+
+            const CONFLICT_LABEL = 'conflicts';
+            const COMMENT_MARKER = '<!-- merge-conflict-bot-marker -->';
+
+            // Retrieve comments to check for existing bot comments
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: number,
+              per_page: 100
+            });
+            const existingComment = comments.find(c => c.body.includes(COMMENT_MARKER));
+
+            if (pr.mergeable === false) {
+              core.info('Merge conflict detected. Applying label and posting comment...');
+
+              // 1. Ensure the conflicts label exists in the repo, then add it to the PR
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name: CONFLICT_LABEL });
+              } catch (e) {
+                core.info(`Label '${CONFLICT_LABEL}' does not exist, creating it...`);
+                try {
+                  await github.rest.issues.createLabel({
+                    owner,
+                    repo,
+                    name: CONFLICT_LABEL,
+                    color: 'd73a4a',
+                    description: 'This pull request has merge conflicts that must be resolved.'
+                  });
+                } catch (err) {
+                  core.warning(`Could not create label: ${err.message}`);
+                }
+              }
+
+              try {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: number,
+                  labels: [CONFLICT_LABEL]
+                });
+              } catch (e) {
+                core.warning(`Could not add label: ${e.message}`);
+              }
+
+              // 2. Post or update the conflict comment
+              const commentBody = [
+                COMMENT_MARKER,
+                `## 🔀 Merge Conflict Detected — @${username}`,
+                ``,
+                `Oh no! It looks like this pull request has merge conflicts with the target branch. A maintainer cannot merge this until the conflicts are resolved.`,
+                ``,
+                `### 🛠️ How to resolve conflicts:`,
+                `1. Fetch the latest changes from upstream:`,
+                `   \`\`\`bash`,
+                `   git checkout ${pr.head.ref}`,
+                `   git pull origin main`,
+                `   \`\`\``,
+                `2. Identify and resolve any conflicted files in your editor (marked by \`<<<<<<\`, \`=======\`, \`>>>>>>>\`).`,
+                `3. Add and commit the resolved changes:`,
+                `   \`\`\`bash`,
+                `   git add .`,
+                `   git commit -m "chore: resolve merge conflicts"`,
+                `   \`\`\``,
+                `4. Push the updates to your branch:`,
+                `   \`\`\`bash`,
+                `   git push origin ${pr.head.ref}`,
+                `   \`\`\``,
+                ``,
+                `Once you push the resolved commits, this check will automatically run again and update this status.`,
+              ].join('\n');
+
+              if (existingComment) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existingComment.id,
+                  body: commentBody
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: number,
+                  body: commentBody
+                });
+              }
+            } else if (pr.mergeable === true) {
+              core.info('PR is mergeable. Cleaning up conflict labels and comments if present...');
+
+              // 1. Remove the conflicts label if it exists on the PR
+              try {
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: number,
+                  name: CONFLICT_LABEL
+                });
+                core.info(`Removed '${CONFLICT_LABEL}' label.`);
+              } catch (e) {
+                // Ignore if the label wasn't there
+                core.info(`Label '${CONFLICT_LABEL}' was not present or could not be removed.`);
+              }
+
+              // 2. Update the existing comment to success, or do nothing if no comment exists
+              if (existingComment && !existingComment.body.includes('Passed')) {
+                const commentBody = [
+                  COMMENT_MARKER,
+                  `## ✅ Merge Conflicts Resolved — @${username}`,
+                  ``,
+                  `All conflicts have been successfully resolved! Thank you. This pull request is now ready for a maintainer review.`,
+                ].join('\n');
+
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existingComment.id,
+                  body: commentBody
+                });
+              }
+            }

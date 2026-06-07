@@ -11,7 +11,16 @@ const router = express.Router();
 router.get("/lists", auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN), UserController.getAllUsers);
 
 // Profile
-router.get("/profile", UserController.getProfileInfo);
+router.get(
+  "/profile",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  UserController.getProfileInfo,
+);
 
 // Apply for Writer
 router.get(
@@ -88,6 +97,40 @@ router.get(
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
   UserController.getFollowStatus
+);
+
+// Streaks and Achievements routes
+router.get(
+  "/me/streak",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  UserController.getWritingStreak
+);
+
+router.get(
+  "/me/achievements",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  UserController.getAchievements
+);
+
+router.post(
+  "/me/streak/update",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  UserController.updateWritingStreak
 );
 
 export const UserRouter = router;

@@ -4,7 +4,7 @@ import { Post } from "../post/post.model";
 import { User } from "../user/user.model";
 import { ITokenPayload } from "../../../interfaces/token";
 import mongoose from "mongoose";
-import { IStoryVersion } from "../story_version/story_version.interface";
+import { IPost } from "../post/post.interface";
 const getPersonalizedRecommendations = async (token: ITokenPayload) => {
   const user = await User.findById(token._id);
   if (!user) {
@@ -21,7 +21,7 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
     query._id = { $nin: readingHistory };
   }
 
-  let recommendations: IStoryVersion[] = [];
+  let recommendations: IPost[] = [];
 
   // If user has preferences, try to match them
   if (readingPreferences) {
@@ -55,7 +55,7 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
   // Fallback: If no preferences or not enough recommendations, get top popular posts
   if (recommendations.length < 10) {
     const limit = 10 - recommendations.length;
-    const recommendationIds = recommendations.map(r => r._id);
+    const recommendationIds = recommendations.map(r => (r as any)._id);
     
     // Add existing recommendations to exclusion list to avoid duplicates
     const fallbackQuery = { 

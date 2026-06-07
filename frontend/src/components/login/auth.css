@@ -1,0 +1,533 @@
+/* ═══════════════════════════════════════════════
+   STORY SPARK AI AUTHENTICATION DESIGN SYSTEM
+   File: auth.css
+   ═══════════════════════════════════════════════ */
+
+/* ── Design System: Spacing Grid & Layout Tokens ── */
+:root {
+    --ds-space-1: 4px;
+    --ds-space-2: 8px;
+    --ds-space-3: 12px;
+    --ds-space-4: 16px;
+    --ds-space-6: 24px;
+    --ds-space-8: 32px;
+    --ds-space-16: 64px;
+    --ds-input-height: 50px;
+    --ds-btn-height: 48px;
+    --ds-btn-max-width: 360px;
+    --ds-card-max-width: 420px;
+}
+
+html, body {
+    touch-action: pan-x pan-y;
+}
+
+body {
+    min-height: 100vh;
+    background-image:
+        radial-gradient(circle at top left, rgba(208, 188, 255, 0.16), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(255, 182, 106, 0.12), transparent 20%),
+        linear-gradient(180deg, #090b12 0%, #0d111b 100%);
+    background-color: #090b12;
+    scroll-behavior: smooth;
+}
+/* ── Keyframe Animations ── */
+@keyframes float {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    50% { transform: translateY(-20px) translateX(10px); }
+}
+
+@keyframes spark-glow {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+}
+
+/* ── Particles Canvas (Canvas-driven background) ── */
+
+#particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.left-pane-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.22), transparent 35%),
+    radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.18), transparent 35%),
+    radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.12), transparent 45%);
+  z-index: 0;
+  filter: blur(10px);
+}
+
+.hero-gradient {
+  background: linear-gradient(
+    90deg,
+    #a855f7,
+    #ec4899,
+    #f97316
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-panel {
+  background: rgba(10, 15, 35, 0.72);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.auth-container {
+  background: #050816;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+
+.auth-divider-text {
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#particle-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Form Transition (Smooth tab switching) ── */
+#auth-form {
+    transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#auth-form.form-transitioning {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+}
+
+/* ── Legal Modal Styles ── */
+#legal-modal.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#legal-modal.show #legal-modal-content {
+    transform: scale(1);
+}
+
+/* ── Google Auth Loading/Status Banner ── */
+#google-auth-status {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#google-auth-status.hidden {
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+}
+
+/* ── Gradients & Glassmorphic Utilities ── */
+.hero-gradient,
+.spark-gradient-text {
+    background: linear-gradient(135deg, #7c3aed 0%, #ec4899 45%, #f97316 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.glass-panel {
+    backdrop-filter: blur(24px);
+    background: rgba(11, 14, 25, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+}
+
+.auth-tab-active {
+    color: #d0bcff;
+    border-bottom: 2px solid #d0bcff;
+}
+
+/* ── Left Pane Radial Overlays ── */
+.left-pane-overlay,
+.left-pane-radial {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 25% 35%, rgba(124, 58, 237, 0.16) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 70%, rgba(251, 171, 255, 0.08) 0%, transparent 52%),
+                radial-gradient(ellipse at 60% 20%, rgba(249, 115, 22, 0.08) 0%, transparent 45%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.left-pane-mobile {
+    min-height: 260px;
+}
+
+/* ── Design System: Form Input Custom Fields ── */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    height: var(--ds-input-height);
+    font-size: 15px;
+    line-height: calc(var(--ds-input-height) - 2px);
+    padding: 0 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #e1e2ea;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: block;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.auth-field {
+    appearance: none;
+    -webkit-appearance: none;
+    font-family: inherit;
+    width: 100% !important;
+    max-width: 100%;
+    height: var(--ds-input-height);
+    line-height: var(--ds-input-height);
+    box-sizing: border-box; 
+    padding-left: 44px !important; 
+    padding-right: 16px !important;
+    overflow: hidden;
+}
+.auth-field::placeholder {
+    line-height: var(--ds-input-height);
+}
+
+.auth-field:-webkit-autofill,
+.auth-field:-webkit-autofill:hover,
+.auth-field:-webkit-autofill:focus {
+    -webkit-text-fill-color: #e1e2ea;
+    box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.04) inset;
+    transition: background-color 9999s ease-in-out 0s;
+}
+
+.input-icon-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.ds-input-group {
+    position: relative;
+}
+
+.ds-input-group .ds-input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(203, 195, 215, 0.8);
+    font-size: 18px;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.ds-input-group.has-action .ds-input {
+    padding-right: 44px;
+}
+
+.ds-input-group .ds-input-action {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: rgba(203, 195, 215, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+.ds-input-group .ds-input-action:hover {
+    color: #d0bcff;
+}
+
+input::placeholder {
+    color: rgba(203, 195, 215, 0.7);
+}
+
+input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16), 0 0 16px rgba(124, 58, 237, 0.08);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+/* ── Design System: Submit Buttons ── */
+.ds-btn-submit {
+    height: var(--ds-btn-height);
+    max-width: var(--ds-btn-max-width);
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    background: linear-gradient(135deg, #7c3aed 0%, #f97316 100%);
+    color: #ffffff;
+    box-shadow: 0 0 32px rgba(0, 97, 182, 0.32), 0 8px 22px rgba(0, 0, 0, 0.24);
+    border-radius: 14px;
+    transition: box-shadow 0.3s ease, transform 0.2s ease, opacity 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.ds-btn-submit:hover {
+    box-shadow: 0 0 42px rgba(249, 115, 22, 0.35), 0 10px 26px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+}
+
+.ds-btn-submit:active {
+    transform: scale(0.985);
+}
+
+/* ── Design System: Google Buttons ── */
+.ds-btn-google {
+    height: 44px;
+    max-width: var(--ds-btn-max-width);
+    border-radius: 14px;
+    margin-left: auto;
+    margin-right: auto;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f8fafc;
+}
+
+.ds-btn-google:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ── Centered Layout Panel Constraints ── */
+.auth-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Constrain the authentication card so inputs don't overflow their container */
+.auth-form-card {
+    max-width: var(--ds-card-max-width);
+    width: 100%;
+}
+
+/* ── Mobile Layout Media Queries ── */
+@media (max-width: 767px) {
+    .auth-container {
+        max-width: 100%;
+    }
+    .left-pane-mobile {
+        height: 260px;
+        min-height: 260px;
+    }
+}
+
+/* ── Field Helpers, Errors, Alerts ── */
+.ds-help {
+    margin-top: 8px;
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: rgba(203, 195, 215, 0.8);
+}
+
+.ds-error {
+    margin-top: 8px;
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: #ffb4ab;
+    display: none;
+}
+
+.ds-error.is-visible {
+    display: block;
+}
+
+/* ── Password Match Feedback ── */
+.ds-feedback {
+    margin-top: 8px;
+    font-size: 12.5px;
+    line-height: 1.35;
+    display: none;
+    align-items: center;
+    gap: 6px;
+}
+
+.ds-feedback.is-visible {
+    display: flex;
+}
+
+.ds-feedback.match {
+    color: #6ee7b7;
+}
+
+.ds-feedback.match::before {
+    content: "✓";
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.ds-feedback.mismatch {
+    color: #ffb4ab;
+}
+
+.ds-feedback.mismatch::before {
+    content: "✕";
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.ds-alert {
+    margin-bottom: 14px;
+    padding: 12px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.04);
+    color: #e1e2ea;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.ds-alert.hidden {
+    display: none;
+}
+
+.ds-alert[data-variant="error"] {
+    border-color: rgba(255, 180, 171, 0.28);
+    background: rgba(147, 0, 10, 0.22);
+}
+
+.ds-alert[data-variant="success"] {
+    border-color: rgba(110, 231, 183, 0.26);
+    background: rgba(16, 185, 129, 0.12);
+}
+
+/* ── Input State Styling (used by JS via aria-invalid/disabled) ── */
+.ds-input {
+    width: 100%;
+}
+
+.ds-input.with-icon {
+    padding-left: 44px;
+}
+
+.ds-input[aria-invalid="true"] {
+    border-color: rgba(255, 180, 171, 0.55) !important;
+    box-shadow: 0 0 0 3px rgba(255, 180, 171, 0.12) !important;
+}
+
+input:disabled,
+button:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+}
+
+/* ── Password Strength Meter ── */
+.ds-meter {
+    margin-top: 10px;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+
+.ds-meter-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(255, 180, 171, 0.9) 0%, rgba(208, 188, 255, 0.9) 55%, rgba(255, 182, 144, 0.95) 100%);
+    transition: width 240ms ease;
+}
+
+/* ── Button Loading Spinner ── */
+.ds-btn-submit {
+    gap: 10px;
+}
+
+.ds-spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: rgba(255, 255, 255, 0.95);
+    animation: ds-spin 0.8s linear infinite;
+}
+
+.ds-spinner.hidden {
+    display: none;
+}
+
+@keyframes ds-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; }
+    #auth-form,
+    .ds-btn-submit,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    .ds-meter-bar {
+        transition: none !important;
+    }
+    .ds-spinner { animation: none !important; }
+}
+
+.auth-field,
+.input-icon-wrapper {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+/* ── Fix: Login textbox alignment within container ── */
+.auth-form-card .ds-input-group,
+.auth-form-card .input-icon-wrapper,
+.auth-form-card input[type="text"],
+.auth-form-card input[type="email"],
+.auth-form-card input[type="password"] {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-form-card {
+  padding: 0 1rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}

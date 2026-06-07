@@ -47,6 +47,11 @@ const ThemeToggle: React.FC = () => {
       Math.max(y, innerHeight - y)
     );
 
+    const isDarkCurrent = isDark;
+    
+    // Add a class for scoping theme transition styles
+    document.documentElement.classList.add("theme-transitioning");
+
     const transition = doc.startViewTransition(() => {
       flushSync(() => {
         toggleTheme();
@@ -61,14 +66,20 @@ const ThemeToggle: React.FC = () => {
 
       document.documentElement.animate(
         {
-          clipPath: clipPath,
+          clipPath: isDarkCurrent ? clipPath : [...clipPath].reverse(),
         },
         {
           duration: 500,
           easing: "ease-in-out",
-          pseudoElement: "::view-transition-new(root)",
+          pseudoElement: isDarkCurrent
+            ? "::view-transition-new(root)"
+            : "::view-transition-old(root)",
         }
       );
+    });
+
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove("theme-transitioning");
     });
   };
 

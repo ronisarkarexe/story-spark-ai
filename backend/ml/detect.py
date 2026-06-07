@@ -12,6 +12,7 @@ Place at: story-spark-ai/ml/detect.py
 
 import os
 import json
+from pathlib import Path
 import numpy as np
 import joblib
 import random
@@ -21,9 +22,11 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 from tensorflow.keras.models import load_model
 from model import SEQ_LEN, N_FEATURES
 
-MODEL_PATH = "saved/model.keras"
-SCALER_PATH = "saved/scaler.pkl"
-THRESHOLD_PATH = "saved/threshold.json"
+from pathlib import Path
+ML_DIR = Path(__file__).resolve().parent
+MODEL_PATH = ML_DIR / "saved" / "model.keras"
+SCALER_PATH = ML_DIR / "saved" / "scaler.pkl"
+THRESHOLD_PATH = ML_DIR / "saved" / "threshold.json"
 
 _ML_ASSETS_CACHE = None
 
@@ -48,6 +51,49 @@ FEATURE_KEYS = [
     "blocked_word_count",
 ]
 
+def _validate_session(session: list, idx: int | None = None) -> str | None:
+    """
+    Validate a single session before processing.
+    Returns an error message string if invalid, else None.
+
+    idx is included in the message for batch_detect() context.
+    """
+    label = f"Session[{idx}]" if idx is not None else "Session"
+
+    if not isinstance(session, list) or len(session) == 0:
+        return f"{label}: must be a non-empty list"
+
+    if len(session) < SEQ_LEN:
+        return f"{label}: needs at least {SEQ_LEN} entries, got {len(session)}"
+
+    window = session[-SEQ_LEN:]
+
+    if isinstance(window[0], dict):
+        missing_keys = [
+            i for i, s in enumerate(window)
+            if not all(k in s for k in FEATURE_KEYS)
+        ]
+        if missing_keys:
+            return f"{label}: entries at positions {missing_keys} are missing required keys"
+
+        non_numeric = [
+            i for i, s in enumerate(window)
+            if not all(isinstance(s.get(k, None), (int, float)) for k in FEATURE_KEYS)
+        ]
+        if non_numeric:
+            return f"{label}: entries at positions {non_numeric} have non-numeric values"
+
+    elif isinstance(window[0], (list, np.ndarray)):
+        wrong_len = [
+            i for i, s in enumerate(window)
+            if len(s) != N_FEATURES
+        ]
+        if wrong_len:
+            return f"{label}: entries at positions {wrong_len} must have {N_FEATURES} values"
+    else:
+        return f"{label}: entries must be dicts or lists, got {type(window[0]).__name__}"
+
+    return None
 
 def load_ml_assets_into_cache():
     """
@@ -62,14 +108,21 @@ def load_ml_assets_into_cache():
         return _ML_ASSETS_CACHE
 
     for path in (MODEL_PATH, SCALER_PATH, THRESHOLD_PATH):
-        if not os.path.exists(path):
+        if not path.exists():
             raise FileNotFoundError(f"{path} not found — run train.py first.")
 
-    model = load_model(MODEL_PATH)
-    scaler = joblib.load(SCALER_PATH)
+    model = load_model(str(MODEL_PATH))
+    scaler = joblib.load(str(SCALER_PATH))
 
-    with open(THRESHOLD_PATH, "r") as f:
-        threshold = json.load(f)["threshold"]
+    with open(THRESHOLD_PATH, "r", encoding="utf-8") as f:
+        threshold_data = json.load(f)
+    
+    threshold = threshold_data.get("threshold")
+    
+    if threshold is None:
+        raise ValueError(
+            "threshold.json is missing required 'threshold' field"
+    )
 
     _ML_ASSETS_CACHE = {
         "model": model,
@@ -172,10 +225,19 @@ def detect(session: list) -> dict:
     Returns
     -------
     dict : is_stuck, confidence, anomaly_score, threshold, suggestion
+
+    Raises
+    ------
+    ValueError        : if session is invalid
+    FileNotFoundError : if model artifacts are missing
     """
-    assets = load_ml_assets_into_cache()
-    model = assets["model"]
-    scaler = assets["scaler"]
+    error_msg = _validate_session(session)
+    if error_msg:
+        raise ValueError(error_msg)
+
+    assets    = load_ml_assets_into_cache()
+    model     = assets["model"]
+    scaler    = assets["scaler"]
     threshold = assets["threshold"]
 
     window = session[-SEQ_LEN:]
@@ -194,12 +256,12 @@ def detect(session: list) -> dict:
             f"got {session_raw.shape}. Check FEATURE_KEYS order."
         )
 
-    seq_scaled = scaler.transform(session_raw).reshape(1, SEQ_LEN, N_FEATURES)
+    seq_scaled    = scaler.transform(session_raw).reshape(1, SEQ_LEN, N_FEATURES)
     reconstructed = model.predict(seq_scaled, verbose=0)
     anomaly_score = float(np.mean((seq_scaled - reconstructed) ** 2))
 
     is_stuck = anomaly_score > threshold
-    ratio = anomaly_score / threshold
+    ratio    = anomaly_score / threshold
 
     if not is_stuck:
         confidence = "N/A"
@@ -211,11 +273,11 @@ def detect(session: list) -> dict:
         confidence = "Low"
 
     return {
-        "is_stuck": is_stuck,
-        "confidence": confidence,
+        "is_stuck":     is_stuck,
+        "confidence":   confidence,
         "anomaly_score": round(anomaly_score, 6),
-        "threshold": round(threshold, 6),
-        "suggestion": _get_unique_suggestion(_dominant_feature(session_raw)) if is_stuck else "",
+        "threshold":    round(threshold, 6),
+        "suggestion":   _get_unique_suggestion(_dominant_feature(session_raw)) if is_stuck else "",
     }
 
 
@@ -242,41 +304,50 @@ PROMPTS = {
 
 
 def _interactive():
-    print("\n" + "=" * 52)
-    print("  Writer's Block Detector — Interactive Mode")
-    print("=" * 52)
-    print(f"\nEnter data for {SEQ_LEN} timesteps (one per writing window).")
-    print("─" * 52)
+    while True:
+        print("\n" + "=" * 52)
+        print("  Writer's Block Detector — Interactive Mode")
+        print("=" * 52)
+        print(f"\nEnter data for {SEQ_LEN} timesteps (one per writing window).")
+        print("─" * 52)
 
-    session = []
-    for i in range(1, SEQ_LEN + 1):
-        print(f"\n  Timestep {i}/{SEQ_LEN}")
-        step = {key: _get_int(prompt) for key, prompt in PROMPTS.items()}
-        session.append(step)
+        session = []
 
-    print("\n" + "─" * 52)
-    print("  Result")
-    print("─" * 52)
+        for i in range(1, SEQ_LEN + 1):
+            print(f"\n  Timestep {i}/{SEQ_LEN}")
+            step = {
+                key: _get_int(prompt)
+                for key, prompt in PROMPTS.items()
+            }
+            session.append(step)
 
-    result = detect(session)
+        print("\n" + "─" * 52)
+        print("  Result")
+        print("─" * 52)
 
-    status = "🔴 STUCK" if result["is_stuck"] else "🟢 FLOWING"
-    print(f"\n  Status        : {status}")
-    print(f"  Confidence    : {result['confidence']}")
-    print(f"  Anomaly Score : {result['anomaly_score']}")
-    print(f"  Threshold     : {result['threshold']}")
+        result = detect(session)
 
-    if result["is_stuck"]:
-        print(f"\n  💡 Suggestion :")
-        print(f"     {result['suggestion']}")
-    else:
-        print("\n  ✅ User is in a normal creative flow — no intervention needed.")
+        status = "🔴 STUCK" if result["is_stuck"] else "🟢 FLOWING"
 
-    print()
+        print(f"\n  Status        : {status}")
+        print(f"  Confidence    : {result['confidence']}")
+        print(f"  Anomaly Score : {result['anomaly_score']}")
+        print(f"  Threshold     : {result['threshold']}")
 
-    again = input("  Run again? (y/n): ").strip().lower()
-    if again == "y":
-        _interactive()
+        if result["is_stuck"]:
+            print("\n  💡 Suggestion :")
+            print(f"     {result['suggestion']}")
+        else:
+            print(
+                "\n  ✅ User is in a normal creative flow — no intervention needed."
+            )
+
+        print()
+
+        again = input("  Run again? (y/n): ").strip().lower()
+
+        if again != "y":
+            break
 
 
 # ── Batch detect ──────────────────────────────────────────────────────────────
@@ -299,7 +370,7 @@ def batch_detect(sessions: list[list]) -> list[dict]:
     if not sessions:
         raise ValueError("sessions list must not be empty")
 
-    assets = load_ml_assets_into_cache()  # load once for all sessions
+    assets    = load_ml_assets_into_cache()  # load once for all sessions
     model     = assets["model"]
     scaler    = assets["scaler"]
     threshold = assets["threshold"]
@@ -307,6 +378,12 @@ def batch_detect(sessions: list[list]) -> list[dict]:
     results = []
 
     for idx, session in enumerate(sessions):
+        # ── validate before touching the model ───────────────────────────
+        error_msg = _validate_session(session, idx=idx)
+        if error_msg:
+            results.append({"index": idx, "error": error_msg})
+            continue
+
         try:
             window = session[-SEQ_LEN:]
 
