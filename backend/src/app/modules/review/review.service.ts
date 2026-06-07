@@ -5,7 +5,6 @@ import { ITokenPayload } from "../../../interfaces/token";
 import redis from "../../utils/redis.client";
 import { IReviewPayload } from "./review.interface";
 import { Review } from "./review.model";
-
 const PUBLISHED_REVIEWS_KEY = "reviews:published:v1";
 const REVIEWS_CACHE_TTL = Number(process.env.REVIEWS_CACHE_TTL) || 300; // seconds
 

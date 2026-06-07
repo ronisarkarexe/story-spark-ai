@@ -16,6 +16,7 @@ import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import { useRecentPrompts } from "../../hooks/useRecentPrompts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import { useDebounce } from "../../hooks/useDebounce";
+import { useSavedWorkspacePreferences } from "../../hooks/useSavedWorkspacePreferences";
 
 const soundtrackMap: Record<string, string> = {
   "🧙 Fantasy": "/audio/fantasy.mp3",
@@ -292,7 +293,7 @@ const UI_TEXT: Record<string, UiText> = {
     keyboardTip: "కీబోర్డ్ చిట్కా:", press: "నొక్కండి", toGenerate: "రూపొందించడానికి", alsoWorks: "కూడా పనిచేస్తుంది", forNewLine: "కొత్త లైన్ కోసం",
     generating: "రూపొందిస్తోంది...", generate: "రూపొందించు", examples: "కొన్ని ఉదాహरण ప్రాంప్ట్‌లు:",
     selectPrompt: "ప్రాంప్ట్ ఎంచుకోండి", characterLimit: "అక్షర పరిమితి చేరింది - రూపొందింపు నిలిపివేయబడింది", charactersRemaining: "అక్షరాలు మిగిలాయి",
-    shortcuts: "キーボードショートカット", openHelp: "సహాయం తెరవండి", closeHelp: "సహాయం మూసివేయండి", focusPrompt: "ప్రాంप्ట్‌పై దృష్టి",
+    shortcuts: "కీబోర్డ్ సత్వరమార్గాలు", openHelp: "సహాయం తెరవండి", closeHelp: "సహాయం మూసివేయండి", focusPrompt: "ప్రాంప్ట్‌పై దృష్టి",
     generateStory: "కథ రూపొందించు", publishStory: "కథ ప్రచురించు", close: "మూసివేయి", freeLimitReached: "ఉచిత పరిమితి చేరింది",
     freeLimitMessage: "మీరు 3 ఉచిత కథా రూపొందింపులను ఉపయోగించారు. కొనసాగడానికి లాగిన్ చేయండి.", continueBrowsing: "బ్రౌజింగ్ కొనసాగించు", recentPrompts: "ఇటీవల ప్రాంప్ట్‌లు", usePrompt: "ఉపయోగించు", delete: "తొలగించు", clearAll: "అన్నింటిని తొలగించు", noRecentPrompts: "ఇటీవల ప్రాంప్ట్‌లు లేవు",
   },
@@ -394,7 +395,18 @@ interface ICharacter {
   personality: string;
 }
 
+const getUniqueStories = (arr: IStories[]): IStories[] => {
+  const seen = new Set<string>();
+  return arr.filter((story) => {
+    const id = story.uuid || story.title;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+};
+
 const StoriesComponent = () => {
+  const { aiProvider, defaultGenre, targetLength } = useSavedWorkspacePreferences();
   const [currentPage, setCurrentPage] = useState(1);
   const storiesPerPage = 10;
   const location = useLocation();
@@ -462,9 +474,12 @@ const StoriesComponent = () => {
   const [selectedGenre, setSelectedGenre] = useState<string>(
     draft?.genre
       ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
-      : "🧙 Fantasy"
+      : (GENRES.find((g) => g.value === defaultGenre || g.name === defaultGenre)?.value ?? "🧙 Fantasy")
   );
-  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
+  const [selectedLength, setSelectedLength] = useState<string>(
+    draft?.length || 
+    (targetLength === "Short (~300)" ? "short" : targetLength === "Long (~1000)" ? "long" : "medium")
+  );
   const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
   const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
@@ -646,6 +661,7 @@ const StoriesComponent = () => {
         language: selectedLanguage,
         tone: selectedTone || undefined,
         characters: characters.map(({ name, role, personality }) => ({ name, role, personality })),
+        aiProvider: aiProvider,
       };
 
       const generationRequest = login ? generateModel(payload) : generateFreeModel(payload);
@@ -1041,24 +1057,7 @@ const StoriesComponent = () => {
                     </p>
                   </div>
 
-                      <span
-  className={`text-xs tabular-nums ml-auto flex gap-2 ${
-    isOverLimit
-      ? "text-red-400 font-medium"
-      : isNearLimit
-      ? "text-yellow-400"
-      : "text-gray-500"
-  }`}
->
-  <span>
-    {textareaValue.trim() === "" ? 0 : textareaValue.trim().split(/\s+/).length} words
-  </span>
-  <span className="opacity-40">·</span>
-  <span>{textareaValue.length} / {MAX_PROMPT_LENGTH} chars</span>
-</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
+                  <div className="space-y-4">
                       {characters.map((char, index) => (
                         <div
                           key={char.id}
@@ -1128,7 +1127,6 @@ const StoriesComponent = () => {
                         </button>
                       </div>
                     </div>
-                  )}
 
                   <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5 w-full box-border select-none">
                     <button
@@ -1281,7 +1279,6 @@ const StoriesComponent = () => {
         isLogin={login}
         setStories={setStories}
         onPublishSuccess={handlePublishSuccess}
-        isLoading={loading}
       />
 
       <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>

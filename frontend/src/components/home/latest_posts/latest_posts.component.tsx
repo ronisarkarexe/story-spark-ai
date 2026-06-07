@@ -37,12 +37,7 @@ const LatestPostsComponent = () => {
     );
   }
 
-  const seenIds = new Set<string>();
-  const uniquePosts = (data?.posts ?? []).filter((post: Post) => {
-    if (!post?._id || seenIds.has(post._id)) return false;
-    seenIds.add(post._id);
-    return true;
-  });
+
 
   const shouldShowLoadMore = uniquePosts.length > INITIAL_VISIBLE_COUNT;
   const visiblePosts =
@@ -56,7 +51,7 @@ const LatestPostsComponent = () => {
 
   return (
     <section className="w-full min-w-0 max-w-full text-slate-900 dark:text-slate-100">
-      <h2 className="mb-6 text-2xl font-bold">Latest Posts</h2>
+      <h2 className="mb-6 text-2xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Latest Posts</h2>
       <div className="max-w-full space-y-3">
         {visiblePosts.length > 0 ? (
           visiblePosts.map((post: Post) => {

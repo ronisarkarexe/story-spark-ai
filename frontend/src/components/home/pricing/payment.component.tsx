@@ -1,48 +1,49 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
 import { getBaseUrl } from "../../../helpers/config";
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-import React, { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   CheckCircle2,
   CreditCard,
   ShieldCheck,
+  Lock,
+  User,
 } from "lucide-react";
+import { getUserInfo } from "../../../services/auth.service";
 
-import { loadRazorpayScript } from "../../../utils/loadRazorpay";
-
-interface RazorpayResponse {
-  razorpay_payment_id?: string;
-  razorpay_order_id?: string;
-  razorpay_signature?: string;
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
 }
 
-interface RazorpayFailureResponse {
-  error?: {
-    description?: string;
-  };
-}
+const PaymentComponent = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const rawUser = null;
+  const user = rawUser || getUserInfo();
+  const loggedIn = !!user;
 
-const API_BASE_URL = getBaseUrl();
+  // Read selected plan from URL search parameters (pricing page redirects to "/payment?plan=Pro&price=19")
+  const [searchParams] = useSearchParams();
+  const rawPlan = searchParams.get("plan") || "Pro";
+  
+  // Backend expects 'basic', 'pro', or 'premium'
+  const plan = (rawPlan.toLowerCase() === "pro" || rawPlan.toLowerCase() === "basic" || rawPlan.toLowerCase() === "premium")
+    ? (rawPlan.toLowerCase() as "basic" | "pro" | "premium")
+    : "pro";
+  
+  const planName = rawPlan;
+  
+  // Price displayed on checkout matching backend map (basic: 499, pro: 999, premium: 1999)
+  const planPriceDisplay = plan === "pro" ? "₹999" : plan === "premium" ? "₹1999" : "₹499";
 
-interface PaymentProps {
-  plan: "basic" | "pro" | "premium";
-  planLabel: string;
-  displayAmount: string; // e.g. "₹499"
-}
-
-export const PaymentComponent = ({ plan, planLabel, displayAmount }: PaymentProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const user = useSelector((state: RootState) => state.auth.user);
+
+  const API_BASE_URL = getBaseUrl();
 
   // Load Razorpay script dynamically if not already present
   const loadRazorpayScript = (): Promise<boolean> => {
@@ -59,7 +60,6 @@ export const PaymentComponent = ({ plan, planLabel, displayAmount }: PaymentProp
   const handlePayment = async () => {
     setError(null);
     setLoading(true);
-
     try {
       // 1. Load Razorpay SDK
       const scriptLoaded = await loadRazorpayScript();
@@ -92,7 +92,7 @@ export const PaymentComponent = ({ plan, planLabel, displayAmount }: PaymentProp
         amount,
         currency,
         name: "Story Spark AI",
-        description: `${planLabel} Plan`,
+        description: `${planName} Plan`,
         order_id: orderId,
         prefill: {
           name: user?.name ?? "",
@@ -118,7 +118,7 @@ export const PaymentComponent = ({ plan, planLabel, displayAmount }: PaymentProp
           const verifyData = await verifyRes.json();
 
           if (verifyData.success) {
-            // Subscription upgraded — reload user session or redirect
+            // Subscription upgraded — redirect
             window.location.href = "/dashboard?upgraded=true";
           } else {
             setError("Payment verification failed. Please contact support.");
@@ -141,24 +141,13 @@ export const PaymentComponent = ({ plan, planLabel, displayAmount }: PaymentProp
   };
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      {error && (
-        <p className="text-sm text-red-500 text-center">{error}</p>
-      )}
-      <button
-        onClick={handlePayment}
-        disabled={loading}
-        className="w-full py-2 px-6 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {loading ? "Processing…" : `Pay ${displayAmount}`}
-      </button>
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 px-4 py-10 relative overflow-hidden transition-colors duration-300 w-full box-border sm:px-6 lg:px-8">
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none select-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none select-none" />
 
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl items-center justify-center w-full box-border relative z-10">
         <div className="grid w-full gap-6 lg:grid-cols-[1.1fr_0.9fr] items-start box-border">
-          
+          {/* Main payment panel */}
           <section className="bg-white dark:bg-[#111827]/40 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm hover:shadow-xl transition-all duration-300 w-full box-border">
             <div className="mb-8 flex items-start justify-between gap-4 w-full box-border">
               <div className="min-w-0 flex-1">
@@ -166,172 +155,153 @@ export const PaymentComponent = ({ plan, planLabel, displayAmount }: PaymentProp
                   Secure checkout
                 </span>
 
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
                   Complete Your Subscription
                 </h1>
 
-                <p className="mt-2 text-xs sm:text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
-                  Finish your upgrade with secure Razorpay payment integration setup protocols.
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-505 dark:text-slate-300">
+                  Finish your upgrade with secure Razorpay payment integration.
                 </p>
               </div>
 
-              <div className="hidden rounded-xl border border-slate-200 dark:border-cyan-400/20 bg-slate-50 dark:bg-cyan-400/10 p-3 text-slate-500 dark:text-cyan-300 sm:flex shrink-0 select-none">
-                <CreditCard size={20} />
+              <div className="hidden rounded-2xl border border-cyan-400 bg-cyan-400/10 p-3 text-cyan-500 dark:text-cyan-300 sm:block">
+                <CreditCard size={22} />
               </div>
             </div>
 
-            <div className="mb-6 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-cyan-400/10 bg-slate-50/50 dark:bg-cyan-400/5 p-4 sm:p-5 w-full box-border">
-              <div className="flex items-center justify-between gap-4 w-full box-border">
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">
+            {/* Selected Plan */}
+            <div className="mb-6 rounded-3xl border border-cyan-400/20 bg-cyan-400/5 p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
                     Selected Plan
                   </p>
 
-                  <h2 className="mt-1 text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight truncate">
+                  <h2 className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                     {planName} Plan
                   </h2>
                 </div>
 
-                <div className="text-right shrink-0">
-                  <p className="text-xl sm:text-2xl font-extrabold text-cyan-600 dark:text-cyan-400 tracking-tight">
-                    ₹{planPrice}
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-300">
+                    {planPriceDisplay}
                   </p>
 
-                  <p className="text-[11px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 select-none">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
                     per month
                   </p>
                 </div>
               </div>
             </div>
 
-            <form
-              className="space-y-5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handlePay();
-              }}
-            >
-              {/* Cardholder Name */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">
-                  Cardholder Name
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                />
-              </div>
-
-              {/* Card Number */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">
-                  Card Number
-                </label>
-
-                <div className="relative">
-                  <CreditCard
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    size={18}
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="1234 5678 9012 3456"
-                    value={cardNumber}
-                    onChange={(e) =>
-                      setCardNumber(formatCardNumber(e.target.value))
-                    }
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 py-4 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                  />
+            {/* User Account Info Chip if logged in */}
+            {loggedIn && (
+              <div className="mb-6 flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-55 dark:bg-slate-900/40 p-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
+                  <User size={20} />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">Account Upgrading</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{user?.email}</p>
                 </div>
               </div>
+            )}
 
-              {/* Expiry + CVV */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
-                    Expiry Date
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="MM/YY"
-                    value={expiry}
-                    onChange={(e) =>
-                      setExpiry(formatExpiry(e.target.value))
-                    }
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                  />
+            {/* Checkout Action or Auth Required */}
+            {!loggedIn ? (
+              <div className="space-y-6 py-6 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-400/10 text-cyan-500 dark:text-cyan-300">
+                  <Lock size={32} />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">
-                    CVC
-                  </label>
-
-                  <input
-                    type="password"
-                    placeholder="123"
-                    value={cvv}
-                    onChange={(e) =>
-                      setCvv(
-                        e.target.value.replace(/\D/g, "").slice(0, 3)
-                      )
-                    }
-                    className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
-                  />
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Authentication Required</h2>
+                  <p className="mx-auto max-w-md text-sm leading-relaxed text-slate-605 dark:text-slate-300">
+                    To upgrade to the <span className="font-semibold text-cyan-600 dark:text-cyan-300">{planName}</span> plan, you must log in or sign up first. This links the subscription to your StorySpark AI profile.
+                  </p>
                 </div>
+
+                <div className="grid gap-4 pt-4 sm:grid-cols-2">
+                  <button
+                    onClick={() =>
+                      navigate("/login", {
+                        state: { from: `${location.pathname}${location.search}` },
+                      })
+                    }
+                    className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 cursor-pointer"
+                  >
+                    Log In to Continue
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      navigate("/signup", {
+                        state: { from: `${location.pathname}${location.search}` },
+                      })
+                    }
+                    className="flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/50 px-5 py-4 text-base font-semibold text-slate-700 dark:text-white transition hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  >
+                    Create New Account
+                  </button>
+                </div>
+
+                <p className="text-xs text-slate-505 dark:text-slate-400">
+                  After signing in, you will be redirected back here automatically to complete your secure payment.
+                </p>
               </div>
-
-              {/* Pay Button */}
-              <button
-                type="submit"
-                disabled={loading || !isFormValid}
-                className="motion-cta inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading ? (
-                  <>
-                    <svg
-                      className="h-5 w-5 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v8z"
-                      />
-                    </svg>
-
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck size={18} />
-                    Pay Now - ${planPrice}/mo
-                  </>
+            ) : (
+              <div className="space-y-5">
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-650 dark:text-red-400 text-sm text-center">
+                    {error}
+                  </div>
                 )}
-              </button>
+                
+                <button
+                  type="button"
+                  onClick={handlePayment}
+                  disabled={loading}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer animate-pulse-subtle"
+                >
+                  {loading ? (
+                    <>
+                      <svg
+                        className="h-5 w-5 animate-spin"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
+                      </svg>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck size={18} />
+                      Pay Now — {planPriceDisplay}
+                    </>
+                  )}
+                </button>
 
-              <p className="text-xs leading-5 text-slate-400">
-                Your payment information is protected with encrypted processing
-                and is never stored on our servers.
-              </p>
-            </form>
+                <p className="text-xs leading-5 text-slate-505 dark:text-slate-400">
+                  Your payment information is protected with secure Razorpay modal integration
+                  and is never stored on our servers.
+                </p>
+              </div>
+            )}
 
+            {/* Back Button */}
             <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/5 w-full box-border">
               <Link
                 to="/pricing"
@@ -343,67 +313,69 @@ export const PaymentComponent = ({ plan, planLabel, displayAmount }: PaymentProp
             </div>
           </section>
 
-          <aside className="bg-white dark:bg-[#111827]/20 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm w-full box-border">
-            <div className="mb-6 flex items-center gap-3 w-full box-border select-none">
-              <div className="rounded-xl border border-slate-200 dark:border-emerald-400/20 bg-slate-50 dark:bg-emerald-400/10 p-2.5 text-slate-500 dark:text-emerald-400 shrink-0">
-                <CheckCircle2 size={20} />
+          {/* Summary Sidebar */}
+          <aside className="bg-white dark:bg-[#111827]/40 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm hover:shadow-xl transition-all duration-300 w-full box-border">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="rounded-2xl border border-emerald-500/10 dark:border-emerald-400/20 bg-emerald-500/5 dark:bg-emerald-400/10 p-3 text-emerald-600 dark:text-emerald-300">
+                <CheckCircle2 size={22} />
               </div>
 
-              <div className="min-w-0">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                   What you get
                 </h2>
 
-                <p className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   A quick summary before you confirm.
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-4 sm:p-5 w-full box-border">
-              <div className="flex items-center justify-between gap-4 w-full box-border">
-                <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 tracking-tight truncate">
+            <div className="space-y-4 rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/70 p-5">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-sm text-slate-700 dark:text-slate-300">
                   {planName} subscription
                 </span>
 
-                <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight shrink-0">
-                  ₹{planPrice}/mo
+                <span className="text-lg font-semibold text-slate-900 dark:text-white">
+                  {planPriceDisplay}/mo
                 </span>
               </div>
 
-              <div className="h-px bg-slate-200 dark:bg-slate-800 w-full" />
+              <div className="h-px bg-slate-200 dark:bg-slate-800" />
 
-              <ul className="space-y-3 list-none p-0 m-0 text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
-                <li className="flex items-start gap-2.5 leading-relaxed">
-                  <CheckCircle2 size={14} className="text-cyan-500 dark:text-cyan-400 shrink-0 mt-0.5 select-none" />
-                  <span>Unlimited AI writing tools</span>
+              <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-300 list-none p-0 m-0">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-cyan-600 dark:text-cyan-300" />
+                  Unlimited AI writing tools
                 </li>
 
-                <li className="flex items-start gap-2.5 leading-relaxed">
-                  <CheckCircle2 size={14} className="text-cyan-500 dark:text-cyan-400 shrink-0 mt-0.5 select-none" />
-                  <span>Priority access to premium features</span>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-cyan-600 dark:text-cyan-300" />
+                  Priority access to premium features
                 </li>
 
-                <li className="flex items-start gap-2.5 leading-relaxed">
-                  <CheckCircle2 size={14} className="text-cyan-500 dark:text-cyan-400 shrink-0 mt-0.5 select-none" />
-                  <span>Cancel anytime from your account settings</span>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-cyan-600 dark:text-cyan-300" />
+                  Cancel anytime from your account settings
                 </li>
               </ul>
             </div>
 
-            <div className="mt-6 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-cyan-400/10 bg-slate-50/30 dark:bg-cyan-400/5 p-4 sm:p-5 w-full box-border">
-              <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-cyan-400 select-none tracking-tight">
+            <div className="mt-6 rounded-3xl border border-cyan-500/10 dark:border-cyan-400/10 bg-cyan-500/5 dark:bg-cyan-400/5 p-5">
+              <p className="text-sm font-medium text-cyan-600 dark:text-cyan-200">
                 Need help?
               </p>
 
-              <p className="mt-1.5 text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
-                If your payment transaction parameters fail, please refresh to loop again or reach out to platform operations support.
+              <p className="mt-2 text-sm leading-6 text-slate-505 dark:text-slate-300">
+                If your payment fails, please try again or contact support.
               </p>
             </div>
           </aside>
-          
         </div>
       </div>
     </div>
   );
 };
+
+export default PaymentComponent;

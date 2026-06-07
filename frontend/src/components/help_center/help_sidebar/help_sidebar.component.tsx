@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 
 const HELP_SECTIONS = [
@@ -11,6 +11,7 @@ const HELP_SECTIONS = [
 
 const HelpSidebar = () => {
   const [activeSection, setActiveSection] = useState("help-categories");
+  const mobileNavRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

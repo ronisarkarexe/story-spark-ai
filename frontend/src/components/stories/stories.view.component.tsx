@@ -143,6 +143,7 @@ export interface IStories {
   language?: string;
   emotions?: string[];
   enhancedPrompt?: string;
+  genre?: string;
 }
 
 interface IPost extends IStories {
@@ -193,7 +194,7 @@ const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
   return segments;
 };
 
-const getSafeFileName = (title: string, extension: "md" | "docx"): string => {
+const getSafeFileName = (title: string, extension: "md" | "docx" | "pdf" | "epub"): string => {
   const safeTitle = (title || "story")
     .trim()
     .replace(/[^a-z0-9]+/gi, "_")

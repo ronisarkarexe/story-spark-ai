@@ -167,9 +167,14 @@ const ExploreComponent = () => {
                 placeholder="Search title, tag..."
                 className="w-full pl-12 pr-4 py-3 text-base text-slate-900 placeholder:text-slate-400 bg-gray-100/80 backdrop-blur-md border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner dark:bg-slate-900/50 dark:text-white dark:placeholder:text-slate-400 dark:border-none"
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Main Layout */}
         <div className="flex flex-col md:flex-row gap-8">

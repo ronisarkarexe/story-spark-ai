@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
-import { ..., Image as ImageIcon, X } from "lucide-react";
+import { Image as ImageIcon, X } from "lucide-react";
 import { 
   Bug, 
   Send, 
@@ -389,11 +389,13 @@ const ReportBug = () => {
                       )}
 
                       <input
-                        ref={fileInputRef}
                         type="file"
                         accept="image/png,image/jpeg,image/webp,image/gif"
                         className="hidden"
-                        {...register("screenshot")}
+                        ref={(e) => {
+                          register("screenshot").ref(e);
+                          fileInputRef.current = e;
+                        }}
                         onChange={(e) => {
                           register("screenshot").onChange(e);
                           const file = e.target.files?.[0];

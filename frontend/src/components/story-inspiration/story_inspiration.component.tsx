@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import StoryInspirationCard from "./story_inspiration_card.component";
 import { inspirationData } from "./inspirationData";
+import { getSavedWorkspacePreferences } from "../../utils/preferences";
 
 const StoryInspirationComponent: React.FC = () => {
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedGenre, setSelectedGenre] = useState<string>("All");
 
   const genres = [
     "All",
@@ -19,6 +19,14 @@ const StoryInspirationComponent: React.FC = () => {
     "Adventure",
     "Romance",
   ];
+
+  const [selectedGenre, setSelectedGenre] = useState<string>(() => {
+    const { defaultGenre } = getSavedWorkspacePreferences();
+    if (!defaultGenre) return "All";
+    const cleaned = defaultGenre.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji}/gu, "").trim();
+    const matched = genres.find((g) => g.toLowerCase() === cleaned.toLowerCase());
+    return matched || "All";
+  });
 
   const filteredStories = inspirationData.filter((story) => {
     const matchesGenre =

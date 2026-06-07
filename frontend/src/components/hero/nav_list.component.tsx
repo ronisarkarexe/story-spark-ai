@@ -1,21 +1,81 @@
-﻿import { useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import React, { FC, useRef, useState } from "react";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
 import { ArrowRight, Menu, Sparkles, X } from "lucide-react";
 import { useTheme } from "../theme/theme.context";
 
+interface NotificationComponentProps {
+  notifications: any[];
+  showNotification: boolean;
+  setShowNotification: () => void;
+  unreadCount: number;
+  onMarkAsRead: (id: string) => void;
+}
+
+const NotificationComponent: FC<NotificationComponentProps> = ({
+  notifications,
+  showNotification,
+  setShowNotification,
+  onMarkAsRead
+}) => {
+  if (!showNotification) return null;
+
+  return (
+    <div className="absolute right-4 top-16 z-50 w-80 rounded-xl border border-slate-200/70 bg-white p-4 shadow-xl dark:border-white/10 dark:bg-[#0B1120] animate-in fade-in slide-in-from-top-2 duration-200">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-2 dark:border-white/5 mb-2">
+        <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Notifications</h3>
+        <button 
+          onClick={setShowNotification}
+          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs cursor-pointer"
+        >
+          Close
+        </button>
+      </div>
+      <div className="max-h-64 overflow-y-auto space-y-2">
+        {notifications && notifications.length > 0 ? (
+          notifications.map((n) => (
+            <div 
+              key={n.id} 
+              onClick={() => onMarkAsRead(n.id)}
+              className="p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer text-xs transition-colors"
+            >
+              <p className="font-medium text-slate-800 dark:text-slate-200">{n.title || "New Update"}</p>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">{n.message || "You have an update."}</p>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-slate-400 dark:text-slate-500 py-4 text-xs">No new notifications</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const NavListComponent = () => {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
   const { pathname } = useLocation();
   const { glowEnabled, toggleGlow } = useTheme();
 
+  const [isOpen, setIsOpen] = useState(false);
+  const notificationMenuRef = useRef<HTMLDivElement>(null);
+  const unreadCount = 0;
+  const notifications: any[] = [];
+
+  const toggle = () => setIsOpen((prev) => !prev);
+  const close = () => setIsOpen(false);
+  const markAsRead = (id: string) => {
+    // stub
+  };
+
   const handleLogout = () => {
     removeUserInfo();
     setLoggedIn(false);
     setMenuOpen(false);
+    navigate("/");
   };
 
   const handleNavClick = () => {
@@ -30,6 +90,7 @@ const NavListComponent = () => {
     { to: "/", label: "Home" },
     { to: "/explore", label: "Explore" },
     { to: "/story-inspiration", label: "Stories" },
+    { to: "/collab", label: "Collab" },
     { to: "/community", label: "Community" },
   ];
 
@@ -127,30 +188,57 @@ const NavListComponent = () => {
           ))}
 
           {loggedIn && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.28, delay: navItems.length * 0.04 }}
-              whileHover={{ y: -1 }}
-            >
-              <NavLink
-                to="/dashboard"
-                className={`group relative flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-all duration-300 ${
-                  isActive("/dashboard")
-                    ? "text-white shadow-sm"
-                    : "text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
-                }`}
+            <>
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.28, delay: navItems.length * 0.04 }}
+                whileHover={{ y: -1 }}
               >
-                {isActive("/dashboard") && (
-                  <motion.span
-                    layoutId="activeIndicator"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 shadow-lg shadow-indigo-600/25"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  />
-                )}
-                <span className="relative">Dashboard</span>
-              </NavLink>
-            </motion.div>
+                <NavLink
+                  to="/bookmarks"
+                  className={`group relative flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-all duration-300 ${
+                    isActive("/bookmarks")
+                      ? "text-white shadow-sm"
+                      : "text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+                  }`}
+                >
+                  {isActive("/bookmarks") && (
+                    <motion.span
+                      layoutId="activeIndicator"
+                      className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 shadow-lg shadow-indigo-600/25"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                  <span className="relative">Saved</span>
+                </NavLink>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.28, delay: (navItems.length + 1) * 0.04 }}
+                whileHover={{ y: -1 }}
+              >
+                <NavLink
+                  to="/dashboard"
+                  className={`group relative flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-all duration-300 ${
+                    isActive("/dashboard")
+                      ? "text-white shadow-sm"
+                      : "text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+                  }`}
+                >
+                  {isActive("/dashboard") && (
+                    <motion.span
+                      layoutId="activeIndicator"
+                      className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 shadow-lg shadow-indigo-600/25"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                  <span className="relative">Dashboard</span>
+                </NavLink>
+              </motion.div>
+            </>
           )}
         </nav>
 
@@ -161,9 +249,36 @@ const NavListComponent = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex items-center gap-2"
           >
+            {/* Help Button */}
+            <button
+              onClick={() => navigate("/help-center")}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white/60 text-slate-400 hover:text-slate-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-500 dark:hover:text-slate-300 transition-all duration-300 shadow-sm cursor-pointer"
+              title="Help Center"
+              aria-label="Open Help Center"
+            >
+              <i className="fas fa-circle-question text-base" />
+            </button>
+
+            {/* Notifications Button */}
+            <div className="relative inline-flex" ref={notificationMenuRef}>
+              <button
+                type="button"
+                aria-label="Notifications"
+                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white/60 text-slate-400 hover:text-slate-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-500 dark:hover:text-slate-300 transition-all duration-300 shadow-sm cursor-pointer"
+                onClick={toggle}
+              >
+                <i className="fa-solid fa-bell text-sm" />
+                {unreadCount > 0 && (
+                  <span className="absolute right-0 top-0 grid min-h-[18px] min-w-[18px] -translate-y-1/2 translate-x-1/2 place-items-center rounded-full bg-rose-500 px-1 text-[11px] font-semibold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
             <button
               onClick={toggleGlow}
-              className={`group relative grid h-10 w-10 place-items-center rounded-full border transition-all duration-300 ${
+              className={`group relative grid h-10 w-10 place-items-center rounded-full border transition-all duration-300 cursor-pointer ${
                 glowEnabled
                   ? "border-indigo-200 bg-indigo-50 text-indigo-600 shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
                   : "border-slate-200/80 bg-white/60 text-slate-400 hover:text-slate-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-500 dark:hover:text-slate-300"
@@ -185,7 +300,7 @@ const NavListComponent = () => {
                 onClick={handleLogout}
                 whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.97 }}
-                className="h-10 rounded-full border border-slate-200/80 bg-white/60 px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white"
+                className="h-10 rounded-full border border-slate-200/80 bg-white/60 px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white cursor-pointer"
               >
                 Logout
               </motion.button>
@@ -211,7 +326,7 @@ const NavListComponent = () => {
                   <Link
                     to="/signup"
                     onClick={handleNavClick}
-                    className="group inline-flex h-10 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300 hover:shadow-indigo-600/40"
+                    className="group inline-flex h-10 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300"
                   >
                     <span>Get Started</span>
                     <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
@@ -226,7 +341,7 @@ const NavListComponent = () => {
             type="button"
             aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={menuOpen}
-            className="grid h-10 w-10 place-items-center rounded-full border border-slate-200/80 bg-white/60 text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white lg:hidden"
+            className="grid h-10 w-10 place-items-center rounded-full border border-slate-200/80 bg-white/60 text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white lg:hidden cursor-pointer"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -270,29 +385,51 @@ const NavListComponent = () => {
                 ))}
 
                 {loggedIn && (
-                  <motion.div
-                    custom={navItems.length}
-                    initial="hidden"
-                    animate="visible"
-                    variants={mobileItemVariants}
-                  >
-                    <NavLink
-                      to="/dashboard"
-                      onClick={handleNavClick}
-                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
-                        isActive("/dashboard")
-                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
-                          : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
-                      }`}
+                  <>
+                    <motion.div
+                      custom={navItems.length}
+                      initial="hidden"
+                      animate="visible"
+                      variants={mobileItemVariants}
                     >
-                      <span>Dashboard</span>
-                      {isActive("/dashboard") && <span className="h-2 w-2 rounded-full bg-white/90" />}
-                    </NavLink>
-                  </motion.div>
+                      <NavLink
+                        to="/bookmarks"
+                        onClick={handleNavClick}
+                        className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
+                          isActive("/bookmarks")
+                            ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
+                            : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
+                        }`}
+                      >
+                        <span>Saved</span>
+                        {isActive("/bookmarks") && <span className="h-2 w-2 rounded-full bg-white/90" />}
+                      </NavLink>
+                    </motion.div>
+
+                    <motion.div
+                      custom={navItems.length + 1}
+                      initial="hidden"
+                      animate="visible"
+                      variants={mobileItemVariants}
+                    >
+                      <NavLink
+                        to="/dashboard"
+                        onClick={handleNavClick}
+                        className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
+                          isActive("/dashboard")
+                            ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
+                            : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
+                        }`}
+                      >
+                        <span>Dashboard</span>
+                        {isActive("/dashboard") && <span className="h-2 w-2 rounded-full bg-white/90" />}
+                      </NavLink>
+                    </motion.div>
+                  </>
                 )}
 
                 <motion.div
-                  custom={navItems.length + 1}
+                  custom={navItems.length + 2}
                   initial="hidden"
                   animate="visible"
                   variants={mobileItemVariants}
@@ -301,7 +438,7 @@ const NavListComponent = () => {
                   {loggedIn ? (
                     <button
                       onClick={handleLogout}
-                      className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
+                      className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10 transition duration-300 cursor-pointer"
                     >
                       Logout
                     </button>
@@ -330,6 +467,14 @@ const NavListComponent = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <NotificationComponent
+        notifications={notifications}
+        showNotification={isOpen}
+        setShowNotification={close}
+        unreadCount={unreadCount}
+        onMarkAsRead={markAsRead}
+      />
     </header>
   );
 };

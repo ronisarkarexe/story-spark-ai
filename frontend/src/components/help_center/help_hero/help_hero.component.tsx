@@ -14,12 +14,6 @@ const HelpHero: FC<HelpHeroProps> = ({
   onSearchChange,
   resultCount,
 }) => {
-  const handleSearchChange = (value: string) => {
-    if (onSearchChange) {
-      onSearchChange(value);
-    }
-  };
-
   return (
     <section
       id="help-hero"
@@ -71,7 +65,6 @@ const HelpHero: FC<HelpHeroProps> = ({
 
           <h1
             id="help-center-title"
-
             className="text-3xl sm:text-5xl lg:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-700 to-indigo-800 dark:from-slate-100 dark:via-blue-400 dark:to-indigo-400 mb-4 sm:mb-5 tracking-tight"
           >
             How can we help you today?
@@ -88,29 +81,7 @@ const HelpHero: FC<HelpHeroProps> = ({
               resultCount={resultCount}
             />
           </div>
-        </motion.div>
-
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 via-blue-700 to-indigo-700 dark:from-gray-200 dark:via-blue-400 dark:to-indigo-400 mb-6 tracking-tight drop-shadow-sm dark:drop-shadow-none"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            How can we help you today?
-          </motion.h1>
-
-          <p className="text-lg text-slate-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Find answers, troubleshoot issues, and get started with StorySparkAI.
-            Search our guides or browse topics below.
-          </p>
-
-            <HelpSearchBar
-              value={searchQuery}
-              onChange={handleSearchChange}
-              resultCount={searchQuery ? resultCount : undefined}
-            />
-          </motion.div>
         </div>
-
       </div>
     </section>
   );

@@ -27,7 +27,6 @@ const enhancePromptApi = baseApi.injectEndpoints({
       transformResponse: (response: IEnhancePromptResponse) => {
         return { data: response.data, message: response.message };
       },
-      invalidatesTags: [tagTypes.prompt], // ✅ adjust tag type if needed
     }),
   }),
 });

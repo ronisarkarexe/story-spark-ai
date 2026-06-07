@@ -227,6 +227,51 @@ const SignUpComponent = () => {
     }
   };
 
+  const handleResendOtp = async () => {
+    if (!registerInfo) {
+      toast.error("Something went wrong. Please restart the process.");
+      return;
+    }
+    setIsBusy(true);
+    try {
+      const res = await emailVerify({ name: registerInfo.name, email: registerInfo.email }).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        toast.success("New OTP sent to your email");
+        setCooldown(60);
+      }
+    } catch (error) {
+      const err = error as { data?: Array<{ message?: string }>; message?: string };
+      const message =
+        err?.data?.[0]?.message ||
+        err?.message ||
+        "Failed to resend OTP. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    if (credentialResponse.credential) {
+      setIsBusy(true);
+      try {
+        const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
+        if (res.data.accessToken) {
+          toast.success("Login successful!");
+          storeUserInfo({ accessToken: res.data.accessToken });
+          navigate("/");
+        }
+      } catch (err: unknown) {
+        toast.error("Google login failed. Please try again.");
+        console.error("Google login error:", err);
+      } finally {
+        setIsBusy(false);
+      }
+    }
+  };
+
   const handleGoogleLoginError = () => {
     toast.error("Google login failed. Please try again.");
   };

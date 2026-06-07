@@ -23,7 +23,7 @@ const itemVariants = {
   visible: { 
     opacity: 1, 
     y: 0, 
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const } 
   },
 };
 
@@ -333,7 +333,7 @@ const HeroSectionComponent = () => {
                 </Link>
               </div>
             </div>
-          </motion.div>
+          </div>
 
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
           <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
@@ -346,7 +346,8 @@ const HeroSectionComponent = () => {
             ))}
           </div>
         </div>
-        </div>
+        </motion.div>
+      </div>
 
       <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">

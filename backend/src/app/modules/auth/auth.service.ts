@@ -1,5 +1,7 @@
 import * as bcrypt from "bcryptjs";
 import httpStatus from "http-status";
+import { USER_STATUS } from '../../../enums/user_status';
+import { SUBSCRIPTION_TYPE } from '../../../enums/subscription_type';
 import jwt, { Secret } from "jsonwebtoken";
 import crypto from "crypto";
 import { OAuth2Client } from "google-auth-library";
@@ -14,8 +16,7 @@ import { OTPModel } from "../verify_email/otp.model";
 import { RefreshSession } from "./refresh_session.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 import { GamificationService } from "../gamification/gamification.service";
-import { USER_STATUS } from "../../../enums/user_status";
-import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
+
 
 const googleClient = new OAuth2Client(config.google_client_id);
 
@@ -273,7 +274,7 @@ const googleLogin = async (payload: { token: string }) => {
         email: email as string,
         name: (googleName || email || "Google User").slice(0, 100),
         status: "Active",
-        subscriptionType: "Free",
+        subscriptionType: "free",
         profile: {
           avatar: (picture as string) || "",
           bio: "",

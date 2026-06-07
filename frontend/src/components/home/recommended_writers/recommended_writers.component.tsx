@@ -1,8 +1,9 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { isLoggedIn } from "../../../services/auth.service";
 import { useToggleFollowMutation } from "../../../redux/apis/user.api";
+import ImageFallback from "../../ImageFallback";
 
 const RecommendedWritersComponent = () => {
   const recommendedWriters = [
@@ -51,48 +52,30 @@ const RecommendedWritersComponent = () => {
 
   return (
     <>
-      <section className="w-full max-w-full overflow-hidden bg-blue-500/10 rounded-lg shadow-sm p-6">
+      <section className="bg-blue-500/10 rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-gray-300 mb-4">
           Recommended Writers
         </h3>
 
         <div className="space-y-4">
           {recommendedWriters.map((writer, index) => (
-            <div key={writer.id} className="flex min-w-0 items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center">
-                <img
-                  className="h-10 w-10 shrink-0 rounded-full"
+            <div key={writer.id} className="flex items-center justify-between">
+              <div className="flex items-center">
+                <ImageFallback
+                  className="h-10 w-10 rounded-full object-cover"
                   src={writer.image}
                   alt={writer.name}
                 />
-
-                <div className="ml-3 min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-700 dark:text-gray-400">
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-slate-700 dark:text-gray-400">
                     {writer.name}
                   </p>
-                  <p className="truncate text-xs text-slate-500 dark:text-gray-500">
+                  <p className="text-xs text-slate-500 dark:text-gray-500">
                     {writer.role}
                   </p>
                 </div>
-                <button 
-                  disabled={isLoading} 
-                  onClick={() => toggleFollow(writer.id)} 
-                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-150 active:scale-[0.97] disabled:opacity-50 select-none cursor-pointer uppercase tracking-wider ${
-                    isFollowing
-                      ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
-                      : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-sm shadow-blue-500/10"
-                  }`}
-                >
-                  {isFollowing ? "Following" : "Follow"}
-                </button>
               </div>
-
-              <button
-                onClick={() => toggleFollow(index, writer.id)}
-                disabled={isLoading}
-                aria-label={following.includes(index) ? `Unfollow ${writer.name}` : `Follow ${writer.name}`}
-                className="!rounded-button text-indigo-600 text-sm font-medium hover:text-indigo-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button disabled={isLoading} onClick={() => toggleFollow(index, writer.id)} className="motion-cta rounded-full px-3 py-1.5 text-sm text-white font-semibold disabled:opacity-50">
                 {following.includes(index) ? "Following" : "Follow"}
               </button>
             </div>
