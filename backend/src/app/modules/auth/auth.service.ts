@@ -386,7 +386,7 @@ const resetPassword = async (payload: {
   if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter(a-z)";
   if (!/[0-9]/.test(pwd)) return "Password must contain at least one number(0-9)";
   if (!/[^A-Za-z0-9]/.test(pwd)) return "Password must contain at least one special character(e.g. !@#$%^&*)";
-    return " ";
+    return null;
   };
   const passwordError = getPasswordError(password);
   if (passwordError) {

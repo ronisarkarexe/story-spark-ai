@@ -6,6 +6,8 @@ import config from "../../../config";
 import httpStatus from "http-status";
 import { OTPModel } from "./otp.model";
 import crypto from "crypto";
+import { escapeHtml } from "../../../utils/email.util";
+import { clearOtpAttempts } from "./otp.rate-limiter.middleware";
 
 
 const transporter = nodemailer.createTransport({
