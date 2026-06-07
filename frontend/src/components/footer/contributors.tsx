@@ -3,14 +3,16 @@ import {
   Globe,
   GitPullRequest,
   Users,
+  Sparkles,
+  Trophy,
+  Zap,
   Star,
   ExternalLink,
   Code2,
-  Trophy,
 } from "lucide-react";
-import ImageFallback from "../ImageFallback";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { motion } from "framer-motion";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,7 +23,7 @@ interface Contributor {
   contributions: number;
 }
 
-/* ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ Floating Particles Background ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
+/* ─── Floating Particles Background ─── */
 const ParticleField = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -119,7 +121,7 @@ const ParticleField = () => {
   );
 };
 
-/* ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ Animated Number Counter ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
+/* ─── Animated Number Counter ─── */
 const AnimatedCounter = ({
   value,
   suffix = "",
@@ -161,7 +163,7 @@ const AnimatedCounter = ({
   return <span ref={ref}>0{suffix}</span>;
 };
 
-/* ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ Contributor Card with 3D Tilt ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
+/* ─── Contributor Card with 3D Tilt ─── */
 const ContributorCard = ({
   contributor,
   index,
@@ -180,19 +182,19 @@ const ContributorCard = ({
     {
       glow: "rgba(251,191,36,0.3)",
       badge: "bg-gradient-to-r from-amber-400 to-yellow-500",
-      label: "≡ƒÑç",
+      label: "🥇",
       borderColor: "rgba(251,191,36,0.4)",
     },
     {
       glow: "rgba(148,163,184,0.3)",
       badge: "bg-gradient-to-r from-slate-300 to-gray-400",
-      label: "≡ƒÑê",
+      label: "🥈",
       borderColor: "rgba(148,163,184,0.3)",
     },
     {
       glow: "rgba(251,146,60,0.25)",
       badge: "bg-gradient-to-r from-orange-400 to-amber-600",
-      label: "≡ƒÑë",
+      label: "🥉",
       borderColor: "rgba(251,146,60,0.3)",
     },
   ];
@@ -382,10 +384,8 @@ const ContributorCard = ({
   );
 };
 
-/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-   MAIN COMPONENT
-   ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
-const ContributorsComponent = () => {
+/* ─── MAIN COMPONENT ─── */
+export default function ContributorsComponent() {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(true);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -394,25 +394,24 @@ const ContributorsComponent = () => {
   const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchContributors = async () => {
+    (async () => {
       try {
-        const response = await fetch(
+        const res = await fetch(
           "https://api.github.com/repos/ronisarkarexe/story-spark-ai/contributors"
         );
-        const data = await response.json();
+        const data: Contributor[] = await res.json();
         if (Array.isArray(data)) {
-          const filtered = data.filter(
-            (contributor: Contributor) => contributor.contributions >= 1
-          );
-          setContributors(filtered);
+          const sorted = data
+            .filter((c) => c.contributions > 0)
+            .sort((a, b) => b.contributions - a.contributions);
+          setContributors(sorted);
         }
-      } catch (error) {
-        console.error("Failed to fetch contributors:", error);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
-    };
-    fetchContributors();
+    })();
   }, []);
 
   const totalPRs = contributors.reduce(
@@ -424,7 +423,7 @@ const ContributorsComponent = () => {
     ? Math.max(...contributors.map((c) => c.contributions))
     : 1;
 
-  /* ΓöÇΓöÇ GSAP scroll animations ΓöÇΓöÇ */
+  /* GSAP scroll animations */
   useEffect(() => {
     if (loading) return;
 
@@ -636,7 +635,7 @@ const ContributorsComponent = () => {
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 md:py-28">
-        {/* ΓöÇΓöÇΓöÇ HERO ΓöÇΓöÇΓöÇ */}
+        {/* HERO */}
         <div ref={heroRef} className="text-center mb-20 md:mb-28">
           <div className="hero-badge inline-flex items-center gap-2.5 rounded-full border border-indigo-500/20 bg-indigo-500/5 px-5 py-2 text-sm text-indigo-300 mb-8">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -663,7 +662,7 @@ const ContributorsComponent = () => {
           </div>
 
           <p className="hero-subtitle mt-8 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            The brilliant minds behind StorySparkAI ΓÇö building, iterating, and
+            The brilliant minds behind StorySparkAI - building, iterating, and
             pushing the boundaries of AI-powered storytelling.
           </p>
 
@@ -681,7 +680,7 @@ const ContributorsComponent = () => {
           </div>
         </div>
 
-        {/* ΓöÇΓöÇΓöÇ STATS ΓöÇΓöÇΓöÇ */}
+        {/* STATS */}
         <div
           ref={statsRef}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-20 md:mb-28"
@@ -756,7 +755,7 @@ const ContributorsComponent = () => {
           ))}
         </div>
 
-        {/* ΓöÇΓöÇΓöÇ SECTION HEADER ΓöÇΓöÇΓöÇ */}
+        {/* SECTION HEADER */}
         <div className="flex items-center gap-4 mb-12">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
           <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
@@ -766,7 +765,7 @@ const ContributorsComponent = () => {
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
         </div>
 
-        {/* ΓöÇΓöÇΓöÇ CONTRIBUTORS GRID ΓöÇΓöÇΓöÇ */}
+        {/* CONTRIBUTORS GRID */}
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {[...Array(8)].map((_, i) => (
@@ -803,7 +802,7 @@ const ContributorsComponent = () => {
           </div>
         )}
 
-        {/* ΓöÇΓöÇΓöÇ CTA ΓöÇΓöÇΓöÇ */}
+        {/* CTA */}
         <div ref={ctaRef} className="mt-24 md:mt-32">
           <div
             className="cta-container relative rounded-3xl p-10 md:p-14 overflow-hidden text-center"
@@ -878,6 +877,4 @@ const ContributorsComponent = () => {
       `}</style>
     </div>
   );
-};
-
-export default ContributorsComponent;
+}

@@ -15,18 +15,44 @@ const aiModel = z.object({
       .string({ required_error: "Prompt is required!" })
       .trim()
       .min(1, "Prompt cannot be empty or whitespace only!")
+      .max(2000, "Prompt must not exceed 2000 characters.")
       .refine((val) => {
-        // Remove [Genre: ...] if it exists to check the actual prompt content
-        const stripped = val.replace(/^\[Genre:.*?\]\s*/, '').trim();
+        const stripped = val.replace(/^\[Genre:.*?\]\s*/, "").trim();
         return stripped.length > 0;
       }, { message: "Prompt must contain actual story content, not just a genre." }),
+
+    wordLength: z
+      .number()
+      .int("wordLength must be a whole number.")
+      .min(50, "wordLength must be at least 50.")
+      .max(1000, "wordLength must not exceed 1000.")
+      .optional(),
+
+    numStories: z
+      .number()
+      .int("numStories must be a whole number.")
+      .min(1, "numStories must be at least 1.")
+      .max(5, "numStories must not exceed 5.")
+      .optional(),
+
     language: z.string().optional(),
+
     tone: z
       .enum(VALID_TONES, {
         errorMap: () => ({
           message: `Tone must be one of: ${VALID_TONES.join(", ")}`,
         }),
       })
+      .optional(),
+
+    characters: z
+      .array(
+        z.object({
+          name: z.string({ required_error: "Name is required" }).trim().min(1),
+          role: z.string({ required_error: "Role is required" }).trim().min(1),
+          personality: z.string({ required_error: "Personality/Traits are required" }).trim().min(1),
+        })
+      )
       .optional(),
   }),
 });
@@ -58,11 +84,21 @@ const aiAlternateEndings = z.object({
 
 const aiChat = z.object({
   body: z.object({
-    message: z.string({ required_error: "Message is required!" }),
-    history: z.array(z.object({
-      role: z.enum(["user", "model"]),
-      parts: z.string(),
-    })).optional(),
+    message: z
+      .string({ required_error: "Message is required!" })
+      .min(1, "Message cannot be empty.")
+      .max(2000, "Message must not exceed 2000 characters."),
+    history: z
+      .array(
+        z.object({
+          role: z.enum(["user", "model"]),
+          parts: z
+            .string()
+            .max(2000, "Each history message must not exceed 2000 characters."),
+        })
+      )
+      .max(20, "Chat history must not exceed 20 messages.")
+      .optional(),
   }),
 });
 

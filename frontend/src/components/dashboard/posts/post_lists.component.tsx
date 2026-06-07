@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useGetPostListsQuery } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
 import { Topic } from "../../../models/post";
@@ -15,7 +15,7 @@ const PostListsComponent: React.FC = () => {
 
   const debounceTerm = useDebounced({
     searchQuery: searchTerm,
-    daley: 600,
+    delay: 600,
   });
 
   if (debounceTerm) {

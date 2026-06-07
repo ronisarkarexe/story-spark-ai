@@ -1,24 +1,34 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { connectSocket } from "../../socket/socket.oi";
+import { connectSocket, getSocketIo } from "../../socket/socket.oi";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
+interface CreateRoomResponse {
+  roomId?: string;
+  message?: string;
+}
 
 export default function CollabHome() {
   const navigate = useNavigate();
   const [joinRoomId, setJoinRoomId] = useState("");
   const [error, setError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
   const user = getUserInfo();
 
   const createRoom = () => {
-    if (!isLoggedIn()) {
+    if (!isLoggedIn() || !user) {
       navigate("/login");
       return;
     }
 
     try {
       setIsCreating(true);
-      const socket = connectSocket();
+      setError("");
+
+      let socket = getSocketIo();
+      if (!socket) {
+        socket = connectSocket();
+      }
       if (!socket) {
         setError(
           "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
@@ -27,18 +37,16 @@ export default function CollabHome() {
         return;
       }
 
-      const collabSocket = socket;
-
-      collabSocket.emit(
+      socket.emit(
         "collab:create_room",
-        { userId: user?.userId, username: user?.name },
-        (response: unknown) => {
-          if (response && (response as { roomId: string }).roomId) {
-            navigate(`/collab/${(response as { roomId: string }).roomId}`);
+        { userId: user.userId, username: user.name },
+        (response: CreateRoomResponse) => {
+          if (response.roomId) {
+            navigate(`/collab/${response.roomId}`);
           } else {
-            setError("Failed to create room. Please try again.");
+            setError(response.message || "Failed to create room");
+            setIsCreating(false);
           }
-          setIsCreating(false);
         }
       );
     } catch (err) {
@@ -53,6 +61,7 @@ export default function CollabHome() {
       setError("Please enter a Room ID");
       return;
     }
+
     navigate(`/collab/${joinRoomId.trim()}`);
   };
 

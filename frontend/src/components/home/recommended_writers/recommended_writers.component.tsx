@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { isLoggedIn } from "../../../services/auth.service";
 import { useToggleFollowMutation } from "../../../redux/apis/user.api";
 import ImageFallback from "../../ImageFallback";
@@ -82,48 +83,61 @@ const RecommendedWritersComponent = () => {
         </div>
       </section>
 
-      {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#0f172a] border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.5)] max-w-md w-full p-6 transform transition-all">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="fas fa-user-lock text-2xl text-blue-400"></i>
+      <AnimatePresence>
+        {showLoginModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", damping: 30, stiffness: 200, mass: 0.8 }}
+              className="bg-[#0f172a] border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.5)] max-w-md w-full p-6 overflow-hidden"
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-user-lock text-2xl text-blue-400"></i>
+                </div>
+
+                <h3 className="text-2xl font-bold text-gray-200 mb-2">
+                  Authentication Required
+                </h3>
+
+                <p className="text-gray-400 mb-6 leading-relaxed">
+                  You need to log in or sign up to follow writers.
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  <Link
+                    to="/login"
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
+                  >
+                    Log In
+                  </Link>
+
+                  <Link
+                    to="/signup"
+                    className="bg-white/5 hover:bg-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all border border-white/10"
+                  >
+                    Sign Up
+                  </Link>
+
+                  <button
+                    onClick={() => setShowLoginModal(false)}
+                    className="bg-transparent hover:bg-white/5 text-gray-400 hover:text-gray-300 font-medium py-3 px-4 rounded-xl transition-all mt-1"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-
-              <h3 className="text-2xl font-bold text-gray-200 mb-2">
-                Authentication Required
-              </h3>
-
-              <p className="text-gray-400 mb-6 leading-relaxed">
-                You need to log in or sign up to follow writers.
-              </p>
-
-              <div className="flex flex-col gap-3">
-                <Link
-                  to="/login"
-                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
-                >
-                  Log In
-                </Link>
-
-                <Link
-                  to="/signup"
-                  className="w-full bg-white/5 hover:bg-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all border border-white/10"
-                >
-                  Sign Up
-                </Link>
-
-                <button
-                  onClick={() => setShowLoginModal(false)}
-                  className="w-full bg-transparent hover:bg-white/5 text-gray-400 hover:text-gray-300 font-medium py-3 px-4 rounded-xl transition-all mt-1"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

@@ -3,6 +3,7 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 export interface CustomJwtPayload extends JwtPayload {
   email?: string | undefined;
   userId?: string | undefined;
+  _id?: string | undefined;
   name?: string | undefined;
   postsCount?: number | undefined;
   role?: string | undefined;
@@ -38,6 +39,15 @@ export const decodedToken = (token: string): CustomJwtPayload => {
     throw new Error("Token payload is not a valid object.");
   }
 
+  // Backend tokens use MongoDB `_id`; normalize to `userId` for client auth state.
+  if (
+    (typeof decoded.userId !== "string" || decoded.userId.trim() === "") &&
+    typeof decoded._id === "string" &&
+    decoded._id.trim() !== ""
+  ) {
+    decoded.userId = decoded._id;
+  }
+
   // 1. Validate required userId claim
   if (typeof decoded.userId !== "string" || decoded.userId.trim() === "") {
     throw new Error("Token is missing a valid 'userId' claim.");
@@ -59,7 +69,7 @@ export const decodedToken = (token: string): CustomJwtPayload => {
     throw new Error("Token is missing a valid 'role' claim.");
   }
 
-  const validRoles = ["user", "admin", "guest"];
+  const validRoles = ["user", "admin", "super_admin", "writer", "guest"];
   if (!validRoles.includes(decoded.role)) {
     throw new Error(`Token 'role' claim must be one of: ${validRoles.join(", ")}`);
   }
@@ -69,7 +79,7 @@ export const decodedToken = (token: string): CustomJwtPayload => {
     throw new Error("Token is missing a valid 'subscriptionType' claim.");
   }
 
-  const validSubscriptions = ["free", "premium"];
+  const validSubscriptions = ["free", "pro", "premium"];
   if (!validSubscriptions.includes(decoded.subscriptionType)) {
     throw new Error(`Token 'subscriptionType' claim must be one of: ${validSubscriptions.join(", ")}`);
   }

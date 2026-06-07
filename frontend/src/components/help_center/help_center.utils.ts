@@ -32,14 +32,6 @@ export interface HelpCategory {
   sectionId: string; // FIX: Resolves category.sectionId error
 }
 
-export const HELP_SECTIONS = [
-  { id: "categories", label: "Quick Help", icon: "fa-layer-group" },
-  { id: "faq", label: "FAQ", icon: "fa-circle-question" },
-  { id: "troubleshooting", label: "Troubleshooting", icon: "fa-screwdriver-wrench" },
-  { id: "developer-setup", label: "Developer Setup", icon: "fa-laptop-code" },
-  { id: "support", label: "Support & Community", icon: "fa-users" },
-] as const;
-
 // TroubleshootItem Model
 export interface TroubleshootItem {
   id: string;

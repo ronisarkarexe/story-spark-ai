@@ -88,18 +88,17 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                 <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
                   <BookmarkButton
                     storyId={story._id}
-                    bookmarks={story.bookmarks}
                     className="backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 hover:bg-white/30 p-2 !rounded-full shadow-lg hover:scale-110 transition-all duration-300"
                   />
                 </div>
 
-                <div className="absolute top-4 left-4 flex gap-2">
-                  <span className="px-3 py-1 bg-indigo-600 border border-indigo-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
+                <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap max-w-[80%]">
+                  <span className="inline-flex items-center px-2 py-0.5 bg-indigo-600 border border-indigo-500/50 text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-lg max-w-[120px] truncate">
                     {story.tag}
                   </span>
                   {story.language && (
-                    <span className="px-3 py-1 bg-purple-600 border border-purple-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
-                      {story.language}
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-600 border border-purple-500/50 text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-lg whitespace-nowrap">
+                      🌐 {story.language}
                     </span>
                   )}
                 </div>

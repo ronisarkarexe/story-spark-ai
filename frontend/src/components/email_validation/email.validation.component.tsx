@@ -13,7 +13,7 @@ interface Inputs {
 
 const EmailValidationComponent = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit, getValues } = useForm<Inputs>({
+  const { register, getValues } = useForm<Inputs>({
     mode: "onChange",
   });
   const [verifyOtp] = useVerifyOtpMutation();
@@ -24,48 +24,61 @@ const EmailValidationComponent = () => {
   }, []);
 
   const [isBusy, setIsBusy] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: "error" | "success" | "info"; text: string } | null>(null);
 
   const onVerify = async () => {
     const otp = getValues("otp").trim();
     if (!otp) {
       toast.error("Please enter OTP");
+      setStatusMessage({ type: "error", text: "Please enter a valid OTP code." });
       return;
     }
     if (!email) {
       toast.error("Missing email for verification. Please restart signup.");
+      setStatusMessage({ type: "error", text: "Missing email context. Please restart the registration process." });
       return;
     }
 
     setIsBusy(true);
+    setStatusMessage({ type: "info", text: "Verifying your security code, please wait..." });
+    
     try {
       const res = await verifyOtp({ email, otp }).unwrap();
 
       const verificationToken = res?.data?.verificationToken;
       const accessToken = res?.data?.accessToken;
 
-      // Backend may return either accessToken directly or a verificationToken.
       if (accessToken) {
         storeUserInfo({ accessToken });
         toast.success("Email verified successfully!");
-        navigate("/dashboard", { replace: true });
+        setStatusMessage({ type: "success", text: "Verification successful! Redirecting to your dashboard..." });
+        
+        setTimeout(() => {
+          navigate("/dashboard", { replace: true });
+        }, 1500);
         return;
       }
 
       if (!verificationToken) {
         toast.error("Verification failed. Please try again.");
+        setStatusMessage({ type: "error", text: "Verification failed. The platform did not return a valid session." });
         return;
       }
 
-      // If only verificationToken is returned, user still needs to complete registration.
       toast.success("OTP verified. Redirecting...");
-      navigate(`/signup?email=${encodeURIComponent(email)}&verificationToken=${encodeURIComponent(verificationToken)}`, {
-        replace: true,
-      });
+      setStatusMessage({ type: "success", text: "Code validated! Redirecting you to complete your signup..." });
+      
+      setTimeout(() => {
+        navigate(`/signup?email=${encodeURIComponent(email)}&verificationToken=${encodeURIComponent(verificationToken)}`, {
+          replace: true,
+        });
+      }, 1500);
     } catch (e) {
-      toast.error(
-        (e as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-          "OTP verification failed. Please check the code and try again."
-      );
+      const serverMessage = (e as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
+        "OTP verification failed. Please check the code and try again.";
+      
+      toast.error(serverMessage);
+      setStatusMessage({ type: "error", text: serverMessage });
     } finally {
       setIsBusy(false);
     }
@@ -110,8 +123,32 @@ const EmailValidationComponent = () => {
             icon="fas fa-key"
             register={register}
           />
-          <SSButton text="Verify OTP" type="submit" isLoading={isBusy} />
+          
+          {/* Visual Feedback Banner Row */}
+          {statusMessage && (
+            <div 
+              className={`p-3 text-xs rounded-lg border transition-all duration-200 ${
+                statusMessage.type === "error" 
+                  ? "bg-red-500/10 border-red-500/30 text-red-400" 
+                  : statusMessage.type === "success"
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                  : "bg-blue-500/10 border-blue-500/30 text-blue-400"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {statusMessage.type === "info" && <span className="animate-spin text-sm">⏳</span>}
+                <p>{statusMessage.text}</p>
+              </div>
+            </div>
+          )}
+
+          <SSButton 
+            text={isBusy ? "Verifying..." : "Verify OTP"} 
+            type="submit" 
+            isLoading={isBusy} 
+          />
         </form>
+        
         <p className="mt-8 text-sm text-center text-slate-400">
           Need help? Contact us at{" "}
           <a

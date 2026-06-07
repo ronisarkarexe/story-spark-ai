@@ -10,6 +10,7 @@ const BookmarksComponent = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [size, setSize] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
+  const [sortBy, setSortBy] = useState<string>("newest");
 
   const query: Record<string, string | number> = {
     page,
@@ -33,6 +34,25 @@ const BookmarksComponent = () => {
         (story.tag?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
   );
+
+  // Sort posts client-side
+  const sortedPosts = [...filteredPosts].sort((a, b) => {
+    switch (sortBy) {
+      case "oldest":
+        return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+      case "title-asc":
+        return (a.title || "").localeCompare(b.title || "");
+      case "title-desc":
+        return (b.title || "").localeCompare(a.title || "");
+      case "length-asc":
+        return (a.content || "").length - (b.content || "").length;
+      case "length-desc":
+        return (b.content || "").length - (a.content || "").length;
+      case "newest":
+      default:
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    }
+  });
 
   return (
     <div className="pt-0 min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
@@ -82,22 +102,40 @@ const BookmarksComponent = () => {
                 </p>
               </div>
               {allPosts.length > 0 && (
-                <div className="flex items-center space-x-4">
-                  <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
-                  <select
-                    className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                    value={size}
-                    onChange={(e) => {
-                      setSize(Number(e.target.value));
-                      setPage(1);
-                    }}
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                  <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center space-x-2">
+                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Sort By</label>
+                    <select
+                      className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                    >
+                      <option value="newest">Newest Bookmarked</option>
+                      <option value="oldest">Oldest Bookmarked</option>
+                      <option value="title-asc">Alphabetical (A-Z)</option>
+                      <option value="title-desc">Alphabetical (Z-A)</option>
+                      <option value="length-asc">Shortest First</option>
+                      <option value="length-desc">Longest First</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
+                    <select
+                      className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                      value={size}
+                      onChange={(e) => {
+                        setSize(Number(e.target.value));
+                        setPage(1);
+                      }}
+                    >
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -125,7 +163,7 @@ const BookmarksComponent = () => {
                 </div>
               ) : (
                 <ExploreViewListComponent
-                  posts={filteredPosts}
+                  posts={sortedPosts}
                   isLoading={isLoading}
                 />
               )}
