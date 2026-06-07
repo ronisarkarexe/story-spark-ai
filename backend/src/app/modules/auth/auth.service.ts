@@ -1,4 +1,4 @@
-import * as bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import jwt, { Secret } from "jsonwebtoken";
 import crypto from "crypto";
@@ -272,7 +272,7 @@ const googleLogin = async (payload: { token: string }) => {
         email: email as string,
         name: (googleName || email || "Google User").slice(0, 100),
         status: "Active",
-        subscriptionType: "Free",
+        subscriptionType: "free",
         profile: {
           avatar: (picture as string) || "",
           bio: "",

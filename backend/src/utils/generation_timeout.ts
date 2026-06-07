@@ -64,8 +64,11 @@ export const raceGenerationWithTimeout = async <T>(
         // operation error (e.g. network failure, API error).
         if (controller.signal.aborted) {
           // Timeout already fired — reject with the timeout error.
-        if (timedOut) {
-          reject(new GenerationTimeoutError());
+          if (timedOut) {
+            reject(new GenerationTimeoutError());
+          } else {
+            reject(new GenerationAbortedError());
+          }
         } else {
           // Real error from the operation — clean up then propagate it.
           controller.abort();

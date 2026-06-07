@@ -427,8 +427,6 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
       bookmarked: false,
     };
   }
-};}
-
 
   await Post.updateOne(
     { _id: postId },
