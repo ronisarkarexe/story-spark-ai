@@ -174,7 +174,6 @@ const ContributorCard = ({
   const glowRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const hasBarAnimated = useRef(false);
-
   const rankColors = [
     {
       glow: "rgba(251,191,36,0.3)",
@@ -401,7 +400,7 @@ const ContributorsComponent = () => {
         const data = await response.json();
         if (Array.isArray(data)) {
           const filtered = data.filter(
-            (contributor: Contributor) => contributor.contributions >= 1
+            (c: Contributor) => c.contributions >= 3
           );
           setContributors(filtered);
         }
@@ -660,7 +659,6 @@ const ContributorsComponent = () => {
               </span>
             </h1>
           </div>
-
           <p className="hero-subtitle mt-8 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
             The brilliant minds behind StorySparkAI — building, iterating, and
             pushing the boundaries of AI-powered storytelling.

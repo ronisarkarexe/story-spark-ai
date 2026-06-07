@@ -9,9 +9,13 @@ import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
 
-dns.setServers(["1.1.1.1", "8.8.8.8"]);
+// Override DNS resolvers only when explicitly configured; default to the platform resolver.
+if (config.dns_servers?.length) {
+  dns.setServers(config.dns_servers);
+}
 
 if (config.disable_logs) {
+  // Silence only verbose channels; keep warn/error so failures stay visible in logs.
   const noop = () => undefined;
   console.log = noop;
   console.info = noop;

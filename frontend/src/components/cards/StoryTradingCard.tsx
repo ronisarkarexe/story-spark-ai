@@ -1,9 +1,9 @@
-import React, { useMemo, useRef } from "react";
-import html2canvas from "html2canvas";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import type { IStories } from "../stories/stories.view.component";
 import { getWordCount } from "../stories/stories.utils";
 import StoryCoverImage from "../stories/StoryCoverImage";
+import { isSessionBookmarked, addSessionBookmark, removeSessionBookmark } from "../../utils/session-bookmarks";
 
 export type StoryCardRarity = "Common" | "Rare" | "Epic" | "Legendary";
 
@@ -119,6 +119,18 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const rarity = getStoryCardRarity(story.content);
+  const [isBookmarked, setIsBookmarked] = useState(() => isSessionBookmarked(story.uuid));
+
+  useEffect(() => {
+    const handleBookmarkChange = () => {
+      setIsBookmarked(isSessionBookmarked(story.uuid));
+    };
+    window.addEventListener("session_bookmarks_changed", handleBookmarkChange);
+    return () => {
+      window.removeEventListener("session_bookmarks_changed", handleBookmarkChange);
+    };
+  }, [story.uuid]);
+
   const rarityStyle = rarityConfig[rarity];
   const wordCount = getWordCount(story.content);
   const cardId = getStoryCardId(story);
@@ -134,6 +146,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
     const toastId = toast.loading("Preparing trading card...");
 
     try {
+      const { default: html2canvas } = await import("html2canvas");
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
         scale: 2,
@@ -234,6 +247,23 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
               className="h-full w-full"
               style={{ minHeight: "0", borderRadius: "0.75rem" }}
             />
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isBookmarked) {
+                  removeSessionBookmark(story.uuid);
+                  toast.success("Removed from bookmarks");
+                } else {
+                  addSessionBookmark(story);
+                  toast.success("Saved to session bookmarks!");
+                }
+              }}
+              className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/20 flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              title={isBookmarked ? "Remove bookmark" : "Save story"}
+            >
+              <i className={`${isBookmarked ? "fas text-amber-400" : "far text-white/70"} fa-bookmark`}></i>
+            </button>
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
               <span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${genreClass}`}>

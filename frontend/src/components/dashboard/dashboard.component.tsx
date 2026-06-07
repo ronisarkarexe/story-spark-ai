@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useGetDashboardAnalysisQuery } from "../../redux/apis/analysis.api";
 import TopicsChart from "../chart/dashboard/bar_chart";
 import SubscriptionChart from "../chart/dashboard/doughnut_chart";

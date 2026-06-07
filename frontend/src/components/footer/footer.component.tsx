@@ -80,26 +80,10 @@ const FooterComponent: React.FC = () => {
   ];
 
   const socialLinks = [
-    {
-      icon: "fa-instagram",
-      url: "https://www.instagram.com/",
-      label: "Follow us on Instagram",
-    },
-    {
-      icon: "fa-linkedin",
-      url: "https://www.linkedin.com/",
-      label: "Connect with us on LinkedIn",
-    },
-    {
-      icon: "fa-x-twitter",
-      url: "https://x.com/",
-      label: "Follow us on X (Twitter)",
-    },
-    {
-      icon: "fa-facebook",
-      url: "https://www.facebook.com/",
-      label: "Follow us on Facebook",
-    },
+    { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
+    { icon: "fa-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
+    { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
+    { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
   ];
 
   const currentYear = new Date().getFullYear();
@@ -261,13 +245,16 @@ const FooterComponent: React.FC = () => {
               noValidate
               className="mt-1 flex flex-col gap-2 rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-2 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
             >
-              {/* Input */}
+
               <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
                 <i
                   className="fa-solid fa-envelope text-slate-500 text-[13px]"
                   aria-hidden="true"
                 />
                 <input
+                  id="newsletter-email-footer"
+                  name="email"
+                  autoComplete="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -330,7 +317,7 @@ const FooterComponent: React.FC = () => {
                   {label}
                 </Link>
                 {i < legalLinks.length - 1 && (
-                  <span className="text-white/[0.12]">|</span>
+                  <span className="text-white/12">|</span>
                 )}
               </React.Fragment>
             ))}

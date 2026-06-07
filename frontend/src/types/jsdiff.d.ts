@@ -88,3 +88,4 @@ declare module 'jsdiff' {
 
   export function canonicalize(obj: any): any;
 }
+

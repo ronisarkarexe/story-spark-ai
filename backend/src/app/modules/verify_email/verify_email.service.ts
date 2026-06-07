@@ -8,6 +8,16 @@ import { OTPModel } from "./otp.model";
 import crypto from "crypto";
 import { clearOtpAttempts } from "./otp.rate-limiter.middleware";
 
+const escapeHtml = (unsafe: string): string => {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
+
 const transporter = nodemailer.createTransport({
   service: "Gmail",
   auth: {
@@ -19,6 +29,7 @@ const transporter = nodemailer.createTransport({
 const VerifyEmail = async (payload: IEmailBody) => {
   try {
     const { email, name } = payload;
+    const safeName = escapeHtml(name);
     // Use a cryptographically secure RNG so OTPs cannot be predicted.
     const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
@@ -61,7 +72,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
           </a>
         </header>
         <main style="margin-top: 20px;">
-          <h2 style="color: #333;">Hi ${name},</h2>
+          <h2 style="color: #333;">Hi ${safeName},</h2>
           <p style="color: #666;">This is your verification code:</p>
           <div style="display: flex; justify-content: center; margin: 20px 0;">
             ${otp

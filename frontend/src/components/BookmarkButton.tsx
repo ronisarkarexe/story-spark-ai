@@ -58,6 +58,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
       onClick={handleBookmark}
       disabled={isLoading}
       title={isCurrentlyBookmarked ? "Remove bookmark" : "Save story"}
+      aria-label={isCurrentlyBookmarked ? "Remove bookmark" : "Save story"}
       className={`!rounded-button cursor-pointer transition-all duration-300 border px-3 py-1 flex items-center justify-center hover:scale-105 active:scale-95 ${
         isCurrentlyBookmarked
           ? "text-purple-400 border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20 hover:text-purple-300"

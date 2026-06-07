@@ -28,7 +28,7 @@ const auth =
       const isBlacklisted = await TokenBlacklist.findOne({ token });
       if (isBlacklisted) {
         return res.status(401).json({
-          message: "Token has been revoked. Please log in again.",
+          message: "Token is invalidated/logged out",
         });
       }
 
@@ -64,7 +64,7 @@ const auth =
         );
       }
 
-      req.user = verifiedUser;
+      (req as any).user = verifiedUser;
 
       next();
     } catch (err) {

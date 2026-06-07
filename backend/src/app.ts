@@ -28,8 +28,6 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-
-
 const defaultCorsOrigins =
   process.env.NODE_ENV === "development"
   ? ["http://localhost:4001", "http://localhost:4002"]
@@ -59,8 +57,8 @@ app.use(
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
 app.use((req, res, next) => {
@@ -86,6 +84,5 @@ app.use((req: Request, res: Response, _next: NextFunction) => {
 });
 
 app.use(globalErrorHandler);
-
 
 export default app;

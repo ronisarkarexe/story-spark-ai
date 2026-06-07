@@ -15,15 +15,14 @@ const toggleReaction = async (
 ) => {
   const { email } = token;
 
-  // Optimization: Use select() and lean() for user lookup to reduce overhead
   const user = await User.findOne({ email }).select("_id").lean();
+
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  // Optimization: Use select() to fetch only necessary fields for the toggle operation
-  // Note: lean() is NOT used here because we call post.save() later
   const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } }).select("likesCount reactions");
+
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }

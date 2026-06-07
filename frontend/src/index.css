@@ -1164,3 +1164,194 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
     animation: none !important;
   }
 }
+/* ΓöÇΓöÇΓöÇ Floating label fields ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
+
+.contact-float-field {
+  position: relative;
+}
+
+.contact-float-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #475569;
+  z-index: 2;
+  pointer-events: none;
+  transition: color 220ms ease;
+  display: flex;
+  align-items: center;
+}
+
+.contact-float-icon--textarea {
+  top: 20px;
+  transform: none;
+}
+
+.contact-float-icon--active,
+.contact-float-field:focus-within .contact-float-icon {
+  color: #a78bfa;
+}
+
+.contact-float-input {
+  width: 100%;
+  height: 52px;
+  padding: 20px 16px 6px 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f8fafc;
+  font-size: 0.9375rem;
+  outline: none;
+  transition:
+    border-color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease;
+  position: relative;
+  z-index: 1;
+}
+
+.contact-float-textarea {
+  height: auto;
+  resize: none;
+  padding-top: 22px;
+  padding-bottom: 12px;
+}
+
+.contact-float-input:hover {
+  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.contact-float-input:focus,
+.contact-float-input--active {
+  border-color: rgba(139, 92, 246, 0.55);
+  background: rgba(139, 92, 246, 0.05);
+  box-shadow:
+    0 0 0 3px rgba(139, 92, 246, 0.12),
+    0 0 20px rgba(139, 92, 246, 0.06);
+}
+
+/* Error state */
+.contact-float-input--error {
+  border-color: rgba(239, 68, 68, 0.55) !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.10) !important;
+}
+
+.contact-float-input::placeholder {
+  color: transparent;
+  transition: color 150ms ease;
+}
+
+.contact-float-input:focus::placeholder {
+  color: #475569;
+}
+
+/* Floating label */
+.contact-float-label {
+  position: absolute;
+  left: 42px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 2;
+  transition:
+    top 220ms cubic-bezier(0.4, 0, 0.2, 1),
+    font-size 220ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 220ms ease,
+    transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.contact-float-label--textarea {
+  top: 20px;
+  transform: none;
+}
+
+.contact-float-label--floated,
+.contact-float-field:focus-within .contact-float-label {
+  top: 8px;
+  transform: translateY(0);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #a78bfa;
+}
+
+.contact-float-label--textarea.contact-float-label--floated,
+.contact-float-field:focus-within .contact-float-label--textarea {
+  top: 6px;
+  transform: none;
+}
+
+/* Animated focus underline */
+.contact-float-underline {
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #6366f1, #a78bfa, #ec4899);
+  background-size: 200% 100%;
+  opacity: 0;
+  transform: scaleX(0);
+  transition:
+    opacity 220ms ease,
+    transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  animation: border-gradient 3s ease infinite paused;
+}
+
+.contact-float-field:focus-within .contact-float-underline {
+  opacity: 1;
+  transform: scaleX(1);
+  animation-play-state: running;
+}
+
+/* Submit button */
+.contact-submit-btn {
+  transform: translateZ(0);
+  transition:
+    transform 180ms ease,
+    box-shadow 220ms ease,
+    opacity 180ms ease;
+  will-change: transform;
+}
+
+.contact-btn-gradient {
+  border-radius: inherit;
+  background: linear-gradient(115deg, #2563eb 0%, #7c3aed 50%, #db2777 100%);
+  background-size: 200% 200%;
+  animation: border-gradient 4s ease infinite;
+  transition: filter 200ms ease;
+}
+
+.contact-submit-btn:not(:disabled):hover {
+  transform: translate3d(0, -2px, 0) scale(1.005);
+  box-shadow:
+    0 0 0 1px rgba(139, 92, 246, 0.35),
+    0 10px 36px rgba(99, 102, 241, 0.40),
+    0 0 56px rgba(139, 92, 246, 0.18);
+}
+
+.contact-submit-btn:not(:disabled):hover .contact-btn-gradient {
+  filter: brightness(1.1);
+}
+
+.contact-submit-btn:not(:disabled):active {
+  transform: translate3d(0, 0, 0) scale(0.98);
+}
+
+.contact-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+

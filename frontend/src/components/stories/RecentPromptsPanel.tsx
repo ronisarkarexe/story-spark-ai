@@ -94,6 +94,7 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
             <button
               type="button"
               onClick={onToggle}
+              aria-label="Close recent prompts"
               className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
               title={text.close}
             >
@@ -240,4 +241,4 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
   );
 };
 
-export default RecentPromptsPanel;
+export default React.memo(RecentPromptsPanel);

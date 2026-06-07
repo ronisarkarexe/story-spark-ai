@@ -6,6 +6,7 @@ import logo from "../../assets/logoNew.png";
 import NotificationComponent from "../notification/notification.component";
 import { useNotifications } from "../../hooks/useNotifications";
 import ThemeToggle from "../theme/theme_toggle.component";
+import { useTheme } from "../theme/theme.context";
 import {
   Home,
   Compass,
@@ -22,6 +23,7 @@ import {
   X,
   Bell,
   ChevronDown,
+  Sparkles,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -59,6 +61,8 @@ const NavListComponent: React.FC = () => {
   const [isLogin, setIsLogin] = useState<boolean>(isLoggedIn());
   const notificationMenuRef = useRef<HTMLDivElement | null>(null);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const { glowEnabled, toggleGlow } = useTheme();
 
   const {
     notifications,
@@ -157,7 +161,6 @@ const NavListComponent: React.FC = () => {
     >
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between gap-4">
-
           {/* ── Logo ── */}
           <Link
             to="/"
@@ -215,7 +218,22 @@ const NavListComponent: React.FC = () => {
           </nav>
 
           {/* ── Desktop Right Actions ── */}
-          <div className="hidden md:flex items-center gap-1 shrink-0">
+          <div className="hidden md:flex items-center gap-2 shrink-0">
+            {/* Glow Toggle */}
+            <button
+              onClick={toggleGlow}
+              className={`group relative grid h-8 w-8 place-items-center rounded-lg border transition-all duration-300 ${
+                glowEnabled
+                  ? "border-indigo-200 bg-indigo-50 text-indigo-600 shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
+                  : "border-slate-200/80 bg-white/60 text-slate-400 hover:text-slate-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-500 dark:hover:text-slate-300"
+              }`}
+              title={glowEnabled ? "Glow: On" : "Glow: Off"}
+              aria-label={glowEnabled ? "Disable cursor glow" : "Enable cursor glow"}
+              aria-pressed={glowEnabled}
+            >
+              <Sparkles className="h-4 w-4" strokeWidth={2.5} />
+            </button>
+
             {/* Theme Toggle */}
             <ThemeToggle />
 
@@ -365,6 +383,21 @@ const NavListComponent: React.FC = () => {
 
           {/* ── Mobile: Notification + Hamburger ── */}
           <div className="flex md:hidden items-center gap-1">
+            {/* Glow Toggle Mobile */}
+            <button
+              onClick={toggleGlow}
+              className={`group relative grid h-8 w-8 place-items-center rounded-lg border transition-all duration-300 ${
+                glowEnabled
+                  ? "border-indigo-200 bg-indigo-50 text-indigo-600 shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
+                  : "border-slate-200/80 bg-white/60 text-slate-400 hover:text-slate-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-500 dark:hover:text-slate-300"
+              }`}
+              title={glowEnabled ? "Glow: On" : "Glow: Off"}
+              aria-label={glowEnabled ? "Disable cursor glow" : "Enable cursor glow"}
+              aria-pressed={glowEnabled}
+            >
+              <Sparkles className="h-4 w-4" strokeWidth={2.5} />
+            </button>
+
             <ThemeToggle />
             {isLogin && (
               <button

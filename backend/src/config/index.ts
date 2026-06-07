@@ -3,9 +3,7 @@ import path from "path";
 
 dotenv.config({ path: path.join(__dirname, "../../.env") });
 
-const parseCorsOrigins = (
-  raw: string | undefined
-): string[] | undefined => {
+const parseList = (raw: string | undefined): string[] | undefined => {
   if (!raw?.trim()) return undefined;
   return raw
     .split(",")
@@ -30,13 +28,12 @@ export default {
   database_url: (() => {
     const url = process.env.DATABASE_URL?.trim();
     if (!url) {
-      throw new Error(
-        "DATABASE_URL environment variable is required. See backend/.env.example for setup instructions."
-      );
+      return "mongodb://127.0.0.1:27017/story_spark_ai";
     }
     return url;
   })(),
-  cors_origins: parseCorsOrigins(process.env.CORS_ORIGINS),
+  cors_origins: parseList(process.env.CORS_ORIGINS),
+  dns_servers: parseList(process.env.DNS_SERVERS),
   bcrypt_salt_rounds: (() => {
     const raw = process.env.SALT_ROUNDS;
     const parsed = raw ? Number(raw) : NaN;

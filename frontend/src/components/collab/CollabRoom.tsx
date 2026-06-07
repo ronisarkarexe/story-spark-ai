@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { connectSocket, getSocketIo } from "../../socket/socket.oi";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 
@@ -52,10 +52,7 @@ export default function CollabRoom() {
     }
 
     try {
-      let socket = getSocketIo();
-      if (!socket) {
-        socket = connectSocket();
-      }
+      const socket = getSocketIo() || connectSocket();
 
       if (!socket) {
         setError("Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env");
@@ -104,7 +101,7 @@ export default function CollabRoom() {
         collabSocket.off("collab:room_updated", handleRoomUpdated);
         collabSocket.off("collab:story_updated", handleStoryUpdated);
         collabSocket.off("collab:error", handleError);
-        collabSocket.disconnect(); // Clean connection handle loop safely
+        collabSocket.disconnect();
       };
     } catch (err) {
       console.error("Collab error:", err);
@@ -155,7 +152,7 @@ export default function CollabRoom() {
           <button
             type="button"
             onClick={() => navigate("/collab")}
-            className="text-indigo-600 dark:text-indigo-400 underline"
+            className="text-indigo-600 dark:text-indigo-400 underline cursor-pointer"
           >
             Back to collab home
           </button>
@@ -201,13 +198,13 @@ export default function CollabRoom() {
                 />
                 <button
                   onClick={handleAddText}
-                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors cursor-pointer"
                 >
                   Add
                 </button>
                 <button
                   onClick={handleAIContinue}
-                  className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                  className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors cursor-pointer"
                 >
                   AI ✨
                 </button>
@@ -217,7 +214,7 @@ export default function CollabRoom() {
 
           {/* Participants Sidebar */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6">
-            <h2 className="text-lg font-bold mb-4">Participants ({room?.participants.length})</h2>
+            <h2 className="text-lg font-bold mb-4">Participants ({room?.participants.length || 0})</h2>
             <div className="space-y-2">
               {room?.participants.map((p) => (
                 <div
@@ -227,7 +224,7 @@ export default function CollabRoom() {
                   <div
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: p.color }}
-                  />
+                  ></div>
                   <span className="text-sm">{p.username}</span>
                 </div>
               ))}

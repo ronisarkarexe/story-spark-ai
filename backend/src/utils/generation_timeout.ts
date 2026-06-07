@@ -17,32 +17,57 @@ export class GenerationAbortedError extends Error {
  */
 export const raceGenerationWithTimeout = async <T>(
   operation: (signal: AbortSignal) => Promise<T>,
-  timeLimitMs: number
+  timeLimitMs: number,
+  externalSignal?: AbortSignal
 ): Promise<T> => {
   const controller = new AbortController();
   let timedOut = false;
 
   return new Promise<T>((resolve, reject) => {
+    let abortHandler: (() => void) | null = null;
+
+    if (externalSignal) {
+      if (externalSignal.aborted) {
+        controller.abort();
+        reject(new GenerationAbortedError());
+        return;
+      }
+      abortHandler = () => {
+        controller.abort();
+        reject(new GenerationAbortedError());
+      };
+      externalSignal.addEventListener("abort", abortHandler);
+    }
+
     const timeoutId = setTimeout(() => {
       timedOut = true;
       controller.abort();
+      if (externalSignal && abortHandler) {
+        externalSignal.removeEventListener("abort", abortHandler);
+      }
       reject(new GenerationTimeoutError());
     }, timeLimitMs);
 
     operation(controller.signal)
       .then((result) => {
         clearTimeout(timeoutId);
+        if (externalSignal && abortHandler) {
+          externalSignal.removeEventListener("abort", abortHandler);
+        }
         resolve(result);
       })
       .catch((error) => {
         clearTimeout(timeoutId);
-
+        if (externalSignal && abortHandler) {
+          externalSignal.removeEventListener("abort", abortHandler);
+        }
         if (timedOut) {
           reject(new GenerationTimeoutError());
-          return;
+        } else if (controller.signal.aborted) {
+          reject(new GenerationAbortedError());
+        } else {
+          reject(error);
         }
-
-        reject(error);
       });
   });
 };

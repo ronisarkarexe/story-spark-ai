@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { motion } from "framer-motion";
 import CommunitySpotlightComponent from "./community_spotlight/community_spotlight.component";
 import FeatureComponent from "./feature/feature.component";
 import LatestPostsComponent from "./latest_posts/latest_posts.component";
@@ -12,7 +10,8 @@ import WriterFeedbackComponent from "./writer_feedback/writer_feedback.component
 import StartWritingComponent from "./start_writing/start_writing.component";
 import PersonalizedRecommendationsComponent from "./personalized_recommendations/personalized_recommendations.component";
 import { isLoggedIn } from "../../services/auth.service";
-import BackToTop from "../ScrollToTopButton";
+import BackToTop from "../back_home/back_to_top.component";
+import { motion } from "framer-motion";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -36,11 +35,6 @@ const itemVariants = {
 
 const HomeComponent = () => {
   const isLogin = isLoggedIn();
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 w-full box-border overflow-x-hidden">
       <motion.div

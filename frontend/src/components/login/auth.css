@@ -214,7 +214,7 @@ input[type="password"] {
     line-height: var(--ds-input-height);
     box-sizing: border-box; 
     padding-left: 44px !important; 
-    padding-right: 44px !important;
+    padding-right: 16px !important;
     overflow: hidden;
 }
 .auth-field::placeholder {
@@ -508,4 +508,26 @@ button:disabled {
         transition: none !important;
     }
     .ds-spinner { animation: none !important; }
+}
+
+.auth-field,
+.input-icon-wrapper {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+/* ── Fix: Login textbox alignment within container ── */
+.auth-form-card .ds-input-group,
+.auth-form-card .input-icon-wrapper,
+.auth-form-card input[type="text"],
+.auth-form-card input[type="email"],
+.auth-form-card input[type="password"] {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-form-card {
+  padding: 0 1rem;
+  box-sizing: border-box;
+  overflow: hidden;
 }

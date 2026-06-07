@@ -1,0 +1,78 @@
+.cp-planner-container {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.cp-header-block h3 {
+  margin: 0 0 4px 0;
+  color: #38bdf8;
+  font-size: 1.25rem;
+}
+
+.cp-header-block p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.cp-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cp-form-group label, .cp-arc-section label {
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.cp-form-group input, .cp-form-group select {
+  background-color: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #f8fafc;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.cp-form-group input:focus, .cp-form-group select:focus {
+  border-color: #38bdf8;
+}
+
+.cp-arc-timeline {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cp-arc-node {
+  flex: 1;
+  background-color: #0f172a;
+  border: 1px solid #475569;
+  color: #94a3b8;
+  padding: 8px 4px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cp-arc-node.active {
+  background-color: #38bdf8;
+  border-color: #38bdf8;
+  color: #0f172a;
+  font-weight: 600;
+}

@@ -5,19 +5,29 @@ const CommentSchema: Schema<IComment> = new Schema<IComment, CommentModel>(
   {
     postId: { type: Schema.Types.ObjectId, ref: "Post", required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    comment: { type: String, required: true },
+    comment: { type: String, required: true, maxlength: 5000 },
     parentCommentId: {
       type: Schema.Types.ObjectId,
       ref: "Comment",
       default: null,
     },
-    likes: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        default: [],
-      },
-    ],
+   likes: [
+  {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    default: [],
+  },
+],
+
+isDeleted: {
+  type: Boolean,
+  default: false,
+},
+
+deletedAt: {
+  type: Date,
+  default: null,
+},
   },
   { timestamps: true }
 );

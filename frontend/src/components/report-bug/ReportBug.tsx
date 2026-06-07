@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
-import { Image as ImageIcon, X } from "lucide-react";
 import { 
   Bug, 
   Send, 
@@ -15,7 +14,9 @@ import {
   MessageSquare,
   ClipboardList,
   Target,
-  FileWarning
+  FileWarning,
+  Image as ImageIcon,
+  X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -50,9 +51,10 @@ const SEVERITIES = [
 const ReportBug = () => {
   const [submitBugReport, { isLoading: isSubmitting }] = useSubmitBugReportMutation();
   const [isSuccess, setIsSuccess] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null); 
-  const [fileError, setFileError] = useState<string | null>(null);   
-  const fileInputRef = useRef<HTMLInputElement>(null);    
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -61,44 +63,59 @@ const ReportBug = () => {
   } = useForm<ReportBugFormData>();
 
   const handleFileSelect = (file: File) => {
-  setFileError(null);
-  const allowed = ["image/png", "image/jpeg", "image/webp", "image/gif"];
-  if (!allowed.includes(file.type)) {
-    setFileError("Only PNG, JPG, WEBP, or GIF allowed.");
-    return;
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    setFileError("File size must be under 5MB.");
-    return;
-  }
-  const reader = new FileReader();
-  reader.onloadend = () => setPreviewUrl(reader.result as string);
-  reader.readAsDataURL(file);
-};
+    setFileError(null);
 
- const onSubmit = async (data: ReportBugFormData) => {
-  try {
-    const formData = new FormData();
-    formData.append("title", data.title);
-    formData.append("category", data.category);
-    formData.append("severity", data.severity);
-    formData.append("description", data.description);
-    formData.append("steps", data.steps);
-    formData.append("expected", data.expected);
-    formData.append("actual", data.actual);
-    if (data.email) formData.append("email", data.email);
-    if (data.screenshot?.[0]) formData.append("screenshot", data.screenshot[0]);
+    // Validate size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("File size exceeds 5MB limit.");
+      return;
+    }
 
-    await submitBugReport(formData).unwrap();
-    setIsSuccess(true);
-    setPreviewUrl(null);
-    toast.success("Bug report submitted successfully!");
-    reset();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  } catch {
-    toast.error("Failed to submit report. Please try again.");
-  }
-};
+    // Validate type
+    const validTypes = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+    if (!validTypes.includes(file.type)) {
+      setFileError("Unsupported file format. Please upload PNG, JPG, or WEBP.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const onSubmit = async (data: ReportBugFormData) => {
+    try {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, val]) => {
+        if (key === "screenshot") return;
+        if (val !== undefined) {
+          formData.append(key, val);
+        }
+      });
+
+      if (fileInputRef.current?.files?.[0]) {
+        formData.append("screenshot", fileInputRef.current.files[0]);
+      }
+
+      await submitBugReport(formData).unwrap();
+      
+      setIsSuccess(true);
+      toast.success("Bug report submitted successfully!");
+      reset();
+      setPreviewUrl(null);
+      setFileError(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      
+      // Scroll to top of form or success message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      toast.error("Failed to submit report. Please try again.");
+    }
+  };
 
   return (
     <section className="min-h-screen px-4 py-16 relative flex flex-col items-center overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300 sm:px-6 md:px-10 lg:px-20">
@@ -351,8 +368,8 @@ const ReportBug = () => {
                   </div>
 
                   {/* Section 3: Optional Info */}
-                  <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
-                  {/* Screenshot Upload */}
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-6">
+                    {/* Screenshot Upload */}
                     <div>
                       <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">
                         Screenshot (Optional)
@@ -410,34 +427,38 @@ const ReportBug = () => {
                       })()}
                       {fileError && <p className="mt-2 text-sm text-red-500 ml-1">{fileError}</p>}
                     </div>
-                    <label htmlFor="email" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">
-                      Contact Email (Optional)
-                    </label>
-                    <div className="relative group/input">
-                      <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within/input:text-blue-500 transition-colors">
-                        <Mail className="w-5 h-5" />
+
+                    {/* Contact Email */}
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">
+                        Contact Email (Optional)
+                      </label>
+                      <div className="relative group/input">
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within/input:text-blue-500 transition-colors">
+                          <Mail className="w-5 h-5" />
+                        </div>
+                        <input
+                          id="email"
+                          {...register("email", { 
+                            pattern: {
+                              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                              message: "Invalid email address"
+                            }
+                          })}
+                          type="email"
+                          placeholder="your@email.com"
+                          className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 font-medium`}
+                        />
                       </div>
-                      <input
-                        id="email"
-                        {...register("email", { 
-                          pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: "Invalid email address"
-                          }
-                        })}
-                        type="email"
-                        placeholder="your@email.com"
-                        className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 font-medium`}
-                      />
-                    </div>
-                    {errors.email && (
-                      <p className="mt-2 text-sm text-red-500 flex items-center gap-1 ml-1" role="alert">
-                        <AlertCircle className="w-4 h-4" /> {errors.email.message}
+                      {errors.email && (
+                        <p className="mt-2 text-sm text-red-500 flex items-center gap-1 ml-1" role="alert">
+                          <AlertCircle className="w-4 h-4" /> {errors.email.message}
+                        </p>
+                      )}
+                      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 ml-1">
+                        Provide your email if you'd like us to reach out for more details or updates on the fix.
                       </p>
-                    )}
-                    <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 ml-1">
-                      Provide your email if you'd like us to reach out for more details or updates on the fix.
-                    </p>
+                    </div>
                   </div>
 
                   {/* Submit Button */}

@@ -12,7 +12,7 @@ import { Notification } from "../notification/notification.model";
 import { StoryVersion } from "../story_version/story_version.model";
 import { Report } from "../report/report.model";
 
-const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram"] as const;
+const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram", "github", "discord"] as const;
 
 const getAllUsers = async (): Promise<IUser[]> => {
   const result = await User.find({}).select("-password");

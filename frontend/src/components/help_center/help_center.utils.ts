@@ -13,6 +13,7 @@ export interface FaqItem {
   answer: string;
   keywords: string[];
 }
+export type FAQItem = FaqItem;
 
 export interface TroubleshootItem {
   id: string;
@@ -21,10 +22,11 @@ export interface TroubleshootItem {
   symptoms: string;
   solution: string;
   keywords: string[];
+  description?: string;
 }
 
 export interface SetupStep {
-  step: number;
+  step: number | string;
   title: string;
   description: string;
   code?: string;
@@ -38,14 +40,20 @@ export interface SupportLink {
   href: string;
   external?: boolean;
 }
+export type Support_Links = SupportLink;
 
-export const HELP_SECTIONS = [
-  { id: "categories", label: "Quick Help" },
-  { id: "faq", label: "FAQ" },
-  { id: "troubleshooting", label: "Troubleshooting" },
-  { id: "developer-setup", label: "Developer Setup" },
-  { id: "support", label: "Support & Community" },
-] as const;
+export interface HelpSection {
+  id: string;
+  label: string;
+}
+
+export const HELP_SECTIONS: HelpSection[] = [
+  { id: "help-categories", label: "Categories" },
+  { id: "troubleshoot-section", label: "Troubleshooting" },
+  { id: "faq-section", label: "FAQ" },
+  { id: "developer-setup", label: "Setup Guide" },
+  { id: "support-links-section", label: "Support" },
+];
 
 export const HELP_CATEGORIES: HelpCategory[] = [
   {
@@ -54,7 +62,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Getting Started",
     description:
       "Learn the basics of StorySparkAI — from signing up to generating your first AI story.",
-    sectionId: "categories",
+    sectionId: "help-categories",
     keywords: ["signup", "login", "onboarding", "first story", "prompt"],
   },
   {
@@ -63,7 +71,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "AI Story Generation",
     description:
       "Understand how prompts work, explore story variations, and use OpenAI or Gemini integrations.",
-    sectionId: "faq",
+    sectionId: "faq-section",
     keywords: ["openai", "gemini", "prompt", "variations", "generate"],
   },
   {
@@ -72,7 +80,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Editing & Publishing",
     description:
       "Edit generated stories, refine your narrative, and publish content for the community.",
-    sectionId: "faq",
+    sectionId: "faq-section",
     keywords: ["edit", "publish", "post", "dashboard", "writer"],
   },
   {
@@ -81,7 +89,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Account & Authentication",
     description:
       "Manage your profile, JWT sessions, email verification, and subscription access.",
-    sectionId: "faq",
+    sectionId: "faq-section",
     keywords: ["jwt", "login", "signup", "password", "email", "token"],
   },
   {
@@ -90,7 +98,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Notifications & Realtime",
     description:
       "Stay updated with Socket.IO-powered real-time notifications across the platform.",
-    sectionId: "faq",
+    sectionId: "faq-section",
     keywords: ["socket", "notification", "realtime", "websocket"],
   },
   {
@@ -99,7 +107,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Troubleshooting",
     description:
       "Resolve common issues with API keys, database connections, and environment setup.",
-    sectionId: "troubleshooting",
+    sectionId: "troubleshoot-section",
     keywords: ["error", "fix", "debug", "connection", "mongodb"],
   },
   {

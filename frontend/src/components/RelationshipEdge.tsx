@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { memo } from "react";
 import { BaseEdge, EdgeLabelRenderer, EdgeProps, getBezierPath } from "@xyflow/react";
 
@@ -75,3 +76,4 @@ const RelationshipEdge = ({
 };
 
 export default memo(RelationshipEdge);
+

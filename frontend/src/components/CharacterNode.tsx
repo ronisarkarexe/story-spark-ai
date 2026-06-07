@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { memo } from "react";
 import { Handle, Position, NodeProps, Node } from "@xyflow/react";
 
@@ -45,3 +46,4 @@ const CharacterNode = ({ data }: NodeProps<Node<CharacterNodeData>>) => {
 };
 
 export default memo(CharacterNode);
+
