@@ -34,7 +34,6 @@ export const doPublishAccessibility = (subscriptionType: string) => {
     return false;
   }
 };
-
 export const SELECTED_TOPIC_CLASSES = "bg-indigo-100 text-indigo-800";
 export const UNSELECTED_TOPIC_CLASSES = "bg-slate-700 text-slate-300";
 
