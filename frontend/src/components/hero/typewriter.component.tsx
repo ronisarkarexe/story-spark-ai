@@ -60,13 +60,27 @@ const Typewriter: React.FC<TypewriterProps> = ({
     }
 
     return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [charIndex, isDeleting, phraseIndex, phrases, typingSpeed, deletingSpeed, pause]);
+  }, [
+    charIndex,
+    isDeleting,
+    phraseIndex,
+    phrases,
+    typingSpeed,
+    deletingSpeed,
+    pause,
+  ]);
 
   return (
     <span className={className} aria-live="polite">
       {display}
-      <span aria-hidden style={{ opacity: blink ? 1 : 0, display: "inline-block", marginLeft: 2 }}>
+      <span
+        aria-hidden
+        style={{
+          opacity: blink ? 1 : 0,
+          display: "inline-block",
+          marginLeft: 2,
+        }}
+      >
         ▌
       </span>
     </span>

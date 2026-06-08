@@ -13,8 +13,7 @@ const FeatureProfileComponent = () => {
   const { data, isLoading } = useGetProfileInfoQuery(undefined);
 
   useEffect(() => {
-    const anyModalOpen =
-      showFollowers || showFollowing || showNoPostsModal;
+    const anyModalOpen = showFollowers || showFollowing || showNoPostsModal;
 
     document.body.style.overflow = anyModalOpen ? "hidden" : "auto";
 
@@ -26,35 +25,25 @@ const FeatureProfileComponent = () => {
   // ---------------- LOADING STATE ----------------
   if (isLoading) {
     return (
-      <div className="p-6 text-gray-400 animate-pulse">
-        Loading profile...
-      </div>
+      <div className="p-6 text-gray-400 animate-pulse">Loading profile...</div>
     );
   }
 
   // ---------------- EMPTY STATE SAFETY ----------------
   if (!data) {
     return (
-      <div className="p-6 text-gray-400">
-        Unable to load profile data.
-      </div>
+      <div className="p-6 text-gray-400">Unable to load profile data.</div>
     );
   }
 
   return (
     <section className="bg-blue-500/10 rounded-lg shadow-sm p-6 mb-8">
-
       {/* PROFILE HEADER */}
       <div className="flex items-center mb-6">
-        <SSProfile
-          name={data.name}
-          imageUrl={data.profile?.avatar}
-        />
+        <SSProfile name={data.name} imageUrl={data.profile?.avatar} />
 
         <div className="ml-4">
-          <h3 className="text-lg font-semibold text-gray-300">
-            {data.name}
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-300">{data.name}</h3>
           <p className="text-sm text-gray-400">{data.email}</p>
         </div>
       </div>
@@ -62,7 +51,6 @@ const FeatureProfileComponent = () => {
       {/* STATS */}
       <div className="border-t border-b border-gray-500 py-4 mb-6">
         <div className="grid grid-cols-3 gap-4 text-center">
-
           {/* POSTS */}
           <button
             type="button"
@@ -107,7 +95,6 @@ const FeatureProfileComponent = () => {
             </p>
             <p className="text-sm text-gray-500">Following</p>
           </button>
-        
         </div>
       </div>
 
@@ -121,12 +108,8 @@ const FeatureProfileComponent = () => {
       {/* ================= FOLLOWERS MODAL ================= */}
       {showFollowers && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-
           <div className="bg-white p-6 rounded-2xl w-[380px] shadow-2xl">
-
-            <h2 className="text-xl font-bold mb-5 text-center">
-              Followers
-            </h2>
+            <h2 className="text-xl font-bold mb-5 text-center">Followers</h2>
 
             {(data.followers?.length ?? 0) > 0 ? (
               data.followers.map((follower) => (
@@ -135,7 +118,6 @@ const FeatureProfileComponent = () => {
                   className="flex items-center justify-between p-3 mb-3 bg-gray-50 rounded-xl hover:shadow-md transition"
                 >
                   <div className="flex items-center gap-3">
-
                     <img
                       src={follower.profilePicture}
                       alt={follower.username}
@@ -145,7 +127,6 @@ const FeatureProfileComponent = () => {
                     <p className="font-medium text-gray-800">
                       {follower.username}
                     </p>
-
                   </div>
                 </div>
               ))
@@ -161,7 +142,6 @@ const FeatureProfileComponent = () => {
             >
               Close
             </button>
-
           </div>
         </div>
       )}
@@ -169,12 +149,8 @@ const FeatureProfileComponent = () => {
       {/* ================= FOLLOWING MODAL ================= */}
       {showFollowing && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-
           <div className="bg-white p-6 rounded-2xl w-[380px] shadow-2xl">
-
-            <h2 className="text-xl font-bold mb-5 text-center">
-              Following
-            </h2>
+            <h2 className="text-xl font-bold mb-5 text-center">Following</h2>
 
             {(data.following?.length ?? 0) > 0 ? (
               data.following.map((user) => (
@@ -183,17 +159,13 @@ const FeatureProfileComponent = () => {
                   className="flex items-center justify-between p-3 mb-3 bg-gray-50 rounded-xl hover:shadow-md transition"
                 >
                   <div className="flex items-center gap-3">
-
                     <img
                       src={user.profilePicture}
                       alt={user.username}
                       className="w-11 h-11 rounded-full object-cover border"
                     />
 
-                    <p className="font-medium text-gray-800">
-                      {user.username}
-                    </p>
-
+                    <p className="font-medium text-gray-800">{user.username}</p>
                   </div>
                 </div>
               ))
@@ -209,7 +181,6 @@ const FeatureProfileComponent = () => {
             >
               Close
             </button>
-
           </div>
         </div>
       )}
@@ -217,9 +188,7 @@ const FeatureProfileComponent = () => {
       {/* ================= NO POSTS MODAL ================= */}
       {showNoPostsModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-
           <div className="bg-white p-6 rounded-2xl w-[360px] text-center shadow-2xl">
-
             <h2 className="text-xl font-bold mb-2">No Posts Yet</h2>
 
             <p className="text-gray-600 mb-6">
@@ -242,11 +211,9 @@ const FeatureProfileComponent = () => {
             >
               Close
             </button>
-
           </div>
         </div>
       )}
-
     </section>
   );
 };

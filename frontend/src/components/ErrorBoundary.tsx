@@ -15,17 +15,17 @@ interface State {
 class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { 
+    this.state = {
       hasError: false,
-      retryCount: 0
+      retryCount: 0,
     };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { 
+    return {
       hasError: true,
       error,
-      retryCount: 0
+      retryCount: 0,
     };
   }
 
@@ -50,12 +50,12 @@ class ErrorBoundary extends Component<Props, State> {
 
       // Try to persist to localStorage for diagnostics
       const existing = JSON.parse(
-        localStorage.getItem("app_error_log") || "[]"
+        localStorage.getItem("app_error_log") || "[]",
       );
       existing.unshift(errorLog);
       localStorage.setItem(
         "app_error_log",
-        JSON.stringify(existing.slice(0, 10))
+        JSON.stringify(existing.slice(0, 10)),
       );
     } catch {
       // Fail silently if localStorage is unavailable
@@ -66,7 +66,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   handleRetry = () => {
     const { retryCount } = this.state;
-    
+
     // Cap retries at 3 to prevent infinite loops
     if (retryCount >= 3) {
       window.location.reload();

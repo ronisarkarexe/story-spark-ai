@@ -32,14 +32,19 @@ const BookmarksComponent = () => {
       story &&
       ((story.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (story.tag?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
+        (story.content?.toLowerCase() || "").includes(
+          searchTerm.toLowerCase(),
+        )),
   );
 
   // Sort posts client-side
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     switch (sortBy) {
       case "oldest":
-        return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+        return (
+          new Date(a.createdAt || 0).getTime() -
+          new Date(b.createdAt || 0).getTime()
+        );
       case "title-asc":
         return (a.title || "").localeCompare(b.title || "");
       case "title-desc":
@@ -50,7 +55,10 @@ const BookmarksComponent = () => {
         return (b.content || "").length - (a.content || "").length;
       case "newest":
       default:
-        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        return (
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+        );
     }
   });
 
@@ -104,7 +112,9 @@ const BookmarksComponent = () => {
               {allPosts.length > 0 && (
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center space-x-2">
-                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Sort By</label>
+                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">
+                      Sort By
+                    </label>
                     <select
                       className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
                       value={sortBy}
@@ -120,7 +130,9 @@ const BookmarksComponent = () => {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
+                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">
+                      Show
+                    </label>
                     <select
                       className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
                       value={size}
@@ -134,7 +146,9 @@ const BookmarksComponent = () => {
                       <option value={50}>50</option>
                       <option value={100}>100</option>
                     </select>
-                    <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
+                    <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">
+                      entries
+                    </span>
                   </div>
                 </div>
               )}
@@ -152,7 +166,8 @@ const BookmarksComponent = () => {
                     Your collection is waiting
                   </h3>
                   <p className="text-slate-500 max-w-sm mb-10 text-lg leading-relaxed dark:text-gray-400">
-                    Whenever you find a story that moves you, save it here to build your personal library of inspiration.
+                    Whenever you find a story that moves you, save it here to
+                    build your personal library of inspiration.
                   </p>
                   <button
                     onClick={() => navigate("/explore")}

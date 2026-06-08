@@ -20,7 +20,9 @@ export interface UseVoicePreviewResult {
  */
 export const useVoicePreview = (): UseVoicePreviewResult => {
   const previewUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
+  const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(
+    null,
+  );
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
 
   const stopPreview = useCallback(() => {
@@ -43,7 +45,9 @@ export const useVoicePreview = (): UseVoicePreviewResult => {
       // Find the actual browser voice object and apply it
       const browserVoice = window.speechSynthesis
         .getVoices()
-        .find((v) => v.voiceURI === voice.id || `${v.name}-${v.lang}` === voice.id);
+        .find(
+          (v) => v.voiceURI === voice.id || `${v.name}-${v.lang}` === voice.id,
+        );
 
       if (browserVoice) {
         utterance.voice = browserVoice;

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import './navbar.css';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import "./navbar.css";
 
 function Navbar() {
   const [hasNotification, setHasNotification] = useState(true);
@@ -14,9 +14,9 @@ function Navbar() {
       {/* Left Side: Brand Text */}
       <div className="navbar-left">
         <Link
-        to="/"
-        className="logo-brand-text"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          to="/"
+          className="logo-brand-text"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         >
           Spark-Story-AI
         </Link>
@@ -27,14 +27,12 @@ function Navbar() {
         {/* Interactive Notification Bell */}
         <button
           className="nav-bell-btn"
-          aria-label="Notifications"    
+          aria-label="Notifications"
           onClick={() => setHasNotification(false)}
         >
           <span className="bell-emoji">🔔</span>
 
-          {hasNotification && (
-            <span className="bell-dot-indicator"></span>
-          )}
+          {hasNotification && <span className="bell-dot-indicator"></span>}
         </button>
 
         {/* Right End: Letter 'R' Logo */}

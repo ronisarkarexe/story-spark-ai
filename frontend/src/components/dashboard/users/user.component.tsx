@@ -61,19 +61,29 @@ const UserComponent = () => {
           <table className="w-full text-left table-auto">
             <thead>
               <tr className="bg-indigo-600 text-white">
-                <th className="p-4 py-4 text-xs font-bold uppercase tracking-wider pl-6">Name</th>
-                <th className="p-4 py-4 text-xs font-bold uppercase tracking-wider">Email Address</th>
-                <th className="p-4 py-4 text-xs font-bold uppercase tracking-wider">Account Status</th>
-                <th className="p-4 py-4 text-xs font-bold uppercase tracking-wider">Subscription Tier</th>
-                <th className="p-4 py-4 text-xs font-bold uppercase tracking-wider pr-6">Applied Writer</th>
+                <th className="p-4 py-4 text-xs font-bold uppercase tracking-wider pl-6">
+                  Name
+                </th>
+                <th className="p-4 py-4 text-xs font-bold uppercase tracking-wider">
+                  Email Address
+                </th>
+                <th className="p-4 py-4 text-xs font-bold uppercase tracking-wider">
+                  Account Status
+                </th>
+                <th className="p-4 py-4 text-xs font-bold uppercase tracking-wider">
+                  Subscription Tier
+                </th>
+                <th className="p-4 py-4 text-xs font-bold uppercase tracking-wider pr-6">
+                  Applied Writer
+                </th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-200/60 dark:divide-white/[0.04]">
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user: User) => (
-                  <tr 
-                    key={user._id} 
+                  <tr
+                    key={user._id}
                     className="hover:bg-slate-100/50 dark:hover:bg-white/[0.01] transition duration-200"
                   >
                     <td className="p-4 py-4.5 pl-6">
@@ -81,39 +91,51 @@ const UserComponent = () => {
                         <div className="w-8 h-8 rounded-full bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 font-bold text-xs flex items-center justify-center">
                           {user.name ? user.name.charAt(0).toUpperCase() : "U"}
                         </div>
-                        <p className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{user.name}</p>
+                        <p className="font-semibold text-slate-800 dark:text-slate-200 text-sm">
+                          {user.name}
+                        </p>
                       </div>
                     </td>
                     <td className="p-4 py-4.5">
-                      <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">{user.email}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                        {user.email}
+                      </p>
                     </td>
                     <td className="p-4 py-4.5">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                        user.status === "active"
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20"
-                          : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 border border-red-100 dark:border-red-500/20"
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${user.status === "active" ? "bg-emerald-500" : "bg-red-500"}`}></span>
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                          user.status === "active"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20"
+                            : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 border border-red-100 dark:border-red-500/20"
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${user.status === "active" ? "bg-emerald-500" : "bg-red-500"}`}
+                        ></span>
                         {user.status}
                       </span>
                     </td>
                     <td className="p-4 py-4.5">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
-                        user.subscriptionType === "premium"
-                          ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
-                          : user.subscriptionType === "pro"
-                          ? "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20"
-                          : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-350 dark:border-slate-700"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                          user.subscriptionType === "premium"
+                            ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
+                            : user.subscriptionType === "pro"
+                              ? "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20"
+                              : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-350 dark:border-slate-700"
+                        }`}
+                      >
                         {user.subscriptionType}
                       </span>
                     </td>
                     <td className="p-4 py-4.5 pr-6">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                        user.isApplyForWriter 
-                          ? "bg-blue-50 text-blue-700 border border-blue-150 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20"
-                          : "bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-450 dark:border-slate-750"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+                          user.isApplyForWriter
+                            ? "bg-blue-50 text-blue-700 border border-blue-150 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20"
+                            : "bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-450 dark:border-slate-750"
+                        }`}
+                      >
                         {user.isApplyForWriter ? (
                           <>
                             <i className="fas fa-check text-[10px]"></i> YES
@@ -129,7 +151,10 @@ const UserComponent = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="text-center p-12 text-slate-500 dark:text-slate-450 font-medium">
+                  <td
+                    colSpan={5}
+                    className="text-center p-12 text-slate-500 dark:text-slate-450 font-medium"
+                  >
                     <i className="fas fa-search-minus text-3xl mb-3 block text-slate-350"></i>
                     No matching users found in the system
                   </td>

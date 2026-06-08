@@ -85,7 +85,8 @@ export const setupAxiosInterceptors = () => {
           errorMessages: [
             {
               path: "",
-              message: "The server is currently unavailable. Please try again later.",
+              message:
+                "The server is currently unavailable. Please try again later.",
             },
           ],
         };

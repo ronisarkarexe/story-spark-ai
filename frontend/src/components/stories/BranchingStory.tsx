@@ -29,7 +29,9 @@ const fallbackStory = (segmentIndex: number): CurrentStoryState => ({
 
 const BranchingStory = () => {
   const [history, setHistory] = useState<BranchingHistoryEntry[]>([]);
-  const [currentStory, setCurrentStory] = useState<CurrentStoryState | null>(null);
+  const [currentStory, setCurrentStory] = useState<CurrentStoryState | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [genre, setGenre] = useState("");
   const [showTimeline, setShowTimeline] = useState(true);
@@ -40,32 +42,35 @@ const BranchingStory = () => {
       history
         .map((entry) => `${entry.segment}\n[Player chose: ${entry.choice}]`)
         .join("\n\n"),
-    [history]
+    [history],
   );
 
-  const loadStory = useCallback(async (selectedChoice: string, storyContext = fullContext) => {
-    setLoading(true);
+  const loadStory = useCallback(
+    async (selectedChoice: string, storyContext = fullContext) => {
+      setLoading(true);
 
-    try {
-      const response = await createBranchingStory({
-        storyContext,
-        selectedChoice,
-        genre: genre || undefined,
-      }).unwrap();
+      try {
+        const response = await createBranchingStory({
+          storyContext,
+          selectedChoice,
+          genre: genre || undefined,
+        }).unwrap();
 
-      setCurrentStory({
-        segment: response.data.storySegment,
-        choices: response.data.choices,
-        segmentIndex: response.data.segmentIndex,
-      });
-    } catch (error) {
-      console.error("Unable to load branching story", error);
-      toast.error("The story engine stalled. A fallback scene is ready.");
-      setCurrentStory(fallbackStory(history.length + 1));
-    } finally {
-      setLoading(false);
-    }
-  }, [createBranchingStory, fullContext, genre, history.length]);
+        setCurrentStory({
+          segment: response.data.storySegment,
+          choices: response.data.choices,
+          segmentIndex: response.data.segmentIndex,
+        });
+      } catch (error) {
+        console.error("Unable to load branching story", error);
+        toast.error("The story engine stalled. A fallback scene is ready.");
+        setCurrentStory(fallbackStory(history.length + 1));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [createBranchingStory, fullContext, genre, history.length],
+  );
 
   useEffect(() => {
     void loadStory("");
@@ -107,17 +112,13 @@ const BranchingStory = () => {
                   {defaultTitle}
                 </h1>
                 <p className="text-xs sm:text-sm leading-relaxed text-slate-500 dark:text-slate-400 font-medium m-0">
-                  Each segment ends with three choices. Select one, and the next scene will preserve the full narrative context.
+                  Each segment ends with three choices. Select one, and the next
+                  scene will preserve the full narrative context.
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 shrink-0">
-                {[
-                  "Fantasy",
-                  "Sci-Fi",
-                  "Mystery",
-                  "Romance",
-                ].map((item) => (
+                {["Fantasy", "Sci-Fi", "Mystery", "Romance"].map((item) => (
                   <button
                     key={item}
                     type="button"

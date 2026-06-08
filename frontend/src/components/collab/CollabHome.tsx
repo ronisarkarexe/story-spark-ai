@@ -33,7 +33,7 @@ export default function CollabHome() {
 
       if (!socket) {
         setError(
-          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
+          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env",
         );
         setIsCreating(false);
         return;
@@ -49,7 +49,7 @@ export default function CollabHome() {
             setError(response.message || "Failed to create room");
             setIsCreating(false);
           }
-        }
+        },
       );
     } catch (err) {
       console.error("Create room error:", err);
@@ -144,9 +144,14 @@ export default function CollabHome() {
               { icon: "⚡", label: "Real-time sync" },
               { icon: "✨", label: "AI co-writer" },
             ].map((f) => (
-              <div key={f.label} className="bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl p-3 shadow-sm dark:shadow-none box-border">
+              <div
+                key={f.label}
+                className="bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-xl p-3 shadow-sm dark:shadow-none box-border"
+              >
                 <div className="text-xl mb-1">{f.icon}</div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 m-0">{f.label}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 m-0">
+                  {f.label}
+                </p>
               </div>
             ))}
           </div>

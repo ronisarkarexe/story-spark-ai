@@ -47,14 +47,20 @@ const NotificationComponent: React.FC<INotificationComponentProps> = ({
                   type="button"
                   onClick={() => onMarkAsRead(notify._id)}
                   className={`flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left transition-all hover:bg-white/5 ${
-                    notify.isRead ? "border-white/5 bg-white/[0.02]" : "border-blue-500/20 bg-blue-500/10"
+                    notify.isRead
+                      ? "border-white/5 bg-white/[0.02]"
+                      : "border-blue-500/20 bg-blue-500/10"
                   }`}
                 >
-                  <span className={`mt-0.5 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 ${textColor}`}>
+                  <span
+                    className={`mt-0.5 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 ${textColor}`}
+                  >
                     <i className={`fa-solid ${icon}`}></i>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className={`block text-sm font-semibold ${notify.isRead ? "text-slate-300" : "text-white"}`}>
+                    <span
+                      className={`block text-sm font-semibold ${notify.isRead ? "text-slate-300" : "text-white"}`}
+                    >
                       {notify.title}
                     </span>
                     <span className="mt-1 block text-sm leading-5 text-slate-400">

@@ -80,7 +80,9 @@ const filterVoicesByGender = (
   return filtered.length > 0 ? filtered : browserVoices;
 };
 
-const toVoiceOptions = (browserVoices: SpeechSynthesisVoice[]): SpeechVoiceOption[] =>
+const toVoiceOptions = (
+  browserVoices: SpeechSynthesisVoice[],
+): SpeechVoiceOption[] =>
   browserVoices.map((voice) => ({
     id: getVoiceId(voice),
     label: voice.name,
@@ -164,7 +166,9 @@ export const useSpeechSynthesis = (
   const [pitchState, setPitchState] = useState(1);
   const [volumeState, setVolumeState] = useState(1);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>(
+    [],
+  );
   const [selectedVoiceId, setSelectedVoiceId] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("en-US");
 
@@ -206,7 +210,10 @@ export const useSpeechSynthesis = (
 
   const resolveBrowserVoice = useCallback(
     (voiceId: string): SpeechSynthesisVoice | undefined => {
-      const genderFiltered = filterVoicesByGender(browserVoicesRef.current, voiceGender);
+      const genderFiltered = filterVoicesByGender(
+        browserVoicesRef.current,
+        voiceGender,
+      );
       return genderFiltered.find((voice) => getVoiceId(voice) === voiceId);
     },
     [voiceGender],
@@ -246,7 +253,9 @@ export const useSpeechSynthesis = (
     }
 
     if (!isReady) {
-      setError("Speech voices are still loading. Please try again in a moment.");
+      setError(
+        "Speech voices are still loading. Please try again in a moment.",
+      );
       return;
     }
 
@@ -289,7 +298,9 @@ export const useSpeechSynthesis = (
       }
 
       if (typeof event.charIndex === "number") {
-        setCurrentWordIndex(getWordIndexAtCharIndex(event.charIndex, wordRanges));
+        setCurrentWordIndex(
+          getWordIndexAtCharIndex(event.charIndex, wordRanges),
+        );
       }
     };
 
@@ -438,7 +449,9 @@ export const useSpeechSynthesis = (
       return;
     }
 
-    const voiceStillExists = voices.some((voice) => voice.id === selectedVoiceId);
+    const voiceStillExists = voices.some(
+      (voice) => voice.id === selectedVoiceId,
+    );
     if (!voiceStillExists) {
       setSelectedVoiceId(voices[0].id);
     }

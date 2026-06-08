@@ -29,7 +29,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
 
   const handleBookmark = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (!currentUser || !currentUser.email) {
       toast.error("You need to login to bookmark stories!");
       navigate("/login");

@@ -7,7 +7,12 @@ interface AchievementsGridProps {
   isLoading?: boolean;
 }
 
-type CategoryFilter = "all" | "streak" | "story" | "word_count" | "productivity";
+type CategoryFilter =
+  | "all"
+  | "streak"
+  | "story"
+  | "word_count"
+  | "productivity";
 
 const AchievementsGrid: React.FC<AchievementsGridProps> = ({
   achievements = [],
@@ -35,7 +40,7 @@ const AchievementsGrid: React.FC<AchievementsGridProps> = ({
   const filteredAchievements = useMemo(() => {
     if (activeTab === "all") return achievements;
     return achievements.filter(
-      (ach) => getCategoryFromId(ach.id) === activeTab
+      (ach) => getCategoryFromId(ach.id) === activeTab,
     );
   }, [achievements, activeTab]);
 
@@ -50,12 +55,18 @@ const AchievementsGrid: React.FC<AchievementsGridProps> = ({
       <div className="space-y-6" aria-busy="true" aria-live="polite">
         <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-8 w-28 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" />
+            <div
+              key={i}
+              className="h-8 w-28 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse"
+            />
           ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-40 bg-slate-100 dark:bg-slate-800 rounded-2xl animate-pulse" />
+            <div
+              key={i}
+              className="h-40 bg-slate-100 dark:bg-slate-800 rounded-2xl animate-pulse"
+            />
           ))}
         </div>
       </div>
@@ -65,8 +76,12 @@ const AchievementsGrid: React.FC<AchievementsGridProps> = ({
   if (achievements.length === 0) {
     return (
       <div className="rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-slate-50/50 p-12 text-center">
-        <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200">No achievements found</h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Check back later or start writing to trigger them!</p>
+        <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200">
+          No achievements found
+        </h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+          Check back later or start writing to trigger them!
+        </p>
       </div>
     );
   }
@@ -75,7 +90,7 @@ const AchievementsGrid: React.FC<AchievementsGridProps> = ({
     <div className="space-y-6">
       {/* Category Tab filters */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div 
+        <div
           className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-white/[0.03] border border-slate-200/50 dark:border-white/[0.05]"
           role="tablist"
           aria-label="Filter Achievements by Category"
@@ -109,7 +124,7 @@ const AchievementsGrid: React.FC<AchievementsGridProps> = ({
       </div>
 
       {/* Grid of Badges */}
-      <div 
+      <div
         id="achievements-panel"
         role="tabpanel"
         aria-labelledby={`tab-${activeTab}`}

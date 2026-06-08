@@ -6,7 +6,7 @@ export function getErrorMessage(err: unknown): string {
   // Check if it is a standard response error containing data object
   if ("data" in err && err.data && typeof err.data === "object") {
     const data = err.data as Record<string, unknown>;
-    
+
     // Check for data.message
     if (typeof data.message === "string") {
       return data.message;
@@ -24,7 +24,7 @@ export function getErrorMessage(err: unknown): string {
         return errorArray[0].message;
       }
     }
-    
+
     if (Array.isArray(data)) {
       const errorArray = data as { message?: string }[];
       if (errorArray.length > 0 && errorArray[0]?.message) {

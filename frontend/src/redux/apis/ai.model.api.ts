@@ -33,7 +33,10 @@ const aiModelApi = baseApi.injectEndpoints({
         method: "POST",
         data: data,
       }),
-      transformResponse: (response: { data: { style: string; ending: string; fullStory: string }[]; message: string }) => {
+      transformResponse: (response: {
+        data: { style: string; ending: string; fullStory: string }[];
+        message: string;
+      }) => {
         return { data: response.data, message: response.message };
       },
       invalidatesTags: [tagTypes.model, tagTypes.user],
@@ -44,7 +47,10 @@ const aiModelApi = baseApi.injectEndpoints({
         method: "POST",
         data: data,
       }),
-      transformResponse: (response: { data: { style: string; ending: string; fullStory: string }[]; message: string }) => {
+      transformResponse: (response: {
+        data: { style: string; ending: string; fullStory: string }[];
+        message: string;
+      }) => {
         return { data: response.data, message: response.message };
       },
       invalidatesTags: [tagTypes.model, tagTypes.user],
@@ -55,7 +61,10 @@ const aiModelApi = baseApi.injectEndpoints({
         method: "POST",
         data: data,
       }),
-      transformResponse: (response: { data: { title: string; content: string; tag: string }; message: string }) => {
+      transformResponse: (response: {
+        data: { title: string; content: string; tag: string };
+        message: string;
+      }) => {
         return { data: response.data, message: response.message };
       },
       invalidatesTags: [tagTypes.model, tagTypes.user],
@@ -66,7 +75,10 @@ const aiModelApi = baseApi.injectEndpoints({
         method: "POST",
         data: data,
       }),
-      transformResponse: (response: { data: { title: string; content: string; tag: string }; message: string }) => {
+      transformResponse: (response: {
+        data: { title: string; content: string; tag: string };
+        message: string;
+      }) => {
         return { data: response.data, message: response.message };
       },
       invalidatesTags: [tagTypes.model],
@@ -77,7 +89,10 @@ const aiModelApi = baseApi.injectEndpoints({
         method: "POST",
         data: data,
       }),
-      transformResponse: (response: { data: { title: string; content: string }; message: string }) => {
+      transformResponse: (response: {
+        data: { title: string; content: string };
+        message: string;
+      }) => {
         return { data: response.data, message: response.message };
       },
       invalidatesTags: [tagTypes.model],
@@ -88,7 +103,10 @@ const aiModelApi = baseApi.injectEndpoints({
         method: "POST",
         data: data,
       }),
-      transformResponse: (response: { data: { title: string; content: string }; message: string }) => {
+      transformResponse: (response: {
+        data: { title: string; content: string };
+        message: string;
+      }) => {
         return { data: response.data, message: response.message };
       },
       invalidatesTags: [tagTypes.model],
@@ -99,7 +117,10 @@ const aiModelApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
-      transformResponse: (response: { data: { continuation: string }; message: string }) => {
+      transformResponse: (response: {
+        data: { continuation: string };
+        message: string;
+      }) => {
         return { data: response.data, message: response.message };
       },
       invalidatesTags: [tagTypes.model, tagTypes.user],
@@ -110,7 +131,10 @@ const aiModelApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
-      transformResponse: (response: { data: { continuation: string }; message: string }) => {
+      transformResponse: (response: {
+        data: { continuation: string };
+        message: string;
+      }) => {
         return { data: response.data, message: response.message };
       },
       invalidatesTags: [tagTypes.model],
@@ -130,4 +154,3 @@ export const {
   useContinueStoryMutation,
   useContinueFreeStoryMutation,
 } = aiModelApi;
-

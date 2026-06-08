@@ -30,7 +30,9 @@ const isReaderPreferences = (value: unknown): value is ReaderPreferences => {
 
   return (
     ["small", "medium", "large"].includes(candidate.fontSize ?? "") &&
-    ["compact", "comfortable", "spacious"].includes(candidate.lineSpacing ?? "") &&
+    ["compact", "comfortable", "spacious"].includes(
+      candidate.lineSpacing ?? "",
+    ) &&
     ["narrow", "default", "wide"].includes(candidate.readingWidth ?? "") &&
     ["default", "serif", "dyslexia"].includes(candidate.fontStyle ?? "")
   );
@@ -93,7 +95,7 @@ export const useReaderPreferences = () => {
 
   const updatePreference = <Key extends keyof ReaderPreferences>(
     key: Key,
-    value: ReaderPreferences[Key]
+    value: ReaderPreferences[Key],
   ) => {
     setPreferences((current) => ({ ...current, [key]: value }));
   };

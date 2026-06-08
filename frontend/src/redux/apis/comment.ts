@@ -34,4 +34,8 @@ const commentApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useCreateCommentMutation, useGetCommentsListQuery, useToggleCommentLikeMutation } = commentApi;
+export const {
+  useCreateCommentMutation,
+  useGetCommentsListQuery,
+  useToggleCommentLikeMutation,
+} = commentApi;

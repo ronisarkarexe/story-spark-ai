@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import { useTranslateStoryMutation, useTranslateFreeStoryMutation } from "../../redux/apis/ai.model.api";
+import {
+  useTranslateStoryMutation,
+  useTranslateFreeStoryMutation,
+} from "../../redux/apis/ai.model.api";
 import { IStories } from "../stories/stories.view.component";
 
 interface Props {
@@ -122,24 +125,37 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur flex items-center justify-center p-4">
       <Toaster position="top-center" />
       <div className="w-full max-w-4xl bg-[#0f1117] rounded-2xl border border-white/10 overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
           <div>
-            <h2 className="text-xl font-bold text-emerald-400">🌍 Story Translator</h2>
-            <p className="text-xs text-white/40 mt-0.5 truncate max-w-xs">{story.title}</p>
+            <h2 className="text-xl font-bold text-emerald-400">
+              🌍 Story Translator
+            </h2>
+            <p className="text-xs text-white/40 mt-0.5 truncate max-w-xs">
+              {story.title}
+            </p>
           </div>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition text-xl">✕</button>
+          <button
+            onClick={onClose}
+            className="text-white/40 hover:text-white transition text-xl"
+          >
+            ✕
+          </button>
         </div>
 
         <div className="px-6 py-5 overflow-y-auto flex-1">
           {/* Language selector */}
-          <p className="text-sm text-white/60 mb-3 font-medium">Select target language:</p>
+          <p className="text-sm text-white/60 mb-3 font-medium">
+            Select target language:
+          </p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-6">
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
-                onClick={() => { setSelectedLanguage(lang.code); setIsDone(false); }}
+                onClick={() => {
+                  setSelectedLanguage(lang.code);
+                  setIsDone(false);
+                }}
                 className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm transition-all ${
                   selectedLanguage === lang.code
                     ? "border-emerald-500 bg-emerald-500/15 text-emerald-300"
@@ -163,7 +179,8 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
             >
               {isTranslating ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="animate-spin">⟳</span> Translating to {selectedLanguage}...
+                  <span className="animate-spin">⟳</span> Translating to{" "}
+                  {selectedLanguage}...
                 </span>
               ) : (
                 `🌍 Translate to ${selectedLanguage || "..."}`
@@ -175,9 +192,14 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
           {isDone && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-emerald-400">✅ Translated to {selectedLanguage}!</p>
+                <p className="text-sm font-semibold text-emerald-400">
+                  ✅ Translated to {selectedLanguage}!
+                </p>
                 <button
-                  onClick={() => { setIsDone(false); setSelectedLanguage(""); }}
+                  onClick={() => {
+                    setIsDone(false);
+                    setSelectedLanguage("");
+                  }}
                   className="text-xs text-white/40 hover:text-white border border-white/10 px-3 py-1 rounded-lg transition"
                 >
                   Translate Again
@@ -187,23 +209,33 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Original */}
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <p className="text-xs font-bold text-white/40 uppercase tracking-widest mb-2">🇬🇧 Original (English)</p>
-                  <p className="text-sm font-semibold text-white mb-2">{story.title}</p>
-                  <p className="text-xs text-white/60 leading-relaxed max-h-48 overflow-y-auto">{story.content}</p>
+                  <p className="text-xs font-bold text-white/40 uppercase tracking-widest mb-2">
+                    🇬🇧 Original (English)
+                  </p>
+                  <p className="text-sm font-semibold text-white mb-2">
+                    {story.title}
+                  </p>
+                  <p className="text-xs text-white/60 leading-relaxed max-h-48 overflow-y-auto">
+                    {story.content}
+                  </p>
                 </div>
                 {/* Translated */}
                 <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
                   <p className="text-xs font-bold text-emerald-400/60 uppercase tracking-widest mb-2">
-                    {LANGUAGES.find(l => l.code === selectedLanguage)?.flag} {selectedLanguage}
+                    {LANGUAGES.find((l) => l.code === selectedLanguage)?.flag}{" "}
+                    {selectedLanguage}
                   </p>
-                  <p className="text-sm font-semibold text-white mb-2">{translatedTitle}</p>
-                  <p className="text-xs text-white/60 leading-relaxed max-h-48 overflow-y-auto">{translatedContent}</p>
+                  <p className="text-sm font-semibold text-white mb-2">
+                    {translatedTitle}
+                  </p>
+                  <p className="text-xs text-white/60 leading-relaxed max-h-48 overflow-y-auto">
+                    {translatedContent}
+                  </p>
                 </div>
               </div>
 
               {/* ── Action Buttons ── */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-
                 {/* Copy to Clipboard */}
                 <button
                   onClick={handleCopy}
@@ -239,7 +271,6 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
                   <span>✍️</span>
                   <span>Save as Draft</span>
                 </button>
-
               </div>
             </div>
           )}

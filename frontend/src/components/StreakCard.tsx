@@ -9,7 +9,7 @@ interface StreakCardProps {
 const StreakCard: React.FC<StreakCardProps> = ({ streak, isLoading }) => {
   if (isLoading) {
     return (
-      <div 
+      <div
         className="animate-pulse rounded-2xl border border-orange-100 bg-white/50 p-6 dark:border-orange-500/10 dark:bg-white/[0.02]"
         aria-live="polite"
         aria-busy="true"
@@ -23,12 +23,14 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, isLoading }) => {
 
   if (!streak) {
     return (
-      <div 
+      <div
         className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-slate-50/50 p-6 text-center"
         role="region"
         aria-label="Writing Streak Info"
       >
-        <p className="text-sm text-slate-500 dark:text-slate-400">No streak data available.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          No streak data available.
+        </p>
       </div>
     );
   }
@@ -36,7 +38,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, isLoading }) => {
   const { currentStreak, longestStreak, totalWritingDays } = streak;
 
   return (
-    <div 
+    <div
       className="relative overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50/40 via-white to-amber-50/30 p-6 shadow-lg transition-all hover:shadow-xl dark:border-orange-500/10 dark:from-orange-500/5 dark:via-transparent dark:to-amber-500/5"
       role="region"
       aria-label="Writing Streak Tracker"
@@ -50,17 +52,19 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, isLoading }) => {
             Writing Streak
           </h3>
           <div className="mt-2 flex items-baseline gap-2">
-            <span 
+            <span
               className="text-4xl font-black text-slate-800 dark:text-white"
               aria-label={`${currentStreak} days current streak`}
             >
               {currentStreak}
             </span>
-            <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Days</span>
+            <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+              Days
+            </span>
           </div>
         </div>
 
-        <div 
+        <div
           className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 text-white shadow-md shadow-orange-500/20 animate-bounce"
           style={{ animationDuration: "3s" }}
           aria-hidden="true"
@@ -71,8 +75,10 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, isLoading }) => {
 
       <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 dark:border-white/[0.06]">
         <div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Longest Streak</p>
-          <p 
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Longest Streak
+          </p>
+          <p
             className="text-lg font-bold text-slate-700 dark:text-slate-200 mt-1"
             aria-label={`${longestStreak} days longest streak`}
           >
@@ -80,8 +86,10 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, isLoading }) => {
           </p>
         </div>
         <div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Total Writing Days</p>
-          <p 
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Total Writing Days
+          </p>
+          <p
             className="text-lg font-bold text-slate-700 dark:text-slate-200 mt-1"
             aria-label={`${totalWritingDays} total writing days`}
           >

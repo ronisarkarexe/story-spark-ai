@@ -2,7 +2,7 @@ import { REQUEST_LIMITS } from "../../constants/subscription";
 
 export const getShortenedText = (
   content: string | undefined,
-  wordLimit: number = 35
+  wordLimit: number = 35,
 ): string => {
   if (!content) return "";
   const words: string[] = content.split(" ");
@@ -127,8 +127,7 @@ export const prompts = [
   },
   {
     id: 6,
-    prompt:
-      "Tell the story of a robot who desperately wants to become human.",
+    prompt: "Tell the story of a robot who desperately wants to become human.",
   },
   {
     id: 7,

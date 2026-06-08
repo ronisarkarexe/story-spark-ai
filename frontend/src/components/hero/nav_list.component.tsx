@@ -35,7 +35,12 @@ const NavListComponent = () => {
 
   const mobileMenuVariants = {
     hidden: { opacity: 0, height: 0, y: -8 },
-    visible: { opacity: 1, height: "auto", y: 0, transition: { duration: 0.28 } },
+    visible: {
+      opacity: 1,
+      height: "auto",
+      y: 0,
+      transition: { duration: 0.28 },
+    },
     exit: { opacity: 0, height: 0, y: -8, transition: { duration: 0.22 } },
   };
 
@@ -169,7 +174,9 @@ const NavListComponent = () => {
                   : "border-slate-200/80 bg-white/60 text-slate-400 hover:text-slate-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-500 dark:hover:text-slate-300"
               }`}
               title={glowEnabled ? "Glow: On" : "Glow: Off"}
-              aria-label={glowEnabled ? "Disable cursor glow" : "Enable cursor glow"}
+              aria-label={
+                glowEnabled ? "Disable cursor glow" : "Enable cursor glow"
+              }
               aria-pressed={glowEnabled}
             >
               <Sparkles className="h-[18px] w-[18px]" strokeWidth={2.5} />
@@ -224,7 +231,9 @@ const NavListComponent = () => {
           <motion.button
             whileTap={{ scale: 0.9 }}
             type="button"
-            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-label={
+              menuOpen ? "Close navigation menu" : "Open navigation menu"
+            }
             aria-expanded={menuOpen}
             className="grid h-10 w-10 place-items-center rounded-full border border-slate-200/80 bg-white/60 text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white lg:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -264,7 +273,9 @@ const NavListComponent = () => {
                       }`}
                     >
                       <span>{item.label}</span>
-                      {isActive(item.to) && <span className="h-2 w-2 rounded-full bg-white/90" />}
+                      {isActive(item.to) && (
+                        <span className="h-2 w-2 rounded-full bg-white/90" />
+                      )}
                     </NavLink>
                   </motion.div>
                 ))}
@@ -286,7 +297,9 @@ const NavListComponent = () => {
                       }`}
                     >
                       <span>Dashboard</span>
-                      {isActive("/dashboard") && <span className="h-2 w-2 rounded-full bg-white/90" />}
+                      {isActive("/dashboard") && (
+                        <span className="h-2 w-2 rounded-full bg-white/90" />
+                      )}
                     </NavLink>
                   </motion.div>
                 )}

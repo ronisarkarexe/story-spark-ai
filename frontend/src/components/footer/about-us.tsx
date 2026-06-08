@@ -14,7 +14,8 @@ const AboutUs = () => {
 
         {/* Heading */}
         <h1 className="text-3xl sm:text-5xl font-extrabold mb-4 tracking-tight text-gray-900 dark:text-white">
-          About <span className="text-blue-600 dark:text-blue-500">StorySparkAI</span>
+          About{" "}
+          <span className="text-blue-600 dark:text-blue-500">StorySparkAI</span>
         </h1>
 
         {/* Description */}
@@ -29,14 +30,20 @@ const AboutUs = () => {
             Our Mission & Vision
           </h2>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed mb-6">
-            We believe that storytelling is a fundamental part of the human experience. Our mission is to empower writers of all levels by providing intuitive, AI-driven tools that spark creativity, overcome writer's block, and help bring unique narratives to life.
+            We believe that storytelling is a fundamental part of the human
+            experience. Our mission is to empower writers of all levels by
+            providing intuitive, AI-driven tools that spark creativity, overcome
+            writer's block, and help bring unique narratives to life.
           </p>
 
           <h2 className="text-2xl font-semibold mb-3 text-blue-600 dark:text-blue-400">
             Why StorySparkAI?
           </h2>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            Writing shouldn't be a solitary struggle. StorySparkAI bridges the gap between imagination and execution. We offer an environment where both beginners and seasoned writers can experiment, learn, and craft compelling stories effortlessly.
+            Writing shouldn't be a solitary struggle. StorySparkAI bridges the
+            gap between imagination and execution. We offer an environment where
+            both beginners and seasoned writers can experiment, learn, and craft
+            compelling stories effortlessly.
           </p>
         </div>
 
@@ -48,27 +55,39 @@ const AboutUs = () => {
 
           <ul className="grid grid-cols-1 justify-items-start sm:grid-cols-2 gap-4 text-gray-700 dark:text-gray-300 text-left max-w-xl mx-auto">
             <li className="flex items-center gap-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">✨</span>
+              <span className="text-blue-600 dark:text-blue-400 text-xl">
+                ✨
+              </span>
               AI Story Generation
             </li>
             <li className="flex items-center gap-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">📚</span>
+              <span className="text-blue-600 dark:text-blue-400 text-xl">
+                📚
+              </span>
               Multiple Story Variations
             </li>
             <li className="flex items-center gap-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">📖</span>
+              <span className="text-blue-600 dark:text-blue-400 text-xl">
+                📖
+              </span>
               Writing Resources
             </li>
             <li className="flex items-center gap-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">🤖</span>
+              <span className="text-blue-600 dark:text-blue-400 text-xl">
+                🤖
+              </span>
               AI Writing Assistance
             </li>
             <li className="flex items-center gap-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">💾</span>
+              <span className="text-blue-600 dark:text-blue-400 text-xl">
+                💾
+              </span>
               Save & Explore Stories
             </li>
             <li className="flex items-center gap-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">🎓</span>
+              <span className="text-blue-600 dark:text-blue-400 text-xl">
+                🎓
+              </span>
               Creative Learning Support
             </li>
           </ul>
@@ -80,7 +99,10 @@ const AboutUs = () => {
             Community & Open Source
           </h2>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            StorySparkAI thrives on collaboration. As an open-source platform, we invite developers, writers, and enthusiasts to contribute, share ideas, and help build a stronger community. Together, we can shape the future of AI-assisted creativity.
+            StorySparkAI thrives on collaboration. As an open-source platform,
+            we invite developers, writers, and enthusiasts to contribute, share
+            ideas, and help build a stronger community. Together, we can shape
+            the future of AI-assisted creativity.
           </p>
         </div>
 

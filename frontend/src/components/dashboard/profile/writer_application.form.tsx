@@ -8,13 +8,18 @@ interface Props {
 }
 
 export const WriterApplicationForm = ({ user }: Props) => {
-  const [submitApplication, { isLoading }] = useSubmitWriterApplicationMutation();
+  const [submitApplication, { isLoading }] =
+    useSubmitWriterApplicationMutation();
   const [formData, setFormData] = useState({
     portfolioLink: "",
     reason: "",
   });
 
-  if (user.role === "writer" || user.role === "admin" || user.role === "super_admin") {
+  if (
+    user.role === "writer" ||
+    user.role === "admin" ||
+    user.role === "super_admin"
+  ) {
     return null;
   }
 
@@ -26,9 +31,13 @@ export const WriterApplicationForm = ({ user }: Props) => {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 mb-4">
               <i className="fas fa-clock text-2xl"></i>
             </div>
-            <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Application Under Review</h3>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
+              Application Under Review
+            </h3>
             <p className="text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
-              You have already submitted an application for writer access. Our team is currently reviewing it. You will be notified once a decision is made.
+              You have already submitted an application for writer access. Our
+              team is currently reviewing it. You will be notified once a
+              decision is made.
             </p>
           </div>
         </div>
@@ -36,7 +45,9 @@ export const WriterApplicationForm = ({ user }: Props) => {
     );
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
@@ -45,7 +56,7 @@ export const WriterApplicationForm = ({ user }: Props) => {
     try {
       await submitApplication(formData).unwrap();
       toast.success("Application submitted successfully!");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to submit application");
     }
@@ -68,8 +79,12 @@ export const WriterApplicationForm = ({ user }: Props) => {
           <form onSubmit={handleSubmit}>
             <div className="space-y-7">
               <div>
-                <label htmlFor="portfolioLink" className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1">
-                  Portfolio / Website URL <span className="text-red-400">*</span>
+                <label
+                  htmlFor="portfolioLink"
+                  className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1"
+                >
+                  Portfolio / Website URL{" "}
+                  <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="url"
@@ -84,8 +99,12 @@ export const WriterApplicationForm = ({ user }: Props) => {
               </div>
 
               <div>
-                <label htmlFor="reason" className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1">
-                  Why do you want to write for StorySpark AI? <span className="text-red-400">*</span>
+                <label
+                  htmlFor="reason"
+                  className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1"
+                >
+                  Why do you want to write for StorySpark AI?{" "}
+                  <span className="text-red-400">*</span>
                 </label>
                 <textarea
                   id="reason"

@@ -2,9 +2,9 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Mail, GitBranch, MessageSquare } from "lucide-react";
 
 const CONTACT_ITEMS = [
-  { icon: Mail,          text: "ronichandrasarkar@gmail.com"              },
-  { icon: GitBranch,     text: "github.com/ronisarkarexe/story-spark-ai"  },
-  { icon: MessageSquare, text: "Open-source collaboration welcome"         },
+  { icon: Mail, text: "ronichandrasarkar@gmail.com" },
+  { icon: GitBranch, text: "github.com/ronisarkarexe/story-spark-ai" },
+  { icon: MessageSquare, text: "Open-source collaboration welcome" },
 ];
 
 const ContactUs = () => {
@@ -18,7 +18,6 @@ const ContactUs = () => {
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-16 sm:px-6">
         <div className="w-full max-w-lg text-center">
-
           {/* Eyebrow */}
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-blue-400 sm:text-sm">
             Get in Touch
@@ -36,7 +35,8 @@ const ContactUs = () => {
           </h1>
 
           <p className="mx-auto mt-4 max-w-sm text-base leading-7 text-slate-600 dark:text-slate-300">
-            Have questions, suggestions, or feedback? We'd love to hear from you.
+            Have questions, suggestions, or feedback? We'd love to hear from
+            you.
           </p>
 
           {/* Info card */}
@@ -44,9 +44,15 @@ const ContactUs = () => {
             <h2 className="mb-4 text-base font-semibold text-blue-500 dark:text-blue-400 sm:text-lg">
               Reach us directly
             </h2>
-            <ul className="space-y-3 text-left" aria-label="Contact information">
+            <ul
+              className="space-y-3 text-left"
+              aria-label="Contact information"
+            >
               {CONTACT_ITEMS.map(({ icon: Icon, text }) => (
-                <li key={text} className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 sm:text-base">
+                <li
+                  key={text}
+                  className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 sm:text-base"
+                >
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/15 to-purple-500/15 text-purple-400">
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                   </span>
@@ -63,7 +69,10 @@ const ContactUs = () => {
               className="motion-cta group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-purple-500/20 sm:text-base"
             >
               Open Contact Form
-              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true" />
+              <ArrowRight
+                className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
+                aria-hidden="true"
+              />
             </Link>
             <Link
               to="/"
@@ -72,7 +81,6 @@ const ContactUs = () => {
               ← Back to Home
             </Link>
           </div>
-
         </div>
       </div>
     </div>

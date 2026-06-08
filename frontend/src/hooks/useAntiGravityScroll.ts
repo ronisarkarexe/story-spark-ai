@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-export function useAntiGravityScroll(containerRef: React.RefObject<HTMLDivElement | null>) {
+export function useAntiGravityScroll(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [targetSpeed, setTargetSpeed] = useState(1); // multiplier
   const currentVelocityRef = useRef(0);
@@ -16,7 +18,9 @@ export function useAntiGravityScroll(containerRef: React.RefObject<HTMLDivElemen
     };
 
     container.addEventListener("wheel", handleUserScroll, { passive: true });
-    container.addEventListener("touchmove", handleUserScroll, { passive: true });
+    container.addEventListener("touchmove", handleUserScroll, {
+      passive: true,
+    });
 
     return () => {
       container.removeEventListener("wheel", handleUserScroll);
@@ -37,14 +41,23 @@ export function useAntiGravityScroll(containerRef: React.RefObject<HTMLDivElemen
         // Accelerate/Decelerate towards targeted speed
         const desiredSpeed = targetSpeed * baseSpeed;
         if (currentVelocityRef.current < desiredSpeed) {
-          currentVelocityRef.current = Math.min(desiredSpeed, currentVelocityRef.current + acceleration);
+          currentVelocityRef.current = Math.min(
+            desiredSpeed,
+            currentVelocityRef.current + acceleration,
+          );
         } else if (currentVelocityRef.current > desiredSpeed) {
-          currentVelocityRef.current = Math.max(desiredSpeed, currentVelocityRef.current - decayRate);
+          currentVelocityRef.current = Math.max(
+            desiredSpeed,
+            currentVelocityRef.current - decayRate,
+          );
         }
       } else {
         // Apply linear friction decay to slow down to 0
         if (currentVelocityRef.current > 0) {
-          currentVelocityRef.current = Math.max(0, currentVelocityRef.current - decayRate);
+          currentVelocityRef.current = Math.max(
+            0,
+            currentVelocityRef.current - decayRate,
+          );
         }
       }
 

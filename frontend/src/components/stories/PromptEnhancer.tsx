@@ -22,7 +22,8 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
   const [originalPrompt, setOriginalPrompt] = useState<string | null>(null);
   const [isEnhanced, setIsEnhanced] = useState(false);
 
-  const [enhancePrompt, { isLoading: isEnhancing }] = useEnhancePromptMutation();
+  const [enhancePrompt, { isLoading: isEnhancing }] =
+    useEnhancePromptMutation();
 
   const handleEnhance = async () => {
     if (!prompt.trim() || isEnhancing) return;

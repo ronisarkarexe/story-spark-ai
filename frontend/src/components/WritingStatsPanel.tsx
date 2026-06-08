@@ -19,9 +19,15 @@ const WritingStatsPanel: React.FC<WritingStatsPanelProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5" aria-busy="true">
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"
+        aria-busy="true"
+      >
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-28 bg-slate-100 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] rounded-2xl animate-pulse" />
+          <div
+            key={i}
+            className="h-28 bg-slate-100 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] rounded-2xl animate-pulse"
+          />
         ))}
       </div>
     );
@@ -38,23 +44,28 @@ const WritingStatsPanel: React.FC<WritingStatsPanelProps> = ({
       title: "Total Words Written",
       value: totalWords.toLocaleString(),
       icon: "fa-file-signature",
-      color: "text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400",
+      color:
+        "text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400",
     },
     {
       title: "Active Writing Days",
       value: activeDays.toLocaleString(),
       icon: "fa-calendar-alt",
-      color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400",
+      color:
+        "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400",
     },
     {
       title: "Longest writing streak",
       value: `${longestStreak} Day${longestStreak !== 1 ? "s" : ""}`,
       icon: "fa-bolt",
-      color: "text-amber-500 bg-amber-50 dark:bg-amber-500/10 dark:text-amber-400",
+      color:
+        "text-amber-500 bg-amber-50 dark:bg-amber-500/10 dark:text-amber-400",
     },
   ];
 
-  const sortedMonths = Object.keys(monthlyActivity).sort((a, b) => b.localeCompare(a));
+  const sortedMonths = Object.keys(monthlyActivity).sort((a, b) =>
+    b.localeCompare(a),
+  );
 
   return (
     <div className="space-y-6">
@@ -65,11 +76,15 @@ const WritingStatsPanel: React.FC<WritingStatsPanelProps> = ({
             key={idx}
             className="flex items-center gap-4 rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-white/[0.06] dark:bg-white/[0.01]"
           >
-            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.color}`}>
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.color}`}
+            >
               <i className={`fas ${stat.icon} text-lg`}></i>
             </div>
             <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{stat.title}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {stat.title}
+              </p>
               <h4 className="text-xl font-black text-slate-800 dark:text-white mt-1">
                 {stat.value}
               </h4>

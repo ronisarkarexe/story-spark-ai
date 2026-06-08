@@ -93,7 +93,7 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
     (likes as unknown[])?.some((u) =>
       typeof u === "string"
         ? u === currentUser?.userId
-        : (u as { email?: string })?.email === currentUser?.email
+        : (u as { email?: string })?.email === currentUser?.email,
     ) ?? false;
 
   const handleLike = async (commentId: string) => {
@@ -136,7 +136,10 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
         {commentList?.comments.map((comment) => (
           <div key={comment._id} className="flex flex-col space-y-4">
             <div className="flex space-x-4">
-              <SSProfile name={comment?.userId?.name || "Unknown User"} size="w-10 h-10" />
+              <SSProfile
+                name={comment?.userId?.name || "Unknown User"}
+                size="w-10 h-10"
+              />
               <div className="flex-1">
                 <div className="bg-gray-50 backdrop-blur-sm border border-gray-200 rounded-2xl p-5 shadow-sm hover:border-slate-600 transition-colors dark:bg-slate-800/40 dark:border-slate-700/50">
                   <div className="flex items-center justify-between mb-2">
@@ -147,18 +150,26 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                       {timeAgo(comment.createdAt)}
                     </span>
                   </div>
-                  <p className="text-slate-600 leading-relaxed mt-2 dark:text-slate-300">{comment.comment}</p>
+                  <p className="text-slate-600 leading-relaxed mt-2 dark:text-slate-300">
+                    {comment.comment}
+                  </p>
                 </div>
                 <div className="flex items-center mt-3 pl-2 space-x-4 text-sm text-slate-500 font-medium dark:text-slate-500">
                   <button
                     onClick={() => handleLike(comment._id)}
                     className={`hover:text-red-400 transition-colors flex items-center gap-1 ${isCommentLiked(comment.likes) ? "text-red-400" : ""}`}
                   >
-                    <i className={`${isCommentLiked(comment.likes) ? "fas" : "far"} fa-heart mr-1`}></i>
+                    <i
+                      className={`${isCommentLiked(comment.likes) ? "fas" : "far"} fa-heart mr-1`}
+                    ></i>
                     {comment.likes?.length || 0}
                   </button>
                   <button
-                    onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
+                    onClick={() =>
+                      setReplyingTo(
+                        replyingTo === comment._id ? null : comment._id,
+                      )
+                    }
                     className="hover:text-blue-400 transition-colors"
                   >
                     <i className="far fa-comment mr-1"></i> Reply
@@ -166,15 +177,26 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                 </div>
 
                 {replyingTo === comment._id && (
-                  <form className="mt-4 flex space-x-3" onSubmit={(e) => onReplySubmit(e, comment._id)}>
+                  <form
+                    className="mt-4 flex space-x-3"
+                    onSubmit={(e) => onReplySubmit(e, comment._id)}
+                  >
                     <input
                       type="text"
                       value={replyForms[comment._id] || ""}
-                      onChange={(e) => setReplyForms({ ...replyForms, [comment._id]: e.target.value })}
+                      onChange={(e) =>
+                        setReplyForms({
+                          ...replyForms,
+                          [comment._id]: e.target.value,
+                        })
+                      }
                       placeholder="Write a reply..."
                       className="flex-1 bg-gray-100/80 border border-gray-200 rounded-lg px-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-200"
                     />
-                    <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                    <button
+                      type="submit"
+                      className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                    >
                       Reply
                     </button>
                   </form>
@@ -184,7 +206,10 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                   <div className="mt-4 space-y-4 border-l-2 border-gray-200 pl-4 ml-2 dark:border-slate-700">
                     {comment.replies.map((reply) => (
                       <div key={reply._id} className="flex space-x-3">
-                        <SSProfile name={reply?.userId?.name || "Unknown User"} size="w-8 h-8" />
+                        <SSProfile
+                          name={reply?.userId?.name || "Unknown User"}
+                          size="w-8 h-8"
+                        />
                         <div className="flex-1">
                           <div className="rounded-lg p-3 border border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/20">
                             <div className="flex items-center justify-between mb-1">
@@ -195,14 +220,18 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                                 {timeAgo(reply.createdAt)}
                               </span>
                             </div>
-                            <p className="text-slate-600 text-sm dark:text-slate-300">{reply.comment}</p>
+                            <p className="text-slate-600 text-sm dark:text-slate-300">
+                              {reply.comment}
+                            </p>
                           </div>
                           <div className="flex items-center mt-1 space-x-4 text-xs text-slate-500">
                             <button
                               onClick={() => handleLike(reply._id)}
                               className={`hover:text-red-400 transition-colors ${isCommentLiked(reply.likes) ? "text-red-400" : ""}`}
                             >
-                              <i className={`${isCommentLiked(reply.likes) ? "fas" : "far"} fa-heart mr-1`}></i>
+                              <i
+                                className={`${isCommentLiked(reply.likes) ? "fas" : "far"} fa-heart mr-1`}
+                              ></i>
                               {reply.likes?.length || 0}
                             </button>
                           </div>

@@ -6,8 +6,7 @@ interface ImageFallbackProps {
   className?: string;
 }
 
-const FALLBACK =
-  "https://placehold.co/800x400/png?text=Story+Image";
+const FALLBACK = "https://placehold.co/800x400/png?text=Story+Image";
 
 export default function ImageFallback({
   src,

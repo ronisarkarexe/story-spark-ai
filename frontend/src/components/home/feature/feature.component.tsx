@@ -20,7 +20,11 @@ const FeatureComponent = () => {
     return Math.max(1, Math.ceil(words / 200));
   };
 
-  const handleCopyLink = (e: React.MouseEvent, postId: string, postUrl: string) => {
+  const handleCopyLink = (
+    e: React.MouseEvent,
+    postId: string,
+    postUrl: string,
+  ) => {
     e.stopPropagation();
     navigator.clipboard.writeText(postUrl).then(() => {
       setCopiedId(postId);
@@ -93,7 +97,8 @@ const FeatureComponent = () => {
                             </span>
 
                             <p className="text-xs text-purple-400 font-medium flex items-center gap-1">
-                              <i className="fa-regular fa-clock"></i> {calculateReadingTime(post.content)} min read
+                              <i className="fa-regular fa-clock"></i>{" "}
+                              {calculateReadingTime(post.content)} min read
                             </p>
                           </div>
                         </div>
@@ -126,7 +131,10 @@ const FeatureComponent = () => {
                         {post.likesCount ?? 0}
                       </span>
                       <span className="flex items-center">
-                        <i className="far fa-comment mr-1" aria-hidden="true"></i>
+                        <i
+                          className="far fa-comment mr-1"
+                          aria-hidden="true"
+                        ></i>
                         {post.commentsCount ?? 0}
                       </span>
                     </div>
@@ -166,10 +174,14 @@ const FeatureComponent = () => {
                       <button
                         type="button"
                         onClick={(e) => handleCopyLink(e, post._id, postUrl)}
-                        title={copiedId === post._id ? "Link copied!" : "Copy link"}
+                        title={
+                          copiedId === post._id ? "Link copied!" : "Copy link"
+                        }
                         aria-label="Copy post link"
                         className={`transition-colors duration-200 focus:outline-none ${
-                          copiedId === post._id ? "text-green-400" : "hover:text-blue-400"
+                          copiedId === post._id
+                            ? "text-green-400"
+                            : "hover:text-blue-400"
                         }`}
                       >
                         <FaLink size={16} />
@@ -184,7 +196,10 @@ const FeatureComponent = () => {
       ) : (
         <div className="rounded-3xl border border-dashed border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-12 text-center box-border max-w-full">
           <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto mb-5 border border-slate-200/60 dark:border-white/5">
-            <i className="fa-solid fa-star text-slate-400 dark:text-slate-500 text-xl" aria-hidden="true"></i>
+            <i
+              className="fa-solid fa-star text-slate-400 dark:text-slate-500 text-xl"
+              aria-hidden="true"
+            ></i>
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
             No featured nodes are highlighted inside the stream right now.

@@ -49,7 +49,9 @@ export default function EngagementAnalyzer() {
       />
 
       {isError && (
-        <p className="text-red-500 text-sm">Analysis failed. Please try again.</p>
+        <p className="text-red-500 text-sm">
+          Analysis failed. Please try again.
+        </p>
       )}
 
       <button
@@ -74,8 +76,8 @@ export default function EngagementAnalyzer() {
                     val >= 70
                       ? "text-green-500"
                       : val >= 40
-                      ? "text-yellow-500"
-                      : "text-red-500"
+                        ? "text-yellow-500"
+                        : "text-red-500"
                   }`}
                 >
                   {val}
@@ -86,23 +88,46 @@ export default function EngagementAnalyzer() {
 
           <div className="border rounded-xl p-4">
             <h3 className="font-semibold mb-3">Dimension Breakdown</h3>
-            <ScoreBar label={`Pacing — ${result.pacing.label}`} score={result.pacing.score} />
-            <ScoreBar label="Dialogue Quality" score={result.dialogueQuality.score} />
-            <ScoreBar label="Emotional Intensity" score={result.emotionalIntensity.score} />
-            <ScoreBar label="Suspense Level" score={result.suspenseLevel.score} />
+            <ScoreBar
+              label={`Pacing — ${result.pacing.label}`}
+              score={result.pacing.score}
+            />
+            <ScoreBar
+              label="Dialogue Quality"
+              score={result.dialogueQuality.score}
+            />
+            <ScoreBar
+              label="Emotional Intensity"
+              score={result.emotionalIntensity.score}
+            />
+            <ScoreBar
+              label="Suspense Level"
+              score={result.suspenseLevel.score}
+            />
             <ScoreBar label="Readability" score={result.readability.score} />
           </div>
 
           {result.dropOffSections?.length > 0 && (
             <div className="border rounded-xl p-4">
-              <h3 className="font-semibold mb-3">⚠️ Potential Drop-off Sections</h3>
-              {result.dropOffSections.map((s: any, i: number) => (
-                <div key={i} className="border-l-4 border-red-400 pl-3 mb-3">
-                  <p className="text-sm italic text-gray-500">"{s.excerpt}"</p>
-                  <p className="text-sm text-red-500 mt-1">🔴 {s.reason}</p>
-                  <p className="text-sm text-green-600 mt-1">💡 {s.suggestion}</p>
-                </div>
-              ))}
+              <h3 className="font-semibold mb-3">
+                ⚠️ Potential Drop-off Sections
+              </h3>
+              {result.dropOffSections.map(
+                (
+                  s: { excerpt: string; reason: string; suggestion: string },
+                  i: number,
+                ) => (
+                  <div key={i} className="border-l-4 border-red-400 pl-3 mb-3">
+                    <p className="text-sm italic text-gray-500">
+                      "{s.excerpt}"
+                    </p>
+                    <p className="text-sm text-red-500 mt-1">🔴 {s.reason}</p>
+                    <p className="text-sm text-green-600 mt-1">
+                      💡 {s.suggestion}
+                    </p>
+                  </div>
+                ),
+              )}
             </div>
           )}
 

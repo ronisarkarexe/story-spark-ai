@@ -20,6 +20,22 @@ export interface StoryTreeResponse {
   edges: StoryTreeEdge[];
 }
 
+interface CharacterNetworkNode {
+  id: string;
+  name: string;
+  appearanceCount: number;
+  importanceScore: number;
+}
+
+interface CharacterNetworkRelationship {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  strength: number;
+  interactionCount: number;
+}
+
 const storyVersionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getVersionsByStoryId: build.query({
@@ -43,9 +59,8 @@ const storyVersionApi = baseApi.injectEndpoints({
         url: `/story-version/${storyId}/tree`,
         method: "GET",
       }),
-      transformResponse: (response: {
-        data: StoryTreeResponse;
-      }) => response.data,
+      transformResponse: (response: { data: StoryTreeResponse }) =>
+        response.data,
       providesTags: [tagTypes.StoryVersion],
     }),
 
@@ -74,12 +89,23 @@ const storyVersionApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.StoryVersion],
     }),
 
-    getCharacterNetwork: build.query<{ characters: any[]; relationships: any[] }, string>({
+    getCharacterNetwork: build.query<
+      {
+        characters: CharacterNetworkNode[];
+        relationships: CharacterNetworkRelationship[];
+      },
+      string
+    >({
       query: (storyId: string) => ({
         url: `/story/${storyId}/character-network`,
         method: "GET",
       }),
-      transformResponse: (response: { data: { characters: any[]; relationships: any[] } }) => response.data,
+      transformResponse: (response: {
+        data: {
+          characters: CharacterNetworkNode[];
+          relationships: CharacterNetworkRelationship[];
+        };
+      }) => response.data,
       providesTags: [tagTypes.StoryVersion],
     }),
   }),
@@ -93,4 +119,3 @@ export const {
   useCreateBranchVersionMutation,
   useGetCharacterNetworkQuery,
 } = storyVersionApi;
-

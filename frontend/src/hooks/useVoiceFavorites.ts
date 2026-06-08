@@ -18,7 +18,9 @@ export interface UseVoiceFavoritesResult {
  * Allows users to mark and save their preferred voices.
  */
 export const useVoiceFavorites = (): UseVoiceFavoritesResult => {
-  const [favoriteVoiceIds, setFavoriteVoiceIds] = useState<Set<string>>(new Set());
+  const [favoriteVoiceIds, setFavoriteVoiceIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load favorites from localStorage on mount

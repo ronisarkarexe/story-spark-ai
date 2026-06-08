@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { resources } from './community.data';
+import React from "react";
+import { Link } from "react-router-dom";
+import { resources } from "./community.data";
 
 const ResourcesListComponent: React.FC = () => {
   return (
@@ -8,7 +8,10 @@ const ResourcesListComponent: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6">
         {/* Navigation */}
         <div className="mb-8">
-          <Link to="/community" className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 transition-colors">
+          <Link
+            to="/community"
+            className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 transition-colors"
+          >
             <i className="fa-solid fa-arrow-left mr-2"></i>
             Back to Community
           </Link>
@@ -20,7 +23,8 @@ const ResourcesListComponent: React.FC = () => {
             Writing Resources
           </h1>
           <p className="text-slate-600 max-w-2xl dark:text-gray-400">
-            Explore guides, tutorials, and templates designed to spark your storytelling and master AI-assisted writing.
+            Explore guides, tutorials, and templates designed to spark your
+            storytelling and master AI-assisted writing.
           </p>
         </div>
 
@@ -45,7 +49,8 @@ const ResourcesListComponent: React.FC = () => {
                 {resource.overview}
               </p>
               <div className="flex items-center text-slate-500 text-sm font-medium dark:text-gray-500">
-                <i className="fa-regular fa-clock mr-2 text-blue-400"></i> {resource.readTime} read
+                <i className="fa-regular fa-clock mr-2 text-blue-400"></i>{" "}
+                {resource.readTime} read
               </div>
             </Link>
           ))}

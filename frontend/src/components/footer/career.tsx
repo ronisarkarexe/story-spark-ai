@@ -130,7 +130,9 @@ const Career = () => {
                   Open roles
                 </span>
               </div>
-              <h2 className="text-xl font-semibold">Find your place to create</h2>
+              <h2 className="text-xl font-semibold">
+                Find your place to create
+              </h2>
               <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                 Technology, storytelling, and community meet here. Contribute
                 from wherever inspiration finds you.
@@ -145,7 +147,10 @@ const Career = () => {
                     key={label}
                     className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center dark:border-white/10 dark:bg-white/[0.04]"
                   >
-                    <Icon className="mx-auto mb-2 text-blue-600 dark:text-blue-300" size={19} />
+                    <Icon
+                      className="mx-auto mb-2 text-blue-600 dark:text-blue-300"
+                      size={19}
+                    />
                     <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                       {label}
                     </p>
@@ -176,46 +181,50 @@ const Career = () => {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            {opportunities.map(({ title, icon: Icon, type, focus, description, skills }) => (
-              <article
-                key={title}
-                className="motion-card group flex h-full flex-col rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-slate-900/55 sm:p-7"
-              >
-                <div className="mb-6 flex items-start justify-between">
-                  <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white dark:text-blue-300">
-                    <Icon size={27} />
-                  </div>
-                  <span className="rounded-full border border-blue-500/15 bg-blue-500/[0.07] px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
-                    {type}
-                  </span>
-                </div>
-                <h3 className="text-2xl font-semibold tracking-tight">{title}</h3>
-                <div className="mb-5 mt-3 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                  <Briefcase size={15} />
-                  {focus}
-                </div>
-                <p className="mb-6 flex-1 leading-7 text-slate-600 dark:text-slate-300">
-                  {description}
-                </p>
-                <div className="mb-7 flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-                <a
-                  href={`mailto:careers@storysparkai.com?subject=Application%3A%20${encodeURIComponent(title)}`}
-                  className="motion-cta inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-500/20 bg-blue-500/[0.08] px-4 py-3 font-semibold text-blue-700 hover:bg-blue-600 hover:text-white dark:text-blue-300"
+            {opportunities.map(
+              ({ title, icon: Icon, type, focus, description, skills }) => (
+                <article
+                  key={title}
+                  className="motion-card group flex h-full flex-col rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-slate-900/55 sm:p-7"
                 >
-                  Apply for this role
-                  <ArrowRight size={16} />
-                </a>
-              </article>
-            ))}
+                  <div className="mb-6 flex items-start justify-between">
+                    <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white dark:text-blue-300">
+                      <Icon size={27} />
+                    </div>
+                    <span className="rounded-full border border-blue-500/15 bg-blue-500/[0.07] px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
+                      {type}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-semibold tracking-tight">
+                    {title}
+                  </h3>
+                  <div className="mb-5 mt-3 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <Briefcase size={15} />
+                    {focus}
+                  </div>
+                  <p className="mb-6 flex-1 leading-7 text-slate-600 dark:text-slate-300">
+                    {description}
+                  </p>
+                  <div className="mb-7 flex flex-wrap gap-2">
+                    {skills.map((skill) => (
+                      <span
+                        key={skill}
+                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                  <a
+                    href={`mailto:careers@storysparkai.com?subject=Application%3A%20${encodeURIComponent(title)}`}
+                    className="motion-cta inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-500/20 bg-blue-500/[0.08] px-4 py-3 font-semibold text-blue-700 hover:bg-blue-600 hover:text-white dark:text-blue-300"
+                  >
+                    Apply for this role
+                    <ArrowRight size={16} />
+                  </a>
+                </article>
+              ),
+            )}
           </div>
         </div>
       </section>
@@ -240,7 +249,10 @@ const Career = () => {
                 key={title}
                 className="motion-card-subtle rounded-2xl border border-slate-200/80 bg-slate-50/60 p-5 dark:border-white/10 dark:bg-white/[0.03]"
               >
-                <Icon className="mb-5 text-blue-600 dark:text-blue-300" size={26} />
+                <Icon
+                  className="mb-5 text-blue-600 dark:text-blue-300"
+                  size={26}
+                />
                 <h3 className="font-semibold">{title}</h3>
                 <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   {description}

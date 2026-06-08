@@ -25,14 +25,18 @@ export const isJwtTokenFormat = (token: string): boolean => {
  */
 export const decodedToken = (token: string): CustomJwtPayload => {
   if (!isJwtTokenFormat(token)) {
-    throw new Error("Token format is invalid. A JWT must consist of three dot-separated segments.");
+    throw new Error(
+      "Token format is invalid. A JWT must consist of three dot-separated segments.",
+    );
   }
 
   let decoded: CustomJwtPayload;
   try {
     decoded = jwtDecode<CustomJwtPayload>(token);
   } catch (error) {
-    throw new Error(`Failed to decode JWT token: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to decode JWT token: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 
   if (!decoded || typeof decoded !== "object") {
@@ -71,17 +75,24 @@ export const decodedToken = (token: string): CustomJwtPayload => {
 
   const validRoles = ["user", "admin", "super_admin", "writer", "guest"];
   if (!validRoles.includes(decoded.role)) {
-    throw new Error(`Token 'role' claim must be one of: ${validRoles.join(", ")}`);
+    throw new Error(
+      `Token 'role' claim must be one of: ${validRoles.join(", ")}`,
+    );
   }
 
   // 4. Validate required subscriptionType claim
-  if (typeof decoded.subscriptionType !== "string" || decoded.subscriptionType.trim() === "") {
+  if (
+    typeof decoded.subscriptionType !== "string" ||
+    decoded.subscriptionType.trim() === ""
+  ) {
     throw new Error("Token is missing a valid 'subscriptionType' claim.");
   }
 
   const validSubscriptions = ["free", "pro", "premium"];
   if (!validSubscriptions.includes(decoded.subscriptionType)) {
-    throw new Error(`Token 'subscriptionType' claim must be one of: ${validSubscriptions.join(", ")}`);
+    throw new Error(
+      `Token 'subscriptionType' claim must be one of: ${validSubscriptions.join(", ")}`,
+    );
   }
 
   // 5. Validate exp claim (must be a future timestamp in seconds)
@@ -104,10 +115,12 @@ export const decodedToken = (token: string): CustomJwtPayload => {
   }
 
   // 8. Validate optional postsCount claim type if present
-  if (decoded.postsCount !== undefined && typeof decoded.postsCount !== "number") {
+  if (
+    decoded.postsCount !== undefined &&
+    typeof decoded.postsCount !== "number"
+  ) {
     throw new Error("Token 'postsCount' claim must be a number.");
   }
 
   return decoded;
 };
-

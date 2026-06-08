@@ -5,7 +5,7 @@
   height: 100vh; /* Lock page to exactly screen height */
   width: 100vw;
   overflow: hidden; /* Prevents double scrollbars on the main window */
-  background-color: #F4F5F7; /* Match your image's crisp off-white canvas */
+  background-color: #f4f5f7; /* Match your image's crisp off-white canvas */
 }
 
 /* Container directly beneath the 64px navbar */
@@ -44,12 +44,12 @@
 }
 
 .dashboard-main-content-view::-webkit-scrollbar-thumb {
-  background: #E4E4E7;
+  background: #e4e4e7;
   border-radius: 999px;
 }
 
 .dashboard-main-content-view::-webkit-scrollbar-thumb:hover {
-  background: #D4D4D8;
+  background: #d4d4d8;
 }
 
 /* Responsive collapse safety triggers for tablet/mobile viewing windows */

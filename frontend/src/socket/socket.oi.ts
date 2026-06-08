@@ -16,13 +16,17 @@ export const connectSocket = (): Socket | null => {
 
   const socketUrl = resolveSocketUrl();
   if (!socketUrl) {
-    console.warn("[Story Spark] Socket.IO URL not configured. Real-time notifications disabled.");
+    console.warn(
+      "[Story Spark] Socket.IO URL not configured. Real-time notifications disabled.",
+    );
     return null;
   }
 
   const token = getFromLocalStorage(AUTH_KEY);
   if (!token) {
-    console.warn("[Story Spark] User not authenticated. Cannot connect to Socket.IO.");
+    console.warn(
+      "[Story Spark] User not authenticated. Cannot connect to Socket.IO.",
+    );
     return null;
   }
 
@@ -43,7 +47,7 @@ export const connectSocket = (): Socket | null => {
     console.log("[Story Spark] Socket.IO disconnected");
   });
 
-  socketIoInstance.on("connect_error", (error: any) => {
+  socketIoInstance.on("connect_error", (error: Error) => {
     console.warn("[Story Spark] Socket.IO connection error:", error);
   });
 

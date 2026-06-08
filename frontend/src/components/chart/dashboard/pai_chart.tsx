@@ -62,7 +62,6 @@ const UsersPieChart: FC<Props> = ({ data, title = "User Distribution" }) => {
           bottom: 20,
         },
       },
-      
     },
   };
 

@@ -6,10 +6,7 @@ interface Props {
   storyId: string;
 }
 
-const StoryViewer: React.FC<Props> = ({
-  chapters,
-  storyId,
-}) => {
+const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
   const [progress, setProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -27,11 +24,9 @@ const StoryViewer: React.FC<Props> = ({
       setProgress(progressValue);
 
       setTimeout(() => {
-        const maxScroll =
-          container.scrollHeight - container.clientHeight;
+        const maxScroll = container.scrollHeight - container.clientHeight;
 
-        container.scrollTop =
-          (progressValue / 100) * maxScroll;
+        container.scrollTop = (progressValue / 100) * maxScroll;
       }, 100);
     }
   }, [storageKey]);
@@ -41,44 +36,26 @@ const StoryViewer: React.FC<Props> = ({
     if (!container) return;
 
     const handleScroll = () => {
-      const maxScroll =
-        container.scrollHeight - container.clientHeight;
+      const maxScroll = container.scrollHeight - container.clientHeight;
 
       if (maxScroll <= 0) return;
 
-      const currentProgress =
-        (container.scrollTop / maxScroll) * 100;
+      const currentProgress = (container.scrollTop / maxScroll) * 100;
 
-      const rounded = Math.min(
-        100,
-        Math.max(0, Math.round(currentProgress))
-      );
+      const rounded = Math.min(100, Math.max(0, Math.round(currentProgress)));
 
       setProgress(rounded);
 
-      localStorage.setItem(
-        storageKey,
-        rounded.toString()
-      );
+      localStorage.setItem(storageKey, rounded.toString());
     };
 
-    container.addEventListener(
-      "scroll",
-      handleScroll
-    );
+    container.addEventListener("scroll", handleScroll);
 
-    return () =>
-      container.removeEventListener(
-        "scroll",
-        handleScroll
-      );
+    return () => container.removeEventListener("scroll", handleScroll);
   }, [storageKey]);
 
   return (
-    <div
-      ref={containerRef}
-      className="flex-1 overflow-y-auto p-8"
-    >
+    <div ref={containerRef} className="flex-1 overflow-y-auto p-8">
       <div className="sticky top-0 z-10 bg-black pb-4">
         <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
           <div

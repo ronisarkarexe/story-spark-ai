@@ -3,7 +3,7 @@ interface RetryBannerProps {
   retryCount: number;
   maxRetries: number;
   isRetrying: boolean;
-  countdown: number;        // seconds remaining in backoff
+  countdown: number; // seconds remaining in backoff
   onRetry: () => void;
 }
 
@@ -49,10 +49,10 @@ const RetryBanner = ({
           {exhausted
             ? "All retry attempts exhausted. Please wait a moment and try again manually."
             : countdown > 0
-            ? `Retrying in ${countdown}s… (attempt ${retryCount} of ${maxRetries})`
-            : retryCount > 0
-            ? `Attempt ${retryCount} of ${maxRetries} failed. Try again?`
-            : "This can happen due to high server load or network issues."}
+              ? `Retrying in ${countdown}s… (attempt ${retryCount} of ${maxRetries})`
+              : retryCount > 0
+                ? `Attempt ${retryCount} of ${maxRetries} failed. Try again?`
+                : "This can happen due to high server load or network issues."}
         </p>
 
         {/* Attempt dots indicator */}
@@ -65,8 +65,8 @@ const RetryBanner = ({
                   i < retryCount
                     ? "bg-red-500"
                     : i === retryCount && isRetrying
-                    ? "bg-yellow-400 animate-pulse"
-                    : "bg-white/20"
+                      ? "bg-yellow-400 animate-pulse"
+                      : "bg-white/20"
                 }`}
               />
             ))}
@@ -83,8 +83,8 @@ const RetryBanner = ({
           exhausted
             ? "Maximum retries reached"
             : isRetrying
-            ? "Retrying generation..."
-            : "Retry story generation"
+              ? "Retrying generation..."
+              : "Retry story generation"
         }
         className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg
           bg-red-600 hover:bg-red-700 active:scale-95
@@ -104,7 +104,9 @@ const RetryBanner = ({
             >
               <circle
                 className="opacity-25"
-                cx="12" cy="12" r="10"
+                cx="12"
+                cy="12"
+                r="10"
                 stroke="currentColor"
                 strokeWidth="4"
               />

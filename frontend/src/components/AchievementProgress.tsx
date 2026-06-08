@@ -18,10 +18,11 @@ const AchievementProgress: React.FC<AchievementProgressProps> = ({
       <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">
         <span>{label || "Progress"}</span>
         <span aria-label={`${progress} out of ${target}`}>
-          {progress.toLocaleString()} / {target.toLocaleString()} ({Math.round(percentage)}%)
+          {progress.toLocaleString()} / {target.toLocaleString()} (
+          {Math.round(percentage)}%)
         </span>
       </div>
-      <div 
+      <div
         className="w-full bg-slate-100 dark:bg-white/[0.05] h-2.5 rounded-full overflow-hidden"
         role="progressbar"
         aria-valuenow={progress}

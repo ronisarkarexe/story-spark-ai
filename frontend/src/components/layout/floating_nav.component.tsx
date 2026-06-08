@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
+import {
+  isLoggedIn,
+  removeUserInfo,
+  getUserInfo,
+} from "../../services/auth.service";
 import { USER_ROLE } from "../../constants/role";
 import { useNotifications } from "../../hooks/useNotifications";
 import ThemeToggle from "../theme/theme_toggle.component";
@@ -19,7 +23,7 @@ import {
   LogOut,
   LogIn,
   UserPlus,
-  X
+  X,
 } from "lucide-react";
 
 const FloatingNavComponent: React.FC = () => {
@@ -31,7 +35,8 @@ const FloatingNavComponent: React.FC = () => {
 
   const { unreadCount } = useNotifications();
   const user = getUserInfo();
-  const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
+  const isAdmin =
+    user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
 
   const handleLogout = () => {
     removeUserInfo();
@@ -168,7 +173,9 @@ const FloatingNavComponent: React.FC = () => {
                       <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-400 group-hover:scale-105 transition-transform shrink-0">
                         <Bookmark size={16} />
                       </div>
-                      <span className="font-medium truncate">Saved Stories</span>
+                      <span className="font-medium truncate">
+                        Saved Stories
+                      </span>
                     </Link>
 
                     {isAdmin && (
@@ -232,8 +239,13 @@ const FloatingNavComponent: React.FC = () => {
                     : "hover:text-slate-800 dark:hover:text-white"
                 }`}
               >
-                <IconComponent size={18} className={isActive ? "stroke-[2.5px]" : "stroke-[2px]"} />
-                <span className="text-[8px] tracking-wide font-semibold uppercase block truncate max-w-full">{item.label}</span>
+                <IconComponent
+                  size={18}
+                  className={isActive ? "stroke-[2.5px]" : "stroke-[2px]"}
+                />
+                <span className="text-[8px] tracking-wide font-semibold uppercase block truncate max-w-full">
+                  {item.label}
+                </span>
                 {isActive && (
                   <motion.div
                     layoutId="activeTabPill"
@@ -254,14 +266,19 @@ const FloatingNavComponent: React.FC = () => {
             }`}
           >
             <div className="relative flex items-center justify-center">
-              <MoreHorizontal size={18} className={isMoreOpen ? "stroke-[2.5px]" : "stroke-[2px]"} />
+              <MoreHorizontal
+                size={18}
+                className={isMoreOpen ? "stroke-[2.5px]" : "stroke-[2px]"}
+              />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1.5 bg-rose-500 text-white text-[7px] font-bold px-1 rounded-full min-w-[12px] h-[12px] flex items-center justify-center shadow-lg border border-white dark:border-slate-950">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
             </div>
-            <span className="text-[8px] tracking-wide font-semibold uppercase block truncate max-w-full">More</span>
+            <span className="text-[8px] tracking-wide font-semibold uppercase block truncate max-w-full">
+              More
+            </span>
             {isMoreOpen && (
               <motion.div
                 layoutId="activeTabPill"

@@ -7,21 +7,20 @@ import { store } from "./redux/store.ts";
 import { ThemeProvider } from "./components/theme/theme.context";
 import "./index.css";
 
-
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
-
-
 if (!GOOGLE_CLIENT_ID) {
-  console.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will not function.");
+  console.warn(
+    "VITE_GOOGLE_CLIENT_ID is missing. Google Login will not function.",
+  );
 }
 
 const container = document.getElementById("root");
 
 if (!container) {
-  throw new Error("Failed to find the root element. Ensure index.html has <div id='root'></div>");
+  throw new Error(
+    "Failed to find the root element. Ensure index.html has <div id='root'></div>",
+  );
 }
 
 createRoot(container).render(
@@ -33,5 +32,5 @@ createRoot(container).render(
         </ThemeProvider>
       </Provider>
     </GoogleOAuthProvider>
-  </StrictMode>
+  </StrictMode>,
 );

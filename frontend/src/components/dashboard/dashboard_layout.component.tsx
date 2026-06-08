@@ -172,7 +172,13 @@
 
 // export default DashboardLayout;
 import React, { useState } from "react";
-import { Link, Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
+import {
+  Link,
+  Outlet,
+  useLocation,
+  useNavigate,
+  Navigate,
+} from "react-router-dom";
 import { MenuItem, menuItems } from "./dashboard.utils";
 import { getUserInfo } from "../../services/auth.service";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
@@ -251,7 +257,7 @@ const DashboardLayout: React.FC = () => {
             src={
               userProfile?.profile?.avatar ||
               `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                user?.name || "User"
+                user?.name || "User",
               )}&background=random`
             }
             alt="profile"

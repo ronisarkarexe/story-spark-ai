@@ -1,26 +1,36 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import DOMPurify from "dompurify";
-import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
+import {
+  getShortenedText,
+  ITopicData,
+  topicsData,
+  SELECTED_TOPIC_CLASSES,
+} from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useAntiGravityScroll } from "../../hooks/useAntiGravityScroll";
-import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
+import {
+  useCreatePostMutation,
+  useDeletePostMutation,
+} from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
 import {
   fetchImageAsBlob,
   blobToBase64,
   exportStoryToPDF,
-  exportStoryToEPUB
+  exportStoryToEPUB,
 } from "../../services/export.service";
 import StoryWorldMap from "../story-map/StoryWorldMap";
 import StoryRemix from "../remix/StoryRemix";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
+import AudioPlayer, {
+  type AudioPlayerHandle,
+  type NarrationPlaybackState,
+} from "../AudioPlayer";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
@@ -28,11 +38,13 @@ import {
 import ImageFallback from "../ImageFallback";
 import StoryVisualizer from "../story-visualizer/StoryVisualizer";
 import ContinueStoryModal from "./ContinueStoryModal";
-import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
 
 // --- Custom Error Classes & Helper Types ---
 export class ApiError extends Error {
-  constructor(public readonly status: number, message: string) {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
     super(message);
     this.name = "ApiError";
   }
@@ -58,6 +70,7 @@ function getErrorMessage(error: unknown): string {
 
 // Dummy themes helper
 const getGenreTheme = (tag: string) => {
+  void tag;
   return { gradient: "45deg, #1e1b4b, #311042", accent: "#a855f7", icon: "✨" };
 };
 const getInitials = (title: string) => title.slice(0, 2).toUpperCase();
@@ -120,15 +133,116 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
         ...style,
       }}
     >
-      <div style={{ position: "absolute", top: "-30%", right: "-15%", width: "60%", height: "120%", background: "rgba(255,255,255,0.08)", borderRadius: "50%", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: "-20%", left: "-10%", width: "45%", height: "80%", background: "rgba(0,0,0,0.12)", borderRadius: "50%", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", top: "12px", right: "16px", fontSize: "3.5rem", color: theme.accent, opacity: 0.35, lineHeight: 1, userSelect: "none", pointerEvents: "none", fontWeight: 300 }}>{theme.icon}</div>
-      <div style={{ position: "absolute", top: "14px", left: "14px", background: "rgba(0,0,0,0.28)", backdropFilter: "blur(6px)", color: "#fff", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "3px 10px", borderRadius: "999px", border: `1px solid ${theme.accent}55`, userSelect: "none" }}>{tag}</div>
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ fontSize: "5rem", fontWeight: 900, color: "rgba(255,255,255,0.12)", letterSpacing: "-0.04em", lineHeight: 1, userSelect: "none", pointerEvents: "none" }}>{initials}</div>
+      <div
+        style={{
+          position: "absolute",
+          top: "-30%",
+          right: "-15%",
+          width: "60%",
+          height: "120%",
+          background: "rgba(255,255,255,0.08)",
+          borderRadius: "50%",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-20%",
+          left: "-10%",
+          width: "45%",
+          height: "80%",
+          background: "rgba(0,0,0,0.12)",
+          borderRadius: "50%",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: "12px",
+          right: "16px",
+          fontSize: "3.5rem",
+          color: theme.accent,
+          opacity: 0.35,
+          lineHeight: 1,
+          userSelect: "none",
+          pointerEvents: "none",
+          fontWeight: 300,
+        }}
+      >
+        {theme.icon}
       </div>
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)", padding: "32px 14px 12px" }}>
-        <p style={{ margin: 0, color: "#fff", fontSize: "0.9rem", fontWeight: 700, lineHeight: 1.3, textShadow: "0 1px 6px rgba(0,0,0,0.5)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{title}</p>
+      <div
+        style={{
+          position: "absolute",
+          top: "14px",
+          left: "14px",
+          background: "rgba(0,0,0,0.28)",
+          backdropFilter: "blur(6px)",
+          color: "#fff",
+          fontSize: "0.65rem",
+          fontWeight: 700,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          padding: "3px 10px",
+          borderRadius: "999px",
+          border: `1px solid ${theme.accent}55`,
+          userSelect: "none",
+        }}
+      >
+        {tag}
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "5rem",
+            fontWeight: 900,
+            color: "rgba(255,255,255,0.12)",
+            letterSpacing: "-0.04em",
+            lineHeight: 1,
+            userSelect: "none",
+            pointerEvents: "none",
+          }}
+        >
+          {initials}
+        </div>
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)",
+          padding: "32px 14px 12px",
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            color: "#fff",
+            fontSize: "0.9rem",
+            fontWeight: 700,
+            lineHeight: 1.3,
+            textShadow: "0 1px 6px rgba(0,0,0,0.5)",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          {title}
+        </p>
       </div>
     </div>
   );
@@ -180,7 +294,8 @@ const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
     if (!trimmedSentence) return;
     const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
     const startWordIndex = wordCursor;
-    const endWordIndex = wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
+    const endWordIndex =
+      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
 
     segments.push({
       id: `${index}-${startWordIndex}-${endWordIndex}`,
@@ -193,7 +308,10 @@ const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
   return segments;
 };
 
-const getSafeFileName = (title: string, extension: "md" | "docx"): string => {
+const getSafeFileName = (
+  title: string,
+  extension: "md" | "docx" | "pdf",
+): string => {
   const safeTitle = (title || "story")
     .trim()
     .replace(/[^a-z0-9]+/gi, "_")
@@ -277,7 +395,9 @@ const StoryWorldMapModal = StoryWorldMap as React.ComponentType<{
   onClose: () => void;
 }>;
 
-export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
+export const RelatedStoriesComponent: React.FC<
+  IRelatedStoriesComponentProps
+> = ({ posts, currentPostId }) => {
   const navigate = useNavigate();
   const filteredPosts = posts.filter((post) => post._id !== currentPostId);
 
@@ -292,12 +412,16 @@ export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = 
               onClick={() => navigate(`/stories/${post._id}`)}
               className="p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/60 transition-colors"
             >
-              <p className="text-sm font-semibold text-white truncate">{post.title}</p>
+              <p className="text-sm font-semibold text-white truncate">
+                {post.title}
+              </p>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-center text-slate-500 py-4 border border-dashed border-slate-700 rounded-xl">No related stories found.</p>
+        <p className="text-center text-slate-500 py-4 border border-dashed border-slate-700 rounded-xl">
+          No related stories found.
+        </p>
       )}
     </div>
   );
@@ -308,10 +432,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
   setStories,
-  onPublishSuccess
+  onPublishSuccess,
 }) => {
   const location = useLocation();
-  const dispatch = useDispatch();
 
   const storyScrollContainerRef = useRef<HTMLDivElement>(null);
   const {
@@ -327,8 +450,11 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Export states
-  const [exportState, setExportState] = useState<"idle" | "processing" | "compiling" | "success" | "error">("idle");
-  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState<boolean>(false);
+  const [exportState, setExportState] = useState<
+    "idle" | "processing" | "compiling" | "success" | "error"
+  >("idle");
+  const [isExportDropdownOpen, setIsExportDropdownOpen] =
+    useState<boolean>(false);
   const dropdownMenuRef = useRef<HTMLDivElement>(null);
 
   // Standard functional states
@@ -338,46 +464,59 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [newTopicTitle, setNewTopicTitle] = useState<string>("");
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Used for initial generative state
+  const [isLoading] = useState<boolean>(false);
 
   // Modals
   const [showContinueModal, setShowContinueModal] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
-  const [showTranslator, setShowTranslator] = useState<boolean>(false);
-  const [showStoryVisualizer, setShowStoryVisualizer] = useState<boolean>(false);
-  
-  // Dummy states for StoryVisualizer missing in provided code
-  const [storyboardScenes, setStoryboardScenes] = useState<any[]>([]);
-  const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<any>({});
+  const [, setShowTranslator] = useState<boolean>(false);
+  const [showStoryVisualizer, setShowStoryVisualizer] =
+    useState<boolean>(false);
+
+  const [storyboardScenes] = useState<
+    Array<{ sceneNumber: number; caption: string; imagePrompt: string }>
+  >([]);
+  const [storyboardStyleGuide] = useState<string>("");
 
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
-  const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
-  
+  const { data: profile } = useGetProfileInfoQuery(undefined, {
+    skip: !isLogin,
+  });
+
   const lastSavedContentRef = useRef<string>("");
   const isSavingRef = useRef<boolean>(false);
   const hasSavedSessionRef = useRef<boolean>(false);
   const savedPostIdRef = useRef<string | null>(null);
 
   // Endings State
-  const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
-  const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
+  const [isGeneratingEndings, setIsGeneratingEndings] =
+    useState<boolean>(false);
+  const [activeEndingTab, setActiveEndingTab] =
+    useState<string>("Happy Ending");
   const [endingsCache, setEndingsCache] = useState<{
     [uuid: string]: { style: string; ending: string; fullStory: string }[];
   }>({});
-  const [originalStoryContent, setOriginalStoryContent] = useState<{ [uuid: string]: string }>({});
+  const [originalStoryContent, setOriginalStoryContent] = useState<{
+    [uuid: string]: string;
+  }>({});
 
   const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
-  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+  const [narrationState, setNarrationState] =
+    useState<NarrationPlaybackState>("idle");
 
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
-  const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+  const [generateFreeAlternateEndings] =
+    useGenerateFreeAlternateEndingsMutation();
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownMenuRef.current && !dropdownMenuRef.current.contains(event.target as Node)) {
+      if (
+        dropdownMenuRef.current &&
+        !dropdownMenuRef.current.contains(event.target as Node)
+      ) {
         setIsExportDropdownOpen(false);
       }
     };
@@ -389,10 +528,12 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
   const handleExport = async (format: "pdf" | "epub") => {
     if (!selectedStory) return;
-    
+
     setIsExportDropdownOpen(false);
     setExportState("processing");
-    const toastId = toast.loading(`Preparing story for ${format.toUpperCase()} export...`);
+    const toastId = toast.loading(
+      `Preparing story for ${format.toUpperCase()} export...`,
+    );
 
     try {
       let imageBlob: Blob | null = null;
@@ -404,12 +545,16 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           base64Image = await blobToBase64(imageBlob);
         } catch (err) {
           console.error("Could not fetch story illustration for export:", err);
-          toast.error("Story illustration could not be loaded. Exporting text only.");
+          toast.error(
+            "Story illustration could not be loaded. Exporting text only.",
+          );
         }
       }
 
       setExportState("compiling");
-      toast.loading(`Compiling ${format.toUpperCase()} file...`, { id: toastId });
+      toast.loading(`Compiling ${format.toUpperCase()} file...`, {
+        id: toastId,
+      });
 
       if (format === "pdf") {
         await exportStoryToPDF(selectedStory, base64Image);
@@ -418,12 +563,16 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       }
 
       setExportState("success");
-      toast.success(`${format.toUpperCase()} downloaded successfully!`, { id: toastId });
+      toast.success(`${format.toUpperCase()} downloaded successfully!`, {
+        id: toastId,
+      });
       setTimeout(() => setExportState("idle"), 2000);
     } catch (err) {
       console.error(`Failed to export to ${format}:`, err);
       setExportState("error");
-      toast.error(`Failed to generate ${format.toUpperCase()}.`, { id: toastId });
+      toast.error(`Failed to generate ${format.toUpperCase()}.`, {
+        id: toastId,
+      });
       setTimeout(() => setExportState("idle"), 2000);
     }
   };
@@ -458,7 +607,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
   useEffect(() => {
     const player = audioPlayerRef.current;
-    return () => { player?.stop(); };
+    return () => {
+      player?.stop();
+    };
   }, [location.pathname]);
 
   useEffect(() => {
@@ -507,9 +658,17 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       }
     };
 
-    const timer = setTimeout(() => { autoSaveStory(); }, 1000);
+    const timer = setTimeout(() => {
+      autoSaveStory();
+    }, 1000);
     return () => clearTimeout(timer);
-  }, [selectedStory, selectedStory?.content, isLogin, selectTopics, createPost]);
+  }, [
+    selectedStory,
+    selectedStory?.content,
+    isLogin,
+    selectTopics,
+    createPost,
+  ]);
 
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
@@ -518,22 +677,35 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const handleTopicClick = (index: number) => {
     setTopics((currentTopics) =>
       currentTopics.map((topic, topicIndex) =>
-        topicIndex === index ? { ...topic, selected: !topic.selected } : topic
-      )
+        topicIndex === index ? { ...topic, selected: !topic.selected } : topic,
+      ),
     );
   };
 
   const handleAddTopic = () => {
     const title = newTopicTitle.trim();
-    if (!title) { toast.error("Please enter a topic."); return; }
+    if (!title) {
+      toast.error("Please enter a topic.");
+      return;
+    }
     const normalizedTitle = title.startsWith("#") ? title : `#${title}`;
-    const topicExists = topics.some((topic) => topic.title.toLowerCase() === normalizedTitle.toLowerCase());
-    
-    if (topicExists) { toast.error("This topic already exists."); return; }
-    
+    const topicExists = topics.some(
+      (topic) => topic.title.toLowerCase() === normalizedTitle.toLowerCase(),
+    );
+
+    if (topicExists) {
+      toast.error("This topic already exists.");
+      return;
+    }
+
     setTopics((currentTopics) => [
-      ...currentTopics, 
-      { title: normalizedTitle, className: SELECTED_TOPIC_CLASSES, color: SELECTED_TOPIC_CLASSES, selected: true }
+      ...currentTopics,
+      {
+        title: normalizedTitle,
+        className: SELECTED_TOPIC_CLASSES,
+        color: SELECTED_TOPIC_CLASSES,
+        selected: true,
+      },
     ]);
     setNewTopicTitle("");
   };
@@ -544,7 +716,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       return;
     }
     setTopics((currentTopics) =>
-      currentTopics.filter((_, topicIndex) => topicIndex !== index)
+      currentTopics.filter((_, topicIndex) => topicIndex !== index),
     );
   };
 
@@ -566,7 +738,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     try {
       const payload = {
         title: selectedStory.title,
-        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
+        content:
+          originalStoryContent[selectedStory.uuid] || selectedStory.content,
         tag: selectedStory.tag,
         language: selectedStory.language || "English",
       };
@@ -583,13 +756,18 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
       setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
       toast.success("Alternate endings generated successfully!");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[StoriesView Alternate Ending Flow Failure]:", err);
-      const errorStatus = err?.status || err?.data?.status;
+      const apiErr = err as {
+        status?: number;
+        data?: { status?: number; message?: string };
+        message?: string;
+      };
+      const errorStatus = apiErr.status || apiErr.data?.status;
       const parsedMessage = errorStatus
-        ? getErrorMessage(new ApiError(errorStatus, err?.data?.message || ""))
-        : err?.message || "An unexpected failure occurred.";
-      
+        ? getErrorMessage(new ApiError(errorStatus, apiErr.data?.message || ""))
+        : apiErr.message || "An unexpected failure occurred.";
+
       setErrorMessage(parsedMessage);
       toast.error("Failed to generate alternate endings.");
     } finally {
@@ -598,11 +776,17 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     }
   };
 
-  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
+  const handleApplyEnding = (endingData: {
+    style: string;
+    ending: string;
+    fullStory: string;
+  }) => {
     if (!selectedStory) return;
     const updatedStory = { ...selectedStory, content: endingData.fullStory };
     setSelectedStory(updatedStory);
-    setStories(stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)));
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)),
+    );
     toast.success(`${endingData.style} applied to story!`);
   };
 
@@ -612,25 +796,45 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     if (!originalContent) return;
     const updatedStory = { ...selectedStory, content: originalContent };
     setSelectedStory(updatedStory);
-    setStories(stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)));
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)),
+    );
     toast.success("Reverted to original story ending!");
   };
 
   const handleExportPDF = async () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) { toast.error("Story content is empty. Cannot export."); return; }
-    
+    if (!selectedStory) {
+      toast.error("No story available to export.");
+      return;
+    }
+    if (!selectedStory.content?.trim()) {
+      toast.error("Story content is empty. Cannot export.");
+      return;
+    }
+
     setIsExportDropdownOpen(false);
     const toastId = toast.loading("Preparing your premium PDF...");
-    
+
     try {
-      const loadImageWithTimeout = (src: string, timeoutMs: number = 3000): Promise<HTMLImageElement> => {
+      const loadImageWithTimeout = (
+        src: string,
+        timeoutMs: number = 3000,
+      ): Promise<HTMLImageElement> => {
         return new Promise((resolve, reject) => {
           const img = new Image();
           img.crossOrigin = "anonymous";
-          const timeout = setTimeout(() => { img.src = ""; reject(new Error(`Timeout loading image: ${src}`)); }, timeoutMs);
-          img.onload = () => { clearTimeout(timeout); resolve(img); };
-          img.onerror = (e) => { clearTimeout(timeout); reject(e); };
+          const timeout = setTimeout(() => {
+            img.src = "";
+            reject(new Error(`Timeout loading image: ${src}`));
+          }, timeoutMs);
+          img.onload = () => {
+            clearTimeout(timeout);
+            resolve(img);
+          };
+          img.onerror = (e) => {
+            clearTimeout(timeout);
+            reject(e);
+          };
           img.src = src;
         });
       };
@@ -638,16 +842,31 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       let logoImg: HTMLImageElement | null = null;
       let storyImg: HTMLImageElement | null = null;
 
-      try { logoImg = await loadImageWithTimeout(logo); } catch (err) { console.warn("Failed to load logo", err); }
+      try {
+        logoImg = await loadImageWithTimeout(logo);
+      } catch (err) {
+        console.warn("Failed to load logo", err);
+      }
       if (selectedStory.imageURL) {
-        try { storyImg = await loadImageWithTimeout(selectedStory.imageURL); } catch (err) { console.warn("Failed to load story banner", err); }
+        try {
+          storyImg = await loadImageWithTimeout(selectedStory.imageURL);
+        } catch (err) {
+          console.warn("Failed to load story banner", err);
+        }
       }
 
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
       const title = selectedStory.title || "Untitled Story";
       const content = selectedStory.content || "";
       const tag = (selectedStory.tag || "STORY").toUpperCase();
-      const leftMargin = 20, rightMargin = 20, topMargin = 20, bottomMargin = 20;
+      const leftMargin = 20,
+        rightMargin = 20,
+        topMargin = 20,
+        bottomMargin = 20;
       const printableWidth = 210 - leftMargin - rightMargin;
       const maxY = 297 - bottomMargin - 10;
       let yCursor = topMargin;
@@ -656,43 +875,84 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       if (logoImg) {
         const logoHeight = 8;
         const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
-        doc.addImage(logoImg, "PNG", leftMargin, yCursor, logoWidth, logoHeight);
+        doc.addImage(
+          logoImg,
+          "PNG",
+          leftMargin,
+          yCursor,
+          logoWidth,
+          logoHeight,
+        );
       } else {
-        doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(99, 102, 241);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(99, 102, 241);
         doc.text("StorySparkAI", leftMargin, yCursor + 6);
       }
-      
-      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
-      doc.text("PREMIUM AI GENERATED STORY", 190, yCursor + 5, { align: "right" });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text("PREMIUM AI GENERATED STORY", 190, yCursor + 5, {
+        align: "right",
+      });
       yCursor += 10;
-      
-      doc.setDrawColor(99, 102, 241); doc.setLineWidth(0.5); doc.line(leftMargin, yCursor, 190, yCursor);
+
+      doc.setDrawColor(99, 102, 241);
+      doc.setLineWidth(0.5);
+      doc.line(leftMargin, yCursor, 190, yCursor);
       yCursor += 8;
 
       // Story Banner Image
       if (storyImg) {
         const bannerHeight = 55;
-        doc.addImage(storyImg, "JPEG", leftMargin, yCursor, printableWidth, bannerHeight);
+        doc.addImage(
+          storyImg,
+          "JPEG",
+          leftMargin,
+          yCursor,
+          printableWidth,
+          bannerHeight,
+        );
         yCursor += bannerHeight + 8;
       }
 
-      doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(30, 41, 59);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(30, 41, 59);
       const splitTitle = doc.splitTextToSize(title, printableWidth);
-      splitTitle.forEach((line: string) => { doc.text(line, leftMargin, yCursor); yCursor += 9; });
+      splitTitle.forEach((line: string) => {
+        doc.text(line, leftMargin, yCursor);
+        yCursor += 9;
+      });
       yCursor += 1;
 
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
-      const formattedDate = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      const formattedDate = new Date().toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
       doc.text(`Generated on ${formattedDate}`, leftMargin, yCursor);
-      
-      doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
       const tagWidth = doc.getTextWidth(tag);
-      const chipWidth = tagWidth + 5, chipHeight = 5, chipX = 190 - chipWidth, chipY = yCursor - 3.8;
-      doc.setFillColor(99, 102, 241); doc.roundedRect(chipX, chipY, chipWidth, chipHeight, 1, 1, "F");
-      doc.setTextColor(255, 255, 255); doc.text(tag, chipX + 2.5, chipY + 3.5);
-      
+      const chipWidth = tagWidth + 5,
+        chipHeight = 5,
+        chipX = 190 - chipWidth,
+        chipY = yCursor - 3.8;
+      doc.setFillColor(99, 102, 241);
+      doc.roundedRect(chipX, chipY, chipWidth, chipHeight, 1, 1, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.text(tag, chipX + 2.5, chipY + 3.5);
+
       yCursor += 4.5;
-      doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.2); doc.line(leftMargin, yCursor, 190, yCursor);
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.2);
+      doc.line(leftMargin, yCursor, 190, yCursor);
       yCursor += 10;
 
       const paragraphs = content.split(/\n+/);
@@ -701,9 +961,15 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
         if (!cleanPara) return;
         const lines = doc.splitTextToSize(cleanPara, printableWidth);
         lines.forEach((line: string) => {
-          if (yCursor > maxY) { doc.addPage(); yCursor = 30; }
-          doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(30, 41, 59);
-          doc.text(line, leftMargin, yCursor); yCursor += 6.5;
+          if (yCursor > maxY) {
+            doc.addPage();
+            yCursor = 30;
+          }
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(11);
+          doc.setTextColor(30, 41, 59);
+          doc.text(line, leftMargin, yCursor);
+          yCursor += 6.5;
         });
         if (pIdx < paragraphs.length - 1) yCursor += 4.5;
       });
@@ -711,17 +977,28 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
-        doc.setDrawColor(241, 245, 249); doc.setLineWidth(0.25); doc.line(leftMargin, 280, 190, 280);
-        doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 116, 139);
+        doc.setDrawColor(241, 245, 249);
+        doc.setLineWidth(0.25);
+        doc.line(leftMargin, 280, 190, 280);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
         doc.text("Generated with StorySparkAI", leftMargin, 285);
         doc.text(`Page ${i} of ${totalPages}`, 190, 285, { align: "right" });
         if (i > 1) {
-          doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(99, 102, 241);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setTextColor(99, 102, 241);
           doc.text("StorySparkAI", leftMargin, 14);
-          doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
-          const headerTitle = title.length > 50 ? title.substring(0, 50) + "..." : title;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(148, 163, 184);
+          const headerTitle =
+            title.length > 50 ? title.substring(0, 50) + "..." : title;
           doc.text(headerTitle, 190, 14, { align: "right" });
-          doc.setDrawColor(241, 245, 249); doc.setLineWidth(0.2); doc.line(leftMargin, 17, 190, 17);
+          doc.setDrawColor(241, 245, 249);
+          doc.setLineWidth(0.2);
+          doc.line(leftMargin, 17, 190, 17);
         }
       }
 
@@ -729,15 +1006,21 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       toast.dismiss(toastId);
       toast.success("Premium PDF downloaded!");
     } catch (error) {
-      console.error(error); 
-      toast.dismiss(toastId); 
+      console.error(error);
+      toast.dismiss(toastId);
       toast.error("Failed to export PDF.");
     }
   };
 
   const handleExportMarkdown = () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) { toast.error("Story content is empty. Cannot export."); return; }
+    if (!selectedStory) {
+      toast.error("No story available to export.");
+      return;
+    }
+    if (!selectedStory.content?.trim()) {
+      toast.error("Story content is empty. Cannot export.");
+      return;
+    }
     setIsExportDropdownOpen(false);
 
     try {
@@ -747,21 +1030,29 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
       const isoDate = new Date().toISOString().split("T")[0];
       const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
-      const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
+      const blob = new Blob([markdownContent], {
+        type: "text/markdown;charset=utf-8;",
+      });
 
       downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
-    } catch (error) { 
-      console.error(error); 
-      toast.error("Failed to export Markdown."); 
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export Markdown.");
     }
   };
 
   const handleExportDOCX = () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) { toast.error("Story content is empty. Cannot export."); return; }
+    if (!selectedStory) {
+      toast.error("No story available to export.");
+      return;
+    }
+    if (!selectedStory.content?.trim()) {
+      toast.error("Story content is empty. Cannot export.");
+      return;
+    }
     setIsExportDropdownOpen(false);
-    
+
     try {
       const title = selectedStory.title || "Untitled Story";
       const docxBlob = createDocxBlob({
@@ -779,29 +1070,45 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   };
 
   const handelPublishStory = async () => {
-    if (!isLogin) { toast.error("Please login to publish the story."); return; }
-    if (!selectedStory) { toast.error("No story available. Please generate a story first."); return; }
-    if (selectTopics.length < 2) { toast.error("Please select at least 2 topics."); return; }
-    
-    const post: IPost = { ...selectedStory, topic: selectTopics, isPublished: true };
+    if (!isLogin) {
+      toast.error("Please login to publish the story.");
+      return;
+    }
+    if (!selectedStory) {
+      toast.error("No story available. Please generate a story first.");
+      return;
+    }
+    if (selectTopics.length < 2) {
+      toast.error("Please select at least 2 topics.");
+      return;
+    }
+
+    const post: IPost = {
+      ...selectedStory,
+      topic: selectTopics,
+      isPublished: true,
+    };
     setLoading(true);
-    
+
     try {
       if (savedPostIdRef.current) {
-        try { await deletePost(savedPostIdRef.current).unwrap(); }
-        catch (deleteError) { console.warn("Failed to delete draft:", deleteError); }
+        try {
+          await deletePost(savedPostIdRef.current).unwrap();
+        } catch (deleteError) {
+          console.warn("Failed to delete draft:", deleteError);
+        }
       }
       const result = await createPost(post).unwrap();
-      if (result) { 
-        toast.success("Story published successfully!"); 
-        setStories([]); 
-        setSelectedStory(null); 
-        onPublishSuccess?.(); 
+      if (result) {
+        toast.success("Story published successfully!");
+        setStories([]);
+        setSelectedStory(null);
+        onPublishSuccess?.();
       }
-    } catch { 
-      toast.error("Something went wrong. Please try again."); 
-    } finally { 
-      setLoading(false); 
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -828,7 +1135,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   return (
     <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 pb-16 relative overflow-hidden box-border">
       <Toaster position="top-right" reverseOrder={false} />
-      
+
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
 
@@ -839,8 +1146,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
             <span>⚠️</span>
             <p className="text-sm font-medium">{errorMessage}</p>
           </div>
-          <button 
-            onClick={() => setErrorMessage(null)} 
+          <button
+            onClick={() => setErrorMessage(null)}
             className="text-xs uppercase font-bold tracking-wider hover:text-white px-2 py-1 cursor-pointer"
           >
             Dismiss
@@ -849,10 +1156,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start relative z-10 w-full box-border">
-        
         {/* ── Left Column ── */}
         <div className="col-span-1 lg:col-span-8 flex flex-col space-y-6 w-full box-border animate-fade-in-up">
-          
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 w-full box-border border-b border-slate-200/60 dark:border-white/5 pb-6">
             <div className="text-left">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
@@ -868,11 +1173,12 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                 <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800/5 text-slate-600 dark:text-slate-400 border border-slate-700/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
                   📖 {formatReadingStats(selectedStory.content)}
                 </span>
-                {selectedStory.emotions && selectedStory.emotions.length > 0 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
-                    😊 {selectedStory.emotions.join(", ")}
-                  </span>
-                )}
+                {selectedStory.emotions &&
+                  selectedStory.emotions.length > 0 && (
+                    <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                      😊 {selectedStory.emotions.join(", ")}
+                    </span>
+                  )}
               </div>
             </div>
 
@@ -883,15 +1189,25 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                   <button
                     key={story.uuid}
                     className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 ${
-                      selectedStory?.uuid === story.uuid ? "border-blue-500 scale-110 z-10 shadow-md" : "border-white dark:border-slate-800"
+                      selectedStory?.uuid === story.uuid
+                        ? "border-blue-500 scale-110 z-10 shadow-md"
+                        : "border-white dark:border-slate-800"
                     } hover:scale-110 hover:z-10 transition-all duration-150 focus:outline-none overflow-hidden cursor-pointer`}
                     onClick={() => handelStorySelection(story)}
                     title={story.title}
                   >
                     {story.imageURL ? (
-                      <ImageFallback src={story.imageURL} alt={story.title} className="w-full h-full object-cover rounded-full" />
+                      <ImageFallback
+                        src={story.imageURL}
+                        alt={story.title}
+                        className="w-full h-full object-cover rounded-full"
+                      />
                     ) : (
-                      <StoryCoverImage title={story.title} tag={story.tag} size="thumb" />
+                      <StoryCoverImage
+                        title={story.title}
+                        tag={story.tag}
+                        size="thumb"
+                      />
                     )}
                   </button>
                 ))}
@@ -903,55 +1219,100 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm w-full box-border text-left relative overflow-hidden">
             <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-white/5 select-none relative z-10">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Workspace Blueprint</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Workspace Blueprint
+              </h3>
               <div className="flex flex-wrap items-center gap-2">
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={handleCopyStory}>
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                  onClick={handleCopyStory}
+                >
                   {isCopied ? "✓ Copied" : "📋 Copy"}
                 </button>
-                
+
                 {/* Export Story Dropdown Menu */}
-                <div className="relative inline-block text-left" ref={dropdownMenuRef}>
+                <div
+                  className="relative inline-block text-left"
+                  ref={dropdownMenuRef}
+                >
                   <button
                     type="button"
                     disabled={exportState !== "idle"}
-                    onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+                    onClick={() =>
+                      setIsExportDropdownOpen(!isExportDropdownOpen)
+                    }
                     className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer flex items-center gap-2"
                   >
-                    {getExportButtonText()} <i className="fa-solid fa-chevron-down text-[10px]" />
+                    {getExportButtonText()}{" "}
+                    <i className="fa-solid fa-chevron-down text-[10px]" />
                   </button>
                   {isExportDropdownOpen && (
                     <div className="absolute left-0 sm:right-0 mt-2 z-50 w-52 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-1 animate-fadeIn">
-                      <button onClick={handleExportPDF} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                      <button
+                        onClick={handleExportPDF}
+                        className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer"
+                      >
                         <span>📄</span> Premium PDF
                       </button>
-                      <button onClick={() => handleExport("epub")} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                      <button
+                        onClick={() => handleExport("epub")}
+                        className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer"
+                      >
                         <span>📘</span> Kindle EPUB
                       </button>
-                      <button onClick={handleExportMarkdown} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                      <button
+                        onClick={handleExportMarkdown}
+                        className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer"
+                      >
                         <span>⬇️</span> Markdown
                       </button>
-                      <button onClick={handleExportDOCX} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                      <button
+                        onClick={handleExportDOCX}
+                        className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer"
+                      >
                         <span>📝</span> DOCX
                       </button>
                     </div>
                   )}
                 </div>
 
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowWorldMap(true)}>
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                  onClick={() => setShowWorldMap(true)}
+                >
                   🗺️ Map
                 </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowRemix(true)}>
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                  onClick={() => setShowRemix(true)}
+                >
                   🔀 Remix
                 </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowTranslator(true)}>
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                  onClick={() => setShowTranslator(true)}
+                >
                   🌍 Translate
                 </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white border border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-sm" onClick={() => setShowContinueModal(true)}>
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white border border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-sm"
+                  onClick={() => setShowContinueModal(true)}
+                >
                   ✦ Continue →
                 </button>
-                <button type="button" className={`rounded-xl px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50 ${loading ? 'opacity-70' : ''}`} onClick={handelPublishStory} disabled={loading}>
+                <button
+                  type="button"
+                  className={`rounded-xl px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50 ${loading ? "opacity-70" : ""}`}
+                  onClick={handelPublishStory}
+                  disabled={loading}
+                >
                   {loading ? "Publishing..." : "Publish"}
                 </button>
               </div>
@@ -960,7 +1321,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
             {selectedStory.enhancedPrompt && (
               <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
                 <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
-                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
+                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced
+                  Prompt
                 </h4>
                 <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">
                   {selectedStory.enhancedPrompt}
@@ -968,33 +1330,41 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
               </div>
             )}
 
-            <div id="story-content" className="prose prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed tracking-wide relative z-10">
+            <div
+              id="story-content"
+              className="prose prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed tracking-wide relative z-10"
+            >
               <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence = isNarrationActive && narrationWordIndex >= segment.startWordIndex && narrationWordIndex <= segment.endWordIndex;
-                    return (
-                      <span
-                        key={segment.id}
-                        className={isActiveSentence ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-800 dark:text-indigo-100 ring-1 ring-indigo-400/30 transition-all duration-200" : undefined}
-                      >
-                        {DOMPurify.sanitize(segment.text)}
-                      </span>
-                    );
-                  })
-                ) : (
-                  DOMPurify.sanitize(selectedStory.content)
-                )}
+                {sentenceSegments.length > 0
+                  ? sentenceSegments.map((segment: StorySentenceSegment) => {
+                      const isActiveSentence =
+                        isNarrationActive &&
+                        narrationWordIndex >= segment.startWordIndex &&
+                        narrationWordIndex <= segment.endWordIndex;
+                      return (
+                        <span
+                          key={segment.id}
+                          className={
+                            isActiveSentence
+                              ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-800 dark:text-indigo-100 ring-1 ring-indigo-400/30 transition-all duration-200"
+                              : undefined
+                          }
+                        >
+                          {DOMPurify.sanitize(segment.text)}
+                        </span>
+                      );
+                    })
+                  : DOMPurify.sanitize(selectedStory.content)}
               </p>
             </div>
 
             <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
-              <AudioPlayer 
-                ref={audioPlayerRef} 
-                text={selectedStory.content} 
-                title={selectedStory.title} 
-                onWordIndexChange={setNarrationWordIndex} 
-                onPlaybackStateChange={setNarrationState} 
+              <AudioPlayer
+                ref={audioPlayerRef}
+                text={selectedStory.content}
+                title={selectedStory.title}
+                onWordIndexChange={setNarrationWordIndex}
+                onPlaybackStateChange={setNarrationState}
               />
             </div>
           </div>
@@ -1002,7 +1372,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           {/* Alternate Endings Section */}
           <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl sm:rounded-3xl shadow-xl p-6 mt-2 relative overflow-hidden">
             <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-            
+
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
@@ -1012,7 +1382,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                   Explore alternate narrative styles for your story context.
                 </p>
               </div>
-              {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
+              {selectedStory.content !==
+                originalStoryContent[selectedStory.uuid] && (
                 <button
                   type="button"
                   onClick={handleResetEnding}
@@ -1038,12 +1409,16 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                     { name: "Dark Ending" },
                     { name: "Plot Twist Ending" },
                     { name: "Open Ending" },
-                    { name: "Cliffhanger Ending" }
+                    { name: "Cliffhanger Ending" },
                   ].map((s) => {
                     const hasEndings = endingsCache[selectedStory.uuid] || [];
-                    const endingData = hasEndings.find((e) => e.style === s.name);
-                    const isApplied = endingData && selectedStory.content === endingData.fullStory;
-                    
+                    const endingData = hasEndings.find(
+                      (e) => e.style === s.name,
+                    );
+                    const isApplied =
+                      endingData &&
+                      selectedStory.content === endingData.fullStory;
+
                     return (
                       <button
                         key={s.name}
@@ -1066,11 +1441,14 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
                 {(() => {
                   const currentEndings = endingsCache[selectedStory.uuid] || [];
-                  const currentEndingData = currentEndings.find((e) => e.style === activeEndingTab);
+                  const currentEndingData = currentEndings.find(
+                    (e) => e.style === activeEndingTab,
+                  );
                   if (!currentEndingData) return null;
-                  
-                  const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
-                  
+
+                  const isCurrentlyApplied =
+                    selectedStory.content === currentEndingData.fullStory;
+
                   return (
                     <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-6 border border-slate-200 dark:border-slate-700/30">
                       <div className="flex justify-between items-center mb-4">
@@ -1080,12 +1458,15 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                         <div>
                           {isCurrentlyApplied ? (
                             <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
-                              <i className="fa-solid fa-check"></i> Applied to Story
+                              <i className="fa-solid fa-check"></i> Applied to
+                              Story
                             </span>
                           ) : (
                             <button
                               type="button"
-                              onClick={() => handleApplyEnding(currentEndingData)}
+                              onClick={() =>
+                                handleApplyEnding(currentEndingData)
+                              }
                               className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
                             >
                               Apply to Story
@@ -1093,7 +1474,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="space-y-4">
                         {/* Glassmorphic Anti-Gravity Scroll Control Panel Dock */}
                         <div className="bg-slate-100 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-slate-800/80 p-3.5 rounded-xl flex flex-wrap items-center justify-between gap-4 shadow-xl select-none">
@@ -1116,14 +1497,20 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                                 max="5.0"
                                 step="0.1"
                                 value={antiGravitySpeed}
-                                onChange={(e) => setAntiGravitySpeed(parseFloat(e.target.value))}
+                                onChange={(e) =>
+                                  setAntiGravitySpeed(
+                                    parseFloat(e.target.value),
+                                  )
+                                }
                                 disabled={!isAntiGravityPlaying}
                                 className="w-24 h-1.5 bg-slate-300 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed"
                               />
                             </div>
                             <button
                               type="button"
-                              onClick={() => setIsAntiGravityPlaying(!isAntiGravityPlaying)}
+                              onClick={() =>
+                                setIsAntiGravityPlaying(!isAntiGravityPlaying)
+                              }
                               className={`px-3.5 py-2 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
                                 isAntiGravityPlaying
                                   ? "bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 hover:bg-red-200 dark:hover:bg-red-500/20 active:scale-95"
@@ -1145,15 +1532,20 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                           </div>
                         </div>
 
-                        <div ref={storyScrollContainerRef} className="bg-white dark:bg-slate-950/60 p-5 rounded-xl border border-slate-200 dark:border-slate-800 leading-relaxed text-slate-700 dark:text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap max-h-[520px] overflow-y-auto">
+                        <div
+                          ref={storyScrollContainerRef}
+                          className="bg-white dark:bg-slate-950/60 p-5 rounded-xl border border-slate-200 dark:border-slate-800 leading-relaxed text-slate-700 dark:text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap max-h-[520px] overflow-y-auto"
+                        >
                           <p>{currentEndingData.ending}</p>
                         </div>
-                        
+
                         <div>
                           <details className="group border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-950/20">
                             <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer select-none">
                               <span>PREVIEW FULL STORY WITH THIS ENDING</span>
-                              <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
+                              <span className="transition-transform duration-200 group-open:rotate-180">
+                                ▼
+                              </span>
                             </summary>
                             <div className="p-4 border-t border-slate-200 dark:border-slate-800/80 text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
                               {currentEndingData.fullStory}
@@ -1176,7 +1568,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                   Generate Alternate Endings
                 </button>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
-                  Uses the story context to produce 5 unique ending variations (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.
+                  Uses the story context to produce 5 unique ending variations
+                  (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.
                 </p>
               </div>
             )}
@@ -1184,38 +1577,68 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
           {/* Topics management section */}
           <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm w-full box-border text-left">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-4 select-none">Categorization Indexes</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-4 select-none">
+              Categorization Indexes
+            </h3>
             <div className="flex flex-col sm:flex-row gap-3 mb-5 select-none w-full box-border">
               <input
                 type="text"
                 value={newTopicTitle}
                 onChange={(event) => setNewTopicTitle(event.target.value)}
-                onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); handleAddTopic(); } }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    handleAddTopic();
+                  }
+                }}
                 placeholder="Add contextual keyword index tag..."
                 className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/60 px-4 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:border-blue-500/40 focus:outline-none transition-colors"
               />
-              <button type="button" className="rounded-xl px-4 py-2.5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors active:scale-[0.98] cursor-pointer" onClick={handleAddTopic}>
+              <button
+                type="button"
+                className="rounded-xl px-4 py-2.5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors active:scale-[0.98] cursor-pointer"
+                onClick={handleAddTopic}
+              >
                 Add Tag
               </button>
             </div>
             <div className="flex flex-wrap gap-2 w-full box-border">
               {topics.length > 0 ? (
                 topics.map((topic, index) => (
-                  <span key={index} className={`inline-flex items-center gap-2 px-3 py-1.5 ${topic.className} rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm border border-slate-200 dark:border-transparent select-none`}>
-                    <button type="button" className="cursor-pointer font-bold uppercase flex items-center gap-1.5" onClick={() => handleTopicClick(index)}>
-                      {topic.selected ? <i className="fa-solid fa-check" /> : <i className="fa-solid fa-plus" />} {topic.title}
+                  <span
+                    key={index}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 ${topic.className} rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm border border-slate-200 dark:border-transparent select-none`}
+                  >
+                    <button
+                      type="button"
+                      className="cursor-pointer font-bold uppercase flex items-center gap-1.5"
+                      onClick={() => handleTopicClick(index)}
+                    >
+                      {topic.selected ? (
+                        <i className="fa-solid fa-check" />
+                      ) : (
+                        <i className="fa-solid fa-plus" />
+                      )}{" "}
+                      {topic.title}
                     </button>
-                    <button type="button" className="cursor-pointer border-l border-current/20 pl-2 opacity-50 hover:opacity-100 disabled:cursor-not-allowed" onClick={() => handleRemoveTopic(index)} disabled={topics.length <= 2} aria-label={`Remove ${topic.title}`}>
+                    <button
+                      type="button"
+                      className="cursor-pointer border-l border-current/20 pl-2 opacity-50 hover:opacity-100 disabled:cursor-not-allowed"
+                      onClick={() => handleRemoveTopic(index)}
+                      disabled={topics.length <= 2}
+                      aria-label={`Remove ${topic.title}`}
+                    >
                       <i className="fa-solid fa-xmark" />
                     </button>
                   </span>
                 ))
               ) : (
-                <p className="text-xs font-medium text-slate-400 dark:text-slate-500 m-0">No keyword topics registered.</p>
+                <p className="text-xs font-medium text-slate-400 dark:text-slate-500 m-0">
+                  No keyword topics registered.
+                </p>
               )}
             </div>
           </div>
-
         </div>
 
         {/* ── Right Column ── */}
@@ -1235,7 +1658,12 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                     className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
-                  <StoryCoverImage title={selectedStory?.title} tag={selectedStory?.tag} size="full" style={{ height: "192px" }} />
+                  <StoryCoverImage
+                    title={selectedStory?.title}
+                    tag={selectedStory?.tag}
+                    size="full"
+                    style={{ height: "192px" }}
+                  />
                 )}
               </div>
               <div className="px-4 py-2 mb-4">
@@ -1249,21 +1677,25 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                     </div>
                   </div>
                   <div>
-                    {selectedStory && <BookmarkButton storyId={selectedStory.uuid} />}
+                    {selectedStory && (
+                      <BookmarkButton storyId={selectedStory.uuid} />
+                    )}
                   </div>
                 </div>
                 <h6 className="mb-2 text-slate-800 dark:text-gray-200 text-lg font-bold leading-tight">
                   {selectedStory?.title ?? ""}
                 </h6>
                 <p className="text-slate-500 dark:text-gray-400 font-medium break-words text-sm line-clamp-3">
-                  {selectedStory ? getShortenedText(selectedStory.content, 120) : ""}
+                  {selectedStory
+                    ? getShortenedText(selectedStory.content, 120)
+                    : ""}
                 </p>
               </div>
             </div>
           </div>
-          
+
           <div className="mt-8">
-             {/* If posts were supplied by context, they would render here */}
+            {/* If posts were supplied by context, they would render here */}
           </div>
         </div>
       </div>
@@ -1286,7 +1718,11 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           onApplyRemix={(content: string) => {
             const updatedStory = { ...selectedStory, content };
             setSelectedStory(updatedStory);
-            setStories(stories.map((story) => (story.uuid === selectedStory.uuid ? updatedStory : story)));
+            setStories(
+              stories.map((story) =>
+                story.uuid === selectedStory.uuid ? updatedStory : story,
+              ),
+            );
             setShowRemix(false);
           }}
         />

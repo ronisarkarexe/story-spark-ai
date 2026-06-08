@@ -33,10 +33,9 @@ const splitStoryIntoEvents = (content: string): TimelineEvent[] => {
   const normalizedContent = cleanText(content);
   if (!normalizedContent) return [];
 
-  const sentences =
-    normalizedContent.match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map(cleanText) ?? [
-      normalizedContent,
-    ];
+  const sentences = normalizedContent
+    .match(/[^.!?]+[.!?]+|[^.!?]+$/g)
+    ?.map(cleanText) ?? [normalizedContent];
   const totalWords = getWords(normalizedContent).length;
   const targetEventCount = Math.min(EVENT_COUNT, Math.max(1, sentences.length));
   const wordsPerEvent = Math.max(1, Math.ceil(totalWords / targetEventCount));
@@ -61,7 +60,10 @@ const splitStoryIntoEvents = (content: string): TimelineEvent[] => {
 
     if (shouldCloseEvent || sentenceIndex === sentences.length - 1) {
       const eventText = currentSentences.join(" ");
-      const eventEndWord = Math.max(eventStartWord, wordCursor + currentWordCount - 1);
+      const eventEndWord = Math.max(
+        eventStartWord,
+        wordCursor + currentWordCount - 1,
+      );
 
       events.push({
         id: `${events.length}-${eventStartWord}-${eventEndWord}`,
@@ -92,7 +94,8 @@ const GeneratedStoryTimeline = ({
 
   const narratedEvent = events.find(
     (event) =>
-      narrationWordIndex >= event.wordStart && narrationWordIndex <= event.wordEnd
+      narrationWordIndex >= event.wordStart &&
+      narrationWordIndex <= event.wordEnd,
   );
   const activeEventId =
     narrationState !== "idle" && narratedEvent
@@ -100,10 +103,12 @@ const GeneratedStoryTimeline = ({
       : selectedEventId || events[0]?.id;
   const activeIndex = Math.max(
     0,
-    events.findIndex((event) => event.id === activeEventId)
+    events.findIndex((event) => event.id === activeEventId),
   );
   const progress =
-    events.length <= 1 ? 100 : Math.round((activeIndex / (events.length - 1)) * 100);
+    events.length <= 1
+      ? 100
+      : Math.round((activeIndex / (events.length - 1)) * 100);
 
   if (events.length === 0) {
     return null;
@@ -159,8 +164,8 @@ const GeneratedStoryTimeline = ({
                     isActive
                       ? "border-cyan-300 bg-cyan-400 text-slate-950"
                       : isComplete
-                      ? "border-indigo-300 bg-indigo-400 text-slate-950"
-                      : "border-slate-600 bg-slate-900 text-slate-400"
+                        ? "border-indigo-300 bg-indigo-400 text-slate-950"
+                        : "border-slate-600 bg-slate-900 text-slate-400"
                   }`}
                 >
                   {index + 1}
@@ -199,7 +204,9 @@ const GeneratedStoryTimeline = ({
           <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
             Highlight
           </p>
-          <p className="text-sm leading-6 text-slate-200">{activeEvent.summary}</p>
+          <p className="text-sm leading-6 text-slate-200">
+            {activeEvent.summary}
+          </p>
         </motion.div>
       </AnimatePresence>
     </section>

@@ -44,7 +44,9 @@ const CharacterDetailsPanel = ({
       {selectedNode ? (
         <div className="flex flex-col gap-4 mt-3">
           <div>
-            <h4 className="text-xl font-bold text-white leading-tight">{selectedNode.name}</h4>
+            <h4 className="text-xl font-bold text-white leading-tight">
+              {selectedNode.name}
+            </h4>
             <div className="flex flex-wrap gap-2 mt-2">
               <span className="bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-2 py-0.5 rounded text-xs font-semibold">
                 Score: <strong>{selectedNode.importanceScore}%</strong>
@@ -61,9 +63,14 @@ const CharacterDetailsPanel = ({
             </h5>
             <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
               {allRelationships
-                .filter((r) => r.source === selectedNode.id || r.target === selectedNode.id)
+                .filter(
+                  (r) =>
+                    r.source === selectedNode.id ||
+                    r.target === selectedNode.id,
+                )
                 .map((r) => {
-                  const targetId = r.source === selectedNode.id ? r.target : r.source;
+                  const targetId =
+                    r.source === selectedNode.id ? r.target : r.source;
                   const targetName = getCharacterName(targetId);
                   return (
                     <button
@@ -71,15 +78,22 @@ const CharacterDetailsPanel = ({
                       onClick={() => onNodeSelect(targetId)}
                       className="flex justify-between items-center bg-zinc-950 hover:bg-zinc-850/50 border border-zinc-850 rounded px-2.5 py-1.5 text-xs text-left text-slate-300 transition"
                     >
-                      <span className="font-semibold text-slate-200">{targetName}</span>
+                      <span className="font-semibold text-slate-200">
+                        {targetName}
+                      </span>
                       <span className="text-[10px] bg-slate-800 text-indigo-300 border border-zinc-800 px-1.5 py-0.5 rounded-full font-medium">
                         {r.type} ({r.strength})
                       </span>
                     </button>
                   );
                 })}
-              {allRelationships.filter((r) => r.source === selectedNode.id || r.target === selectedNode.id).length === 0 && (
-                <div className="text-xs text-slate-500 italic">No recorded relationships.</div>
+              {allRelationships.filter(
+                (r) =>
+                  r.source === selectedNode.id || r.target === selectedNode.id,
+              ).length === 0 && (
+                <div className="text-xs text-slate-500 italic">
+                  No recorded relationships.
+                </div>
               )}
             </div>
           </div>
@@ -104,14 +118,20 @@ const CharacterDetailsPanel = ({
           <div className="grid grid-cols-2 gap-3 bg-zinc-950 border border-zinc-850 p-2.5 rounded-lg">
             <div>
               <span className="text-[10px] text-slate-500 block">Type</span>
-              <strong className="text-white text-sm font-semibold">{selectedEdge.type}</strong>
+              <strong className="text-white text-sm font-semibold">
+                {selectedEdge.type}
+              </strong>
             </div>
             <div>
               <span className="text-[10px] text-slate-500 block">Strength</span>
-              <strong className="text-white text-sm font-semibold">{selectedEdge.strength}/100</strong>
+              <strong className="text-white text-sm font-semibold">
+                {selectedEdge.strength}/100
+              </strong>
             </div>
             <div className="col-span-2 pt-1.5 border-t border-zinc-850 mt-1">
-              <span className="text-[10px] text-slate-500 block">Direct Interactions</span>
+              <span className="text-[10px] text-slate-500 block">
+                Direct Interactions
+              </span>
               <strong className="text-white text-sm font-semibold">
                 {selectedEdge.interactionCount}
               </strong>

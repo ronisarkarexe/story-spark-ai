@@ -30,7 +30,8 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
           Developer Setup
         </h2>
         <p className="mt-4 max-w-2xl mx-auto text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-          Get StorySparkAI running locally and start contributing to the monorepo.
+          Get StorySparkAI running locally and start contributing to the
+          monorepo.
         </p>
       </div>
 
@@ -122,7 +123,10 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
         <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5 w-full box-border">
           {/* Info Icon Container */}
           <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-indigo-500/10 text-indigo-600 shadow-sm dark:text-indigo-300 flex-shrink-0 select-none border border-indigo-500/10">
-            <i className="fa-solid fa-circle-info text-base sm:text-lg" aria-hidden="true"></i>
+            <i
+              className="fa-solid fa-circle-info text-base sm:text-lg"
+              aria-hidden="true"
+            ></i>
           </div>
 
           {/* Callout Information Description */}
@@ -139,7 +143,8 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
               <span className="font-bold text-slate-800 dark:text-slate-200">
                 npm 9+
               </span>
-              , and a running MongoDB instance configured locally or in the cloud.
+              , and a running MongoDB instance configured locally or in the
+              cloud.
             </p>
 
             {/* Version Framework Pill Badges */}
@@ -158,7 +163,10 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
             {/* Crucial Security Warn Banner */}
             <div className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
               <div className="flex items-start gap-3">
-                <i className="fa-solid fa-shield-halved mt-0.5 text-amber-500" aria-hidden="true"></i>
+                <i
+                  className="fa-solid fa-shield-halved mt-0.5 text-amber-500"
+                  aria-hidden="true"
+                ></i>
                 <p className="text-sm leading-relaxed text-amber-700 dark:text-amber-300">
                   Always copy{" "}
                   <code className="rounded bg-black/10 px-1.5 py-0.5 font-mono text-xs dark:bg-white/10">
@@ -168,7 +176,8 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
                   <code className="rounded bg-black/10 px-1.5 py-0.5 font-mono text-xs dark:bg-white/10">
                     .env
                   </code>{" "}
-                  and never commit real production environment variables or secret API keys to public source control repositories.
+                  and never commit real production environment variables or
+                  secret API keys to public source control repositories.
                 </p>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
@@ -7,16 +7,11 @@ import LoadingAnimation from "../../loading/loading.component";
 const INITIAL_VISIBLE_COUNT = 6;
 
 const LatestPostsComponent = () => {
-  const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
+  const { data, isLoading, isError, refetch } =
+    useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
-
-
-  // Remove duplicate posts based on _id
-  const uniquePosts = Array.from(
-    new Map((data?.posts ?? []).map((post) => [post._id, post])).values(),
-  );
 
   if (isLoading) return <LoadingAnimation />;
 
@@ -71,7 +66,9 @@ const LatestPostsComponent = () => {
                   onClick={() => toggleAccordion(post._id)}
                   className="flex w-full min-w-0 items-center justify-between p-4 text-left font-bold text-slate-900 dark:text-slate-100 hover:bg-slate-700/5 dark:hover:bg-slate-700/20 transition-colors"
                 >
-                  <span className="min-w-0 pr-4 text-lg break-words md:text-xl">{post.title}</span>
+                  <span className="min-w-0 pr-4 text-lg break-words md:text-xl">
+                    {post.title}
+                  </span>
                   <span className="shrink-0 text-slate-500 dark:text-slate-400 font-mono text-sm transition-transform duration-200 select-none">
                     {isExpanded ? "▼" : "▶"}
                   </span>
@@ -79,7 +76,9 @@ const LatestPostsComponent = () => {
 
                 <div
                   className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isExpanded ? "max-h-[500px] border-t border-slate-200 dark:border-slate-700/30" : "max-h-0"
+                    isExpanded
+                      ? "max-h-[500px] border-t border-slate-200 dark:border-slate-700/30"
+                      : "max-h-0"
                   }`}
                 >
                   <div className="min-w-0 p-5 bg-slate-50/50 dark:bg-[#1e2330]/30">
@@ -102,9 +101,7 @@ const LatestPostsComponent = () => {
           })
         ) : (
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400">
-            
             Posts are not available.
-          
           </div>
         )}
       </div>

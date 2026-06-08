@@ -9,10 +9,8 @@ const reviewApi = baseApi.injectEndpoints({
         method: "GET",
       }),
 
-      transformResponse: (response: {
-        data: Review[];
-        message: string;
-      }) => response.data,
+      transformResponse: (response: { data: Review[]; message: string }) =>
+        response.data,
     }),
 
     getPendingReviews: build.query({
@@ -21,10 +19,8 @@ const reviewApi = baseApi.injectEndpoints({
         method: "GET",
       }),
 
-      transformResponse: (response: {
-        data: Review[];
-        message: string;
-      }) => response.data,
+      transformResponse: (response: { data: Review[]; message: string }) =>
+        response.data,
     }),
 
     approveReview: build.mutation({
@@ -33,7 +29,7 @@ const reviewApi = baseApi.injectEndpoints({
         method: "PATCH",
       }),
     }),
-    
+
     createReview: build.mutation({
       query: (body: {
         name: string;

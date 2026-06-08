@@ -10,7 +10,7 @@ const ContinueStoryButton = () => {
   const dispatch = useDispatch();
 
   const currentStory = useSelector(
-    (state: RootState) => state.story.currentStory
+    (state: RootState) => state.story.currentStory,
   );
 
   const [loading, setLoading] = useState(false);
@@ -21,15 +21,16 @@ const ContinueStoryButton = () => {
     try {
       setLoading(true);
 
-      const nextChapter = await continueStory(
-        currentStory.chapters
-      );
+      const nextChapter = await continueStory(currentStory.chapters);
 
       dispatch(addChapter(nextChapter));
       toast.success("New chapter generated successfully!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      const errorMsg = error?.message || "Failed to continue story. Please try again.";
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Failed to continue story. Please try again.";
       toast.error(errorMsg);
     } finally {
       setLoading(false);
@@ -42,9 +43,7 @@ const ContinueStoryButton = () => {
       disabled={loading}
       className="bg-purple-600 hover:bg-purple-700 transition-all px-6 py-3 rounded-xl text-white font-semibold"
     >
-      {loading
-        ? "Generating Chapter..."
-        : "Continue Story"}
+      {loading ? "Generating Chapter..." : "Continue Story"}
     </button>
   );
 };

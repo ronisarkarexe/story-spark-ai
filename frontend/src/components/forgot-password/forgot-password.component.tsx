@@ -26,11 +26,10 @@ const ForgotPasswordComponent = () => {
     try {
       await forgotPassword({ email }).unwrap();
       setSubmitted(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(
-        err?.data?.message ||
-          "Failed to send reset email. Please try again."
+        err?.data?.message || "Failed to send reset email. Please try again.",
       );
     }
   };
@@ -39,12 +38,8 @@ const ForgotPasswordComponent = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">
-            StorySparkAI
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Reset your password
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">StorySparkAI</h1>
+          <p className="mt-1 text-sm text-gray-500">Reset your password</p>
         </div>
 
         {submitted ? (
@@ -71,10 +66,8 @@ const ForgotPasswordComponent = () => {
 
             <p className="text-sm text-gray-500">
               If an account exists for{" "}
-              <span className="font-medium text-gray-700">
-                {email}
-              </span>
-              , we've sent a password reset link.
+              <span className="font-medium text-gray-700">{email}</span>, we've
+              sent a password reset link.
             </p>
 
             <Link
@@ -85,14 +78,10 @@ const ForgotPasswordComponent = () => {
             </Link>
           </div>
         ) : (
-          <form
-            onSubmit={handleSubmit}
-            noValidate
-            className="space-y-5"
-          >
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
             <p className="text-sm text-gray-600 mb-4">
-              Enter the email address associated with your account and
-              we'll send you a link to reset your password.
+              Enter the email address associated with your account and we'll
+              send you a link to reset your password.
             </p>
 
             <div>
@@ -114,10 +103,7 @@ const ForgotPasswordComponent = () => {
               />
 
               {error && (
-                <p
-                  className="mt-1 text-xs text-red-600"
-                  role="alert"
-                >
+                <p className="mt-1 text-xs text-red-600" role="alert">
                   {error}
                 </p>
               )}

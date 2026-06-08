@@ -18,7 +18,6 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
   };
 
   return (
-
     <form
       onSubmit={handleSubmit}
       className="relative w-full max-w-3xl mx-auto px-4 sm:px-0 box-border"
@@ -28,7 +27,6 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
       </label>
 
       <div className="relative before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-purple-500/10 before:via-indigo-500/10 before:to-blue-500/10 before:blur-xl before:rounded-2xl">
-        
         <div className="absolute inset-y-0 left-0 pl-4 sm:pl-5 flex items-center pointer-events-none select-none">
           <i
             className="fas fa-search text-slate-500 dark:text-gray-400 text-sm sm:text-base"
@@ -53,7 +51,10 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
             className="absolute inset-y-0 right-0 pr-4 sm:pr-5 flex items-center text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white transition-colors cursor-pointer"
             aria-label="Clear search"
           >
-            <i className="fas fa-times text-sm sm:text-base" aria-hidden="true"></i>
+            <i
+              className="fas fa-times text-sm sm:text-base"
+              aria-hidden="true"
+            ></i>
           </button>
         )}
       </div>

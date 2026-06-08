@@ -3,7 +3,8 @@ import { useGetPersonalizedRecommendationsQuery } from "../../../redux/apis/reco
 import { Post } from "../../../models/post";
 
 const PersonalizedRecommendationsComponent = () => {
-  const { data: posts, isLoading } = useGetPersonalizedRecommendationsQuery(undefined);
+  const { data: posts, isLoading } =
+    useGetPersonalizedRecommendationsQuery(undefined);
 
   if (isLoading) {
     return (
@@ -53,10 +54,14 @@ const PersonalizedRecommendationsComponent = () => {
                 {post.title}
               </h3>
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 select-none">
-                <span className="truncate max-w-[120px]">{post.author?.name || "Anonymous"}</span>
+                <span className="truncate max-w-[120px]">
+                  {post.author?.name || "Anonymous"}
+                </span>
                 {post.emotions && post.emotions.length > 0 && (
                   <>
-                    <span className="text-slate-300 dark:text-slate-700">•</span>
+                    <span className="text-slate-300 dark:text-slate-700">
+                      •
+                    </span>
                     <span className="truncate text-emerald-600 dark:text-emerald-400 font-bold tracking-tight">
                       😊 {post.emotions[0]}
                     </span>

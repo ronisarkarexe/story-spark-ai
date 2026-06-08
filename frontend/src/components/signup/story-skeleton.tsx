@@ -20,7 +20,7 @@ const StorySkeleton = () => {
         <div className="h-3.5 w-[92%] bg-slate-200/80 dark:bg-slate-800/70 rounded-md"></div>
         <div className="h-3.5 w-[98%] bg-slate-200/80 dark:bg-slate-800/70 rounded-md"></div>
         <div className="h-3.5 w-[85%] bg-slate-200/80 dark:bg-slate-800/70 rounded-md"></div>
-        
+
         <div className="h-3.5 w-[94%] bg-slate-200/80 dark:bg-slate-800/70 rounded-md pt-4 box-content"></div>
         <div className="h-3.5 w-[88%] bg-slate-200/80 dark:bg-slate-800/70 rounded-md"></div>
         <div className="h-3.5 w-[75%] bg-slate-200/80 dark:bg-slate-800/70 rounded-md"></div>

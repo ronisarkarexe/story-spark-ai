@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 type Theme = "light" | "dark";
 
@@ -16,9 +22,11 @@ export const THEME_STORAGE_KEY = "theme";
 const GLOW_STORAGE_KEY = "cursorGlow";
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const getSystemTheme = (): Theme =>
   window.matchMedia(COLOR_SCHEME_QUERY).matches ? "dark" : "light";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const getStoredThemePreference = (): Theme | null => {
   const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
   if (storedTheme === "dark" || storedTheme === "light") {
@@ -27,20 +35,24 @@ export const getStoredThemePreference = (): Theme | null => {
   return null;
 };
 
-const getInitialTheme = (): Theme => getStoredThemePreference() ?? getSystemTheme();
+const getInitialTheme = (): Theme =>
+  getStoredThemePreference() ?? getSystemTheme();
 
 const getInitialGlow = (): boolean => {
   const storedGlow = localStorage.getItem(GLOW_STORAGE_KEY);
   return storedGlow !== "false";
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const applyDocumentTheme = (theme: Theme, isExplicit: boolean): void => {
   const root = document.documentElement;
   root.classList.toggle("dark", theme === "dark");
   root.classList.toggle("light", theme === "light" && isExplicit);
 };
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [hasExplicitPreference, setHasExplicitPreference] = useState(
     () => getStoredThemePreference() !== null,
@@ -68,7 +80,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     mediaQuery.addEventListener("change", handleSystemThemeChange);
-    return () => mediaQuery.removeEventListener("change", handleSystemThemeChange);
+    return () =>
+      mediaQuery.removeEventListener("change", handleSystemThemeChange);
   }, [hasExplicitPreference]);
 
   useEffect(() => {
@@ -89,7 +102,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     [theme, glowEnabled],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 };
 
 // eslint-disable-next-line react-refresh/only-export-components

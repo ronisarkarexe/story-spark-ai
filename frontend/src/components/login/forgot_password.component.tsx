@@ -68,7 +68,8 @@ const ForgotPasswordComponent = () => {
     if (!data) return fallback;
 
     if (Array.isArray(data)) {
-      const maybeMessage = (data[0] as { message?: unknown } | undefined)?.message;
+      const maybeMessage = (data[0] as { message?: unknown } | undefined)
+        ?.message;
       return typeof maybeMessage === "string" ? maybeMessage : fallback;
     }
 
@@ -87,25 +88,21 @@ const ForgotPasswordComponent = () => {
   const passedChecks = Object.values(passwordChecks).filter(Boolean).length;
 
   const passwordStrength =
-    passedChecks <= 2
-      ? "Weak"
-      : passedChecks <= 4
-      ? "Medium"
-      : "Strong";
+    passedChecks <= 2 ? "Weak" : passedChecks <= 4 ? "Medium" : "Strong";
 
   const strengthColor =
     passwordStrength === "Weak"
       ? "bg-red-500"
       : passwordStrength === "Medium"
-      ? "bg-yellow-400"
-      : "bg-green-500";
+        ? "bg-yellow-400"
+        : "bg-green-500";
 
   const strengthWidth =
     passwordStrength === "Weak"
       ? "w-1/3"
       : passwordStrength === "Medium"
-      ? "w-2/3"
-      : "w-full";
+        ? "w-2/3"
+        : "w-full";
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -208,7 +205,10 @@ const ForgotPasswordComponent = () => {
       }
     } catch (error: unknown) {
       toast.error(
-        getApiErrorMessage(error, "Password reset failed. Please restart the process."),
+        getApiErrorMessage(
+          error,
+          "Password reset failed. Please restart the process.",
+        ),
       );
       console.log("error: ", error);
     } finally {
@@ -229,7 +229,9 @@ const ForgotPasswordComponent = () => {
         setCooldown(60);
       }
     } catch (error: unknown) {
-      toast.error(getApiErrorMessage(error, "Failed to resend OTP. Please try again."));
+      toast.error(
+        getApiErrorMessage(error, "Failed to resend OTP. Please try again."),
+      );
       console.log("resend error: ", error);
     } finally {
       setIsBusy(false);
@@ -257,7 +259,10 @@ const ForgotPasswordComponent = () => {
           </div>
 
           {step === 1 && (
-            <form className="space-y-4" onSubmit={handleSubmit(handleRequestOtp)}>
+            <form
+              className="space-y-4"
+              onSubmit={handleSubmit(handleRequestOtp)}
+            >
               <SSInput
                 label="Email address"
                 name="email"
@@ -268,12 +273,20 @@ const ForgotPasswordComponent = () => {
                 register={register}
                 error={errors.email}
               />
-              <SSButton text="Send OTP" type="submit" isLoading={isBusy} disabled={otpSent} />
+              <SSButton
+                text="Send OTP"
+                type="submit"
+                isLoading={isBusy}
+                disabled={otpSent}
+              />
             </form>
           )}
 
           {step === 2 && (
-            <form className="space-y-4" onSubmit={handleSubmit(handleVerifyOtp)}>
+            <form
+              className="space-y-4"
+              onSubmit={handleSubmit(handleVerifyOtp)}
+            >
               <SSInput
                 label="OTP"
                 name="otp"
@@ -298,7 +311,10 @@ const ForgotPasswordComponent = () => {
           )}
 
           {step === 3 && (
-            <form className="space-y-4" onSubmit={handleSubmit(handleResetPassword)}>
+            <form
+              className="space-y-4"
+              onSubmit={handleSubmit(handleResetPassword)}
+            >
               <SSInput
                 label="New Password"
                 name="password"
@@ -321,27 +337,53 @@ const ForgotPasswordComponent = () => {
                     passwordStrength === "Weak"
                       ? "text-red-400"
                       : passwordStrength === "Medium"
-                      ? "text-yellow-300"
-                      : "text-green-400"
+                        ? "text-yellow-300"
+                        : "text-green-400"
                   }`}
                 >
                   {passwordStrength} Password
                 </p>
 
                 <ul className="space-y-1 text-xs">
-                  <li className={passwordChecks.length ? "text-green-400" : "text-red-400"}>
+                  <li
+                    className={
+                      passwordChecks.length ? "text-green-400" : "text-red-400"
+                    }
+                  >
                     {passwordChecks.length ? "✅" : "❌"} Minimum 8 characters
                   </li>
-                  <li className={passwordChecks.uppercase ? "text-green-400" : "text-red-400"}>
-                    {passwordChecks.uppercase ? "✅" : "❌"} One uppercase letter
+                  <li
+                    className={
+                      passwordChecks.uppercase
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }
+                  >
+                    {passwordChecks.uppercase ? "✅" : "❌"} One uppercase
+                    letter
                   </li>
-                  <li className={passwordChecks.lowercase ? "text-green-400" : "text-red-400"}>
-                    {passwordChecks.lowercase ? "✅" : "❌"} One lowercase letter
+                  <li
+                    className={
+                      passwordChecks.lowercase
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }
+                  >
+                    {passwordChecks.lowercase ? "✅" : "❌"} One lowercase
+                    letter
                   </li>
-                  <li className={passwordChecks.number ? "text-green-400" : "text-red-400"}>
+                  <li
+                    className={
+                      passwordChecks.number ? "text-green-400" : "text-red-400"
+                    }
+                  >
                     {passwordChecks.number ? "✅" : "❌"} One number
                   </li>
-                  <li className={passwordChecks.special ? "text-green-400" : "text-red-400"}>
+                  <li
+                    className={
+                      passwordChecks.special ? "text-green-400" : "text-red-400"
+                    }
+                  >
                     {passwordChecks.special ? "✅" : "❌"} One special character
                   </li>
                 </ul>
@@ -357,7 +399,11 @@ const ForgotPasswordComponent = () => {
                 register={register}
               />
 
-              <SSButton text="Reset Password" type="submit" isLoading={isBusy} />
+              <SSButton
+                text="Reset Password"
+                type="submit"
+                isLoading={isBusy}
+              />
             </form>
           )}
 

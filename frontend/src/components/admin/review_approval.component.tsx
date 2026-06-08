@@ -1,4 +1,3 @@
-
 import React from "react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -10,7 +9,8 @@ import { Review } from "../../models/review";
 
 const ReviewApprovalComponent = () => {
   const { data: reviews = [], isLoading } = useGetPendingReviewsQuery({});
-  const [approveReview, { isLoading: isApproving }] = useApproveReviewMutation();
+  const [approveReview, { isLoading: isApproving }] =
+    useApproveReviewMutation();
 
   const handleApprove = async (id: string) => {
     try {
@@ -44,13 +44,16 @@ const ReviewApprovalComponent = () => {
         <div className="mb-10 max-w-2xl text-left px-0.5 select-none">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/10 dark:border-white/10 bg-blue-500/5 text-blue-600 dark:text-blue-400 mb-4 shadow-sm dark:shadow-none">
             <i className="fa-solid fa-shield-check text-xs"></i>
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Moderation Desk</span>
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+              Moderation Desk
+            </span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Pending Reviews
           </h2>
           <p className="mt-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-            Evaluate, approve, or filter user submissions before deployment into the production feedback directory stream.
+            Evaluate, approve, or filter user submissions before deployment into
+            the production feedback directory stream.
           </p>
         </div>
 
@@ -80,7 +83,9 @@ const ReviewApprovalComponent = () => {
                   </div>
 
                   <div className="flex gap-0.5 mb-4 select-none text-amber-400 text-sm">
-                    {Array.from({ length: Math.min(review.rating || 5, 5) }).map((_, i) => (
+                    {Array.from({
+                      length: Math.min(review.rating || 5, 5),
+                    }).map((_, i) => (
                       <span key={i}>★</span>
                     ))}
                   </div>
@@ -97,7 +102,9 @@ const ReviewApprovalComponent = () => {
                     className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 select-none uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
                   >
                     <i className="fa-solid fa-circle-check text-xs" />
-                    <span>{isApproving ? "Approving..." : "Approve Review"}</span>
+                    <span>
+                      {isApproving ? "Approving..." : "Approve Review"}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -112,7 +119,8 @@ const ReviewApprovalComponent = () => {
               Queue clear
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-normal">
-              No pending reviews are waiting inside the staging evaluation channel buffer right now.
+              No pending reviews are waiting inside the staging evaluation
+              channel buffer right now.
             </p>
           </div>
         )}

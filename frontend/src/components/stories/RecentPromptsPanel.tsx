@@ -27,27 +27,28 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
   onToggle,
   text,
 }) => {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
+    null,
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const filteredPrompts = recentPrompts.filter((item) =>
-  item.prompt.toLowerCase().includes(searchTerm.toLowerCase())
+    item.prompt.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const exportPrompts = () => {
-  const blob = new Blob(
-    [JSON.stringify(recentPrompts, null, 2)],
-    { type: "application/json" }
-  );
+    const blob = new Blob([JSON.stringify(recentPrompts, null, 2)], {
+      type: "application/json",
+    });
 
-  const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "recent-prompts.json";
-  a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "recent-prompts.json";
+    a.click();
 
-  URL.revokeObjectURL(url);
-};
+    URL.revokeObjectURL(url);
+  };
   return (
     <div className="relative">
       <button
@@ -97,7 +98,12 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
               className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
               title={text.close}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -117,7 +123,7 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
               className="w-full px-3 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:border-indigo-500 text-sm"
             />
           </div>
-          
+
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {filteredPrompts.length > 0 ? (
@@ -132,10 +138,9 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
                     className="w-full text-left p-0 bg-transparent text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium leading-relaxed break-words border-none outline-none cursor-pointer"
                   >
                     {item.prompt}
-                    
                   </button>
                   <p className="text-xs text-gray-400 mt-2">
-                      {new Date(item.timestamp).toLocaleString()}
+                    {new Date(item.timestamp).toLocaleString()}
                   </p>
                   <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button
@@ -147,7 +152,11 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
                       className="flex-1 h-8 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-blue-500/10"
                       title={text.usePrompt}
                     >
-                      <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <svg
+                        className="w-3 h-3 shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
                         <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 101.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM15.657 14.243a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM11 17a1 1 0 102 0v-1a1 1 0 10-2 0v1zM5.757 15.657a1 1 0 00-1.414-1.414l-.707.707a1 1 0 101.414 1.414l.707-.707zM2 10a1 1 0 011 1h1a1 1 0 110-2H3a1 1 0 00-1 1zM5.757 4.343a1 1 0 00-1.414 1.414l.707.707a1 1 0 101.414-1.414l-.707-.707z" />
                       </svg>
                       <span>{text.usePrompt}</span>
@@ -158,7 +167,11 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
                       className="w-8 h-8 shrink-0 bg-red-500/5 border border-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors flex items-center justify-center cursor-pointer"
                       title={text.delete}
                     >
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
                         <path
                           fillRule="evenodd"
                           d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
@@ -170,7 +183,9 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
 
                   {showDeleteConfirm === item.id && (
                     <div className="mt-2.5 p-3 rounded-lg bg-red-500/5 border border-red-500/10 text-xs text-red-600 dark:text-red-400 font-semibold w-full box-border">
-                      <p className="m-0 mb-2.5 uppercase tracking-wider text-[10px]">Delete this prompt index?</p>
+                      <p className="m-0 mb-2.5 uppercase tracking-wider text-[10px]">
+                        Delete this prompt index?
+                      </p>
                       <div className="flex gap-2 w-full box-border">
                         <button
                           type="button"
@@ -217,7 +232,11 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  if (window.confirm("Are you sure you want to clear all recent prompts?")) {
+                  if (
+                    window.confirm(
+                      "Are you sure you want to clear all recent prompts?",
+                    )
+                  ) {
                     onClearAll();
                   }
                 }}

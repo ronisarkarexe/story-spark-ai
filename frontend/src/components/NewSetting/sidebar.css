@@ -1,10 +1,10 @@
 :root {
-  --sidebar-bg: #141b2d;        /* Deep Midnight Slate/Navy from image */
-  --sidebar-border: #1f293d;    /* Subtle dark dividing line offset */
-  --text-inactive: #94a3b8;     /* Muted slate text layer */
-  --text-active: #ffffff;       /* Pure white text layer */
-  --bg-active: #232f4b;         /* Focused subtle blue-slate menu block highlight */
-  --radius-menu: 8px;           /* Crisp rounded corners */
+  --sidebar-bg: #141b2d; /* Deep Midnight Slate/Navy from image */
+  --sidebar-border: #1f293d; /* Subtle dark dividing line offset */
+  --text-inactive: #94a3b8; /* Muted slate text layer */
+  --text-active: #ffffff; /* Pure white text layer */
+  --bg-active: #232f4b; /* Focused subtle blue-slate menu block highlight */
+  --radius-menu: 8px; /* Crisp rounded corners */
 }
 
 .sidebar {
@@ -17,9 +17,10 @@
   flex-direction: column;
   justify-content: space-between;
   /* CHANGED: Decreased top padding from 32px to 12px to shift content upward */
-  padding: 12px 16px 32px 16px; 
+  padding: 12px 16px 32px 16px;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .sidebar-menu-wrapper {
@@ -104,10 +105,12 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-  
-  background-color: #ffffff; 
-  color: #1e293b;            
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+
+  background-color: #ffffff;
+  color: #1e293b;
 }
 
 .logout-btn:hover {

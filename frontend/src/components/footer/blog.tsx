@@ -31,24 +31,26 @@ const Blog = () => {
   return (
     <div className="min-h-screen bg-white text-slate-900 dark:bg-[#0b1329] dark:text-white px-6 py-12 transition-colors duration-300">
       <div className="max-w-6xl mx-auto">
-
         {/* HERO SECTION */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4">StorySpark Blog</h1>
           <p className="text-lg text-slate-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Insights, updates, and storytelling inspiration from the StorySpark AI community.
+            Insights, updates, and storytelling inspiration from the StorySpark
+            AI community.
           </p>
 
           {/* CATEGORY PILLS */}
           <div className="flex flex-wrap justify-center gap-3 mt-6">
-            {["All", "AI Writing", "Updates", "Community", "Tips"].map((cat) => (
-              <span
-                key={cat}
-                className="px-4 py-2 text-sm rounded-full border border-gray-300 dark:border-gray-700 hover:bg-blue-500 hover:text-white cursor-pointer transition"
-              >
-                {cat}
-              </span>
-            ))}
+            {["All", "AI Writing", "Updates", "Community", "Tips"].map(
+              (cat) => (
+                <span
+                  key={cat}
+                  className="px-4 py-2 text-sm rounded-full border border-gray-300 dark:border-gray-700 hover:bg-blue-500 hover:text-white cursor-pointer transition"
+                >
+                  {cat}
+                </span>
+              ),
+            )}
           </div>
         </div>
 

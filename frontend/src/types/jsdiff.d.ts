@@ -1,4 +1,5 @@
-declare module 'jsdiff' {
+﻿/* eslint-disable */
+declare module "jsdiff" {
   export interface Change {
     value: string;
     added?: boolean;
@@ -8,43 +9,39 @@ declare module 'jsdiff' {
   export function diffChars(
     oldStr: string,
     newStr: string,
-    options?: { ignoreWhitespace?: boolean }
+    options?: { ignoreWhitespace?: boolean },
   ): Change[];
 
   export function diffWords(
     oldStr: string,
     newStr: string,
-    options?: any
+    options?: any,
   ): Change[];
 
   export function diffLines(
     oldStr: string,
     newStr: string,
-    options?: any
+    options?: any,
   ): Change[];
 
   export function diffSentences(
     oldStr: string,
     newStr: string,
-    options?: any
+    options?: any,
   ): Change[];
 
   export function diffCss(
     oldStr: string,
     newStr: string,
-    options?: any
+    options?: any,
   ): Change[];
 
-  export function diffJson(
-    oldStr: any,
-    newStr: any,
-    options?: any
-  ): Change[];
+  export function diffJson(oldStr: any, newStr: any, options?: any): Change[];
 
   export function diffArrays(
     oldArr: any[],
     newArr: any[],
-    options?: any
+    options?: any,
   ): Change[];
 
   export function createTwoFilesPatch(
@@ -54,7 +51,7 @@ declare module 'jsdiff' {
     newStr: string,
     oldHeader?: string,
     newHeader?: string,
-    options?: any
+    options?: any,
   ): string;
 
   export function createPatch(
@@ -63,23 +60,21 @@ declare module 'jsdiff' {
     newStr: string,
     oldHeader?: string,
     newHeader?: string,
-    options?: any
+    options?: any,
   ): string;
 
   export function applyPatch(
     source: string,
     uniDiff: string,
-    options?: any
+    options?: any,
   ): string | false;
 
   export function applyPatches(
     uniDiff: string | string[],
-    options?: any
+    options?: any,
   ): string;
 
-  export function parsePatch(
-    uniDiff: string | string[]
-  ): any[];
+  export function parsePatch(uniDiff: string | string[]): any[];
 
   export function convertChangesToDMP(changes: Change[]): any;
 

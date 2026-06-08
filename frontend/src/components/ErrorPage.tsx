@@ -16,14 +16,14 @@ const ErrorPage = () => {
       // Preserve auth tokens
       const authToken = localStorage.getItem("authToken");
       const userPrefs = localStorage.getItem("userPreferences");
-      
+
       localStorage.clear();
       sessionStorage.clear();
-      
+
       // Restore critical data
       if (authToken) localStorage.setItem("authToken", authToken);
       if (userPrefs) localStorage.setItem("userPreferences", userPrefs);
-      
+
       setTimeout(() => {
         window.location.reload();
       }, 300);

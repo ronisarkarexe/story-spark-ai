@@ -67,22 +67,26 @@ export default function CollabRoom() {
 
       if (!socket) {
         setError(
-          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
+          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env",
         );
         setLoading(false);
         return;
       }
 
       // Request room info
-      socket.emit("collab:get_room", { roomId }, (response: CollabRoomResponse) => {
-        if (response && response.room) {
-          setRoom(response.room);
-          setError(null);
-        } else {
-          setError(response.message || "Room not found");
-        }
-        setLoading(false);
-      });
+      socket.emit(
+        "collab:get_room",
+        { roomId },
+        (response: CollabRoomResponse) => {
+          if (response && response.room) {
+            setRoom(response.room);
+            setError(null);
+          } else {
+            setError(response.message || "Room not found");
+          }
+          setLoading(false);
+        },
+      );
 
       // Listeners
       const handleRoomUpdated = (data: CollabRoomResponse) => {
@@ -93,9 +97,7 @@ export default function CollabRoom() {
 
       const handleStoryUpdated = (data: CollabStoryResponse) => {
         if (data && data.story) {
-          setRoom((prev) =>
-            prev ? { ...prev, story: data.story! } : null
-          );
+          setRoom((prev) => (prev ? { ...prev, story: data.story! } : null));
         }
       };
 
@@ -157,7 +159,9 @@ export default function CollabRoom() {
       <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0d0d14] dark:text-white flex items-center justify-center px-4 transition-colors duration-300">
         <div className="text-center max-w-md">
           <p className="text-red-500 dark:text-red-400 text-lg mb-2">Error</p>
-          <p className="text-slate-600 dark:text-white/60 text-sm mb-6">{error}</p>
+          <p className="text-slate-600 dark:text-white/60 text-sm mb-6">
+            {error}
+          </p>
           <button
             type="button"
             onClick={() => navigate("/collab")}
@@ -184,15 +188,22 @@ export default function CollabRoom() {
                   <div className="space-y-3">
                     {room.story.map((chunk, idx) => (
                       <div key={idx} className="text-sm">
-                        <span style={{ color: chunk.color }} className="font-semibold">
+                        <span
+                          style={{ color: chunk.color }}
+                          className="font-semibold"
+                        >
                           {chunk.authorName}:
                         </span>{" "}
-                        <span className="text-slate-600 dark:text-slate-300">{chunk.text}</span>
+                        <span className="text-slate-600 dark:text-slate-300">
+                          {chunk.text}
+                        </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-400 text-center py-20">Story is empty. Start writing!</p>
+                  <p className="text-slate-400 text-center py-20">
+                    Story is empty. Start writing!
+                  </p>
                 )}
               </div>
 

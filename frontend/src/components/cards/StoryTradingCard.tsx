@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+﻿import React, { useMemo, useRef } from "react";
 import html2canvas from "html2canvas";
 import toast from "react-hot-toast";
 import type { IStories } from "../stories/stories.view.component";
@@ -103,8 +103,7 @@ const getKeyQuote = (content: string) => {
 };
 
 const getGenreLabel = (story: IStories) =>
-  cleanText(story.genre || story.tag || "Story").replace(/^[^\w]+/, "") ||
-  "Story";
+  cleanText(story.tag || "Story").replace(/^[^\w]+/, "") || "Story";
 
 interface StoryTradingCardProps {
   story: IStories;
@@ -141,8 +140,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
       });
       const link = document.createElement("a");
       const fileName =
-        story.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") ||
-        "story-card";
+        story.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story-card";
 
       link.download = `${fileName}-trading-card.png`;
       link.href = canvas.toDataURL("image/png");
@@ -167,7 +165,9 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
           url: window.location.href,
         });
       } else {
-        await navigator.clipboard.writeText(`${shareText} ${window.location.href}`);
+        await navigator.clipboard.writeText(
+          `${shareText} ${window.location.href}`,
+        );
         toast.success("Share text copied!");
       }
     } catch (error) {
@@ -236,7 +236,9 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
-              <span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${genreClass}`}>
+              <span
+                className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${genreClass}`}
+              >
                 {genre}
               </span>
               <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold text-white">
@@ -269,7 +271,9 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
                 </p>
               </div>
               <div className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
-                <p className="text-lg font-black">{story.tag.slice(0, 3).toUpperCase()}</p>
+                <p className="text-lg font-black">
+                  {story.tag.slice(0, 3).toUpperCase()}
+                </p>
                 <p className="text-[9px] uppercase tracking-wider text-white/45">
                   Class
                 </p>

@@ -29,7 +29,6 @@ const postApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.post],
     }),
 
-
     getPostLists: build.query({
       query: (arg: Record<string, string | number>) => ({
         url: `/${POST_URL}/lists`,

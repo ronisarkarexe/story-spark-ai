@@ -1,4 +1,8 @@
-import { getWordCount, calculateReadingTime, formatReadingStats } from "../story-utils";
+import {
+  getWordCount,
+  calculateReadingTime,
+  formatReadingStats,
+} from "../story-utils";
 
 describe("story-utils", () => {
   describe("getWordCount", () => {

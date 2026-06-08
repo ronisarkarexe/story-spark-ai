@@ -9,15 +9,15 @@ import { USER_ROLE } from "../../../constants/role";
 const UserListComponent = () => {
   const { data: users, isLoading } = useGetUsersListQuery(undefined);
   const [searchTerm, setSearchTerm] = useState("");
-const auth = useContext(AuthContext);
+  const auth = useContext(AuthContext);
 
-if (
-  !auth?.user ||
-  (auth.user.role !== USER_ROLE.ADMIN &&
-    auth.user.role !== USER_ROLE.SUPER_ADMIN)
-) {
-  return <Navigate to="/dashboard" replace />;
-}
+  if (
+    !auth?.user ||
+    (auth.user.role !== USER_ROLE.ADMIN &&
+      auth.user.role !== USER_ROLE.SUPER_ADMIN)
+  ) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const filteredUsers = (users?.data ?? []).filter((user: User) => {
     const searchValue = searchTerm.toLowerCase().trim();
@@ -109,10 +109,14 @@ if (
                 <p className="text-sm font-normal leading-none">Status</p>
               </th>
               <th className="p-4">
-                <p className="text-sm font-normal leading-none">Subscription Type</p>
+                <p className="text-sm font-normal leading-none">
+                  Subscription Type
+                </p>
               </th>
               <th className="p-4">
-                <p className="text-sm font-normal leading-none">Apply For Writer</p>
+                <p className="text-sm font-normal leading-none">
+                  Apply For Writer
+                </p>
               </th>
             </tr>
           </thead>
@@ -120,9 +124,14 @@ if (
           <tbody>
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user: User) => (
-                <tr key={user._id} className="border-b border-slate-200 bg-slate-800">
+                <tr
+                  key={user._id}
+                  className="border-b border-slate-200 bg-slate-800"
+                >
                   <td className="p-4 py-5">
-                    <p className="block font-semibold text-sm text-slate-400">{user.name}</p>
+                    <p className="block font-semibold text-sm text-slate-400">
+                      {user.name}
+                    </p>
                   </td>
                   <td className="p-4 py-5">
                     <p className="text-sm text-slate-500">{user.email}</p>
@@ -131,10 +140,14 @@ if (
                     <p className="text-sm text-slate-500">{user.status}</p>
                   </td>
                   <td className="p-4 py-5">
-                    <p className="text-sm text-slate-500">{user.subscriptionType}</p>
+                    <p className="text-sm text-slate-500">
+                      {user.subscriptionType}
+                    </p>
                   </td>
                   <td className="p-4 py-5">
-                    <p className="text-sm text-slate-500">{user.isApplyForWriter ? "YES" : "NO"}</p>
+                    <p className="text-sm text-slate-500">
+                      {user.isApplyForWriter ? "YES" : "NO"}
+                    </p>
                   </td>
                 </tr>
               ))

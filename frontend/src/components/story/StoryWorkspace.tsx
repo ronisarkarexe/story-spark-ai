@@ -19,9 +19,11 @@ import {
 
 const StoryWorkspace = () => {
   const currentStory = useSelector(
-    (state: RootState) => state.story.currentStory
+    (state: RootState) => state.story.currentStory,
   );
-  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
+  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">(
+    "editor",
+  );
 
   const handleExportMarkdown = () => {
     if (!currentStory) {
@@ -44,7 +46,9 @@ const StoryWorkspace = () => {
       }
 
       const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${chaptersContent}`;
-      const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
+      const blob = new Blob([markdownContent], {
+        type: "text/markdown;charset=utf-8;",
+      });
       downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
     } catch (error) {
@@ -116,19 +120,13 @@ const StoryWorkspace = () => {
   };
 
   if (!currentStory) {
-    return (
-      <div className="text-white p-10">
-        No Story Available
-      </div>
-    );
+    return <div className="text-white p-10">No Story Available</div>;
   }
 
   return (
     <div className="flex bg-black h-screen">
       <Toaster position="top-right" reverseOrder={false} />
-      <ChapterSidebar
-        chapters={currentStory.chapters}
-      />
+      <ChapterSidebar chapters={currentStory.chapters} />
 
       <div className="flex flex-col flex-1">
         <div className="flex justify-between items-center p-4 border-b border-zinc-800 bg-zinc-900">

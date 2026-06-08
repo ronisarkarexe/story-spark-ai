@@ -169,7 +169,10 @@ const ContinueStoryModal = ({ story, onClose }: ContinueStoryModalProps) => {
 
                   {/* Branch nodes */}
                   {branches.map((branch, idx) => (
-                    <div key={branch.id} className="flex items-start gap-3 ml-4">
+                    <div
+                      key={branch.id}
+                      className="flex items-start gap-3 ml-4"
+                    >
                       <div className="flex flex-col items-center">
                         <div
                           className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 transition-all ${

@@ -17,10 +17,7 @@ const storySlice = createSlice({
     setStory(state, action: PayloadAction<Story>) {
       state.currentStory = action.payload;
 
-      localStorage.setItem(
-        "story",
-        JSON.stringify(action.payload)
-      );
+      localStorage.setItem("story", JSON.stringify(action.payload));
     },
 
     addChapter(state, action: PayloadAction<string>) {
@@ -35,15 +32,11 @@ const storySlice = createSlice({
 
       state.currentStory.chapters.push(nextChapter);
 
-      localStorage.setItem(
-        "story",
-        JSON.stringify(state.currentStory)
-      );
+      localStorage.setItem("story", JSON.stringify(state.currentStory));
     },
   },
 });
 
-export const { setStory, addChapter } =
-  storySlice.actions;
+export const { setStory, addChapter } = storySlice.actions;
 
 export default storySlice.reducer;
