@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, FC } from "react";
 import { motion } from "framer-motion";
 
 const HELP_SECTIONS = [
@@ -7,8 +7,9 @@ const HELP_SECTIONS = [
   { id: "troubleshoot-section", label: "Troubleshooting", icon: "fa-screwdriver-wrench", color: "from-orange-500 to-red-500" },
   { id: "setup-guide-section", label: "Setup Guide", icon: "fa-rocket", color: "from-emerald-500 to-teal-500" },
   { id: "support-links-section", label: "Support", icon: "fa-headset", color: "from-pink-500 to-rose-500" },
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+]
+
+
 import { HELP_SECTIONS } from "../help_center.utils";
 
 const HelpSidebar: FC = () => {
@@ -41,7 +42,6 @@ const HelpSidebar: FC = () => {
     const handleScroll = () => {
       const scrollBottom = window.innerHeight + window.scrollY;
       const documentHeight = document.documentElement.scrollHeight;
-      if (scrollBottom >= documentHeight - 120) {
       if (scrollBottom >= documentHeight - 80) {
         setActiveSection("support-links-section");
       }
@@ -78,23 +78,7 @@ const HelpSidebar: FC = () => {
 
   return (
     <>
-      <nav className="hidden lg:block w-full max-w-full block box-border" aria-label="Help center desktop navigation">
-        <motion.div
-          initial={{ opacity: 0, x: -16 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.45 }}
-          className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-[#111827]/40 backdrop-blur-2xl shadow-sm p-5 w-full box-border"
-        >
-          <div className="absolute -top-16 -right-16 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 w-full box-border">
-            <div className="mb-6 select-none">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/5 border border-blue-500/10 mb-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                <span className="text-[10px] font-bold tracking-wider uppercase text-blue-600 dark:text-blue-400">
-                  Quick Navigation
-                </span>
+      
       {/* Desktop sticky sidebar */}
       <nav className="hidden lg:block w-72 flex-shrink-0" aria-label="Help center sections">
         <div className="sticky top-24">
@@ -139,7 +123,6 @@ const HelpSidebar: FC = () => {
                       }`}
                     >
                       <i className={`fa-solid ${section.icon} text-sm`} aria-hidden="true" />
-                    </div>
                     <div className="min-w-0 flex-1">
                       <p className={`font-bold text-xs sm:text-sm tracking-tight transition-colors duration-200 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white"}`}>
                         {section.label}
