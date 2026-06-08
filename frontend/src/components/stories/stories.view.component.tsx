@@ -413,74 +413,10 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownMenuRef.current && !dropdownMenuRef.current.contains(event.target as Node)) {
-        setIsExportDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const handleExport = async (format: "pdf" | "epub") => {
-    if (!selectedStory) return;
-    
-    setIsExportDropdownOpen(false);
-    setExportState("processing");
-    const toastId = toast.loading(`Preparing story for ${format.toUpperCase()} export...`);
-
-    try {
-      let imageBlob: Blob | null = null;
-      let base64Image: string | null = null;
-
-      if (selectedStory.imageURL) {
-        try {
-          imageBlob = await fetchImageAsBlob(selectedStory.imageURL);
-          base64Image = await blobToBase64(imageBlob);
-        } catch (err) {
-          console.error("Could not fetch story illustration for export:", err);
-          toast.error("Story illustration could not be loaded. Exporting text only.");
-        }
-      }
-
-      setExportState("compiling");
-      toast.loading(`Compiling ${format.toUpperCase()} file...`, { id: toastId });
-
-      if (format === "pdf") {
-        await exportStoryToPDF(selectedStory, base64Image);
-      } else {
-        await exportStoryToEPUB(selectedStory, imageBlob);
-      }
-
-      setExportState("success");
-      toast.success(`${format.toUpperCase()} downloaded successfully!`, { id: toastId });
-      setTimeout(() => setExportState("idle"), 2000);
-    } catch (err) {
-      console.error(`Failed to export to ${format}:`, err);
-      setExportState("error");
-      toast.error(`Failed to generate ${format.toUpperCase()}.`, { id: toastId });
-      setTimeout(() => setExportState("idle"), 2000);
-    }
-  };
-
-  const getExportButtonText = () => {
-    switch (exportState) {
-      case "processing":
-        return "Processing Images...";
-      case "compiling":
-        return "Compiling Book...";
-      case "success":
-        return "Success!";
-      case "error":
-        return "Failed";
-      default:
-        return "📥 Export";
-    }
-  };
+  const sentenceSegments = useMemo(() => 
+    buildSentenceSegments(selectedStory?.content ?? ""),
+    [selectedStory?.content]
+  );
 
   useEffect(() => {
     if (selectedStory && !originalStoryContent[selectedStory.uuid]) {

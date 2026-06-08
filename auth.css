@@ -18,8 +18,10 @@
     --ds-card-max-width: 420px;
 }
 
+
 html, body {
     touch-action: pan-x pan-y;
+    overflow-x: hidden;
 }
 
 body {
@@ -30,6 +32,11 @@ body {
         linear-gradient(180deg, #090b12 0%, #0d111b 100%);
     background-color: #090b12;
     scroll-behavior: smooth;
+}
+/* Subtle animated background pan to create a moving theme */
+body {
+    background-size: 140% 140%, 140% 140%, 100% 100%;
+    animation: bg-shift 30s linear infinite;
 }
 /* ── Keyframe Animations ── */
 @keyframes float {
@@ -61,6 +68,24 @@ body {
     radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.12), transparent 45%);
   z-index: 0;
   filter: blur(10px);
+}
+
+/* animate the overlay to give a moving theme */
+.left-pane-overlay {
+    animation: float 14s ease-in-out infinite, overlay-scale 28s ease-in-out infinite;
+    transform-origin: center;
+}
+
+@keyframes overlay-scale {
+    0% { transform: translateY(0px) translateX(0px) scale(1); }
+    50% { transform: translateY(-12px) translateX(8px) scale(1.06); }
+    100% { transform: translateY(0px) translateX(0px) scale(1); }
+}
+
+@keyframes bg-shift {
+    0% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+    50% { background-position: 8% 4%, 92% 96%, 45% 55%; }
+    100% { background-position: 0% 0%, 100% 100%, 50% 50%; }
 }
 
 .hero-gradient {
@@ -212,13 +237,55 @@ input[type="password"] {
     max-width: 100%;
     height: var(--ds-input-height);
     line-height: var(--ds-input-height);
-    box-sizing: border-box; 
-    padding-left: 44px !important; 
-    padding-right: 16px !important;
+    box-sizing: border-box;
+    padding-left: 44px !important;
+    padding-right: 44px !important;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease, transform 0.2s ease;
     overflow: hidden;
+}
+.auth-field:focus {
+    border-color: rgba(124, 58, 237, 0.65);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+    outline: none;
+    background: rgba(255, 255, 255, 0.09);
+    transform: translateY(-1px);
 }
 .auth-field::placeholder {
     line-height: var(--ds-input-height);
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: rgba(226, 226, 234, 0.75);
+}
+
+.field-error-msg {
+    display: block;
+    margin-top: 0.55rem;
+    font-size: 0.78rem;
+    color: #ffb4ab;
+    min-height: 1.2rem;
+}
+
+.auth-form-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.ds-btn-submit,
+.ds-btn-google {
+    width: 100%;
+    max-width: 100%;
 }
 
 .auth-field:-webkit-autofill,
@@ -294,9 +361,9 @@ input:focus {
     justify-content: center;
     margin-left: auto;
     margin-right: auto;
-    background: linear-gradient(135deg, #7c3aed 0%, #f97316 100%);
+    background: linear-gradient(135deg, #1e90ff 0%, #2563eb 100%);
     color: #ffffff;
-    box-shadow: 0 0 32px rgba(0, 97, 182, 0.32), 0 8px 22px rgba(0, 0, 0, 0.24);
+    box-shadow: 0 0 32px rgba(37, 99, 235, 0.28), 0 8px 22px rgba(12, 38, 80, 0.38);
     border-radius: 14px;
     transition: box-shadow 0.3s ease, transform 0.2s ease, opacity 0.2s ease;
     cursor: pointer;
@@ -304,7 +371,7 @@ input:focus {
 }
 
 .ds-btn-submit:hover {
-    box-shadow: 0 0 42px rgba(249, 115, 22, 0.35), 0 10px 26px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 42px rgba(37, 99, 235, 0.36), 0 12px 30px rgba(12, 38, 80, 0.42);
     transform: translateY(-1px);
 }
 
@@ -339,10 +406,16 @@ input:focus {
     width: 100%;
 }
 
-/* Constrain the authentication card so inputs don't overflow their container */
-.auth-form-card {
-    max-width: var(--ds-card-max-width);
+.auth-container > section {
+    min-width: 0;
+}
+
+.auth-form-card,
+.glass-panel,
+.ds-btn-submit,
+.ds-btn-google {
     width: 100%;
+    max-width: 100%;
 }
 
 /* ── Mobile Layout Media Queries ── */
@@ -508,29 +581,4 @@ button:disabled {
         transition: none !important;
     }
     .ds-spinner { animation: none !important; }
-}
-
-/* ── Fix: Ensure auth fields and wrappers stay within card bounds ── */
-.auth-field,
-.input-icon-wrapper {
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 100%;
-}
-
-/* Guarantee every input inside the auth card is fully contained */
-.auth-form-card .ds-input-group,
-.auth-form-card .input-icon-wrapper,
-.auth-form-card input[type="text"],
-.auth-form-card input[type="email"],
-.auth-form-card input[type="password"] {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-}
-
-/* Ensure submit and Google buttons fill the card width */
-.ds-btn-submit,
-.ds-btn-google {
-    width: 100%;
 }

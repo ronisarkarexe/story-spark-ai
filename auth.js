@@ -6,9 +6,15 @@
 let currentMode = 'signin';
 
 // ── Google Identity Services (GIS) Client ID ──
-const GOOGLE_CLIENT_ID = (typeof window !== 'undefined' && window.VITE_GOOGLE_CLIENT_ID) ? window.VITE_GOOGLE_CLIENT_ID : 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = (() => {
+    if (typeof window !== 'undefined' && window.GOOGLE_CLIENT_ID) {
+        return window.GOOGLE_CLIENT_ID;
+    }
+    return 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+})();
 
 let isSubmitting = false;
+
 
 /**
  * Close the login/signup page and return the user to their previous location.

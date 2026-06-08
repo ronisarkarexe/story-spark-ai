@@ -20,6 +20,7 @@
 
 html, body {
     touch-action: pan-x pan-y;
+    overflow-x: hidden;
 }
 
 body {
@@ -212,13 +213,56 @@ input[type="password"] {
     max-width: 100%;
     height: var(--ds-input-height);
     line-height: var(--ds-input-height);
-    box-sizing: border-box; 
-    padding-left: 44px !important; 
-    padding-right: 16px !important;
+    box-sizing: border-box;
+    padding-left: 44px !important;
+    padding-right: 44px !important;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease, transform 0.2s ease;
     overflow: hidden;
+}
+
+.auth-field:focus {
+    border-color: rgba(124, 58, 237, 0.65);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+    outline: none;
+    background: rgba(255, 255, 255, 0.09);
+    transform: translateY(-1px);
 }
 .auth-field::placeholder {
     line-height: var(--ds-input-height);
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: rgba(226, 226, 234, 0.75);
+}
+
+.field-error-msg {
+    display: block;
+    margin-top: 0.55rem;
+    font-size: 0.78rem;
+    color: #ffb4ab;
+    min-height: 1.2rem;
+}
+
+.auth-form-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.ds-btn-submit,
+.ds-btn-google {
+    width: 100%;
+    max-width: 100%;
 }
 
 .auth-field:-webkit-autofill,
@@ -339,10 +383,16 @@ input:focus {
     width: 100%;
 }
 
-/* Constrain the authentication card so inputs don't overflow their container */
-.auth-form-card {
-    max-width: var(--ds-card-max-width);
+.auth-container > section {
+    min-width: 0;
+}
+
+.auth-form-card,
+.glass-panel,
+.ds-btn-submit,
+.ds-btn-google {
     width: 100%;
+    max-width: 100%;
 }
 
 /* ── Mobile Layout Media Queries ── */
