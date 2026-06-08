@@ -770,9 +770,12 @@ useEffect(() => {
   }, [setValue, reset]);
 
   const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
-    if (isGenerationInProgressRef.current) {
-      return;
-    }
+
+  if (loading) {
+    return;
+  }
+
+  
 
     if (!login && guestRequestCount >= 3) {
       setShowLimitModal(true);
@@ -1918,25 +1921,7 @@ useEffect(() => {
         </div>
       )}
 
-      <StoriesViewComponent
-        stories={currentStories}
-        isLogin={login}
-        setStories={setStories}
-        onPublishSuccess={handlePublishSuccess}
-        isLoading={loading}
-      />
-
-      <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
-      {showLimitModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.15)] max-w-md w-full p-6 transform transition-all text-slate-900 dark:bg-[#0f172a] dark:border-white/10 dark:text-white dark:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="fas fa-lock text-2xl text-blue-400"></i>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2 dark:text-gray-200">
-                {text.freeLimitReached}
-              </h3>
+      
               <p className="text-slate-600 mb-6 leading-relaxed dark:text-gray-400">
                 {text.freeLimitMessage}
               </p>
