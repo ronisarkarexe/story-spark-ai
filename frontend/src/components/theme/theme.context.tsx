@@ -12,39 +12,77 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-const getInitialTheme = (): Theme => {
-  const storedTheme = localStorage.getItem("theme");
+export const THEME_STORAGE_KEY = "theme";
+const GLOW_STORAGE_KEY = "cursorGlow";
+const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)";
+
+export const getSystemTheme = (): Theme =>
+  window.matchMedia(COLOR_SCHEME_QUERY).matches ? "dark" : "light";
+
+export const getStoredThemePreference = (): Theme | null => {
+  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
   if (storedTheme === "dark" || storedTheme === "light") {
     return storedTheme;
   }
-
-  return "light";
+  return null;
 };
 
+const getInitialTheme = (): Theme => getStoredThemePreference() ?? getSystemTheme();
+
 const getInitialGlow = (): boolean => {
-  const storedGlow = localStorage.getItem("cursorGlow");
+  const storedGlow = localStorage.getItem(GLOW_STORAGE_KEY);
   return storedGlow !== "false";
+};
+
+export const applyDocumentTheme = (theme: Theme, isExplicit: boolean): void => {
+  const root = document.documentElement;
+  root.classList.toggle("dark", theme === "dark");
+  root.classList.toggle("light", theme === "light" && isExplicit);
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const [hasExplicitPreference, setHasExplicitPreference] = useState(
+    () => getStoredThemePreference() !== null,
+  );
   const [glowEnabled, setGlowEnabled] = useState<boolean>(getInitialGlow);
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    applyDocumentTheme(theme, hasExplicitPreference);
+
+    if (hasExplicitPreference) {
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } else {
+      localStorage.removeItem(THEME_STORAGE_KEY);
+    }
+  }, [theme, hasExplicitPreference]);
 
   useEffect(() => {
-    localStorage.setItem("cursorGlow", glowEnabled ? "true" : "false");
+    if (hasExplicitPreference) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia(COLOR_SCHEME_QUERY);
+    const handleSystemThemeChange = (event: MediaQueryListEvent) => {
+      setTheme(event.matches ? "dark" : "light");
+    };
+
+    mediaQuery.addEventListener("change", handleSystemThemeChange);
+    return () => mediaQuery.removeEventListener("change", handleSystemThemeChange);
+  }, [hasExplicitPreference]);
+
+  useEffect(() => {
+    localStorage.setItem(GLOW_STORAGE_KEY, glowEnabled ? "true" : "false");
   }, [glowEnabled]);
 
   const value = useMemo(
     () => ({
       theme,
       isDark: theme === "dark",
-      toggleTheme: () => setTheme((prev) => (prev === "dark" ? "light" : "dark")),
+      toggleTheme: () => {
+        setHasExplicitPreference(true);
+        setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+      },
       glowEnabled,
       toggleGlow: () => setGlowEnabled((prev) => !prev),
     }),
