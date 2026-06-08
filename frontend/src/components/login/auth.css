@@ -559,3 +559,28 @@ button:disabled {
     }
     .ds-spinner { animation: none !important; }
 }
+
+/* ── Fix: Ensure auth fields and wrappers stay within card bounds ── */
+.auth-field,
+.input-icon-wrapper {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Guarantee every input inside the auth card is fully contained */
+.auth-form-card .ds-input-group,
+.auth-form-card .input-icon-wrapper,
+.auth-form-card input[type="text"],
+.auth-form-card input[type="email"],
+.auth-form-card input[type="password"] {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure submit and Google buttons fill the card width */
+.ds-btn-submit,
+.ds-btn-google {
+    width: 100%;
+}

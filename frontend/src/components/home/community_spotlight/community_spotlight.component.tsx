@@ -2,9 +2,8 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
-import LoadingAnimation from "../../loading/loading.component";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
-
+import CommunitySpotlightSkeleton from "../community_spotlight/CommunitySpotlightSkeleton";
 type SpotlightWriter = {
   author: Post["author"];
   storiesCount: number;
@@ -103,8 +102,21 @@ const CommunitySpotlightComponent = () => {
       .slice(0, TOP_WRITERS_LIMIT) as SpotlightWriter[];
   }, [data?.posts]);
 
-  if (isLoading) return <LoadingAnimation />;
+  if (isLoading) {
+  return (
+    <section className="px-5 py-10 text-slate-100">
+      <h2 className="mb-6 text-3xl font-bold">
+        Community Spotlight
+      </h2>
 
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <CommunitySpotlightSkeleton key={index} />
+        ))}
+      </div>
+    </section>
+  );
+}
   if (isError) {
     return (
       <div className="w-full max-w-7xl mx-auto px-4 py-8 box-border">

@@ -71,7 +71,7 @@ const getValidDecodedToken = () => {
       return buildUserInfo({
         email: decodedData.email ?? "",
         role: decodedData.role ?? "",
-        userId: decodedData.userId ?? "",
+        userId: decodedData.userId ?? decodedData._id ?? "",
         name: decodedData.name ?? "",
         postsCount: decodedData.postsCount ?? 0,
         subscriptionType: decodedData.subscriptionType ?? "free",

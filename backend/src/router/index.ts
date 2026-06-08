@@ -15,6 +15,7 @@ import storyRoutes from "../routes/story.routes";
 import { ReportRouter } from "../app/modules/report/report.router";
 import { NewsletterRouter } from "../app/modules/newsletter/newsletter.route";
 import paymentRouter from "../router/payment.route";
+import { AIEditorRouter } from "../app/modules/ai_editor/ai_editor.router";
 import { BookmarkRouter } from "../app/modules/bookmark/bookmark.router";
 import { StoryVersionRouter } from "../app/modules/story_version/story_version.router";
 import { AnalyticsRouter } from "../app/modules/analytics/analytics.router";
@@ -23,6 +24,7 @@ import { RecommendationRouter } from "../app/modules/recommendation/recommendati
 import { WriterApplicationRoutes } from "../app/modules/writer_application/writer_application.route";
 import { StoryVisualizerRouter } from "../app/modules/story_visualizer/story_visualizer.router";
 import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_inspiration.router";
+import { EngagementRouter } from "../app/modules/engagement/engagement.router";
 import { ChatRouter } from "../app/modules/chat/chat.router";
 
 const router = express.Router();
@@ -34,6 +36,10 @@ const modules = [
   },
   {
     path: "/user",
+    router: UserRouter,
+  },
+  {
+    path: "/users",
     router: UserRouter,
   },
   {
@@ -101,6 +107,10 @@ const modules = [
     router: StoryInspirationRouter,
   },
   {
+    path: "/engagement",
+    router: EngagementRouter,
+  },
+  {
     path: "/contact",
     router: ContactRoutes,
   },
@@ -119,6 +129,10 @@ const modules = [
   {
     path: "/writer-applications",
     router: WriterApplicationRoutes,
+  },
+  {
+    path: "/ai-editor",
+    router: AIEditorRouter,
   },
   {
     path: "/chat",

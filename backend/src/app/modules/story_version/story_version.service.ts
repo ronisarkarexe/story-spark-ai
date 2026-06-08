@@ -11,8 +11,9 @@ import {
   IPaginationOptions,
   IGenericResponse,
 } from "../../../interfaces/pagination";
+import { analyzeCharacterNetwork, ICharacterNetworkResponse } from "./character_network.utils";
 
-interface IBranchTreeNode{
+interface IBranchTreeNode {
   id: string;
   parentId: string | null;
   title: string;
@@ -21,12 +22,12 @@ interface IBranchTreeNode{
   branchDepth: number;
 }
 
-interface IBranchTreeEdge{
+interface IBranchTreeEdge {
   source: string;
   target: string;
 }
 
-interface IStoryTreeResponse{
+interface IStoryTreeResponse {
   nodes: IBranchTreeNode[];
   edges: IBranchTreeEdge[];
 }
@@ -46,8 +47,6 @@ const createVersionSnapshot = async (
     const maxRetries = 5;
     for (let attempt = 0; attempt < maxRetries; attempt += 1) {
       try {
-        // Re-read the latest version number on each attempt so concurrent writers
-        // that win the race cause a retry instead of silently skipping a snapshot.
         const lastVersion = await StoryVersion.findOne({ storyId })
           .sort({ versionNumber: -1 })
           .select("versionNumber");
@@ -74,12 +73,10 @@ const createVersionSnapshot = async (
     }
     return null;
   } catch (error) {
-    // Non-blocking catch to ensure AI generation routes do not crash due to versioning failures
     console.error("Story version snapshot creation failed:", error);
     return null;
   }
 };
-
 
 const createBranchVersion = async (
   parentVersionId: string,
@@ -164,7 +161,7 @@ const getStoryTree = async (
   for (const version of versions) {
     nodes.push({
       id: version._id.toString(),
-      parentId: version.parentVersionId? version.parentVersionId.toString(): null,
+      parentId: version.parentVersionId ? version.parentVersionId.toString() : null,
       title: version.title,
       versionNumber: version.versionNumber,
       branchName: version.branchName ?? null,
@@ -179,7 +176,7 @@ const getStoryTree = async (
     }
   }
 
-  return {nodes,edges,};
+  return { nodes, edges };
 };
 
 const getBranchPath = async (
@@ -212,7 +209,6 @@ const getBranchPath = async (
     if (!current.parentVersionId) {
       break;
     }
-
     current = await StoryVersion.findById(current.parentVersionId);
   }
 
@@ -230,26 +226,28 @@ const getVersionsByStoryId = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
   }
 
-  // Enforce access control - users can only view their own stories
   if (post.author.toString() !== userId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story history!");
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have access to this story history!"
+    );
   }
 
-const data = await StoryVersion.find({ storyId })
-  .sort({ versionNumber: -1 })
-  .skip(skip)
-  .limit(limit);
+  const data = await StoryVersion.find({ storyId })
+    .sort({ versionNumber: -1 })
+    .skip(skip)
+    .limit(limit);
 
-const total = await StoryVersion.countDocuments({ storyId });
+  const total = await StoryVersion.countDocuments({ storyId });
 
-return {
-  meta: {
-    page,
-    limit,
-    total,
-  },
-  data,
-};
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data,
+  };
 };
 
 const getVersionById = async (
@@ -258,13 +256,18 @@ const getVersionById = async (
 ): Promise<IStoryVersion> => {
   const version = await StoryVersion.findById(versionId);
   if (!version) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Story version snapshot not found!");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Story version snapshot not found!"
+    );
   }
 
-  // Fetch the post to verify ownership
   const post = await Post.findById(version.storyId);
   if (!post || post.author.toString() !== userId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story version!");
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have access to this story version!"
+    );
   }
 
   return version;
@@ -276,7 +279,10 @@ const restoreVersion = async (
 ): Promise<IPost> => {
   const version = await StoryVersion.findById(versionId);
   if (!version) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Story version snapshot not found!");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Story version snapshot not found!"
+    );
   }
 
   const post = await Post.findById(version.storyId);
@@ -284,12 +290,13 @@ const restoreVersion = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Original story not found!");
   }
 
-  // Access check
   if (post.author.toString() !== userId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have permission to restore this story!");
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have permission to restore this story!"
+    );
   }
 
-  // 1. Create a version snapshot of the CURRENT active post content so we preserve it (avoiding data loss)
   await createVersionSnapshot(
     post._id.toString(),
     userId,
@@ -297,12 +304,10 @@ const restoreVersion = async (
     "pre-restoration"
   );
 
-  // 2. Overwrite active post with chosen version
   post.content = version.content;
   post.title = version.title;
   await post.save();
 
-  // 3. Create a final snapshot documenting that a restore event occurred
   await createVersionSnapshot(
     post._id.toString(),
     userId,
@@ -348,6 +353,22 @@ const enhancePrompt = async (prompt: string): Promise<string> => {
   }
 };
 
+const getCharacterNetwork = async (
+  storyId: string,
+  userId: string
+): Promise<ICharacterNetworkResponse> => {
+  const post = await Post.findById(storyId);
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
+  }
+
+  if (post.author.toString() !== userId) {
+    throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story history!");
+  }
+
+  return await analyzeCharacterNetwork(post.content || "");
+};
+
 export const StoryVersionService = {
   createVersionSnapshot,
   createBranchVersion,
@@ -357,4 +378,5 @@ export const StoryVersionService = {
   getVersionById,
   restoreVersion,
   enhancePrompt,
+  getCharacterNetwork,
 };

@@ -68,6 +68,7 @@ describe("AiModelService", () => {
       1,
       "Spanish",
       expect.anything(),
+      undefined,
       undefined
     );
   });
@@ -163,7 +164,8 @@ describe("AiModelService", () => {
       1,
       "English",
       expect.any(Object),
-      "Humorous"
+      "Humorous",
+      undefined
     );
   });
 
@@ -181,7 +183,8 @@ describe("AiModelService", () => {
       1,
       "English",
       expect.any(Object),
-      undefined // no tone → undefined, so the util skips the directive
+      undefined, // no tone → undefined, so the util skips the directive
+      undefined
     );
   });
 
@@ -200,6 +203,7 @@ describe("AiModelService", () => {
       1,
       "English",
       expect.any(Object),
+      undefined,
       undefined
     );
   });

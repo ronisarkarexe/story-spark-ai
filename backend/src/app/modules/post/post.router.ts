@@ -22,8 +22,13 @@ router.post(
 );
 
 router.get(
-  "/",
-  PostController.getPosts
+  "/tag/:tag",
+  PostController.getPostsByTag
+);
+
+router.get(
+  "/:id",
+  PostController.getSinglePost
 );
 
 router.get(
@@ -98,7 +103,7 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
-  checkRequestLimit,
+  checkRequestLimit(),
   PostController.remixStory
 );
 
@@ -110,7 +115,7 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
-  checkRequestLimit,
+  checkRequestLimit(),
   PostController.translateStory
 );
 

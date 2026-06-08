@@ -9,9 +9,13 @@ import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
 
-dns.setServers(["1.1.1.1", "8.8.8.8"]);
+// Override DNS resolvers only when explicitly configured; default to the platform resolver.
+if (config.dns_servers?.length) {
+  dns.setServers(config.dns_servers);
+}
 
 if (config.disable_logs) {
+  // Silence only verbose channels; keep warn/error so failures stay visible in logs.
   const noop = () => undefined;
   console.log = noop;
   console.info = noop;
@@ -32,13 +36,21 @@ async function main() {
     });
 
     const httpServer = http.createServer(app);
+    const defaultCorsOrigins =
+      process.env.NODE_ENV === "development"
+      ? ["http://localhost:4001", "http://localhost:4002"]
+      : [];
+
+    const socketCorsOrigins =
+      config.cors_origins && config.cors_origins.length > 0
+      ? config.cors_origins
+      : defaultCorsOrigins;
+
     const io = new Server(httpServer, {
-      cors: {
-        origin: config.cors_origins?.length
-          ? config.cors_origins
-          : ["http://localhost:4001", "https://storysparkai-five.vercel.app"],
-        credentials: true,
-      },
+        cors: {
+          origin: socketCorsOrigins,
+          credentials: true,
+        },
     });
 
     const [{ setNotificationSocket }, { setupCollabSocket }] = await Promise.all([
