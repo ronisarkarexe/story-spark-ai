@@ -1,20 +1,17 @@
 import React from "react";
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
-import StoriesComponent from "./components/stories/stories.component";
-
 import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
   Outlet,
 } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
 
+import ScrollToTop from "./components/ScrollToTop";
+import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
+import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import CollabHome from "./components/collab/CollabHome";
+import CollabRoom from "./components/collab/CollabRoom";
+import StoriesComponent from "./components/stories/stories.component";
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import LoginComponent from "./components/login/login.component";
@@ -53,7 +50,6 @@ import ContributorsComponent from "./components/footer/contributors";
 import ReportBug from "./components/report-bug/ReportBug";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import StoryWorkspace from "./components/story/StoryWorkspace";
-import StoriesComponent from "./components/stories/stories.component";
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
