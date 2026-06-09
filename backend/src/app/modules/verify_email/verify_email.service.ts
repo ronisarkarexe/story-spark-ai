@@ -159,7 +159,6 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   }
 
   // FIX #4: Create verification token instead of returning only { verified: true }
-  // This token binds the verification to a specific email and must be used in registration
   const verificationToken = crypto.randomBytes(32).toString("hex");
   const verificationTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes validity
   
@@ -181,6 +180,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
 export const VerifyEmailService = {
   VerifyEmail,
   VerifyOtp,
+};
 };
 
 const clearOtpAttempts = (email: string) => {

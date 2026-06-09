@@ -344,6 +344,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   // States
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -1965,6 +1967,17 @@ ${content}
               </div>
             </div>
 
+            <button
+              onClick={handleGenerateAlternateEndings}
+              disabled={isGeneratingEndings}
+              className={`px-5 py-2.5 rounded-xl font-bold transition-all text-white ${
+                isGeneratingEndings 
+                  ? "bg-slate-700 cursor-not-allowed opacity-50" 
+                  : "bg-indigo-600 hover:bg-indigo-500 active:scale-95 shadow-md shadow-indigo-600/20"
+              }`}
+            >
+              {isGeneratingEndings ? "Generating Endings..." : "Generate Alternate Endings"}
+            </button>
             {/* Story selector thumbnails */}
             <div className="flex justify-start sm:justify-end shrink-0 select-none mt-4 sm:mt-0">
               <div className="flex -space-x-4">
