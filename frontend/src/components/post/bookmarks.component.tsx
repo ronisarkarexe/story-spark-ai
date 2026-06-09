@@ -231,7 +231,7 @@ const BookmarksComponent = () => {
                   </div>
                 ) : (
                   <ExploreViewListComponent
-                    posts={filteredPosts}
+                    posts={sortedPosts}
                     isLoading={isLoading}
                   />
                 )
@@ -262,10 +262,6 @@ const BookmarksComponent = () => {
                     ))}
                   </div>
                 )
-                <ExploreViewListComponent
-                  posts={sortedPosts}
-                  isLoading={isLoading}
-                />
               )}
             </div>
 
