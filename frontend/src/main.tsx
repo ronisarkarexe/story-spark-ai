@@ -10,6 +10,9 @@ import "./index.css";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
+if (!GOOGLE_CLIENT_ID) {
+  console.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will not function.");
+}
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
