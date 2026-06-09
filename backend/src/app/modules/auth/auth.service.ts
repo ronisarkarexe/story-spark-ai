@@ -283,6 +283,8 @@ const googleLogin = async (payload: { token: string }) => {
             twitter: "",
             linkedin: "",
             instagram: "",
+            github: "",
+            discord: "",
           },
         },
       };
