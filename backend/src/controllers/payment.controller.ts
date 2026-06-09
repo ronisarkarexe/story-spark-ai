@@ -1,71 +1,121 @@
 import { Request, Response } from "express";
+import Razorpay from "razorpay";
 import crypto from "crypto";
-import razorpayInstance from "../config/razorpay";
+import { Order } from "../app/modules/payment/order.model";
+import { User } from "../app/modules/user/user.model";
 
-// Validate RAZORPAY_KEY_SECRET is present at startup so misconfigured
-// deployments fail loudly rather than silently passing undefined to
-// crypto.createHmac() and returning an opaque 500 during payment verification.
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
-if (!RAZORPAY_KEY_SECRET) {
-  throw new Error(
-    "Missing required environment variable: RAZORPAY_KEY_SECRET. " +
-    "Payment verification cannot work without it."
-  );
-}
+// Server-side plan -> price map (paise)
+// Amount is NEVER trusted from the client. The client sends a plan name;
+// the server derives the canonical price.
+const PLAN_PRICE_MAP: Record<string, { amount: number; currency: string }> = {
+  basic: { amount: 49900, currency: "INR" },
+  pro: { amount: 99900, currency: "INR" },
+  premium: { amount: 199900, currency: "INR" },
+};
 
-// Creates a new Razorpay order and returns the order details to the frontend
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+});
+
+// POST /api/v1/payment/create-order
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { amount } = req.body;
-
-    // Validate that amount is provided and is a positive number
-    if (!amount || typeof amount !== "number" || amount <= 0) {
-      return res.status(400).json({ success: false, message: "Invalid amount" });
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const options = {
-      amount: amount * 100, // Razorpay accepts amount in paise (1 INR = 100 paise)
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`, // Unique receipt ID using timestamp
-    };
+    const { plan } = req.body;
 
-    const order = await razorpayInstance.orders.create(options);
-    res.status(200).json({ success: true, order });
+    // Validate plan - reject anything not in the server-side map
+    if (!plan || !PLAN_PRICE_MAP[plan]) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid plan. Valid options: ${Object.keys(PLAN_PRICE_MAP).join(", ")}`,
+      });
+    }
+
+    const { amount, currency } = PLAN_PRICE_MAP[plan];
+
+    // Create the Razorpay order
+    const razorpayOrder = await razorpay.orders.create({
+      amount,
+      currency,
+      receipt: `receipt_${userId}_${Date.now()}`,
+    });
+
+    // Persist an order record so verifyPayment can resolve the tier
+    // without trusting anything from the client
+    await Order.create({
+      userId,
+      razorpayOrderId: razorpayOrder.id,
+      plan,
+      amount,
+      currency,
+      status: "created",
+    });
+
+    return res.status(201).json({
+      success: true,
+      orderId: razorpayOrder.id,
+      amount,
+      currency,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Order creation failed" });
+    console.error("createOrder error:", error);
+    return res.status(500).json({ success: false, message: "Failed to create order" });
   }
 };
 
-// Verifies the payment signature to confirm the payment is legitimate
+// POST /api/v1/payment/verify
 export const verifyPayment = async (req: Request, res: Response) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-    // Validate that all required payment fields are present
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ success: false, message: "Missing payment details" });
+      return res.status(400).json({ success: false, message: "Missing payment fields" });
     }
 
-    // Razorpay signature verification: HMAC-SHA256 of "order_id|payment_id"
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    // 1. Verify the HMAC signature
     const expectedSignature = crypto
-      .createHmac("sha256", RAZORPAY_KEY_SECRET)
-      .update(body)
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    // Use timingSafeEqual to compare signatures and prevent timing-based attacks
-    const expectedBuffer = Buffer.from(expectedSignature, "hex");
-    const receivedBuffer = Buffer.from(razorpay_signature, "hex");
-    const signaturesMatch =
-      expectedBuffer.length === receivedBuffer.length &&
-      crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
-
-    if (!signaturesMatch) {
-      return res.status(400).json({ success: false, message: "Invalid signature" });
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Invalid payment signature" });
     }
 
-    res.status(200).json({ success: true, message: "Payment verified successfully" });
+    // 2. Atomically claim the order: created -> paid
+    //    Using findOneAndUpdate with a status guard makes a replayed verify a no-op,
+    //    preventing a subscription from being granted twice.
+    const order = await Order.findOneAndUpdate(
+      { razorpayOrderId: razorpay_order_id, status: "created" },
+      { status: "paid", razorpayPaymentId: razorpay_payment_id },
+      { new: true }
+    );
+
+    if (!order) {
+      // Either the order doesn't exist or was already claimed
+      return res.status(409).json({
+        success: false,
+        message: "Order not found or already processed",
+      });
+    }
+
+    // 3. Upgrade the user's subscriptionType using the tier stored in the order
+    await User.findByIdAndUpdate(order.userId, {
+      subscriptionType: order.plan,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment verified and subscription upgraded",
+      plan: order.plan,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Payment verification failed" });
+    console.error("verifyPayment error:", error);
+    return res.status(500).json({ success: false, message: "Payment verification failed" });
   }
 };

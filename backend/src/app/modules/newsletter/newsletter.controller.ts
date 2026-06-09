@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as newsletterService from "./newsletter.service";
+import httpStatus from "http-status";
 
 // Subscribe user to newsletter
 export const subscribe = async (req: Request, res: Response) => {
@@ -7,31 +8,36 @@ export const subscribe = async (req: Request, res: Response) => {
     const { email, name, source } = req.body;
 
     if (!email || !email.includes("@")) {
-      return res.status(400).json({ message: "Valid email is required." });
+      return res.status(httpStatus.BAD_REQUEST).json({ message: "Valid email is required." });
     }
 
     // Extract logged-in user id from JWT token if available
     const userId = (req as any).user?.id;
 
+    // Origin of the API request, used to build the unsubscribe link in the email.
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
     const result = await newsletterService.subscribeNewsletter(
       email,
       name,
       source,
-      userId
+      userId,
+      baseUrl
     );
 
-    res.status(200).json(result);
+    res.status(httpStatus.OK).json(result);
   } catch (err: any) {
     if (err.code === 11000) {
-      return res.status(409).json({
+      return res.status(httpStatus.CONFLICT).json({
         message: "This email is already subscribed.",
       });
     }
-    res.status(400).json({
+    res.status(httpStatus.BAD_REQUEST).json({
       message: err.message,
     });
   }
 };
+
 // Verify newsletter subscription token
 export const verify = async (req: Request, res: Response) => {
   try {
@@ -39,49 +45,30 @@ export const verify = async (req: Request, res: Response) => {
 
     const result = await newsletterService.verifyNewsletter(token);
 
-    res.status(200).json(result);
+    res.status(httpStatus.OK).json(result);
   } catch (err: any) {
-    res.status(400).json({
+    res.status(httpStatus.BAD_REQUEST).json({
       message: err.message,
     });
   }
 };
 
-// Unsubscribe user from newsletter
-export const unsubscribe = async (req: Request, res: Response) => {
-  try {
-    const { email } = req.body;
-
-    const result = await newsletterService.unsubscribeNewsletter(email);
-
-    res.status(200).json(result);
-  } catch (err: any) {
-    res.status(400).json({
-      message: err.message,
-    });
-  }
-};
-// Generate unsubscribe token (to be sent via email link)
-export const generateUnsubscribeToken = async (req: Request, res: Response) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: "Email is required." });
-    }
-    const result = await newsletterService.generateUnsubscribeToken(email);
-    res.status(200).json(result);
-  } catch (err: any) {
-    res.status(400).json({ message: err.message });
-  }
-};
-
-// Unsubscribe via signed token — safe, no unauthenticated email enumeration
+// Unsubscribe via token from the email link. Safe, no email enumeration.
 export const unsubscribeByToken = async (req: Request, res: Response) => {
   try {
-    const { token } = req.params;
-    const result = await newsletterService.unsubscribeByToken(token);
-    res.status(200).json(result);
+    const token = (req.params.token as string || "").trim();
+    const safeToken = Array.isArray(token) ? token[0] : token;
+
+    const result = await newsletterService.unsubscribeByToken(safeToken);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Successfully unsubscribed",
+      data: result,
+    });
   } catch (err: any) {
-    res.status(400).json({ message: err.message });
+    res.status(httpStatus.BAD_REQUEST).json({
+      message: err.message,
+    });
   }
 };

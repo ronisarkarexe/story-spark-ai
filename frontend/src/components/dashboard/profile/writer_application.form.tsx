@@ -20,15 +20,17 @@ export const WriterApplicationForm = ({ user }: Props) => {
 
   if (user.isApplyForWriter) {
     return (
-      <div className="max-w-3xl mx-auto mt-8">
-        <div className="bg-slate-50 border border-slate-200 dark:bg-slate-800/40 dark:border-slate-700/50 rounded-xl shadow-lg p-6 md:p-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 mb-4">
-            <i className="fas fa-clock text-2xl"></i>
+      <div className="w-full">
+        <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-lg dark:border-slate-700/50 dark:bg-slate-800/40">
+          <div className="p-6 md:p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 mb-4">
+              <i className="fas fa-clock text-2xl"></i>
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Application Under Review</h3>
+            <p className="text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
+              You have already submitted an application for writer access. Our team is currently reviewing it. You will be notified once a decision is made.
+            </p>
           </div>
-          <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Application Under Review</h3>
-          <p className="text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
-            You have already submitted an application for writer access. Our team is currently reviewing it. You will be notified once a decision is made.
-          </p>
         </div>
       </div>
     );
@@ -43,16 +45,16 @@ export const WriterApplicationForm = ({ user }: Props) => {
     try {
       await submitApplication(formData).unwrap();
       toast.success("Application submitted successfully!");
-    } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || "Failed to submit application");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to submit application");
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-8">
-      <div className="bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06] rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-indigo-600 px-6 py-4">
+    <div className="w-full">
+      <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-lg dark:border-white/[0.06] dark:bg-white/[0.02]">
+        <div className="bg-indigo-600 px-6 py-5 sm:px-8">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <i className="fas fa-pen-nib"></i>
             Apply for Writer Access
@@ -62,9 +64,9 @@ export const WriterApplicationForm = ({ user }: Props) => {
           </p>
         </div>
 
-        <div className="p-6 md:p-8">
+        <div className="p-6 md:p-8 lg:p-10">
           <form onSubmit={handleSubmit}>
-            <div className="space-y-6">
+            <div className="space-y-7">
               <div>
                 <label htmlFor="portfolioLink" className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1">
                   Portfolio / Website URL <span className="text-red-400">*</span>

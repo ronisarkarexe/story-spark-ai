@@ -16,7 +16,8 @@ const genreImages: { [key: string]: string } = {
 };
 
 export async function fetchImageURL(
-  prompt: string
+  prompt: string,
+  signal?: AbortSignal
 ): Promise<{ imageUrl: string }> {
   const normalized = (prompt || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   let fallbackImage = genreImages.default;
@@ -37,7 +38,7 @@ export async function fetchImageURL(
   )}&client_id=${accessKey}`;
   
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { signal });
     if (!response.ok) {
       return { imageUrl: fallbackImage };
     }

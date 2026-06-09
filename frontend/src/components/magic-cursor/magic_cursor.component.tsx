@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "../theme/theme.context";
 
 type Sparkle = {
   id: number;
@@ -12,6 +13,7 @@ const MAX_SPARKLES = 9;
 const SPARKLE_LIFETIME = 760;
 
 const MagicCursorComponent = () => {
+  const { glowEnabled } = useTheme();
   const [enabled, setEnabled] = useState(false);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const cursorRef = useRef<HTMLDivElement | null>(null);
@@ -142,7 +144,7 @@ const MagicCursorComponent = () => {
   document.activeElement instanceof HTMLInputElement ||
   document.activeElement instanceof HTMLTextAreaElement;
 
-  if (!enabled || isInputFocused) {
+  if (!enabled || isInputFocused || !glowEnabled) {
   return null;
 }
 

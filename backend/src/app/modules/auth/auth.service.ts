@@ -1,10 +1,13 @@
+import { Types } from "mongoose";
 import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import { Secret } from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { AuthModel } from "./auth.interface";
 import { User } from "../user/user.model";
-import { JwtHalers } from "../../../utils/jwt.helper";
+import { JwtHelpers } from "../../../utils/jwt.helper";
+import { RefreshSession } from "./refresh_session.model";
+import { ITokenPayload } from "../../../interfaces/token";
 import logger from "../../../utils/logger.util";
 import config from "../../../config";
 import ApiError from "../../../errors/api_error";
@@ -31,14 +34,24 @@ const login = async (payload: AuthModel) => {
   if (!match) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Password is not valid!");
   }
-  const { _id, email, role, subscriptionType, name, postsCount } = isExistUser;
-  const accessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+  const jti = new Types.ObjectId().toString();
+  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } = isExistUser;
+
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+  await RefreshSession.create({
+    jti,
+    userId: _id,
+    expiresAt,
+  });
+
+  const accessToken = JwtHelpers.createToken(
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
-  const refreshToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+  const refreshToken = JwtHelpers.createToken(
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion, jti },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
@@ -98,14 +111,24 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
   // Clean up OTP record after successful registration
   await OTPModel.deleteOne({ email: userEmail });
   
-  const { _id, email, role, subscriptionType, name, postsCount } = result;
-  const accessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+  const jti = new Types.ObjectId().toString();
+  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } = result;
+
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+  await RefreshSession.create({
+    jti,
+    userId: _id,
+    expiresAt,
+  });
+
+  const accessToken = JwtHelpers.createToken(
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
-  const refreshToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+  const refreshToken = JwtHelpers.createToken(
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion, jti },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
@@ -118,7 +141,7 @@ const register = async (payload: IUser & { verificationToken?: string }) => {
 const refreshToken = async (token: string) => {
   let verifiedToken = null;
   try {
-    verifiedToken = JwtHalers.verifyToken(
+    verifiedToken = JwtHelpers.verifyToken(
       token,
       config.jwt.refresh_secret as Secret
     );
@@ -126,19 +149,50 @@ const refreshToken = async (token: string) => {
     throw new ApiError(httpStatus.FORBIDDEN, "Invalid refresh token");
   }
 
-  const { email: userEmail } = verifiedToken;
+  const { email: userEmail, jti: oldJti } = verifiedToken;
+
+  if (oldJti) {
+    const session = await RefreshSession.findOne({ jti: oldJti });
+    if (session) {
+      if (session.used || session.revoked) {
+        await RefreshSession.updateMany({ userId: session.userId }, { revoked: true });
+        await User.updateOne({ _id: session.userId }, { $inc: { tokenVersion: 1 } });
+        throw new ApiError(httpStatus.FORBIDDEN, "Refresh token has been revoked due to reuse detection");
+      }
+      session.used = true;
+      await session.save();
+    }
+  }
+
   const user = await User.findOne({ email: userEmail });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
-  const { _id, email, role, subscriptionType, name, postsCount } = user;
-  const newAccessToken = JwtHalers.createToken(
-    { _id, email, role, subscriptionType, name, postsCount },
+  const { _id, email, role, subscriptionType, name, postsCount, tokenVersion } = user;
+
+  const newJti = new Types.ObjectId().toString();
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+  await RefreshSession.create({
+    jti: newJti,
+    userId: _id,
+    expiresAt,
+  });
+
+  const newAccessToken = JwtHelpers.createToken(
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
+  const newRefreshToken = JwtHelpers.createToken(
+    { _id, email, role, subscriptionType, name, postsCount, tokenVersion, jti: newJti },
+    config.jwt.refresh_secret as Secret,
+    config.jwt.refresh_expires_in as string
+  );
+
   return {
     accessToken: newAccessToken,
+    refreshToken: newRefreshToken,
   };
 };
 
@@ -177,6 +231,8 @@ const googleLogin = async (payload: { token: string }) => {
             twitter: "",
             linkedin: "",
             instagram: "",
+            github: "",
+            discord: "",
           },
         },
       };
@@ -184,14 +240,24 @@ const googleLogin = async (payload: { token: string }) => {
       user = await User.create(newUser);
     }
 
-    const { _id, role, subscriptionType, postsCount, name } = user;
-    const accessToken = JwtHalers.createToken(
-      { _id, email, role, subscriptionType, name, postsCount },
+    const jti = new Types.ObjectId().toString();
+    const { _id, role, subscriptionType, postsCount, name, tokenVersion, email: userEmail } = user;
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+    await RefreshSession.create({
+      jti,
+      userId: _id,
+      expiresAt,
+    });
+
+    const accessToken = JwtHelpers.createToken(
+      { _id, email: userEmail, role, subscriptionType, name, postsCount, tokenVersion },
       config.jwt.secret as Secret,
       config.jwt.expires_in as string
     );
-    const refreshTokenData = JwtHalers.createToken(
-      { _id, email, role, subscriptionType, name, postsCount },
+    const refreshTokenData = JwtHelpers.createToken(
+      { _id, email: userEmail, role, subscriptionType, name, postsCount, tokenVersion, jti },
       config.jwt.refresh_secret as Secret,
       config.jwt.refresh_expires_in as string
     );
@@ -301,14 +367,24 @@ const resetPassword = async (payload: {
   await OTPModel.deleteOne({ email });
 
   // Generate JWT tokens for auto-login
-  const { _id, role, subscriptionType, name, postsCount } = user;
-  const accessToken = JwtHalers.createToken(
-    { _id, email: user.email, role, subscriptionType, name, postsCount },
+  const jti = new Types.ObjectId().toString();
+  const { _id, role, subscriptionType, name, postsCount, tokenVersion } = user;
+
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+  await RefreshSession.create({
+    jti,
+    userId: _id,
+    expiresAt,
+  });
+
+  const accessToken = JwtHelpers.createToken(
+    { _id, email: user.email, role, subscriptionType, name, postsCount, tokenVersion },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
-  const refreshToken = JwtHalers.createToken(
-    { _id, email: user.email, role, subscriptionType, name, postsCount },
+  const refreshToken = JwtHelpers.createToken(
+    { _id, email: user.email, role, subscriptionType, name, postsCount, tokenVersion, jti },
     config.jwt.refresh_secret as Secret,
     config.jwt.refresh_expires_in as string
   );
@@ -319,6 +395,56 @@ const resetPassword = async (payload: {
   };
 };
 
+const logout = async (token: string | undefined): Promise<void> => {
+  if (!token) {
+    return;
+  }
+  try {
+    const verifiedToken = JwtHelpers.verifyToken(
+      token,
+      config.jwt.refresh_secret as Secret
+    );
+    const { _id, jti } = verifiedToken;
+    if (jti) {
+      await RefreshSession.updateOne({ jti }, { revoked: true });
+    }
+    if (_id) {
+      await User.updateOne({ _id }, { $inc: { tokenVersion: 1 } });
+    }
+  } catch (error) {
+    // swallow errors silently
+  }
+};
+
+const changePassword = async (
+  userToken: ITokenPayload,
+  data: any
+): Promise<void> => {
+  const { email } = userToken;
+  const { oldPassword, newPassword } = data;
+
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
+  if (!user.password) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Social login accounts cannot change password!"
+    );
+  }
+
+  const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+  if (!isPasswordMatch) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Old password is not correct!");
+  }
+
+  user.password = newPassword;
+  user.tokenVersion = (user.tokenVersion || 0) + 1;
+  await user.save();
+};
+
 export const AuthService = {
   login,
   register,
@@ -326,4 +452,6 @@ export const AuthService = {
   googleLogin,
   forgotPassword,
   resetPassword,
+  logout,
+  changePassword,
 };

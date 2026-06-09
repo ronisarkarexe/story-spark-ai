@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
+import { Image as ImageIcon, X } from "lucide-react";
 import { 
   Bug, 
   Send, 
@@ -58,7 +59,13 @@ const ReportBug = () => {
 
   const onSubmit = async (data: ReportBugFormData) => {
     try {
-      await submitBugReport(data).unwrap();
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, val]) => {
+        if (val !== undefined) {
+          formData.append(key, val);
+        }
+      });
+      await submitBugReport(formData).unwrap();
       
       setIsSuccess(true);
       toast.success("Bug report submitted successfully!");

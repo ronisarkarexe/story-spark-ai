@@ -7,6 +7,16 @@ export interface Chapter {
 
 export interface Story {
   id: string;
+  _id?: string;
   title: string;
   chapters: Chapter[];
+  userId?: string;
+}
+
+export interface StoryVersion {
+  id: string;
+  timestamp: string;
+  title: string;
+  chapterCount: number;
+  storySnapshot: Story;
 }
