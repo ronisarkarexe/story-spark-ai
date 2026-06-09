@@ -149,6 +149,7 @@ const ExploreComponent = () => {
   return (
     <div className="pt-0 min-h-screen bg-white text-slate-900 relative overflow-hidden transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        
         {/* Top Section */}
         <div className="pt-2 pb-6 flex flex-col md:flex-row gap-4 md:gap-8">
           <div className="w-full md:w-64">
@@ -162,14 +163,19 @@ const ExploreComponent = () => {
 
           <div className="flex-1">
             <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </span>
               <input
                 type="text"
                 placeholder="Search title, tag..."
                 className="w-full pl-12 pr-4 py-3 text-base text-slate-900 placeholder:text-slate-400 bg-gray-100/80 backdrop-blur-md border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner dark:bg-slate-900/50 dark:text-white dark:placeholder:text-slate-400 dark:border-none"
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Main Layout */}
         <div className="flex flex-col md:flex-row gap-8">
@@ -180,7 +186,6 @@ const ExploreComponent = () => {
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   Filters
                 </h3>
-
                 <button
                   onClick={resetAllStates}
                   className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400 dark:hover:text-blue-300"
@@ -195,7 +200,6 @@ const ExploreComponent = () => {
                   <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
                     Genres
                   </h4>
-
                   <div className="space-y-2">
                     {availableGenres.map((genre) => (
                       <label key={genre} className="flex items-center">
@@ -215,10 +219,9 @@ const ExploreComponent = () => {
 
                 {/* Tags */}
                 <div>
-                    <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
                     Trending Tags
                   </h4>
-
                   <div className="flex flex-wrap gap-2">
                     {availableTags.map((tag) => (
                       <span
@@ -239,12 +242,9 @@ const ExploreComponent = () => {
                 {/* Sort */}
                 <div>
                   <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">Sort By</h4>
-
                   <select
                     value={sortBy}
-                    onChange={(e) => {
-                      setSortBy(e.target.value);
-                    }}
+                    onChange={(e) => setSortBy(e.target.value)}
                     className="w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 text-slate-900 p-2.5 outline-none transition-all cursor-pointer appearance-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200"
                   >
                     <option value="createdAt">Latest</option>
@@ -257,12 +257,9 @@ const ExploreComponent = () => {
                 {/* Order */}
                 <div>
                   <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">Order</h4>
-
                   <select
                     value={sortOrder}
-                    onChange={(e) => {
-                      setSortOrder(e.target.value);
-                    }}
+                    onChange={(e) => setSortOrder(e.target.value)}
                     className="w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 text-slate-900 p-2.5 outline-none transition-all cursor-pointer appearance-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200"
                   >
                     <option value="desc">Descending</option>
@@ -273,7 +270,7 @@ const ExploreComponent = () => {
             </div>
           </div>
 
-          {/* Content */}
+          {/* Content Area */}
           <div className="flex-1 flex flex-col min-h-[70vh]">
             <div className={`${featuredPost ? "mb-6" : ""}`}>
               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
@@ -306,9 +303,7 @@ const ExploreComponent = () => {
                   <select
                     className="!rounded-button border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-gray-100 text-slate-900 py-1.5 px-3 outline-none transition-all appearance-none cursor-pointer dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
                     value={size}
-                    onChange={(e) => {
-                      setSize(Number(e.target.value));
-                    }}
+                    onChange={(e) => setSize(Number(e.target.value))}
                   >
                     <option value={10}>10</option>
                     <option value={25}>25</option>
@@ -325,22 +320,17 @@ const ExploreComponent = () => {
               {!isLoading && filteredPosts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] text-center">
                   <div className="text-6xl mb-4">📚</div>
-
                   <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
                     No stories found
                     {searchTerm && (
                       <span className="text-indigo-400">
-                        {" "}
-                        for "{searchTerm}"
+                        {" "}for "{searchTerm}"
                       </span>
                     )}
                   </h2>
-
                   <p className="text-slate-600 dark:text-gray-400 max-w-md">
-                    Try searching with different keywords or explore trending
-                    tags and genres.
+                    Try searching with different keywords or explore trending tags and genres.
                   </p>
-
                   <button
                     onClick={resetAllStates}
                     className="mt-6 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 transition-colors rounded-md text-white"
@@ -375,10 +365,11 @@ const ExploreComponent = () => {
             )}
           </div>
         </div>
+
       </div>
 
+      {/* Ambient background glows */}
       <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
-
       <div className="fixed bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
     </div>
   );

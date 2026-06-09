@@ -23,10 +23,8 @@ const HelpSidebar: FC = () => {
         }
       },
       {
-
         rootMargin: "-20% 0px -55% 0px",
         threshold: [0.1, 0.25, 0.5],
-
       }
     );
 
@@ -117,7 +115,7 @@ const HelpSidebar: FC = () => {
                       key={section.id}
                       type="button"
                       onClick={() => scrollToSection(section.id)}
-                      className={`relative group w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 overflow-hidden border focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-left box-border ${
+                      className={`relative group w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 overflow-hidden border focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-left box-border bg-transparent cursor-pointer ${
                         isActive
                           ? "border-blue-300 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/15 dark:to-indigo-500/15"
                           : "border-slate-200 dark:border-white/5 hover:border-blue-200 dark:hover:border-white/10 bg-white/50 dark:bg-white/[0.03] hover:bg-slate-50 dark:hover:bg-white/[0.05]"
@@ -152,7 +150,6 @@ const HelpSidebar: FC = () => {
                         }`}>
                           {section.label}
                         </p>
-                        {/* The 'Jump to section' text has been safely removed from here! */}
                       </div>
 
                       <div className="relative z-10 shrink-0">
@@ -165,65 +162,36 @@ const HelpSidebar: FC = () => {
                 })}
               </div>
 
-              {/* Bottom Support CTA Card */}
+              {/* Support CTA Card */}
               <motion.div
                 whileHover={{ y: -2 }}
-                className="relative overflow-hidden mt-6 rounded-2xl border border-blue-200 dark:border-indigo-500/20 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-indigo-500/10 dark:via-blue-500/10 dark:to-slate-900/30 p-5"
+                className="relative overflow-hidden mt-8 rounded-3xl border border-blue-200 dark:border-indigo-500/20 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-indigo-500/10 dark:via-blue-500/10 dark:to-slate-900/30 p-6"
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
-                      <i className="fa-solid fa-sparkles text-sm" aria-hidden="true" />
+                <div className="absolute top-0 right-0 w-28 h-28 bg-blue-500/10 rounded-full blur-3xl" />
+                <div className="relative z-10 flex flex-col gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shrink-0">
+                      <i className="fa-solid fa-sparkles text-lg" aria-hidden="true" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-800 dark:text-white text-sm">
-                        Still Stuck?
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        We're here to help
-                      </p>
+                      <h3 className="font-bold text-slate-800 dark:text-white">Need More Help?</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Contact support</p>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Support CTA Card */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              className="relative overflow-hidden mt-8 rounded-3xl border border-blue-200 dark:border-indigo-500/20 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-indigo-500/10 dark:via-blue-500/10 dark:to-slate-900/30 p-6"
-            >
-              <div className="absolute top-0 right-0 w-28 h-28 bg-blue-500/10 rounded-full blur-3xl" />
-              <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-lg">
-                    <i className="fa-solid fa-sparkles text-lg" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-800 dark:text-white">Need More Help?</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Contact support</p>
-
                   </div>
 
                   <button
                     type="button"
                     onClick={() => scrollToSection("support-links-section")}
-                    className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 text-xs transition-all duration-300 shadow-md shadow-blue-500/10"
+                    className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 text-xs transition-all duration-300 shadow-md shadow-blue-500/10 cursor-pointer border-0"
                   >
                     Open Support Hub
                   </button>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-      </div>
-    </nav>
-
-
-      {/* Mobile sticky nav */}
-      <nav className="lg:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 mb-8" aria-label="Help center sections">
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </nav>
 
       {/* Mobile horizontal scroll nav */}
       <nav
@@ -242,10 +210,10 @@ const HelpSidebar: FC = () => {
                 type="button"
                 data-section-id={section.id}
                 onClick={() => scrollToSection(section.id)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 border-1 cursor-pointer ${
                   isSelected
-                    ? "bg-indigo-100 dark:bg-indigo-500/30 text-indigo-700 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-500/40 shadow-sm"
-                    : "bg-white dark:bg-white/5 text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
+                    ? "bg-indigo-100 dark:bg-indigo-500/30 text-indigo-700 dark:text-indigo-200 border-indigo-300 dark:border-indigo-500/40 shadow-sm"
+                    : "bg-white dark:bg-white/5 text-slate-600 dark:text-gray-400 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
                 }`}
                 aria-current={isSelected ? "true" : undefined}
               >

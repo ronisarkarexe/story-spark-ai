@@ -55,7 +55,6 @@ const FooterComponent = () => {
   const resourceLinks = [
     { label: "Blog",         to: "/blog"        },
     { label: "Help Center",  to: "/help-center"    },
-    // ─── FIXED: Changed from "/community" to match the secure dashboard sub-route ───
     { label: "Community",    to: "/dashboard/community" },
     { label: "Contributors", to: "/contributors"},
     { label: "Support / Feedback", to: "/contact-us" },
@@ -80,6 +79,7 @@ const FooterComponent = () => {
 
   return (
     <footer className="relative w-full bg-gradient-to-b from-[#090F24] via-[#080E22] to-[#060A18] overflow-hidden">
+      {/* Decorative Blur and Light Effects */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0"
@@ -123,7 +123,8 @@ const FooterComponent = () => {
 
       <div className="relative z-10 max-w-[1450px] mx-auto px-6 sm:px-8 lg:px-10 pt-12 pb-10">
         <div className="grid grid-cols-12 gap-x-6 gap-y-10 items-start">
-
+          
+          {/* Brand Panel */}
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-5">
             <Link to="/" className="group inline-block w-fit">
               <img
@@ -141,6 +142,7 @@ const FooterComponent = () => {
             </p>
           </div>
 
+          {/* Platform Directory Column */}
           <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Platform</h3>
             <ul className="flex flex-col gap-[12.5px]">
@@ -155,6 +157,7 @@ const FooterComponent = () => {
             </ul>
           </div>
 
+          {/* Resources Column */}
           <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Resources</h3>
             <ul className="flex flex-col gap-[12.5px]">
@@ -176,6 +179,7 @@ const FooterComponent = () => {
             </ul>
           </div>
 
+          {/* Socials Column */}
           <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
               Follow Us
@@ -206,59 +210,39 @@ const FooterComponent = () => {
             </ul>
           </div>
 
+          {/* Newsletter Segment */}
           <div className="col-span-12 sm:col-span-8 lg:col-span-2 flex flex-col gap-4">
             <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">Stay Updated</h3>
             <p className="text-[13.5px] leading-[1.65] text-slate-300/80 max-w-sm">
               Writing tips, product updates, and stories straight to your inbox.
             </p>
+            
             <form
               onSubmit={handleSubscribe}
               noValidate
-
-              className="group/form mt-1 flex items-center rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-1 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
+              className="mt-0.5 flex flex-col gap-2 rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-2 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
             >
-              <span className="shrink-0 pl-3 text-slate-500 text-[13px]">
-                <i className="fa-solid fa-envelope" aria-hidden="true" />
-              </span>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@storyspark.ai"
-                disabled={status === "loading"}
-                className="w-full min-w-0 bg-transparent pl-2.5 pr-1.5 py-2 text-[13px] text-white placeholder-slate-500 focus:outline-none"
-              />
+              <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
+                <i className="fa-solid fa-envelope text-slate-500 text-[13px]" aria-hidden="true" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@storyspark.ai"
+                  disabled={status === "loading"}
+                  className="w-full h-full bg-transparent text-[13px] text-white placeholder-slate-500 focus:outline-none"
+                />
+              </div>
+
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-[12px] font-semibold text-white tracking-wide hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60"
-
-              className="mt-0.5 flex flex-col gap-2 rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-2 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
-
+                className="self-start h-8 px-3 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 text-[11px] font-medium text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60 cursor-pointer"
               >
-               {/* Input */}
-              <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
-              <i className="fa-solid fa-envelope text-slate-500 text-[13px]" />
-
-              <input
-                  type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@storyspark.ai"
-                    disabled={status === "loading"}
-                    className="w-full h-full bg-transparent text-[13px] text-white placeholder-slate-500 focus:outline-none"
-                  />
-              </div>
-
-               {/* Small button below */}
-              <button
-                  type="submit"
-                  disabled={status === "loading"}
-                  className="self-start h-8 px-3 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 text-[11px] font-medium text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60"
-              >
-                  {status === "loading" ? "..." : "Subscribe"}
+                {status === "loading" ? "..." : "Subscribe"}
               </button>
             </form>
+
             <div aria-live="polite" role="status">
               {status === "success" && <p className="text-[12.5px] text-green-400 mt-1">{message}</p>}
               {status === "error" && <p className="text-[12.5px] text-red-400 mt-1">{message}</p>}
@@ -267,6 +251,7 @@ const FooterComponent = () => {
           </div>
         </div>
 
+        {/* Horizontal Split Line */}
         <div
           className="my-8"
           style={{
@@ -275,13 +260,13 @@ const FooterComponent = () => {
           }}
         />
 
+        {/* Footer Base Legal Panel */}
         <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-slate-400/80">
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 gap-y-1 text-center md:text-left">
             <span className="text-slate-400/80">&copy; {currentYear} StorySparkAI. All rights reserved.</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
             {legalLinks.map(({ label, to }, i) => (
-
               <React.Fragment key={label}>
                 <Link to={to} className="hover:text-blue-300 transition-colors">
                   {label}
@@ -290,17 +275,6 @@ const FooterComponent = () => {
                   <span className="text-white/[0.12]">|</span>
                 )}
               </React.Fragment>
-
-              <span key={label}>
-                <Link to={to}>
-                  {label}
-                </Link>
-
-                {i < legalLinks.length - 1 && (
-                  <span className="text-white/[0.12]">|</span>
-                )}
-              </span>
-
             ))}
           </div>
         </div>

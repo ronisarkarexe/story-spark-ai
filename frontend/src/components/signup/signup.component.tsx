@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { storeUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import logo from "../../assets/logoNew.png";
 import { Link } from "react-router-dom";
 import { useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import {

@@ -9,6 +9,8 @@ import {
 import {
   useGetVersionsByStoryIdQuery,
   useRestoreVersionMutation,
+  useGetStoryTreeQuery,
+  useCreateBranchVersionMutation,
 } from "../../redux/apis/storyVersion.api";
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
@@ -25,23 +27,10 @@ import { formatReadingStats } from "../../utils/story-utils";
 import { getUserInfo } from "../../services/auth.service";
 
 import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
-
-import {
-  useToggleFollowMutation,
-  useGetFollowStatusQuery,
-} from "../../redux/apis/user.api";
-
-import {
-  useGetVersionsByStoryIdQuery,
-  useRestoreVersionMutation,
-  useGetStoryTreeQuery,
-  useCreateBranchVersionMutation,
-} from "../../redux/apis/storyVersion.api";
+import { useToggleFollowMutation, useGetFollowStatusQuery } from "../../redux/apis/user.api";
 
 import { toast } from "react-hot-toast";
-
 import { FaXTwitter } from "react-icons/fa6";
-
 
 interface IStoryVersion {
   _id: string;
@@ -61,7 +50,6 @@ const PostDetailsComponent = () => {
   const { id } = useParams();
 
   const { data: post, isLoading } = useGetPostByIdQuery(id || "");
-
   const tag = post?.tag;
 
   const { data: relatedPost } = useGetPostByTagQuery(
@@ -73,15 +61,7 @@ const PostDetailsComponent = () => {
       skip: !tag,
     }
   );
-  
 
-  console.log("Current Post:", post);
-  console.log("Tag:", tag);
-  console.log(
-  "Related Posts Full Data:",
-  JSON.stringify(relatedPost, null, 2)
-);
-  
   const [toggleReaction] = useToggleReactionMutation();
   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
   const currentUser = getUserInfo();
@@ -96,24 +76,25 @@ const PostDetailsComponent = () => {
   });
 
   const [toggleFollow] = useToggleFollowMutation();
-
   const isFollowing = followData?.isFollowing ?? false;
 
-  // New Version Timeline and Editor States
+  // Version Timeline and Editor States
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [editedContent, setEditedContent] = useState("");
   const [showTimeline, setShowTimeline] = useState(false);
   const [readProgress, setReadProgress] = useState(0);
   const [showTree, setShowTree] = useState(false);
-  const [selectedVersionForBranch, setSelectedVersionForBranch] = useState<string | null>(null);
   const [showComparison, setShowComparison] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
+  
   const { data: versions, isLoading: isLoadingVersions } = useGetVersionsByStoryIdQuery(id || "", {
-    skip: !id || !showTimeline,
+    skip: !id || (!showTimeline && !showComparison),
   });
+  
   const [restoreVersion, { isLoading: isRestoring }] = useRestoreVersionMutation();
+
   useEffect(() => {
     const handleScroll = () => {
       const el = document.documentElement;
@@ -124,8 +105,7 @@ const PostDetailsComponent = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const { data: storyTree } = useGetStoryTreeQuery(id || "", { skip: !id || !showTree,});
-
+  const { data: storyTree } = useGetStoryTreeQuery(id || "", { skip: !id || !showTree });
   const [createBranchVersion] = useCreateBranchVersionMutation();
 
   const isAuthor = !!currentUser && authorId === currentUser?.userId;
@@ -135,7 +115,6 @@ const PostDetailsComponent = () => {
       toast.error("You need to login to follow this author");
       return;
     }
-
     if (!authorId) return;
 
     try {
@@ -147,7 +126,6 @@ const PostDetailsComponent = () => {
 
   const handleLike = async () => {
     if (!id) return;
-
     try {
       await toggleReaction({ postId: id }).unwrap();
     } catch (error) {
@@ -195,28 +173,21 @@ const PostDetailsComponent = () => {
     }
   };
 
-  const handleCreateBranch = async (versionId: string) => {const branchName = window.prompt("Enter a branch name");
+  const handleCreateBranch = async (versionId: string) => {
+    const branchName = window.prompt("Enter a branch name");
+    if (!branchName?.trim()) return;
 
-  if (!branchName?.trim()) {
-    return;
-  }
-
-  try {
-    await createBranchVersion({versionId, branchName,}).unwrap();
-
-    toast.success("Branch created successfully!");
-  } catch (error) {
-    console.error(error);
-
-    toast.error(
-      "Failed to create branch"
-    );
-  }
-};
+    try {
+      await createBranchVersion({ versionId, branchName }).unwrap();
+      toast.success("Branch created successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to create branch");
+    }
+  };
 
   const hasUserReacted = post?.reactions?.some((r) => {
     const userId = r.userId;
-
     const reactorId =
       typeof userId === "object" && userId !== null && "_id" in userId
         ? userId._id
@@ -271,6 +242,7 @@ const PostDetailsComponent = () => {
       toast.error("Unable to remove this story. Please try again.");
     }
   };
+
   if (isLoading) {
     return <LoadingAnimation />;
   }
@@ -295,7 +267,6 @@ const PostDetailsComponent = () => {
           >
             <i className="fa-solid fa-left-long"></i> BACK
           </div>
-
           <div></div>
         </div>
 
@@ -307,12 +278,10 @@ const PostDetailsComponent = () => {
                   name={post?.author?.name || "Unknown User"}
                   size="h-12 w-12"
                 />
-
                 <div>
                   <h3 className="font-medium text-slate-700 dark:text-gray-400">
                     {post?.author?.name || "Unknown User"}
                   </h3>
-
                   <div className="flex items-center text-sm text-slate-500 dark:text-gray-500">
                     <span>{formatDateShort(post ? post?.createdAt : "")}</span>
                   </div>
@@ -455,10 +424,7 @@ const PostDetailsComponent = () => {
                       : "text-slate-600 hover:text-slate-900 dark:text-gray-600 dark:hover:text-gray-400"
                   }`}
                 >
-                  <i
-                    className={`${hasUserReacted ? "fas" : "far"} fa-heart`}
-                  ></i>
-
+                  <i className={`${hasUserReacted ? "fas" : "far"} fa-heart`}></i>
                   <span>{post?.likesCount}</span>
                 </button>
 
@@ -472,9 +438,8 @@ const PostDetailsComponent = () => {
 
               <div className="flex items-center space-x-3 bg-slate-800/40 backdrop-blur-md px-4 py-2 rounded-full border border-slate-700/50 shadow-sm">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 mr-1 select-none">
-                Share:
+                  Share:
                 </span>
-
                 <button
                   id="share-twitter-btn"
                   onClick={handleTwitterShare}
@@ -483,7 +448,6 @@ const PostDetailsComponent = () => {
                 >
                   <FaXTwitter className="text-sm" />
                 </button>
-
                 <button
                   id="share-linkedin-btn"
                   onClick={handleLinkedInShare}
@@ -492,7 +456,6 @@ const PostDetailsComponent = () => {
                 >
                   <i className="fab fa-linkedin text-sm"></i>
                 </button>
-
                 <button
                   id="share-email-btn"
                   onClick={handleEmailShare}
@@ -514,7 +477,6 @@ const PostDetailsComponent = () => {
               <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
                 Related Stories
               </h3>
-
               <RelatedStoriesComponent
                 posts={relatedPost || []}
                 currentPostId={post?._id || ""}
@@ -528,7 +490,6 @@ const PostDetailsComponent = () => {
       {showTimeline && (
         <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#0f172a]/95 backdrop-blur-xl border-l border-slate-700/60 shadow-2xl p-6 overflow-y-auto text-white animate-slide-in flex flex-col">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-800">
-            
             <button
               onClick={() => setShowTimeline(false)}
               className="w-8 h-8 rounded-full bg-slate-850 border border-slate-750 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all cursor-pointer"
@@ -543,12 +504,10 @@ const PostDetailsComponent = () => {
               <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400 flex items-center gap-2">
                 ✨ Story Timeline
               </h3>
-
               <p className="text-[11px] text-slate-400 mt-1">
                 Chronological creative iterations
               </p>
             </div>
-
             <button
               onClick={() => setShowTree(true)}
               className="px-3 py-1 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 transition"
@@ -575,7 +534,6 @@ const PostDetailsComponent = () => {
 
                   return (
                     <div key={v._id} className="relative group">
-                      {/* Chronological marker dot */}
                       <div className="absolute left-[-21px] top-1.5 w-3.5 h-3.5 rounded-full bg-indigo-500 border-4 border-[#0f172a] group-hover:scale-125 transition-transform duration-200"></div>
                       <div className="bg-slate-900/55 border border-slate-800/80 rounded-xl p-4 hover:border-slate-700/80 transition-all duration-200">
                         <div className="flex justify-between items-start mb-2 gap-2">
@@ -595,12 +553,9 @@ const PostDetailsComponent = () => {
                             >
                               Restore
                             </button>
-
                             <button
-                              onClick={() =>
-                                handleCreateBranch(v._id)
-                              }
-                              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] rounded transition-all"
+                              onClick={() => handleCreateBranch(v._id)}
+                              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] rounded transition-all active:scale-95 cursor-pointer"
                             >
                               Branch
                             </button>
@@ -611,13 +566,11 @@ const PostDetailsComponent = () => {
                         <p className="text-xs text-slate-400 leading-relaxed line-clamp-3 bg-slate-950/40 p-2.5 rounded-lg border border-slate-900/60 font-light select-all">
                           {v.content}
                         </p>
-
                         {v.prompt && (
                           <p className="text-[10px] text-slate-500 mt-2 italic truncate">
                             Prompt: "{v.prompt}"
                           </p>
                         )}
-
                         <span className="text-[9px] text-slate-500 block mt-2">
                           🕒 {new Date(v.createdAt).toLocaleString()}
                         </span>
@@ -639,52 +592,81 @@ const PostDetailsComponent = () => {
         </div>
       )}
 
+      {/* Story Branch Tree Modal */}
       {showTree && (
-        <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-6">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-white">
-                Story Branch Tree
+        <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-6 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-auto p-6 text-white shadow-2xl">
+            <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-3">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                🌿 Story Branch Tree
               </h3>
-
               <button
                 onClick={() => setShowTree(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white transition"
               >
                 ✕
               </button>
             </div>
-
             {!storyTree ? (
-              <div className="text-slate-400">
-                Loading...
-              </div>
+              <div className="text-slate-400 py-8 text-center animate-pulse">Loading Tree Hierarchy...</div>
             ) : (
               <div className="space-y-3">
                 {storyTree.nodes.map((node) => (
                   <div
                     key={node.id}
-                    className="border border-slate-700 rounded-lg p-3"
+                    className="border border-slate-800 bg-slate-950/40 hover:border-slate-700 rounded-xl p-4 transition"
                   >
-                    <div className="font-bold">
+                    <div className="font-bold text-indigo-400 text-sm">
                       Version #{node.versionNumber}
                     </div>
-
-                    <div>
-                      {node.title}
-                    </div>
-
+                    <div className="text-slate-200 mt-1 font-medium">{node.title}</div>
                     {node.branchName && (
-                      <div className="text-purple-400 text-sm">
-                        Branch:
-                        {" "}
-                        {node.branchName}
+                      <div className="inline-block text-purple-400 text-xs bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md mt-2 font-mono">
+                        Branch: {node.branchName}
                       </div>
                     )}
                   </div>
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Variations Comparison Overlay/Modal */}
+      {showComparison && (
+        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl text-white">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800 bg-slate-950/40">
+              <div>
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  📊 Variation Version Comparison
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Compare visual content structure against historical snapshots
+                </p>
+              </div>
+              <button
+                onClick={() => setShowComparison(false)}
+                className="text-slate-400 hover:text-white text-lg transition p-1"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              {isLoadingVersions ? (
+                <div className="text-center py-20 text-slate-400">Loading tracking histories...</div>
+              ) : versions && versions.length > 0 ? (
+                <ComparisonMode 
+                  currentPost={{ title: post?.title, content: post?.content }}
+                  historicalVersions={versions} 
+                />
+              ) : (
+                <div className="text-center py-12 text-slate-500">
+                  No historical snapshots available to match metrics against.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

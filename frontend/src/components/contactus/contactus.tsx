@@ -8,7 +8,6 @@ import {
   Send,
   GitBranch,
   Sparkles,
-  AlertCircle,
   ArrowUpRight,
   Zap,
 } from "lucide-react";
@@ -52,36 +51,6 @@ const CONTACT_CHANNELS = [
     color: "from-purple-500/10 to-violet-500/10",
     iconColor: "text-purple-500 dark:text-purple-400",
     hoverBorder: "hover:border-purple-500/30",
-  },
-];
-
-const FORM_FIELDS = [
-  {
-    id: "contact-fullname",
-    name: "fullname" as FormField,
-    type: "text",
-    label: "Full Name",
-    placeholder: "Jane Smith",
-    icon: User,
-    autoComplete: "name",
-  },
-  {
-    id: "contact-email",
-    name: "email" as FormField,
-    type: "email",
-    label: "Email Address",
-    placeholder: "jane@example.com",
-    icon: Mail,
-    autoComplete: "email",
-  },
-  {
-    id: "contact-subject",
-    name: "subject" as FormField,
-    type: "text",
-    label: "Subject",
-    placeholder: "What's this about?",
-    icon: FileText,
-    autoComplete: "off",
   },
 ];
 
@@ -172,8 +141,7 @@ export default function Contact() {
           </span>
         </div>
 
-        <motion.div className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-12 xl:gap-16 w-full box-border">
-
+        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-12 xl:gap-16 w-full box-border">
           <div className="flex flex-col w-full box-border text-left">
             <span className="mb-6 hidden w-fit items-center gap-1.5 rounded-full border border-blue-500/10 dark:border-white/10 bg-blue-500/5 text-blue-600 dark:text-blue-400 px-4 py-1.5 text-xs font-bold uppercase tracking-wider lg:inline-flex select-none">
               <Zap className="h-3 w-3" aria-hidden="true" />
@@ -263,145 +231,147 @@ export default function Contact() {
               <Sparkles className="h-20 w-20 text-purple-400" />
             </div>
           </div>
-        </motion.div>
+        </div>
 
-      {/* RIGHT */}
+        {/* RIGHT */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="relative"
+          className="relative mt-12 lg:mt-0"
         >
           <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-20 blur-2xl" />
 
-        <form
-  onSubmit={submitHandler}
-  className="relative space-y-6 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.05] p-7 backdrop-blur-2xl transition-all duration-300 hover:border-purple-500/30 sm:p-10"
->
-  {/* NAME */}
-  <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
-    <User className="h-5 w-5 flex-shrink-0 text-purple-300" />
-    <div className="flex w-full items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">      <label className="text-[10px] font-bold uppercase tracking-wider text-purple-300/80 mb-1 block">
-        Full Name
-      </label>
-       <input
-           type="text"
-           name="fullname"
-           value={formData.fullname}
-           onChange={changeHandler}
-           placeholder="John Doe"
-           required
-  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
-/>
-    </div>
-  </div>
+          <form
+            onSubmit={submitHandler}
+            className="relative space-y-6 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.05] p-7 backdrop-blur-2xl transition-all duration-300 hover:border-purple-500/30 sm:p-10"
+          >
+            {/* NAME */}
+            <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
+              <User className="h-5 w-5 flex-shrink-0 text-purple-300" />
+              <div className="flex flex-col flex-grow min-w-full">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-purple-300/80 mb-1 block">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="fullname"
+                  value={formData.fullname}
+                  onChange={changeHandler}
+                  placeholder="John Doe"
+                  required
+                  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+                />
+              </div>
+            </div>
 
-  {/* EMAIL */}
-  <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-blue-400/40 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
-    <Mail className="h-5 w-5 flex-shrink-0 text-blue-300" />
-    <div className="flex flex-col flex-grow min-w-full">
-      <label className="text-[10px] font-bold uppercase tracking-wider text-blue-300/80 mb-1 block">
-        Email Address
-      </label>
-     <input
-  type="email"
-  name="email"
-  value={formData.email}
-  onChange={changeHandler}
-  placeholder="john@example.com"
-  required
-  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
-/>
-    </div>
-  </div>
+            {/* EMAIL */}
+            <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-blue-400/40 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
+              <Mail className="h-5 w-5 flex-shrink-0 text-blue-300" />
+              <div className="flex flex-col flex-grow min-w-full">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-blue-300/80 mb-1 block">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={changeHandler}
+                  placeholder="john@example.com"
+                  required
+                  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+                />
+              </div>
+            </div>
 
-  {/* SUBJECT */}
-  <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-pink-400/40 focus-within:border-pink-500 focus-within:ring-2 focus-within:ring-pink-500/20">
-    <FileText className="h-5 w-5 flex-shrink-0 text-pink-300" />
-    <div className="flex flex-col flex-grow min-w-full">
-      <label className="text-[10px] font-bold uppercase tracking-wider text-pink-300/80 mb-1 block">
-        Subject
-      </label>
-      <input
-  type="text"
-  name="subject"
-  value={formData.subject}
-  onChange={changeHandler}
-  placeholder="Project Collaboration"
-  required
-  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
-/>
-    </div>
-  </div>
+            {/* SUBJECT */}
+            <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-3 transition-all duration-300 hover:border-pink-400/40 focus-within:border-pink-500 focus-within:ring-2 focus-within:ring-pink-500/20">
+              <FileText className="h-5 w-5 flex-shrink-0 text-pink-300" />
+              <div className="flex flex-col flex-grow min-w-full">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-pink-300/80 mb-1 block">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={changeHandler}
+                  placeholder="Project Collaboration"
+                  required
+                  className="w-full min-w-0 bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+                />
+              </div>
+            </div>
 
-  {/* MESSAGE */}
-  <div className="flex items-start gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-4 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
-    <Pencil className="mt-1 h-5 w-5 flex-shrink-0 text-purple-300" />
-    <div className="flex flex-col flex-grow min-w-full">
-      <label className="text-[10px] font-bold uppercase tracking-wider text-purple-300/80 mb-2 block">
-        Message
-      </label>
-      <textarea
-  rows={6}
-  name="message"
-  value={formData.message}
-  onChange={changeHandler}
-  placeholder="Tell us about your idea..."
-  maxLength={500}
-  required
-  className="w-full min-w-0 resize-none bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
-/>
-<div className="mt-2 text-right text-xs text-slate-400">
-  {formData.message.length}/500
-</div>
-    </div>
-  </div>
+            {/* MESSAGE */}
+            <div className="flex items-start gap-4 rounded-2xl border border-white/10 bg-[#0b1120]/80 px-5 py-4 transition-all duration-300 hover:border-purple-400/40 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20">
+              <Pencil className="mt-1 h-5 w-5 flex-shrink-0 text-purple-300" />
+              <div className="flex flex-col flex-grow min-w-full">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-purple-300/80 mb-2 block">
+                  Message
+                </label>
+                <textarea
+                  rows={6}
+                  name="message"
+                  value={formData.message}
+                  onChange={changeHandler}
+                  placeholder="Tell us about your idea..."
+                  maxLength={500}
+                  required
+                  className="w-full min-w-0 resize-none bg-transparent border-none p-0 text-base text-white outline-none focus:ring-0"
+                />
+                <div className="mt-2 text-right text-xs text-slate-400">
+                  {formData.message.length}/500
+                </div>
+              </div>
+            </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  aria-busy={loading}
-                  aria-label={loading ? "Sending message…" : "Send message"}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3.5 px-4 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 select-none uppercase tracking-wider cursor-pointer mt-1 flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      <span>Sending…</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
-                      <span>Send Message</span>
-                    </>
-                  )}
-                </button>
+            <button
+              type="submit"
+              disabled={loading}
+              aria-busy={loading}
+              aria-label={loading ? "Sending message…" : "Send message"}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3.5 px-4 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 select-none uppercase tracking-wider cursor-pointer mt-1 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  <span>Sending…</span>
+                </>
+              ) : (
+                <>
+                  <Send className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+                  <span>Send Message</span>
+                </>
+              )}
+            </button>
 
-  {/* SUCCESS & ERROR MESSAGE BLOCKS */}
-  {success && (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-4"
-    >
-      <p className="text-center text-sm font-medium text-green-400 sm:text-base">
-      🎉 Thank you! Your message has been sent successfully.      </p>
-    </motion.div>
-  )}
+            {/* SUCCESS & ERROR MESSAGE BLOCKS */}
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-4"
+              >
+                <p className="text-center text-sm font-medium text-green-400 sm:text-base">
+                  🎉 Thank you! Your message has been sent successfully.
+                </p>
+              </motion.div>
+            )}
 
-  {error && (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4"
-    >
-      <p className="text-center text-sm font-medium text-red-400 sm:text-base">
-        {error}
-      </p>
-    </motion.div>
-  )}
-</form>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4"
+              >
+                <p className="text-center text-sm font-medium text-red-400 sm:text-base">
+                  {error}
+                </p>
+              </motion.div>
+            )}
+          </form>
         </motion.div>
       </div>
     </section>
