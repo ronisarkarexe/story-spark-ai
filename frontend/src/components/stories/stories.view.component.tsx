@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import DOMPurify from "dompurify";
-import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
+import { getShortenedText, ITopicData, topicsData, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useAntiGravityScroll } from "../../hooks/useAntiGravityScroll";
@@ -20,15 +20,14 @@ import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
+import type { StoryboardScene } from "../../redux/apis/story.visualizer.api";
 import ImageFallback from "../ImageFallback";
 import StoryVisualizer from "../story-visualizer/StoryVisualizer";
 import ContinueStoryModal from "./ContinueStoryModal";
-import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
 import { useAnalyzeStoryMutation, ISuggestion } from "../../redux/apis/analysis.api";
 import { RevisionSuggestionsPanel } from "../writing-assistant/RevisionSuggestionsPanel";
 
@@ -60,6 +59,7 @@ function getErrorMessage(error: unknown): string {
 
 // Dummy themes helper
 const getGenreTheme = (tag: string) => {
+  void tag;
   return { gradient: "45deg, #1e1b4b, #311042", accent: "#a855f7", icon: "✨" };
 };
 const getInitials = (title: string) => title.slice(0, 2).toUpperCase();
@@ -195,7 +195,7 @@ const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
   return segments;
 };
 
-const getSafeFileName = (title: string, extension: "md" | "docx"): string => {
+const getSafeFileName = (title: string, extension: "md" | "docx" | "pdf"): string => {
   const safeTitle = (title || "story")
     .trim()
     .replace(/[^a-z0-9]+/gi, "_")
@@ -313,7 +313,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   onPublishSuccess
 }) => {
   const location = useLocation();
-  const dispatch = useDispatch();
 
   const storyScrollContainerRef = useRef<HTMLDivElement>(null);
   const {
@@ -340,18 +339,18 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [newTopicTitle, setNewTopicTitle] = useState<string>("");
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Used for initial generative state
+  const [isLoading] = useState<boolean>(false); // Used for initial generative state
 
   // Modals
   const [showContinueModal, setShowContinueModal] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
-  const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [, setShowTranslator] = useState<boolean>(false);
   const [showStoryVisualizer, setShowStoryVisualizer] = useState<boolean>(false);
   
   // Dummy states for StoryVisualizer missing in provided code
-  const [storyboardScenes, setStoryboardScenes] = useState<any[]>([]);
-  const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<any>({});
+  const [storyboardScenes] = useState<StoryboardScene[]>([]);
+  const [storyboardStyleGuide] = useState<string>("");
 
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
@@ -588,12 +587,13 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
       setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
       toast.success("Alternate endings generated successfully!");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[StoriesView Alternate Ending Flow Failure]:", err);
-      const errorStatus = err?.status || err?.data?.status;
+      const errorObj = err as { status?: number; data?: { status?: number; message?: string }; message?: string };
+      const errorStatus = errorObj?.status || errorObj?.data?.status;
       const parsedMessage = errorStatus
-        ? getErrorMessage(new ApiError(errorStatus, err?.data?.message || ""))
-        : err?.message || "An unexpected failure occurred.";
+        ? getErrorMessage(new ApiError(errorStatus, errorObj?.data?.message || ""))
+        : errorObj?.message || "An unexpected failure occurred.";
       
       setErrorMessage(parsedMessage);
       toast.error("Failed to generate alternate endings.");
@@ -636,6 +636,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     } else {
       setSuggestions([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStory?.uuid]);
 
   const handleApplySuggestion = (suggestion: ISuggestion) => {
