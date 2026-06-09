@@ -25,7 +25,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
 });
 
 const register = catchAsync(async (req: Request, res: Response) => {
-  const body: IUser = req.body;
+  const body: AuthModel = req.body;
   const result = await AuthService.register(body);
   const { accessToken, refreshToken } = result;
 
@@ -34,7 +34,7 @@ const register = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "User Register successfully!",
+    message: "User registered successfully!",
     data: { accessToken },
   });
 });

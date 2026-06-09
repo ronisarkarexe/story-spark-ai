@@ -7,28 +7,12 @@ import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { WriterApplication } from "../writer_application/writer_application.model";
 
-main
-
+const getDashboardAnalysis = async (userId: string, userRole: string = ENUM_USER_ROLE.USER) => {
+    const role = userRole || ENUM_USER_ROLE.USER;
     return {
       role,
-      writerStats: {
-        totalReaders,
-        totalPosts,
-        subscriptionStatus: user.subscriptionType.toUpperCase(),
-        applicationStatus,
-        gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
-      },
-      posts: {
-        perMonth: postsPerMonth,
-        topics: topicCount,
-      }
+      stats: {}
     };
-  }
-
-  // Else standard user
-  return {
-main
-  };
 };
 
 const analyzeStory = async (content: string) => {
