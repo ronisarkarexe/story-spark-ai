@@ -30,3 +30,36 @@ ${previousContent}
 
   return response.data.data.continuation;
 };
+
+/**
+ * Generate multiple story continuations (batch) based on the provided chapters.
+ * @param chapters - Array of Chapter objects representing the current story.
+ * @param count - Desired number of continuations (default 3, capped at 5).
+ * @returns An array of continuation strings.
+ */
+export const getContinuations = async (
+  chapters: Chapter[],
+  count: number = 3
+): Promise<string[]> => {
+  const previousContent = chapters.map((c) => c.content).join("\n\n");
+  const response = await axios.post(`${BASE_URL}/story-continuation/continuations`, {
+    prompt: `
+Continue this story naturally.
+
+Rules:
+- Maintain character consistency
+- Keep emotional tone
+- Avoid repetition
+- Continue the narrative smoothly
+
+Story:
+${previousContent}
+    `,
+    count,
+  });
+  const data = response.data.data;
+  if (Array.isArray(data)) {
+    return data.map((item: any) => item.continuation ?? "");
+  }
+  return [];
+};

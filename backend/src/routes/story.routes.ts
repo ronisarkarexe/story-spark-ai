@@ -15,14 +15,7 @@ import piiScrubberMiddleware from "../app/middleware/pii_scrubber";
 
 const router = express.Router();
 
-/**
- * STORY CONTINUATION
- * POST /api/v1/story-continuation/continue
- *
- * Previously returned a hardcoded string and never called the AI.
- * Now validates the request body, applies a rate limit, and delegates
- * to AiModelService.aiFreeStoryContinuation which calls Gemini.
- */
+/** STORY CONTINUATION - single */
 router.post(
   "/continue",
   freeAiRateLimiter,
@@ -34,21 +27,34 @@ router.post(
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Story continuation generated successfully!",
       data: result,
     });
   })
 );
 
-/**
- * CREATE REVIEW
- * POST /api/v1/story-continuation/create
- *
- * Previously was a no-op stub that always returned 201 without
- * authentication, validation, or a database write.
- * Now requires authentication, validates the request body, and
- * persists the review via ReviewController.createReview.
- */
+/** STORY CONTINUATIONS - multiple */
+router.post(
+  "/continuations",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  piiScrubberMiddleware,
+  validateRequest(AIModelValidator.aiStoryContinuation),
+  catchAsync(async (req: Request, res: Response) => {
+    const { prompt, language, count } = req.body as { prompt: string; language?: string; count?: number };
+    const result = await AiModelService.aiFreeStoryContinuationMultiple({ prompt, language, count });
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      data: result,
+    });
+  })
+);
+
+/** CREATE REVIEW */
 router.post(
   "/create",
   auth(
