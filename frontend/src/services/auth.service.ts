@@ -1,6 +1,7 @@
 import { AUTH_KEY } from "../constants/storage-key";
 import { AccessToken } from "../models/login";
 import { decodedToken } from "../utils/jwt";
+import { validateTokenPayload } from "../utils/auth-validator";
 import {
   getFromLocalStorage,
   removeFromLocalStorage,
@@ -55,13 +56,14 @@ const buildUserInfo = (decodedData: RawJwtPayload): AuthUserInfo => ({
   avatar: decodedData?.avatar || "",
 });
 
-const getValidDecodedToken = () => {
+export const getValidDecodedToken = () => {
   const authToken = getFromLocalStorage(AUTH_KEY);
 
   if (authToken) {
     try {
       const decodedData = decodedToken(authToken);
-          if (
+      validateTokenPayload(decodedData);
+      if (
       typeof decodedData.exp === "number" &&
       decodedData.exp <= Math.floor(Date.now() / 1000)
     ) {

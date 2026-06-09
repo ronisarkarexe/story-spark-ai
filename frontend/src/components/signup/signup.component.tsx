@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { storeUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import logo from "../../assets/logoNew.png";
 import { Link } from "react-router-dom";
 import { useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import {
@@ -96,7 +95,6 @@ const SignUpComponent = () => {
     register,
     handleSubmit,
     watch,
-    setValue,
     unregister,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
@@ -114,6 +112,52 @@ const SignUpComponent = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, [cooldown]);
+
+  const handleResendOtp = async () => {
+    if (!registerInfo) return;
+    setIsBusy(true);
+    try {
+      const res = await emailVerify({
+        name: registerInfo.name,
+        email: registerInfo.email,
+      }).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        toast.success("OTP resent to your email");
+        setCooldown(60);
+      }
+    } catch (error) {
+      const err = error as { data?: Array<{ message?: string }>; message?: string };
+      const message =
+        err?.data?.[0]?.message ||
+        err?.message ||
+        "Failed to resend OTP. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    setIsBusy(true);
+    try {
+      const res = await googleLogin({
+        token: credentialResponse.credential,
+      }).unwrap();
+      if (res.data.accessToken) {
+        toast.success("User registered/logged in successfully with Google!");
+        storeUserInfo({
+          accessToken: res.data.accessToken,
+        });
+        navigate("/dashboard");
+      }
+    } catch {
+      toast.error("Failed to login with Google. Please try again.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
 
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");

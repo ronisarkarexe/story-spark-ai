@@ -1,8 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Story } from "../../types/story.types";
+import { Story, StoryVersion } from "../../types/story.types";
 
 interface StoryState {
   currentStory: Story | null;
+  versions: StoryVersion[];
 }
 
 const loadStoryFromStorage = (): Story | null => {
@@ -17,6 +18,7 @@ const loadStoryFromStorage = (): Story | null => {
 
 const initialState: StoryState = {
   currentStory: loadStoryFromStorage(),
+  versions: [],
 }; 
 
 const storySlice = createSlice({
@@ -37,8 +39,8 @@ const storySlice = createSlice({
         };
         
         localStorage.setItem(storageKey, JSON.stringify(safeData));
-      } catch (error: any) {
-        if (error.name === "QuotaExceededError") {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name === "QuotaExceededError") {
           console.error("Storage limit reached. Cannot save story locally.");
         } else {
           console.error("Error saving story to storage", error);
@@ -68,17 +70,39 @@ const storySlice = createSlice({
         };
         
         localStorage.setItem(storageKey, JSON.stringify(safeData));
-      } catch (error: any) {
-        if (error.name === "QuotaExceededError") {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name === "QuotaExceededError") {
           console.error("Storage limit reached. Cannot save story locally.");
         } else {
           console.error("Error saving story to storage", error);
         }
       }
     },
+
+    restoreVersion(state, action: PayloadAction<string>) {
+      const version = state.versions.find((v) => v.id === action.payload);
+      if (version) {
+        state.currentStory = version.storySnapshot;
+        try {
+          const userId = state.currentStory.userId || "guest";
+          const storageKey = `story_${userId}`;
+          const safeData = {
+            version: "1.0",
+            data: state.currentStory
+          };
+          localStorage.setItem(storageKey, JSON.stringify(safeData));
+        } catch (error: unknown) {
+          console.error("Error saving restored story to storage", error);
+        }
+      }
+    },
+
+    deleteVersion(state, action: PayloadAction<string>) {
+      state.versions = state.versions.filter((v) => v.id !== action.payload);
+    },
   },
 });
 
-export const { setStory, addChapter } = storySlice.actions;
+export const { setStory, addChapter, restoreVersion, deleteVersion } = storySlice.actions;
 
 export default storySlice.reducer;
