@@ -31,12 +31,20 @@
   },
   "packageManager": "pnpm@9.15.9",
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "concurrently": "^9.1.2"
   },
+  "overrides": {
+    "@types/express": "^4.17.21",
+    "@types/express-serve-static-core": "^4.17.33"
+  },
   "dependencies": {
+    "@react-oauth/google": "^0.13.5",
     "bcryptjs": "^3.0.3",
+    "express": "^4.21.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
+    "razorpay": "^2.9.6",
     "socket.io": "^4.8.3"
   }
 }

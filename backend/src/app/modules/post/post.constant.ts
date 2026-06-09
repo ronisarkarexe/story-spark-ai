@@ -5,4 +5,6 @@ export const postFilterFields = [
   "tag",
   "topic.title",
   "genres",
+  "author",
+  "isPublished",
 ];

@@ -28,7 +28,7 @@ const seedAdmin = async () => {
     password: hashedPassword,
     role: "admin",
     subscriptionType: "premium",
-    status: "active",
+    status: "Active",
   });
 
   console.log(`Admin user created: ${email}`);

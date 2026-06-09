@@ -20,7 +20,7 @@ router.post(
 );
 
 // Get comments by postId
-router.get("/get-comments/postId=:postId", CommentController.getCommentsByPostId);
+router.get("/get-comments/:postId", CommentController.getCommentsByPostId);
 
 // Toggle like on a comment
 router.patch(
@@ -32,6 +32,18 @@ router.patch(
     ENUM_USER_ROLE.USER
   ),
   CommentController.toggleCommentLike
+);
+
+// Delete a comment (author or admin only)
+router.delete(
+  "/delete/commentId=:commentId",
+  auth(
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.USER
+  ),
+  CommentController.deleteComment
 );
 
 export const CommentRouter = router;

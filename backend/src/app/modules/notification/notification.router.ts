@@ -27,4 +27,26 @@ router.patch(
   NotificationController.markNotificationAsRead
 );
 
+router.patch(
+  "/mark-all-read",
+  auth(
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.USER
+  ),
+  NotificationController.markAllNotificationsAsRead
+);
+
+router.delete(
+  "/",
+  auth(
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.USER
+  ),
+  NotificationController.deleteAllNotifications
+);
+
 export const NotificationRouter = router;

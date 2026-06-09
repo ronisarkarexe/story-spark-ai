@@ -1,10 +1,8 @@
 import { Router } from "express";
-import { subscribe, verify, unsubscribe } from "./newsletter.controller";
-
+import { newsletterRateLimiter } from "../../middleware/ip.rate-limiter";
+import { subscribe, verify, unsubscribeByToken } from "./newsletter.controller";
 const router = Router();
-
-router.post("/subscribe", subscribe);
+router.post("/subscribe", newsletterRateLimiter, subscribe);
 router.get("/verify/:token", verify);
-router.post("/unsubscribe", unsubscribe);
-
-export const NewsletterRouter = router; 
+router.get("/unsubscribe/:token", unsubscribeByToken);
+export const NewsletterRouter = router;
