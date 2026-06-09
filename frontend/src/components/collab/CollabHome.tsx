@@ -43,10 +43,10 @@ export default function CollabHome() {
         "collab:create_room",
         { userId: user.userId, username: user.name },
         (response: CreateRoomResponse) => {
-          if (response.roomId) {
+          if (response?.roomId) {
             navigate(`/collab/${response.roomId}`);
           } else {
-            setError(response.message || "Failed to create room");
+            setError(response?.message || "Failed to create room");
             setIsCreating(false);
           }
         }

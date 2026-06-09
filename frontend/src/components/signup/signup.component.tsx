@@ -232,152 +232,99 @@ const SignUpComponent = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-12 relative overflow-hidden text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-900 dark:text-slate-100 box-border">
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-          <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
+      <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-4 min-w-0 box-border">
+        <div className="sm:mx-auto sm:w-full mb-6">
+          <h2 className="text-center text-3xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
         </div>
 
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden">
-          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-200"></h3>
-        <div className="flex justify-center items-center gap-40">
-        
-                <div className="flex flex-col gap-5">
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
-                    
-                    Turns Ideas into
-                    <br /> 
-                    unforgotable stories
-                    
-                    </h1>
-                  <p>AI powered storytelling that helps you
-                      <br />            
-                     create connect inspire.</p>
-        
-                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-                      <div>
-                        <WandSparkles className="text-violet-600"/>
-                      </div>
-                      <div>
-                        <h1 className="font-bold">Smart writing</h1>
-                        <p>AI that understands your ideas</p>
-                      </div>
-                     </div>
-        
-        
-                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-                      <div>
-                        <BookOpen className="text-violet-600"/>
-                      </div>
-                      <div>
-                        <h1 className="font-bold">Endless Creativity</h1>
-                        <p>Stories that captivate and inspire</p>
-                      </div>
-                     </div>
-        
-        
-                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-                      <div>
-                        <UsersRound className="text-violet-600"/>
-                      </div>
-                      <div>
-                        <h1 className="font-bold">Built for everyone</h1>
-                        <p>Writers, Creaters and dreamers</p>
-                      </div>
-                     </div>
-                     <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-                        Create, edit, and generate engaging multiple story
-                        <br />
-                         variations from a single prompt.
-                          <br />                
-                         Perfect for writers, creators, and enthusiasts 
-                         <br />
-                         exploring the future of fiction.
-                     </div>
-                </div>
-                <div className="w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl p-6 sm:p-8 shadow-2xl">
-          {" "}
-          <h3 className="text-center text-2xl md:text-3xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
-            {" "}
+        {/* UPDATED: Structured layout classes to lock down maximum inner boundary constraints */}
+        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
+          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
           {!showOtpField && (
-            <p className="mt-2 mb-5 text-center text-sm text-slate-400">
-              {" "}
+            <p className="mt-2 mb-6 text-center text-xs sm:text-sm text-slate-400 px-1">
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
 
           {!showOtpField && (
-            <div className="relative my-6">
-              {" "}
+            <div className="relative mb-6 w-full box-border">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-700/50"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-slate-800/60 text-slate-400 font-semibold">
+              <div className="relative flex justify-center text-xs">
+                {/* FIXED: Changed bg-slate-800 to transparent with an overlay filter or solid card layer color */}
+                <span className="px-4 bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
                   SIGN UP WITH EMAIL
                 </span>
               </div>
             </div>
           )}
           {!showOtpField ? (
-            <form className="space-y-5 w-full min-w-0 overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
-              <SSInput
-                label="Name"
-                name="name"
-                placeholder="Enter your name"
-                required={true}
-                icon="fi fi-rr-user"
-                register={register}
-                autoComplete="name"
-                validation={{
-                  required: "Name is required",
+            <form className="space-y-5 w-full min-w-0 block box-border overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="Name"
+                  name="name"
+                  placeholder="Enter your name"
+                  required={true}
+                  icon="fi fi-rr-user"
+                  register={register}
+                  autoComplete="name"
+                  validation={{
+                    required: "Name is required",
                     minLength: {
-                        value: 2,
-                        message: "Name must be at least 2 characters",
+                      value: 2,
+                      message: "Name must be at least 2 characters",
                     },
-                  pattern: {
-                    value: /^[A-Za-z0-9\s._]+$/,
-                    message: "Only letters, numbers, spaces, underscores, and dots are allowed",
-                  },
-                }}
-                error={errors.name}
-              />
+                    pattern: {
+                      value: /^[A-Za-z0-9\s._]+$/,
+                      message: "Only letters, numbers, spaces, underscores, and dots are allowed",
+                    },
+                  }}
+                  error={errors.name}
+                />
+              </div>
 
-              <SSInput
-                label="Email address"
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                required={true}
-                icon="fi fi-rr-envelope"
-                register={register}
-                autoComplete="email"
-                error={errors.email}
-              />
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="Email address"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  required={true}
+                  icon="fi fi-rr-envelope"
+                  register={register}
+                  autoComplete="email"
+                  error={errors.email}
+                />
+              </div>
 
-              <SSInput
-                label="Password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                required={true}
-                icon="fi fi-rr-lock"
-                register={register}
-                autoComplete="new-password"
-                error={errors.password}
-              />
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="Password"
+                  name="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  required={true}
+                  icon="fi fi-rr-lock"
+                  register={register}
+                  autoComplete="new-password"
+                  error={errors.password}
+                />
+              </div>
 
               {password?.length > 0 && (
-                <div className="space-y-3 -mt-2 min-w-0 overflow-hidden">
+                <div className="space-y-3 -mt-1 w-full min-w-0 overflow-hidden box-border">
                   <div
-                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden select-none"
+                    className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden select-none"
                     role="progressbar"
                     aria-valuenow={passedChecks}
                     aria-valuemin={0}
@@ -397,7 +344,7 @@ const SignUpComponent = () => {
                       return (
                         <li
                           key={key}
-                          className={`flex items-center gap-2 ${met ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-600"}`}
+                          className={`flex items-center gap-2 ${met ? "text-emerald-400" : "text-slate-500"}`}
                           aria-label={`${label}: ${met ? "met" : "not met"}`}
                         >
                           <i className={`fa-solid ${met ? "fa-circle-check" : "fa-circle-xmark"} text-xs shrink-0`} aria-hidden="true" />
@@ -409,70 +356,67 @@ const SignUpComponent = () => {
                 </div>
               )}
 
-              <SSInput
-                label="Confirm Password"
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                required={!showOtpField}
-                icon="fi fi-rr-eye"
-                register={register}
-                autoComplete="new-password"
-                validation={{
-                  validate: (value) => {
-                    if (showOtpField) return true;
-                    if (!value) return "Confirm password is required";
-                    if (value !== password) return "Passwords do not match!";
-                    return true;
-                  }
-                }}
-                error={errors.confirmPassword}
-              />
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="Confirm Password"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  required={!showOtpField}
+                  icon="fi fi-rr-lock"
+                  register={register}
+                  autoComplete="new-password"
+                  validation={{
+                    validate: (value) => {
+                      if (showOtpField) return true;
+                      if (!value) return "Confirm password is required";
+                      if (value !== password) return "Passwords do not match!";
+                      return true;
+                    }
+                  }}
+                  error={errors.confirmPassword}
+                />
+              </div>
 
-              <div className="pt-2">
+              <div className="pt-2 w-full box-border">
                 <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
               </div>
             </form>
           ) : (
-            <div className="grid grid-cols-1 gap-4 w-full box-border">
-              <SSInput
-                label="OTP"
-                name="otp"
-                placeholder="Enter your OTP"
-                required={true}
-                icon="fi fi-rr-key"
-                register={register}
-                validation={{
-                  required: "Please enter OTP",
-                  minLength: {
-                    value: 6,
-                    message: "OTP must be 6 digits",
-                  },
-                  maxLength: {
-                    value: 6,
-                    message: "OTP must be 6 digits",
-                  },
-                  pattern: {
-                    value: /^[0-9]{6}$/,
-                    message: "OTP must contain only numbers",
-                  },
-                }}
-                error={errors.otp}
-              />
+            <div className="grid grid-cols-1 gap-5 w-full min-w-0 box-border">
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="OTP"
+                  name="otp"
+                  placeholder="Enter your OTP"
+                  required={true}
+                  icon="fi fi-rr-key"
+                  register={register}
+                  validation={{
+                    required: "Please enter OTP",
+                    minLength: { value: 6, message: "OTP must be 6 digits" },
+                    maxLength: { value: 6, message: "OTP must be 6 digits" },
+                    pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
+                  }}
+                  error={errors.otp}
+                />
+              </div>
 
-              <SSButton
-                text="Verify OTP"
-                type="button"
-                onClick={handleOtpValidation}
-                isLoading={isBusy}
-              />
+              <div className="w-full box-border">
+                <SSButton
+                  text="Verify OTP"
+                  type="button"
+                  onClick={handleOtpValidation}
+                  isLoading={isBusy}
+                />
+              </div>
 
-              <div className="text-center pt-2 select-none">
+              <div className="text-center pt-1 select-none">
                 <button
                   type="button"
                   onClick={handleResendOtp}
                   disabled={cooldown > 0 || isBusy}
-                  className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 disabled:text-slate-400 dark:disabled:text-slate-600 transition-colors duration-150 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
+                  className="text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 disabled:text-slate-600 transition-colors duration-150 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
                 >
                   {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
                 </button>
@@ -480,35 +424,36 @@ const SignUpComponent = () => {
             </div>
           )}
           {!showOtpField && (
-            <>
-              <div className="relative my-8 w-full box-border">
+            <div className="w-full min-w-0 box-border">
+              {/* FIXED: Switched background from white to dark theme-aware color matching the card backdrop */}
+              <div className="relative my-6 w-full box-border">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+                  <div className="w-full border-t border-slate-700/50" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-slate-900 px-4 text-slate-400 dark:text-slate-500 font-medium">
+                  <span className="bg-slate-800 px-4 text-slate-400 font-medium rounded-md">
                     Or
                   </span>
                 </div>
               </div>
 
-              <div className="flex justify-center w-full box-border">
+              <div className="flex justify-center w-full box-border overflow-hidden max-w-full">
                 <GoogleLogin
                   onSuccess={handleGoogleLoginSuccess}
                   onError={handleGoogleLoginError}
                 />
               </div>
 
-              <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-6 text-center text-sm text-slate-400">
                 Already have an account?{" "}
                 <Link
                   to="/login"
-                  className="font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                  className="font-semibold text-blue-400 hover:underline transition-colors"
                 >
                   Sign In
                 </Link>
               </p>
-            </>
+            </div>
           )}
         </div>
       </div>

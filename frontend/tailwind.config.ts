@@ -76,7 +76,5 @@ const config: Config = {
       },
     },
   },
-  plugins: [forms, containerQueries],
 };
 
-export default config;

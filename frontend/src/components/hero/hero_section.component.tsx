@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
@@ -61,11 +63,13 @@ const features = [
   }
 ];
 
+type Feature = {
 interface Feature {
   title: string;
   description: string;
   bgClass: string;
   icon: ReactNode;
+};
 }
 
 const FeatureCard = ({ feature }: { feature: Feature }) => {
@@ -333,6 +337,8 @@ const HeroSectionComponent = () => {
                 </Link>
               </div>
             </div>
+          </div>
+        </div>
           </motion.div>
 
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
@@ -354,6 +360,8 @@ const HeroSectionComponent = () => {
             <FeatureCard feature={feature} key={index} />
           ))}
         </div>
+      </div>
+    </div>
       </motion.div>
     </motion.div>
   );

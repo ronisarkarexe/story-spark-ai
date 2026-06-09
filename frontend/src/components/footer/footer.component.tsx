@@ -80,26 +80,10 @@ const FooterComponent: React.FC = () => {
   ];
 
   const socialLinks = [
-    {
-      icon: "fa-instagram",
-      url: "https://www.instagram.com/",
-      label: "Follow us on Instagram",
-    },
-    {
-      icon: "fa-linkedin",
-      url: "https://www.linkedin.com/",
-      label: "Connect with us on LinkedIn",
-    },
-    {
-      icon: "fa-x-twitter",
-      url: "https://x.com/",
-      label: "Follow us on X (Twitter)",
-    },
-    {
-      icon: "fa-facebook",
-      url: "https://www.facebook.com/",
-      label: "Follow us on Facebook",
-    },
+    { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
+    { icon: "fa-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
+    { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
+    { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
   ];
 
   const currentYear = new Date().getFullYear();
@@ -261,6 +245,21 @@ const FooterComponent: React.FC = () => {
               noValidate
               className="mt-1 flex flex-col gap-2 rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-2 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
             >
+              <span className="shrink-0 pl-3 text-slate-500 text-[13px]">
+                <i className="fa-solid fa-envelope" aria-hidden="true" />
+              </span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@storyspark.ai"
+                disabled={status === "loading"}
+                className="w-full min-w-0 bg-transparent pl-2.5 pr-1.5 py-2 text-[13px] text-white placeholder-slate-500 focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={status === "loading"}
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-[9px] px-3.5 py-2 bg-linear-to-r from-blue-500 to-indigo-500 text-[12px] font-semibold text-white tracking-wide hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60"
               <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
                 <i
                   className="fa-solid fa-envelope text-slate-500 text-[13px]"
@@ -328,7 +327,7 @@ const FooterComponent: React.FC = () => {
                   {label}
                 </Link>
                 {i < legalLinks.length - 1 && (
-                  <span className="text-white/[0.12]">|</span>
+                  <span className="text-white/12">|</span>
                 )}
               </React.Fragment>
             ))}

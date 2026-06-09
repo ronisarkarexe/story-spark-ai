@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import GenreCard from './genre_card.component';
 import { isLoggedIn } from '../../services/auth.service';

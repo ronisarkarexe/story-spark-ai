@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from "react";
+import { useEffect, useRef, useState, type FC } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../theme/theme.context";
 
@@ -37,7 +37,12 @@ const saveCookiePreferences = (preferences: CookiePreferences) => {
   updateAppCookieState(preferences);
 };
 
-const CookieConsentBanner: FC = () => {
+type CookieConsentBannerProps = {
+  onLayoutChange?: (height: number) => void;
+};
+
+const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) => {
+  const bannerRef = useRef<HTMLDivElement>(null);
   const [preferences, setPreferences] = useState<CookiePreferences | null>(null);
   const [showBanner, setShowBanner] = useState(false);
   const { isDark } = useTheme();
@@ -47,6 +52,31 @@ const CookieConsentBanner: FC = () => {
     setPreferences(storedPreferences);
     setShowBanner(!storedPreferences.saved);
   }, []);
+
+  useEffect(() => {
+    if (!showBanner) {
+      onLayoutChange?.(0);
+      return;
+    }
+
+    const updateLayout = () => {
+      const banner = bannerRef.current;
+      if (!banner) return;
+      onLayoutChange?.(banner.getBoundingClientRect().height);
+    };
+
+    updateLayout();
+    const observer = new ResizeObserver(updateLayout);
+    if (bannerRef.current) {
+      observer.observe(bannerRef.current);
+    }
+    window.addEventListener("resize", updateLayout);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateLayout);
+    };
+  }, [onLayoutChange, showBanner]);
 
   if (!preferences || !showBanner) {
     return null;
@@ -99,6 +129,13 @@ const CookieConsentBanner: FC = () => {
     : "w-full rounded-xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-900 transition-all duration-150 hover:bg-slate-100 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider";
 
   return (
+    <div ref={bannerRef} className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4 text-white sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-h-[82vh] max-w-5xl flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-700 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl sm:p-5 xl:flex-row xl:items-start xl:justify-between xl:gap-6">
+        <div className="max-w-3xl space-y-3">
+          <p className="text-xs uppercase tracking-[0.26em] text-slate-400">Cookie Preferences</p>
+          <h2 className="text-xl font-semibold text-white sm:text-2xl">Manage your cookie settings</h2>
+          <p className="text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
+    <div className="fixed inset-x-0 bottom-0 z-50 bg-slate-950/95 border-t border-slate-200/10 dark:border-white/10 py-6 shadow-2xl backdrop-blur-xl text-white transition-colors duration-300 max-h-[85vh] overflow-y-auto sidebar">
     <div className={bannerClasses}>
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:px-8 xl:flex-row xl:items-start xl:justify-between xl:gap-8">
         <div className="max-w-3xl space-y-4">

@@ -14,13 +14,12 @@ import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
 import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
-import { WritingStreakService } from "../gamification/writing_streak.service";
-
 const MAX_SEARCH_TERM_LENGTH = 100;
 
 const escapeRegex = (text: string): string => {
-  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+  return text.replace(/[-[\]{}()*+?.,\^$|#\s]/g, "\$&");
 };
+// const MAX_SEARCH_TERM_LENGTH = 100;
 
 interface ICursorPayload {
   value: string;
@@ -111,11 +110,15 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       author: user._id,
       updatedBy: user._id,
     });
+
     if (res && res.isPublished) {
-      user.postsCount += 1;
-      await user.save();
+      const updatedUser = await User.findByIdAndUpdate(
+        user._id,
+        { $inc: { postsCount: 1 } },
+        { new: true }
+      );
       GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
-      if (user.postsCount === 1) {
+      if (updatedUser && updatedUser.postsCount === 1) {
         GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
       }
     }
@@ -157,6 +160,7 @@ const getPosts = async (
         })),
       });
     }
+
   }
 
   if (trendingTopic) {
@@ -194,7 +198,6 @@ const getPosts = async (
 
   const countCondition = andCondition.length > 0 ? { $and: andCondition } : {};
 
-  // sort condition
   const sortCondition: { [key: string]: SortOrder } = {};
   if (sortFilter === "mostPopular") {
     sortCondition.likesCount = -1;
@@ -255,14 +258,19 @@ const getPublishedPostsByAuthor = async (
   ];
 
   if (filters.searchTerm) {
-    andCondition.push({
-      $or: postSearchFields.map((field) => ({
-        [field]: {
-          $regex: filters.searchTerm,
-          $options: "i",
-        },
-      })),
-    });
+    const safeSearchTerm = escapeRegex(
+      filters.searchTerm.trim().slice(0, MAX_SEARCH_TERM_LENGTH)
+    );
+    if (safeSearchTerm) {
+      andCondition.push({
+        $or: postSearchFields.map((field) => ({
+          [field]: {
+            $regex: safeSearchTerm,
+            $options: "i",
+          },
+        })),
+      });
+    }
   }
 
   const sortCondition: { [key: string]: SortOrder } = {};
@@ -305,6 +313,7 @@ const getLatestPosts = async () => {
         path: "reactions",
         populate: { path: "userId", select: "email" },
       })
+      .populate("bookmarks", "email");
     return res;
   } catch (error) {
     throw new ApiError(
@@ -328,6 +337,7 @@ const getFeaturedPosts = async () => {
         path: "reactions",
         populate: { path: "userId", select: "email" },
       })
+      .populate("bookmarks", "email");
     return res;
   } catch (error) {
     throw new ApiError(
@@ -360,6 +370,7 @@ const getSinglePost = async (id: string) => {
       path: "reactions",
       populate: { path: "userId", select: "email" },
     })
+    .populate("bookmarks", "email");
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
@@ -382,6 +393,7 @@ const getPostsByTag = async (tag: string, excludeId?: string) => {
       path: "reactions",
       populate: { path: "userId", select: "email" },
     })
+    .populate("bookmarks", "email");
   return result;
 };
 
@@ -399,7 +411,6 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
-  // Check bookmark status atomically
   const isBookmarked = await Post.exists({
     _id: postId,
     bookmarks: user._id,
@@ -415,17 +426,17 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
       message: "Bookmark removed",
       bookmarked: false,
     };
-  } else {
-    await Post.updateOne(
-      { _id: postId },
-      { $addToSet: { bookmarks: user._id } }
-    );
-
-    return {
-      message: "Bookmark added",
-      bookmarked: true,
-    };
   }
+
+  await Post.updateOne(
+    { _id: postId },
+    { $addToSet: { bookmarks: user._id } }
+  );
+
+  return {
+    message: "Bookmark added",
+    bookmarked: true,
+  };
 };
 
 const updatePost = async (
@@ -444,7 +455,6 @@ const updatePost = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
 
-  // Enforce ownership
   if (
     post.author.toString() !== user._id.toString() &&
     user.role !== "admin" &&
@@ -453,7 +463,6 @@ const updatePost = async (
     throw new ApiError(httpStatus.FORBIDDEN, "You do not have permission to edit this story!");
   }
 
-  // Automatically create version snapshot of the current state BEFORE overwriting
   await StoryVersionService.createVersionSnapshot(
     postId,
     user._id.toString(),
@@ -461,7 +470,6 @@ const updatePost = async (
     payload.generationType || "edited"
   );
 
-  // Overwrite post content
   if (payload.title !== undefined) post.title = payload.title;
   if (payload.content !== undefined) post.content = payload.content;
   if (payload.tag !== undefined) post.tag = payload.tag;
@@ -469,8 +477,6 @@ const updatePost = async (
 
   post.updatedBy = user._id;
   await post.save();
-
-  WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
 
   return post;
 };
@@ -489,7 +495,11 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
 
-  if (!post.author || post.author.toString() !== user._id.toString()) {
+  if (
+    post.author.toString() !== user._id.toString() &&
+    user.role !== "admin" &&
+    user.role !== "super_admin"
+  ) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
       "You can only delete your own story!"
@@ -501,18 +511,26 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
   post.deletedBy = user._id;
   await post.save();
 
-  if (post.isPublished && user.postsCount > 0) {
-    user.postsCount -= 1;
-    await user.save();
+  if (post.isPublished) {
+    await User.findByIdAndUpdate(
+      user._id,
+      { $inc: { postsCount: -1 } }
+    );
   }
 
-  // Clean up associated bookmarks when story post is soft-deleted
   await Bookmark.deleteMany({ storyId: postId });
 
   return post;
 };
 
 const remixStory = async (postId: string, prompt: string, token: ITokenPayload) => {
+  if (!prompt || typeof prompt !== "string") {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Prompt is required and must be a string");
+  }
+  const safePrompt = prompt.slice(0, 500).replace(/[\n\r\t"]/g, " ").trim();
+  if (!safePrompt) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Prompt cannot be empty or whitespace");
+  }
   const user = await User.findOne({ email: token.email });
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
@@ -523,7 +541,7 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
-  const remixedContent = `[AI Remixed Version based on prompt: "${prompt}"]\n\n${originalPost.content}`;
+  const remixedContent = `[AI Remixed Version based on prompt: "${safePrompt}"]\n\n${originalPost.content}`;
 
   const res = await Post.create({
     title: `Remix of ${originalPost.title}`,
@@ -534,15 +552,23 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
   });
 
   if (res) {
-    user.postsCount += 1;
-    await user.save();
-    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
+    await User.findByIdAndUpdate(
+      user._id,
+      { $inc: { postsCount: 1 } }
+    );
   }
 
   return res;
 };
 
 const translateStory = async (postId: string, language: string, token: ITokenPayload) => {
+  if (!language || typeof language !== "string") {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Language is required and must be a string");
+  }
+  const safeLanguage = language.slice(0, 50).replace(/[\n\r\t"]/g, " ").trim();
+  if (!safeLanguage) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Language cannot be empty or whitespace");
+  }
   const user = await User.findOne({ email: token.email });
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
@@ -553,7 +579,7 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
-  const translatedContent = `[Translated to ${language}]\n\n${originalPost.content}`;
+  const translatedContent = `[Translated to ${safeLanguage}]\n\n${originalPost.content}`;
 
   const res = await Post.create({
     title: `${originalPost.title} (${language})`,
@@ -564,9 +590,10 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
   });
 
   if (res) {
-    user.postsCount += 1;
-    await user.save();
-    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
+    await User.findByIdAndUpdate(
+      user._id,
+      { $inc: { postsCount: 1 } }
+    );
   }
 
   return res;
@@ -576,6 +603,7 @@ const getGenres = async (): Promise<string[]> => {
   const genres = await Post.distinct("tag", { isDeleted: { $ne: true }, tag: { $nin: [null, ""] } });
   return genres.sort();
 };
+
 
 export const PostService = {
   createPost,
@@ -589,7 +617,8 @@ export const PostService = {
   toggleBookmark,
   updatePost,
   deletePost,
-  remixStory,       // Exposed service for AI story variations
-  translateStory,   // Exposed service for localized modifications
+  remixStory,
+  translateStory,
   getGenres,
 };
+

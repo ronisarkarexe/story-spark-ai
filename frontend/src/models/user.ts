@@ -27,10 +27,7 @@ export interface User {
   status: string;
   subscriptionType: string;
   postsCount: number;
-  writingGoals?: {
-    dailyWordCount: number;
-    weeklyWordCount: number;
-  };
+
   followers: {
     _id: string;
     username: string;
@@ -50,4 +47,9 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   profile: UserProfile;
+
+  writingGoals?: {
+    dailyWordCount: number;
+    weeklyWordCount: number;
+  };
 }
