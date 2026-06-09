@@ -36,6 +36,7 @@ export const subscribe = async (req: Request, res: Response) => {
     });
   }
 };
+
 // Verify newsletter subscription token
 export const verify = async (req: Request, res: Response) => {
   try {
@@ -55,11 +56,9 @@ export const verify = async (req: Request, res: Response) => {
 export const unsubscribeByToken = async (req: Request, res: Response) => {
   try {
     const { token } = req.params;
-    const safeToken = Array.isArray(token) ? token[0] : token;
+    const safeToken = Array.isArray(token) ? token[0] : (token as string);
 
     const result = await newsletterService.unsubscribeByToken(safeToken);
-    const token = req.params.token as string;
-    const result = await newsletterService.unsubscribeByToken(token);
     res.status(200).json(result);
   } catch (err: any) {
     res.status(400).json({ message: err.message });
