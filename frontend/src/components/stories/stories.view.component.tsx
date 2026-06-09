@@ -47,7 +47,6 @@ function getErrorMessage(error: unknown): string {
   return "An unexpected error occurred. Please try again.";
 }
 
-// Dummy themes helper (Ensure it works or adjust imports)
 const getGenreTheme = (tag: string) => {
   return { gradient: "45deg, #1e1b4b, #311042", accent: "#a855f7", icon: "✨" };
 };
@@ -214,10 +213,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const dispatch = useDispatch();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
 
-  // Error handling states
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Standard functional states
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
@@ -261,7 +258,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   useEffect(() => {
     setNarrationWordIndex(0);
     setNarrationState("idle");
-    setErrorMessage(null); // Clear errors when switching stories
+    setErrorMessage(null);
   }, [selectedStory?.uuid]);
 
   const sentenceSegments = useMemo(() => {
@@ -300,7 +297,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
       const res = await generationRequest.unwrap();
 
-      // Guard check validation
       if (!res || !Array.isArray(res.data)) {
         throw new Error("Invalid response from server");
       }
@@ -316,9 +312,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       
       setErrorMessage(parsedMessage);
       toast.error("Failed to generate alternate endings.");
-    } {
+    } finally {
       toast.dismiss(toastId);
-      setIsGeneratingEndings(false); // Fixes infinite spinner
+      setIsGeneratingEndings(false);
     }
   };
 
@@ -344,7 +340,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     <div className="p-6 bg-slate-900 min-h-screen text-white">
       <Toaster />
       
-      {/* Step 16: Error Banner Component UI Layout Rendering */}
       {errorMessage && (
         <div className="error-banner mb-6 p-4 bg-amber-500/20 border border-amber-500 rounded-xl text-amber-200 flex justify-between items-center animate-fadeIn">
           <div className="flex items-center gap-3">
@@ -368,7 +363,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
               {selectedStory.content}
             </div>
 
-            {/* Step 17: Generate Button disables during loading phase */}
             <button
               onClick={handleGenerateAlternateEndings}
               disabled={isGeneratingEndings}
