@@ -13,6 +13,10 @@ export function timeAgo(dateString: string): string {
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
+  // Handle future timestamps / clock skew
+  if (seconds < 0) {
+    return "just now";
+  }
   let interval = Math.floor(seconds / 31536000);
   if (interval >= 1) {
     return interval === 1 ? "1 year ago" : `${interval} years ago`;

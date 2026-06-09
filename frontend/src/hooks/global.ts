@@ -2,19 +2,19 @@ import { useEffect, useState } from "react";
 
 interface Debounced {
   searchQuery: string;
-  daley: number;
+  delay: number;
 }
 
-export const useDebounced = ({ searchQuery, daley }: Debounced) => {
+export const useDebounced = ({ searchQuery, delay }: Debounced) => {
   const [debouncedValue, setDebouncedValue] = useState<string>(searchQuery);
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(searchQuery);
-    }, daley);
+    }, delay);
     return () => {
       clearTimeout(handler);
     };
-  }, [searchQuery, daley]);
+  }, [searchQuery, delay]);
   return debouncedValue;
 };

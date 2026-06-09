@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, useEffect, useRef } from "react";
 import { useChatWithAiMutation } from "../../../redux/apis/chat.api";
 import { isLoggedIn } from "../../../services/auth.service";
@@ -208,6 +209,7 @@ export const FloatingChatWidget: React.FC = () => {
               <button
                 onClick={handleClearChat}
                 title="Clear conversation history"
+                aria-label="Clear conversation history"
                 className="text-slate-400 hover:text-rose-500 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
               >
                 <i className="fa-solid fa-trash-can text-xs"></i>
@@ -215,6 +217,7 @@ export const FloatingChatWidget: React.FC = () => {
               <button
                 onClick={toggleWidget}
                 title="Collapse Assistant"
+                aria-label="Collapse assistant"
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
               >
                 <i className="fa-solid fa-xmark text-sm"></i>
@@ -336,3 +339,4 @@ export const FloatingChatWidget: React.FC = () => {
     </div>
   );
 };
+

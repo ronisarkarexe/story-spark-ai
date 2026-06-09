@@ -43,7 +43,7 @@ const createComment = async (
 };
 
 const getCommentsByPostId = async (postId: string) => {
-  return await Comment.find({ post: postId }).populate("author", "name profile.avatar").sort({ createdAt: -1 });
+  return await Comment.find({ postId }).populate("userId", "name profile.avatar").sort({ createdAt: -1 });
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
@@ -88,8 +88,36 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   return updatedComment;
 };
 
+const deleteComment = async (commentId: string, token: ITokenPayload) => {
+  const { _id, email, role } = token;
+  const user = _id ? await User.findById(_id) : await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Comment not found!");
+  }
+  // Only the comment author or an admin/super-admin can delete
+  const isAuthor = comment.userId.toString() === user._id.toString();
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+  if (!isAuthor && !isAdmin) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You are not authorized to delete this comment!"
+    );
+  }
+  await Comment.findByIdAndDelete(commentId);
+  // Decrement commentsCount on the post atomically
+  await Post.findByIdAndUpdate(comment.postId, {
+    $inc: { commentsCount: -1 },
+  });
+  return { message: "Comment deleted successfully!" };
+};
+
 export const CommentService = {
   createComment,
   getCommentsByPostId,
   toggleCommentLike,
+  deleteComment,
 };

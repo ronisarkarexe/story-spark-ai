@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
-import { useState } from "react";
 import { motion } from "framer-motion";
+
 import {
   useLoginUserMutation,
   useGoogleLoginMutation,
@@ -13,9 +13,11 @@ import {
 import { storeUserInfo, getUserInfo } from "../../services/auth.service";
 import { USER_ROLE } from "../../constants/role";
 import RedirectComponent from "../redirect.component";
+
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
+
 
 type Inputs = {
   email: string;
@@ -51,7 +53,13 @@ const LoginComponent = () => {
     }
   };
 
+  const handleGoogleLoginSuccess = async (
+    credentialResponse: CredentialResponse
+  ) => {
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse,) => {
+
   const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+
     setIsBusy(true);
     try {
       const res = await googleLogin({
@@ -76,20 +84,34 @@ const LoginComponent = () => {
   };
 
   if (isLoggedIn) {
-    const userInfo = getUserInfo();
-    const isDashboardUser =
-      userInfo?.role === USER_ROLE.ADMIN ||
-      userInfo?.role === USER_ROLE.SUPER_ADMIN;
     return (
       <RedirectComponent
-        defaultPath={isDashboardUser ? "/dashboard" : "/explore"}
+        defaultPath="/dashboard"
       />
     );
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 box-border">
+
+    <div className="min-h-screen bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden p-4 sm:p-8 box-border">
+
       {/* Background Glow */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="flex w-full max-w-5xl flex-row justify-center gap-16 py-12 relative z-10 box-border items-center">
+        {/* Left side — feature highlights */}
+        <div className="hidden lg:flex flex-col gap-5 max-w-sm">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
+            Turns Ideas into
+            <br />
+            unforgettable stories
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400">
+            AI powered storytelling that helps you
+            <br />
+            create, connect &amp; inspire.
+          </p>
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -97,6 +119,8 @@ const LoginComponent = () => {
         className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" 
       />
 
+
+      <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10">
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -104,12 +128,16 @@ const LoginComponent = () => {
         className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" 
       />
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="flex w-full max-w-md flex-col justify-center py-12 relative z-10 px-4"
-      >
+      {/* Main Grid Layout Container */}
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 box-border">
+        
+        {/* Left Column — Informational Cards */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
+        >
 
           <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
             <WandSparkles className="text-violet-600 shrink-0" />
@@ -119,29 +147,42 @@ const LoginComponent = () => {
             </div>
           </div>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden"
-        >
-
-            <button
-            onClick={() => window.location.href = "/"}
-            className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-                      >
-            ← Back to Home
-            </button>
-
-          <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400 text-sm">
-            Create, edit, and generate engaging multiple story variations from a
-            single prompt. Perfect for writers, creators, and enthusiasts
-            exploring the future of fiction.
+          <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+            <BookOpen className="text-violet-600 shrink-0" />
+            <div>
+              <h2 className="font-bold">Endless Creativity</h2>
+              <p>Stories that captivate and inspire</p>
+            </div>
           </div>
-        </div>
+
+          <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+            <UsersRound className="text-violet-600 shrink-0" />
+            <div>
+              <h2 className="font-bold">Built for everyone</h2>
+              <p>Writers, Creators and dreamers</p>
+            </div>
+          </div>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 box-border"
+          >
+            <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400 text-sm">
+              Create, edit, and generate engaging multiple story variations from a
+              single prompt. Perfect for writers, creators, and enthusiasts
+              exploring the future of fiction.
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Right Column — Login Form */}
+        <div className="flex justify-center w-full box-border">
+
 
         {/* Right side — login form card */}
-        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
+
+        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl box-border overflow-hidden relative">
           {/* Back to Home */}
           <button
             onClick={() => (window.location.href = "/")}
@@ -159,7 +200,9 @@ const LoginComponent = () => {
             </p>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+
+          <form className="space-y-5 w-full min-w-0 box-border" onSubmit={handleSubmit(onSubmit)}>
+
             <SSInput
               label="Email address"
               name="email"
@@ -173,65 +216,77 @@ const LoginComponent = () => {
               autoComplete="email"
               />
 
-            <div>
-              <SSInput
-                label="Password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                required={true}
-                icon="fi fi-rr-lock"
-                register={register}
-                validation={{ required: "Password is required" }}
-                error={errors.password}
-              />
-              <div className="flex justify-end pt-2">
-                <Link
-                  to="/forgot-password"
-                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
+            {/* Password field — eye icon toggle is provided by SSInput when type="password" */}
+            <SSInput
+              label="Password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              required={true}
+              icon="fi fi-rr-lock"
+              register={register}
+              validation={{ required: "Password is required" }}
+              error={errors.password}
+              autoComplete="password"
+            />
+
+            <div className="flex justify-end -mt-2">
+              <Link
+                to="/forgot-password"
+                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+              >
+                Forgot Password?
+              </Link>
             </div>
 
-            <div className="pt-2">
-              <SSButton text="Sign In" type="submit" isLoading={isBusy} />
-            </div>
+            <SSButton text="Sign In" type="submit" isLoading={isBusy} />
           </form>
 
-          {/* Custom Form Divider */}
-          <div className="relative my-8 w-full box-border">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+          <div className="mt-6 relative w-full">
+            <div className="absolute inset-0 flex items-center w-full">
+              <div className="w-full border-t border-slate-200 dark:border-slate-700" />
             </div>
+            <div className="relative flex justify-center text-sm w-full">
+              <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                OR
+
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white dark:bg-slate-900 px-4 text-slate-400 dark:text-slate-500 font-semibold tracking-wide">
                 Or
+
               </span>
             </div>
           </div>
 
+          <div className="mt-6 flex justify-center list-none w-full">
+          {/* Social Identity OAuth Block Container */}          <div className="flex justify-center w-full box-border">
+
           {/* Social Identity OAuth Block Container */}
           <div className="flex justify-center list-none w-full box-border">
+
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}
             />
           </div>
 
+          <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            Don&apos;t have an account?{" "}
           <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
             Don't have an account?{" "}
             <Link
               to="/signup"
-              className="font-bold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+              className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
             >
               Sign up for free
             </Link>
           </p>
         </div>
-
       </div>
+
+        </div>
+      </div>
+
 
       <Toaster position="top-right" reverseOrder={false} />
     </div>

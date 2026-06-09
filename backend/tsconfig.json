@@ -2,6 +2,8 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "src/**/__tests__/**"],
   "compilerOptions": {
+    "esModuleInterop": true,
+    "target": "ES2015",
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */

@@ -31,8 +31,9 @@ jobs:
         run: npm install -w story-spark-ai-frontend --no-save @rollup/rollup-linux-x64-gnu
 
       - name: Work around npm optional dependency bug (Lightning CSS Linux binary)
-        run: npm install -w story-spark-ai-frontend --no-save lightningcss-linux-x64-gnu
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          npm install -w story-spark-ai-frontend --no-save lightningcss-linux-x64-gnu
+          pnpm install --no-frozen-lockfile
 
       - name: Work around npm optional dependency bug (Rollup Linux binary)
         run: pnpm --filter story-spark-ai-frontend add  @rollup/rollup-linux-x64-gnu
@@ -41,5 +42,6 @@ jobs:
         run: pnpm --filter story-spark-ai-frontend add  lightningcss-linux-x64-gnu
 
       - name: Build
-        run: npm run build
-        run: pnpm run build
+        run: |
+          npm run build
+          pnpm run build
