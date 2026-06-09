@@ -1,24 +1,49 @@
 /* eslint-disable */
+import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { createDocxBlob, downloadBlob, getSafeFileName, createWorkspaceDocxBlob, exportWorkspacePDF } from "../story-export.utils";
 import jsPDF from "jspdf";
 
-jest.mock("jspdf", () => {
-  const mockJsPdfInstance = {
-    setFont: jest.fn(),
-    setFontSize: jest.fn(),
-    setTextColor: jest.fn(),
-    text: jest.fn(),
-    setDrawColor: jest.fn(),
-    setLineWidth: jest.fn(),
-    line: jest.fn(),
-    splitTextToSize: jest.fn().mockImplementation((text: string) => [text]),
-    addPage: jest.fn(),
-    getNumberOfPages: jest.fn().mockReturnValue(2),
-    setPage: jest.fn(),
-    save: jest.fn(),
+// Mock document for Node environment
+const originalDocument = global.document;
+
+beforeAll(() => {
+  const mockAnchor = {
+    href: "",
+    download: "",
+    click: vi.fn(),
+    remove: vi.fn(),
   };
+
+  global.document = {
+    createElement: vi.fn().mockReturnValue(mockAnchor),
+    body: {
+      appendChild: vi.fn().mockReturnValue(mockAnchor),
+      removeChild: vi.fn(),
+    },
+  } as unknown as Document;
+});
+
+afterAll(() => {
+  global.document = originalDocument;
+});
+
+vi.mock("jspdf", () => {
+  class MockjsPDF {
+    setFont = vi.fn();
+    setFontSize = vi.fn();
+    setTextColor = vi.fn();
+    text = vi.fn();
+    setDrawColor = vi.fn();
+    setLineWidth = vi.fn();
+    line = vi.fn();
+    splitTextToSize = vi.fn().mockImplementation((text: string) => [text]);
+    addPage = vi.fn();
+    getNumberOfPages = vi.fn().mockReturnValue(2);
+    setPage = vi.fn();
+    save = vi.fn();
+  }
   return {
-    default: jest.fn().mockImplementation(() => mockJsPdfInstance),
+    default: vi.fn().mockImplementation(() => new MockjsPDF()),
   };
 });
 
@@ -37,12 +62,12 @@ describe("story-export.utils", () => {
 
   describe("downloadBlob", () => {
     it("creates a temporary anchor and revokes the object URL", () => {
-      const createObjectURL = jest
+      const createObjectURL = vi
         .spyOn(URL, "createObjectURL")
         .mockReturnValue("blob:mock");
-      const revokeObjectURL = jest.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
-      const click = jest.fn();
-      const remove = jest.fn();
+      const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+      const click = vi.fn();
+      const remove = vi.fn();
       const anchor = {
         href: "",
         download: "",
@@ -50,8 +75,8 @@ describe("story-export.utils", () => {
         remove,
       } as unknown as HTMLAnchorElement;
 
-      jest.spyOn(document, "createElement").mockReturnValue(anchor);
-      jest.spyOn(document.body, "appendChild").mockImplementation(() => anchor);
+      vi.spyOn(document, "createElement").mockReturnValue(anchor);
+      vi.spyOn(document.body, "appendChild").mockImplementation(() => anchor);
 
       downloadBlob(new Blob(["hello"]), "hello.md");
 
@@ -110,23 +135,25 @@ describe("story-export.utils", () => {
 
   describe("exportWorkspacePDF", () => {
     it("initializes jsPDF and triggers document save", () => {
-      const mockSave = jest.fn();
+      const mockSave = vi.fn();
       const mockJsPdfInstance = {
-        setFont: jest.fn(),
-        setFontSize: jest.fn(),
-        setTextColor: jest.fn(),
-        text: jest.fn(),
-        setDrawColor: jest.fn(),
-        setLineWidth: jest.fn(),
-        line: jest.fn(),
-        splitTextToSize: jest.fn().mockImplementation((text: string) => [text]),
-        addPage: jest.fn(),
-        getNumberOfPages: jest.fn().mockReturnValue(2),
-        setPage: jest.fn(),
+        setFont: vi.fn(),
+        setFontSize: vi.fn(),
+        setTextColor: vi.fn(),
+        text: vi.fn(),
+        setDrawColor: vi.fn(),
+        setLineWidth: vi.fn(),
+        line: vi.fn(),
+        splitTextToSize: vi.fn().mockImplementation((text: string) => [text]),
+        addPage: vi.fn(),
+        getNumberOfPages: vi.fn().mockReturnValue(2),
+        setPage: vi.fn(),
         save: mockSave,
       };
 
-      jest.mocked(jsPDF).mockImplementation(() => mockJsPdfInstance as any);
+      vi.mocked(jsPDF).mockImplementation(function() {
+        return mockJsPdfInstance as any;
+      });
 
       exportWorkspacePDF({
         title: "PDF Story",
@@ -142,4 +169,3 @@ describe("story-export.utils", () => {
     });
   });
 });
-

@@ -143,6 +143,7 @@ export interface IStories {
   tag: string;
   imageURL: string;
   language?: string;
+  genre?: string;
   emotions?: string[];
   enhancedPrompt?: string;
 }

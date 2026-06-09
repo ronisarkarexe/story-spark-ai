@@ -1,17 +1,19 @@
-import { Navigate } from 'react-router-dom';
-import { isLoggedIn } from '../services/auth.service';
+import React from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import { isLoggedIn, getUserInfo } from '../services/auth.service';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  allowedRoles?: string[];
+  children?: React.ReactNode;
 }
 
 /**
- * SimpleProtectedRoute Component
+ * ProtectedRoute Component
  * Guards a route by verifying the stored token is present, decodable,
- * and not past its `exp` claim. Redirects to /login immediately when
- * any check fails.
+ * not past its `exp` claim, and that the user's role is permitted.
+ * Redirects to /login immediately when any check fails.
  */
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
   // isLoggedIn reads the token from localStorage, decodes it with
   // jwtDecode, and returns false if the token is missing, malformed,
   // or if Date.now() is past the `exp` claim.
@@ -19,7 +21,15 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  if (allowedRoles) {
+    const userInfo = getUserInfo();
+    const userRole = userInfo?.role;
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      return <Navigate to="/login" replace />;
+    }
+  }
+
+  return children ? <>{children}</> : <Outlet />;
 };
 
 export default ProtectedRoute;
