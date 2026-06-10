@@ -54,11 +54,8 @@ const LoginComponent = () => {
   };
 
   const handleGoogleLoginSuccess = async (
-    credentialResponse: CredentialResponse
-  ) => {
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse,) => {
-
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+  credentialResponse: CredentialResponse
+) => {
 
     setIsBusy(true);
     try {
