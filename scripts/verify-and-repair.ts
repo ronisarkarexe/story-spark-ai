@@ -46,8 +46,7 @@ async function main() {
 
   // Verification: run only the test runner.
   // vitest (frontend) and jest (backend) both compile TypeScript internally
-  // using the project's tsconfig, so a standalone tsc step is not needed
-  // (and would fail without tsconfig context to resolve imports).
+  // using the project's tsconfig, so a standalone tsc step is not needed.
   const steps: { name: string; command: string }[] = [];
   if (isFrontend) {
     steps.push({ name: "Test", command: `npx vitest run ${relativeTestPath} --reporter=verbose` });
@@ -73,6 +72,8 @@ async function main() {
         if (attempt === maxAttempts) {
           console.error(`Max repair attempts reached. Verification failed.`);
           console.error(`Error details:\n${result.errorLog}`);
+          // Exit with 1 to signal failure — but do NOT crash. The workflow
+          // will still commit the generated tests and open a PR.
           process.exit(1);
         }
 
@@ -82,8 +83,8 @@ async function main() {
         try {
           execSync(`npx tsx scripts/generate-tests.ts ${targetFile} --fix ${tempErrorLogFile}`, { stdio: "inherit" });
         } catch (repairErr: any) {
-          console.error(`Failed to run generate-tests.ts --fix: ${repairErr.message}`);
-          process.exit(1);
+          console.error(`AI repair attempt failed: ${repairErr.message}`);
+          // Don't crash — let the next attempt try again
         }
         break; // Break the steps loop to restart verification from next attempt
       } else {

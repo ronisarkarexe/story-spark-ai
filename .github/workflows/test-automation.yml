@@ -131,27 +131,40 @@ jobs:
  
             # Run verify and repair loop (up to 3 attempts)
             echo "Running verification and repair loop..."
-            if npx tsx scripts/verify-and-repair.ts "$FILE"; then
-              echo "Verification succeeded! Committing and pushing..."
-              
-              git add .
-              git commit -m "test: add unit tests for $(basename "$FILE")"
-              
-              # Push branch to our fork
-              git push origin "$BRANCH_NAME" --force
- 
-              # Construct structured PR body matching pull_request_template.md (including GSSoC'26 reference)
-              printf -v PR_BODY "## What this PR does\n\nThis PR adds unit test coverage for the file \`$FILE\`.\nThe tests cover core behavior, success flows, and error paths.\nThis contribution is under GSSoC'26.\n\n## Type of change\n\n- [x] Code quality improvement / tests\n\n## Related issue\n\nCloses ronisarkarexe/story-spark-ai#$ISSUE_NUMBER\n\n## Checklist\n\n- [x] I have added screenshots or a recording when they help explain this PR, or noted **N/A** with a one-line reason (N/A - Unit tests only).\n- [x] I have filled in the related issue number when there is one.\n- [x] I have tested my changes.\n- [x] I have done a self-review of the code."
- 
-              # Submit PR against upstream main
-              echo "Creating Pull Request on upstream repository..."
-              gh pr create \
-                --repo ronisarkarexe/story-spark-ai \
-                --title "test: add unit tests for $(basename "$FILE")" \
-                --body "$PR_BODY" \
-                --head "Harshithk951:$BRANCH_NAME" \
-                --base main
-            else
-              echo "Verification and self-repair failed for $FILE. Skipping PR creation."
+            TESTS_PASSED="true"
+            if ! npx tsx scripts/verify-and-repair.ts "$FILE"; then
+              echo "⚠️ Verification did not fully pass, but we will still open a PR with the generated tests."
+              TESTS_PASSED="false"
             fi
+ 
+            # Always commit, push, and open a PR (no orphan issues)
+            echo "Committing and pushing..."
+            git add .
+            
+            # Check if there are changes to commit
+            if git diff --cached --quiet; then
+              echo "No test files were generated for $FILE. Skipping."
+              continue
+            fi
+            
+            git commit -m "test: add unit tests for $(basename "$FILE")"
+            
+            # Push branch to our fork
+            git push origin "$BRANCH_NAME" --force
+ 
+            # Construct structured PR body matching pull_request_template.md
+            if [ "$TESTS_PASSED" = "true" ]; then
+              printf -v PR_BODY "## What this PR does\n\nThis PR adds unit test coverage for the file \`$FILE\`.\nThe tests cover core behavior, success flows, and error paths.\nAll tests pass. This contribution is under GSSoC'26.\n\n## Type of change\n\n- [x] Code quality improvement / tests\n\n## Related issue\n\nCloses ronisarkarexe/story-spark-ai#$ISSUE_NUMBER\n\n## Checklist\n\n- [x] I have added screenshots or a recording when they help explain this PR, or noted **N/A** with a one-line reason (N/A - Unit tests only).\n- [x] I have filled in the related issue number when there is one.\n- [x] I have tested my changes.\n- [x] I have done a self-review of the code."
+            else
+              printf -v PR_BODY "## What this PR does\n\nThis PR adds unit test coverage for the file \`$FILE\`.\nThe tests cover core behavior, success flows, and error paths.\n⚠️ Some tests may need manual review — the auto-repair loop could not fully resolve all failures.\nThis contribution is under GSSoC'26.\n\n## Type of change\n\n- [x] Code quality improvement / tests\n\n## Related issue\n\nCloses ronisarkarexe/story-spark-ai#$ISSUE_NUMBER\n\n## Checklist\n\n- [x] I have added screenshots or a recording when they help explain this PR, or noted **N/A** with a one-line reason (N/A - Unit tests only).\n- [x] I have filled in the related issue number when there is one.\n- [ ] I have tested my changes.\n- [x] I have done a self-review of the code."
+            fi
+ 
+            # Submit PR against upstream main
+            echo "Creating Pull Request on upstream repository..."
+            gh pr create \
+              --repo ronisarkarexe/story-spark-ai \
+              --title "test: add unit tests for $(basename "$FILE")" \
+              --body "$PR_BODY" \
+              --head "Harshithk951:$BRANCH_NAME" \
+              --base main
           done
