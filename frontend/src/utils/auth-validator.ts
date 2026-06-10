@@ -2,7 +2,20 @@
  * Validates a decoded JWT token payload and strictly checks its claims format and existence.
  * Throws a descriptive Error if validation fails.
  */
-export const validateTokenPayload = (decodedData: any): void => {
+interface TokenPayload {
+  userId?: string;
+  _id?: string;
+  sub?: string;
+  email?: string;
+  role?: string;
+  subscriptionType?: string;
+  exp?: number;
+  iat?: number;
+  name?: string;
+  postsCount?: number;
+}
+
+export const validateTokenPayload = (decodedData: TokenPayload | null | undefined): void => {
   if (!decodedData || typeof decodedData !== "object") {
     throw new Error("Token payload is not a valid object.");
   }

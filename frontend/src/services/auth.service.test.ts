@@ -112,7 +112,7 @@ describe("Auth Service - JWT Payload Validation", () => {
     };
 
     vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("invalid.token.here");
-    vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload as any);
+    vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload as unknown as jwtUtils.CustomJwtPayload);
 
     const result = getValidDecodedToken();
 
@@ -131,7 +131,7 @@ describe("Auth Service - JWT Payload Validation", () => {
     };
 
     vi.mocked(localStorageUtils.getFromLocalStorage).mockReturnValue("invalid.token.here");
-    vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload as any);
+    vi.mocked(jwtUtils.decodedToken).mockReturnValue(mockPayload as unknown as jwtUtils.CustomJwtPayload);
 
     const result = getValidDecodedToken();
 

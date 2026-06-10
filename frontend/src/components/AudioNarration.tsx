@@ -27,7 +27,7 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
     stop,
     setPlaybackRate,
     setSelectedVoice,
-  } = useSpeechSynthesis();
+  } = useSpeechSynthesis(text);
 
   // Stop speech when component unmounts or text changes
   useEffect(() => {
