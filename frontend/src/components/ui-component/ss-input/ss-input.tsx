@@ -12,7 +12,6 @@ interface SSInputProps<T extends FieldValues> {
   name: Path<T>;
   type?: string;
   placeholder?: string;
-  required?: boolean;
   icon?: string;
   register: UseFormRegister<T>;
   validation?: RegisterOptions<T>;

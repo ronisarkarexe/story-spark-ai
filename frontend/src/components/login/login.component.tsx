@@ -243,44 +243,33 @@ const LoginComponent = () => {
           </form>
 
           <div className="mt-6 relative w-full">
-            <div className="absolute inset-0 flex items-center w-full">
-              <div className="w-full border-t border-slate-200 dark:border-slate-700" />
-            </div>
-            <div className="relative flex justify-center text-sm w-full">
-              <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                OR
+  <div className="absolute inset-0 flex items-center">
+    <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+  </div>
 
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-slate-900 px-4 text-slate-400 dark:text-slate-500 font-semibold tracking-wide">
-                Or
+  <div className="relative flex justify-center text-sm">
+    <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+      OR
+    </span>
+  </div>
+</div>
 
-              </span>
-            </div>
-          </div>
+<div className="mt-6 flex justify-center w-full">
+  <GoogleLogin
+    onSuccess={handleGoogleLoginSuccess}
+    onError={handleGoogleLoginError}
+  />
+</div>
 
-          <div className="mt-6 flex justify-center list-none w-full">
-          {/* Social Identity OAuth Block Container */}          <div className="flex justify-center w-full box-border">
-
-          {/* Social Identity OAuth Block Container */}
-          <div className="flex justify-center list-none w-full box-border">
-
-            <GoogleLogin
-              onSuccess={handleGoogleLoginSuccess}
-              onError={handleGoogleLoginError}
-            />
-          </div>
-
-          <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
-            Don&apos;t have an account?{" "}
-          <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
-            >
-              Sign up for free
-            </Link>
-          </p>
+<p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+  Don't have an account?{" "}
+  <Link
+    to="/signup"
+    className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+  >
+    Sign up for free
+  </Link>
+</p>
         </div>
       </div>
 
