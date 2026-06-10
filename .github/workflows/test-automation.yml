@@ -82,9 +82,10 @@ jobs:
             ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -oE "[0-9]+$")
             echo "Created Issue Number: $ISSUE_NUMBER ($ISSUE_URL)"
 
-             # Assign to ourselves upstream (by commenting /assign contributing under gssoc26)
+             # Assign to ourselves upstream (by commenting /assign and I am contributing under GSSoC'26)
             echo "Assigning issue via comment..."
-            gh issue comment "$ISSUE_NUMBER" --repo ronisarkarexe/story-spark-ai --body "/assign contributing under gssoc26"
+            printf -v COMMENT_BODY "/assign\nI am contributing under GSSoC'26"
+            gh issue comment "$ISSUE_NUMBER" --repo ronisarkarexe/story-spark-ai --body "$COMMENT_BODY"
 
             # Create branch locally
             SAFE_NAME=$(echo "$FILE" | sed 's/[^a-zA-Z0-9-]/_/g')
