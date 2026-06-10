@@ -7,9 +7,7 @@ const HELP_SECTIONS = [
   { id: "troubleshoot-section", label: "Troubleshooting", icon: "fa-screwdriver-wrench", color: "from-orange-500 to-red-500" },
   { id: "setup-guide-section", label: "Setup Guide", icon: "fa-rocket", color: "from-emerald-500 to-teal-500" },
   { id: "support-links-section", label: "Support", icon: "fa-headset", color: "from-pink-500 to-rose-500" },
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { HELP_SECTIONS } from "../help_center.utils";
+
 
 const HelpSidebar = () => {
   const [activeSection, setActiveSection] = useState<string>(
@@ -130,20 +128,20 @@ const HelpSidebar = () => {
                           : "border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/[0.03] hover:border-blue-200 dark:hover:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
                       }`}
                     >
-                      <i className={`fa-solid ${section.icon} text-sm`} aria-hidden="true" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className={`font-bold text-xs sm:text-sm tracking-tight transition-colors duration-200 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white"}`}>
-                        {section.label}
-                      </p>
-                    </div>
-                    <div className="shrink-0">
-                      <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${isActive ? "bg-blue-500 scale-125 shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "bg-slate-300 dark:bg-slate-700"}`} />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                      <div className="min-w-0 flex-1 flex items-center gap-4">
+                        <i className={`fa-solid ${section.icon} text-sm`} aria-hidden="true" />
+                        <p className={`font-bold text-xs sm:text-sm tracking-tight transition-colors duration-200 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white"}`}>
+                          {section.label}
+                        </p>
+                      </div>
+
+                      <div className="shrink-0">
+                        <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${isActive ? "bg-blue-500 scale-125 shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "bg-slate-300 dark:bg-slate-700"}`} />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
 
                       {isActive && (
                         <motion.div

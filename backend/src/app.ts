@@ -67,6 +67,13 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/") && !req.path.startsWith("/api/v1/")) {
+    req.url = req.url.replace(/^\/api\//, "/api/v1/");
+  }
+  next();
+});
+
 app.use("/api/v1", Routers);
 
 app.use((req: Request, res: Response, _next: NextFunction) => {
