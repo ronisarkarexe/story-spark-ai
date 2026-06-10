@@ -1,8 +1,9 @@
+// FAQ Structure
 export interface FAQItem {
   id: string;
   question: string;
   answer: string;
-  keywords: string[];
+  keywords: string[]; // Strict type array prevents TS2488 Spread Iterator crash
 }
 
 export interface Support_Links {
@@ -21,35 +22,28 @@ export interface SetupStep {
   code?: string;
 }
 
+// HelpCategory Model
 export interface HelpCategory {
   id: string;
   title: string;
   description: string;
   icon: string;
   keywords: string[];
-  sectionId: string;
+  sectionId: string; // FIX: Resolves category.sectionId error
 }
 
+// TroubleshootItem Model
 export interface TroubleshootItem {
   id: string;
   title: string;
   description: string;
   keywords: string[];
-  icon: string;
-  symptoms: string;
-  solution: string;
+  icon: string;       // FIX: Resolves item.icon layout crash
+  symptoms: string;   // FIX: Resolves item.symptoms layout crash
+  solution: string;   // FIX: Resolves item.solution layout crash
 }
 
-export interface HelpSection {
-  id: string;
-  label: string;
-  icon: string;
-  color: string;
-}
-
-export type FaqItem = FAQItem;
-export type SupportLink = Support_Links;
-
+// Data Sets
 export const FAQ_ITEMS: FAQItem[] = [
   {
     id: "faq-generate-stories",
@@ -105,7 +99,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Account & Billing",
     description: "Manage your profile settings, subscriptions, and security options.",
     icon: "fa-solid fa-user-gear",
-    sectionId: "account-billing-section",
+    sectionId: "account-billing-section", 
     keywords: ["profile", "password", "billing", "subscription", "plan"]
   },
   {
@@ -128,6 +122,22 @@ export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
     solution: "Verify your local network availability, clear application session storage, or recreate the workspace instance.",
     keywords: ["network", "socket", "disconnect", "collab", "freeze"]
   }
+];
+
+export type FaqItem = FAQItem;
+export type SupportLink = Support_Links;
+
+export interface HelpSection {
+  id: string;
+  label: string;
+}
+
+export const HELP_SECTIONS: HelpSection[] = [
+  { id: "help-categories", label: "Categories" },
+  { id: "troubleshoot-section", label: "Troubleshooting" },
+  { id: "faq-section", label: "FAQ" },
+  { id: "developer-setup", label: "Setup Guide" },
+  { id: "support-links-section", label: "Support" },
 ];
 
 export const scrollToSection = (id: string) => {

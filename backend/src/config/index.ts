@@ -3,9 +3,7 @@ import path from "path";
 
 dotenv.config({ path: path.join(__dirname, "../../.env") });
 
-const parseCorsOrigins = (
-  raw: string | undefined
-): string[] | undefined => {
+const parseList = (raw: string | undefined): string[] | undefined => {
   if (!raw?.trim()) return undefined;
   return raw
     .split(",")
@@ -34,7 +32,8 @@ export default {
     }
     return url;
   })(),
-  cors_origins: parseCorsOrigins(process.env.CORS_ORIGINS),
+  cors_origins: parseList(process.env.CORS_ORIGINS),
+  dns_servers: parseList(process.env.DNS_SERVERS),
   bcrypt_salt_rounds: (() => {
     const raw = process.env.SALT_ROUNDS;
     const parsed = raw ? Number(raw) : NaN;

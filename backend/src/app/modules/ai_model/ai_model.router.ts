@@ -122,8 +122,10 @@ router.post(
 // ========== AI CHAT ==========
 
 // AI Chat - PROTECTED
+
 router.post(
   "/chat",
+  aiGenerationRateLimiter,
   auth(),
   validateRequest(AIModelValidator.aiChat),
   checkRequestLimit(),

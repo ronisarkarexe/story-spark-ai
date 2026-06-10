@@ -15,6 +15,7 @@ import storyRoutes from "../routes/story.routes";
 import { ReportRouter } from "../app/modules/report/report.router";
 import { NewsletterRouter } from "../app/modules/newsletter/newsletter.route";
 import paymentRouter from "../router/payment.route";
+import { AIEditorRouter } from "../app/modules/ai_editor/ai_editor.router";
 import { BookmarkRouter } from "../app/modules/bookmark/bookmark.router";
 import { StoryVersionRouter } from "../app/modules/story_version/story_version.router";
 import { AnalyticsRouter } from "../app/modules/analytics/analytics.router";
@@ -128,6 +129,10 @@ const modules = [
   {
     path: "/writer-applications",
     router: WriterApplicationRoutes,
+  },
+  {
+    path: "/ai-editor",
+    router: AIEditorRouter,
   },
   {
     path: "/chat",

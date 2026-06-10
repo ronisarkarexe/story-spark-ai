@@ -53,6 +53,10 @@ const LoginComponent = () => {
     }
   };
 
+  const handleGoogleLoginSuccess = async (
+    credentialResponse: CredentialResponse
+  ) => {
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse,) => {
 
   const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
 
@@ -97,6 +101,22 @@ const LoginComponent = () => {
     <div className="min-h-screen bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden p-4 sm:p-8 box-border">
 
       {/* Background Glow */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="flex w-full max-w-5xl flex-row justify-center gap-16 py-12 relative z-10 box-border items-center">
+        {/* Left side — feature highlights */}
+        <div className="hidden lg:flex flex-col gap-5 max-w-sm">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
+            Turns Ideas into
+            <br />
+            unforgettable stories
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400">
+            AI powered storytelling that helps you
+            <br />
+            create, connect &amp; inspire.
+          </p>
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -105,6 +125,7 @@ const LoginComponent = () => {
       />
 
 
+      <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10">
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -131,6 +152,21 @@ const LoginComponent = () => {
             </div>
           </div>
 
+          <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+            <BookOpen className="text-violet-600 shrink-0" />
+            <div>
+              <h2 className="font-bold">Endless Creativity</h2>
+              <p>Stories that captivate and inspire</p>
+            </div>
+          </div>
+
+          <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+            <UsersRound className="text-violet-600 shrink-0" />
+            <div>
+              <h2 className="font-bold">Built for everyone</h2>
+              <p>Writers, Creators and dreamers</p>
+            </div>
+          </div>
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -227,6 +263,8 @@ const LoginComponent = () => {
             </div>
           </div>
 
+          <div className="mt-6 flex justify-center list-none w-full">
+          {/* Social Identity OAuth Block Container */}          <div className="flex justify-center w-full box-border">
 
           {/* Social Identity OAuth Block Container */}
           <div className="flex justify-center list-none w-full box-border">
@@ -237,6 +275,8 @@ const LoginComponent = () => {
             />
           </div>
 
+          <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            Don&apos;t have an account?{" "}
           <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
             Don't have an account?{" "}
             <Link

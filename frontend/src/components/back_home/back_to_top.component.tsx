@@ -16,7 +16,11 @@ const BackToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  if (!isVisible) return null;
+  const isNearBottom =
+  window.innerHeight + window.scrollY >=
+  document.documentElement.scrollHeight - 200;
+
+  if (!isVisible || isNearBottom) return null;
 
   return (
     <button

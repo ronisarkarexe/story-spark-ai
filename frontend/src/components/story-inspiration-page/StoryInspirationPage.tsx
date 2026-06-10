@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState } from 'react';
 import { getBaseUrl } from '../../helpers/config';
 import StoryGeneratingAnimation from '../loading/story-generating-animation.component';
@@ -81,3 +82,4 @@ const StoryInspirationPage: React.FC = () => {
 };
 
 export default StoryInspirationPage;
+

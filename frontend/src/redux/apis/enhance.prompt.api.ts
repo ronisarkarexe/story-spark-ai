@@ -1,10 +1,13 @@
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 // NEW FILE: frontend/src/redux/apis/enhance.prompt.api.ts
-// ─────────────────────────────────────────────────────────────
+// Follows the exact same pattern as aiModelApi.ts
+// ─────────────────────────────────────────────────────────────────────────────
 
 import baseApi from "../base_api/base.api";
 import { tagTypes } from "../tag-types";
 
+// The base URL for story-version routes
+// Check base.endpoints.ts for the exact constant name — adjust if needed
 const STORY_VERSION_URL = "story-version";
 
 export interface IEnhancePromptRequest {
@@ -22,12 +25,12 @@ const enhancePromptApi = baseApi.injectEndpoints({
       query: (data) => ({
         url: `/${STORY_VERSION_URL}/enhance-prompt`,
         method: "POST",
-        body: data, // ✅ use "body" instead of "data"
+        data: data,
       }),
       transformResponse: (response: IEnhancePromptResponse) => {
         return { data: response.data, message: response.message };
       },
-      invalidatesTags: [tagTypes.prompt], // ✅ adjust tag type if needed
+      invalidatesTags: [tagTypes.model],
     }),
   }),
 });

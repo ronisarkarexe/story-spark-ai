@@ -171,7 +171,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 role="button"
                 aria-label="Play narration from the beginning"
                 title="Play from the beginning"
-                onClick={speech.play}
+                onClick={() => speech.play()}
                 disabled={!canNarrate}
                 className={`${controlButtonBaseClass} border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:bg-indigo-500/20`}
               >

@@ -492,6 +492,8 @@ const StoriesComponent = () => {
   const filteredStories = useMemo(() => {
     if (!searchQuery.trim()) return uniqueStories;
   const debouncedSearchQuery = useDebounce(searchQuery, 350);
+  const debouncedPrompt = useDebounce(textareaValue, 500);
+
 
   const filteredStories = useMemo(() => {
     if (!debouncedSearchQuery.trim()) return stories;
@@ -731,8 +733,8 @@ useEffect(() => {
   }, [location, navigate, setSelectedGenre, setTextareaValue]);
 
   useEffect(() => {
-    setValue("prompt", textareaValue);
-  }, [textareaValue, setValue]);
+  setValue("prompt", debouncedPrompt);
+}, [debouncedPrompt, setValue]);
 
   useEffect(() => {
     return () => {

@@ -19,6 +19,19 @@ const getDashboardAnalysis = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const analyzeStory = catchAsync(async (req: Request, res: Response) => {
+  const { content } = req.body;
+  const result = await AnalysisService.analyzeStory(content);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Story analyzed successfully!",
+    data: result,
+  });
+});
+
 export const AnalysisController = {
   getDashboardAnalysis,
+  analyzeStory,
 };
+

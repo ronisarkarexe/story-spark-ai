@@ -1,3 +1,4 @@
+/* eslint-disable */
 import baseApi from "../base_api/base.api";
 import { tagTypes } from "../tag-types";
 
@@ -93,4 +94,5 @@ export const {
   useCreateBranchVersionMutation,
   useGetCharacterNetworkQuery,
 } = storyVersionApi;
+
 

@@ -32,7 +32,7 @@ const CardCollection: React.FC<CardCollectionProps> = ({
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-700/50 bg-slate-800/60 p-5 shadow-xl">
+    <section className="mt-6 rounded-2xl border border-slate-700/40 bg-slate-800/40 backdrop-blur-lg p-5 shadow-xl">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h2 className="text-xl font-black text-slate-100">My Collection</h2>
@@ -52,7 +52,7 @@ const CardCollection: React.FC<CardCollectionProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {sortedStories.map((story) => {
           const isSelected = story.uuid === selectedStoryId;
 
@@ -61,10 +61,10 @@ const CardCollection: React.FC<CardCollectionProps> = ({
               key={story.uuid}
               type="button"
               onClick={() => onSelectStory(story)}
-              className={`rounded-xl border p-2 text-left transition ${
+              className={`group rounded-xl border p-2 text-left transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(0,0,0,0.45)] ${
                 isSelected
                   ? "border-blue-400 bg-blue-500/10"
-                  : "border-slate-700 bg-slate-950/30 hover:border-slate-500"
+                  : "border-slate-700 bg-slate-950/20 backdrop-blur-sm hover:border-slate-500"
               }`}
             >
               <StoryTradingCard story={story} compact />

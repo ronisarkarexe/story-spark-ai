@@ -28,6 +28,34 @@ export default function CollabHome() {
     const collabSocket = connectCollabSocket();
     if (!collabSocket) {
       setError("Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env");
+      let socket = getSocketIo();
+      if (!socket) {
+        socket = connectSocket();
+      }
+
+      if (!socket) {
+        setError(
+          "Socket.IO connection failed. Please check VITE_SOCKET_URL in frontend/.env"
+        );
+        setIsCreating(false);
+        return;
+      }
+
+      socket.emit(
+        "collab:create_room",
+        { userId: user.userId, username: user.name },
+        (response: CreateRoomResponse) => {
+          if (response?.roomId) {
+            navigate(`/collab/${response.roomId}`);
+          } else {
+            setError(response?.message || "Failed to create room");
+            setIsCreating(false);
+          }
+        }
+      );
+    } catch (err) {
+      console.error("Create room error:", err);
+      setError("Error creating room. Please try again.");
       setIsCreating(false);
       return;
     }

@@ -11,6 +11,7 @@ import catchAsync from "../shared/catch_async";
 import sendResponse from "../shared/send_response";
 import httpStatus from "http-status";
 import { Request, Response } from "express";
+import piiScrubberMiddleware from "../app/middleware/pii_scrubber";
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ const router = express.Router();
 router.post(
   "/continue",
   freeAiRateLimiter,
+  piiScrubberMiddleware,
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {
     const { prompt, language } = req.body as { prompt: string; language?: string };

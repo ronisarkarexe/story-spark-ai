@@ -13,7 +13,6 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
-
 if (!GOOGLE_CLIENT_ID) {
   console.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will not function.");
 }
@@ -26,12 +25,20 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || ""}>
+    {GOOGLE_CLIENT_ID ? (
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <Provider store={store}>
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
+        </Provider>
+      </GoogleOAuthProvider>
+    ) : (
       <Provider store={store}>
         <ThemeProvider>
           <App />
         </ThemeProvider>
       </Provider>
-    </GoogleOAuthProvider>
+    )}
   </StrictMode>
 );
