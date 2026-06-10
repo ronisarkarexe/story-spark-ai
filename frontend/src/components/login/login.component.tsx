@@ -10,8 +10,7 @@ import {
   useLoginUserMutation,
   useGoogleLoginMutation,
 } from "../../redux/apis/auth.api";
-import { storeUserInfo, getUserInfo } from "../../services/auth.service";
-import { USER_ROLE } from "../../constants/role";
+import { storeUserInfo } from "../../services/auth.service";
 import RedirectComponent from "../redirect.component";
 
 import toast, { Toaster } from "react-hot-toast";
