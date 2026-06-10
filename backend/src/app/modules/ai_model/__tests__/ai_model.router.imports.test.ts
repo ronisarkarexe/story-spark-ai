@@ -23,8 +23,8 @@ describe("AI model router middleware imports", () => {
         ts.sys
       ).resolvedModule;
 
-      expect(resolved?.resolvedFileName).toContain(
-        path.normalize("backend/src/app/middleware/")
+      expect(resolved?.resolvedFileName.replace(/\\/g, "/")).toContain(
+        "backend/src/app/middleware/"
       );
     }
   });

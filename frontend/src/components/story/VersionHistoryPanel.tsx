@@ -1,22 +1,33 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-
+import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import {
-  restoreVersion,
-  deleteVersion,
-} from "../../redux/slices/storySlice";
+  useGetVersionsByStoryIdQuery,
+  useRestoreVersionMutation,
+} from "../../redux/apis/storyVersion.api";
+import toast from "react-hot-toast";
 
 const VersionHistoryPanel = () => {
-  const dispatch = useDispatch();
-
-  const versions = useSelector(
-    (state: RootState) => state.story.versions
-  );
-
   const currentStory = useSelector(
     (state: RootState) => state.story.currentStory
   );
+
+  const { data: versions = [] } = useGetVersionsByStoryIdQuery(
+    currentStory?._id || "",
+    { skip: !currentStory?._id }
+  );
+
+  const [restoreVersion, { isLoading: isRestoring }] =
+    useRestoreVersionMutation();
+
+  const handleRestore = async (versionId: string) => {
+    try {
+      await restoreVersion(versionId).unwrap();
+      toast.success("Version restored successfully!");
+    } catch {
+      toast.error("Failed to restore version.");
+    }
+  };
 
   if (!versions.length) {
     return (
@@ -24,11 +35,9 @@ const VersionHistoryPanel = () => {
         <h2 className="text-2xl font-bold text-white mb-6">
           Version History
         </h2>
-
         <p className="text-zinc-400 text-sm">
           No saved versions yet.
         </p>
-
         <p className="text-zinc-500 text-xs mt-2">
           Versions are automatically created whenever a new chapter is generated.
         </p>
@@ -43,17 +52,14 @@ const VersionHistoryPanel = () => {
       <h2 className="text-2xl font-bold text-white mb-2">
         Version History
       </h2>
-
       <p className="text-zinc-500 text-sm mb-6">
-        {versions.length} saved version
-        {versions.length !== 1 ? "s" : ""}
+        {versions.length} saved version{versions.length !== 1 ? "s" : ""}
       </p>
 
       <div className="space-y-3">
-        {reversedVersions.map((version, index) => {
+        {reversedVersions.map((version: any, index) => {
           const isCurrent =
-            currentStory?.chapters.length ===
-            version.chapterCount;
+            currentStory?.chapters?.length === version.chapterCount;
 
           return (
             <div
@@ -73,14 +79,11 @@ const VersionHistoryPanel = () => {
               </p>
 
               <p className="text-zinc-500 text-xs mt-2">
-                {version.chapterCount} Chapter
-                {version.chapterCount !== 1 ? "s" : ""}
+                {version.chapterCount} Chapter{version.chapterCount !== 1 ? "s" : ""}
               </p>
 
               <p className="text-zinc-500 text-xs mt-1">
-                {new Date(
-                  version.timestamp
-                ).toLocaleString()}
+                {new Date(version.timestamp).toLocaleString()}
               </p>
 
               {isCurrent && (
@@ -91,25 +94,11 @@ const VersionHistoryPanel = () => {
 
               <div className="flex flex-col gap-2 mt-3">
                 <button
-                  onClick={() =>
-                    dispatch(
-                      restoreVersion(version.id)
-                    )
-                  }
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg transition"
+                  disabled={isRestoring}
+                  onClick={() => handleRestore(version.id)}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg transition disabled:opacity-50"
                 >
-                  Restore Version
-                </button>
-
-                <button
-                  onClick={() =>
-                    dispatch(
-                      deleteVersion(version.id)
-                    )
-                  }
-                  className="w-full bg-red-600 hover:bg-red-700 text-white text-sm py-2 rounded-lg transition"
-                >
-                  Delete Version
+                  {isRestoring ? "Restoring..." : "Restore Version"}
                 </button>
               </div>
             </div>

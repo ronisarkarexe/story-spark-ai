@@ -24,10 +24,10 @@ const VerifyEmail = async (payload: IEmailBody) => {
     // Use a cryptographically secure RNG so OTPs cannot be predicted.
     const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
-    
+
     // Delete any existing OTP for this email
     await OTPModel.deleteOne({ email });
-    
+
     // Create new OTP record in MongoDB
     await OTPModel.create({
       email,
@@ -43,7 +43,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
         expiresAt,
       };
     }
-    
+
     const mailOptions = {
       from: config.verify_email,
       to: email,
@@ -67,25 +67,23 @@ const VerifyEmail = async (payload: IEmailBody) => {
           <p style="color: #666;">This is your verification code:</p>
           <div style="display: flex; justify-content: center; margin: 20px 0;">
             ${otp
-              .split("")
-              .map(
-                (digit, index, arr) => `
-                <span style="display: inline-block; width: 40px; height: 40px; font-size: 24px; font-weight: bold; color: #007bff; border: 2px solid #007bff; border-radius: 5px; line-height: 40px; text-align: center; ${
-                  index !== arr.length - 1 ? "margin-right: 10px;" : ""
-                }">
+          .split("")
+          .map(
+            (digit, index, arr) => `
+                <span style="display: inline-block; width: 40px; height: 40px; font-size: 24px; font-weight: bold; color: #007bff; border: 2px solid #007bff; border-radius: 5px; line-height: 40px; text-align: center; ${index !== arr.length - 1 ? "margin-right: 10px;" : ""
+              }">
                 ${digit}
                 </span>
             `
-              )
-              .join("")}
+          )
+          .join("")}
             </div>
           <p style="color: #666;">This code will only be valid for the next 10 minutes. If the code does not work, please request a new one and ensure you enter it correctly.</p>
           <p style="margin-top: 20px; color: #666;">Thanks,<br>Story Spark AI Team</p>
         </main>
         <footer style="margin-top: 20px; font-size: 12px; color: #aaa;">
-          <p>This email was sent from ${
-            config.verify_email
-          } for your one-time OTP verification.</p>
+          <p>This email was sent from ${config.verify_email
+        } for your one-time OTP verification.</p>
           <p>&copy; ${new Date().getFullYear()} Story Spark Ai. All Rights Reserved.</p>
         </footer>
       </section>
@@ -93,7 +91,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
       </html>
       `,
     };
-    
+
     await transporter.sendMail(mailOptions);
 
     return {
@@ -110,7 +108,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
 
 const VerifyOtp = async (payload: IVerifyOtpBody) => {
   const { email, otp } = payload;
-  
+
   // FIX #3: Input validation - check if otp is a non-empty string before calling .trim()
   if (typeof otp !== "string" || !otp) {
     throw new ApiError(
@@ -118,7 +116,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
       "OTP must be a non-empty string"
     );
   }
-  
+
   const storedOtpRecord = await OTPModel.findOne({ email });
 
   if (!storedOtpRecord) {
@@ -151,7 +149,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
     // Increment failed attempts
     storedOtpRecord.failedAttempts += 1;
     await storedOtpRecord.save();
-    
+
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       `Invalid OTP. Please try again. (${5 - storedOtpRecord.failedAttempts} attempts remaining)`
@@ -162,7 +160,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   // This token binds the verification to a specific email and must be used in registration
   const verificationToken = crypto.randomBytes(32).toString("hex");
   const verificationTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes validity
-  
+
   storedOtpRecord.isVerified = true;
   storedOtpRecord.verificationToken = verificationToken;
   storedOtpRecord.verificationTokenExpires = verificationTokenExpires;
@@ -171,7 +169,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   // Clear memory rate limit attempts on success
   clearOtpAttempts(email);
 
-  return { 
+  return {
     verified: true,
     verificationToken, // Client must include this in registration request
     expiresIn: 15 * 60, // 15 minutes in seconds
@@ -185,3 +183,4 @@ export const VerifyEmailService = {
 
 const clearOtpAttempts = (email: string) => {
   console.log('Clearing OTP attempts for:', email);
+};

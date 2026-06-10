@@ -36,14 +36,6 @@ const GithubcontributorsComponent: React.FC = () => {
         );
   
         const data = await githubRes.json();
-        setGitHubContributors(data);
-    
-      
-      }catch(error){
-        console.error("Failed to load GitHub contributors", error);
-      } catch (err: unknown) {
-        console.error("Failed to load GitHub contributors", err);
-  
         if (!controller.signal.aborted) {
           setGitHubContributors(data);
         }
@@ -66,7 +58,7 @@ const GithubcontributorsComponent: React.FC = () => {
         }
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
-          console.log(e);
+          console.error("Failed to load GitHub data", e);
         }
       }
     };

@@ -1,3 +1,7 @@
+jest.mock("dotenv", () => ({
+  config: jest.fn(),
+}));
+
 describe("backend config startup validation", () => {
   const OLD_ENV = process.env;
 

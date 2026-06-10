@@ -1,16 +1,8 @@
-import React, { createContext, useContext, useEffect, useRef } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
-import { socketIo } from "./socket.oi";
-import { isLoggedIn } from "../services/auth.service";
-import { AUTH_KEY } from "../constants/storage-key";
+import { connectSocket, disconnectSocket, getSocketIo } from "./socket.oi";
+import { isLoggedIn, authChangeEventName } from "../services/auth.service";
 
-/**
- * SocketContext provides a stable reference to the singleton Socket.IO client.
- *
- * The connection lifecycle is managed here at the app root so that
- * individual hooks/components can subscribe to events without risking
- * premature disconnects when any single consumer unmounts.
- */
 const SocketContext = createContext<Socket | null>(null);
 
 export const useSocket = (): Socket | null => useContext(SocketContext);
@@ -18,35 +10,32 @@ export const useSocket = (): Socket | null => useContext(SocketContext);
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const isConnected = useRef(false);
+  const [socket, setSocket] = useState<Socket | null>(getSocketIo());
 
   useEffect(() => {
-    const authed = isLoggedIn();
-    if (!authed) {
-      // If the user is not authenticated, ensure the socket is disconnected
-      if (isConnected.current) {
-        socketIo.disconnect();
-        isConnected.current = false;
+    const handleAuthChange = () => {
+      if (isLoggedIn()) {
+        const socketInstance = connectSocket();
+        setSocket(socketInstance);
+      } else {
+        disconnectSocket();
+        setSocket(null);
       }
-      return;
-    }
+    };
 
-    // Always refresh the auth token before connecting so we never send
-    // the stale token that was captured at module-load time.
-    socketIo.auth = { token: localStorage.getItem(AUTH_KEY) || "" };
+    // Run once on mount
+    handleAuthChange();
 
-    if (!socketIo.connected) {
-      socketIo.connect();
-      isConnected.current = true;
-    }
-
+    window.addEventListener(authChangeEventName, handleAuthChange);
     return () => {
-      socketIo.disconnect();
-      isConnected.current = false;
+      window.removeEventListener(authChangeEventName, handleAuthChange);
+      disconnectSocket();
+      setSocket(null);
     };
   }, []);
 
   return (
-    <SocketContext.Provider value={socketIo}>{children}</SocketContext.Provider>
+    <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
   );
 };
+export default SocketProvider;

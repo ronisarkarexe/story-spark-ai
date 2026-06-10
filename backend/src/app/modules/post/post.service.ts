@@ -377,7 +377,7 @@ const getSinglePost = async (id: string) => {
   return postById;
 };
 
-const getPostsByTag = async (tag: string, excludeId?: string) => {
+const getPostsByTag = async (tag: string, excludeId?: string, limit: number = 2) => {
   if (!tag) {
     return [];
   }
@@ -387,7 +387,7 @@ const getPostsByTag = async (tag: string, excludeId?: string) => {
     query._id = { $ne: excludeId };
   }
   const result = await Post.find(query)
-    .limit(2)
+    .limit(limit)
     .populate("author", "name email createdAt")
     .populate({
       path: "reactions",
