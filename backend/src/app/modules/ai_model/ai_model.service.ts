@@ -41,6 +41,7 @@ const normalizeStoryPayload = (payload: IAIModel) => ({
   language: payload.language ?? "English",
   tone: payload.tone ?? undefined,
   genre: payload.genre ?? undefined,
+  characters: payload.characters ?? undefined,
 });
 
 const mapGenerationError = (error: unknown, message: string): never => {
@@ -62,7 +63,7 @@ const mapGenerationError = (error: unknown, message: string): never => {
 // Bug fix 1: quota.lifecycle owns rollback — no manual User.updateOne needed.
 // Bug fix 2: _token kept as unused param (quota handled upstream by middleware).
 const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload) => {
-  const { prompt, wordLength, numStories, language, tone, genre } =
+  const { prompt, wordLength, numStories, language, tone, genre, characters } =
     normalizeStoryPayload(payload);
 
   try {
@@ -76,6 +77,7 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload) => {
           signal,
           tone,
           genre,
+          characters,
         ),
       AUTHENTICATED_GENERATION_TIMEOUT_MS
     );
@@ -87,7 +89,7 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload) => {
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel) => {
-  const { prompt, wordLength, numStories, language, tone, genre } =
+  const { prompt, wordLength, numStories, language, tone, genre, characters } =
     normalizeStoryPayload(payload);
 
   try {
@@ -101,6 +103,7 @@ const aiFreeModelGenerate = async (payload: IAIModel) => {
           signal,
           tone,
           genre,
+          characters,
         ),
       FREE_GENERATION_TIMEOUT_MS
     );
@@ -198,6 +201,23 @@ const aiFreeModelTranslate = async (payload: ITranslatePayload) => {
   }
 };
 
+const aiModelStoryContinuation = async (
+  payload: { prompt: string; language?: string },
+  _token?: ITokenPayload
+) => {
+  const { prompt, language = "English" } = payload;
+
+  try {
+    const result = await raceGenerationWithTimeout(
+      (signal) => generateStoryContinuationWithGemini(prompt, language, signal),
+      AUTHENTICATED_GENERATION_TIMEOUT_MS
+    );
+    return result;
+  } catch (error) {
+    mapGenerationError(error, "Story continuation failed.");
+  }
+};
+
 const aiFreeStoryContinuation = async (payload: { prompt: string; language?: string }) => {
   const { prompt, language = "English" } = payload;
 
@@ -259,6 +279,7 @@ export const AiModelService = {
   aiFreeModelRemix,
   aiModelTranslate,
   aiFreeModelTranslate,
+  aiModelStoryContinuation,
   aiFreeStoryContinuation,
   aiModelChat,
   aiFreeModelChat,

@@ -9,7 +9,7 @@ Place at: backend/ml/score_api.py
 
 import logging
 from flask import Blueprint, request, jsonify
-from scorer import batch_score
+from scorer import score_story
 from detect import detect, batch_detect
 
 score_bp = Blueprint("score", __name__)
@@ -100,7 +100,7 @@ def score_route():
     scored = []
     if valid_stories:
         try:
-            scored = batch_score(valid_stories, prompt)
+            scored = score_story(valid_stories, prompt)
         except FileNotFoundError as e:
             logger.error("Scorer model missing: %s", e)
             return jsonify({

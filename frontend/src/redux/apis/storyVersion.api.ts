@@ -73,6 +73,15 @@ const storyVersionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.StoryVersion],
     }),
+
+    getCharacterNetwork: build.query<{ characters: any[]; relationships: any[] }, string>({
+      query: (storyId: string) => ({
+        url: `/story/${storyId}/character-network`,
+        method: "GET",
+      }),
+      transformResponse: (response: { data: { characters: any[]; relationships: any[] } }) => response.data,
+      providesTags: [tagTypes.StoryVersion],
+    }),
   }),
 });
 
@@ -82,5 +91,6 @@ export const {
   useGetStoryTreeQuery,
   useGetBranchPathQuery,
   useCreateBranchVersionMutation,
+  useGetCharacterNetworkQuery,
 } = storyVersionApi;
 

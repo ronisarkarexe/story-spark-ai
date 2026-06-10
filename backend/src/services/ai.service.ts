@@ -3,8 +3,19 @@
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const openai = new OpenAI({ apiKey: process.env.OPEN_AI_KEY || "dummy_key" });
+let openai: OpenAI | null = null;
 const genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    const key = process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY;
+    if (!key) {
+      throw new Error("OpenAI API key is required but was not provided. Please set OPEN_AI_KEY environment variable.");
+    }
+    openai = new OpenAI({ apiKey: key });
+  }
+  return openai;
+}
 
 export const GEMINI_MODEL = "gemini-2.5-flash";
 
@@ -19,7 +30,8 @@ interface AIResponse {
 // ─── OpenAI call ─────────────────────────────────────────────────────────────
 
 async function generateWithOpenAI(prompt: string): Promise<string> {
-  const response = await openai.chat.completions.create(
+  const client = getOpenAIClient();
+  const response = await client.chat.completions.create(
     {
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],

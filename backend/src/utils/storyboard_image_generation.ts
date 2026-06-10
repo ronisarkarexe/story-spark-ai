@@ -41,7 +41,7 @@ const generateWithOpenAI = async (prompt: string): Promise<string | null> => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-image-1",
+      model: "dall-e-3",
       prompt,
       size: "1024x1024",
       quality: "low",

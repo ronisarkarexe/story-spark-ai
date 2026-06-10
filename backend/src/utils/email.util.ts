@@ -1,6 +1,15 @@
 import nodemailer from "nodemailer";
 import config from "../config";
 
+const escapeHtml = (unsafe: string): string => {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
 export const sendVerificationEmail = async (
   to: string,
   token: string,
@@ -84,22 +93,26 @@ export const sendContactEmail = async (data: {
 
   const displayName = data.fullname?.trim() || "Anonymous user";
   const displayEmail = data.email?.trim() || "Not provided";
+  const safeDisplayName = escapeHtml(displayName);
+  const safeDisplayEmail = escapeHtml(displayEmail);
+  const safeSubject = escapeHtml(data.subject);
+  const safeMessage = escapeHtml(data.message);
 
   const mailOptions = {
     from: `"Story Spark AI Support" <${config.verify_email}>`,
     replyTo: data.email?.trim() || undefined,
     to: config.verify_email,
-    subject: `Support Form [${feedbackTypeLabel}]: ${data.subject}`,
+    subject: `Support Form [${feedbackTypeLabel}]: ${safeSubject}`,
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
         <h2>New Support / Feedback Submission</h2>
         <p><strong>Type:</strong> ${feedbackTypeLabel}</p>
-        <p><strong>Name:</strong> ${displayName}</p>
-        <p><strong>Email:</strong> ${displayEmail}</p>
-        <p><strong>Subject:</strong> ${data.subject}</p>
+        <p><strong>Name:</strong> ${safeDisplayName}</p>
+        <p><strong>Email:</strong> ${safeDisplayEmail}</p>
+        <p><strong>Subject:</strong> ${safeSubject}</p>
         <hr style="border: none; border-top: 1px solid #eaeaea; margin: 20px 0;" />
         <p><strong>Message:</strong></p>
-        <p style="white-space: pre-wrap;">${data.message}</p>
+        <p style="white-space: pre-wrap;">${safeMessage}</p>
         <hr style="border: none; border-top: 1px solid #eaeaea; margin: 20px 0;" />
         <p style="color: #888; font-size: 12px;">This email was sent from the Story Spark AI support form.</p>
       </div>

@@ -1,5 +1,4 @@
 import React, { useMemo, useRef } from "react";
-import html2canvas from "html2canvas";
 import toast from "react-hot-toast";
 import type { IStories } from "../stories/stories.view.component";
 import { getWordCount } from "../stories/stories.utils";
@@ -134,6 +133,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
     const toastId = toast.loading("Preparing trading card...");
 
     try {
+      const { default: html2canvas } = await import("html2canvas");
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
         scale: 2,

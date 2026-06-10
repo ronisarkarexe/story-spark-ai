@@ -1,69 +1,143 @@
-﻿import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
 import { Link } from "react-router-dom";
 import { useGetPostListsQuery, useGetGenresQuery } from "../../redux/apis/post.api";
 import type { Post } from "../../models/post";
 import { useDebounced } from "../../hooks/global";
-import PaginationComponent from "../pagination/pagination.component";
 
 const ExploreComponent = () => {
   const [sortBy, setSortBy] = useState<string>("createdAt");
   const [sortOrder, setSortOrder] = useState<string>("desc");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [size, setSize] = useState<number>(10);
-  const [page, setPage] = useState<number>(1);
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [featuredPost, setFeaturedPost] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-  const query: Record<string, string | number> = {
-    page,
-    limit: size,
-    sortBy,
-    sortOrder,
-  };
 
   const debounceTerm = useDebounced({
     searchQuery: searchTerm,
     delay: 600,
   });
 
-  if (debounceTerm?.trim()) {
-  query["searchTerm"] = debounceTerm;
-}
+  const normalizedSearchTerm = debounceTerm?.trim() ?? "";
+  const genresParam = selectedTags.length > 0 ? selectedTags.join(",") : undefined;
 
-  if (selectedTags.length > 0) {
-    query["genres"] = selectedTags.join(",");
-  }
+  const queryArgs = useMemo<Record<string, string | number>>(() => {
+    const args: Record<string, string | number> = {
+      limit: size,
+      sortBy,
+      sortOrder,
+    };
 
-  const { data, isLoading } = useGetPostListsQuery({ ...query });
+    if (normalizedSearchTerm) {
+      args.searchTerm = normalizedSearchTerm;
+    }
+
+    if (genresParam) {
+      args.genres = genresParam;
+    }
+
+    if (cursor) {
+      args.cursor = cursor;
+    }
+
+    return args;
+  }, [size, sortBy, sortOrder, normalizedSearchTerm, genresParam, cursor]);
+
+  const { data, isLoading, isFetching } = useGetPostListsQuery(queryArgs);
   const { data: genres } = useGetGenresQuery();
 
-  const filteredPosts = data?.posts || [];
+  const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
+  const querySignature = useMemo(
+    () =>
+      JSON.stringify({
+        size,
+        sortBy,
+        sortOrder,
+        normalizedSearchTerm,
+        genresParam,
+      }),
+    [size, sortBy, sortOrder, normalizedSearchTerm, genresParam],
+  );
+  const previousQuerySignature = useRef<string>(querySignature);
+
+  useEffect(() => {
+    if (previousQuerySignature.current !== querySignature) {
+      previousQuerySignature.current = querySignature;
+      setCursor(undefined);
+      setPosts([]);
+    }
+  }, [querySignature]);
+
+  useEffect(() => {
+    if (!data?.posts) {
+      return;
+    }
+
+    if (!cursor) {
+      setPosts(data.posts);
+      return;
+    }
+
+    if (data.posts.length > 0) {
+      setPosts((prevPosts) => [...prevPosts, ...data.posts]);
+    }
+  }, [data?.posts, cursor]);
+
+  useEffect(() => {
+    const trigger = loadMoreTriggerRef.current;
+    if (!trigger) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (
+          entry?.isIntersecting &&
+          data?.meta?.hasMore &&
+          data.meta.nextCursor &&
+          !isLoading &&
+          !isFetching &&
+          data.meta.nextCursor !== cursor
+        ) {
+          setCursor(data.meta.nextCursor);
+        }
+      },
+      {
+        rootMargin: "200px",
+      },
+    );
+
+    observer.observe(trigger);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [cursor, data?.meta?.hasMore, data?.meta?.nextCursor, isFetching, isLoading]);
+
+  const filteredPosts = posts;
 
   const resetAllStates = () => {
     setSortBy("createdAt");
     setSortOrder("desc");
     setSearchTerm("");
     setSelectedTags([]);
-    setPage(1);
-  };
-
-  const onPaginationChange = (page: number, pageSize: number) => {
-    setPage(page);
-    setSize(pageSize);
+    setCursor(undefined);
+    setPosts([]);
   };
 
   const handleTagClick = (tag: string) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     );
-    setPage(1);
   };
 
   const availableTags = Array.from(
     new Set(
-      (data?.posts || [])
+      posts
         .map((post: Post) => post.tag)
         .filter(Boolean)
         .map((tag: string) => `#${tag.toLowerCase().trim()}`),
@@ -95,10 +169,8 @@ const ExploreComponent = () => {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  setPage(1);
                 }}
               />
-
               <i className="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
             </div>
           </div>
@@ -177,12 +249,11 @@ const ExploreComponent = () => {
                     value={sortBy}
                     onChange={(e) => {
                       setSortBy(e.target.value);
-                      setPage(1);
                     }}
                     className="w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 text-slate-900 p-2.5 outline-none transition-all cursor-pointer appearance-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200"
                   >
                     <option value="createdAt">Latest</option>
-                    <option value="views">Most Popular</option>
+                    <option value="viewsCount">Most Popular</option>
                     <option value="commentsCount">Most Discussed</option>
                     <option value="likesCount">Most Liked</option>
                   </select>
@@ -196,7 +267,6 @@ const ExploreComponent = () => {
                     value={sortOrder}
                     onChange={(e) => {
                       setSortOrder(e.target.value);
-                      setPage(1);
                     }}
                     className="w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 text-slate-900 p-2.5 outline-none transition-all cursor-pointer appearance-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200"
                   >
@@ -243,7 +313,6 @@ const ExploreComponent = () => {
                     value={size}
                     onChange={(e) => {
                       setSize(Number(e.target.value));
-                      setPage(1);
                     }}
                   >
                     <option value={10}>10</option>
@@ -260,7 +329,7 @@ const ExploreComponent = () => {
             <div className="flex-grow pb-24">
               {!isLoading && filteredPosts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] text-center">
-                  <div className="text-6xl mb-4">≡ƒôÜ</div>
+                  <div className="text-6xl mb-4">📚</div>
 
                   <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
                     No stories found
@@ -292,17 +361,21 @@ const ExploreComponent = () => {
               )}
             </div>
 
-            {!featuredPost && data?.meta && (
-
-              <div className="sticky bottom-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 z-20 mt-8 shadow-[0_-10px_40px_-10px_rgba(15,23,42,0.12)] transition-colors duration-300 dark:bg-[#0b1329]/80 dark:border-slate-800 dark:shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)]">
-                <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                  <PaginationComponent
-                    current={page}
-                    pageSize={size}
-                    total={data.meta.total}
-                    onChange={onPaginationChange}
-                  />
+            {!featuredPost && (
+              <div className="mt-8">
+                <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-center">
+                  {isFetching && !isLoading && (
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      Loading more stories...
+                    </p>
+                  )}
+                  {!isFetching && !data?.meta?.hasMore && posts.length > 0 && (
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      You have reached the end of the feed.
+                    </p>
+                  )}
                 </div>
+                <div ref={loadMoreTriggerRef} className="h-6" />
               </div>
             )}
           </div>

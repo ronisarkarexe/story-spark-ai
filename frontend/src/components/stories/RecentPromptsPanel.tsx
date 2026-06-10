@@ -240,4 +240,4 @@ const RecentPromptsPanel: React.FC<RecentPromptsPanelProps> = ({
   );
 };
 
-export default RecentPromptsPanel;
+export default React.memo(RecentPromptsPanel);
