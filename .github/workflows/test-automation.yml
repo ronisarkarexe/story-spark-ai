@@ -82,9 +82,9 @@ jobs:
             ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -oE "[0-9]+$")
             echo "Created Issue Number: $ISSUE_NUMBER ($ISSUE_URL)"
 
-            # Assign to ourselves upstream (by commenting /assign)
+             # Assign to ourselves upstream (by commenting /assign contributing under gssoc26)
             echo "Assigning issue via comment..."
-            gh issue comment "$ISSUE_NUMBER" --repo ronisarkarexe/story-spark-ai --body "/assign"
+            gh issue comment "$ISSUE_NUMBER" --repo ronisarkarexe/story-spark-ai --body "/assign contributing under gssoc26"
 
             # Create branch locally
             SAFE_NAME=$(echo "$FILE" | sed 's/[^a-zA-Z0-9-]/_/g')
@@ -107,8 +107,8 @@ jobs:
               # Push branch to our fork
               git push origin "$BRANCH_NAME" --force
 
-              # Construct structured PR body matching pull_request_template.md
-              printf -v PR_BODY "## What this PR does\n\nThis PR adds unit test coverage for the file \`$FILE\`.\nThe tests cover core behavior, success flows, and error paths.\n\n## Type of change\n\n- [x] Code quality improvement / tests\n\n## Related issue\n\nCloses ronisarkarexe/story-spark-ai#$ISSUE_NUMBER\n\n## Checklist\n\n- [x] I have added screenshots or a recording when they help explain this PR, or noted **N/A** with a one-line reason (N/A - Unit tests only).\n- [x] I have filled in the related issue number when there is one.\n- [x] I have tested my changes.\n- [x] I have done a self-review of the code."
+              # Construct structured PR body matching pull_request_template.md (including GSSoC'26 reference)
+              printf -v PR_BODY "## What this PR does\n\nThis PR adds unit test coverage for the file \`$FILE\`.\nThe tests cover core behavior, success flows, and error paths.\nThis contribution is under GSSoC'26.\n\n## Type of change\n\n- [x] Code quality improvement / tests\n\n## Related issue\n\nCloses ronisarkarexe/story-spark-ai#$ISSUE_NUMBER\n\n## Checklist\n\n- [x] I have added screenshots or a recording when they help explain this PR, or noted **N/A** with a one-line reason (N/A - Unit tests only).\n- [x] I have filled in the related issue number when there is one.\n- [x] I have tested my changes.\n- [x] I have done a self-review of the code."
 
               # Submit PR against upstream main
               echo "Creating Pull Request on upstream repository..."
