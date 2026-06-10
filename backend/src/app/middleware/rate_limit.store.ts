@@ -131,8 +131,14 @@ export const consumeRateLimit = async (
 import Redis from "ioredis";
 
 // We use ioredis to securely track token quotas
-const redisClient = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : new Redis();
+let redisClient: InstanceType<typeof Redis> | null = null;
+if (process.env.REDIS_URL) {
+  redisClient = new Redis(process.env.REDIS_URL);
 
+ redisClient.on("error", (err: Error) => {
+    logger.warn(`Redis unavailable: ${err.message}`);
+  });
+}
 export const consumeTokenQuota = async (
   userIdOrIp: string,
   tokensRequired: number,
@@ -142,7 +148,15 @@ export const consumeTokenQuota = async (
   const key = `token_quota:${userIdOrIp}:${dateStr}`;
 
   try {
-    const currentTokens = await redisClient.get(key);
+    if (!redisClient) {
+  return {
+    allowed: true,
+    remainingTokens: dailyQuotaLimit,
+    retryAfterSec: 0,
+  };
+}
+
+const currentTokens = await redisClient.get(key);
     const usedTokens = currentTokens ? parseInt(currentTokens, 10) : 0;
 
     if (usedTokens + tokensRequired > dailyQuotaLimit) {
