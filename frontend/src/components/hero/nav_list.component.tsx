@@ -52,18 +52,8 @@ const NavListComponent = () => {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-2">
-          <NavLink to="/" end className={linkClass}>
-            Home
-          </NavLink>
-          <NavLink to="/explore" className={linkClass}>
-            Explore
-          </NavLink>
-          <NavLink to="/story-inspiration" className={linkClass}>
-            Stories
-          </NavLink>
-          <NavLink to="/community" className={linkClass}>
-            Community
-          </NavLink>
+          
+          
   const navItems = [
     { to: "/", label: "Home" },
     { to: "/explore", label: "Explore" },
