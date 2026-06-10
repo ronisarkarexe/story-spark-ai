@@ -1,0 +1,112 @@
+name: Automated Test Generation & PR Agent
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  test-agent:
+    runs-on: ubuntu-latest
+
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+    steps:
+      - name: Checkout Code from Fork
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.15.9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure Git User
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
+      - name: Run Test Agent Pipeline
+        run: |
+          # 1. Scan for the top 2 untested files
+          echo "Scanning for untested files..."
+          TARGETS=$(npx tsx scripts/coverage-scanner.ts)
+          echo "Top untested files: $TARGETS"
+
+          # Parse JSON array using jq and loop
+          for FILE in $(echo "$TARGETS" | jq -r '.[]'); do
+            echo ""
+            echo "=================================================="
+            echo "Processing Target File: $FILE"
+            echo "=================================================="
+
+            # Make sure we start from a clean main branch
+            git checkout main
+            git reset --hard origin/main
+
+            # Create the upstream issue
+            echo "Creating issue on upstream repo ronisarkarexe/story-spark-ai..."
+            ISSUE_URL=$(gh issue create \
+              --repo ronisarkarexe/story-spark-ai \
+              --title "Add tests for $FILE" \
+              --body "Automated issue tracking test coverage for the file \`$FILE\`. Created by Test Automation Agent." \
+              --label "enhancement")
+            
+            # Extract issue number
+            ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -oE "[0-9]+$")
+            echo "Created Issue Number: $ISSUE_NUMBER ($ISSUE_URL)"
+
+            # Assign to ourselves upstream (by commenting /assign)
+            echo "Assigning issue via comment..."
+            gh issue comment "$ISSUE_NUMBER" --repo ronisarkarexe/story-spark-ai --body "/assign"
+
+            # Create branch locally
+            SAFE_NAME=$(echo "$FILE" | sed 's/[^a-zA-Z0-9-]/_/g')
+            BRANCH_NAME="test/add-coverage-$SAFE_NAME"
+            echo "Creating local branch: $BRANCH_NAME"
+            git checkout -b "$BRANCH_NAME"
+
+            # Generate initial tests
+            echo "Generating tests..."
+            npx tsx scripts/generate-tests.ts "$FILE"
+
+            # Run verify and repair loop (up to 3 attempts)
+            echo "Running verification and repair loop..."
+            if npx tsx scripts/verify-and-repair.ts "$FILE"; then
+              echo "Verification succeeded! Committing and pushing..."
+              
+              git add .
+              git commit -m "test: add unit tests for $(basename "$FILE")"
+              
+              # Push branch to our fork
+              git push origin "$BRANCH_NAME" --force
+
+              # Submit PR against upstream main
+              echo "Creating Pull Request on upstream repository..."
+              gh pr create \
+                --repo ronisarkarexe/story-spark-ai \
+                --title "test: add unit tests for $(basename "$FILE")" \
+                --body "Resolves ronisarkarexe/story-spark-ai#$ISSUE_NUMBER" \
+                --head "Harshithk951:$BRANCH_NAME" \
+                --base main
+            else
+              echo "Verification and self-repair failed for $FILE. Skipping PR creation."
+            fi
+          done

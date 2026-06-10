@@ -33,6 +33,9 @@ importers:
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.25
+      '@types/node':
+        specifier: ^22.13.9
+        version: 22.19.19
       concurrently:
         specifier: ^9.1.2
         version: 9.2.1

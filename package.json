@@ -32,6 +32,7 @@
   "packageManager": "pnpm@9.15.9",
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/node": "^22.13.9",
     "concurrently": "^9.1.2"
   },
   "overrides": {
