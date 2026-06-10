@@ -76,9 +76,7 @@ jobs:
             ISSUE_URL=$(gh issue create \
               --repo ronisarkarexe/story-spark-ai \
               --title "Improve: Add tests for $FILE" \
-              --body "$ISSUE_BODY" \
-              --label "Improvement" \
-              --label "Needs Triage")
+              --body "$ISSUE_BODY")
             
             # Extract issue number
             ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -oE "[0-9]+$")
