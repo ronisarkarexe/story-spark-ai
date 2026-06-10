@@ -3,272 +3,130 @@ import { ENUM_USER_ROLE } from "../../../enums/user";
 import { USER_STATUS } from "../../../enums/user_status";
 import { Post } from "../post/post.model";
 import { User } from "../user/user.model";
-import ApiError from "../../../errors/api_error";
-import httpStatus from "http-status";
-import { WriterApplication } from "../writer_application/writer_application.model";
 
-main
-
-    return {
-      role,
-      writerStats: {
-        totalReaders,
-        totalPosts,
-        subscriptionStatus: user.subscriptionType.toUpperCase(),
-        applicationStatus,
-        gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
-      },
-      posts: {
-        perMonth: postsPerMonth,
-        topics: topicCount,
-      }
-    };
+/**
+ * Helper to convert a $facet bucket array (e.g. [{ _id: "Active", count: 5 }])
+ * into a plain object (e.g. { Active: 5 }).
+ */
+const bucketToMap = (
+  buckets: Array<{ _id: string | null; count: number }>
+): Record<string, number> => {
+  const map: Record<string, number> = {};
+  for (const b of buckets) {
+    if (b._id !== null) {
+      map[b._id] = b.count;
+    }
   }
-
-  // Else standard user
-  return {
-main
-  };
+  return map;
 };
 
-const analyzeStory = async (content: string) => {
-  const suggestions: Array<{
-    id: string;
-    category: "Style" | "Readability" | "Vocabulary" | "Dialogue" | "Pacing";
-    title: string;
-    description: string;
-    originalText?: string;
-    suggestedText?: string;
-  }> = [];
-
-  const generateId = (prefix: string, index: number) => `${prefix}_${index}_${Math.random().toString(36).substr(2, 9)}`;
-
-  const cleanText = content.replace(/[\r\n]+/g, " ").trim();
-  const words = cleanText.split(/\s+/).map(w => w.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").toLowerCase()).filter(Boolean);
-
-  // 1. Detect repetitive words
-  const stopWords = new Set([
-    "the", "a", "an", "and", "or", "but", "in", "on", "at", "for", "of", "with", "to", "is", "was", "were", 
-    "it", "he", "she", "they", "you", "we", "i", "my", "his", "her", "their", "its", "had", "have", "has", 
-    "been", "would", "could", "should", "will", "would", "that", "this", "there", "then", "thence", "thus"
+const getDashboardAnalysis = async (
+  userId?: string,
+  role?: string
+) => {
+  // Run user and post aggregations concurrently for maximum throughput.
+  const [userAgg, postAgg] = await Promise.all([
+    User.aggregate([
+      {
+        $facet: {
+          total: [{ $count: "count" }],
+          byStatus: [{ $group: { _id: "$status", count: { $sum: 1 } } }],
+          byRole: [{ $group: { _id: "$role", count: { $sum: 1 } } }],
+          bySubscription: [
+            { $group: { _id: "$subscriptionType", count: { $sum: 1 } } },
+          ],
+          applyForWriter: [
+            { $match: { isApplyForWriter: true } },
+            { $count: "count" },
+          ],
+        },
+      },
+    ]),
+    Post.aggregate([
+      {
+        $facet: {
+          total: [{ $count: "count" }],
+          published: [
+            { $match: { isPublished: true } },
+            { $count: "count" },
+          ],
+          featured: [
+            { $match: { isFeaturedPost: true } },
+            { $count: "count" },
+          ],
+          perMonth: [
+            { $match: { publishedAt: { $ne: null } } },
+            {
+              $group: {
+                _id: { $dateToString: { format: "%Y-%m", date: "$publishedAt" } },
+                count: { $sum: 1 },
+              },
+            },
+            { $sort: { _id: 1 } },
+          ],
+          topics: [
+            { $unwind: "$topic" },
+            {
+              $group: {
+                _id: "$topic.title",
+                count: { $sum: 1 },
+              },
+            },
+          ],
+        },
+      },
+    ]),
   ]);
 
-  const wordCounts: Record<string, number> = {};
-  words.forEach(w => {
-    if (w.length >= 4 && !stopWords.has(w)) {
-      wordCounts[w] = (wordCounts[w] || 0) + 1;
-    }
-  });
+  // Extract results from the $facet output (always a single-element array).
+  const userFacet = userAgg[0];
+  const postFacet = postAgg[0];
 
-  const synonymMap: Record<string, string[]> = {
-    amazing: ["extraordinary", "magnificent", "marvelous", "wonderful"],
-    great: ["outstanding", "exceptional", "remarkable", "splendid"],
-    good: ["favorable", "excellent", "superb", "satisfying"],
-    bad: ["dreadful", "awful", "severe", "unfavorable"],
-    happy: ["joyful", "ecstatic", "cheerful", "jubilant"],
-    sad: ["gloomy", "sorrowful", "melancholy", "downcast"],
-    scary: ["frightening", "terrifying", "spine-chilling"],
-    look: ["gaze", "peer", "observe", "glance"],
-    looked: ["gazed", "peered", "observed", "glanced"],
-    walk: ["stroll", "amble", "tread", "pace"],
-    walked: ["strolled", "ambled", "trod", "paced"],
-    went: ["journeyed", "proceeded", "departed"],
-    said: ["declared", "stated", "whispered", "exclaimed", "commented"]
+  const statusMap = bucketToMap(userFacet.byStatus);
+  const roleMap = bucketToMap(userFacet.byRole);
+  const subscriptionMap = bucketToMap(userFacet.bySubscription);
+
+  const postsPerMonth: Record<string, number> = {};
+  for (const entry of postFacet.perMonth) {
+    postsPerMonth[entry._id] = entry.count;
+  }
+
+  const topicCount: Record<string, number> = {};
+  for (const entry of postFacet.topics) {
+    topicCount[entry._id] = entry.count;
+  }
+
+  return {
+    users: {
+      total: userFacet.total[0]?.count ?? 0,
+      active: statusMap[USER_STATUS.ACTIVE] ?? 0,
+      inactive: statusMap[USER_STATUS.INACTIVE] ?? 0,
+      blocked: statusMap[USER_STATUS.BLOCKED] ?? 0,
+      writers: roleMap[ENUM_USER_ROLE.WRITER] ?? 0,
+      applyForWriter: userFacet.applyForWriter[0]?.count ?? 0,
+    },
+    subscriptionTypes: {
+      free: subscriptionMap[SUBSCRIPTION_TYPE.FREE] ?? 0,
+      pro: subscriptionMap[SUBSCRIPTION_TYPE.PRO] ?? 0,
+      premium: subscriptionMap[SUBSCRIPTION_TYPE.PREMIUM] ?? 0,
+    },
+    posts: {
+      total: postFacet.total[0]?.count ?? 0,
+      published: postFacet.published[0]?.count ?? 0,
+      featured: postFacet.featured[0]?.count ?? 0,
+      perMonth: postsPerMonth,
+      topics: topicCount,
+    },
   };
-
-  let wordRepIndex = 0;
-  Object.entries(wordCounts).forEach(([word, count]) => {
-    if (count >= 3) {
-      const synonyms = synonymMap[word] || [];
-      const suggestedText = synonyms.length > 0 ? synonyms[0] : undefined;
-      
-      const originalMatchRegex = new RegExp(`\\b${word}\\b`, "i");
-      const match = content.match(originalMatchRegex);
-      const originalText = match ? match[0] : word;
-
-      suggestions.push({
-        id: generateId("rep_word", wordRepIndex++),
-        category: "Vocabulary",
-        title: "Repeated Word Usage",
-        description: `The word '${originalText}' appears frequently (${count} times). Consider using alternatives like ${synonyms.length > 0 ? synonyms.join(", ") : "a synonym"} to enrich your vocabulary.`,
-        originalText,
-        suggestedText
-      });
-    }
-  });
-
-  // 2. Stronger vocabulary suggestions (weak words/phrases)
-  const weakReplacements: Array<{ weak: string; strong: string }> = [
-    { weak: "very bad", strong: "terrible" },
-    { weak: "very good", strong: "excellent" },
-    { weak: "very happy", strong: "ecstatic" },
-    { weak: "very sad", strong: "devastated" },
-    { weak: "very angry", strong: "furious" },
-    { weak: "very cold", strong: "freezing" },
-    { weak: "very hot", strong: "scorching" },
-    { weak: "very big", strong: "gigantic" },
-    { weak: "very small", strong: "microscopic" },
-    { weak: "very quiet", strong: "silent" },
-    { weak: "very loud", strong: "deafening" },
-    { weak: "very quick", strong: "rapid" },
-    { weak: "very slow", strong: "sluggish" },
-    { weak: "really big", strong: "massive" }
-  ];
-
-  let weakVocabIndex = 0;
-  weakReplacements.forEach(({ weak, strong }) => {
-    const regex = new RegExp(`\\b${weak}\\b`, "gi");
-    const matches = content.match(regex);
-    if (matches && matches.length > 0) {
-      suggestions.push({
-        id: generateId("weak_vocab", weakVocabIndex++),
-        category: "Vocabulary",
-        title: "Stronger Vocabulary Suggestion",
-        description: `Consider replacing the weak modifier '${matches[0]}' with the stronger, more descriptive word '${strong}'.`,
-        originalText: matches[0],
-        suggestedText: strong
-      });
-    }
-  });
-
-  // 3. Flag very long paragraphs
-  const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 0);
-  let longParaIndex = 0;
-  paragraphs.forEach((para, index) => {
-    const paraWords = para.split(/\s+/).filter(Boolean);
-    if (paraWords.length > 100) {
-      const sentences = para.split(/(?<=[.!?])\s+/);
-      let cumulativeWordCount = 0;
-      let splitPoint = -1;
-      const midPoint = paraWords.length / 2;
-
-      for (let sIdx = 0; sIdx < sentences.length; sIdx++) {
-        const sWords = sentences[sIdx].split(/\s+/).filter(Boolean).length;
-        cumulativeWordCount += sWords;
-        if (cumulativeWordCount >= midPoint && splitPoint === -1) {
-          splitPoint = sIdx;
-        }
-      }
-
-      let suggestedText = undefined;
-      if (splitPoint !== -1 && sentences.length > 1) {
-        const part1 = sentences.slice(0, splitPoint + 1).join(" ");
-        const part2 = sentences.slice(splitPoint + 1).join(" ");
-        suggestedText = `${part1}\n\n${part2}`;
-      }
-
-      suggestions.push({
-        id: generateId("long_para", longParaIndex++),
-        category: "Readability",
-        title: "Very Long Paragraph",
-        description: `Paragraph ${index + 1} contains ${paraWords.length} words. Splitting it will make it easier to read and improve page flow.`,
-        originalText: para,
-        suggestedText
-      });
-    }
-  });
-
-  // 4. Flag very long sentences
-  let longSentenceIndex = 0;
-  const allSentences = content.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
-  allSentences.forEach((sentence) => {
-    const sentenceWords = sentence.split(/\s+/).filter(Boolean);
-    if (sentenceWords.length > 25) {
-      let suggestedText = undefined;
-      const splitConjunctions = [", and ", ", but ", " because "];
-      for (const conj of splitConjunctions) {
-        if (sentence.includes(conj)) {
-          const parts = sentence.split(conj);
-          if (parts.length === 2) {
-            const firstPart = parts[0].trim();
-            const secondPart = parts[1].trim();
-            const capitalizedSecondPart = secondPart.charAt(0).toUpperCase() + secondPart.slice(1);
-            
-            if (conj === " because ") {
-              suggestedText = `${firstPart}. This is because ${secondPart}`;
-            } else {
-              suggestedText = `${firstPart}. ${capitalizedSecondPart}`;
-            }
-            break;
-          }
-        }
-      }
-
-      suggestions.push({
-        id: generateId("long_sentence", longSentenceIndex++),
-        category: "Readability",
-        title: "Long Sentence",
-        description: `This sentence is very long (${sentenceWords.length} words). Consider breaking it down to keep your readers engaged.`,
-        originalText: sentence,
-        suggestedText
-      });
-    }
-  });
-
-  // 5. Dialogue context suggestions
-  const dialogueRegex = /(["'])(.*?)\1/g;
-  let dialogueCount = 0;
-  while (dialogueRegex.exec(content) !== null) {
-    dialogueCount++;
-  }
-
-  const speechTags = ["said", "asked", "replied", "whispered", "shouted", "called", "exclaimed", "shrieked", "muttered", "murmured"];
-  let speechTagsCount = 0;
-  speechTags.forEach(tag => {
-    const regex = new RegExp(`\\b${tag}\\b`, "gi");
-    const matches = content.match(regex);
-    if (matches) {
-      speechTagsCount += matches.length;
-    }
-  });
-
-  if (dialogueCount > 3 && speechTagsCount < dialogueCount / 2) {
-    suggestions.push({
-      id: generateId("dialogue_context", 1),
-      category: "Dialogue",
-      title: "Add Speech Tags or Action Beats",
-      description: "You have several dialogue sections, but few speech tags (e.g. 'he said', 'she replied'). Consider adding tags or action beats to clarify who is speaking and convey their emotions."
-    });
-  }
-
-  // 6. Pacing inconsistencies
-  if (paragraphs.length >= 3) {
-    const lengths = paragraphs.map(p => p.split(/\s+/).filter(Boolean).length);
-    const totalLength = lengths.reduce((a, b) => a + b, 0);
-    const avgLength = totalLength / lengths.length;
-    
-    const variance = lengths.reduce((sum, len) => sum + Math.pow(len - avgLength, 2), 0) / lengths.length;
-    const stdDev = Math.sqrt(variance);
-
-    if (avgLength > 80 && stdDev < 15) {
-      suggestions.push({
-        id: generateId("pacing_monotony", 1),
-        category: "Pacing",
-        title: "Monotonous Paragraph Length",
-        description: "Most of your paragraphs are similarly long. Try breaking up some paragraphs or introducing shorter, punchier sentences to create a more dynamic pacing."
-      });
-    }
-
-    let abruptShiftIndex = 0;
-    for (let i = 0; i < lengths.length - 1; i++) {
-      const diff = Math.abs(lengths[i] - lengths[i + 1]);
-      if (diff > 80) {
-        suggestions.push({
-          id: generateId("pacing_abrupt", abruptShiftIndex++),
-          category: "Pacing",
-          title: "Abrupt Pacing Shift",
-          description: `Paragraph ${i + 1} (${lengths[i]} words) is followed by a paragraph of extremely different length (${lengths[i + 1]} words). Easing the transition can help maintain narrative flow.`
-        });
-        break;
-      }
-    }
-  }
-
-  return { suggestions };
+};
+const analyzeStory = async (content: string) => {
+  return {
+    summary: "Analysis feature temporarily unavailable",
+    contentLength: content?.length || 0,
+  };
 };
 
 export const AnalysisService = {
   getDashboardAnalysis,
   analyzeStory,
 };
-

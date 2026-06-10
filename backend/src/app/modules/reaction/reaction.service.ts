@@ -16,14 +16,12 @@ const toggleReaction = async (
   const { email } = token;
 
   const user = await User.findOne({ email }).select("_id").lean();
+
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
   const post = await Post.findOne({
-  _id: postId,
-  isDeleted: { $ne: true },
-}).select("likesCount reactions");
     _id: postId,
     isDeleted: { $ne: true },
   }).select("likesCount reactions");
@@ -32,9 +30,6 @@ const toggleReaction = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
-//  main
-    const newReaction = await Reaction.create({
-      postId: new Types.ObjectId(postId),
   const existingReaction = await Reaction.findOne({
     postId: post._id,
     userId: user._id,
@@ -51,7 +46,7 @@ const toggleReaction = async (
       await post.save();
 
       return {
-        message: "Reaction removed successfully",
+        message: "Reaction removed",
         likesCount: post.likesCount,
       };
     } else {
@@ -60,7 +55,7 @@ const toggleReaction = async (
       await existingReaction.save();
 
       return {
-        message: "Reaction updated successfully",
+        message: "Reaction updated",
         likesCount: post.likesCount,
       };
     }
@@ -71,13 +66,14 @@ const toggleReaction = async (
       userId: user._id,
       type: type,
     });
+
     post.reactions = post.reactions || [];
     post.reactions.push(newReaction._id);
     post.likesCount = (post.likesCount || 0) + 1;
     await post.save();
 
     return {
-      message: "Reaction added successfully",
+      message: "Reaction added",
       likesCount: post.likesCount,
     };
   }

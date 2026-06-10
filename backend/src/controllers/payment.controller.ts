@@ -13,10 +13,16 @@ const PLAN_PRICE_MAP: Record<string, { amount: number; currency: string }> = {
   premium: { amount: 199900, currency: "INR" },
 };
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+let razorpay: InstanceType<typeof Razorpay> | null = null;
+if (
+  process.env.RAZORPAY_KEY_ID &&
+  process.env.RAZORPAY_KEY_SECRET
+) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+}
 
 // POST /api/v1/payment/create-order
 export const createOrder = async (req: Request, res: Response) => {

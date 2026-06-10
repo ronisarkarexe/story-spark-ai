@@ -24,8 +24,6 @@ export interface IUser {
       instagram: string;
     github: string;
     discord: string;
-      github: string;  
-      discord: string;
     };
   };
   requestsThisMonth: number;

@@ -278,11 +278,13 @@ const googleLogin = async (payload: { token: string }) => {
           avatar: (picture as string) || "",
           bio: "",
           social: {
-            facebook: "",
-            twitter: "",
-            linkedin: "",
-            instagram: "",
-          },
+  facebook: "",
+  twitter: "",
+  linkedin: "",
+  instagram: "",
+  github: "",
+  discord: "",
+},
         },
       };
 
