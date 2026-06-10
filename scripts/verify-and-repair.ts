@@ -47,10 +47,10 @@ async function main() {
   // Define verification steps (targeted only to the test file to avoid preexisting unrelated errors)
   const steps: { name: string; command: string }[] = [];
   if (isFrontend) {
-    steps.push({ name: "Typecheck Test File", command: `npx tsc --noEmit --skipLibCheck ${relativeTestPath}` });
+    steps.push({ name: "Typecheck Test File", command: `npx -p typescript tsc --noEmit --skipLibCheck ${relativeTestPath}` });
     steps.push({ name: "Test", command: `npx vitest run ${relativeTestPath}` });
   } else {
-    steps.push({ name: "Typecheck Test File", command: `npx tsc --noEmit --skipLibCheck ${relativeTestPath}` });
+    steps.push({ name: "Typecheck Test File", command: `npx -p typescript tsc --noEmit --skipLibCheck ${relativeTestPath}` });
     steps.push({ name: "Test", command: `npx jest --runInBand ${relativeTestPath}` });
   }
 

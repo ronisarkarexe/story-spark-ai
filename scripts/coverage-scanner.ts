@@ -88,8 +88,8 @@ function scan() {
     })
     .sort((a, b) => b.size - a.size);
 
-  // Take top 2
-  const topUntested = sortedUntested.slice(0, 2).map((f) => f.path);
+  // Take top 10
+  const topUntested = sortedUntested.slice(0, 10).map((f) => f.path);
 
   console.log(JSON.stringify(topUntested, null, 2));
 }

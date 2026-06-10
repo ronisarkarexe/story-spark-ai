@@ -21,7 +21,7 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
 }
 
 const getNodePosition = (node: string | number | SimNode, axis: "x" | "y") =>
-  typeof node === "object" ? node[axis] ?? 0 : 0;
+  typeof node === "object" ? (node as any)[axis] ?? 0 : 0;
 
 export default function StoryWorldMap({ story, title, onClose }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -73,7 +73,6 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
     const simulation = d3.forceSimulation<SimNode>(simNodes)
       .force("link", d3.forceLink<SimNode, SimLink>(simLinks)
         .id((d: SimNode) => d.id)
-        .id((node: SimNode) => node.id)
         .distance(120))
       .force("charge", d3.forceManyBody().strength(-400))
       .force("center", d3.forceCenter(width / 2, height / 2))
@@ -95,23 +94,18 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
       .call(
         d3.drag<SVGGElement, SimNode>()
           .on("start", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, d: SimNode) => {
-          .on("start", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, node: SimNode) => {
             if (!event.active) simulation.alphaTarget(0.3).restart();
-            node.fx = node.x;
-            node.fy = node.y;
+            d.fx = d.x;
+            d.fy = d.y;
           })
           .on("drag", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, d: SimNode) => {
-            d.fx = event.x; d.fy = event.y;
+            d.fx = event.x;
+            d.fy = event.y;
           })
           .on("end", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, d: SimNode) => {
-          .on("drag", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, node: SimNode) => {
-            node.fx = event.x;
-            node.fy = event.y;
-          })
-          .on("end", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, node: SimNode) => {
             if (!event.active) simulation.alphaTarget(0);
-            node.fx = null;
-            node.fy = null;
+            d.fx = null;
+            d.fy = null;
           })
       );
 
@@ -121,11 +115,6 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
         ? "rgba(99,102,241,0.2)"
         : "rgba(236,72,153,0.2)")
       .attr("stroke", (d: SimNode) => d.type === "location" ? "#6366f1" : "#ec4899")
-      .attr("r", (node: SimNode) => node.type === "location" ? 28 : 20)
-      .attr("fill", (node: SimNode) => node.type === "location"
-        ? "rgba(99,102,241,0.2)"
-        : "rgba(236,72,153,0.2)")
-      .attr("stroke", (node: SimNode) => node.type === "location" ? "#6366f1" : "#ec4899")
       .attr("stroke-width", 2);
 
     node.append("text")
@@ -144,29 +133,11 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
 
     simulation.on("tick", () => {
       link
-        .attr("x1", (d: SimLink) => (typeof d.source === "string" ? 0 : d.source.x ?? 0))
-        .attr("y1", (d: SimLink) => (typeof d.source === "string" ? 0 : d.source.y ?? 0))
-        .attr("x2", (d: SimLink) => (typeof d.target === "string" ? 0 : d.target.x ?? 0))
-        .attr("y2", (d: SimLink) => (typeof d.target === "string" ? 0 : d.target.y ?? 0));
-      node.attr("transform", (d: SimNode) => `translate(${d.x || 0},${d.y || 0})`);
-      .attr("font-size", (node: SimNode) => node.type === "location" ? "18px" : "14px")
-      .text((node: SimNode) => node.type === "location" ? "Pin" : "User");
-
-    node.append("text")
-      .attr("text-anchor", "middle")
-      .attr("y", (node: SimNode) => node.type === "location" ? 40 : 32)
-      .attr("fill", (node: SimNode) => node.type === "location" ? "#a5b4fc" : "#f9a8d4")
-      .attr("font-size", "11px")
-      .attr("font-weight", "600")
-      .text((node: SimNode) => node.name);
-
-    simulation.on("tick", () => {
-      link
-        .attr("x1", (link: SimLink) => getNodePosition(link.source, "x"))
-        .attr("y1", (link: SimLink) => getNodePosition(link.source, "y"))
-        .attr("x2", (link: SimLink) => getNodePosition(link.target, "x"))
-        .attr("y2", (link: SimLink) => getNodePosition(link.target, "y"));
-      node.attr("transform", (node: SimNode) => `translate(${node.x ?? 0},${node.y ?? 0})`);
+        .attr("x1", (d: SimLink) => getNodePosition(d.source, "x"))
+        .attr("y1", (d: SimLink) => getNodePosition(d.source, "y"))
+        .attr("x2", (d: SimLink) => getNodePosition(d.target, "x"))
+        .attr("y2", (d: SimLink) => getNodePosition(d.target, "y"));
+      node.attr("transform", (d: SimNode) => `translate(${d.x ?? 0},${d.y ?? 0})`);
     });
 
     return () => {

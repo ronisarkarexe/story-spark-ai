@@ -45,58 +45,90 @@ jobs:
 
       - name: Run Test Agent Pipeline
         run: |
-          # 1. Scan for the top 2 untested files
+          # 1. Scan for the top 10 untested files
           echo "Scanning for untested files..."
           TARGETS=$(npx tsx scripts/coverage-scanner.ts)
           echo "Top untested files: $TARGETS"
-
-          # Parse JSON array using jq and loop (limit to max 2 files)
+ 
+          # Parse JSON array using jq and loop (limit to max 2 files successfully attempted)
           COUNT=0
           for FILE in $(echo "$TARGETS" | jq -r '.[]'); do
             if [ $COUNT -ge 2 ]; then
               echo "Reached maximum run limit of 2 targets. Stopping."
               break
             fi
-            COUNT=$((COUNT+1))
-
+ 
             echo ""
             echo "=================================================="
             echo "Processing Target File: $FILE"
             echo "=================================================="
-
+ 
+            # Check if a PR is already open for this file on upstream
+            echo "Checking if a PR is already open for $FILE on upstream..."
+            PR_TITLE="test: add unit tests for $(basename "$FILE")"
+            EXISTING_PR_NUMBER=$(gh pr list \
+              --repo ronisarkarexe/story-spark-ai \
+              --search "$PR_TITLE" \
+              --state open \
+              --json number \
+              --jq '.[0].number')
+ 
+            if [ -n "$EXISTING_PR_NUMBER" ] && [ "$EXISTING_PR_NUMBER" != "null" ]; then
+              echo "PR #$EXISTING_PR_NUMBER is already open for $FILE. Skipping."
+              continue
+            fi
+ 
+            # Increment count of processed files since we are starting to work on this target
+            COUNT=$((COUNT+1))
+ 
             # Make sure we start from a clean main branch
             git checkout main
             git reset --hard origin/main
-
-            # Construct structured issue body matching improvement.yml template
-            printf -v ISSUE_BODY "### Is there an existing issue for this?\n\n- [x] I have searched the existing issues\n\n### What would you like to improve?\n\nAdd robust TypeScript unit tests for the file \`$FILE\` to cover core logic, edge cases, and ensure type-safety.\n\n### Why does this matter?\n\nAdding tests ensures regression protection, improves code quality, and helps verify implementation details automatically.\n\n### Record\n\n- [x] I agree to follow this project's Code of Conduct\n- [x] I want to work on this issue"
-
-            # Create the upstream issue
-            echo "Creating issue on upstream repo ronisarkarexe/story-spark-ai..."
-            ISSUE_URL=$(gh issue create \
+ 
+            # Check if an issue is already open for this file on upstream
+            echo "Checking if an issue is already open for $FILE on upstream..."
+            ISSUE_TITLE="Improve: Add tests for $FILE"
+            EXISTING_ISSUE_NUMBER=$(gh issue list \
               --repo ronisarkarexe/story-spark-ai \
-              --title "Improve: Add tests for $FILE" \
-              --body "$ISSUE_BODY")
-            
-            # Extract issue number
-            ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -oE "[0-9]+$")
-            echo "Created Issue Number: $ISSUE_NUMBER ($ISSUE_URL)"
-
-             # Assign to ourselves upstream (by commenting /assign and I am contributing under GSSoC'26)
+              --search "$ISSUE_TITLE" \
+              --state open \
+              --json number \
+              --jq '.[0].number')
+ 
+            if [ -n "$EXISTING_ISSUE_NUMBER" ] && [ "$EXISTING_ISSUE_NUMBER" != "null" ]; then
+              echo "Reusing existing open issue #$EXISTING_ISSUE_NUMBER for $FILE."
+              ISSUE_NUMBER="$EXISTING_ISSUE_NUMBER"
+            else
+              # Construct structured issue body matching improvement.yml template
+              printf -v ISSUE_BODY "### Is there an existing issue for this?\n\n- [x] I have searched the existing issues\n\n### What would you like to improve?\n\nAdd robust TypeScript unit tests for the file \`$FILE\` to cover core logic, edge cases, and ensure type-safety.\n\n### Why does this matter?\n\nAdding tests ensures regression protection, improves code quality, and helps verify implementation details automatically.\n\n### Record\n\n- [x] I agree to follow this project's Code of Conduct\n- [x] I want to work on this issue"
+ 
+              # Create the upstream issue
+              echo "Creating issue on upstream repo ronisarkarexe/story-spark-ai..."
+              ISSUE_URL=$(gh issue create \
+                --repo ronisarkarexe/story-spark-ai \
+                --title "$ISSUE_TITLE" \
+                --body "$ISSUE_BODY")
+              
+              # Extract issue number
+              ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -oE "[0-9]+$")
+              echo "Created Issue Number: $ISSUE_NUMBER ($ISSUE_URL)"
+            fi
+ 
+            # Assign to ourselves upstream (by commenting /assign and I am contributing under GSSoC'26)
             echo "Assigning issue via comment..."
             printf -v COMMENT_BODY "/assign\nI am contributing under GSSoC'26"
             gh issue comment "$ISSUE_NUMBER" --repo ronisarkarexe/story-spark-ai --body "$COMMENT_BODY"
-
+ 
             # Create branch locally
             SAFE_NAME=$(echo "$FILE" | sed 's/[^a-zA-Z0-9-]/_/g')
             BRANCH_NAME="test/add-coverage-$SAFE_NAME"
             echo "Creating local branch: $BRANCH_NAME"
             git checkout -b "$BRANCH_NAME"
-
+ 
             # Generate initial tests
             echo "Generating tests..."
             npx tsx scripts/generate-tests.ts "$FILE"
-
+ 
             # Run verify and repair loop (up to 3 attempts)
             echo "Running verification and repair loop..."
             if npx tsx scripts/verify-and-repair.ts "$FILE"; then
@@ -107,10 +139,10 @@ jobs:
               
               # Push branch to our fork
               git push origin "$BRANCH_NAME" --force
-
+ 
               # Construct structured PR body matching pull_request_template.md (including GSSoC'26 reference)
               printf -v PR_BODY "## What this PR does\n\nThis PR adds unit test coverage for the file \`$FILE\`.\nThe tests cover core behavior, success flows, and error paths.\nThis contribution is under GSSoC'26.\n\n## Type of change\n\n- [x] Code quality improvement / tests\n\n## Related issue\n\nCloses ronisarkarexe/story-spark-ai#$ISSUE_NUMBER\n\n## Checklist\n\n- [x] I have added screenshots or a recording when they help explain this PR, or noted **N/A** with a one-line reason (N/A - Unit tests only).\n- [x] I have filled in the related issue number when there is one.\n- [x] I have tested my changes.\n- [x] I have done a self-review of the code."
-
+ 
               # Submit PR against upstream main
               echo "Creating Pull Request on upstream repository..."
               gh pr create \
