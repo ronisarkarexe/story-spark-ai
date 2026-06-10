@@ -1,7 +1,9 @@
 import logo from "../../assets/logoNew.png";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 const AboutUs = () => {
+  useEffect(() => { document.title = "StorySparkAI | About Us"; }, []);
   return (
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white px-4 sm:px-6 py-10 flex items-center transition-colors duration-300">
       <div className="max-w-4xl mx-auto w-full text-center">

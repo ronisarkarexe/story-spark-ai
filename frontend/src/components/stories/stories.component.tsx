@@ -310,6 +310,7 @@ const UI_TEXT: Record<string, UiText> = {
 const LANGUAGE_STORAGE_KEY = "storySparkLanguage";
 
 const StoriesComponent = () => {
+  useEffect(() => { document.title = "StorySparkAI | Stories"; }, []);
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();

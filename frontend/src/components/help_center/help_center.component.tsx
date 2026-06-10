@@ -6,6 +6,7 @@ import FAQAccordion from "./faq_accordion/faq_accordion.component";
 import Troubleshoot from "./troubleshoot/troubleshoot.component";
 import SetupGuide from "./setup_guide/setup_guide.component";
 import SupportLinks from "./support_links/support_links.component";
+import { useEffect } from "react";
 import {
   FAQ_ITEMS,
   HELP_CATEGORIES,
@@ -16,6 +17,7 @@ import {
 } from "./help_center.utils";
 
 const HelpCenterComponent = () => {
+  useEffect(() => { document.title = "StorySparkAI | Help Center"; }, []);
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCategories = useMemo(

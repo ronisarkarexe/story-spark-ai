@@ -1,4 +1,8 @@
+import { useEffect } from "react";
+
 export default function CommunityCardsPreview() {
+  useEffect(() => { document.title = "StorySparkAI | Community"; }, []);
+  
   const genres = [
     {
       title: 'Fantasy Hub',

@@ -1,6 +1,8 @@
 import React from "react";
+import { useEffect } from "react";
 
 const CookiePolicy: React.FC = () => {
+  useEffect(() => { document.title = "StorySparkAI | Cookie Policy"; }, []);
   return (
     <div className="min-h-screen bg-[#0f172a] text-white px-6 py-24 pt-28 sm:pt-32">
       <div className="max-w-5xl mx-auto">

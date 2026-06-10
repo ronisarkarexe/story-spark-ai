@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
+import { useEffect } from "react";  
 
 const Blog = () => {
 
+  useEffect(() => { document.title = "StorySparkAI | Blog"; }, []);
   const blogPosts = [
   {
     title: "AI-Powered Storytelling",

@@ -10,6 +10,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
+import { useEffect } from "react";
 
 const opportunities = [
   {
@@ -69,6 +70,7 @@ const applicationSteps = [
 ];
 
 const Career = () => {
+  useEffect(() => { document.title = "StorySparkAI | Careers"; }, []);
   return (
     <div className="relative overflow-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-[#070d1c] dark:text-white">
       <section className="relative isolate px-6 pb-16 pt-16 sm:pb-24 sm:pt-20 lg:pb-28 lg:pt-24">

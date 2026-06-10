@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Globe, GitPullRequest, Users } from "lucide-react";
 
+
 interface Contributor {
   login: string;
   avatar_url: string;
@@ -10,6 +11,7 @@ interface Contributor {
 }
 
 const ContributorsComponent = () => {
+  useEffect(() => { document.title = "StorySparkAI | Contributors"; }, []);
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(true);
 

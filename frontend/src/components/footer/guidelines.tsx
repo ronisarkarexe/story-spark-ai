@@ -1,5 +1,6 @@
 
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 import {
     Handshake,
     Sparkles,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 
 const Guidelines = () => {
+    useEffect(() => { document.title = "StorySparkAI | Guidelines"; }, []);
     const rules = [
         {
             title: "Respect Everyone",
