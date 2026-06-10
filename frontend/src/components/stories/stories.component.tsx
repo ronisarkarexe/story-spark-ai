@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import RecentPromptsPanel from "./RecentPromptsPanel";
+import DraftRestoredBanner from "./DraftRestoredBanner";
+import AutoSaveIndicator from "./AutoSaveIndicator";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 import { getRequestLimit, getWordCount, prompts } from "./stories.utils";
@@ -14,6 +16,7 @@ import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import { getErrorMessage } from "../../error/error.message";
 import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import { useRecentPrompts } from "../../hooks/useRecentPrompts";
+import { useAutoSaveDraft } from "../../hooks/useAutoSaveDraft";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import { useDebounce } from "../../hooks/useDebounce";
 
@@ -468,15 +471,14 @@ const StoriesComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
-
-  const draft = useMemo(() => {
+  const draft = (() => {
     try {
       const saved = localStorage.getItem("story_spark_draft");
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
-  }, []);
+  })();
 
   const [stories, setStories] = useState<IStories[]>(
     draft?.stories?.length ? getUniqueStories(draft.stories) : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
@@ -618,64 +620,43 @@ useEffect(() => {
   const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
   const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
 
-  const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
-  const isGenerationInProgressRef = useRef(false);
-  
-  const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-    parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
-  );
-  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
-  const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
-  const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
-  
-  const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
-  const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
+  // ── Auto-save draft hook ────────────────────────────────────────────
+  const {
+    saveStatus,
+    restoredDraft,
+    showRestoredBanner,
+    clearDraft,
+    dismissRestoredBanner,
+  } = useAutoSaveDraft({
+    prompt: textareaValue,
+    genre: selectedGenre,
+    length: selectedLength,
+    language: selectedLanguage,
+    stories,
+  });
 
-  const playSoundtrack = (genre: string) => {
-    const soundtrack = soundtrackMap[genre];
-    if (!soundtrack) return;
-
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+  // ── Restore draft values into form fields ───────────────────────────
+  const handleRestoreDraft = useCallback(() => {
+    if (restoredDraft) {
+      setTextareaValue(restoredDraft.prompt);
+      setValue("prompt", restoredDraft.prompt);
+      if (restoredDraft.genre) setSelectedGenre(restoredDraft.genre);
+      if (restoredDraft.length) setSelectedLength(restoredDraft.length);
+      if (restoredDraft.language) setSelectedLanguage(restoredDraft.language);
+      if (restoredDraft.stories?.length) setStories(restoredDraft.stories as IStories[]);
+      dismissRestoredBanner();
     }
+  }, [restoredDraft, setValue, dismissRestoredBanner]);
 
-    const audio = new Audio(soundtrack);
-    audio.loop = true;
-    audio.volume = 0.3;
-    audio.play().catch((err) => {
-      console.log("Audio playback failed:", err);
-    });
-    audioRef.current = audio;
-  };
+  const handleDiscardDraft = useCallback(() => {
+    clearDraft();
+  }, [clearDraft]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  // Autosave Draft
-  
-
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const draftData = {
-        prompt: textareaValue,
-        genre: selectedGenre,
-        length: selectedLength,
-        language: selectedLanguage,
-        tone: selectedTone,
-      };
-      try {
-        localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "QuotaExceededError") {
-          toast.error("Couldn't autosave draft â€” storage limit reached.");
-        }
-      }
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, selectedTone]);
+  // Auto-save is now handled by the useAutoSaveDraft hook above
 
   useEffect(() => {
     const selectedLocale =
@@ -854,16 +835,8 @@ useEffect(() => {
         setTextareaValue("");
         setSelectedPrompt("");
         setValue("prompt", "");
-        // Clear draft after successful generation
-        localStorage.removeItem("story_spark_draft");
-        if (selectedGenre) {
-          playSoundtrack(selectedGenre);
-        }
-        localStorage.removeItem(DRAFT_KEY);
-        setDraftStatus("");
-        reset();
-        setCharacters([]);
-        setCurrentStep(1);
+        clearDraft();
+        // audio last — it's non-critical
         if (selectedGenre) {
           playSoundtrack(selectedGenre);
         }
@@ -916,6 +889,7 @@ useEffect(() => {
     setCharacters([]);
     setCurrentStep(1);
     reset();
+    clearDraft();
   };
   }, [
     login,
@@ -1116,46 +1090,47 @@ useEffect(() => {
           </h1>
 
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white overflow-hidden">
-              <div className="relative w-full">
-                <form className="space-y-4 w-full" onSubmit={handleSubmit(onSubmit)}>
-                  
-                  {/* â”€â”€ Genre chips â”€â”€ */}
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {GENRES.map((genre) => (
-                      <button
-                        key={genre.value}
-                        type="button"
-                        disabled={loading}
-                        onClick={() => {
-                          if (loading) return;
-                          const newGenre = selectedGenre === genre.value ? "" : genre.value;
-                          setSelectedGenre(newGenre);
-                          if (newGenre) {
-                            playSoundtrack(newGenre);
-                          } else if (audioRef.current) {
-                            audioRef.current.pause();
-                            audioRef.current.currentTime = 0;
-                          }
-                        }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                          selectedGenre === genre.value
-                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                            : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                        } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
-                      >
-                        {genre.icon} {genreLabels[genre.name]}
-                      </button>
-                    ))}
-                  </div>
+            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white">
 
-                  {/* â”€â”€ NEW: Tone picker â”€â”€ */}
-                  <TonePicker selected={selectedTone} onChange={setSelectedTone} />
+{/* ── Draft Restored Banner ─────────────────────────────────── */}
+{showRestoredBanner && restoredDraft && (
+  <DraftRestoredBanner
+    savedAt={restoredDraft.savedAt}
+    onDismiss={handleRestoreDraft}
+    onDiscard={handleDiscardDraft}
+  />
+)}
 
-                  {/* â”€â”€ Length + Language row â”€â”€ */}
-                  <div className="flex flex-wrap items-center gap-4 mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400 mr-1">ðŸ“ {text.length}:</span>
+<div className="relative">
+  <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+    <div className="flex flex-wrap gap-2 mb-3">
+      {GENRES.map((genre) => (
+        <button
+          key={genre.value}
+          type="button"
+          onClick={() => {
+            const newGenre =
+              selectedGenre === genre.value ? "" : genre.value;
+
+            setSelectedGenre(newGenre);
+
+            if (newGenre) {
+              playSoundtrack(newGenre);
+            } else if (audioRef.current) {
+              audioRef.current.pause();
+              audioRef.current.currentTime = 0;
+            }
+          }}
+          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+            selectedGenre === genre.value
+              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+          }`}
+        >
+          {genre.icon} {genreLabels[genre.name]}
+        </button>
+      ))}
+    </div>
 
         </div>
 
@@ -1686,7 +1661,7 @@ useEffect(() => {
             {MAX_PROMPT_LENGTH - textareaValue.length} characters remaining
           </p>
         ) : (
-          <span />
+          <AutoSaveIndicator status={saveStatus} />
         )}
 
         <span

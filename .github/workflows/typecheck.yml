@@ -46,6 +46,10 @@ jobs:
         with:
           version: 9.15.9
 
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.9
+
       - uses: actions/setup-node@v4
         if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
         with:
@@ -53,25 +57,13 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Rebuild native bindings for current platform
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
         run: pnpm rebuild
 
-      - name: Validate recommendation backend changes
-        if: steps.changes.outputs.recommendation_only == 'true'
-        run: pnpm --filter story-spark-ai-backend test -- --runTestsByPath src/app/modules/recommendation/__tests__/recommendation.service.test.ts
-
       - name: Typecheck backend
-        if: steps.changes.outputs.backend == 'true' && steps.changes.outputs.recommendation_only != 'true'
-        run: pnpm --filter story-spark-ai-backend build
+        run: pnpm run build -w story-spark-ai-backend
 
       - name: Typecheck frontend
-        if: steps.changes.outputs.frontend == 'true'
-        run: pnpm --filter story-spark-ai-frontend exec tsc -b --noEmit
-
-      - name: Skip typecheck
-        if: steps.changes.outputs.frontend != 'true' && steps.changes.outputs.backend != 'true'
-        run: echo "No frontend or backend files changed; skipping typecheck."
+        run: pnpm exec -w story-spark-ai-frontend -- tsc -b --noEmit
