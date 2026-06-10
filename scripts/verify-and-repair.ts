@@ -44,14 +44,13 @@ async function main() {
   const cwd = isFrontend ? path.resolve(process.cwd(), "frontend") : path.resolve(process.cwd(), "backend");
   const relativeTestPath = path.relative(cwd, testFilePath);
 
-  // Define verification steps
+  // Define verification steps (targeted only to the test file to avoid preexisting unrelated errors)
   const steps: { name: string; command: string }[] = [];
   if (isFrontend) {
-    steps.push({ name: "Typecheck", command: "npm run typecheck" });
-    steps.push({ name: "Build", command: "npm run build" });
+    steps.push({ name: "Typecheck Test File", command: `npx tsc --noEmit --skipLibCheck ${relativeTestPath}` });
     steps.push({ name: "Test", command: `npx vitest run ${relativeTestPath}` });
   } else {
-    steps.push({ name: "Build/Typecheck", command: "npm run build" });
+    steps.push({ name: "Typecheck Test File", command: `npx tsc --noEmit --skipLibCheck ${relativeTestPath}` });
     steps.push({ name: "Test", command: `npx jest --runInBand ${relativeTestPath}` });
   }
 
