@@ -6,8 +6,8 @@ export interface IOTP extends Document {
   expiresAt: Date;
   failedAttempts: number;
   isVerified: boolean;
-  verificationToken?: string;
-  verificationTokenExpires?: Date;
+  verificationToken: string | null;
+  verificationTokenExpires: Date | null;
 }
 
 const otpSchema = new Schema<IOTP>(

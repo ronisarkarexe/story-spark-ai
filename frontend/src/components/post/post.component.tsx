@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
 import { Link } from "react-router-dom";
-import { useGetPostListsQuery } from "../../redux/apis/post.api";
+import { useGetPostListsQuery, useGetGenresQuery } from "../../redux/apis/post.api";
 import type { Post } from "../../models/post";
 import { useDebounced } from "../../hooks/global";
 import PaginationComponent from "../pagination/pagination.component";
@@ -25,7 +25,7 @@ const ExploreComponent = () => {
 
   const debounceTerm = useDebounced({
     searchQuery: searchTerm,
-    daley: 600,
+    delay: 600,
   });
 
   if (debounceTerm) {
@@ -37,6 +37,7 @@ const ExploreComponent = () => {
   }
 
   const { data, isLoading } = useGetPostListsQuery({ ...query });
+  const { data: genres } = useGetGenresQuery();
 
   const filteredPosts = data?.posts || [];
 
@@ -69,7 +70,7 @@ const ExploreComponent = () => {
     ),
   ).slice(0, 8);
 
-  const availableGenres = ["Fantasy", "Science Fiction", "Mystery", "Romance"];
+  const availableGenres = genres ?? [];
 
   return (
     <div className="pt-0 min-h-screen bg-white text-slate-900 relative overflow-hidden transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
