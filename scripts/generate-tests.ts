@@ -148,10 +148,12 @@ Follow these rules:
 2. Use the correct test framework based on the file environment:
    - Framework to use: ${framework}.
    - Rules: ${frameworkRules}
-3. Import the source module using correct relative imports.
-4. Mock external dependencies appropriately (e.g. database connections, external APIs, heavy services).
-5. Cover edge cases, success paths, and failure paths.
-6. Output ONLY the raw TypeScript code of the test. Do not include markdown code block backticks (e.g. \`\`\`typescript) or explanations.`;
+3. Import the source module using correct relative imports (the test file lives in a __tests__ subdirectory next to the source).
+4. Mock ALL external dependencies so the test runs in complete isolation — database models, API calls, Redux store, React hooks from libraries, file system, network requests, etc. Every import that is not from the source file itself MUST be mocked.
+5. For React components, use @testing-library/react for rendering and screen queries. Mock any hooks or context providers the component depends on.
+6. Cover edge cases, success paths, and failure paths.
+7. Make sure every test can pass independently. Do NOT write tests that depend on a running server, database, or real API.
+8. Output ONLY the raw TypeScript code of the test. Do not include markdown code block backticks (e.g. \`\`\`typescript) or explanations.`;
 
   const testFilePath = getTestFilePath(targetFile);
 

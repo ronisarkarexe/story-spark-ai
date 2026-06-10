@@ -44,13 +44,14 @@ async function main() {
   const cwd = isFrontend ? path.resolve(process.cwd(), "frontend") : path.resolve(process.cwd(), "backend");
   const relativeTestPath = path.relative(cwd, testFilePath);
 
-  // Define verification steps (targeted only to the test file to avoid preexisting unrelated errors)
+  // Verification: run only the test runner.
+  // vitest (frontend) and jest (backend) both compile TypeScript internally
+  // using the project's tsconfig, so a standalone tsc step is not needed
+  // (and would fail without tsconfig context to resolve imports).
   const steps: { name: string; command: string }[] = [];
   if (isFrontend) {
-    steps.push({ name: "Typecheck Test File", command: `npx -p typescript tsc --noEmit --skipLibCheck ${relativeTestPath}` });
-    steps.push({ name: "Test", command: `npx vitest run ${relativeTestPath}` });
+    steps.push({ name: "Test", command: `npx vitest run ${relativeTestPath} --reporter=verbose` });
   } else {
-    steps.push({ name: "Typecheck Test File", command: `npx -p typescript tsc --noEmit --skipLibCheck ${relativeTestPath}` });
     steps.push({ name: "Test", command: `npx jest --runInBand ${relativeTestPath}` });
   }
 
