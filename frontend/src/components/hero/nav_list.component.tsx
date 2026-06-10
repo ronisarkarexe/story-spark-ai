@@ -1,294 +1,228 @@
-import { useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
+﻿import React, { useEffect, useRef, useState } from "react";
+import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { USER_ROLE } from "../../constants/role";
+import logo from "../../assets/logoNew.png";
+import NotificationComponent from "../notification/notification.component";
+import { useNotifications } from "../../hooks/useNotifications";
 import ThemeToggle from "../theme/theme_toggle.component";
-import { ArrowRight, Menu, Sparkles, X } from "lucide-react";
 import { useTheme } from "../theme/theme.context";
+import {
+  Home,
+  Compass,
+  BookOpen,
+  Users,
+  BarChart2,
+  PenSquare,
+  Bookmark,
+  LogOut,
+  LogIn,
+  UserPlus,
+  LayoutDashboard,
+  Menu,
+  X,
+  Bell,
+  ChevronDown,
+  Sparkles,
+} from "lucide-react";
 
-const NavListComponent = () => {
-  const navigate = useNavigate();
+// ΓöÇΓöÇΓöÇ Types ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+interface NavItem {
+  label: string;
+  to: string;
+  icon: React.ReactNode;
+  end?: boolean;
+  authOnly?: boolean;
+}
+
+// ΓöÇΓöÇΓöÇ Primary nav items (always visible) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+const PRIMARY_NAV: NavItem[] = [
+  { label: "Home",        to: "/",                  icon: <Home       size={15} />, end: true },
+  { label: "Explore",     to: "/explore",           icon: <Compass    size={15} /> },
+  { label: "Stories",     to: "/story-inspiration", icon: <BookOpen   size={15} /> },
+  { label: "Community",   to: "/community",         icon: <Users      size={15} /> },
+  { label: "Analytics",   to: "/analytics",         icon: <BarChart2  size={15} /> },
+  { label: "Collab",      to: "/collab",            icon: <PenSquare  size={15} /> },
+];
+
+// ΓöÇΓöÇΓöÇ Auth-only nav items ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+const AUTH_NAV: NavItem[] = [
+  { label: "Saved",       to: "/bookmarks", icon: <Bookmark      size={15} />, authOnly: true },
+  { label: "Dashboard",   to: "/dashboard", icon: <LayoutDashboard size={15} />, authOnly: true },
+];
+
+// ΓöÇΓöÇΓöÇ Component ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+const NavListComponent: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
-  const { pathname } = useLocation();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
+
+  const [isLogin, setIsLogin] = useState<boolean>(isLoggedIn());
+  const notificationMenuRef = useRef<HTMLDivElement | null>(null);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+
   const { glowEnabled, toggleGlow } = useTheme();
+
+  const {
+    notifications,
+    unreadCount,
+    isOpen,
+    toggle,
+    close,
+    markAsRead,
+  } = useNotifications();
+
+  const user = getUserInfo();
+  const isAdmin =
+    user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() ?? "U";
 
   const handleLogout = () => {
     removeUserInfo();
-    setLoggedIn(false);
+    setIsLogin(false);
+    setProfileOpen(false);
     navigate("/");
-    setMenuOpen(false);
   };
 
-  const handleNavClick = () => {
-    setMenuOpen(false);
-  };
+  // Scroll shadow
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  const isActive = (path: string) => {
-    return pathname === path || (path === "/" && pathname === "/");
-  };
+  // Sync login state
+  useEffect(() => {
+    setIsLogin(isLoggedIn());
+  }, []);
 
-  const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `block rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
-      isActive
-        ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white"
-        : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10"
-    }`;
+  // Close notification panel on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-notification-trigger='true']")) return;
+      if (notificationMenuRef.current && !notificationMenuRef.current.contains(target as Node)) {
+        close();
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [close]);
 
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Close mobile menu on route change / resize
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 768) setMenuOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // ΓöÇΓöÇ Link class helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  const desktopLinkClass = (isActive: boolean) =>
+    `relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold tracking-wide
+     transition-all duration-200 select-none
+     ${isActive
+       ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10"
+       : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
+     }`;
+
+  const mobileLinkClass = (isActive: boolean) =>
+    `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold
+     transition-all duration-200
+     ${isActive
+       ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
+       : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+     }`;
+
+  const visibleNavItems = isLogin
+    ? [...PRIMARY_NAV, ...AUTH_NAV]
+    : PRIMARY_NAV;
+
+  // ΓöÇΓöÇ Render ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/90 backdrop-blur-md dark:border-white/10 dark:bg-[#0B1120]/80">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link
-          to="/"
-          className="text-lg font-bold text-slate-800 dark:text-white"
-          onClick={(e) => {
-            if (window.location.pathname === "/") {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }
-          }}
-        >
-          Spark-Story-AI
-        </Link>
-
-        <nav className="hidden lg:flex items-center gap-2">
-          <NavLink to="/" end className={linkClass}>
-            Home
-          </NavLink>
-          <NavLink to="/explore" className={linkClass}>
-            Explore
-          </NavLink>
-          <NavLink to="/story-inspiration" className={linkClass}>
-            Stories
-          </NavLink>
-          <NavLink to="/community" className={linkClass}>
-            Community
-          </NavLink>
-  const navItems = [
-    { to: "/", label: "Home" },
-    { to: "/explore", label: "Explore" },
-    { to: "/story-inspiration", label: "Stories" },
-    { to: "/community", label: "Community" },
-  ];
-
-  const mobileMenuVariants = {
-    hidden: { opacity: 0, height: 0, y: -8 },
-    visible: { opacity: 1, height: "auto", y: 0, transition: { duration: 0.28 } },
-    exit: { opacity: 0, height: 0, y: -8, transition: { duration: 0.22 } },
-  };
-
-  const mobileItemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      x: 0,
-      transition: { delay: i * 0.05 },
-    }),
-  };
-
-  const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `block rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
-      isActive
-        ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white"
-        : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10"
-    }`;
-
-  return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/90 backdrop-blur-md dark:border-white/10 dark:bg-[#0B1120]/80">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link
-          to="/"
-          className="text-lg font-bold text-slate-800 dark:text-white"
-          onClick={(e) => {
-            if (window.location.pathname === "/") {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }
-          }}
-        >
-          Spark-Story-AI
-        </Link>
-
-        <nav className="hidden lg:flex items-center gap-2">
-          <NavLink to="/" end className={linkClass}>
-            Home
-          </NavLink>
-          <NavLink to="/explore" className={linkClass}>
-            Explore
-          </NavLink>
-          <NavLink to="/story-inspiration" className={linkClass}>
-            Stories
-          </NavLink>
-          <NavLink to="/community" className={linkClass}>
-            Community
-          </NavLink>
-    <header className="sticky top-0 z-50 w-full">
-      <div className="absolute inset-0 border-b border-white/50 bg-white/70 shadow-sm shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-black/20" />
-      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-500/35 to-transparent" />
-
-      <div className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center"
-        >
+    <header
+      className={`sticky top-0 z-50 w-full bg-white/95 dark:bg-[#0B1120]/95 backdrop-blur-lg
+        border-b border-slate-200/80 dark:border-white/8
+        transition-all duration-300
+        ${scrolled ? "shadow-md dark:shadow-black/30" : "shadow-none"}`}
+    >
+      <div className="mx-auto max-w-screen-xl px-4 sm:px-6">
+        <div className="flex h-16 items-center justify-between gap-4">
+          {/* ΓöÇΓöÇ Logo ΓöÇΓöÇ */}
           <Link
             to="/"
-            className="group flex items-center gap-2 transition-all duration-300"
-            onClick={(e) => {
-              if (window.location.pathname === "/") {
-                e.preventDefault();
-                window.scrollTo({
-                  top: 0,
-                  behavior: "smooth",
-                });
-              }
-              handleNavClick();
-            }}
+            className="flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
+            aria-label="Story Spark AI ΓÇö Home"
           >
-            <div className="relative grid h-11 w-11 place-items-center rounded-2xl border border-white/70 bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-600/25 transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-indigo-600/40 dark:border-white/15">
-              <div className="absolute inset-0 rounded-2xl bg-white/15 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <Sparkles className="relative h-5 w-5" />
-            </div>
-            <div className="hidden sm:block leading-tight">
-              <span className="block text-base font-extrabold tracking-normal text-slate-950 transition-colors duration-300 group-hover:text-indigo-700 dark:text-white dark:group-hover:text-indigo-200">
-                Story Spark
-              </span>
-              <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                AI Studio
-              </span>
-            </div>
-            <div className="hidden rounded-full border border-indigo-200/70 bg-indigo-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-normal text-indigo-700 shadow-sm shadow-indigo-900/5 dark:border-indigo-400/20 dark:bg-indigo-400/10 dark:text-indigo-200 md:block">
-              Beta
-            </div>
+            <img src={logo} alt="Story Spark AI" className="h-9 w-auto object-contain" />
           </Link>
-        </motion.div>
 
-        <nav className="hidden items-center rounded-full border border-slate-200/80 bg-white/55 p-1 shadow-sm shadow-slate-900/5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] lg:flex">
-          {navItems.map((item, index) => (
-            <motion.div
-              key={item.to}
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.28, delay: index * 0.04 }}
-              whileHover={{ y: -1 }}
-            >
+          {/* ΓöÇΓöÇ Desktop Nav ΓöÇΓöÇ */}
+          <nav
+            aria-label="Primary navigation"
+            className="hidden md:flex items-center gap-1 flex-1 justify-center"
+          >
+            {PRIMARY_NAV.map((item) => (
               <NavLink
+                key={item.to}
                 to={item.to}
-                end={item.to === "/"}
-                onClick={handleNavClick}
-                className={`group relative flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-all duration-300 ${
-                  isActive(item.to)
-                    ? "text-white shadow-sm"
-                    : "text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
-                }`}
+                end={item.end}
+                className={({ isActive }) => desktopLinkClass(isActive)}
               >
-                {isActive(item.to) && (
-                  <motion.span
-                    layoutId="activeIndicator"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 shadow-lg shadow-indigo-600/25"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  />
+                {({ isActive }) => (
+                  <>
+                    <span className={`transition-colors duration-200 ${isActive ? "text-blue-500" : "opacity-60"}`}>
+                      {item.icon}
+                    </span>
+                    {item.label}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-full bg-blue-500" />
+                    )}
+                  </>
                 )}
-                {!isActive(item.to) && (
-                  <span className="absolute inset-0 rounded-full bg-slate-900/0 transition-colors duration-300 group-hover:bg-slate-900/5 dark:group-hover:bg-white/10" />
-                )}
-                <span className="relative">{item.label}</span>
               </NavLink>
-            </motion.div>
-          ))}
+            ))}
 
-          {loggedIn && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.28, delay: navItems.length * 0.04 }}
-              whileHover={{ y: -1 }}
-            >
+            {isLogin && AUTH_NAV.map((item) => (
               <NavLink
-                to="/dashboard"
-                className={`group relative flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-all duration-300 ${
-                  isActive("/dashboard")
-                    ? "text-white shadow-sm"
-                    : "text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
-                }`}
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) => desktopLinkClass(isActive)}
               >
-                {isActive("/dashboard") && (
-                  <motion.span
-                    layoutId="activeIndicator"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 shadow-lg shadow-indigo-600/25"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  />
+                {({ isActive }) => (
+                  <>
+                    <span className={`transition-colors duration-200 ${isActive ? "text-blue-500" : "opacity-60"}`}>
+                      {item.icon}
+                    </span>
+                    {item.label}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-full bg-blue-500" />
+                    )}
+                  </>
                 )}
-                <span className="relative">Dashboard</span>
               </NavLink>
-            </motion.div>
-          )}
-        </nav>
+            ))}
+          </nav>
 
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-
-          {loggedIn ? (
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200"
-            >
-              Logout
-            </button>
-          ) : (
-            <Link
-              to="/login"
-              className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200"
-            >
-              Login
-            </Link>
-          )}
-
-          <button
-            type="button"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-600 dark:text-slate-400 transition-all duration-300 hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white lg:hidden"
-          >
-            {menuOpen ? "✕" : "☰"}
-          </button>
-        </div>
-      </div>
-
-      {menuOpen && (
-        <div className="lg:hidden border-t border-slate-200/70 dark:border-white/10 bg-white dark:bg-[#0B1120]/95 px-4 py-3">
-          <NavLink to="/" end className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Home
-          </NavLink>
-          <NavLink to="/explore" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Explore
-          </NavLink>
-          <NavLink to="/story-inspiration" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Stories
-          </NavLink>
-          <NavLink to="/community" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Community
-          </NavLink>
-          {loggedIn && (
-            <NavLink to="/dashboard" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-              Dashboard
-            </NavLink>
-          )}
-        </div>
-      )}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex items-center gap-2"
-          >
+          {/* ΓöÇΓöÇ Desktop Right Actions ΓöÇΓöÇ */}
+          <div className="hidden md:flex items-center gap-2 shrink-0">
+            {/* Glow Toggle */}
             <button
               onClick={toggleGlow}
-              className={`group relative grid h-10 w-10 place-items-center rounded-full border transition-all duration-300 ${
+              className={`group relative grid h-8 w-8 place-items-center rounded-lg border transition-all duration-300 ${
                 glowEnabled
                   ? "border-indigo-200 bg-indigo-50 text-indigo-600 shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
                   : "border-slate-200/80 bg-white/60 text-slate-400 hover:text-slate-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-500 dark:hover:text-slate-300"
@@ -297,196 +231,332 @@ const NavListComponent = () => {
               aria-label={glowEnabled ? "Disable cursor glow" : "Enable cursor glow"}
               aria-pressed={glowEnabled}
             >
-              <Sparkles className="h-[18px] w-[18px]" strokeWidth={2.5} />
+              <Sparkles className="h-4 w-4" strokeWidth={2.5} />
             </button>
-            <div className="grid h-10 w-10 place-items-center rounded-full border border-slate-200/80 bg-white/60 shadow-sm shadow-slate-900/5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06]">
-              <ThemeToggle />
-            </div>
-          </motion.div>
 
-          <div className="hidden items-center gap-2 lg:flex">
-            {loggedIn ? (
-              <motion.button
-                onClick={handleLogout}
-                whileHover={{ y: -1 }}
-                whileTap={{ scale: 0.97 }}
-                className="h-10 rounded-full border border-slate-200/80 bg-white/60 px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white"
-              >
-                Logout
-              </motion.button>
-            ) : (
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
+            {isLogin ? (
               <>
-                <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}>
-                  <Link
-                    to="/login"
-                    onClick={handleNavClick}
-                    className="inline-flex h-10 items-center rounded-full border border-slate-200/80 bg-white/60 px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white"
+                {/* Notification Bell */}
+                <div className="relative" ref={notificationMenuRef}>
+                  <button
+                    type="button"
+                    aria-label="Notifications"
+                    data-notification-trigger="true"
+                    onClick={toggle}
+                    className="relative p-2 rounded-lg text-slate-500 dark:text-slate-400
+                               hover:bg-slate-100 dark:hover:bg-white/5
+                               hover:text-slate-900 dark:hover:text-white
+                               transition-all duration-200"
                   >
-                    Login
-                  </Link>
-                </motion.div>
+                    <Bell size={17} />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center
+                                       rounded-full bg-rose-500 text-[10px] font-bold text-white
+                                       ring-2 ring-white dark:ring-[#0B1120]">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
 
-                <motion.div
-                  whileHover={{ y: -1, scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
+                {/* Write Story CTA */}
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg
+                             bg-blue-600 hover:bg-blue-700 active:scale-95
+                             text-white text-[13px] font-semibold
+                             transition-all duration-200 shadow-sm"
                 >
-                  <Link
-                    to="/signup"
-                    onClick={handleNavClick}
-                    className="group inline-flex h-10 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300 hover:shadow-indigo-600/40"
+                  <PenSquare size={14} />
+                  Write
+                </Link>
+
+                {/* Profile Dropdown */}
+                <div className="relative" ref={profileMenuRef}>
+                  <button
+                    type="button"
+                    aria-label="Profile menu"
+                    aria-expanded={profileOpen}
+                    onClick={() => setProfileOpen((p) => !p)}
+                    className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-lg
+                               hover:bg-slate-100 dark:hover:bg-white/5
+                               transition-all duration-200 group"
                   >
-                    <span>Get Started</span>
-                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                  </Link>
-                </motion.div>
+                    {/* Avatar */}
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full
+                                     bg-blue-600 text-white text-xs font-bold ring-2
+                                     ring-blue-200 dark:ring-blue-900">
+                      {userInitial}
+                    </span>
+                    <ChevronDown
+                      size={13}
+                      className={`text-slate-400 transition-transform duration-200 ${profileOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {/* Dropdown Panel */}
+                  {profileOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-52
+                                    bg-white dark:bg-slate-900
+                                    border border-slate-200 dark:border-white/10
+                                    rounded-xl shadow-xl shadow-black/10 dark:shadow-black/40
+                                    py-1.5 z-50 animate-[fade-in_0.15s_ease-out]">
+                      {/* User info */}
+                      <div className="px-4 py-2.5 border-b border-slate-100 dark:border-white/8">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                          {user?.name ?? "User"}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          {user?.email ?? ""}
+                        </p>
+                      </div>
+
+                      <div className="py-1">
+                        {isAdmin && (
+                          <Link
+                            to="/dashboard"
+                            onClick={() => setProfileOpen(false)}
+                            className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600
+                                       dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5
+                                       hover:text-slate-900 dark:hover:text-white transition-colors"
+                          >
+                            <LayoutDashboard size={14} className="opacity-60" />
+                            Dashboard
+                          </Link>
+                        )}
+                        <Link
+                          to="/bookmarks"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600
+                                     dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5
+                                     hover:text-slate-900 dark:hover:text-white transition-colors"
+                        >
+                          <Bookmark size={14} className="opacity-60" />
+                          Saved Stories
+                        </Link>
+                      </div>
+
+                      <div className="border-t border-slate-100 dark:border-white/8 pt-1">
+                        <button
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-2.5 px-4 py-2 text-sm
+                                     text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10
+                                     transition-colors rounded-b-xl"
+                        >
+                          <LogOut size={14} />
+                          Log out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* Guest Actions */
+              <>
+                <Link
+                  to="/login"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-semibold
+                             text-slate-600 dark:text-slate-300
+                             hover:bg-slate-100 dark:hover:bg-white/5
+                             hover:text-slate-900 dark:hover:text-white
+                             transition-all duration-200"
+                >
+                  <LogIn size={14} className="opacity-70" />
+                  Log in
+                </Link>
+                <Link
+                  to="/signup"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-semibold
+                             bg-blue-600 hover:bg-blue-700 active:scale-95
+                             text-white transition-all duration-200 shadow-sm"
+                >
+                  <UserPlus size={14} />
+                  Sign up
+                </Link>
               </>
             )}
           </div>
 
-          <button
-            type="button"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-600 dark:text-slate-400 transition-all duration-300 hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white lg:hidden"
-          >
-            {menuOpen ? "✕" : "☰"}
-          </button>
-        </div>
-      </div>
+          {/* ΓöÇΓöÇ Mobile: Notification + Hamburger ΓöÇΓöÇ */}
+          <div className="flex md:hidden items-center gap-1">
+            {/* Glow Toggle Mobile */}
+            <button
+              onClick={toggleGlow}
+              className={`group relative grid h-8 w-8 place-items-center rounded-lg border transition-all duration-300 ${
+                glowEnabled
+                  ? "border-indigo-200 bg-indigo-50 text-indigo-600 shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
+                  : "border-slate-200/80 bg-white/60 text-slate-400 hover:text-slate-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-500 dark:hover:text-slate-300"
+              }`}
+              title={glowEnabled ? "Glow: On" : "Glow: Off"}
+              aria-label={glowEnabled ? "Disable cursor glow" : "Enable cursor glow"}
+              aria-pressed={glowEnabled}
+            >
+              <Sparkles className="h-4 w-4" strokeWidth={2.5} />
+            </button>
 
-      {menuOpen && (
-        <div className="lg:hidden border-t border-slate-200/70 dark:border-white/10 bg-white dark:bg-[#0B1120]/95 px-4 py-3">
-          <NavLink to="/" end className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Home
-          </NavLink>
-          <NavLink to="/explore" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Explore
-          </NavLink>
-          <NavLink to="/story-inspiration" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Stories
-          </NavLink>
-          <NavLink to="/community" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Community
-          </NavLink>
-          {loggedIn && (
-            <NavLink to="/dashboard" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-              Dashboard
-            </NavLink>
-          )}
-        </div>
-      )}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            type="button"
-            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-            aria-expanded={menuOpen}
-            className="grid h-10 w-10 place-items-center rounded-full border border-slate-200/80 bg-white/60 text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white lg:hidden"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
-          </motion.button>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={mobileMenuVariants}
-            className="overflow-hidden border-b border-slate-200/70 bg-white/80 shadow-xl shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/85 lg:hidden"
-          >
-            <div className="mx-auto max-w-7xl px-4 pb-5 pt-2 sm:px-6">
-              <div className="space-y-2 rounded-2xl border border-slate-200/70 bg-white/55 p-2 shadow-sm shadow-slate-900/5 dark:border-white/10 dark:bg-white/[0.04]">
-                {navItems.map((item, index) => (
-                  <motion.div
-                    key={item.to}
-                    custom={index}
-                    initial="hidden"
-                    animate="visible"
-                    variants={mobileItemVariants}
-                  >
-                    <NavLink
-                      to={item.to}
-                      end={item.to === "/"}
-                      onClick={handleNavClick}
-                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
-                        isActive(item.to)
-                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
-                          : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
-                      }`}
-                    >
-                      <span>{item.label}</span>
-                      {isActive(item.to) && <span className="h-2 w-2 rounded-full bg-white/90" />}
-                    </NavLink>
-                  </motion.div>
-                ))}
-
-                {loggedIn && (
-                  <motion.div
-                    custom={navItems.length}
-                    initial="hidden"
-                    animate="visible"
-                    variants={mobileItemVariants}
-                  >
-                    <NavLink
-                      to="/dashboard"
-                      onClick={handleNavClick}
-                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
-                        isActive("/dashboard")
-                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
-                          : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
-                      }`}
-                    >
-                      <span>Dashboard</span>
-                      {isActive("/dashboard") && <span className="h-2 w-2 rounded-full bg-white/90" />}
-                    </NavLink>
-                  </motion.div>
+            <ThemeToggle />
+            {isLogin && (
+              <button
+                type="button"
+                aria-label="Notifications"
+                data-notification-trigger="true"
+                onClick={toggle}
+                className="relative p-2 rounded-lg text-slate-500 dark:text-slate-400
+                           hover:bg-slate-100 dark:hover:bg-white/5 transition-all duration-200"
+              >
+                <Bell size={17} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center
+                                   rounded-full bg-rose-500 text-[10px] font-bold text-white
+                                   ring-2 ring-white dark:ring-[#0B1120]">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
                 )}
+              </button>
+            )}
+            <button
+              type="button"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((p) => !p)}
+              className="p-2 rounded-lg text-slate-500 dark:text-slate-400
+                         hover:bg-slate-100 dark:hover:bg-white/5
+                         hover:text-slate-900 dark:hover:text-white
+                         transition-all duration-200"
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+        </div>
+      </div>
 
-                <motion.div
-                  custom={navItems.length + 1}
-                  initial="hidden"
-                  animate="visible"
-                  variants={mobileItemVariants}
-                  className="grid gap-2 border-t border-slate-200/70 pt-2 dark:border-white/10"
-                >
-                  {loggedIn ? (
-                    <button
-                      onClick={handleLogout}
-                      className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
-                    >
-                      Logout
-                    </button>
-                  ) : (
-                    <>
-                      <Link
-                        to="/login"
-                        onClick={handleNavClick}
-                        className="flex items-center justify-center rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-300 dark:hover:bg-white/10"
-                      >
-                        Login
-                      </Link>
-                      <Link
-                        to="/signup"
-                        onClick={handleNavClick}
-                        className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300"
-                      >
-                        <span>Get Started</span>
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </>
-                  )}
-                </motion.div>
+      {/* ΓöÇΓöÇ Notification Panel ΓöÇΓöÇ */}
+      <div ref={notificationMenuRef}>
+        <NotificationComponent
+          notifications={notifications}
+          showNotification={isOpen}
+          setShowNotification={close}
+          unreadCount={unreadCount}
+          onMarkAsRead={markAsRead}
+        />
+      </div>
+
+      {/* ΓöÇΓöÇ Mobile Menu ΓöÇΓöÇ */}
+      {menuOpen && (
+        <div
+          className="md:hidden border-t border-slate-200/80 dark:border-white/8
+                     bg-white dark:bg-[#0B1120]
+                     px-4 pb-5 pt-3"
+        >
+          {/* User greeting (logged in) */}
+          {isLogin && user && (
+            <div className="flex items-center gap-3 mb-3 px-1 py-3
+                            border-b border-slate-100 dark:border-white/8">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full
+                               bg-blue-600 text-white text-sm font-bold
+                               ring-2 ring-blue-200 dark:ring-blue-900 shrink-0">
+                {userInitial}
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                  {user.name}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  {user.email}
+                </p>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+
+          {/* Nav links */}
+          <nav aria-label="Mobile navigation" className="flex flex-col gap-1">
+            {visibleNavItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) => mobileLinkClass(isActive)}
+                onClick={() => setMenuOpen(false)}
+              >
+                {({ isActive }) => (
+                  <>
+                    <span className={isActive ? "text-blue-500" : "opacity-50"}>
+                      {item.icon}
+                    </span>
+                    {item.label}
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* Divider + Auth actions */}
+          <div className="mt-3 border-t border-slate-100 dark:border-white/8 pt-3 flex flex-col gap-1">
+            {isLogin ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold
+                             bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200"
+                >
+                  <PenSquare size={15} />
+                  Write a Story
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold
+                             text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10
+                             transition-all duration-200 text-left w-full"
+                >
+                  <LogOut size={15} />
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold
+                             text-slate-600 dark:text-slate-300
+                             hover:bg-slate-100 dark:hover:bg-white/5
+                             transition-all duration-200"
+                >
+                  <LogIn size={15} />
+                  Log in
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold
+                             bg-blue-600 text-white hover:bg-blue-700
+                             transition-all duration-200"
+                >
+                  <UserPlus size={15} />
+                  Sign up
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Contact Us link in mobile */}
+          <div className="mt-2">
+            <Link
+              to="/contact-us"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-2 rounded-xl text-sm
+                         text-slate-400 dark:text-slate-500 hover:text-blue-500 transition-colors"
+            >
+              Contact Us
+            </Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

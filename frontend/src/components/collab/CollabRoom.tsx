@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { resolveSocketUrl } from "../../helpers/socket-url";
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
@@ -45,7 +45,7 @@ export default function CollabRoom() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newText, setNewText] = useState("");
-  const [collabSocket, setCollabSocket] = useState<any>(null);
+  const [collabSocket, setCollabSocket] = useState<Socket | null>(null);
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
 
@@ -66,7 +66,7 @@ export default function CollabRoom() {
       return;
     }
 
-    let socketInstance: any;
+    let socketInstance: Socket;
 
     try {
       socketInstance = io(`${socketUrl}/collab`, {
@@ -159,7 +159,7 @@ export default function CollabRoom() {
     setNewText("");
   };
 
-  let typingTimeout: any;
+  let typingTimeout: ReturnType<typeof setTimeout> | undefined;
   const handleInputChange = (val: string) => {
     setNewText(val);
     if (!collabSocket || !roomId) return;

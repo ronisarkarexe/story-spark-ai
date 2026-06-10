@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import Razorpay from "razorpay";
 import crypto from "crypto";
 import { Order } from "../app/modules/payment/order.model";
 import { User } from "../app/modules/user/user.model";
+import { getRazorpay } from "../config/razorpay";
 
 // Server-side plan -> price map (paise)
 // Amount is NEVER trusted from the client. The client sends a plan name;
@@ -12,11 +12,6 @@ const PLAN_PRICE_MAP: Record<string, { amount: number; currency: string }> = {
   pro: { amount: 99900, currency: "INR" },
   premium: { amount: 199900, currency: "INR" },
 };
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
 
 // POST /api/v1/payment/create-order
 export const createOrder = async (req: Request, res: Response) => {
@@ -39,6 +34,7 @@ export const createOrder = async (req: Request, res: Response) => {
     const { amount, currency } = PLAN_PRICE_MAP[plan];
 
     // Create the Razorpay order
+    const razorpay = getRazorpay();
     const razorpayOrder = await razorpay.orders.create({
       amount,
       currency,
@@ -77,9 +73,14 @@ export const verifyPayment = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "Missing payment fields" });
     }
 
+    const key_secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!key_secret) {
+      return res.status(500).json({ success: false, message: "Razorpay signature secret is not configured" });
+    }
+
     // 1. Verify the HMAC signature
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .createHmac("sha256", key_secret)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
