@@ -84,9 +84,14 @@ const LoginComponent = () => {
   };
 
   if (isLoggedIn) {
+    const userInfo = getUserInfo();
+    const isDashboardUser =
+      userInfo?.role === USER_ROLE.ADMIN ||
+      userInfo?.role === USER_ROLE.SUPER_ADMIN;
+
     return (
       <RedirectComponent
-        defaultPath="/dashboard"
+        defaultPath={isDashboardUser ? "/dashboard" : "/explore"}
       />
     );
   }

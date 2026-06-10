@@ -7,9 +7,11 @@ import ChatComponent from "../chat/Chat";
 
 interface RootLayoutProps {
   children: ReactNode;
+  hideHeader?: boolean;
+  hideFooter?: boolean;
 }
 
-const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
+const RootLayout: React.FC<RootLayoutProps> = ({ children, hideHeader, hideFooter }) => {
   const { pathname } = useLocation();
   const hideHeader = pathname === "/login" || pathname === "/signup";
   const hideFooter = pathname === "/login" || pathname === "/signup";

@@ -31,8 +31,6 @@ import {
 } from "../../redux/apis/user.api";
 
 import {
-  useGetVersionsByStoryIdQuery,
-  useRestoreVersionMutation,
   useGetStoryTreeQuery,
   useCreateBranchVersionMutation,
 } from "../../redux/apis/storyVersion.api";

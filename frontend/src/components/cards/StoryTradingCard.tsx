@@ -105,7 +105,7 @@ const getKeyQuote = (content: string) => {
 };
 
 const getGenreLabel = (story: IStories) =>
-  cleanText(story.genre || story.tag || "Story").replace(/^[^\w]+/, "") ||
+  cleanText((story as any).genre || story.tag || "Story").replace(/^[^\w]+/, "") ||
   "Story";
 
 interface StoryTradingCardProps {
