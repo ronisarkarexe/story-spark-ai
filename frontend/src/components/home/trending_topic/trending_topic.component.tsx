@@ -7,6 +7,7 @@ const TrendingTopicComponent = () => {
       <h3 className="text-lg font-semibold text-slate-900 dark:text-gray-300 mb-4">
         Trending Topics
       </h3>
+
       <div className="flex flex-wrap gap-2">
         {topicsData.map((topic, index) => (
           <a
@@ -15,7 +16,7 @@ const TrendingTopicComponent = () => {
             className="story-chip px-3 py-1.5 text-sm font-semibold text-blue-600 dark:text-blue-200"
           >
             {topic.title}
-          </span>
+          </a>
         ))}
       </div>
     </section>
