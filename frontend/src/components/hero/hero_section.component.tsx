@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState, type MouseEvent } from "react";
-import type { ReactNode } from "react";
+
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
@@ -58,20 +57,17 @@ const features = [
     icon: (
       <svg className="w-7 h-7 text-pink-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
+     </svg>
     )
   }
 ];
 
-type Feature = {
 interface Feature {
   title: string;
   description: string;
   bgClass: string;
   icon: ReactNode;
-};
 }
-
 const FeatureCard = ({ feature }: { feature: Feature }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -313,7 +309,7 @@ const HeroSectionComponent = () => {
                 ]}
               />
             </span>
-          </h1>
+          </motion.h1>
 
           <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
             Create, edit, and generate engaging multiple story variations from a single prompt.
@@ -352,7 +348,7 @@ const HeroSectionComponent = () => {
             ))}
           </div>
         </div>
-        </div>
+      </motion.div>
 
       <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">
@@ -360,8 +356,6 @@ const HeroSectionComponent = () => {
             <FeatureCard feature={feature} key={index} />
           ))}
         </div>
-      </div>
-    </div>
       </motion.div>
     </motion.div>
   );

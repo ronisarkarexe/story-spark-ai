@@ -223,18 +223,36 @@ const ContinueStoryModal = ({ story, onClose }: ContinueStoryModalProps) => {
                 id="continue-story-prompt"
                 rows={8}
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                maxLength={500}
+                onChange={(e) => {
+                  if (e.target.value.length <= 500) {
+                    setPrompt(e.target.value);
+                  }
+                }}
                 placeholder="The story continues..."
                 className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-400/50 focus:ring-1 focus:ring-indigo-400/20 transition-all leading-6"
               />
-              <p className="mt-1.5 text-[10px] text-slate-600">
-                {!isAuthenticated && (
-                  <span className="text-amber-400">
-                    ⚡ Using free tier — sign in for higher limits.{" "}
-                  </span>
-                )}
-                Edit the context above, then generate the next part.
-              </p>
+              
+              
+              <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-600">
+                <p>
+                  {!isAuthenticated && (
+                    <span className="text-amber-400">
+                      ⚡ Using free tier — sign in for higher limits.{" "}
+                    </span>
+                  )}
+                  Edit the context above, then generate the next part.
+                </p>
+                
+                
+                <span className={`font-medium shrink-0 transition-colors duration-200 ${
+                  prompt.length >= 500 ? "text-red-500 font-bold" :
+                  prompt.length >= 400 ? "text-orange-500" :
+                  "text-slate-500"
+                }`}>
+                  {prompt.length} / 500
+                </span>
+              </div>
             </section>
 
             {/* ── Actions ─────────────────────────────────────────────────── */}
