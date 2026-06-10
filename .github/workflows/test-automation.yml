@@ -69,25 +69,7 @@ jobs:
             git reset --hard origin/main
 
             # Construct structured issue body matching improvement.yml template
-            ISSUE_BODY=$(cat <<EOF
-### Is there an existing issue for this?
-
-- [x] I have searched the existing issues
-
-### What would you like to improve?
-
-Add robust TypeScript unit tests for the file \`$FILE\` to cover core logic, edge cases, and ensure type-safety.
-
-### Why does this matter?
-
-Adding tests ensures regression protection, improves code quality, and helps verify implementation details automatically.
-
-### Record
-
-- [x] I agree to follow this project's Code of Conduct
-- [x] I want to work on this issue
-EOF
-)
+            printf -v ISSUE_BODY "### Is there an existing issue for this?\n\n- [x] I have searched the existing issues\n\n### What would you like to improve?\n\nAdd robust TypeScript unit tests for the file \`$FILE\` to cover core logic, edge cases, and ensure type-safety.\n\n### Why does this matter?\n\nAdding tests ensures regression protection, improves code quality, and helps verify implementation details automatically.\n\n### Record\n\n- [x] I agree to follow this project's Code of Conduct\n- [x] I want to work on this issue"
 
             # Create the upstream issue
             echo "Creating issue on upstream repo ronisarkarexe/story-spark-ai..."
@@ -128,28 +110,7 @@ EOF
               git push origin "$BRANCH_NAME" --force
 
               # Construct structured PR body matching pull_request_template.md
-              PR_BODY=$(cat <<EOF
-## What this PR does
-
-This PR adds unit test coverage for the file \`$FILE\`.
-The tests cover core behavior, success flows, and error paths.
-
-## Type of change
-
-- [x] Code quality improvement / tests
-
-## Related issue
-
-Closes ronisarkarexe/story-spark-ai#$ISSUE_NUMBER
-
-## Checklist
-
-- [x] I have added screenshots or a recording when they help explain this PR, or noted **N/A** with a one-line reason (N/A - Unit tests only).
-- [x] I have filled in the related issue number when there is one.
-- [x] I have tested my changes.
-- [x] I have done a self-review of the code.
-EOF
-)
+              printf -v PR_BODY "## What this PR does\n\nThis PR adds unit test coverage for the file \`$FILE\`.\nThe tests cover core behavior, success flows, and error paths.\n\n## Type of change\n\n- [x] Code quality improvement / tests\n\n## Related issue\n\nCloses ronisarkarexe/story-spark-ai#$ISSUE_NUMBER\n\n## Checklist\n\n- [x] I have added screenshots or a recording when they help explain this PR, or noted **N/A** with a one-line reason (N/A - Unit tests only).\n- [x] I have filled in the related issue number when there is one.\n- [x] I have tested my changes.\n- [x] I have done a self-review of the code."
 
               # Submit PR against upstream main
               echo "Creating Pull Request on upstream repository..."
