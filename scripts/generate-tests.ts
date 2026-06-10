@@ -36,7 +36,7 @@ async function callAI(prompt: string, systemInstruction?: string): Promise<strin
       authHeader = authHeader.substring(7).trim();
     }
     const body = {
-      model: "meta/llama-3.1-405b-instruct",
+      model: "meta/llama-3.1-8b-instruct",
       messages: [
         ...(systemInstruction ? [{ role: "system", content: systemInstruction }] : []),
         { role: "user", content: prompt },
