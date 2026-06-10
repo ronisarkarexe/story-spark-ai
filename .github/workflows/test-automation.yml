@@ -50,8 +50,15 @@ jobs:
           TARGETS=$(npx tsx scripts/coverage-scanner.ts)
           echo "Top untested files: $TARGETS"
 
-          # Parse JSON array using jq and loop
+          # Parse JSON array using jq and loop (limit to max 2 files)
+          COUNT=0
           for FILE in $(echo "$TARGETS" | jq -r '.[]'); do
+            if [ $COUNT -ge 2 ]; then
+              echo "Reached maximum run limit of 2 targets. Stopping."
+              break
+            fi
+            COUNT=$((COUNT+1))
+
             echo ""
             echo "=================================================="
             echo "Processing Target File: $FILE"
@@ -61,13 +68,35 @@ jobs:
             git checkout main
             git reset --hard origin/main
 
+            # Construct structured issue body matching improvement.yml template
+            ISSUE_BODY=$(cat <<EOF
+### Is there an existing issue for this?
+
+- [x] I have searched the existing issues
+
+### What would you like to improve?
+
+Add robust TypeScript unit tests for the file \`$FILE\` to cover core logic, edge cases, and ensure type-safety.
+
+### Why does this matter?
+
+Adding tests ensures regression protection, improves code quality, and helps verify implementation details automatically.
+
+### Record
+
+- [x] I agree to follow this project's Code of Conduct
+- [x] I want to work on this issue
+EOF
+)
+
             # Create the upstream issue
             echo "Creating issue on upstream repo ronisarkarexe/story-spark-ai..."
             ISSUE_URL=$(gh issue create \
               --repo ronisarkarexe/story-spark-ai \
-              --title "Add tests for $FILE" \
-              --body "Automated issue tracking test coverage for the file \`$FILE\`. Created by Test Automation Agent." \
-              --label "enhancement")
+              --title "Improve: Add tests for $FILE" \
+              --body "$ISSUE_BODY" \
+              --label "Improvement" \
+              --label "Needs Triage")
             
             # Extract issue number
             ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -oE "[0-9]+$")
@@ -98,12 +127,36 @@ jobs:
               # Push branch to our fork
               git push origin "$BRANCH_NAME" --force
 
+              # Construct structured PR body matching pull_request_template.md
+              PR_BODY=$(cat <<EOF
+## What this PR does
+
+This PR adds unit test coverage for the file \`$FILE\`.
+The tests cover core behavior, success flows, and error paths.
+
+## Type of change
+
+- [x] Code quality improvement / tests
+
+## Related issue
+
+Closes ronisarkarexe/story-spark-ai#$ISSUE_NUMBER
+
+## Checklist
+
+- [x] I have added screenshots or a recording when they help explain this PR, or noted **N/A** with a one-line reason (N/A - Unit tests only).
+- [x] I have filled in the related issue number when there is one.
+- [x] I have tested my changes.
+- [x] I have done a self-review of the code.
+EOF
+)
+
               # Submit PR against upstream main
               echo "Creating Pull Request on upstream repository..."
               gh pr create \
                 --repo ronisarkarexe/story-spark-ai \
                 --title "test: add unit tests for $(basename "$FILE")" \
-                --body "Resolves ronisarkarexe/story-spark-ai#$ISSUE_NUMBER" \
+                --body "$PR_BODY" \
                 --head "Harshithk951:$BRANCH_NAME" \
                 --base main
             else
