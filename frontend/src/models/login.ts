@@ -5,6 +5,7 @@ export interface Login {
 
 export interface AccessToken {
   accessToken: string;
+  refreshToken?: string;
 }
 
 export interface LoginUser {

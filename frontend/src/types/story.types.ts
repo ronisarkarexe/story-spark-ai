@@ -7,6 +7,7 @@ export interface Chapter {
 
 export interface Story {
   id: string;
+  userId?: string;
   title: string;
   chapters: Chapter[];
 }

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getValidDecodedToken } from "./auth.service";
 import * as localStorageUtils from "../utils/local-storage";

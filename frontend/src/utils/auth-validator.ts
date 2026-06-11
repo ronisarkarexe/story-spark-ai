@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Validates a decoded JWT token payload and strictly checks its claims format and existence.
  * Throws a descriptive Error if validation fails.

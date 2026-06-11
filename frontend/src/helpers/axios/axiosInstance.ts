@@ -1,12 +1,22 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import {
   getFromLocalStorage,
-  setToLocalStorage,
-  removeFromLocalStorage,
 } from "../../utils/local-storage";
 import { AUTH_KEY } from "../../constants/storage-key";
+import { getRefreshToken, storeTokens, removeTokens } from "../../services/auth.service";
 import { IMeta, ResponseErrorType } from "../../types";
 import { getBaseUrl } from "../config";
+
+let isRefreshing = false;
+let failedQueue: Array<{ resolve: (token: string) => void; reject: (err: unknown) => void }> = [];
+
+const processQueue = (error: unknown, token: string | null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else resolve(token!);
+  });
+  failedQueue = [];
+};
 
 type AxiosGlobalState = typeof globalThis & {
   __storySparkAxiosInstance?: AxiosInstance;
@@ -53,27 +63,49 @@ export const setupAxiosInterceptors = () => {
       const originalRequest = error.config;
 
       if (error.response?.status === 401 && !originalRequest._retry) {
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          }).then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return instance(originalRequest);
+          });
+        }
+
         originalRequest._retry = true;
+        isRefreshing = true;
+
+        const refreshToken = getRefreshToken();
+        if (!refreshToken) {
+          removeTokens();
+          window.location.href = "/login";
+          return Promise.reject(error);
+        }
 
         try {
           const baseUrl = getBaseUrl();
           const response = await axios.post(
             `${baseUrl}/auth/refresh-token`,
-            {},
+            { token: refreshToken },
             { withCredentials: true },
           );
 
           const newAccessToken = response.data?.data?.accessToken;
 
           if (newAccessToken) {
-            setToLocalStorage(AUTH_KEY, newAccessToken);
+            storeTokens({ accessToken: newAccessToken, refreshToken });
+            instance.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+            processQueue(null, newAccessToken);
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return instance(originalRequest);
           }
-        } catch {
-          removeFromLocalStorage(AUTH_KEY);
+        } catch (refreshError) {
+          processQueue(refreshError, null);
+          removeTokens();
           window.location.href = "/login";
-          return Promise.reject(error);
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
         }
       }
 
