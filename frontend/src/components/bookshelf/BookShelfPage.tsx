@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { useGetPostListsQuery } from "../../redux/apis/post.api";
 import BookShelf, { IBookStory } from "./BookShelf";
@@ -10,7 +11,7 @@ export default function BookShelfPage() {
     limit: 50,
   });
 
-  const stories: IBookStory[] = (data?.posts || []).map((post: unknown) => ({
+  const stories: IBookStory[] = (data?.posts || []).map((post: any) => ({
     uuid: post._id || post.uuid,
     title: post.title,
     content: post.content,
