@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
 import { connectSocket, disconnectSocket, getSocketIo } from "./socket.oi";

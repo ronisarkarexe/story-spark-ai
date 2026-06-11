@@ -10,7 +10,7 @@ export default function BookShelfPage() {
     limit: 50,
   });
 
-  const stories: IBookStory[] = (data?.posts || []).map((post: any) => ({
+  const stories: IBookStory[] = (data?.posts || []).map((post: unknown) => ({
     uuid: post._id || post.uuid,
     title: post.title,
     content: post.content,

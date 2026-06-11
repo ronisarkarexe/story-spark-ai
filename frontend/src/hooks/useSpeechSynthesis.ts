@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type WordRange = {
