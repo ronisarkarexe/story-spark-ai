@@ -32,10 +32,11 @@ export const EducationalInsightsPanel: React.FC<
       const data = await getEducationalInsights(storyId);
       insightsCache[storyId] = data;
       setInsights(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
+      const axiosError = err as { response?: { data?: { message?: string } } };
       setError(
-        err?.response?.data?.message ||
+        axiosError?.response?.data?.message ||
           "Failed to generate educational insights. Please try again."
       );
     } finally {
