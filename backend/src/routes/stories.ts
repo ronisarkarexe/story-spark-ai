@@ -5,6 +5,7 @@ import { StoryBranchingController } from "../controllers/storyBranchingControlle
 import auth from "../app/middleware/auth.middleware";
 import { ENUM_USER_ROLE } from "../enums/user";
 import { EducationalInsightsRouter } from "../app/modules/educational-insights/educational-insights.routes";
+import { DialogueFingerprintRouter } from "../app/modules/dialogue-fingerprint/dialogueFingerprint.routes";
 
 const router = express.Router();
 
@@ -33,5 +34,6 @@ router.post(
 );
 
 router.use("/", EducationalInsightsRouter);
+router.use("/", DialogueFingerprintRouter);
 
 export const StoriesRouter = router;

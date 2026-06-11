@@ -10,6 +10,7 @@ import StoryViewer from "./StoryViewer";
 import ContinueStoryButton from "./ContinueStoryButton";
 import CharacterNetwork from "../CharacterNetwork";
 import EducationalInsightsPanel from "../../features/educational-insights/EducationalInsightsPanel";
+import DialogueFingerprintPanel from "../../features/dialogue-fingerprint/DialogueFingerprintPanel";
 
 import {
   getSafeFileName,
@@ -22,7 +23,7 @@ const StoryWorkspace = () => {
   const currentStory = useSelector(
     (state: RootState) => state.story.currentStory
   );
-  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network" | "insights">("editor");
+  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network" | "insights" | "fingerprint">("editor");
 
   const handleExportMarkdown = () => {
     if (!currentStory) {
@@ -166,6 +167,16 @@ const StoryWorkspace = () => {
               >
                 💡 Educational Insights
               </button>
+              <button
+                onClick={() => setWorkspaceMode("fingerprint")}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  workspaceMode === "fingerprint"
+                    ? "bg-indigo-600 text-white shadow"
+                    : "text-slate-400 hover:text-slate-250"
+                }`}
+              >
+                🎙️ Dialogue Fingerprint
+              </button>
             </div>
             <button
               onClick={handleExportMarkdown}
@@ -201,8 +212,10 @@ const StoryWorkspace = () => {
           </>
         ) : workspaceMode === "network" ? (
           <CharacterNetwork storyId={currentStory.id} />
-        ) : (
+        ) : workspaceMode === "insights" ? (
           <EducationalInsightsPanel storyId={currentStory.id} />
+        ) : (
+          <DialogueFingerprintPanel storyId={currentStory.id} />
         )}
       </div>
     </div>
