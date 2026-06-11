@@ -9,6 +9,7 @@ import ChapterSidebar from "./ChapterSidebar";
 import StoryViewer from "./StoryViewer";
 import ContinueStoryButton from "./ContinueStoryButton";
 import CharacterNetwork from "../CharacterNetwork";
+import EducationalInsightsPanel from "../../features/educational-insights/EducationalInsightsPanel";
 
 import {
   getSafeFileName,
@@ -21,7 +22,7 @@ const StoryWorkspace = () => {
   const currentStory = useSelector(
     (state: RootState) => state.story.currentStory
   );
-  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
+  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network" | "insights">("editor");
 
   const handleExportMarkdown = () => {
     if (!currentStory) {
@@ -155,6 +156,16 @@ const StoryWorkspace = () => {
               >
                 🕸️ Character Network
               </button>
+              <button
+                onClick={() => setWorkspaceMode("insights")}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  workspaceMode === "insights"
+                    ? "bg-indigo-600 text-white shadow"
+                    : "text-slate-400 hover:text-slate-250"
+                }`}
+              >
+                💡 Educational Insights
+              </button>
             </div>
             <button
               onClick={handleExportMarkdown}
@@ -188,8 +199,10 @@ const StoryWorkspace = () => {
               <ContinueStoryButton />
             </div>
           </>
-        ) : (
+        ) : workspaceMode === "network" ? (
           <CharacterNetwork storyId={currentStory.id} />
+        ) : (
+          <EducationalInsightsPanel storyId={currentStory.id} />
         )}
       </div>
     </div>

@@ -4,6 +4,7 @@ import validateRequest from "../app/middleware/validate.request";
 import { StoryBranchingController } from "../controllers/storyBranchingController";
 import auth from "../app/middleware/auth.middleware";
 import { ENUM_USER_ROLE } from "../enums/user";
+import { EducationalInsightsRouter } from "../app/modules/educational-insights/educational-insights.routes";
 
 const router = express.Router();
 
@@ -30,5 +31,7 @@ router.post(
   validateRequest(branchingStorySchema),
   StoryBranchingController.createBranchingStory
 );
+
+router.use("/", EducationalInsightsRouter);
 
 export const StoriesRouter = router;
