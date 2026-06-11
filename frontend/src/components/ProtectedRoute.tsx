@@ -2,7 +2,8 @@ import { Navigate } from 'react-router-dom';
 import { isLoggedIn } from '../services/auth.service';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  allowedRoles?: string[];
 }
 
 /**

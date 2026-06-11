@@ -55,7 +55,7 @@ const buildUserInfo = (decodedData: RawJwtPayload): AuthUserInfo => ({
   avatar: decodedData?.avatar || "",
 });
 
-const getValidDecodedToken = () => {
+export const getValidDecodedToken = () => {
   const authToken = getFromLocalStorage(AUTH_KEY);
 
   if (authToken) {
