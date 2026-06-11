@@ -17,16 +17,14 @@ export interface IUser {
   profile: {
     avatar: string;
     bio: string;
-    social: {
-      facebook: string;
-      twitter: string;
-      linkedin: string;
-      instagram: string;
-    github: string;
-    discord: string;
-      github: string;  
-      discord: string;
-    };
+social: {
+  facebook: string;
+  twitter: string;
+  linkedin: string;
+  instagram: string;
+  github: string;
+  discord: string;
+};
   };
   requestsThisMonth: number;
   lastRequestDate: Date;

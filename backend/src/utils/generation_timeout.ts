@@ -16,7 +16,7 @@ export class GenerationAbortedError extends Error {
 export const raceGenerationWithTimeout = async <T>(
   operation: (signal: AbortSignal) => Promise<T>,
   timeLimitMs: number,
-  externalSignal?: AbortSignal
+  externalSignal?: AbortSignal,
 ): Promise<T> => {
   const controller = new AbortController();
   let timedOut = false;
@@ -59,15 +59,13 @@ export const raceGenerationWithTimeout = async <T>(
         if (externalSignal && abortHandler) {
           externalSignal.removeEventListener("abort", abortHandler);
         }
-        if (timedOut) {
-          reject(new GenerationTimeoutError());
         // Check aborted BEFORE calling abort() so we can distinguish
-        // a genuine timeout (already aborted by setTimeout) from a real
-        // operation error (e.g. network failure, API error).
+        // a genuine timeout from a real operation error.
         if (controller.signal.aborted) {
-          // Timeout already fired — reject with the timeout error.
           if (timedOut) {
             reject(new GenerationTimeoutError());
+          } else {
+            reject(new GenerationAbortedError());
           }
         } else {
           controller.abort();
@@ -76,5 +74,3 @@ export const raceGenerationWithTimeout = async <T>(
       });
   });
 };
-
-
