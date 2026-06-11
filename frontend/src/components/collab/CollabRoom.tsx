@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { resolveSocketUrl } from "../../helpers/socket-url";
@@ -155,21 +155,35 @@ export default function CollabRoom() {
       roomId,
       text: newText.trim(),
     });
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
     collabSocket.emit("collab:stop_typing", { roomId });
     setNewText("");
   };
 
-  let typingTimeout: any;
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleInputChange = (val: string) => {
     setNewText(val);
     if (!collabSocket || !roomId) return;
 
     collabSocket.emit("collab:typing", { roomId });
 
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
       collabSocket.emit("collab:stop_typing", { roomId });
     }, 2000);
+  };
+
+  const handleInputBlur = () => {
+    if (!collabSocket || !roomId) return;
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    collabSocket.emit("collab:stop_typing", { roomId });
   };
 
   const handleAIContinue = () => {
@@ -269,6 +283,7 @@ export default function CollabRoom() {
                   value={newText}
                   onChange={(e) => handleInputChange(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAddText()}
+                  onBlur={handleInputBlur}
                   placeholder="Add to the story..."
                   className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
                 />
