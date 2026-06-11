@@ -1,0 +1,1061 @@
+﻿commit 8ea08e13a935a7a58f15bd512ac3f8db660e6a84
+Author: Anjali Kumari <anjaliiiiiii45@gmail.com>
+Date:   Sun Jun 7 19:09:49 2026 +0530
+
+    chore: revert temporary syntax patches; focusing PR on issue #2542 fixes only
+
+diff --git a/backend/src/app/modules/analysis/analysis.service.ts b/backend/src/app/modules/analysis/analysis.service.ts
+index 68d732e3..080f1354 100644
+--- a/backend/src/app/modules/analysis/analysis.service.ts
++++ b/backend/src/app/modules/analysis/analysis.service.ts
+@@ -1,3 +1,274 @@
+-export const analyzeStory = async () => {
+-  return {};
++import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
++import { ENUM_USER_ROLE } from "../../../enums/user";
++import { USER_STATUS } from "../../../enums/user_status";
++import { Post } from "../post/post.model";
++import { User } from "../user/user.model";
++import ApiError from "../../../errors/api_error";
++import httpStatus from "http-status";
++import { WriterApplication } from "../writer_application/writer_application.model";
++
++main
++
++    return {
++      role,
++      writerStats: {
++        totalReaders,
++        totalPosts,
++        subscriptionStatus: user.subscriptionType.toUpperCase(),
++        applicationStatus,
++        gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
++      },
++      posts: {
++        perMonth: postsPerMonth,
++        topics: topicCount,
++      }
++    };
++  }
++
++  // Else standard user
++  return {
++main
++  };
+ };
++
++const analyzeStory = async (content: string) => {
++  const suggestions: Array<{
++    id: string;
++    category: "Style" | "Readability" | "Vocabulary" | "Dialogue" | "Pacing";
++    title: string;
++    description: string;
++    originalText?: string;
++    suggestedText?: string;
++  }> = [];
++
++  const generateId = (prefix: string, index: number) => `${prefix}_${index}_${Math.random().toString(36).substr(2, 9)}`;
++
++  const cleanText = content.replace(/[\r\n]+/g, " ").trim();
++  const words = cleanText.split(/\s+/).map(w => w.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").toLowerCase()).filter(Boolean);
++
++  // 1. Detect repetitive words
++  const stopWords = new Set([
++    "the", "a", "an", "and", "or", "but", "in", "on", "at", "for", "of", "with", "to", "is", "was", "were", 
++    "it", "he", "she", "they", "you", "we", "i", "my", "his", "her", "their", "its", "had", "have", "has", 
++    "been", "would", "could", "should", "will", "would", "that", "this", "there", "then", "thence", "thus"
++  ]);
++
++  const wordCounts: Record<string, number> = {};
++  words.forEach(w => {
++    if (w.length >= 4 && !stopWords.has(w)) {
++      wordCounts[w] = (wordCounts[w] || 0) + 1;
++    }
++  });
++
++  const synonymMap: Record<string, string[]> = {
++    amazing: ["extraordinary", "magnificent", "marvelous", "wonderful"],
++    great: ["outstanding", "exceptional", "remarkable", "splendid"],
++    good: ["favorable", "excellent", "superb", "satisfying"],
++    bad: ["dreadful", "awful", "severe", "unfavorable"],
++    happy: ["joyful", "ecstatic", "cheerful", "jubilant"],
++    sad: ["gloomy", "sorrowful", "melancholy", "downcast"],
++    scary: ["frightening", "terrifying", "spine-chilling"],
++    look: ["gaze", "peer", "observe", "glance"],
++    looked: ["gazed", "peered", "observed", "glanced"],
++    walk: ["stroll", "amble", "tread", "pace"],
++    walked: ["strolled", "ambled", "trod", "paced"],
++    went: ["journeyed", "proceeded", "departed"],
++    said: ["declared", "stated", "whispered", "exclaimed", "commented"]
++  };
++
++  let wordRepIndex = 0;
++  Object.entries(wordCounts).forEach(([word, count]) => {
++    if (count >= 3) {
++      const synonyms = synonymMap[word] || [];
++      const suggestedText = synonyms.length > 0 ? synonyms[0] : undefined;
++      
++      const originalMatchRegex = new RegExp(`\\b${word}\\b`, "i");
++      const match = content.match(originalMatchRegex);
++      const originalText = match ? match[0] : word;
++
++      suggestions.push({
++        id: generateId("rep_word", wordRepIndex++),
++        category: "Vocabulary",
++        title: "Repeated Word Usage",
++        description: `The word '${originalText}' appears frequently (${count} times). Consider using alternatives like ${synonyms.length > 0 ? synonyms.join(", ") : "a synonym"} to enrich your vocabulary.`,
++        originalText,
++        suggestedText
++      });
++    }
++  });
++
++  // 2. Stronger vocabulary suggestions (weak words/phrases)
++  const weakReplacements: Array<{ weak: string; strong: string }> = [
++    { weak: "very bad", strong: "terrible" },
++    { weak: "very good", strong: "excellent" },
++    { weak: "very happy", strong: "ecstatic" },
++    { weak: "very sad", strong: "devastated" },
++    { weak: "very angry", strong: "furious" },
++    { weak: "very cold", strong: "freezing" },
++    { weak: "very hot", strong: "scorching" },
++    { weak: "very big", strong: "gigantic" },
++    { weak: "very small", strong: "microscopic" },
++    { weak: "very quiet", strong: "silent" },
++    { weak: "very loud", strong: "deafening" },
++    { weak: "very quick", strong: "rapid" },
++    { weak: "very slow", strong: "sluggish" },
++    { weak: "really big", strong: "massive" }
++  ];
++
++  let weakVocabIndex = 0;
++  weakReplacements.forEach(({ weak, strong }) => {
++    const regex = new RegExp(`\\b${weak}\\b`, "gi");
++    const matches = content.match(regex);
++    if (matches && matches.length > 0) {
++      suggestions.push({
++        id: generateId("weak_vocab", weakVocabIndex++),
++        category: "Vocabulary",
++        title: "Stronger Vocabulary Suggestion",
++        description: `Consider replacing the weak modifier '${matches[0]}' with the stronger, more descriptive word '${strong}'.`,
++        originalText: matches[0],
++        suggestedText: strong
++      });
++    }
++  });
++
++  // 3. Flag very long paragraphs
++  const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 0);
++  let longParaIndex = 0;
++  paragraphs.forEach((para, index) => {
++    const paraWords = para.split(/\s+/).filter(Boolean);
++    if (paraWords.length > 100) {
++      const sentences = para.split(/(?<=[.!?])\s+/);
++      let cumulativeWordCount = 0;
++      let splitPoint = -1;
++      const midPoint = paraWords.length / 2;
++
++      for (let sIdx = 0; sIdx < sentences.length; sIdx++) {
++        const sWords = sentences[sIdx].split(/\s+/).filter(Boolean).length;
++        cumulativeWordCount += sWords;
++        if (cumulativeWordCount >= midPoint && splitPoint === -1) {
++          splitPoint = sIdx;
++        }
++      }
++
++      let suggestedText = undefined;
++      if (splitPoint !== -1 && sentences.length > 1) {
++        const part1 = sentences.slice(0, splitPoint + 1).join(" ");
++        const part2 = sentences.slice(splitPoint + 1).join(" ");
++        suggestedText = `${part1}\n\n${part2}`;
++      }
++
++      suggestions.push({
++        id: generateId("long_para", longParaIndex++),
++        category: "Readability",
++        title: "Very Long Paragraph",
++        description: `Paragraph ${index + 1} contains ${paraWords.length} words. Splitting it will make it easier to read and improve page flow.`,
++        originalText: para,
++        suggestedText
++      });
++    }
++  });
++
++  // 4. Flag very long sentences
++  let longSentenceIndex = 0;
++  const allSentences = content.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
++  allSentences.forEach((sentence) => {
++    const sentenceWords = sentence.split(/\s+/).filter(Boolean);
++    if (sentenceWords.length > 25) {
++      let suggestedText = undefined;
++      const splitConjunctions = [", and ", ", but ", " because "];
++      for (const conj of splitConjunctions) {
++        if (sentence.includes(conj)) {
++          const parts = sentence.split(conj);
++          if (parts.length === 2) {
++            const firstPart = parts[0].trim();
++            const secondPart = parts[1].trim();
++            const capitalizedSecondPart = secondPart.charAt(0).toUpperCase() + secondPart.slice(1);
++            
++            if (conj === " because ") {
++              suggestedText = `${firstPart}. This is because ${secondPart}`;
++            } else {
++              suggestedText = `${firstPart}. ${capitalizedSecondPart}`;
++            }
++            break;
++          }
++        }
++      }
++
++      suggestions.push({
++        id: generateId("long_sentence", longSentenceIndex++),
++        category: "Readability",
++        title: "Long Sentence",
++        description: `This sentence is very long (${sentenceWords.length} words). Consider breaking it down to keep your readers engaged.`,
++        originalText: sentence,
++        suggestedText
++      });
++    }
++  });
++
++  // 5. Dialogue context suggestions
++  const dialogueRegex = /(["'])(.*?)\1/g;
++  let dialogueCount = 0;
++  while (dialogueRegex.exec(content) !== null) {
++    dialogueCount++;
++  }
++
++  const speechTags = ["said", "asked", "replied", "whispered", "shouted", "called", "exclaimed", "shrieked", "muttered", "murmured"];
++  let speechTagsCount = 0;
++  speechTags.forEach(tag => {
++    const regex = new RegExp(`\\b${tag}\\b`, "gi");
++    const matches = content.match(regex);
++    if (matches) {
++      speechTagsCount += matches.length;
++    }
++  });
++
++  if (dialogueCount > 3 && speechTagsCount < dialogueCount / 2) {
++    suggestions.push({
++      id: generateId("dialogue_context", 1),
++      category: "Dialogue",
++      title: "Add Speech Tags or Action Beats",
++      description: "You have several dialogue sections, but few speech tags (e.g. 'he said', 'she replied'). Consider adding tags or action beats to clarify who is speaking and convey their emotions."
++    });
++  }
++
++  // 6. Pacing inconsistencies
++  if (paragraphs.length >= 3) {
++    const lengths = paragraphs.map(p => p.split(/\s+/).filter(Boolean).length);
++    const totalLength = lengths.reduce((a, b) => a + b, 0);
++    const avgLength = totalLength / lengths.length;
++    
++    const variance = lengths.reduce((sum, len) => sum + Math.pow(len - avgLength, 2), 0) / lengths.length;
++    const stdDev = Math.sqrt(variance);
++
++    if (avgLength > 80 && stdDev < 15) {
++      suggestions.push({
++        id: generateId("pacing_monotony", 1),
++        category: "Pacing",
++        title: "Monotonous Paragraph Length",
++        description: "Most of your paragraphs are similarly long. Try breaking up some paragraphs or introducing shorter, punchier sentences to create a more dynamic pacing."
++      });
++    }
++
++    let abruptShiftIndex = 0;
++    for (let i = 0; i < lengths.length - 1; i++) {
++      const diff = Math.abs(lengths[i] - lengths[i + 1]);
++      if (diff > 80) {
++        suggestions.push({
++          id: generateId("pacing_abrupt", abruptShiftIndex++),
++          category: "Pacing",
++          title: "Abrupt Pacing Shift",
++          description: `Paragraph ${i + 1} (${lengths[i]} words) is followed by a paragraph of extremely different length (${lengths[i + 1]} words). Easing the transition can help maintain narrative flow.`
++        });
++        break;
++      }
++    }
++  }
++
++  return { suggestions };
++};
++
++export const AnalysisService = {
++  getDashboardAnalysis,
++  analyzeStory,
++};
++
+
+commit bdd5d099545dad666b288297ee8ae1fb821145be
+Author: Anjali Kumari <anjaliiiiiii45@gmail.com>
+Date:   Sun Jun 7 19:05:27 2026 +0530
+
+    chore: temporarily patch upstream broken syntax files to fix global CI build checks
+
+diff --git a/backend/src/app/modules/analysis/analysis.service.ts b/backend/src/app/modules/analysis/analysis.service.ts
+index 080f1354..68d732e3 100644
+--- a/backend/src/app/modules/analysis/analysis.service.ts
++++ b/backend/src/app/modules/analysis/analysis.service.ts
+@@ -1,274 +1,3 @@
+-import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
+-import { ENUM_USER_ROLE } from "../../../enums/user";
+-import { USER_STATUS } from "../../../enums/user_status";
+-import { Post } from "../post/post.model";
+-import { User } from "../user/user.model";
+-import ApiError from "../../../errors/api_error";
+-import httpStatus from "http-status";
+-import { WriterApplication } from "../writer_application/writer_application.model";
+-
+-main
+-
+-    return {
+-      role,
+-      writerStats: {
+-        totalReaders,
+-        totalPosts,
+-        subscriptionStatus: user.subscriptionType.toUpperCase(),
+-        applicationStatus,
+-        gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
+-      },
+-      posts: {
+-        perMonth: postsPerMonth,
+-        topics: topicCount,
+-      }
+-    };
+-  }
+-
+-  // Else standard user
+-  return {
+-main
+-  };
++export const analyzeStory = async () => {
++  return {};
+ };
+-
+-const analyzeStory = async (content: string) => {
+-  const suggestions: Array<{
+-    id: string;
+-    category: "Style" | "Readability" | "Vocabulary" | "Dialogue" | "Pacing";
+-    title: string;
+-    description: string;
+-    originalText?: string;
+-    suggestedText?: string;
+-  }> = [];
+-
+-  const generateId = (prefix: string, index: number) => `${prefix}_${index}_${Math.random().toString(36).substr(2, 9)}`;
+-
+-  const cleanText = content.replace(/[\r\n]+/g, " ").trim();
+-  const words = cleanText.split(/\s+/).map(w => w.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").toLowerCase()).filter(Boolean);
+-
+-  // 1. Detect repetitive words
+-  const stopWords = new Set([
+-    "the", "a", "an", "and", "or", "but", "in", "on", "at", "for", "of", "with", "to", "is", "was", "were", 
+-    "it", "he", "she", "they", "you", "we", "i", "my", "his", "her", "their", "its", "had", "have", "has", 
+-    "been", "would", "could", "should", "will", "would", "that", "this", "there", "then", "thence", "thus"
+-  ]);
+-
+-  const wordCounts: Record<string, number> = {};
+-  words.forEach(w => {
+-    if (w.length >= 4 && !stopWords.has(w)) {
+-      wordCounts[w] = (wordCounts[w] || 0) + 1;
+-    }
+-  });
+-
+-  const synonymMap: Record<string, string[]> = {
+-    amazing: ["extraordinary", "magnificent", "marvelous", "wonderful"],
+-    great: ["outstanding", "exceptional", "remarkable", "splendid"],
+-    good: ["favorable", "excellent", "superb", "satisfying"],
+-    bad: ["dreadful", "awful", "severe", "unfavorable"],
+-    happy: ["joyful", "ecstatic", "cheerful", "jubilant"],
+-    sad: ["gloomy", "sorrowful", "melancholy", "downcast"],
+-    scary: ["frightening", "terrifying", "spine-chilling"],
+-    look: ["gaze", "peer", "observe", "glance"],
+-    looked: ["gazed", "peered", "observed", "glanced"],
+-    walk: ["stroll", "amble", "tread", "pace"],
+-    walked: ["strolled", "ambled", "trod", "paced"],
+-    went: ["journeyed", "proceeded", "departed"],
+-    said: ["declared", "stated", "whispered", "exclaimed", "commented"]
+-  };
+-
+-  let wordRepIndex = 0;
+-  Object.entries(wordCounts).forEach(([word, count]) => {
+-    if (count >= 3) {
+-      const synonyms = synonymMap[word] || [];
+-      const suggestedText = synonyms.length > 0 ? synonyms[0] : undefined;
+-      
+-      const originalMatchRegex = new RegExp(`\\b${word}\\b`, "i");
+-      const match = content.match(originalMatchRegex);
+-      const originalText = match ? match[0] : word;
+-
+-      suggestions.push({
+-        id: generateId("rep_word", wordRepIndex++),
+-        category: "Vocabulary",
+-        title: "Repeated Word Usage",
+-        description: `The word '${originalText}' appears frequently (${count} times). Consider using alternatives like ${synonyms.length > 0 ? synonyms.join(", ") : "a synonym"} to enrich your vocabulary.`,
+-        originalText,
+-        suggestedText
+-      });
+-    }
+-  });
+-
+-  // 2. Stronger vocabulary suggestions (weak words/phrases)
+-  const weakReplacements: Array<{ weak: string; strong: string }> = [
+-    { weak: "very bad", strong: "terrible" },
+-    { weak: "very good", strong: "excellent" },
+-    { weak: "very happy", strong: "ecstatic" },
+-    { weak: "very sad", strong: "devastated" },
+-    { weak: "very angry", strong: "furious" },
+-    { weak: "very cold", strong: "freezing" },
+-    { weak: "very hot", strong: "scorching" },
+-    { weak: "very big", strong: "gigantic" },
+-    { weak: "very small", strong: "microscopic" },
+-    { weak: "very quiet", strong: "silent" },
+-    { weak: "very loud", strong: "deafening" },
+-    { weak: "very quick", strong: "rapid" },
+-    { weak: "very slow", strong: "sluggish" },
+-    { weak: "really big", strong: "massive" }
+-  ];
+-
+-  let weakVocabIndex = 0;
+-  weakReplacements.forEach(({ weak, strong }) => {
+-    const regex = new RegExp(`\\b${weak}\\b`, "gi");
+-    const matches = content.match(regex);
+-    if (matches && matches.length > 0) {
+-      suggestions.push({
+-        id: generateId("weak_vocab", weakVocabIndex++),
+-        category: "Vocabulary",
+-        title: "Stronger Vocabulary Suggestion",
+-        description: `Consider replacing the weak modifier '${matches[0]}' with the stronger, more descriptive word '${strong}'.`,
+-        originalText: matches[0],
+-        suggestedText: strong
+-      });
+-    }
+-  });
+-
+-  // 3. Flag very long paragraphs
+-  const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+-  let longParaIndex = 0;
+-  paragraphs.forEach((para, index) => {
+-    const paraWords = para.split(/\s+/).filter(Boolean);
+-    if (paraWords.length > 100) {
+-      const sentences = para.split(/(?<=[.!?])\s+/);
+-      let cumulativeWordCount = 0;
+-      let splitPoint = -1;
+-      const midPoint = paraWords.length / 2;
+-
+-      for (let sIdx = 0; sIdx < sentences.length; sIdx++) {
+-        const sWords = sentences[sIdx].split(/\s+/).filter(Boolean).length;
+-        cumulativeWordCount += sWords;
+-        if (cumulativeWordCount >= midPoint && splitPoint === -1) {
+-          splitPoint = sIdx;
+-        }
+-      }
+-
+-      let suggestedText = undefined;
+-      if (splitPoint !== -1 && sentences.length > 1) {
+-        const part1 = sentences.slice(0, splitPoint + 1).join(" ");
+-        const part2 = sentences.slice(splitPoint + 1).join(" ");
+-        suggestedText = `${part1}\n\n${part2}`;
+-      }
+-
+-      suggestions.push({
+-        id: generateId("long_para", longParaIndex++),
+-        category: "Readability",
+-        title: "Very Long Paragraph",
+-        description: `Paragraph ${index + 1} contains ${paraWords.length} words. Splitting it will make it easier to read and improve page flow.`,
+-        originalText: para,
+-        suggestedText
+-      });
+-    }
+-  });
+-
+-  // 4. Flag very long sentences
+-  let longSentenceIndex = 0;
+-  const allSentences = content.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+-  allSentences.forEach((sentence) => {
+-    const sentenceWords = sentence.split(/\s+/).filter(Boolean);
+-    if (sentenceWords.length > 25) {
+-      let suggestedText = undefined;
+-      const splitConjunctions = [", and ", ", but ", " because "];
+-      for (const conj of splitConjunctions) {
+-        if (sentence.includes(conj)) {
+-          const parts = sentence.split(conj);
+-          if (parts.length === 2) {
+-            const firstPart = parts[0].trim();
+-            const secondPart = parts[1].trim();
+-            const capitalizedSecondPart = secondPart.charAt(0).toUpperCase() + secondPart.slice(1);
+-            
+-            if (conj === " because ") {
+-              suggestedText = `${firstPart}. This is because ${secondPart}`;
+-            } else {
+-              suggestedText = `${firstPart}. ${capitalizedSecondPart}`;
+-            }
+-            break;
+-          }
+-        }
+-      }
+-
+-      suggestions.push({
+-        id: generateId("long_sentence", longSentenceIndex++),
+-        category: "Readability",
+-        title: "Long Sentence",
+-        description: `This sentence is very long (${sentenceWords.length} words). Consider breaking it down to keep your readers engaged.`,
+-        originalText: sentence,
+-        suggestedText
+-      });
+-    }
+-  });
+-
+-  // 5. Dialogue context suggestions
+-  const dialogueRegex = /(["'])(.*?)\1/g;
+-  let dialogueCount = 0;
+-  while (dialogueRegex.exec(content) !== null) {
+-    dialogueCount++;
+-  }
+-
+-  const speechTags = ["said", "asked", "replied", "whispered", "shouted", "called", "exclaimed", "shrieked", "muttered", "murmured"];
+-  let speechTagsCount = 0;
+-  speechTags.forEach(tag => {
+-    const regex = new RegExp(`\\b${tag}\\b`, "gi");
+-    const matches = content.match(regex);
+-    if (matches) {
+-      speechTagsCount += matches.length;
+-    }
+-  });
+-
+-  if (dialogueCount > 3 && speechTagsCount < dialogueCount / 2) {
+-    suggestions.push({
+-      id: generateId("dialogue_context", 1),
+-      category: "Dialogue",
+-      title: "Add Speech Tags or Action Beats",
+-      description: "You have several dialogue sections, but few speech tags (e.g. 'he said', 'she replied'). Consider adding tags or action beats to clarify who is speaking and convey their emotions."
+-    });
+-  }
+-
+-  // 6. Pacing inconsistencies
+-  if (paragraphs.length >= 3) {
+-    const lengths = paragraphs.map(p => p.split(/\s+/).filter(Boolean).length);
+-    const totalLength = lengths.reduce((a, b) => a + b, 0);
+-    const avgLength = totalLength / lengths.length;
+-    
+-    const variance = lengths.reduce((sum, len) => sum + Math.pow(len - avgLength, 2), 0) / lengths.length;
+-    const stdDev = Math.sqrt(variance);
+-
+-    if (avgLength > 80 && stdDev < 15) {
+-      suggestions.push({
+-        id: generateId("pacing_monotony", 1),
+-        category: "Pacing",
+-        title: "Monotonous Paragraph Length",
+-        description: "Most of your paragraphs are similarly long. Try breaking up some paragraphs or introducing shorter, punchier sentences to create a more dynamic pacing."
+-      });
+-    }
+-
+-    let abruptShiftIndex = 0;
+-    for (let i = 0; i < lengths.length - 1; i++) {
+-      const diff = Math.abs(lengths[i] - lengths[i + 1]);
+-      if (diff > 80) {
+-        suggestions.push({
+-          id: generateId("pacing_abrupt", abruptShiftIndex++),
+-          category: "Pacing",
+-          title: "Abrupt Pacing Shift",
+-          description: `Paragraph ${i + 1} (${lengths[i]} words) is followed by a paragraph of extremely different length (${lengths[i + 1]} words). Easing the transition can help maintain narrative flow.`
+-        });
+-        break;
+-      }
+-    }
+-  }
+-
+-  return { suggestions };
+-};
+-
+-export const AnalysisService = {
+-  getDashboardAnalysis,
+-  analyzeStory,
+-};
+-
+
+commit bf835aa888d370c9abab3f8beba7e99ba54b647e
+Author: Roni Sarkar <ronichandrasarkar@gmail.com>
+Date:   Sat May 23 09:19:39 2026 +0600
+
+    Remove deprecated files and middleware related to the AI model and authentication, including controllers, services, and routes, to streamline the backend structure.
+
+diff --git a/backend/dist/app/modules/analysis/analysis.controller.js b/backend/dist/app/modules/analysis/analysis.controller.js
+deleted file mode 100644
+index ae61e814..00000000
+--- a/backend/dist/app/modules/analysis/analysis.controller.js
++++ /dev/null
+@@ -1,31 +0,0 @@
+-"use strict";
+-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+-    return new (P || (P = Promise))(function (resolve, reject) {
+-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+-    });
+-};
+-var __importDefault = (this && this.__importDefault) || function (mod) {
+-    return (mod && mod.__esModule) ? mod : { "default": mod };
+-};
+-Object.defineProperty(exports, "__esModule", { value: true });
+-exports.AnalysisController = void 0;
+-const catch_async_1 = __importDefault(require("../../../shared/catch_async"));
+-const analysis_service_1 = require("./analysis.service");
+-const send_response_1 = __importDefault(require("../../../shared/send_response"));
+-const http_status_1 = __importDefault(require("http-status"));
+-const getDashboardAnalysis = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+-    const result = yield analysis_service_1.AnalysisService.getDashboardAnalysis();
+-    (0, send_response_1.default)(res, {
+-        statusCode: http_status_1.default.OK,
+-        success: true,
+-        message: "OK!",
+-        data: result,
+-    });
+-}));
+-exports.AnalysisController = {
+-    getDashboardAnalysis,
+-};
+diff --git a/backend/dist/app/modules/analysis/analysis.router.js b/backend/dist/app/modules/analysis/analysis.router.js
+deleted file mode 100644
+index 577c0ce5..00000000
+--- a/backend/dist/app/modules/analysis/analysis.router.js
++++ /dev/null
+@@ -1,14 +0,0 @@
+-"use strict";
+-var __importDefault = (this && this.__importDefault) || function (mod) {
+-    return (mod && mod.__esModule) ? mod : { "default": mod };
+-};
+-Object.defineProperty(exports, "__esModule", { value: true });
+-exports.AnalysisRouter = void 0;
+-const express_1 = __importDefault(require("express"));
+-const auth_middleware_1 = __importDefault(require("../../middleware/auth.middleware"));
+-const user_1 = require("../../../enums/user");
+-const analysis_controller_1 = require("./analysis.controller");
+-const router = express_1.default.Router();
+-// Route to get dashboard analysis
+-router.get("/dashboard", (0, auth_middleware_1.default)(user_1.ENUM_USER_ROLE.USER, user_1.ENUM_USER_ROLE.WRITER, user_1.ENUM_USER_ROLE.ADMIN, user_1.ENUM_USER_ROLE.SUPER_ADMIN), analysis_controller_1.AnalysisController.getDashboardAnalysis);
+-exports.AnalysisRouter = router;
+diff --git a/backend/dist/app/modules/analysis/analysis.service.js b/backend/dist/app/modules/analysis/analysis.service.js
+deleted file mode 100644
+index fab68882..00000000
+--- a/backend/dist/app/modules/analysis/analysis.service.js
++++ /dev/null
+@@ -1,75 +0,0 @@
+-"use strict";
+-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+-    return new (P || (P = Promise))(function (resolve, reject) {
+-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+-    });
+-};
+-Object.defineProperty(exports, "__esModule", { value: true });
+-exports.AnalysisService = void 0;
+-const subscription_type_1 = require("../../../enums/subscription_type");
+-const user_1 = require("../../../enums/user");
+-const user_status_1 = require("../../../enums/user_status");
+-const post_model_1 = require("../post/post.model");
+-const user_model_1 = require("../user/user.model");
+-const getDashboardAnalysis = () => __awaiter(void 0, void 0, void 0, function* () {
+-    // get all users
+-    const users = yield user_model_1.User.find({});
+-    const totalUsers = users.length;
+-    const activeUsers = users.filter((u) => u.status === user_status_1.USER_STATUS.ACTIVE).length;
+-    const inactiveUsers = users.filter((u) => u.status === user_status_1.USER_STATUS.INACTIVE).length;
+-    const blockedUsers = users.filter((u) => u.status === user_status_1.USER_STATUS.BLOCKED).length;
+-    const writers = users.filter((u) => u.role === user_1.ENUM_USER_ROLE.WRITER).length;
+-    const applyForWriter = users.filter((u) => u.isApplyForWriter === true).length;
+-    // user subscription types
+-    const freeUsers = users.filter((u) => u.subscriptionType === subscription_type_1.SUBSCRIPTION_TYPE.FREE).length;
+-    const proUsers = users.filter((u) => u.subscriptionType === subscription_type_1.SUBSCRIPTION_TYPE.PRO).length;
+-    const premiumUsers = users.filter((u) => u.subscriptionType === subscription_type_1.SUBSCRIPTION_TYPE.PREMIUM).length;
+-    // get all posts
+-    const posts = yield post_model_1.Post.find({});
+-    const totalPosts = posts.length;
+-    const publishedPosts = posts.filter((p) => p.isPublished).length;
+-    const featuredPosts = posts.filter((p) => p.isFeaturedPost).length;
+-    const postsPerMonth = {};
+-    posts.forEach((post) => {
+-        var _a;
+-        const month = (_a = post === null || post === void 0 ? void 0 : post.publishedAt) === null || _a === void 0 ? void 0 : _a.toISOString().substring(0, 7);
+-        if (month) {
+-            postsPerMonth[month] = (postsPerMonth[month] || 0) + 1;
+-        }
+-    });
+-    const topicCount = {};
+-    posts.forEach((post) => {
+-        post.topic.forEach((t) => {
+-            topicCount[t.title] = (topicCount[t.title] || 0) + 1;
+-        });
+-    });
+-    return {
+-        users: {
+-            total: totalUsers,
+-            active: activeUsers,
+-            inactive: inactiveUsers,
+-            blocked: blockedUsers,
+-            writers: writers,
+-            applyForWriter: applyForWriter,
+-        },
+-        subscriptionTypes: {
+-            free: freeUsers,
+-            pro: proUsers,
+-            premium: premiumUsers,
+-        },
+-        posts: {
+-            total: totalPosts,
+-            published: publishedPosts,
+-            featured: featuredPosts,
+-            perMonth: postsPerMonth,
+-            topics: topicCount,
+-        },
+-    };
+-});
+-exports.AnalysisService = {
+-    getDashboardAnalysis,
+-};
+
+commit 6c6e37c7a0329918462ade7403c7e327ec92af95
+Author: Roni Sarkar <ronichandrasarkar@gmail.com>
+Date:   Sun Apr 19 16:28:18 2026 +0600
+
+    Update .gitignore files to remove unnecessary entries
+    
+    - Removed 'dist/' from the root .gitignore and backend/.gitignore to streamline ignored files.
+    - Kept 'dist-ssr/' in the root .gitignore for SSR builds.
+    - Adjusted backend/.gitignore to maintain focus on essential files for standalone tooling.
+
+diff --git a/backend/dist/app/modules/analysis/analysis.controller.js b/backend/dist/app/modules/analysis/analysis.controller.js
+new file mode 100644
+index 00000000..ae61e814
+--- /dev/null
++++ b/backend/dist/app/modules/analysis/analysis.controller.js
+@@ -0,0 +1,31 @@
++"use strict";
++var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
++    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
++    return new (P || (P = Promise))(function (resolve, reject) {
++        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
++        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
++        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
++        step((generator = generator.apply(thisArg, _arguments || [])).next());
++    });
++};
++var __importDefault = (this && this.__importDefault) || function (mod) {
++    return (mod && mod.__esModule) ? mod : { "default": mod };
++};
++Object.defineProperty(exports, "__esModule", { value: true });
++exports.AnalysisController = void 0;
++const catch_async_1 = __importDefault(require("../../../shared/catch_async"));
++const analysis_service_1 = require("./analysis.service");
++const send_response_1 = __importDefault(require("../../../shared/send_response"));
++const http_status_1 = __importDefault(require("http-status"));
++const getDashboardAnalysis = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
++    const result = yield analysis_service_1.AnalysisService.getDashboardAnalysis();
++    (0, send_response_1.default)(res, {
++        statusCode: http_status_1.default.OK,
++        success: true,
++        message: "OK!",
++        data: result,
++    });
++}));
++exports.AnalysisController = {
++    getDashboardAnalysis,
++};
+diff --git a/backend/dist/app/modules/analysis/analysis.router.js b/backend/dist/app/modules/analysis/analysis.router.js
+new file mode 100644
+index 00000000..577c0ce5
+--- /dev/null
++++ b/backend/dist/app/modules/analysis/analysis.router.js
+@@ -0,0 +1,14 @@
++"use strict";
++var __importDefault = (this && this.__importDefault) || function (mod) {
++    return (mod && mod.__esModule) ? mod : { "default": mod };
++};
++Object.defineProperty(exports, "__esModule", { value: true });
++exports.AnalysisRouter = void 0;
++const express_1 = __importDefault(require("express"));
++const auth_middleware_1 = __importDefault(require("../../middleware/auth.middleware"));
++const user_1 = require("../../../enums/user");
++const analysis_controller_1 = require("./analysis.controller");
++const router = express_1.default.Router();
++// Route to get dashboard analysis
++router.get("/dashboard", (0, auth_middleware_1.default)(user_1.ENUM_USER_ROLE.USER, user_1.ENUM_USER_ROLE.WRITER, user_1.ENUM_USER_ROLE.ADMIN, user_1.ENUM_USER_ROLE.SUPER_ADMIN), analysis_controller_1.AnalysisController.getDashboardAnalysis);
++exports.AnalysisRouter = router;
+diff --git a/backend/dist/app/modules/analysis/analysis.service.js b/backend/dist/app/modules/analysis/analysis.service.js
+new file mode 100644
+index 00000000..fab68882
+--- /dev/null
++++ b/backend/dist/app/modules/analysis/analysis.service.js
+@@ -0,0 +1,75 @@
++"use strict";
++var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
++    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
++    return new (P || (P = Promise))(function (resolve, reject) {
++        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
++        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
++        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
++        step((generator = generator.apply(thisArg, _arguments || [])).next());
++    });
++};
++Object.defineProperty(exports, "__esModule", { value: true });
++exports.AnalysisService = void 0;
++const subscription_type_1 = require("../../../enums/subscription_type");
++const user_1 = require("../../../enums/user");
++const user_status_1 = require("../../../enums/user_status");
++const post_model_1 = require("../post/post.model");
++const user_model_1 = require("../user/user.model");
++const getDashboardAnalysis = () => __awaiter(void 0, void 0, void 0, function* () {
++    // get all users
++    const users = yield user_model_1.User.find({});
++    const totalUsers = users.length;
++    const activeUsers = users.filter((u) => u.status === user_status_1.USER_STATUS.ACTIVE).length;
++    const inactiveUsers = users.filter((u) => u.status === user_status_1.USER_STATUS.INACTIVE).length;
++    const blockedUsers = users.filter((u) => u.status === user_status_1.USER_STATUS.BLOCKED).length;
++    const writers = users.filter((u) => u.role === user_1.ENUM_USER_ROLE.WRITER).length;
++    const applyForWriter = users.filter((u) => u.isApplyForWriter === true).length;
++    // user subscription types
++    const freeUsers = users.filter((u) => u.subscriptionType === subscription_type_1.SUBSCRIPTION_TYPE.FREE).length;
++    const proUsers = users.filter((u) => u.subscriptionType === subscription_type_1.SUBSCRIPTION_TYPE.PRO).length;
++    const premiumUsers = users.filter((u) => u.subscriptionType === subscription_type_1.SUBSCRIPTION_TYPE.PREMIUM).length;
++    // get all posts
++    const posts = yield post_model_1.Post.find({});
++    const totalPosts = posts.length;
++    const publishedPosts = posts.filter((p) => p.isPublished).length;
++    const featuredPosts = posts.filter((p) => p.isFeaturedPost).length;
++    const postsPerMonth = {};
++    posts.forEach((post) => {
++        var _a;
++        const month = (_a = post === null || post === void 0 ? void 0 : post.publishedAt) === null || _a === void 0 ? void 0 : _a.toISOString().substring(0, 7);
++        if (month) {
++            postsPerMonth[month] = (postsPerMonth[month] || 0) + 1;
++        }
++    });
++    const topicCount = {};
++    posts.forEach((post) => {
++        post.topic.forEach((t) => {
++            topicCount[t.title] = (topicCount[t.title] || 0) + 1;
++        });
++    });
++    return {
++        users: {
++            total: totalUsers,
++            active: activeUsers,
++            inactive: inactiveUsers,
++            blocked: blockedUsers,
++            writers: writers,
++            applyForWriter: applyForWriter,
++        },
++        subscriptionTypes: {
++            free: freeUsers,
++            pro: proUsers,
++            premium: premiumUsers,
++        },
++        posts: {
++            total: totalPosts,
++            published: publishedPosts,
++            featured: featuredPosts,
++            perMonth: postsPerMonth,
++            topics: topicCount,
++        },
++    };
++});
++exports.AnalysisService = {
++    getDashboardAnalysis,
++};
+
+commit 42c9d03ec05310544a7fdb01f62b05cebbdf9251
+Author: Roni Sarkar <ronichandrasarkar@gmail.com>
+Date:   Sun Apr 19 16:00:36 2026 +0600
+
+    Refactor project structure and update configurations
+    
+    - Updated project name and version in package.json and package-lock.json.
+    - Removed unused files including ESLint configuration, HTML entry point, and TypeScript configuration files.
+    - Enhanced .gitignore to include additional directories and files.
+    - Updated README for clarity on local development and environment setup.
+    - Removed various components and assets related to the previous application structure.
+    - Introduced a monorepo structure with workspaces for frontend and backend.
+
+diff --git a/backend/src/app/modules/analysis/analysis.controller.ts b/backend/src/app/modules/analysis/analysis.controller.ts
+new file mode 100644
+index 00000000..cd69e823
+--- /dev/null
++++ b/backend/src/app/modules/analysis/analysis.controller.ts
+@@ -0,0 +1,19 @@
++import { Request, Response } from "express";
++import catchAsync from "../../../shared/catch_async";
++import { AnalysisService } from "./analysis.service";
++import sendResponse from "../../../shared/send_response";
++import httpStatus from "http-status";
++
++const getDashboardAnalysis = catchAsync(async (req: Request, res: Response) => {
++  const result = await AnalysisService.getDashboardAnalysis();
++  sendResponse(res, {
++    statusCode: httpStatus.OK,
++    success: true,
++    message: "OK!",
++    data: result,
++  });
++});
++
++export const AnalysisController = {
++  getDashboardAnalysis,
++};
+diff --git a/backend/src/app/modules/analysis/analysis.router.ts b/backend/src/app/modules/analysis/analysis.router.ts
+new file mode 100644
+index 00000000..bd948a38
+--- /dev/null
++++ b/backend/src/app/modules/analysis/analysis.router.ts
+@@ -0,0 +1,20 @@
++import express from "express";
++import auth from "../../middleware/auth.middleware";
++import { ENUM_USER_ROLE } from "../../../enums/user";
++import { AnalysisController } from "./analysis.controller";
++
++const router = express.Router();
++
++// Route to get dashboard analysis
++router.get(
++  "/dashboard",
++  auth(
++    ENUM_USER_ROLE.USER,
++    ENUM_USER_ROLE.WRITER,
++    ENUM_USER_ROLE.ADMIN,
++    ENUM_USER_ROLE.SUPER_ADMIN
++  ),
++  AnalysisController.getDashboardAnalysis
++);
++
++export const AnalysisRouter = router;
+diff --git a/backend/src/app/modules/analysis/analysis.service.ts b/backend/src/app/modules/analysis/analysis.service.ts
+new file mode 100644
+index 00000000..2db6742d
+--- /dev/null
++++ b/backend/src/app/modules/analysis/analysis.service.ts
+@@ -0,0 +1,86 @@
++import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
++import { ENUM_USER_ROLE } from "../../../enums/user";
++import { USER_STATUS } from "../../../enums/user_status";
++import { IPost } from "../post/post.interface";
++import { Post } from "../post/post.model";
++import { User } from "../user/user.model";
++
++const getDashboardAnalysis = async () => {
++  // get all users
++  const users = await User.find({});
++  const totalUsers = users.length;
++  const activeUsers = users.filter(
++    (u) => u.status === USER_STATUS.ACTIVE
++  ).length;
++  const inactiveUsers = users.filter(
++    (u) => u.status === USER_STATUS.INACTIVE
++  ).length;
++  const blockedUsers = users.filter(
++    (u) => u.status === USER_STATUS.BLOCKED
++  ).length;
++  const writers = users.filter((u) => u.role === ENUM_USER_ROLE.WRITER).length;
++  const applyForWriter = users.filter(
++    (u) => u.isApplyForWriter === true
++  ).length;
++
++  // user subscription types
++  const freeUsers = users.filter(
++    (u) => u.subscriptionType === SUBSCRIPTION_TYPE.FREE
++  ).length;
++  const proUsers = users.filter(
++    (u) => u.subscriptionType === SUBSCRIPTION_TYPE.PRO
++  ).length;
++  const premiumUsers = users.filter(
++    (u) => u.subscriptionType === SUBSCRIPTION_TYPE.PREMIUM
++  ).length;
++
++  // get all posts
++  const posts = await Post.find({});
++  const totalPosts = posts.length;
++  const publishedPosts = posts.filter((p) => p.isPublished).length;
++  const featuredPosts = posts.filter((p) => p.isFeaturedPost).length;
++
++  const postsPerMonth: { [key: string]: number } = {};
++  posts.forEach((post: IPost) => {
++    const month: string | undefined = post?.publishedAt
++      ?.toISOString()
++      .substring(0, 7);
++    if (month) {
++      postsPerMonth[month] = (postsPerMonth[month] || 0) + 1;
++    }
++  });
++
++  const topicCount: { [title: string]: number } = {};
++  posts.forEach((post) => {
++    post.topic.forEach((t) => {
++      topicCount[t.title] = (topicCount[t.title] || 0) + 1;
++    });
++  });
++
++  return {
++    users: {
++      total: totalUsers,
++      active: activeUsers,
++      inactive: inactiveUsers,
++      blocked: blockedUsers,
++      writers: writers,
++      applyForWriter: applyForWriter,
++    },
++    subscriptionTypes: {
++      free: freeUsers,
++      pro: proUsers,
++      premium: premiumUsers,
++    },
++    posts: {
++      total: totalPosts,
++      published: publishedPosts,
++      featured: featuredPosts,
++      perMonth: postsPerMonth,
++      topics: topicCount,
++    },
++  };
++};
++
++export const AnalysisService = {
++  getDashboardAnalysis,
++};
+
+commit b99ffd9e74975137864b0b86faeb372098cd7ddd
+Author: Roni Sarkar <ronichandrasarkar@gmail.com>
+Date:   Wed Apr 23 16:35:19 2025 +0530
+
+    added dashboard and chart of this application
+
+diff --git a/src/redux/apis/analysis.api.ts b/src/redux/apis/analysis.api.ts
+new file mode 100644
+index 00000000..b36bf36d
+--- /dev/null
++++ b/src/redux/apis/analysis.api.ts
+@@ -0,0 +1,22 @@
++import { DashboardAnalysis } from "../../models/analysis";
++import baseApi from "../base_api/base.api";
++import { ANALYSIS_URL } from "../base_api/base.endpoints";
++import { tagTypes } from "../tag-types";
++
++const analysisApi = baseApi.injectEndpoints({
++  endpoints: (build) => ({
++    getDashboardAnalysis: build.query({
++      query: () => ({
++        url: `/${ANALYSIS_URL}/dashboard`,
++        method: "GET",
++      }),
++      transformResponse: (response: {
++        data: DashboardAnalysis;
++        message: string;
++      }) => response.data,
++      providesTags: [tagTypes.post, tagTypes.user],
++    }),
++  }),
++});
++
++export const { useGetDashboardAnalysisQuery } = analysisApi;
