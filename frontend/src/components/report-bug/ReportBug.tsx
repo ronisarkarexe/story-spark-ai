@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
-import { Image as ImageIcon, X } from "lucide-react";
 import { 
   Bug, 
   Send, 
@@ -15,9 +14,7 @@ import {
   MessageSquare,
   ClipboardList,
   Target,
-  FileWarning,
-  Image as ImageIcon,
-  X
+  FileWarning
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useGetPostListsQuery } from "../../redux/apis/post.api";
 import BookShelf, { IBookStory } from "./BookShelf";
 
+import { Post } from "../../models/post";
+
 export default function BookShelfPage() {
   const [page] = useState(1);
 
@@ -10,8 +12,8 @@ export default function BookShelfPage() {
     limit: 50,
   });
 
-  const stories: IBookStory[] = (data?.posts || []).map((post: any) => ({
-    uuid: post._id || post.uuid,
+  const stories: IBookStory[] = (data?.posts || []).map((post: Post) => ({
+    uuid: post._id,
     title: post.title,
     content: post.content,
     tag: post.tag,

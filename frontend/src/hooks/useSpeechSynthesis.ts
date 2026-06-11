@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type WordRange = {
   start: number;
@@ -28,7 +28,6 @@ export interface UseSpeechSynthesisResult {
   isPaused: boolean;
   isSpeaking: boolean;
   play: (nextText?: string) => void;
-  play: () => void;
   pause: () => void;
   resume: () => void;
   stop: () => void;
@@ -64,7 +63,6 @@ const clampRate = (nextRate: number): number => {
   if (Number.isNaN(nextRate)) {
     return 1;
   }
-
   return Math.min(SPEED_MAX, Math.max(SPEED_MIN, nextRate));
 };
 
@@ -155,14 +153,10 @@ const getWordIndexAtCharIndex = (
   return fallbackIndex >= 0 ? Math.max(0, fallbackIndex - 1) : ranges.length - 1;
 };
 
-export const useSpeechSynthesis = (text = ""): UseSpeechSynthesisResult => {
 export const useSpeechSynthesis = (
   text: string,
   voiceGender?: "female" | "male",
 ): UseSpeechSynthesisResult => {
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const sessionRef = useRef(0);
-  const previousTextRef = useRef(text);
   const browserVoicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   const [isSupported, setIsSupported] = useState(false);
@@ -172,12 +166,8 @@ export const useSpeechSynthesis = (
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [rate, setRateState] = useState(1);
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoiceIndex, setSelectedVoiceIndex] = useState(0);
-  const [rateState, setRateState] = useState(1);
   const [pitchState, setPitchState] = useState(1);
   const [volumeState, setVolumeState] = useState(1);
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("en-US");
@@ -210,6 +200,8 @@ export const useSpeechSynthesis = (
   useEffect(() => {
     textRef.current = text;
     wordRangesRef.current = buildWordRanges(text);
+  }, [text]);
+
   const resolveBrowserVoice = useCallback(
     (voiceId: string): SpeechSynthesisVoice | undefined => {
       const genderFiltered = filterVoicesByGender(browserVoicesRef.current, voiceGender);
@@ -217,13 +209,6 @@ export const useSpeechSynthesis = (
     },
     [voiceGender],
   );
-
-  const resetNarrationState = useCallback(() => {
-    setIsPlaying(false);
-    setIsPaused(false);
-    setIsSpeaking(false);
-    setCurrentWordIndex(0);
-  }, [text]);
 
   const stop = useCallback(() => {
     if (synthRef.current) {
@@ -249,33 +234,10 @@ export const useSpeechSynthesis = (
     setIsSupported(true);
 
     const syncVoices = () => {
-      const voices = speechSynthesis.getVoices();
-      setAvailableVoices(voices);
-      setIsReady(true);
-    clearUtterance();
-    setError(null);
-    setCurrentWordIndex(0);
-    setIsPaused(false);
-    setIsPlaying(true);
-    setIsSpeaking(true);
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = rateState;
-    utterance.pitch = pitchState;
-    utterance.volume = volumeState;
-    utterance.lang = selectedLanguage;
-
-    const browserVoice = resolveBrowserVoice(selectedVoiceId);
-    if (browserVoice) {
-      utterance.voice = browserVoice;
-      utterance.lang = browserVoice.lang;
-    }
-
-      if (voices.length > 0) {
-        setSelectedVoiceIndex((currentIndex) =>
-          currentIndex >= voices.length ? 0 : currentIndex,
-        );
-      }
+      const loadedVoices = speechSynthesis.getVoices();
+      browserVoicesRef.current = loadedVoices;
+      setBrowserVoices(loadedVoices);
+      setIsReady(loadedVoices.length > 0);
     };
 
     syncVoices();
@@ -296,7 +258,8 @@ export const useSpeechSynthesis = (
     if (isSpeaking || isPaused) {
       stop();
     }
-  }, [text, stop, isPaused, isSpeaking]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text, stop]);
 
   const speakText = useCallback(
     (nextText?: string) => {
@@ -306,29 +269,6 @@ export const useSpeechSynthesis = (
         setError("Text-to-speech is not supported in this browser.");
         return;
       }
-    };
-
-    utteranceRef.current = utterance;
-    speechSynthesis.speak(utterance);
-  }, [
-    clearUtterance,
-    isReady,
-    isSupported,
-    pitchState,
-    rateState,
-    resolveBrowserVoice,
-    selectedLanguage,
-    selectedVoiceId,
-    text,
-    totalWords,
-    volumeState,
-    wordRanges,
-  ]);
-
-  const pause = useCallback(() => {
-    if (!isSupported || !utteranceRef.current) {
-      return;
-    }
 
       if (!textToSpeak) {
         setError("No text to speak.");
@@ -341,12 +281,14 @@ export const useSpeechSynthesis = (
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utteranceRef.current = utterance;
       utterance.rate = rate;
-      utterance.pitch = 1;
-      utterance.volume = 1;
+      utterance.pitch = pitchState;
+      utterance.volume = volumeState;
+      utterance.lang = selectedLanguage;
 
-      const selectedVoice = availableVoices[selectedVoiceIndex];
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
+      const browserVoice = resolveBrowserVoice(selectedVoiceId);
+      if (browserVoice) {
+        utterance.voice = browserVoice;
+        utterance.lang = browserVoice.lang;
       }
 
       utterance.onstart = () => {
@@ -367,25 +309,6 @@ export const useSpeechSynthesis = (
         if (event.name !== "word") {
           return;
         }
-  const setPitch = useCallback((nextPitch: number) => {
-    setPitchState(nextPitch);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.pitch = nextPitch;
-    }
-  }, []);
-
-  const setVolume = useCallback((nextVolume: number) => {
-    setVolumeState(nextVolume);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.volume = nextVolume;
-    }
-  }, []);
-
-  useEffect(() => {
-    const supported = hasSpeechSupport();
-    setIsSupported(supported);
 
         const nextWordIndex = getWordIndexAtCharIndex(
           event.charIndex,
@@ -408,17 +331,12 @@ export const useSpeechSynthesis = (
         setIsPaused(false);
         setError("Unable to play narration. Please try again.");
       };
-      const loadedVoices = speechSynthesis.getVoices();
-      browserVoicesRef.current = loadedVoices;
-      setBrowserVoices(loadedVoices);
-      setIsReady(loadedVoices.length > 0);
-    };
 
       synthRef.current.cancel();
       synthRef.current.speak(utterance);
       setCurrentWordIndex(0);
     },
-    [availableVoices, isSupported, rate, selectedVoiceIndex, stop],
+    [isSupported, rate, pitchState, volumeState, selectedLanguage, selectedVoiceId, resolveBrowserVoice, stop],
   );
 
   const pause = useCallback(() => {
@@ -440,6 +358,15 @@ export const useSpeechSynthesis = (
   const setPlaybackRate = useCallback((nextRate: number) => {
     setRateState(clampRate(nextRate));
   }, []);
+
+  const setPitch = useCallback((nextPitch: number) => {
+    setPitchState(nextPitch);
+  }, []);
+
+  const setVolume = useCallback((nextVolume: number) => {
+    setVolumeState(nextVolume);
+  }, []);
+
   useEffect(() => {
     if (voices.length === 0) {
       return;
@@ -464,10 +391,6 @@ export const useSpeechSynthesis = (
     }
   }, [languageOptions, selectedLanguage]);
 
-  useEffect(() => {
-    const textChanged = previousTextRef.current !== text;
-    previousTextRef.current = text;
-
   const progress = useMemo<SpeechProgress>(() => {
     const totalWords = wordRangesRef.current.length;
 
@@ -491,6 +414,20 @@ export const useSpeechSynthesis = (
     };
   }, [currentWordIndex]);
 
+  // Find index of selected voice in browserVoicesRef.current for AudioNarration support
+  const selectedVoiceIndex = useMemo(() => {
+    return browserVoicesRef.current.findIndex(
+      (voice) => getVoiceId(voice) === selectedVoiceId
+    );
+  }, [selectedVoiceId]);
+
+  const setSelectedVoiceIndex = useCallback((index: number) => {
+    const voice = browserVoicesRef.current[index];
+    if (voice) {
+      setSelectedVoiceId(getVoiceId(voice));
+    }
+  }, []);
+
   return {
     isPlaying: isSpeaking && !isPaused,
     isPaused,
@@ -511,7 +448,7 @@ export const useSpeechSynthesis = (
     error,
     currentWordIndex,
     isLoading: isSupported && !isReady,
-    availableVoices,
+    availableVoices: browserVoicesRef.current,
     selectedVoiceIndex,
     setSelectedVoice: setSelectedVoiceIndex,
     playbackRate: rate,

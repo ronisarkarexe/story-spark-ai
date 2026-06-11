@@ -23,7 +23,7 @@ export const saveStorySession = (story: Story, userId: string): void => {
     // Remove old key if exists
     localStorage.removeItem("story");
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  } catch (e) {
+  } catch {
     console.warn("localStorage quota exceeded, story not saved");
   }
 };

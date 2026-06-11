@@ -46,9 +46,14 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
       } else {
         throw new Error("Invalid response format received from backend.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Plot hole analysis error:", err);
-      const errMsg = err.response?.data?.message || err.message || "Failed to analyze story.";
+      let errMsg = "Failed to analyze story.";
+      if (axios.isAxiosError(err)) {
+        errMsg = err.response?.data?.message || err.message;
+      } else if (err instanceof Error) {
+        errMsg = err.message;
+      }
       setError(errMsg);
       toast.error(errMsg, { id: toastId });
     } finally {

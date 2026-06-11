@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState } from "react";
 import Book3D from "./Book3D";
 import BookOpen from "./BookOpen";
