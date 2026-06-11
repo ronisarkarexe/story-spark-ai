@@ -26,104 +26,65 @@ const SSInput = <T extends FieldValues>({
   name,
   type = "text",
   placeholder,
-  required,
   icon,
   register,
   validation,
   error,
   autoComplete,
-  autoFocus,
+  autoFocus
 }: SSInputProps<T>) => {
-  const [showLocalPassword, setShowLocalPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
 
 
+  const inputType =
+
+    type === "password" ? (showPassword ? "text" : "password") : type;
 
 
-
-  const inputType = type === "password" ? (showPassword ? "text" : "password") : type;
 
   return (
-    <div className="w-full min-w-0 box-border">
-      <label htmlFor={name} className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-
+    <div className="w-full min-w-0">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-600 dark:text-gray-400">
         {label}
       </label>
-      <div className="relative w-full box-border">
-        {/* Left Icon */}
+      <div className="relative mt-2 w-full min-w-0">
         {icon && (
-
-          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-500 pointer-events-none">
-
-
-
-
-
+          <span className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center text-gray-500 pointer-events-none">
             <i className={icon}></i>
           </span>
         )}
 
-
-
-
-
-        {/* The SINGLE Corrected Input Field with Bulletproof Padding and Inline Styles */}
-        <input
-          type={inputType}
-          id={name}
-
-          placeholder={placeholder}
-          autoComplete={autoComplete}
-          autoFocus={autoFocus}
-          {...register(name, validation)}
-
-          className={`w-full max-w-full h-11 block rounded-xl border bg-transparent text-sm transition-all duration-200 focus:outline-none focus:ring-2 ${
-            icon ? "pl-10" : "px-4"
-          } ${type === "password" ? "pr-10" : "pr-4"} ${
-            error
-              ? "border-rose-500 focus:ring-rose-500/20 focus:border-rose-500 text-rose-900 dark:text-rose-200"
-              : "border-slate-200 dark:border-slate-700 text-gray-900 dark:text-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
-          }`}
-          style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
-        />
-
-
-
-
-        {/* Right Password Eye Toggle */}
-
+       <input
+  type={inputType}
+  id={name}
+  className={`w-full box-border pl-6 sm:pl-8 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm sm:text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 transition-all duration-200 ${
+    error
+      ? "border-2 border-red-500"
+      : "focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+  }`}
+  placeholder={placeholder}
+  autoComplete={autoComplete}
+  autoFocus={autoFocus}
+  {...register(name, validation)}
+/>
         {type === "password" && (
-
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-
-            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
-            aria-label={showPassword ? "Hide password" : "Show password"}
-
-
-
-          >
-            <i className={showLocalPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
-          </button>
-        )}
-
-
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+    aria-label={showPassword ? "Hide password" : "Show password"}
+    title={showPassword ? "Hide password" : "Show password"}
+  >
+    <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
+  </button>
+)}
       </div>
-
-      {/* Error Message */}
       {error && (
-
-
-
-        <p className="text-red-500 text-sm mt-2">{error.message}</p>
-
-      )}
-
-
-
-
-
+        <p className="text-red-400 text-sm mt-1 w-full break-words overflow-hidden">
+        {error.message}
+        </p>
+    )}
     </div>
   );
 };

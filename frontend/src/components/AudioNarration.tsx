@@ -16,18 +16,20 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
     isSupported,
     isSpeaking,
     isPaused,
-    isLoading,
+    isReady,
     error,
-    playbackRate,
-    availableVoices,
-    selectedVoiceIndex,
+    rate: playbackRate,
+    voices: availableVoices,
+    selectedVoiceId,
     play,
     pause,
     resume,
     stop,
-    setPlaybackRate,
-    setSelectedVoice,
-  } = useSpeechSynthesis();
+    setRate: setPlaybackRate,
+    setSelectedVoiceId,
+  } = useSpeechSynthesis(text);
+
+  const isLoading = !isReady;
 
   // Stop speech when component unmounts or text changes
   useEffect(() => {
@@ -80,7 +82,7 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
           viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path d="M12 3v9.28c-. 2 0 0-1 1.97 2 2 0 0-1-1.97-2V5c0-1.1.9-2 2-2zm0-1C5.93 2 1 5.93 1 12s3.93 10 11 10 11-3.93 11-11S18.07 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+          <path d="M12 3v9.28c-.2 0 0-1 1.97 2 2 0 0-1-1.97-2V5c0-1.1.9-2 2-2zm0-1C5.93 2 1 5.93 1 12s3.93 10 11 10 11-3.93 11-11S18.07 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
         </svg>
         {title}
       </h3>
@@ -101,7 +103,7 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
         {/* Play/Pause/Resume/Stop Buttons */}
         <div className="flex gap-2 flex-wrap">
           <button
-            onClick={() => play(text)}
+            onClick={play}
             disabled={!canPlay}
             title="Play narration (Alt+P)"
             aria-label="Play story narration"
@@ -183,14 +185,14 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
               </label>
               <select
                 id="voice-select"
-                value={selectedVoiceIndex}
-                onChange={(e) => setSelectedVoice(parseInt(e.target.value, 10))}
+                value={selectedVoiceId}
+                onChange={(e) => setSelectedVoiceId(e.target.value)}
                 aria-label="Voice selection"
                 className="px-2 py-1 bg-slate-700 text-slate-200 border border-slate-600 rounded text-xs hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-colors"
               >
-                {availableVoices.map((voice, index) => (
-                  <option key={index} value={index}>
-                    {voice.name} ({voice.lang})
+                {availableVoices.map((voice) => (
+                  <option key={voice.id} value={voice.id}>
+                    {voice.label} ({voice.lang})
                   </option>
                 ))}
               </select>
