@@ -10,7 +10,7 @@ import {
   useLoginUserMutation,
   useGoogleLoginMutation,
 } from "../../redux/apis/auth.api";
-import { storeUserInfo, getUserInfo } from "../../services/auth.service";
+import { storeUserInfo, storeTokens } from "../../services/auth.service";
 import { USER_ROLE } from "../../constants/role";
 import RedirectComponent from "../redirect.component";
 
@@ -44,6 +44,9 @@ const LoginComponent = () => {
       if (res.data.accessToken) {
         toast.success("User logged in successfully!");
         storeUserInfo({ accessToken: res.data.accessToken });
+        if (res.data.refreshToken) {
+          storeTokens({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken });
+        }
         setIsLoggedIn(true);
       }
     } catch {
@@ -70,6 +73,9 @@ const LoginComponent = () => {
         storeUserInfo({
           accessToken: res.data.accessToken,
         });
+        if (res.data.refreshToken) {
+          storeTokens({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken });
+        }
         setIsLoggedIn(true);
       }
     } catch {

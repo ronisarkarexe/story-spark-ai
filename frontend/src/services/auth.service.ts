@@ -1,4 +1,4 @@
-import { AUTH_KEY } from "../constants/storage-key";
+import { AUTH_KEY, REFRESH_KEY } from "../constants/storage-key";
 import { AccessToken } from "../models/login";
 import { decodedToken } from "../utils/jwt";
 import {
@@ -103,10 +103,23 @@ export const isLoggedIn = () => {
 
 export const removeUserInfo = () => {
   const result = removeFromLocalStorage(AUTH_KEY);
+  removeFromLocalStorage(REFRESH_KEY);
   emitAuthChange();
   return result;
 };
 
 export const getToken = () => getFromLocalStorage(AUTH_KEY);
+
+export const storeTokens = ({ accessToken, refreshToken }: { accessToken: string; refreshToken: string }) => {
+  setToLocalStorage(AUTH_KEY, accessToken);
+  setToLocalStorage(REFRESH_KEY, refreshToken);
+};
+
+export const getRefreshToken = () => getFromLocalStorage(REFRESH_KEY);
+
+export const removeTokens = () => {
+  removeFromLocalStorage(AUTH_KEY);
+  removeFromLocalStorage(REFRESH_KEY);
+};
 
 export const authChangeEventName = AUTH_CHANGE_EVENT;

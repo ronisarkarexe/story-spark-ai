@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   getUserInfo,
   removeUserInfo,
-  storeUserInfo,
+  storeTokens,
 } from "../services/auth.service";
 import { AUTH_KEY } from "../constants/storage-key";
 
@@ -19,7 +19,7 @@ interface User {
 interface AuthContextType {
   accessToken: string | null;
   user: User | null;
-  login: (token: string) => void;
+  login: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
 }
 
@@ -39,9 +39,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     navigate("/login");
   }, [navigate]);
 
-  const login = async (token: string) => {
-    setAccessToken(token);
-    storeUserInfo({ accessToken: token }); // single source of truth for token storage
+  const login = async (accessToken: string, refreshToken: string) => {
+    setAccessToken(accessToken);
+    storeTokens({ accessToken, refreshToken }); // single source of truth for token storage
 
     const userInfo = getUserInfo();
     if (userInfo) {
