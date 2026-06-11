@@ -9,7 +9,7 @@ interface HelpHeroProps {
   resultCount?: number;
 }
 
-const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultCount }) => {
+const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultCount }) => {const handleSearchChange = (value: string) => {if(onSearchChange) {onSearchChange(value);}};
   return (
     <section
       id="help-hero"
@@ -26,47 +26,61 @@ const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultC
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-          <Link to="/" className="inline-block mb-10">
-            <div className="group flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-md text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/10 transition-all duration-300 shadow-sm">
-              <i className="fa-solid fa-arrow-left transition-transform duration-300 group-hover:-translate-x-1" aria-hidden="true"></i>
-              <span className="font-medium">Back to Home</span>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 lg:pt-12 lg:pb-16 box-border w-full">
+        <motion.div
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.45 }}
+          className="w-full"
+        >
+          <Link to="/" className="inline-block mb-8 sm:mb-12">
+            <div className="group flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-md text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/10 transition-all duration-200 shadow-sm cursor-pointer select-none">
+              <i
+                className="fa-solid fa-arrow-left text-xs transition-transform duration-200 group-hover:-translate-x-1"
+                aria-hidden="true"
+              />
+              <span className="text-xs sm:text-sm font-semibold tracking-tight">
+                Back to Home
+              </span>
             </div>
           </Link>
         </motion.div>
 
-        <motion.div
-          className="text-center max-w-4xl mx-auto"
-          initial={{ opacity: 0, y: 35 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-        >
-          <div className="inline-flex items-center justify-center mx-auto px-4 py-1.5 mb-6 rounded-full border border-indigo-200 dark:border-white/20 bg-indigo-100 dark:bg-blue-500/20 text-indigo-700 dark:text-white shadow-sm">
-            <span className="text-sm font-medium">SUPPORT &amp; GUIDANCE</span>
-            <span className="ml-2 text-sm">
+
+        <div className="text-center max-w-4xl mx-auto">
+          <motion.div
+            className="inline-flex items-center justify-center mx-auto px-4 py-1.5 mb-5 sm:mb-6 rounded-full border border-blue-500/10 dark:border-white/10 bg-blue-500/5 text-blue-600 dark:text-blue-400 select-none shadow-sm dark:shadow-none transition-colors duration-300"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <span className="text-xs font-bold uppercase tracking-wider">Support & Guidance</span>
+            <span className="ml-2 text-xs flex items-center justify-center">
               <i className="fa-solid fa-circle-question" aria-hidden="true"></i>
             </span>
-          </div>
+          </motion.div>
 
           <motion.h1
             id="help-center-title"
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:bg-clip-text dark:text-transparent dark:bg-gradient-to-r dark:from-gray-200 dark:via-blue-400 dark:to-indigo-400 mb-6 tracking-tight"
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-700 to-indigo-800 dark:from-slate-100 dark:via-blue-400 dark:to-indigo-400 mb-4 tracking-tight"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
           >
             How can we help you today?
           </motion.h1>
 
           <p className="text-lg text-slate-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Find answers, troubleshoot issues, and get started with StorySparkAI.
-            Search our guides or browse topics below.
+            Find answers, troubleshoot issues, and get started with StorySparkAI. Search our guides or browse topics below.
           </p>
 
-          <HelpSearchBar
-            value={searchQuery}
-            onChange={onSearchChange ?? (() => {})}
-            resultCount={searchQuery ? resultCount : undefined}
-          />
-        </motion.div>
+          <div className="w-full box-border">
+            <HelpSearchBar 
+            value={searchQuery} 
+            onChange={handleSearchChange} 
+            resultCount={resultCount} 
+            />
+          </div>
+        </div>
       </div>
     </section>
   );
