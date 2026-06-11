@@ -7,14 +7,24 @@ import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { WriterApplication } from "../writer_application/writer_application.model";
 
-main
+const getDashboardAnalysis = async (userId: string, userRole: string): Promise<any> => {
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, "User not found");
 
+  const role = userRole || user.role;
+  const totalReaders = 0;
+  const totalPosts = await Post.countDocuments({ authorId: userId });
+  const applicationStatus = "PENDING";
+  const postsPerMonth: any[] = [];
+  const topicCount: any[] = [];
+
+  if (role === ENUM_USER_ROLE.WRITER) {
     return {
       role,
       writerStats: {
         totalReaders,
         totalPosts,
-        subscriptionStatus: user.subscriptionType.toUpperCase(),
+        subscriptionStatus: user.subscriptionType?.toUpperCase() || "FREE",
         applicationStatus,
         gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
       },
@@ -27,7 +37,7 @@ main
 
   // Else standard user
   return {
-main
+    role,
   };
 };
 
