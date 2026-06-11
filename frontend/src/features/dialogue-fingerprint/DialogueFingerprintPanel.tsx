@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, Loader2, AlertCircle, RefreshCw, AudioLines } from "lucide-react";
+import { Loader2, AlertCircle, RefreshCw, AudioLines } from "lucide-react";
 import {
   getDialogueFingerprint,
   IDialogueFingerprintResponse,
