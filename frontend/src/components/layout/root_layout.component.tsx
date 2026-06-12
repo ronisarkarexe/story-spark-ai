@@ -13,9 +13,6 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
   const hideHeader = pathname === "/login" || pathname === "/signup";
   const hideFooter = pathname === "/login" || pathname === "/signup";
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
-  const hideHeader = isAuthPage;
-  const hideFooter = isAuthPage;
   const [cookieBannerHeight, setCookieBannerHeight] = useState(0);
   const handleCookieLayoutChange = useCallback((height: number) => {
     setCookieBannerHeight(height);

@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
