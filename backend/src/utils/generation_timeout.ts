@@ -59,8 +59,7 @@ export const raceGenerationWithTimeout = async <T>(
         if (externalSignal && abortHandler) {
           externalSignal.removeEventListener("abort", abortHandler);
         }
-        if (timedOut) {
-          reject(new GenerationTimeoutError());
+        
         // Check aborted BEFORE calling abort() so we can distinguish
         // a genuine timeout (already aborted by setTimeout) from a real
         // operation error (e.g. network failure, API error).
@@ -76,5 +75,3 @@ export const raceGenerationWithTimeout = async <T>(
       });
   });
 };
-
-

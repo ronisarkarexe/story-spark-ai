@@ -7,27 +7,28 @@ import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { WriterApplication } from "../writer_application/writer_application.model";
 
-main
+const getDashboardAnalysis = async (user: any) => {
+  // Extract user details and roles cleanly
+  const role = user.role;
+  const totalReaders = 0; 
+  const totalPosts = await Post.countDocuments({ author: user._id });
+  const applicationStatus = "NONE"; 
+  const postsPerMonth: number[] = Array(12).fill(0);
+  const topicCount: Record<string, number> = {};
 
-    return {
-      role,
-      writerStats: {
-        totalReaders,
-        totalPosts,
-        subscriptionStatus: user.subscriptionType.toUpperCase(),
-        applicationStatus,
-        gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
-      },
-      posts: {
-        perMonth: postsPerMonth,
-        topics: topicCount,
-      }
-    };
-  }
-
-  // Else standard user
   return {
-main
+    role,
+    writerStats: {
+      totalReaders,
+      totalPosts,
+      subscriptionStatus: user.subscriptionType ? user.subscriptionType.toUpperCase() : "FREE",
+      applicationStatus,
+      gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
+    },
+    posts: {
+      perMonth: postsPerMonth,
+      topics: topicCount,
+    }
   };
 };
 
@@ -271,4 +272,3 @@ export const AnalysisService = {
   getDashboardAnalysis,
   analyzeStory,
 };
-

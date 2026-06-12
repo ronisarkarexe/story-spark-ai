@@ -97,7 +97,7 @@ const getSinglePost = catchAsync(async (req: Request, res: Response) => {
     // Guest or unauthenticated request
   }
 
-  const result = await PostService.getSinglePost(id, token);
+  const result = await PostService.getSinglePost(id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -107,14 +107,16 @@ const getSinglePost = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getPostsByTag = catchAsync(async (req: Request, res: Response) => {
-  const tag = routeParam(req.params.tag);
-  const excludeId = req.query.excludeId as string | undefined;
-  const limit = req.query.limit ? Math.min(Number(req.query.limit), 50) : 10;
-  const result = await PostService.getPostsByTag(tag, excludeId, limit);
+  const { tag } = req.params;
+  const limit = req.query.limit ? String(req.query.limit) : undefined;
+
+  // Pass string parameter as expected by the service signature
+  const result = await PostService.getPostsByTag(tag, limit);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Post fetched successfully!",
+    message: "Posts fetched by tag successfully!",
     data: result,
   });
 });
@@ -183,7 +185,7 @@ const translateStory = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
+//const getPost
 const getGenres = catchAsync(async (_req: Request, res: Response) => {
   const result = await PostService.getGenres();
   sendResponse(res, {
