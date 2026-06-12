@@ -23,7 +23,7 @@ const HelpHero: FC<HelpHeroProps> = ({
   return (
     <section
       id="help-hero"
-      className="relative overflow-hidden border-b border-slate-200/80 dark:border-white/10 bg-gradient-to-b from-slate-50 to-white dark:from-[#0B1120]/40 dark:to-transparent transition-colors duration-300 w-full box-border"
+      className="relative overflow-hidden border-b border-slate-200/80 dark:border-white/10 bg-linear-to-b from-slate-50 to-white dark:from-[#0B1120]/40 dark:to-transparent transition-colors duration-300 w-full box-border"
       aria-labelledby="help-center-title"
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">

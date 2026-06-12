@@ -94,7 +94,7 @@ const ReviewApprovalComponent = () => {
                   <button
                     onClick={() => review._id && handleApprove(review._id)}
                     disabled={!review._id || isApproving}
-                    className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 select-none uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 select-none uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
                   >
                     <i className="fa-solid fa-circle-check text-xs" />
                     <span>{isApproving ? "Approving..." : "Approve Review"}</span>

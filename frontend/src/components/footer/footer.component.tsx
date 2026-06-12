@@ -89,7 +89,7 @@ const FooterComponent: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative w-full bg-gradient-to-b from-[#090F24] via-[#080E22] to-[#060A18] overflow-hidden">
+    <footer className="relative w-full bg-linear-to-b from-[#090F24] via-[#080E22] to-[#060A18] overflow-hidden">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0"
@@ -278,7 +278,7 @@ const FooterComponent: React.FC = () => {
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="self-start h-8 px-3 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 text-[11px] font-medium text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60 cursor-pointer"
+                className="self-start h-8 px-3 rounded-md bg-linear-to-r from-blue-500 to-indigo-500 text-[11px] font-medium text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60 cursor-pointer"
               >
                 {status === "loading" ? "..." : "Subscribe"}
               </button>

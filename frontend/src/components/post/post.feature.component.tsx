@@ -14,7 +14,7 @@ const ExploreFeatureComponent = () => {
             className="animate-pulse relative overflow-hidden rounded-3xl border border-slate-200 bg-[#f8fafc]/90 h-[400px] flex flex-col justify-end p-8 dark:bg-slate-900/40 dark:border-slate-700/50"
           >
             {/* Cinematic Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-200/80 via-slate-100/30 to-transparent dark:from-slate-950 dark:via-slate-900/60 dark:to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-slate-200/80 via-slate-100/30 to-transparent dark:from-slate-950 dark:via-slate-900/60 dark:to-transparent" />
             
             {/* Title Skeleton */}
             <div className="h-9 bg-slate-300 dark:bg-slate-800 rounded-lg w-2/3 mb-3 relative z-10" />
@@ -60,7 +60,7 @@ const ExploreFeatureComponent = () => {
                   alt={post.title || "Post Image"}
                   className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent p-8 flex flex-col justify-end dark:from-slate-950 dark:via-slate-900/60 dark:to-transparent">
+            <div className="absolute inset-0 bg-linear-to-t from-white via-white/80 to-transparent p-8 flex flex-col justify-end dark:from-slate-950 dark:via-slate-900/60 dark:to-transparent">
               <h3 className="text-slate-900 text-3xl font-bold tracking-tight drop-shadow-md group-hover:text-blue-600 transition-colors dark:text-white dark:group-hover:text-blue-300">{post.title}</h3>
               <p className="text-slate-600 text-base mt-3 leading-relaxed max-w-2xl line-clamp-2 dark:text-slate-300">
                 {post.content.slice(0, 150)}...

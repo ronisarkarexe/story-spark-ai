@@ -64,7 +64,7 @@ const CommunityComponent: React.FC = () => {
             Community Hub Live
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-slate-900 to-slate-500 dark:from-white dark:to-gray-500">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 bg-clip-text text-transparent bg-linear-to-b from-slate-900 to-slate-500 dark:from-white dark:to-gray-500">
             Where Imagination <br /> Meets Community
           </h1>
 
@@ -189,7 +189,7 @@ const CommunityComponent: React.FC = () => {
 
       {/* CTA Footer */}
       <section id="guidelines" className="max-w-5xl mx-auto px-6 py-32 text-center">
-        <div className="p-16 rounded-[2.5rem] bg-gradient-to-br from-blue-50 via-white to-slate-100 border border-gray-200 shadow-2xl relative overflow-hidden text-slate-900 transition-colors duration-300 dark:from-blue-900/40 dark:via-slate-900 dark:to-black dark:border-white/10 dark:text-white">
+        <div className="p-16 rounded-[2.5rem] bg-linear-to-br from-blue-50 via-white to-slate-100 border border-gray-200 shadow-2xl relative overflow-hidden text-slate-900 transition-colors duration-300 dark:from-blue-900/40 dark:via-slate-900 dark:to-black dark:border-white/10 dark:text-white">
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] -z-10"></div>
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-slate-900 dark:text-white">Ready to spark your first story?</h2>
           <p className="text-slate-600 dark:text-gray-400 text-lg mb-12 max-w-xl mx-auto leading-relaxed">

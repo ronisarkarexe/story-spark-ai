@@ -138,8 +138,8 @@ const GuidelinesComponent: React.FC = () => {
               transition={{ duration: 0.45, delay: Math.min(index * 0.06, 0.3) }}
               className="group relative overflow-hidden bg-white dark:bg-[#111827]/40 border border-slate-200 dark:border-white/10 p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 w-full box-border"
             >
-              <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-slate-200 dark:via-white/5 to-transparent opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none" />
-              <div className={`absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r ${section.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+              <div className="absolute top-0 left-0 w-full h-[2px] bg-linear-to-r from-transparent via-slate-200 dark:via-white/5 to-transparent opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none" />
+              <div className={`absolute top-0 left-0 w-full h-[2px] bg-linear-to-r ${section.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
 
               <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5 w-full box-border mb-6">
                 <div className={`flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${section.bgLight} border ${section.borderLight} ${section.iconColor} transition-transform duration-300 group-hover:scale-105 select-none shrink-0`}>
@@ -159,7 +159,7 @@ const GuidelinesComponent: React.FC = () => {
                 {section.items.map((item) => (
                   <li key={item} className="flex items-start gap-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                     <div className="flex items-center justify-center h-5 w-5 shrink-0 select-none mt-0.5">
-                      <div className={`h-1.5 w-1.5 rounded-full bg-gradient-to-br ${section.color} shadow-sm`} />
+                      <div className={`h-1.5 w-1.5 rounded-full bg-linear-to-br ${section.color} shadow-sm`} />
                     </div>
                     <span>{item}</span>
                   </li>

@@ -159,7 +159,7 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
             <button
               onClick={handleTranslate}
               disabled={!selectedLanguage || isTranslating}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-lg transition-all mb-6"
+              className="w-full py-3 rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-lg transition-all mb-6"
             >
               {isTranslating ? (
                 <span className="flex items-center justify-center gap-2">

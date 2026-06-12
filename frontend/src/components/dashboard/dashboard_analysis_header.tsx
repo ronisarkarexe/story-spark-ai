@@ -42,7 +42,7 @@ const DashboardAnalysisHeader: React.FC<{ data: DashboardAnalysis }> = ({ data }
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="relative overflow-hidden rounded-2xl bg-slate-50 border border-slate-200 dark:bg-white/[0.03] dark:border-blue-500/15 p-5 hover:-translate-y-0.5 transition-transform duration-200">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-blue-500/40 to-transparent" />
           <div className="flex items-start justify-between mb-3">
             <div>
               <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">
@@ -76,7 +76,7 @@ const DashboardAnalysisHeader: React.FC<{ data: DashboardAnalysis }> = ({ data }
         </div>
 
         <div className="relative overflow-hidden rounded-2xl bg-slate-50 border border-slate-200 dark:bg-white/[0.03] dark:border-violet-500/15 p-5 hover:-translate-y-0.5 transition-transform duration-200">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-violet-500/40 to-transparent" />
           <div className="flex items-start justify-between mb-3">
             <div>
               <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">
@@ -110,7 +110,7 @@ const DashboardAnalysisHeader: React.FC<{ data: DashboardAnalysis }> = ({ data }
         </div>
 
         <div className="relative overflow-hidden rounded-2xl bg-slate-50 border border-slate-200 dark:bg-white/[0.03] dark:border-emerald-500/15 p-5 hover:-translate-y-0.5 transition-transform duration-200">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-emerald-500/40 to-transparent" />
           <div className="flex items-start justify-between mb-3">
             <div>
               <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">
@@ -146,7 +146,7 @@ const DashboardAnalysisHeader: React.FC<{ data: DashboardAnalysis }> = ({ data }
         </div>
 
         <div className="relative overflow-hidden rounded-2xl bg-slate-50 border border-slate-200 dark:bg-white/[0.03] dark:border-amber-500/15 p-5 hover:-translate-y-0.5 transition-transform duration-200">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-amber-500/40 to-transparent" />
           <div className="flex items-start justify-between mb-3">
             <div>
               <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">
@@ -203,7 +203,7 @@ const DashboardAnalysisHeader: React.FC<{ data: DashboardAnalysis }> = ({ data }
                   <p className="w-20 text-xs text-slate-500 font-mono shrink-0">{month}</p>
                   <div className="flex-1 bg-slate-200 dark:bg-white/[0.05] h-2 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-700"
+                      className="h-full bg-linear-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-700"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

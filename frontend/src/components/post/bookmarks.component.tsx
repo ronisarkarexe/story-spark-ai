@@ -94,7 +94,7 @@ const BookmarksComponent = () => {
           </div>
           <div className="w-full md:w-1/2 lg:w-1/3">
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-2xl blur-lg opacity-40 dark:opacity-20"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-indigo-500/10 to-purple-500/10 rounded-2xl blur-lg opacity-40 dark:opacity-20"></div>
               <input
                 type="text"
                 placeholder="Search your saved stories..."

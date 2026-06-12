@@ -154,7 +154,7 @@ export default function StoryRemix({ story, isLogin, onRemixComplete, onClose }:
           <button
             onClick={handleRemix}
             disabled={!selectedType || (!selectedOption && selectedType !== "gender_swap") || isRemixing}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-lg transition-all"
+            className="w-full py-3 rounded-xl bg-linear-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-lg transition-all"
           >
             {isRemixing ? (
               <span className="flex items-center justify-center gap-2">

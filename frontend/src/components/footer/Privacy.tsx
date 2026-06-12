@@ -142,7 +142,7 @@ const PrivacyPolicy: React.FC = () => {
             </ul>
           </section>
 
-          <section className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 shadow-lg text-center">
+          <section className="bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl p-8 shadow-lg text-center">
             <h2 className="text-3xl font-bold mb-4">
               Contact Us
             </h2>

@@ -244,7 +244,7 @@ const ContinueStoryModal = ({ story, onClose }: ContinueStoryModalProps) => {
                 id="continue-story-generate-btn"
                 onClick={handleGenerate}
                 disabled={isLoading || !prompt.trim()}
-                className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition-all hover:from-indigo-400 hover:to-violet-400 hover:shadow-indigo-400/30 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-indigo-500 to-violet-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition-all hover:from-indigo-400 hover:to-violet-400 hover:shadow-indigo-400/30 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoading ? (
                   <>

@@ -5,7 +5,7 @@ const NotFoundComponent = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center px-4">
       <motion.h1
-        className="text-9xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text"
+        className="text-9xl font-bold bg-linear-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text"
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}

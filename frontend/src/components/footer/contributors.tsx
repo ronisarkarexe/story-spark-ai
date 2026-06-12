@@ -178,21 +178,21 @@ const ContributorCard = ({
   const rankColors = [
     {
       glow: "rgba(251,191,36,0.3)",
-      badge: "bg-gradient-to-r from-amber-400 to-yellow-500",
+      badge: "bg-linear-to-r from-amber-400 to-yellow-500",
       label: "🥇",
       label: "\uD83E\uDD47",
       borderColor: "rgba(251,191,36,0.4)",
     },
     {
       glow: "rgba(148,163,184,0.3)",
-      badge: "bg-gradient-to-r from-slate-300 to-gray-400",
+      badge: "bg-linear-to-r from-slate-300 to-gray-400",
       label: "🥈",
       label: "\uD83E\uDD48",
       borderColor: "rgba(148,163,184,0.3)",
     },
     {
       glow: "rgba(251,146,60,0.25)",
-      badge: "bg-gradient-to-r from-orange-400 to-amber-600",
+      badge: "bg-linear-to-r from-orange-400 to-amber-600",
       label: "🥉",
       label: "\uD83E\uDD49",
       borderColor: "rgba(251,146,60,0.3)",
@@ -363,7 +363,7 @@ const ContributorCard = ({
         <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
           <div
             ref={barRef}
-            className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500"
+            className="h-full rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-fuchsia-500"
             style={{ width: "0%" }}
           />
         </div>
@@ -738,7 +738,7 @@ const ContributorsComponent = () => {
               }}
             >
               <div
-                className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-500`}
+                className={`absolute inset-0 bg-linear-to-br ${stat.gradient} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-500`}
               />
               <div className="relative z-10">
                 <div
@@ -750,7 +750,7 @@ const ContributorsComponent = () => {
                   {stat.label}
                 </p>
                 <p
-                  className={`text-4xl font-black bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}
+                  className={`text-4xl font-black bg-linear-to-r ${stat.gradient} bg-clip-text text-transparent`}
                 >
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                 </p>
@@ -761,12 +761,12 @@ const ContributorsComponent = () => {
 
         {/* ─── SECTION HEADER ─── */}
         <div className="flex items-center gap-4 mb-12">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
+          <div className="h-px flex-1 bg-linear-to-r from-transparent via-indigo-500/30 to-transparent" />
           <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
             <Trophy size={24} className="text-amber-400" />
             Hall of Fame
           </h2>
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
+          <div className="h-px flex-1 bg-linear-to-r from-transparent via-indigo-500/30 to-transparent" />
         </div>
 
         {/* ─── CONTRIBUTORS GRID ─── */}

@@ -124,7 +124,7 @@ const NavListComponent = () => {
           </NavLink>
     <header className="sticky top-0 z-50 w-full">
       <div className="absolute inset-0 border-b border-white/50 bg-white/70 shadow-sm shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-black/20" />
-      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-500/35 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-indigo-500/35 to-transparent" />
 
       <div className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <motion.div
@@ -147,7 +147,7 @@ const NavListComponent = () => {
               handleNavClick();
             }}
           >
-            <div className="relative grid h-11 w-11 place-items-center rounded-2xl border border-white/70 bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-600/25 transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-indigo-600/40 dark:border-white/15">
+            <div className="relative grid h-11 w-11 place-items-center rounded-2xl border border-white/70 bg-linear-to-br from-indigo-600 via-violet-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-600/25 transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-indigo-600/40 dark:border-white/15">
               <div className="absolute inset-0 rounded-2xl bg-white/15 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               <Sparkles className="relative h-5 w-5" />
             </div>
@@ -187,7 +187,7 @@ const NavListComponent = () => {
                 {isActive(item.to) && (
                   <motion.span
                     layoutId="activeIndicator"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 shadow-lg shadow-indigo-600/25"
+                    className="absolute inset-0 rounded-full bg-linear-to-r from-indigo-600 via-violet-600 to-fuchsia-500 shadow-lg shadow-indigo-600/25"
                     transition={{ type: "spring", stiffness: 420, damping: 34 }}
                   />
                 )}
@@ -217,7 +217,7 @@ const NavListComponent = () => {
                 {isActive("/dashboard") && (
                   <motion.span
                     layoutId="activeIndicator"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 shadow-lg shadow-indigo-600/25"
+                    className="absolute inset-0 rounded-full bg-linear-to-r from-indigo-600 via-violet-600 to-fuchsia-500 shadow-lg shadow-indigo-600/25"
                     transition={{ type: "spring", stiffness: 420, damping: 34 }}
                   />
                 )}
@@ -336,7 +336,7 @@ const NavListComponent = () => {
                   <Link
                     to="/signup"
                     onClick={handleNavClick}
-                    className="group inline-flex h-10 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300 hover:shadow-indigo-600/40"
+                    className="group inline-flex h-10 items-center gap-2 rounded-full bg-linear-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300 hover:shadow-indigo-600/40"
                   >
                     <span>Get Started</span>
                     <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
@@ -416,7 +416,7 @@ const NavListComponent = () => {
                       onClick={handleNavClick}
                       className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
                         isActive(item.to)
-                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
+                          ? "bg-linear-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
                           : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
                       }`}
                     >
@@ -438,7 +438,7 @@ const NavListComponent = () => {
                       onClick={handleNavClick}
                       className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
                         isActive("/dashboard")
-                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
+                          ? "bg-linear-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
                           : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
                       }`}
                     >
@@ -474,7 +474,7 @@ const NavListComponent = () => {
                       <Link
                         to="/signup"
                         onClick={handleNavClick}
-                        className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300"
                       >
                         <span>Get Started</span>
                         <ArrowRight className="h-4 w-4" />

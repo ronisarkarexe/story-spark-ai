@@ -23,7 +23,7 @@ const StorySegment = ({ text, choiceMade, index }: StorySegmentProps) => {
       className="w-full text-left bg-white dark:bg-[#111827]/40 border border-slate-200 dark:border-white/10 p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-xl transition-shadow duration-300 backdrop-blur-xl box-border"
     >
       <div className="flex items-start gap-4 w-full box-border">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold text-white select-none shadow-sm shadow-blue-500/10">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-indigo-600 text-xs font-bold text-white select-none shadow-sm shadow-blue-500/10">
           {index}
         </span>
         <div className="min-w-0 flex-1">
