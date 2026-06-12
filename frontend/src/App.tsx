@@ -53,9 +53,11 @@ const PublishedStoriesComponent = lazy(() => import("./components/dashboard/post
 const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analytics.page"));
 const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
+const UniverseDashboard = lazy(() => import("./components/story-universe/UniverseDashboard"));
+const UniverseDetails = lazy(() => import("./components/story-universe/UniverseDetails"));
 const PaymentComponent = lazy(() =>
   import("./components/home/pricing/payment.component").then((module) => ({
-    default: module.PaymentComponent,
+    default: module.default,
   }))
 );
 
@@ -101,7 +103,6 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
-      { path: "contributors", element: <SafeContributorsComponent /> },
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "community", element: <CommunityComponent /> },
       { path: "report-bug", element: <ReportBug /> },
@@ -147,6 +148,8 @@ const router = createBrowserRouter([
           { path: "profile", element: <ProfileComponent /> },
           { path: "settings", element: <SettingComponent /> },
           { path: "published-stories", element: <PublishedStoriesComponent /> },
+          { path: "universes", element: <UniverseDashboard /> },
+          { path: "universes/:id", element: <UniverseDetails /> },
           {
             element: <ProtectedRoute allowedRoles={ELEVATED_ADMIN_ROLES} />,
             children: [

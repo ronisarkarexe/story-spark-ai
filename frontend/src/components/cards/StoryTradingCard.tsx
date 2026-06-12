@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import html2canvas from "html2canvas";
-import React, { useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import type { IStories } from "../stories/stories.view.component";
 import { getWordCount } from "../stories/stories.utils";

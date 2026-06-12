@@ -17,11 +17,14 @@ import {
   exportWorkspacePDF,
 } from "../../utils/story-export.utils";
 
+import { UniverseLorePanel } from "./UniverseLorePanel";
+
 const StoryWorkspace = () => {
   const currentStory = useSelector(
     (state: RootState) => state.story.currentStory
   );
   const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
+  const [showLorePanel, setShowLorePanel] = useState(true);
 
   const handleExportMarkdown = () => {
     if (!currentStory) {
@@ -124,7 +127,7 @@ const StoryWorkspace = () => {
   }
 
   return (
-    <div className="flex bg-black h-screen">
+    <div className="flex bg-black h-screen overflow-hidden">
       <Toaster position="top-right" reverseOrder={false} />
       <ChapterSidebar
         chapters={currentStory.chapters}
@@ -155,6 +158,18 @@ const StoryWorkspace = () => {
               >
                 🕸️ Character Network
               </button>
+              {workspaceMode === "editor" && (
+                <button
+                  onClick={() => setShowLorePanel(!showLorePanel)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    showLorePanel
+                      ? "bg-purple-650 text-white shadow"
+                      : "text-slate-450 hover:text-zinc-250"
+                  }`}
+                >
+                  🌌 Universe Lore
+                </button>
+              )}
             </div>
             <button
               onClick={handleExportMarkdown}
@@ -178,7 +193,7 @@ const StoryWorkspace = () => {
         </div>
 
         {workspaceMode === "editor" ? (
-          <>
+          <div className="flex-1 flex flex-col overflow-hidden">
             <StoryViewer
               chapters={currentStory.chapters}
               storyId={currentStory.id}
@@ -187,11 +202,15 @@ const StoryWorkspace = () => {
             <div className="p-6 border-t border-zinc-800">
               <ContinueStoryButton />
             </div>
-          </>
+          </div>
         ) : (
           <CharacterNetwork storyId={currentStory.id} />
         )}
       </div>
+
+      {showLorePanel && workspaceMode === "editor" && (
+        <UniverseLorePanel storyId={currentStory.id} />
+      )}
     </div>
   );
 };

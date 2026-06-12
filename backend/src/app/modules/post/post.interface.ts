@@ -16,11 +16,13 @@ export interface IPostPayload {
   emotions?: string[];
   genre?: string;
   isPublished?: boolean;
+  universeId?: string | Types.ObjectId | null;
 }
 
 export interface IPost extends IPostPayload {
   _id: Types.ObjectId;
   author: Types.ObjectId;
+  universeId?: Types.ObjectId | null;
   likesCount: number;
   commentsCount: number;
   viewsCount: number;

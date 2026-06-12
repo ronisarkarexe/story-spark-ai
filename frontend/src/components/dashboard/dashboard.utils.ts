@@ -21,6 +21,17 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
+    name: "Story Universes",
+    icon: "fas fa-globe",
+    path: "/dashboard/universes",
+    roles: [
+      USER_ROLE.USER,
+      USER_ROLE.ADMIN,
+      USER_ROLE.SUPER_ADMIN,
+      USER_ROLE.WRITER,
+    ],
+  },
+  {
   name: "Published Stories",
   icon: "fas fa-book",
   path: "/dashboard/published-stories",

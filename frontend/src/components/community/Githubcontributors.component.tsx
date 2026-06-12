@@ -23,6 +23,7 @@ const GithubcontributorsComponent: React.FC = () => {
     const controller = new AbortController();
   
     const GithubcontributorData = async () => {
+      let data: GitHubContributor[] = [];
       try {
         const githubRes = await fetch(
           `https://api.github.com/repos/${owner}/${repo}/contributors`,
@@ -35,19 +36,15 @@ const GithubcontributorsComponent: React.FC = () => {
           }
         );
   
-        const data = await githubRes.json();
-        setGitHubContributors(data);
-    
-      
-      }catch(error){
-        console.error("Failed to load GitHub contributors", error);
-      } catch (err: unknown) {
-        console.error("Failed to load GitHub contributors", err);
-  
-        if (!controller.signal.aborted) {
+        data = await githubRes.json();
+        if (Array.isArray(data)) {
           setGitHubContributors(data);
         }
-  
+      } catch (err: unknown) {
+        console.error("Failed to load GitHub contributors", err);
+      }
+
+      try {
         const repoRes = await fetch(
           `https://api.github.com/repos/${owner}/${repo}`,
           {
@@ -62,11 +59,11 @@ const GithubcontributorsComponent: React.FC = () => {
         const repoData = await repoRes.json();
   
         if (!controller.signal.aborted) {
-          setRepoStars(repoData.stargazers_count);
+          setRepoStars(repoData.stargazers_count || 0);
         }
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
-          console.log(e);
+          console.error(e);
         }
       }
     };

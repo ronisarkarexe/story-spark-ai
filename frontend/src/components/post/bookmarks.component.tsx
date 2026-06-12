@@ -14,6 +14,7 @@ const BookmarksComponent = () => {
   const [size, setSize] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
   const [sortBy, setSortBy] = useState<string>("newest");
+  const [activeTab, setActiveTab] = useState<"posts" | "generated">("posts");
 
   const query: Record<string, string | number> = {
     page,
@@ -29,7 +30,6 @@ const BookmarksComponent = () => {
 
   const allPosts: Post[] = (data?.posts ?? []) as Post[];
 
-  const [activeTab, setActiveTab] = useState<"posts" | "generated">("posts");
   const [sessionStories, setSessionStories] = useState<IStories[]>(() => getSessionBookmarks());
 
   useEffect(() => {
@@ -50,7 +50,6 @@ const BookmarksComponent = () => {
         (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
   );
 
-  // Implement client-side instant search for bookmarks
   const filteredPosts = allPosts.filter(
     (story: Post) =>
       story &&
@@ -59,7 +58,6 @@ const BookmarksComponent = () => {
         (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
   );
 
-  // Sort posts client-side
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     switch (sortBy) {
       case "oldest":
@@ -125,58 +123,46 @@ const BookmarksComponent = () => {
                   Stories you've saved for later inspiration
                 </p>
               </div>
-              {activeTab === "posts" && allPosts.length > 0 && (
-                <div className="flex items-center space-x-4">
-                  <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
-                  <select
-                    className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                    value={size}
-                    onChange={(e) => {
-                      setSize(Number(e.target.value));
-                      setPage(1);
-                    }}
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                  <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
-              {allPosts.length > 0 && (
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center space-x-2">
-                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Sort By</label>
-                    <select
-                      className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                    >
-                      <option value="newest">Newest Bookmarked</option>
-                      <option value="oldest">Oldest Bookmarked</option>
-                      <option value="title-asc">Alphabetical (A-Z)</option>
-                      <option value="title-desc">Alphabetical (Z-A)</option>
-                      <option value="length-asc">Shortest First</option>
-                      <option value="length-desc">Longest First</option>
-                    </select>
-                  </div>
 
-                  <div className="flex items-center space-x-2">
-                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
-                    <select
-                      className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                      value={size}
-                      onChange={(e) => {
-                        setSize(Number(e.target.value));
-                        setPage(1);
-                      }}
-                    >
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                    <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
-                  </div>
+              {((activeTab === "posts" && allPosts.length > 0) || (activeTab === "generated" && sessionStories.length > 0)) && (
+                <div className="flex flex-wrap items-center gap-4">
+                  {activeTab === "posts" && (
+                    <div className="flex items-center space-x-2">
+                      <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Sort By</label>
+                      <select
+                        className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                      >
+                        <option value="newest">Newest Bookmarked</option>
+                        <option value="oldest">Oldest Bookmarked</option>
+                        <option value="title-asc">Alphabetical (A-Z)</option>
+                        <option value="title-desc">Alphabetical (Z-A)</option>
+                        <option value="length-asc">Shortest First</option>
+                        <option value="length-desc">Longest First</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {activeTab === "posts" && (
+                    <div className="flex items-center space-x-2">
+                      <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
+                      <select
+                        className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                        value={size}
+                        onChange={(e) => {
+                          setSize(Number(e.target.value));
+                          setPage(1);
+                        }}
+                      >
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -231,7 +217,7 @@ const BookmarksComponent = () => {
                   </div>
                 ) : (
                   <ExploreViewListComponent
-                    posts={filteredPosts}
+                    posts={sortedPosts}
                     isLoading={isLoading}
                   />
                 )
@@ -262,10 +248,6 @@ const BookmarksComponent = () => {
                     ))}
                   </div>
                 )
-                <ExploreViewListComponent
-                  posts={sortedPosts}
-                  isLoading={isLoading}
-                />
               )}
             </div>
 

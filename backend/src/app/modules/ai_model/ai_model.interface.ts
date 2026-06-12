@@ -12,6 +12,8 @@ export interface IAIModel {
   tone?: string;
   genre?: string;
   characters?: ICharacter[];
+  universeId?: string;
+  storyId?: string;
 }
 
 export interface IStory {
