@@ -1,9 +1,11 @@
 import { Model, Types } from "mongoose";
 import { SubscriptionType } from "../../../enums/subscription_type";
+
 export interface IWritingGoals {
   dailyWordCount: number;
   weeklyWordCount: number;
 }
+
 export interface IUser {
   name: string;
   email: string;
@@ -22,9 +24,7 @@ export interface IUser {
       twitter: string;
       linkedin: string;
       instagram: string;
-    github: string;
-    discord: string;
-      github: string;  
+      github: string;
       discord: string;
     };
   };

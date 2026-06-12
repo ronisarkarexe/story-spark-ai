@@ -6,7 +6,7 @@ import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { WriterApplication } from "../writer_application/writer_application.model";
 
-const getDashboardAnalysis = async (userId: string) => {
+const getDashboardAnalysis = async (userId: string, userRole?: string) => {
   const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
