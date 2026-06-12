@@ -479,7 +479,6 @@ const StoriesComponent = () => {
   }, []);
 
   const [stories, setStories] = useState<IStories[]>(
-    draft?.stories?.length ? getUniqueStories(draft.stories) : [{uuid:"test-1",title:"The Wizard's Journey",content:"Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.",tag:"Fantasy",imageURL:""}]
     draft?.stories?.length ? getUniqueStories(draft.stories) : []
   );
   
@@ -489,18 +488,14 @@ const StoriesComponent = () => {
 
   const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
 
-  const filteredStories = useMemo(() => {
-    if (!searchQuery.trim()) return uniqueStories;
   const debouncedSearchQuery = useDebounce(searchQuery, 350);
   const debouncedPrompt = useDebounce(textareaValue, 500);
 
-
   const filteredStories = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) return stories;
+    if (!debouncedSearchQuery.trim()) return uniqueStories;
     const query = debouncedSearchQuery.toLowerCase();
     
     return uniqueStories.filter((story) => {
-    return stories.filter((story) => {
       switch (searchFilter) {
         case "title":
           return story.title?.toLowerCase().includes(query);
@@ -517,8 +512,8 @@ const StoriesComponent = () => {
           );
       }
     });
-  }, [uniqueStories, searchQuery, searchFilter]);
-  }, [stories, debouncedSearchQuery, searchFilter]);
+  }, [uniqueStories, debouncedSearchQuery, searchFilter]);
+
   const indexOfLastStory = currentPage * storiesPerPage;
   const indexOfFirstStory = indexOfLastStory - storiesPerPage;
 
@@ -529,14 +524,6 @@ const StoriesComponent = () => {
   const totalPages = useMemo(() => {
     return Math.ceil(filteredStories.length / storiesPerPage);
   }, [filteredStories.length, storiesPerPage]);
-useEffect(() => {
-  setCurrentPage(1);
-}, [debouncedSearchQuery, searchFilter]);
-
-  const indexOfLastStory = currentPage * storiesPerPage;
-  const indexOfFirstStory = indexOfLastStory - storiesPerPage;
-  const currentStories = filteredStories.slice(indexOfFirstStory, indexOfLastStory);
-  const totalPages = Math.ceil(filteredStories.length / storiesPerPage);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -549,19 +536,6 @@ useEffect(() => {
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string>(
-  draft?.genre
-    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "ðŸ§™ Fantasy")
-    : "ðŸ§™ Fantasy",
-);
-  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
-  const [textareaValue, setTextareaValue] = useState<string>(() => {
-    return location.state?.prompt || draft?.prompt || "";
-  });
-  const [selectedGenre, setSelectedGenre] = useState<string>("");
-  const [selectedLength, setSelectedLength] = useState<string>("medium");
-  const [textareaValue, setTextareaValue] = useState<string>("");
   const DRAFT_KEY = "storyspark_story_draft_v1";
   const [draftStatus, setDraftStatus] = useState("");
   

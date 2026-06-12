@@ -24,11 +24,10 @@ const StarRating = ({
             onClick={() => setRating(star)}
             onMouseEnter={() => setHovered(star)}
             onMouseLeave={() => setHovered(0)}
-            className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none ${
-              star <= (hovered || rating)
+            className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none ${star <= (hovered || rating)
                 ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]"
                 : "text-gray-600"
-            }`}
+              }`}
           >
             ★
           </button>
@@ -235,9 +234,8 @@ const ReviewForm = () => {
                 )}
 
                 <p
-                  className={`text-xs ${
-                    feedback.length > 450 ? "text-yellow-400" : "text-gray-500"
-                  }`}
+                  className={`text-xs ${feedback.length > 450 ? "text-yellow-400" : "text-gray-500"
+                    }`}
                 >
                   {feedback.length}/500
                 </p>
@@ -273,39 +271,37 @@ const ReviewForm = () => {
                 disabled={isLoading}
                 className="w-auto rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/25 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
               >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="h-4 w-4 animate-spin"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    />
-                  </svg>
-                  Submitting...
-                </span>
-              ) : (
-                "Share Review ✨"
-              )}
-            </button>
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg
+                      className="h-4 w-4 animate-spin"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8z"
+                      />
+                    </svg>
+                    Submitting...
+                  </span>
+                ) : (
+                  "Share Review ✨"
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
-  );
     </div>
   );
 };
