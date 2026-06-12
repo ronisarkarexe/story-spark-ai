@@ -91,7 +91,7 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
       
       {/* Zoom-in Card Cover Image */}
       <div className="relative h-44 w-full overflow-hidden bg-gray-100 dark:bg-[#0A0E17]">
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-100 via-gray-100/50 to-transparent z-10 pointer-events-none dark:from-[#0B0F19] dark:via-[#0B0F19]/50 dark:to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-gray-100 via-gray-100/50 to-transparent z-10 pointer-events-none dark:from-[#0B0F19] dark:via-[#0B0F19]/50 dark:to-transparent" />
         <ImageFallback
             src={image}
             alt={title}
@@ -172,7 +172,7 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
         {/* Generate CTA Button */}
         <button
           onClick={handleGenerateSimilar}
-          className="motion-cta w-full mt-auto py-4 rounded-xl bg-purple-100 text-purple-950 border border-purple-300 hover:bg-purple-200 hover:border-purple-400 text-base font-bold flex items-center justify-center gap-2.5 group/btn shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-lg hover:shadow-indigo-500/15 transition-all duration-300 dark:bg-gradient-to-r dark:from-blue-600/90 dark:to-indigo-600/90 dark:text-white dark:border-white/10 dark:hover:from-blue-600 dark:hover:to-indigo-600 dark:hover:border-indigo-300/40 dark:shadow-[0_4px_12px_rgba(0,0,0,0.2)] dark:hover:shadow-indigo-500/30"
+          className="motion-cta w-full mt-auto py-4 rounded-xl bg-purple-100 text-purple-950 border border-purple-300 hover:bg-purple-200 hover:border-purple-400 text-base font-bold flex items-center justify-center gap-2.5 group/btn shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-lg hover:shadow-indigo-500/15 transition-all duration-300 dark:bg-linear-to-r dark:from-blue-600/90 dark:to-indigo-600/90 dark:text-white dark:border-white/10 dark:hover:from-blue-600 dark:hover:to-indigo-600 dark:hover:border-indigo-300/40 dark:shadow-[0_4px_12px_rgba(0,0,0,0.2)] dark:hover:shadow-indigo-500/30"
         >
           <span>Generate Similar Story</span>
           <i className="motion-icon fas fa-wand-magic-sparkles text-base group-hover/btn:translate-x-1 group-hover/btn:rotate-12"></i>

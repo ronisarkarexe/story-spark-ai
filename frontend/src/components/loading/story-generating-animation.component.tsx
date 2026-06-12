@@ -95,7 +95,7 @@ const StoryGeneratingAnimation = ({ onCancel }: StoryGeneratingAnimationProps) =
       {/* Progress bar */}
       <div className="w-72 h-1.5 rounded-full bg-white/10 overflow-hidden">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400"
+          className="h-full rounded-full bg-linear-to-r from-blue-400 via-indigo-400 to-purple-400"
           initial={{ width: "18%" }}
           animate={{ width: ["18%", "88%", "18%"] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}

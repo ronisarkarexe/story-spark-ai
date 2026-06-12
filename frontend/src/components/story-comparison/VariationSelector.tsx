@@ -151,7 +151,7 @@ const VariationSelector: React.FC<VariationSelectorProps> = ({
         disabled={!isReadyToCompare || isLoading}
         className={`w-full py-3 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-2 ${
           isReadyToCompare && !isLoading
-            ? "bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 cursor-pointer active:scale-95"
+            ? "bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 cursor-pointer active:scale-95"
             : "bg-gray-400 dark:bg-gray-700 cursor-not-allowed opacity-50"
         }`}
       >

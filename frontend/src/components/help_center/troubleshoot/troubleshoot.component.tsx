@@ -69,13 +69,13 @@ const Troubleshoot: FC<TroubleshootProps> = ({ items }) => {
               <div className="absolute -top-10 -right-10 w-36 h-36 bg-orange-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               
               {/* Top Accent Line */}
-              <div className="absolute top-0 left-0 h-[2px] w-full bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              <div className="absolute top-0 left-0 h-[2px] w-full bg-linear-to-r from-orange-500 via-amber-500 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
               <div className="relative z-10 p-5 sm:p-7 w-full box-border">
                 {/* Item Details Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
                   {/* Dynamic Icon */}
-                  <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500/10 to-amber-500/10 border border-orange-500/20 text-orange-500 dark:text-orange-400 text-lg sm:text-xl shrink-0 select-none group-hover:scale-105 transition-transform duration-300">
+                  <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-linear-to-br from-orange-500/10 to-amber-500/10 border border-orange-500/20 text-orange-500 dark:text-orange-400 text-lg sm:text-xl shrink-0 select-none group-hover:scale-105 transition-transform duration-300">
                     <i className={item.icon || "fa-solid fa-bug"} aria-hidden="true"></i>
                   </div>
 

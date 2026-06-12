@@ -167,7 +167,7 @@ export const FloatingChatWidget: React.FC = () => {
         <button
           onClick={toggleWidget}
           aria-label="Open Sparky Chat Assistant"
-          className="relative group flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white shadow-[0_4px_20px_rgba(79,70,229,0.4)] border border-indigo-500/30 hover:scale-110 active:scale-95 transition-all duration-300 transform-gpu cursor-pointer"
+          className="relative group flex items-center justify-center h-14 w-14 rounded-full bg-linear-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white shadow-[0_4px_20px_rgba(79,70,229,0.4)] border border-indigo-500/30 hover:scale-110 active:scale-95 transition-all duration-300 transform-gpu cursor-pointer"
         >
           <i className="fa-regular fa-comment-dots text-xl animate-pulse"></i>
           
@@ -191,9 +191,9 @@ export const FloatingChatWidget: React.FC = () => {
         <div className="flex flex-col h-[560px] w-[380px] rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl shadow-[0_12px_40px_rgba(2,6,23,0.3)] animate-in slide-in-from-bottom-5 duration-300 transform-gpu overflow-hidden">
           
           {/* Chat Window Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 bg-gradient-to-r from-blue-600/5 to-purple-600/5">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 bg-linear-to-r from-blue-600/5 to-purple-600/5">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center h-9 w-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20">
+              <div className="flex items-center justify-center h-9 w-9 rounded-full bg-linear-to-tr from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20">
                 <i className="fa-solid fa-robot text-sm"></i>
               </div>
               <div className="flex flex-col">

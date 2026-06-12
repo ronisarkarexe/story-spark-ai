@@ -65,7 +65,7 @@ export default function BookShelf({ stories }: Props) {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold bg-linear-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent mb-2">
             📚 My Bookshelf
           </h1>
           <p className="text-white/40">Your personal story library</p>

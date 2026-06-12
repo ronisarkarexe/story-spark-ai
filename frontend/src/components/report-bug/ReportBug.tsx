@@ -143,7 +143,7 @@ const ReportBug = () => {
 
               {/* Form Card */}
               <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] blur opacity-10 group-hover:opacity-20 transition duration-1000" />
+                <div className="absolute -inset-1 bg-linear-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] blur opacity-10 group-hover:opacity-20 transition duration-1000" />
                 
                 <form
                   onSubmit={handleSubmit(onSubmit)}
@@ -382,7 +382,7 @@ const ReportBug = () => {
                           </>
                         )}
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-linear-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </button>
                   </div>
                 </form>

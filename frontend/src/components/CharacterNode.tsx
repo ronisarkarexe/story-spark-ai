@@ -32,7 +32,7 @@ const CharacterNode = ({ data }: NodeProps<any>) => {
 
       <div 
         style={{ width: `${size}px`, height: `${size}px` }}
-        className={`rounded-full bg-gradient-to-br from-slate-900 to-slate-950 border-2 ${borderGlow} flex items-center justify-center transition-all duration-300 hover:scale-105 cursor-pointer`}
+        className={`rounded-full bg-linear-to-br from-slate-900 to-slate-950 border-2 ${borderGlow} flex items-center justify-center transition-all duration-300 hover:scale-105 cursor-pointer`}
       >
         <span 
           style={{ fontSize: `${Math.max(10, size * 0.18)}px` }}

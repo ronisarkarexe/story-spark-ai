@@ -37,7 +37,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, isLoading }) => {
 
   return (
     <div 
-      className="relative overflow-hidden rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50/40 via-white to-amber-50/30 p-6 shadow-lg transition-all hover:shadow-xl dark:border-orange-500/10 dark:from-orange-500/5 dark:via-transparent dark:to-amber-500/5"
+      className="relative overflow-hidden rounded-2xl border border-orange-100 bg-linear-to-br from-orange-50/40 via-white to-amber-50/30 p-6 shadow-lg transition-all hover:shadow-xl dark:border-orange-500/10 dark:from-orange-500/5 dark:via-transparent dark:to-amber-500/5"
       role="region"
       aria-label="Writing Streak Tracker"
     >
@@ -61,7 +61,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, isLoading }) => {
         </div>
 
         <div 
-          className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 text-white shadow-md shadow-orange-500/20 animate-bounce"
+          className="flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-tr from-orange-500 to-amber-400 text-white shadow-md shadow-orange-500/20 animate-bounce"
           style={{ animationDuration: "3s" }}
           aria-hidden="true"
         >

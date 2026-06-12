@@ -1341,7 +1341,7 @@ ${content}
                 <button
                   type="button"
                   id="publish-story-btn"
-                  className="rounded-xl px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                  className="rounded-xl px-4 py-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-50"
                   onClick={handelPublishStory}
                   disabled={loading || !selectedStory}
                 >
@@ -1610,7 +1610,7 @@ ${content}
                   <button
                     type="button"
                     onClick={handleGenerateAlternateEndings}
-                    className="rounded-xl px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wider shadow-md shadow-blue-500/10 transition-all duration-150 hover:scale-105 active:scale-[0.98] flex items-center gap-2 cursor-pointer"
+                    className="rounded-xl px-5 py-3 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wider shadow-md shadow-blue-500/10 transition-all duration-150 hover:scale-105 active:scale-[0.98] flex items-center gap-2 cursor-pointer"
                   >
                     <i className="fa-solid fa-shuffle text-xs" /> Transform Endings
                   </button>
@@ -1944,7 +1944,7 @@ ${content}
           
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 w-full box-border border-b border-slate-200/60 dark:border-white/5 pb-6">
             <div className="text-left">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 bg-clip-text text-transparent bg-linear-to-r from-purple-400 to-blue-500">
                 {selectedStory.title}
               </h1>
               <div className="flex flex-wrap gap-2 select-none">
@@ -2037,7 +2037,7 @@ ${content}
                 <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowTranslator(true)}>
                   🌍 Translate
                 </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white border border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-sm" onClick={() => setShowContinueModal(true)}>
+                <button type="button" className="rounded-xl px-3 py-2 bg-linear-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white border border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-sm" onClick={() => setShowContinueModal(true)}>
                   ✦ Continue →
                 </button>
                 <button type="button" className={`rounded-xl px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50 ${loading ? 'opacity-70' : ''}`} onClick={handelPublishStory} disabled={loading}>
@@ -2175,7 +2175,7 @@ ${content}
                             <button
                               type="button"
                               onClick={() => handleApplyEnding(currentEndingData)}
-                              className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
+                              className="rounded-lg px-4 py-2 bg-linear-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
                             >
                               Apply to Story
                             </button>
@@ -2187,7 +2187,7 @@ ${content}
                         {/* Glassmorphic Anti-Gravity Scroll Control Panel Dock */}
                         <div className="bg-slate-100 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-slate-800/80 p-3.5 rounded-xl flex flex-wrap items-center justify-between gap-4 shadow-xl select-none">
                           <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-extrabold uppercase tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-cyan-500 dark:from-indigo-400 dark:to-cyan-400">
+                            <span className="text-[11px] font-extrabold uppercase tracking-widest bg-clip-text text-transparent bg-linear-to-r from-indigo-500 to-cyan-500 dark:from-indigo-400 dark:to-cyan-400">
                               Anti-Gravity Engine
                             </span>
                             <span className="text-[9px] bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20 px-1.5 py-0.5 rounded-full font-bold uppercase">
@@ -2216,7 +2216,7 @@ ${content}
                               className={`px-3.5 py-2 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
                                 isAntiGravityPlaying
                                   ? "bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 hover:bg-red-200 dark:hover:bg-red-500/20 active:scale-95"
-                                  : "bg-gradient-to-r from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-700 hover:from-indigo-600 hover:to-indigo-700 text-white shadow-md shadow-indigo-500/20 border border-indigo-500/30 active:scale-95"
+                                  : "bg-linear-to-r from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-700 hover:from-indigo-600 hover:to-indigo-700 text-white shadow-md shadow-indigo-500/20 border border-indigo-500/30 active:scale-95"
                               }`}
                             >
                               {isAntiGravityPlaying ? (
@@ -2260,7 +2260,7 @@ ${content}
                   type="button"
                   onClick={handleGenerateAlternateEndings}
                   disabled={isGeneratingEndings}
-                  className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-xl px-6 py-3 bg-linear-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Generate Alternate Endings
                 </button>
@@ -2310,7 +2310,7 @@ ${content}
         {/* ── Right Column ── */}
         <div className="col-span-1 lg:col-span-4">
           <div className="mb-5">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-purple-400 to-blue-500">
               Preview
             </h1>
           </div>

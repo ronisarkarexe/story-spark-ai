@@ -137,7 +137,7 @@ const PublishedStoriesComponent: React.FC = () => {
       )}
 
       {!isLoading && !isError && stories.length === 0 && (
-  <div className="rounded-2xl border border-dashed border-blue-200 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-12 text-center shadow-sm dark:border-blue-500/20 dark:from-blue-500/10 dark:via-[#0a1020] dark:to-indigo-500/10">
+  <div className="rounded-2xl border border-dashed border-blue-200 bg-linear-to-br from-blue-50 via-white to-indigo-50 p-12 text-center shadow-sm dark:border-blue-500/20 dark:from-blue-500/10 dark:via-[#0a1020] dark:to-indigo-500/10">
     <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-4xl text-blue-600 shadow-inner dark:bg-blue-500/15 dark:text-blue-300">
       <i className="fas fa-book-open"></i>
     </div>

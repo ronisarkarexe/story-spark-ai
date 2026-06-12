@@ -16,7 +16,7 @@ const ResourcesListComponent: React.FC = () => {
 
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-b from-white to-gray-500">
             Writing Resources
           </h1>
           <p className="text-slate-600 max-w-2xl dark:text-gray-400">

@@ -55,8 +55,8 @@ export default function DualScrollButton() {
         active:scale-95
         ${
           isBottomMode
-            ? "bg-gradient-to-br from-cyan-500 to-blue-500 shadow-[0_0_25px_rgba(6,182,212,0.45)] hover:shadow-[0_0_35px_rgba(59,130,246,0.65)]"
-            : "bg-gradient-to-br from-violet-600 to-fuchsia-500 shadow-[0_0_25px_rgba(139,92,246,0.45)] hover:shadow-[0_0_35px_rgba(217,70,239,0.65)]"
+            ? "bg-linear-to-br from-cyan-500 to-blue-500 shadow-[0_0_25px_rgba(6,182,212,0.45)] hover:shadow-[0_0_35px_rgba(59,130,246,0.65)]"
+            : "bg-linear-to-br from-violet-600 to-fuchsia-500 shadow-[0_0_25px_rgba(139,92,246,0.45)] hover:shadow-[0_0_35px_rgba(217,70,239,0.65)]"
         }
         ${
           visible
