@@ -31,7 +31,9 @@ const StoryInspirationPage: React.FC = () => {
 
   return (
     <div className="max-w-xl mx-auto p-6 bg-white rounded shadow mt-10">
-      <h2 className="text-2xl font-bold mb-4">Get Story Inspiration</h2>
+      <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+  Get Story Inspiration
+</h2>
       <textarea
         className="w-full border rounded p-2 mb-4"
         rows={4}
@@ -82,4 +84,3 @@ const StoryInspirationPage: React.FC = () => {
 };
 
 export default StoryInspirationPage;
-
