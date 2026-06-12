@@ -1,9 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import * as Y from "yjs";
 import { resolveSocketUrl } from "../../helpers/socket-url";
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
+
+interface RemoteCursor {
+  username: string;
+  color: string;
+  cursorIndex: number;
+}
 
 interface Participant {
   userId: string;
@@ -44,12 +51,48 @@ export default function CollabRoom() {
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newText, setNewText] = useState("");
+  const [editorText, setEditorText] = useState("");
   const [collabSocket, setCollabSocket] = useState<any>(null);
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
+  const [remoteCursors, setRemoteCursors] = useState<{ [userId: string]: RemoteCursor }>({});
 
   const user = getUserInfo();
+
+  // Yjs document instances
+  const ydoc = useMemo(() => new Y.Doc(), []);
+  const ytext = useMemo(() => ydoc.getText("story"), [ydoc]);
+
+  // Diff-match-patch character diff calculation for textarea CRDT integration
+  const applyDiff = (ytext: Y.Text, oldVal: string, newVal: string) => {
+    let commonStart = 0;
+    while (
+      commonStart < oldVal.length &&
+      commonStart < newVal.length &&
+      oldVal[commonStart] === newVal[commonStart]
+    ) {
+      commonStart++;
+    }
+
+    let commonEnd = 0;
+    while (
+      commonEnd + commonStart < oldVal.length &&
+      commonEnd + commonStart < newVal.length &&
+      oldVal[oldVal.length - 1 - commonEnd] === newVal[newVal.length - 1 - commonEnd]
+    ) {
+      commonEnd++;
+    }
+
+    const deleteCount = oldVal.length - commonStart - commonEnd;
+    const insertText = newVal.slice(commonStart, newVal.length - commonEnd);
+
+    if (deleteCount > 0) {
+      ytext.delete(commonStart, deleteCount);
+    }
+    if (insertText.length > 0) {
+      ytext.insert(commonStart, insertText);
+    }
+  };
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -77,32 +120,15 @@ export default function CollabRoom() {
 
       setCollabSocket(socketInstance);
 
-      // Join room
+      // Join room and request initial state
       socketInstance.emit("collab:join_room", { roomId });
-
-      // Request initial room details
-      socketInstance.emit("collab:get_room", { roomId }, (response: CollabRoomResponse) => {
-        if (response && response.room) {
-          setRoom(response.room);
-          setError(null);
-        } else {
-          setError(response.message || "Room not found");
-        }
-        setLoading(false);
-      });
+      socketInstance.emit("collab:yjs_join", { roomId });
 
       // Listeners
       const handleRoomUpdated = (data: CollabRoomResponse) => {
         if (data && data.room) {
           setRoom(data.room);
         }
-      };
-
-      const handleStoryUpdated = (data: CollabStoryResponse) => {
-        if (data && data.story) {
-          setRoom((prev) => (prev ? { ...prev, story: data.story! } : null));
-        }
-        setIsAiThinking(false);
       };
 
       const handleUserTyping = (data: { userId: string; username: string }) => {
@@ -125,19 +151,59 @@ export default function CollabRoom() {
         setError(data.message || "Collaboration error occurred.");
       };
 
+      // Yjs Init and Update listeners
+      socketInstance.on("collab:yjs_init", ({ yjsState }: { yjsState: any }) => {
+        if (yjsState) {
+          Y.applyUpdate(ydoc, new Uint8Array(yjsState.data || yjsState));
+        }
+        setEditorText(ytext.toString());
+        setLoading(false);
+      });
+
+      socketInstance.on("collab:yjs_update", ({ update }: { update: any }) => {
+        const binaryUpdate = new Uint8Array(update.data || update);
+        Y.applyUpdate(ydoc, binaryUpdate, socketInstance);
+      });
+
+      socketInstance.on(
+        "collab:cursor_update",
+        (data: { userId: string; username: string; color: string; cursorIndex: number }) => {
+          setRemoteCursors((prev) => ({
+            ...prev,
+            [data.userId]: {
+              username: data.username,
+              color: data.color,
+              cursorIndex: data.cursorIndex,
+            },
+          }));
+        }
+      );
+
       socketInstance.on("collab:room_updated", handleRoomUpdated);
-      socketInstance.on("collab:story_updated", handleStoryUpdated);
       socketInstance.on("collab:user_typing", handleUserTyping);
       socketInstance.on("collab:user_stop_typing", handleUserStopTyping);
       socketInstance.on("collab:ai_thinking", handleAiThinking);
       socketInstance.on("collab:error", handleError);
 
+      // Yjs Doc changes sync callback
+      const handleDocUpdate = (update: Uint8Array, origin: any) => {
+        if (origin !== socketInstance) {
+          socketInstance.emit("collab:yjs_update", { roomId, update: Array.from(update) });
+        }
+        setEditorText(ytext.toString());
+        setIsAiThinking(false);
+      };
+      ydoc.on("update", handleDocUpdate);
+
       return () => {
+        ydoc.off("update", handleDocUpdate);
         socketInstance.off("collab:room_updated", handleRoomUpdated);
-        socketInstance.off("collab:story_updated", handleStoryUpdated);
         socketInstance.off("collab:user_typing", handleUserTyping);
         socketInstance.off("collab:user_stop_typing", handleUserStopTyping);
         socketInstance.off("collab:ai_thinking", handleAiThinking);
+        socketInstance.off("collab:yjs_init");
+        socketInstance.off("collab:yjs_update");
+        socketInstance.off("collab:cursor_update");
         socketInstance.off("collab:error", handleError);
         socketInstance.disconnect();
       };
@@ -146,30 +212,25 @@ export default function CollabRoom() {
       setError("Failed to initialize collaboration space.");
       setLoading(false);
     }
-  }, [roomId, navigate]);
+  }, [roomId, navigate, ydoc, ytext]);
 
-  const handleAddText = () => {
-    if (!newText.trim() || !user || !roomId || !collabSocket) return;
-
-    collabSocket.emit("collab:add_text", {
-      roomId,
-      text: newText.trim(),
-    });
-    collabSocket.emit("collab:stop_typing", { roomId });
-    setNewText("");
-  };
-
-  let typingTimeout: any;
-  const handleInputChange = (val: string) => {
-    setNewText(val);
+  const handleLocalTextChange = (val: string) => {
     if (!collabSocket || !roomId) return;
+    const oldVal = ytext.toString();
+    ydoc.transact(() => {
+      applyDiff(ytext, oldVal, val);
+    });
+    setEditorText(val);
 
     collabSocket.emit("collab:typing", { roomId });
+  };
 
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
-      collabSocket.emit("collab:stop_typing", { roomId });
-    }, 2000);
+  const handleCursorChange = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
+    const target = e.currentTarget;
+    const cursorIndex = target.selectionStart;
+    if (collabSocket && roomId) {
+      collabSocket.emit("collab:cursor_update", { roomId, cursorIndex });
+    }
   };
 
   const handleAIContinue = () => {
@@ -215,9 +276,7 @@ export default function CollabRoom() {
             className="group inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors bg-transparent border-none outline-none cursor-pointer"
           >
             <i className="fas fa-arrow-left text-sm transform group-hover:-translate-x-1 transition-transform"></i>
-            <span className="text-sm font-semibold tracking-wide">
-              Leave Collab Room
-            </span>
+            <span className="text-sm font-semibold tracking-wide">Leave Collab Room</span>
           </button>
         </div>
 
@@ -228,62 +287,67 @@ export default function CollabRoom() {
               <h1 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                 Collab Room Canvas
               </h1>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mb-2">Room ID: {roomId}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">Room ID: {roomId}</p>
 
-              <div className="bg-slate-50 dark:bg-slate-950/40 rounded-xl p-4 min-h-[300px] max-h-[500px] overflow-y-auto border border-slate-150 dark:border-white/5 mb-4">
-                {room?.story && room.story.length > 0 ? (
-                  <div className="space-y-4">
-                    {room.story.map((chunk, idx) => (
-                      <div key={idx} className="text-sm border-l-4 pl-3" style={{ borderLeftColor: chunk.color }}>
-                        <span className="font-semibold block mb-0.5 text-xs text-slate-400" style={{ color: chunk.color }}>
-                          {chunk.authorName}
-                        </span>
-                        <span className="text-slate-700 dark:text-slate-350">{chunk.text}</span>
-                      </div>
-                    ))}
-                  </div>
+              <div className="relative w-full">
+                <textarea
+                  value={editorText}
+                  onChange={(e) => handleLocalTextChange(e.target.value)}
+                  onSelect={handleCursorChange}
+                  onKeyUp={handleCursorChange}
+                  placeholder="Start writing the story collaboratively here..."
+                  className="w-full min-h-[400px] p-6 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-blue-500 font-serif text-lg leading-relaxed resize-y box-border transition-colors duration-200"
+                  disabled={isAiThinking}
+                />
+              </div>
+
+              {isAiThinking && (
+                <div className="flex items-center gap-2 mt-4 text-purple-500 italic text-xs select-none">
+                  <div className="animate-spin w-3 h-3 border-2 border-purple-500 border-t-transparent rounded-full"></div>
+                  AI is writing the next segment...
+                </div>
+              )}
+
+              {Object.keys(typingUsers).length > 0 && (
+                <p className="text-xs text-indigo-500 italic mt-2 animate-pulse select-none">
+                  {Object.values(typingUsers).join(", ")}{" "}
+                  {Object.keys(typingUsers).length === 1 ? "is" : "are"} typing...
+                </p>
+              )}
+
+              {/* Remote Cursors Presence Overlay Status */}
+              <div className="mt-4 flex flex-wrap gap-2 items-center select-none">
+                <span className="text-xs text-slate-400 font-medium">Remote Cursors:</span>
+                {Object.keys(remoteCursors).length > 0 ? (
+                  Object.entries(remoteCursors).map(([id, info]) => (
+                    <span
+                      key={id}
+                      className="px-2.5 py-1 rounded-full text-xs font-bold border transition-all duration-150 flex items-center gap-1.5"
+                      style={{
+                        borderColor: info.color,
+                        color: info.color,
+                        backgroundColor: `${info.color}10`,
+                      }}
+                    >
+                      <span
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: info.color }}
+                      ></span>
+                      {info.username} (char {info.cursorIndex})
+                    </span>
+                  ))
                 ) : (
-                  <div className="text-center py-24 text-slate-400">
-                    <p className="mb-2">Story is currently empty.</p>
-                    <p className="text-xs">Type below or click AI continue to start writing!</p>
-                  </div>
-                )}
-
-                {isAiThinking && (
-                  <div className="flex items-center gap-2 mt-4 text-purple-500 italic text-xs">
-                    <div className="animate-spin w-3 h-3 border-2 border-purple-500 border-t-transparent rounded-full"></div>
-                    AI is writing the next segment...
-                  </div>
-                )}
-
-                {Object.keys(typingUsers).length > 0 && (
-                  <p className="text-xs text-indigo-500 italic mt-2 animate-pulse">
-                    {Object.values(typingUsers).join(", ")} {Object.keys(typingUsers).length === 1 ? "is" : "are"} typing...
-                  </p>
+                  <span className="text-xs text-slate-400 italic">No other active cursors</span>
                 )}
               </div>
 
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newText}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddText()}
-                  placeholder="Add to the story..."
-                  className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
-                />
-                <button
-                  onClick={handleAddText}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer"
-                >
-                  Send
-                </button>
+              <div className="flex justify-end gap-2 mt-6">
                 <button
                   onClick={handleAIContinue}
                   disabled={isAiThinking}
-                  className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-55 text-white rounded-xl font-medium transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-55 text-white rounded-xl font-medium transition-colors cursor-pointer flex items-center gap-1.5 shadow-md"
                 >
-                  AI ✨
+                  AI Spark ✨
                 </button>
               </div>
             </div>
@@ -305,7 +369,9 @@ export default function CollabRoom() {
                       className="w-3 h-3 rounded-full shrink-0"
                       style={{ backgroundColor: p.color }}
                     ></div>
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-350">{p.username}</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-350">
+                      {p.username}
+                    </span>
                   </div>
                 ))
               ) : (

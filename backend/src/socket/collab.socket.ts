@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import * as Y from "yjs";
 import crypto from "crypto";
 import logger from "../utils/logger.util";
 import { AiModelService } from "../app/modules/ai_model/ai_model.service";
@@ -124,43 +125,43 @@ export const setupCollabSocket = (io: Server) => {
       }
     });
 
-    // User adds text to story
-    socket.on("collab:add_text", async ({ roomId, text }) => {
+    // Yjs collaboration state initial synchronization
+    socket.on("collab:yjs_join", async ({ roomId }) => {
       try {
-        const userId = socket.data.userId;
         const room = await CollabRoom.findOne({ roomId });
         if (!room) return;
-
-        const participant = room.participants.find((p) => p.userId === userId);
-        if (!participant) {
-          socket.emit("collab:error", {
-            message: "You are not a participant of this room",
-          });
-          return;
-        }
-
-        const chunk: IStoryChunk = {
-          authorId: userId,
-          authorName: participant.username,
-          color: participant.color,
-          text,
-          isAI: false,
-          timestamp: new Date(),
-        };
-
-        room.story.push(chunk);
-        await room.save();
-
-        collabNamespace
-          .to(roomId)
-          .emit("collab:story_updated", { story: room.story, newChunk: chunk });
+        socket.emit("collab:yjs_init", {
+          yjsState: room.yjsState ? room.yjsState : null,
+        });
       } catch (error) {
-        logger.error("Failed to add text to collab room", error);
-        socket.emit("collab:error", { message: "Failed to add text." });
+        logger.error("Failed Yjs join room", error);
       }
     });
 
-    // AI continues the story
+    // Receive and broadcast Yjs updates
+    socket.on("collab:yjs_update", async ({ roomId, update }) => {
+      try {
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) return;
+
+        // Broadcast to everyone else in the room
+        socket.to(roomId).emit("collab:yjs_update", { update });
+
+        // Merge and save Yjs state binary update
+        const binaryUpdate = new Uint8Array(update);
+        const existingState = room.yjsState ? new Uint8Array(room.yjsState) : null;
+        const mergedState = existingState 
+          ? Buffer.from(Y.mergeUpdates([existingState, binaryUpdate]))
+          : Buffer.from(binaryUpdate);
+
+        room.yjsState = mergedState;
+        await room.save();
+      } catch (error) {
+        logger.error("Failed Yjs update processing", error);
+      }
+    });
+
+    // AI continues the story using Yjs document state
     socket.on("collab:ai_continue", async ({ roomId }) => {
       try {
         const room = await CollabRoom.findOne({ roomId });
@@ -203,10 +204,13 @@ export const setupCollabSocket = (io: Server) => {
           await runWithQuotaCleanup(guard, async () => {
             collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
 
-            const storyContext = room.story
-              .map((chunk) => chunk.text)
-              .filter(Boolean)
-              .join("\n");
+            // Reconstruct story context from Yjs binary doc
+            const doc = new Y.Doc();
+            if (room.yjsState) {
+              Y.applyUpdate(doc, new Uint8Array(room.yjsState));
+            }
+            const ytext = doc.getText("story");
+            const storyContext = ytext.toString().trim();
 
             const prompt = storyContext
               ? `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${storyContext}\n\nContinuation:`
@@ -223,24 +227,21 @@ export const setupCollabSocket = (io: Server) => {
               throw new Error("Empty response from AI");
             }
 
-            const aiChunk: IStoryChunk = {
-              authorId: "ai",
-              authorName: "✨ AI",
-              color: "#d4af37",
-              text: continuationText,
-              isAI: true,
-              timestamp: new Date(),
-            };
+            // Append AI text to doc and broadcast
+            const appendedText = storyContext ? "\n\n" + continuationText : continuationText;
+            ytext.insert(ytext.length, appendedText);
+
+            const aiUpdate = Y.encodeStateAsUpdate(doc);
+            collabNamespace.to(roomId).emit("collab:yjs_update", { update: Buffer.from(aiUpdate) });
 
             const latestRoom = await CollabRoom.findOne({ roomId });
             if (latestRoom) {
-              latestRoom.story.push(aiChunk);
+              const existingState = latestRoom.yjsState ? new Uint8Array(latestRoom.yjsState) : null;
+              const mergedState = existingState
+                ? Buffer.from(Y.mergeUpdates([existingState, aiUpdate]))
+                : Buffer.from(aiUpdate);
+              latestRoom.yjsState = mergedState;
               await latestRoom.save();
-
-              collabNamespace.to(roomId).emit("collab:story_updated", {
-                story: latestRoom.story,
-                newChunk: aiChunk,
-              });
             }
           });
         } catch (error) {

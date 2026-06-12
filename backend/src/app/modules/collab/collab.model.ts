@@ -23,6 +23,7 @@ const CollabRoomSchema = new Schema<ICollabRoom>(
     createdBy: { type: String, required: true },
     participants: { type: [ParticipantSchema], default: [] },
     story: { type: [StoryChunkSchema], default: [] },
+    yjsState: { type: Schema.Types.Buffer, required: false },
     expiresAt: { type: Date, required: true },
   },
   {

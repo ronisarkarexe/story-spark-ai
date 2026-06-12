@@ -3,6 +3,7 @@ export interface ICollabRoom {
   createdBy: string;
   participants: IParticipant[];
   story: IStoryChunk[];
+  yjsState?: Buffer;
   createdAt: Date;
   expiresAt: Date;
 }
