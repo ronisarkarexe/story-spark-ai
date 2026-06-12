@@ -18,6 +18,7 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
       },
     ],
     author: { type: Schema.Types.ObjectId, ref: "User" },
+    universeId: { type: Schema.Types.ObjectId, ref: "Universe", default: null },
     likesCount: { type: Number, default: 0 },
     commentsCount: { type: Number, default: 0 },
     bookmarksCount: { type: Number, default: 0 },

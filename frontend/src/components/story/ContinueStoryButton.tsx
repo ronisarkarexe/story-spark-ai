@@ -22,8 +22,11 @@ const ContinueStoryButton = () => {
     try {
       setLoading(true);
 
+      const storedUniverseId = localStorage.getItem("story_universe_" + currentStory.id) || undefined;
       const nextChapter = await continueStory(
-        currentStory.chapters
+        currentStory.chapters,
+        storedUniverseId,
+        currentStory.id
       );
 
       dispatch(addChapter(nextChapter));

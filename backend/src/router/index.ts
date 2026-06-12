@@ -26,6 +26,7 @@ import { StoryVisualizerRouter } from "../app/modules/story_visualizer/story_vis
 import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_inspiration.router";
 import { EngagementRouter } from "../app/modules/engagement/engagement.router";
 import { ChatRouter } from "../app/modules/chat/chat.router";
+import { UniverseRouter } from "../app/modules/universe/universe.router";
 
 const router = express.Router();
 
@@ -137,6 +138,10 @@ const modules = [
   {
     path: "/chat",
     router: ChatRouter,
+  },
+  {
+    path: "/universes",
+    router: UniverseRouter,
   },
 ];
 

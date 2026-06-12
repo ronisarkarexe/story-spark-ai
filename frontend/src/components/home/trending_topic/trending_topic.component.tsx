@@ -15,7 +15,7 @@ const TrendingTopicComponent = () => {
             className="story-chip px-3 py-1.5 text-sm font-semibold text-blue-600 dark:text-blue-200"
           >
             {topic.title}
-          </span>
+          </a>
         ))}
       </div>
     </section>

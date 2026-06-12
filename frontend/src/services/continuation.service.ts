@@ -4,7 +4,9 @@ import { Chapter } from "../types/story.types";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const continueStory = async (
-  chapters: Chapter[]
+  chapters: Chapter[],
+  universeId?: string,
+  storyId?: string
 ) => {
   const previousContent = chapters
     .map((chapter) => chapter.content)
@@ -25,6 +27,8 @@ Rules:
 Story:
 ${previousContent}
       `,
+      universeId,
+      storyId,
     }
   );
 

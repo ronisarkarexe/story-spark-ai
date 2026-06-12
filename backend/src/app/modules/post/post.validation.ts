@@ -40,6 +40,7 @@ const updatePost = z.object({
     topic: z.array(TopicSchema).min(2).max(20).optional(),
     language: z.string().max(50).optional(),
     isPublished: z.boolean().optional(),
+    universeId: z.string().nullable().optional(),
   }),
 });
 

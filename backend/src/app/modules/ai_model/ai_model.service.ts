@@ -21,6 +21,8 @@ import {
   chatWithGemini,
 } from "./ai_model.utils";
 import { assertSuccessfulGeneration } from "./quota.lifecycle";
+import { Post } from "../post/post.model";
+import { UniverseService } from "../universe/universe.service";
 
 const AUTHENTICATED_GENERATION_TIMEOUT_MS = 60000;
 const FREE_GENERATION_TIMEOUT_MS = 60000;
@@ -42,7 +44,46 @@ const normalizeStoryPayload = (payload: IAIModel) => ({
   tone: payload.tone ?? undefined,
   genre: payload.genre ?? undefined,
   characters: payload.characters ?? undefined,
+  universeId: payload.universeId ?? undefined,
+  storyId: payload.storyId ?? undefined,
 });
+
+const getEnrichedPrompt = async (
+  prompt: string,
+  universeId?: string,
+  storyId?: string
+): Promise<string> => {
+  let resolvedUniverseId: string | undefined = universeId;
+
+  // Resolve universeId from storyId if not provided
+  if (!resolvedUniverseId && storyId) {
+    try {
+      const post = await Post.findById(storyId);
+      if (post && post.universeId) {
+        resolvedUniverseId = post.universeId.toString();
+      }
+    } catch (err) {
+      console.error("Error resolving universeId from storyId:", err);
+    }
+  }
+
+  if (resolvedUniverseId) {
+    try {
+      const matchingLore = await UniverseService.retrieveLore(resolvedUniverseId, prompt);
+      if (matchingLore && matchingLore.length > 0) {
+        const loreContext = matchingLore
+          .map((m) => `[Lore - ${m.type.toUpperCase()}] ${m.title}: ${m.content}`)
+          .join("\n");
+
+        return `### STORY UNIVERSE LORE CONTEXT (maintain consistency with these details):\n${loreContext}\n\n### USER GENERATION PROMPT:\n${prompt}`;
+      }
+    } catch (err) {
+      console.error("Error retrieving lore context:", err);
+    }
+  }
+
+  return prompt;
+};
 
 const mapGenerationError = (error: unknown, message: string): never => {
   if (error instanceof ApiError) {
@@ -63,14 +104,16 @@ const mapGenerationError = (error: unknown, message: string): never => {
 // Bug fix 1: quota.lifecycle owns rollback — no manual User.updateOne needed.
 // Bug fix 2: _token kept as unused param (quota handled upstream by middleware).
 const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload) => {
-  const { prompt, wordLength, numStories, language, tone, genre, characters } =
+  const { prompt, wordLength, numStories, language, tone, genre, characters, universeId, storyId } =
     normalizeStoryPayload(payload);
+
+  const enrichedPrompt = await getEnrichedPrompt(prompt, universeId, storyId);
 
   try {
     const result = await raceGenerationWithTimeout(
       (signal) =>
         generateWithGeminiStories(
-          prompt,
+          enrichedPrompt,
           wordLength,
           numStories,
           language,
@@ -89,14 +132,16 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload) => {
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel) => {
-  const { prompt, wordLength, numStories, language, tone, genre, characters } =
+  const { prompt, wordLength, numStories, language, tone, genre, characters, universeId, storyId } =
     normalizeStoryPayload(payload);
+
+  const enrichedPrompt = await getEnrichedPrompt(prompt, universeId, storyId);
 
   try {
     const result = await raceGenerationWithTimeout(
       (signal) =>
         generateWithGeminiStories(
-          prompt,
+          enrichedPrompt,
           wordLength,
           numStories,
           language,
@@ -202,14 +247,16 @@ const aiFreeModelTranslate = async (payload: ITranslatePayload) => {
 };
 
 const aiModelStoryContinuation = async (
-  payload: { prompt: string; language?: string },
+  payload: { prompt: string; language?: string; universeId?: string; storyId?: string },
   _token?: ITokenPayload
 ) => {
-  const { prompt, language = "English" } = payload;
+  const { prompt, language = "English", universeId, storyId } = payload;
+
+  const enrichedPrompt = await getEnrichedPrompt(prompt, universeId, storyId);
 
   try {
     const result = await raceGenerationWithTimeout(
-      (signal) => generateStoryContinuationWithGemini(prompt, language, signal),
+      (signal) => generateStoryContinuationWithGemini(enrichedPrompt, language, signal),
       AUTHENTICATED_GENERATION_TIMEOUT_MS
     );
     return result;
@@ -218,12 +265,14 @@ const aiModelStoryContinuation = async (
   }
 };
 
-const aiFreeStoryContinuation = async (payload: { prompt: string; language?: string }) => {
-  const { prompt, language = "English" } = payload;
+const aiFreeStoryContinuation = async (payload: { prompt: string; language?: string; universeId?: string; storyId?: string }) => {
+  const { prompt, language = "English", universeId, storyId } = payload;
+
+  const enrichedPrompt = await getEnrichedPrompt(prompt, universeId, storyId);
 
   try {
     const result = await raceGenerationWithTimeout(
-      (signal) => generateStoryContinuationWithGemini(prompt, language, signal),
+      (signal) => generateStoryContinuationWithGemini(enrichedPrompt, language, signal),
       FREE_GENERATION_TIMEOUT_MS
     );
     return result;

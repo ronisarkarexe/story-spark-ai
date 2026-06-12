@@ -227,6 +227,44 @@ const SignUpComponent = () => {
     }
   };
 
+  const handleResendOtp = async () => {
+    if (!registerInfo) return;
+    setIsBusy(true);
+    try {
+      const res = await emailVerify({
+        name: registerInfo.name,
+        email: registerInfo.email,
+      }).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        toast.success("OTP resent successfully!");
+        setCooldown(60);
+      }
+    } catch (err) {
+      toast.error("Failed to resend OTP. Please try again.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    setIsBusy(true);
+    try {
+      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
+      if (res.data.accessToken) {
+        toast.success("Logged in successfully!");
+        storeUserInfo({ accessToken: res.data.accessToken });
+        navigate("/");
+      }
+    } catch (err) {
+      toast.error("Google login failed. Please try again.");
+      console.log(err);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
   const handleGoogleLoginError = () => {
     toast.error("Google login failed. Please try again.");
   };

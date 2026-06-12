@@ -277,7 +277,12 @@ const aiFreeModelChat = catchAsync(async (req: Request, res: Response) => {
 });
 
 const aiStoryContinuation = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body as { prompt: string; language?: string };
+  const payload = req.body as {
+    prompt: string;
+    language?: string;
+    universeId?: string;
+    storyId?: string;
+  };
   const guard = res.locals.quotaRefundGuard;
 
   if (!guard) {
@@ -299,7 +304,12 @@ const aiStoryContinuation = catchAsync(async (req: Request, res: Response) => {
 });
 
 const aiFreeStoryContinuation = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body as { prompt: string; language?: string };
+  const payload = req.body as {
+    prompt: string;
+    language?: string;
+    universeId?: string;
+    storyId?: string;
+  };
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
