@@ -467,7 +467,7 @@ const StoriesComponent = () => {
   const storiesPerPage = 10;
   const location = useLocation();
   const navigate = useNavigate();
-  const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
+  const { register, handleSubmit, reset, setValue, formState: { isSubmitting, isValidating } } = useForm<Inputs>();
 
   const draft = useMemo(() => {
     try {
@@ -770,7 +770,7 @@ useEffect(() => {
   }, [setValue, reset]);
 
   const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
-    if (isGenerationInProgressRef.current) {
+    if (isGenerationInProgressRef.current || loading || isSubmitting || isValidating) {
       return;
     }
 
@@ -788,9 +788,6 @@ useEffect(() => {
       toast.error(
         "Please enter a prompt with at least 10 words to generate a story."
       );
-      return;
-    }
-      toast.error("Please enter a prompt with at least 10 words to generate a story.");
       return;
     }
 
@@ -825,25 +822,12 @@ useEffect(() => {
       }, 60000);
 
       const payload = {
-        prompt: selectedGenre
-          ? `[Genre: ${selectedGenre}] ${data.prompt}`
-          : data.prompt,
-        wordLength:
-          selectedLength === "short"
-            ? 175
-            : selectedLength === "long"
-            ? 800
-            : 450,
         prompt: selectedGenre ? `[Genre: ${selectedGenre}] ${data.prompt}` : data.prompt,
         wordLength: selectedLength === "short" ? 175 : selectedLength === "long" ? 800 : 450,
         language: selectedLanguage,
         tone: selectedTone || undefined,
         characters: characters.map(({ name, role, personality }) => ({ name, role, personality })),
       };
-      const generationRequest = login
-        ? generateModel(payload)
-        : generateFreeModel(payload);
-
       const generationRequest = login ? generateModel(payload) : generateFreeModel(payload);
       activeGenerationRef.current = generationRequest;
       const res = await generationRequest.unwrap();
@@ -856,9 +840,6 @@ useEffect(() => {
         setValue("prompt", "");
         // Clear draft after successful generation
         localStorage.removeItem("story_spark_draft");
-        if (selectedGenre) {
-          playSoundtrack(selectedGenre);
-        }
         localStorage.removeItem(DRAFT_KEY);
         setDraftStatus("");
         reset();
@@ -907,16 +888,6 @@ useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
-  };
-
-  const handlePublishSuccess = () => {
-    setTextareaValue("");
-    setSelectedPrompt("");
-    setValue("prompt", "");
-    setCharacters([]);
-    setCurrentStep(1);
-    reset();
-  };
   }, [
     login,
     guestRequestCount,
@@ -930,11 +901,14 @@ useEffect(() => {
     setValue,
     playSoundtrack,
     handleCancelGeneration,
+    loading,
+    isSubmitting,
+    isValidating,
   ]);
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
-  const isGenerateDisabled = loading || isOverLimit || !textareaValue.trim();
+  const isGenerateDisabled = loading || isSubmitting || isValidating || isOverLimit || !textareaValue.trim();
 
   const handleOpenHelp = useCallback(() => setShowHelpModal(true), []);
   const handleCloseHelp = useCallback(() => setShowHelpModal(false), []);
@@ -1118,7 +1092,7 @@ useEffect(() => {
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
             <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white overflow-hidden">
               <div className="relative w-full">
-                <form className="space-y-4 w-full" onSubmit={handleSubmit(onSubmit)}>
+                <form className={`space-y-4 w-full ${loading || isSubmitting || isValidating ? "pointer-events-none opacity-60" : ""}`} onSubmit={handleSubmit(onSubmit)}>
                   
                   {/* â”€â”€ Genre chips â”€â”€ */}
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -1161,7 +1135,7 @@ useEffect(() => {
 
         <div className="max-w-3xl mx-auto w-full box-border space-y-6">
           <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-sm hover:shadow-xl transition-shadow duration-300 w-full box-border">
-            <form className="space-y-6 w-full box-border" onSubmit={handleSubmit(onSubmit)}>
+            <form className={`space-y-6 w-full box-border ${loading || isSubmitting || isValidating ? "pointer-events-none opacity-60" : ""}`} onSubmit={handleSubmit(onSubmit)}>
               {currentStep === 1 ? (
                 <>
                   {/* Step 1 Content */}
@@ -1525,19 +1499,19 @@ useEffect(() => {
                   <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5 w-full box-border select-none">
                     <button
                       type="submit"
-                      disabled={loading || isOverLimit}
-                      aria-busy={loading}
-                      aria-disabled={loading || isOverLimit}
+                      disabled={loading || isSubmitting || isValidating || isOverLimit}
+                      aria-busy={loading || isSubmitting || isValidating}
+                      aria-disabled={loading || isSubmitting || isValidating || isOverLimit}
                       className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
-                        loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                        loading || isSubmitting || isValidating || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                       } group`}
                     >
-                      {loading ? (
+                      {loading || isSubmitting || isValidating ? (
                         <i className="fas fa-circle-notch text-sm animate-spin" />
                       ) : (
                         <i className="fas fa-wand-magic-sparkles text-sm group-hover:scale-110 transition-transform duration-200" />
                       )}
-                      <span>{loading ? text.generating : text.generate}</span>
+                      <span>{loading || isSubmitting || isValidating ? text.generating : text.generate}</span>
                     </button>
                   </div>
                   {loading && (
@@ -1729,17 +1703,17 @@ useEffect(() => {
     <div className="flex justify-end mt-2 w-full">
       <button
         type="submit"
-        disabled={loading || isOverLimit}
-        aria-busy={loading}
-        aria-disabled={loading || isOverLimit}
+        disabled={loading || isSubmitting || isValidating || isOverLimit}
+        aria-busy={loading || isSubmitting || isValidating}
+        aria-disabled={loading || isSubmitting || isValidating || isOverLimit}
         className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-          loading || isOverLimit
+          loading || isSubmitting || isValidating || isOverLimit
             ? "opacity-50 cursor-not-allowed"
             : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
         } transition-all duration-300 transform flex items-center space-x-2 group`}
       >
         <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
-        {loading ? "Generating..." : "Generate"}
+        {loading || isSubmitting || isValidating ? "Generating..." : "Generate"}
       </button>
     </div>
   </form>
@@ -1756,15 +1730,15 @@ useEffect(() => {
               <div className="flex justify-end pt-2 w-full box-border">
                 <button
                   type="submit"
-                  disabled={loading || isOverLimit}
-                  aria-busy={loading}
-                  aria-disabled={loading || isOverLimit}
+                  disabled={loading || isSubmitting || isValidating || isOverLimit}
+                  aria-busy={loading || isSubmitting || isValidating}
+                  aria-disabled={loading || isSubmitting || isValidating || isOverLimit}
                   className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
-                    loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                    loading || isSubmitting || isValidating || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                   } group`}
                 >
                   <i className="fas fa-wand-magic-sparkles text-sm group-hover:scale-110 transition-transform duration-200" />
-                  <span>{loading ? text.generating : text.generate}</span>
+                  <span>{loading || isSubmitting || isValidating ? text.generating : text.generate}</span>
                 </button>
               </div>
                 </>

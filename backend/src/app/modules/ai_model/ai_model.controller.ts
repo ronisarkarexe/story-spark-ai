@@ -12,6 +12,7 @@ import {
   runWithQuotaCleanup,
 } from "./quota.lifecycle";
 import { generateWithGeminiStoriesStream } from "./ai_model.utils";
+import { checkAndTrackRequest, releaseRequest } from "../../../utils/idempotency";
 
 const aiModelGenerate = catchAsync(async (req: Request, res: Response) => {
   const prompt = req.body;
@@ -24,15 +25,29 @@ const aiModelGenerate = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  await runWithQuotaCleanup(guard, async () => {
-    const result = await AiModelService.aiModelGenerate(prompt);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Stories generated successfully!",
-      data: result,
+  const user = (req as any).user;
+  const userIdentifier = user?._id || user?.email || req.ip || "unknown";
+
+  if (!checkAndTrackRequest(userIdentifier, prompt)) {
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      "A duplicate request is already in progress. Please wait."
+    );
+  }
+
+  try {
+    await runWithQuotaCleanup(guard, async () => {
+      const result = await AiModelService.aiModelGenerate(prompt);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Stories generated successfully!",
+        data: result,
+      });
     });
-  });
+  } finally {
+    releaseRequest(userIdentifier, prompt);
+  }
 });
 
 const aiFreeModelGenerate = catchAsync(async (req: Request, res: Response) => {
@@ -44,17 +59,30 @@ const aiFreeModelGenerate = catchAsync(async (req: Request, res: Response) => {
     setGuestUserIdCookie(res, userId);
   }
 
+  const userIdentifier = userId || req.ip || "guest";
+
+  if (!checkAndTrackRequest(userIdentifier, prompt)) {
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      "A duplicate request is already in progress. Please wait."
+    );
+  }
+
   const guard = createGuestQuotaGuard(userId);
-  await runWithQuotaCleanup(guard, async () => {
-    await reserveGuestQuota(userId);
-    const result = await AiModelService.aiFreeModelGenerate(prompt);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Story generated successfully!",
-      data: result,
+  try {
+    await runWithQuotaCleanup(guard, async () => {
+      await reserveGuestQuota(userId);
+      const result = await AiModelService.aiFreeModelGenerate(prompt);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Story generated successfully!",
+        data: result,
+      });
     });
-  });
+  } finally {
+    releaseRequest(userIdentifier, prompt);
+  }
 });
 
 const aiModelAlternateEndings = catchAsync(async (req: Request, res: Response) => {
@@ -107,8 +135,17 @@ const aiModelGenerateStream = async (req: Request, res: Response) => {
   const { prompt, wordLength, numStories } = req.body;
   const guard = res.locals.quotaRefundGuard;
 
-  if (!guard) {                                           // ← ADD
+  if (!guard) {
     res.status(500).json({ error: "Quota guard missing" });
+    return;
+  }
+
+  const user = (req as any).user;
+  const userIdentifier = user?._id || user?.email || req.ip || "unknown";
+  const payloadForDeduplication = { prompt, wordLength, numStories };
+
+  if (!checkAndTrackRequest(userIdentifier, payloadForDeduplication)) {
+    res.status(409).json({ error: "A duplicate request is already in progress. Please wait." });
     return;
   }
 
@@ -123,26 +160,30 @@ const aiModelGenerateStream = async (req: Request, res: Response) => {
     controller.abort();
   });
 
-await runWithQuotaCleanup(guard, async () => {
   try {
-    await generateWithGeminiStoriesStream(
-      prompt,
-      wordLength ?? 250,
-      numStories ?? 2,
-      (chunk: string) => {
-        res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
-      },
-      controller.signal
-    );
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
-    } catch (error: unknown) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    res.write(`data: ${JSON.stringify({ error: errorMsg })}\n\n`);
-    res.end();
-    throw error;
+    await runWithQuotaCleanup(guard, async () => {
+      try {
+        await generateWithGeminiStoriesStream(
+          prompt,
+          wordLength ?? 250,
+          numStories ?? 2,
+          (chunk: string) => {
+            res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+          },
+          controller.signal
+        );
+        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        res.end();
+      } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        res.write(`data: ${JSON.stringify({ error: errorMsg })}\n\n`);
+        res.end();
+        throw error;
+      }
+    });
+  } finally {
+    releaseRequest(userIdentifier, payloadForDeduplication);
   }
-});
 };
 const aiModelRemix = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body as IRemixPayload;
