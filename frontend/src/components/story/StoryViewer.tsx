@@ -4,11 +4,15 @@ import { Chapter } from "../../types/story.types";
 interface Props {
   chapters: Chapter[];
   storyId: string;
+  activeChapterIndex?: number;
+  activeSegmentIndex?: number;
 }
 
 const StoryViewer: React.FC<Props> = ({
   chapters,
   storyId,
+  activeChapterIndex = -1,
+  activeSegmentIndex = -1,
 }) => {
   const [progress, setProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -101,18 +105,46 @@ const StoryViewer: React.FC<Props> = ({
 </div>
       </div>
       <div className="max-w-4xl mx-auto">
-      {chapters.map((chapter) => (
-        <div key={chapter.id} className="mb-16">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-6">
-            {chapter.title}
-          </h1>
+      {chapters.map((chapter, cIdx) => {
+        const isNarrating = activeChapterIndex === cIdx && activeSegmentIndex >= 0;
+        const paragraphs = chapter.content
+          .split(/\n+/)
+          .map((line) => line.trim())
+          .filter(Boolean);
 
-          <p className="text-lg text-zinc-300 whitespace-pre-line leading-9">
-            {chapter.content}
-          </p>
-          <hr className="border-zinc-800 mt-10" />
-        </div>
-      ))}
+        return (
+          <div key={chapter.id} className="mb-16">
+            <h1 className="text-4xl font-extrabold tracking-tight text-white mb-6">
+              {chapter.title}
+            </h1>
+
+            {isNarrating ? (
+              <div className="space-y-6">
+                {paragraphs.map((p, pIdx) => {
+                  const isHighlighted = activeSegmentIndex === pIdx;
+                  return (
+                    <p
+                      key={pIdx}
+                      className={`text-lg transition-all duration-300 leading-9 ${
+                        isHighlighted
+                          ? "bg-indigo-900/25 text-white border-l-4 border-indigo-500 pl-4 py-2 rounded-r-lg"
+                          : "text-zinc-400"
+                      }`}
+                    >
+                      {p}
+                    </p>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-lg text-zinc-300 whitespace-pre-line leading-9">
+                {chapter.content}
+              </p>
+            )}
+            <hr className="border-zinc-800 mt-10" />
+          </div>
+        );
+      })}
       </div>
     </div>
   );

@@ -55,6 +55,7 @@ export default {
   verify_email: process.env.VERIFY_EMAIL,
   verify_password: process.env.VERIFY_PASSWORD,
   google_client_id: process.env.GOOGLE_CLIENT_ID,
+  elevenlabs_api_key: process.env.ELEVENLABS_API_KEY,
   github: {
     token: process.env.GITHUB_TOKEN,
     repo: process.env.GITHUB_REPO || "ronisarkarexe/story-spark-ai",

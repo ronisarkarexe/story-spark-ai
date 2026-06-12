@@ -33,6 +33,7 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     reactions: [{ type: Schema.Types.ObjectId, ref: "Reaction" }],
     bookmarks: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    characterVoiceMap: { type: Map, of: String, default: {} },
   },
   {
     timestamps: true,

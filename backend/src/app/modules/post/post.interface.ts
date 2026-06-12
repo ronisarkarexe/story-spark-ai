@@ -16,6 +16,7 @@ export interface IPostPayload {
   emotions?: string[];
   genre?: string;
   isPublished?: boolean;
+  characterVoiceMap?: Record<string, string>;
 }
 
 export interface IPost extends IPostPayload {

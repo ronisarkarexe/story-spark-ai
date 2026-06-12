@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 
 import { RootState } from "../../redux/store";
 import { getUserInfo } from "../../services/auth.service";
+import { setStory } from "../../redux/slices/storySlice";
 
 import ChapterSidebar from "./ChapterSidebar";
 import StoryViewer from "./StoryViewer";
 import ContinueStoryButton from "./ContinueStoryButton";
 import CharacterNetwork from "../CharacterNetwork";
+import { VoiceCastSettings } from "../audio/VoiceCastSettings";
+import { AudioPlayer } from "../audio/AudioPlayer";
 
 import {
   getSafeFileName,
@@ -18,10 +21,25 @@ import {
 } from "../../utils/story-export.utils";
 
 const StoryWorkspace = () => {
+  const dispatch = useDispatch();
   const currentStory = useSelector(
     (state: RootState) => state.story.currentStory
   );
   const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const [showNarration, setShowNarration] = useState(false);
+  const [activeChapterIndex, setActiveChapterIndex] = useState(0);
+  const [activeSegmentIndex, setActiveSegmentIndex] = useState(-1);
+
+  const handleSaveVoiceMap = (voiceMap: Record<string, string>) => {
+    if (!currentStory) return;
+    const updatedStory = {
+      ...currentStory,
+      characterVoiceMap: voiceMap,
+    };
+    dispatch(setStory(updatedStory));
+    toast.success("Voice cast settings saved!");
+  };
 
   const handleExportMarkdown = () => {
     if (!currentStory) {
@@ -156,6 +174,28 @@ const StoryWorkspace = () => {
                 🕸️ Character Network
               </button>
             </div>
+
+            {workspaceMode === "editor" && (
+              <div className="flex gap-2 mr-2">
+                <button
+                  onClick={() => setShowVoiceSettings(true)}
+                  className="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-1.5 rounded-lg border border-zinc-700 font-bold transition text-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  🎙️ Voice Cast
+                </button>
+                <button
+                  onClick={() => setShowNarration(!showNarration)}
+                  className={`px-3 py-1.5 rounded-lg border font-bold transition text-xs cursor-pointer flex items-center gap-1.5 ${
+                    showNarration
+                      ? "bg-indigo-600 text-white border-indigo-500 shadow"
+                      : "bg-zinc-800 hover:bg-zinc-700 text-white border-zinc-700"
+                  }`}
+                >
+                  🔊 Narrate
+                </button>
+              </div>
+            )}
+
             <button
               onClick={handleExportMarkdown}
               className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
@@ -179,9 +219,25 @@ const StoryWorkspace = () => {
 
         {workspaceMode === "editor" ? (
           <>
+            {showNarration && (
+              <div className="p-4 bg-zinc-900/40 border-b border-zinc-800">
+                <AudioPlayer
+                  story={currentStory}
+                  chapterIndex={activeChapterIndex}
+                  onHighlightSegment={(segIdx) => setActiveSegmentIndex(segIdx)}
+                  onClose={() => {
+                    setShowNarration(false);
+                    setActiveSegmentIndex(-1);
+                  }}
+                />
+              </div>
+            )}
+
             <StoryViewer
               chapters={currentStory.chapters}
               storyId={currentStory.id}
+              activeChapterIndex={activeChapterIndex}
+              activeSegmentIndex={activeSegmentIndex}
             />
 
             <div className="p-6 border-t border-zinc-800">
@@ -192,6 +248,14 @@ const StoryWorkspace = () => {
           <CharacterNetwork storyId={currentStory.id} />
         )}
       </div>
+
+      {showVoiceSettings && (
+        <VoiceCastSettings
+          story={currentStory}
+          onSave={handleSaveVoiceMap}
+          onClose={() => setShowVoiceSettings(false)}
+        />
+      )}
     </div>
   );
 };

@@ -28,6 +28,7 @@ const createPost = z.object({
       .min(2, { message: "At least two topics are required!" })
       .max(20),
     language: z.string().max(50).optional(),
+    characterVoiceMap: z.record(z.string()).optional(),
   }),
 });
 
@@ -40,6 +41,7 @@ const updatePost = z.object({
     topic: z.array(TopicSchema).min(2).max(20).optional(),
     language: z.string().max(50).optional(),
     isPublished: z.boolean().optional(),
+    characterVoiceMap: z.record(z.string()).optional(),
   }),
 });
 
