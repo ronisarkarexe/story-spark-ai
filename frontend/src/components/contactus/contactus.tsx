@@ -218,6 +218,7 @@ const FloatingLabelTextarea = ({
           onBlur={() => setFocused(false)}
           required
           placeholder=" "
+          maxLength={MAX_MESSAGE_LENGTH}
           aria-label="Message"
           aria-invalid={error}
           className={[
@@ -235,7 +236,7 @@ const FloatingLabelTextarea = ({
           className={`contact-float-label contact-float-label--textarea ${isFloated ? "contact-float-label--floated" : ""
             }`}
         >
-          Message
+        
         </label>
 
         {/* Animated focus underline */}
@@ -256,7 +257,7 @@ export default function Contact() {
   const [isVisible, setIsVisible] = useState(false);
   const isSubmittingRef = useRef(false);
   const sectionRef = useRef<HTMLElement>(null);
-
+  const MAX_MESSAGE_LENGTH=1000;
   // Scroll reveal
   useEffect(() => {
     const el = sectionRef.current;
@@ -289,6 +290,7 @@ export default function Contact() {
       email: formData.email.trim(),
       subject: formData.subject.trim(),
       message: formData.message.trim(),
+      
     };
     const newFieldErrors: Partial<Record<FormField, boolean>> = {};
 
@@ -297,7 +299,9 @@ export default function Contact() {
       newFieldErrors.email = true;
     if (!t.subject) newFieldErrors.subject = true;
     if (!t.message) newFieldErrors.message = true;
-
+    if (t.message.length > MAX_MESSAGE_LENGTH) {
+  newFieldErrors.message = true;
+}
     if (Object.keys(newFieldErrors).length > 0) {
       setFieldErrors(newFieldErrors);
       if (!t.fullname || !t.email || !t.subject || !t.message) {
@@ -523,10 +527,20 @@ export default function Contact() {
 
                   {/* Floating label textarea */}
                   <FloatingLabelTextarea
-                    value={formData.message}
-                    onChange={changeHandler}
-                    error={fieldErrors.message}
+                     value={formData.message}
+                      onChange={changeHandler}
+                     error={fieldErrors.message}
                   />
+
+                <p
+                  className={`text-xs text-right mt-1 ${
+                  formData.message.length >= MAX_MESSAGE_LENGTH
+                    ? "text-red-400"
+                  : "text-slate-500"
+                   }`}
+                   >
+                  {formData.message.length} / {MAX_MESSAGE_LENGTH}
+                </p>
 
                   {/* Submit button */}
                   <button
