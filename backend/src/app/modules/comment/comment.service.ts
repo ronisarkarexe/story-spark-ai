@@ -4,7 +4,7 @@ import { User } from "../user/user.model";
 import { IComment, ICommentDTO, ICommentPayload, ILeanComment } from "./comment.interface";
 import httpStatus from "http-status";
 import { Comment } from "./comment.model";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Post } from "../post/post.model";
 
 const createComment = async (
@@ -23,23 +23,65 @@ const createComment = async (
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
-  // Use an atomic $inc update instead of the read-modify-write pattern.
-  // With concurrent requests, both would read the same commentsCount value
-  // and both would write count + 1, losing one increment per race.
-  // findByIdAndUpdate with $inc is a single atomic MongoDB operation.
-  await Post.findByIdAndUpdate(post._id, { $inc: { commentsCount: 1 } });
-  const commentData: Omit<IComment, "parentCommentId"> = {
-    postId: new Types.ObjectId(payload.postId),
-    userId: user._id,
-    comment: payload.comment,
-  };
+
   if (payload.parentCommentId) {
-    (commentData as IComment).parentCommentId = new Types.ObjectId(
-      payload.parentCommentId
-    );
+    if (!Types.ObjectId.isValid(payload.parentCommentId)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid parentCommentId");
+    }
+    const parentComment = await Comment.findOne({
+      _id: payload.parentCommentId,
+      postId: payload.postId,
+    });
+    if (!parentComment) {
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        "Parent comment not found for this post!"
+      );
+    }
+    if (parentComment.parentCommentId) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Replies can only be added to top-level comments!"
+      );
+    }
   }
-  const res = await Comment.create(commentData);
-  return res;
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const updateResult = await Post.updateOne(
+      { _id: post._id, isDeleted: { $ne: true } },
+      { $inc: { commentsCount: 1 } },
+      { session }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+    }
+
+    const commentData: Omit<IComment, "parentCommentId"> = {
+      postId: new Types.ObjectId(payload.postId),
+      userId: user._id,
+      comment: payload.comment,
+    };
+    if (payload.parentCommentId) {
+      (commentData as IComment).parentCommentId = new Types.ObjectId(
+        payload.parentCommentId
+      );
+    }
+
+    const res = await Comment.create([commentData], { session });
+    
+    await session.commitTransaction();
+    session.endSession();
+
+    return res[0];
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };
 
 const getCommentsByPostId = async (postId: string) => {

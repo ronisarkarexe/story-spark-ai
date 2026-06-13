@@ -6,6 +6,7 @@ import config from "../config";
 import { JwtHelpers } from "../utils/jwt.helper";
 import type { Secret } from "jsonwebtoken";
 import { User } from "../app/modules/user/user.model";
+import { Post } from "../app/modules/post/post.model";
 import { reserveUserQuota } from "../app/modules/ai_model/quota.service";
 import { createUserQuotaGuard, runWithQuotaCleanup } from "../app/modules/ai_model/quota.lifecycle";
 
@@ -37,11 +38,29 @@ interface IStoryChunk {
   timestamp: Date;
 }
 
+interface IChatMessage {
+  senderId: string;
+  senderName: string;
+  color: string;
+  text: string;
+  timestamp: Date;
+}
+
+interface IStoryVersion {
+  versionIndex: number;
+  name: string;
+  story: IStoryChunk[];
+  savedBy: string;
+  timestamp: Date;
+}
+
 interface IRoom {
   roomId: string;
   createdBy: string;
   participants: IParticipant[];
   story: IStoryChunk[];
+  chats: IChatMessage[];
+  versions: IStoryVersion[];
   createdAt: Date;
 }
 
@@ -97,6 +116,8 @@ export const setupCollabSocket = (io: Server) => {
           },
         ],
         story: [],
+        chats: [],
+        versions: [],
         createdAt: new Date(),
       };
       rooms.set(roomId, room);
@@ -277,6 +298,162 @@ socket.on("collab:ai_continue", async ({ roomId }) => {
       if (!room) return;
       if (!room.participants.some((p) => p.userId === userId)) return;
       socket.to(roomId).emit("collab:user_stop_typing", { userId });
+    });
+
+    // Real-time Chat
+    socket.on("collab:send_chat", ({ roomId, text }) => {
+      const userId = socket.data.userId;
+      const room = rooms.get(roomId);
+      if (!room) return;
+      const participant = room.participants.find((p) => p.userId === userId);
+      if (!participant) return;
+
+      const chatMsg: IChatMessage = {
+        senderId: userId,
+        senderName: participant.username,
+        color: participant.color,
+        text,
+        timestamp: new Date(),
+      };
+
+      if (!room.chats) room.chats = [];
+      room.chats.push(chatMsg);
+      collabNamespace.to(roomId).emit("collab:new_chat", { chatMsg, chats: room.chats });
+    });
+
+    // Create Checkpoint/Version
+    socket.on("collab:save_version", ({ roomId, versionName }) => {
+      const userId = socket.data.userId;
+      const room = rooms.get(roomId);
+      if (!room) return;
+      const participant = room.participants.find((p) => p.userId === userId);
+      if (!participant) return;
+
+      const newVersion: IStoryVersion = {
+        versionIndex: (room.versions || []).length + 1,
+        name: versionName || `Version ${(room.versions || []).length + 1}`,
+        story: [...room.story],
+        savedBy: participant.username,
+        timestamp: new Date(),
+      };
+
+      if (!room.versions) room.versions = [];
+      room.versions.push(newVersion);
+      collabNamespace.to(roomId).emit("collab:room_updated", { room });
+    });
+
+    // Restore Story Checkpoint
+    socket.on("collab:restore_version", ({ roomId, versionIndex }) => {
+      const userId = socket.data.userId;
+      const room = rooms.get(roomId);
+      if (!room) return;
+      const participant = room.participants.find((p) => p.userId === userId);
+      if (!participant) return;
+
+      const version = (room.versions || []).find((v) => v.versionIndex === versionIndex);
+      if (!version) {
+        socket.emit("collab:error", { message: "Version not found" });
+        return;
+      }
+
+      room.story = [...version.story];
+      collabNamespace.to(roomId).emit("collab:story_updated", { story: room.story });
+      collabNamespace.to(roomId).emit("collab:room_updated", { room });
+    });
+
+    // AI Brainstorming Mode
+    socket.on("collab:ai_brainstorm", async ({ roomId, topic }) => {
+      const room = rooms.get(roomId);
+      if (!room) return;
+
+      const userId = socket.data.userId;
+      const participant = room.participants.find((p) => p.userId === userId);
+      if (!participant) return;
+
+      const user = await User.findById(userId);
+      if (!user) return;
+
+      try {
+        await reserveUserQuota(user.email);
+      } catch (error: any) {
+        socket.emit("collab:error", { message: error.message || "Quota exceeded" });
+        return;
+      }
+
+      const guard = createUserQuotaGuard(user.email);
+
+      try {
+        await runWithQuotaCleanup(guard, async () => {
+          collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
+
+          const storyContext = room.story
+            .map((chunk) => chunk.text)
+            .filter(Boolean)
+            .join("\n");
+
+          const prompt = `You are a creative brainstorming partner. The writers are co-creating a story.
+Here is what they have written so far:
+"${storyContext}"
+
+They need help with this specific brainstorming request: "${topic}"
+
+Provide 3 creative, engaging suggestions or ideas to advance the plot, deepen character motivation, or enrich the setting. Write your suggestions clearly in 3 short, distinct bullet points. Do not include introductory text, tags, markdown headers, or JSON wrapping. Just output the suggestions.`;
+
+          const result = await AiModelService.aiFreeModelChat({
+            message: prompt,
+            history: [],
+          });
+
+          const suggestions = typeof result === "string" ? result : (result as any)?.content || "";
+
+          if (!suggestions?.trim()) throw new Error("Empty response from AI");
+
+          collabNamespace.to(roomId).emit("collab:brainstorm_result", { suggestions });
+        });
+      } catch (error) {
+        logger.error("AI collaboration brainstorm failed", error);
+        socket.emit("collab:error", { message: "AI brainstorming failed. Please try again." });
+      } finally {
+        collabNamespace.to(roomId).emit("collab:user_stop_typing", { userId: "ai" });
+      }
+    });
+
+    // Save and Publish Collaborative Story
+    socket.on("collab:publish_story", async ({ roomId, title, tag, genre }) => {
+      const userId = socket.data.userId;
+      const room = rooms.get(roomId);
+      if (!room) return;
+      const participant = room.participants.find((p) => p.userId === userId);
+      if (!participant) return;
+
+      const content = room.story.map(chunk => chunk.text).join("\n\n");
+      if (!content.trim()) {
+        socket.emit("collab:error", { message: "Cannot publish an empty story!" });
+        return;
+      }
+
+      try {
+        const postData = {
+          title: title || "Collaborative Story",
+          content,
+          tag: tag || "Collaboration",
+          imageURL: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800",
+          genre: genre || "General",
+          author: room.createdBy,
+          isPublished: true,
+          publishedAt: new Date(),
+        };
+
+        const newPost = await Post.create(postData);
+
+        collabNamespace.to(roomId).emit("collab:story_published", {
+          postId: newPost._id,
+          title: newPost.title,
+        });
+      } catch (error: any) {
+        logger.error("Publishing collaborative story failed", error);
+        socket.emit("collab:error", { message: error.message || "Failed to publish story" });
+      }
     });
 
     // Get room info

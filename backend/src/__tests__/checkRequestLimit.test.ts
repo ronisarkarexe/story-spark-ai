@@ -21,7 +21,7 @@ import httpStatus from "http-status";
 
 // ── Module mocks (must be declared before imports that use them) ──────────────
 
-jest.mock("../app/utils/jwt.helper", () => ({
+jest.mock("../utils/jwt.helper", () => ({
   JwtHelpers: {
     verifyToken: jest.fn(),
   },
@@ -42,7 +42,7 @@ jest.mock("../config", () => ({
 
 // ── Imports after mocks ───────────────────────────────────────────────────────
 
-import { JwtHelpers } from "../app/utils/jwt.helper";
+import { JwtHelpers } from "../utils/jwt.helper";
 import { reserveUserQuota } from "../app/modules/ai_model/quota.service";
 import { createUserQuotaGuard } from "../app/modules/ai_model/quota.lifecycle";
 import checkRequestLimit from "../app/middleware/check.request.limit";

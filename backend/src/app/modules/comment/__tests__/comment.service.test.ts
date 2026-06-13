@@ -25,6 +25,7 @@ jest.mock("../../post/post.model", () => ({
   Post: {
     findOne: jest.fn(),
     updateOne: jest.fn(),
+    findByIdAndUpdate: jest.fn(),
   },
 }));
 
@@ -73,6 +74,7 @@ describe("CommentService.createComment", () => {
       email: "reader@example.com",
     } as never);
     mockedPost.updateOne.mockResolvedValue({ modifiedCount: 1 } as never);
+    mockedPost.findByIdAndUpdate.mockResolvedValue({ _id: postId } as never);
   });
 
   it("creates a reply when the parent comment belongs to the same post", async () => {

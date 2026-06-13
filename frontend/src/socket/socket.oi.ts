@@ -57,3 +57,58 @@ export const disconnectSocket = (): void => {
     socketIoInstance = null;
   }
 };
+
+let collabSocketInstance: Socket | null = null;
+
+export const getCollabSocket = (): Socket | null => {
+  return collabSocketInstance;
+};
+
+export const connectCollabSocket = (): Socket | null => {
+  if (collabSocketInstance && collabSocketInstance.connected) {
+    return collabSocketInstance;
+  }
+
+  const socketUrl = resolveSocketUrl();
+  if (!socketUrl) {
+    console.warn("[Story Spark] Socket.IO URL not configured. Collaboration disabled.");
+    return null;
+  }
+
+  const token = getFromLocalStorage(AUTH_KEY);
+  if (!token) {
+    console.warn("[Story Spark] User not authenticated. Cannot connect to Collaboration.");
+    return null;
+  }
+
+  collabSocketInstance = io(`${socketUrl}/collab`, {
+    transports: ["websocket", "polling"],
+    autoConnect: false,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 5000,
+    auth: { token },
+    withCredentials: true,
+  });
+
+  collabSocketInstance.on("connect", () => {
+    console.log("[Story Spark] Collab Socket.IO connected");
+  });
+
+  collabSocketInstance.on("disconnect", () => {
+    console.log("[Story Spark] Collab Socket.IO disconnected");
+  });
+
+  collabSocketInstance.on("connect_error", (error: any) => {
+    console.warn("[Story Spark] Collab Socket.IO connection error:", error);
+  });
+
+  collabSocketInstance.connect();
+  return collabSocketInstance;
+};
+
+export const disconnectCollabSocket = (): void => {
+  if (collabSocketInstance && collabSocketInstance.connected) {
+    collabSocketInstance.disconnect();
+    collabSocketInstance = null;
+  }
+};
