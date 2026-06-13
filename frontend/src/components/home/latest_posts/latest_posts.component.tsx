@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
-import { Post } from "../../../models/post";
-import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
 import LoadingAnimation from "../../loading/loading.component";
 
 const INITIAL_VISIBLE_COUNT = 6;
@@ -12,20 +10,12 @@ const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
   const [showAllPosts, setShowAllPosts] = useState(false);
-
-  const posts = (data?.posts ?? []) as Post[];
-  const shouldShowLoadMore = posts.length >= 7;
-  const visiblePosts = showAllPosts || !shouldShowLoadMore ? posts : posts.slice(0, 6);
+  const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
   useEffect(() => {
     setShowAllPosts(false);
-  }, [posts.length]);
-
-
-  // Remove duplicate posts based on _id
-  const uniquePosts = Array.from(
-    new Map((data?.posts ?? []).map((post) => [post._id, post])).values(),
-  );
+    setExpandedPostId(null);
+  }, [data?.posts?.length]);
 
   if (isLoading) return <LoadingAnimation />;
 
