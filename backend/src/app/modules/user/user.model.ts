@@ -49,6 +49,10 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
       ],
       default: SUBSCRIPTION_TYPE.FREE,
     },
+    subscriptionExpiry: {
+      type: Date,
+      default: null,
+    },
     postsCount: { type: Number, default: 0 },
     followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     following: [{ type: Schema.Types.ObjectId, ref: "User" }],
