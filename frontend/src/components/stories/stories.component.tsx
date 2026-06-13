@@ -431,6 +431,7 @@ const generateId = () => Math.random().toString(36).substring(2, 9);
 // ---------------------------------------------------------------------------
 // Main StoriesComponent
 // ---------------------------------------------------------------------------
+const DRAFT_KEY = "story_spark_draft";
 
 const StoriesComponent = () => {
   const location = useLocation();
@@ -525,6 +526,29 @@ const StoriesComponent = () => {
   // ── Misc UI state ──
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [selectedGenre, setSelectedGenre] = useState<string>(
+  draft?.genre
+    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "ðŸ§™ Fantasy")
+    : "ðŸ§™ Fantasy",
+);
+  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
+  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
+  const [textareaValue, setTextareaValue] = useState<string>(() => {
+    return location.state?.prompt || draft?.prompt || "";
+  });
+  const [selectedGenre, setSelectedGenre] = useState<string>("");
+  const [selectedLength, setSelectedLength] = useState<string>("medium");
+  const [textareaValue, setTextareaValue] = useState<string>("");
+
+  
+  const [selectedGenre, setSelectedGenre] = useState<string>(
+    draft?.genre
+      ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
+      : "🧙 Fantasy"
+  );
+  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
+  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
+  const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
   const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
@@ -550,6 +574,9 @@ const StoriesComponent = () => {
   );
 
   // ── Recent prompts ──
+  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+  const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
+  const [isHighLatency, setIsHighLatency] = useState<boolean>(false);
   const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
 
   const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
@@ -751,6 +778,12 @@ const StoriesComponent = () => {
         toast.error("Please enter a prompt with at least 10 words to generate a story.");
         return;
       }
+    isGenerationInProgressRef.current = true;
+    setLoading(true);
+    setIsHighLatency(false);
+
+    let timeoutId: NodeJS.Timeout | null = null;
+    let latencyTimeoutId: NodeJS.Timeout | null = null;
 
       for (const char of characters) {
         if (!char.name.trim()) {
@@ -760,12 +793,68 @@ const StoriesComponent = () => {
         if (!char.role.trim()) {
           toast.error("Please select a role for all characters.");
           return;
+      }, 60000);
+
+      // 10-second high latency warning (for fallback/backoff cases)
+      latencyTimeoutId = setTimeout(() => {
+        if (isGenerationInProgressRef.current) {
+          setIsHighLatency(true);
+        }
+      }, 10000);
+
+      const payload = {
+        prompt: selectedGenre
+          ? `[Genre: ${selectedGenre}] ${data.prompt}`
+          : data.prompt,
+        wordLength:
+          selectedLength === "short"
+            ? 175
+            : selectedLength === "long"
+            ? 800
+            : 450,
+        prompt: selectedGenre ? `[Genre: ${selectedGenre}] ${data.prompt}` : data.prompt,
+        wordLength: selectedLength === "short" ? 175 : selectedLength === "long" ? 800 : 450,
+        language: selectedLanguage,
+        tone: selectedTone || undefined,
+        characters: characters.map(({ name, role, personality }) => ({ name, role, personality })),
+      };
+      const generationRequest = login
+        ? generateModel(payload)
+        : generateFreeModel(payload);
+
+      const generationRequest = login ? generateModel(payload) : generateFreeModel(payload);
+      activeGenerationRef.current = generationRequest;
+      const res = await generationRequest.unwrap();
+      if (res) {
+        toast.success(res.message);
+        addPrompt(data.prompt);
+        setStories(getUniqueStories(res.data as IStories[]));
+        setTextareaValue("");
+        setSelectedPrompt("");
+        setValue("prompt", "");
+        // Clear draft after successful generation
+        localStorage.removeItem(DRAFT_KEY);
+        setDraftStatus("");
+        reset();
+        setCharacters([]);
+        setCurrentStep(1);
+        if (selectedGenre) {
+          playSoundtrack(selectedGenre);
         }
         if (!char.personality.trim()) {
           toast.error("Please describe the personality/traits for all characters.");
           return;
         }
       }
+      if (latencyTimeoutId) {
+        clearTimeout(latencyTimeoutId);
+      }
+      activeGenerationRef.current = null;
+      isGenerationInProgressRef.current = false;
+      setLoading(false);
+      setIsHighLatency(false);
+    }
+  };
 
       isGenerationInProgressRef.current = true;
       setLoading(true);
@@ -1554,6 +1643,29 @@ const StoriesComponent = () => {
               onClick={() => setCurrentPage((p) => p + 1)}
               disabled={currentPage === totalPages}
               className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50 cursor-pointer"
+          </div>
+        </div>
+      )}
+
+      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} isHighLatency={isHighLatency} />}
+
+      {/* Search UI */}
+      {stories.length > 0 && (
+        <div className="mb-6 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-4 rounded-2xl">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search stories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <select
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               Next
             </button>
