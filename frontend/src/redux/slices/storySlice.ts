@@ -5,19 +5,9 @@ interface StoryState {
   currentStory: Story | null;
 }
 
-const loadStoryFromStorage = (): Story | null => {
-  try {
-    const raw = localStorage.getItem("story");
-    if (!raw) return null;
-    return JSON.parse(raw) as Story;
-  } catch {
-    return null;
-  }
-};
-
 const initialState: StoryState = {
-  currentStory: loadStoryFromStorage(),
-}; 
+  currentStory: null,
+};
 
 const storySlice = createSlice({
   name: "story",
@@ -27,23 +17,10 @@ const storySlice = createSlice({
     setStory(state, action: PayloadAction<Story>) {
       state.currentStory = action.payload;
 
-      try {
-        const userId = action.payload.userId || "guest";
-        const storageKey = `story_${userId}`;
-        
-        const safeData = {
-          version: "1.0",
-          data: action.payload
-        };
-        
-        localStorage.setItem(storageKey, JSON.stringify(safeData));
-      } catch (error: any) {
-        if (error.name === "QuotaExceededError") {
-          console.error("Storage limit reached. Cannot save story locally.");
-        } else {
-          console.error("Error saving story to storage", error);
-        }
-      }
+      localStorage.setItem(
+        "story",
+        JSON.stringify(action.payload)
+      );
     },
 
     addChapter(state, action: PayloadAction<string>) {
@@ -58,27 +35,15 @@ const storySlice = createSlice({
 
       state.currentStory.chapters.push(nextChapter);
 
-      try {
-        const userId = state.currentStory.userId || "guest";
-        const storageKey = `story_${userId}`;
-        
-        const safeData = {
-          version: "1.0",
-          data: state.currentStory
-        };
-        
-        localStorage.setItem(storageKey, JSON.stringify(safeData));
-      } catch (error: any) {
-        if (error.name === "QuotaExceededError") {
-          console.error("Storage limit reached. Cannot save story locally.");
-        } else {
-          console.error("Error saving story to storage", error);
-        }
-      }
+      localStorage.setItem(
+        "story",
+        JSON.stringify(state.currentStory)
+      );
     },
   },
 });
 
-export const { setStory, addChapter } = storySlice.actions;
+export const { setStory, addChapter } =
+  storySlice.actions;
 
 export default storySlice.reducer;

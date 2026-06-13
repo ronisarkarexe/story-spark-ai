@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
-import { socketIo } from "./socket.oi";
+import { connectSocket, disconnectSocket, getSocketIo } from "./socket.oi";
 import { isLoggedIn } from "../services/auth.service";
-import { AUTH_KEY } from "../constants/storage-key";
 
 /**
  * SocketContext provides a stable reference to the singleton Socket.IO client.
@@ -25,28 +24,24 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!authed) {
       // If the user is not authenticated, ensure the socket is disconnected
       if (isConnected.current) {
-        socketIo.disconnect();
+        disconnectSocket();
         isConnected.current = false;
       }
       return;
     }
 
-    // Always refresh the auth token before connecting so we never send
-    // the stale token that was captured at module-load time.
-    socketIo.auth = { token: localStorage.getItem(AUTH_KEY) || "" };
-
-    if (!socketIo.connected) {
-      socketIo.connect();
+    const socket = connectSocket();
+    if (socket) {
       isConnected.current = true;
     }
 
     return () => {
-      socketIo.disconnect();
+      disconnectSocket();
       isConnected.current = false;
     };
   }, []);
 
   return (
-    <SocketContext.Provider value={socketIo}>{children}</SocketContext.Provider>
+    <SocketContext.Provider value={getSocketIo()}>{children}</SocketContext.Provider>
   );
 };

@@ -24,12 +24,13 @@ export interface IUser {
       instagram: string;
     github: string;
     discord: string;
-      github: string;  
-      discord: string;
     };
   };
   requestsThisMonth: number;
   lastRequestDate: Date;
+  subscriptionExpiry?: Date;
+  lastPaymentId?: string;
+  lastOrderId?: string;
   posts: Types.ObjectId[];
   isApplyForWriter: boolean;
   tokenVersion?: number;

@@ -1,7 +1,5 @@
-import { instance as axios } from "../helpers/axios/axiosInstance";
+import axios from "axios";
 import { Chapter } from "../types/story.types";
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const continueStory = async (
   chapters: Chapter[]
@@ -11,7 +9,7 @@ export const continueStory = async (
     .join("\n\n");
 
   const response = await axios.post(
-    `${BASE_URL}/story-continuation/continue`,
+    "http://localhost:5000/api/v1/story-continuation/continue",
     {
       prompt: `
 Continue this story naturally.
@@ -28,5 +26,5 @@ ${previousContent}
     }
   );
 
-  return response.data.data.continuation;
+  return response.data.text;
 };
