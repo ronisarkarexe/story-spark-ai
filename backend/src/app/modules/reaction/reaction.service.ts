@@ -21,9 +21,6 @@ const toggleReaction = async (
   }
 
   const post = await Post.findOne({
-  _id: postId,
-  isDeleted: { $ne: true },
-}).select("likesCount reactions");
     _id: postId,
     isDeleted: { $ne: true },
   }).select("likesCount reactions");
@@ -32,9 +29,6 @@ const toggleReaction = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
-//  main
-    const newReaction = await Reaction.create({
-      postId: new Types.ObjectId(postId),
   const existingReaction = await Reaction.findOne({
     postId: post._id,
     userId: user._id,
@@ -42,7 +36,6 @@ const toggleReaction = async (
 
   if (existingReaction) {
     if (existingReaction.type === type) {
-      // Remove reaction if the same type is toggled
       await Reaction.findByIdAndDelete(existingReaction._id);
       post.reactions = (post.reactions || []).filter(
         (id) => id && id.toString() !== existingReaction._id.toString()
@@ -55,7 +48,6 @@ const toggleReaction = async (
         likesCount: post.likesCount,
       };
     } else {
-      // Update reaction to new type
       existingReaction.type = type;
       await existingReaction.save();
 
@@ -65,7 +57,6 @@ const toggleReaction = async (
       };
     }
   } else {
-    // Create new reaction
     const newReaction = await Reaction.create({
       postId: post._id,
       userId: user._id,
