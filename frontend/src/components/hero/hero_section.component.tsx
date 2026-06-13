@@ -20,7 +20,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants: any = {
+const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
@@ -346,10 +346,9 @@ const HeroSectionComponent = () => {
                 style={{ left: star.x, top: star.y, width: star.size, height: star.size }}
               />
             ))}
-          </div>
         </div>
       </div>
-          </div>
+    </div>
 
             <motion.div
         variants={itemVariants}

@@ -31,18 +31,6 @@ const GithubcontributorsComponent: React.FC = () => {
               "X-GitHub-Api-Version": "2022-11-28",
             },
             signal: controller.signal,
-          }
-        );
-  
-        const data = await githubRes.json();
-  
-        if (!controller.signal.aborted) {
-          setGitHubContributors(data);
-        }
-  
-        const repoRes = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}`,
-          {
           }),
           fetch(`https://api.github.com/repos/${owner}/${repo}`, {
             headers: {
@@ -52,10 +40,10 @@ const GithubcontributorsComponent: React.FC = () => {
             signal: controller.signal,
           }),
         ]);
-  
+
         const data = await githubRes.json();
         const repoData = await repoRes.json();
-  
+
         if (!controller.signal.aborted) {
           setGitHubContributors(data);
           setRepoStars(repoData.stargazers_count);

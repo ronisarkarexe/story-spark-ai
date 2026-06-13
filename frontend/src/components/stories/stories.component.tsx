@@ -421,15 +421,6 @@ const getUniqueStories = (storyList: IStories[]) => {
 };
 // ---------------------------------------------------------------------------
 // Main StoriesComponent
-// ---------------------------------------------------------------------------
-import { useDebounce } from "../../hooks/useDebounce";
-interface ICharacter {
-  id: string;
-  name: string;
-  role: string;
-  personality: string;
-}
-
 const DRAFT_KEY = "story_spark_draft";
 
 const StoriesComponent = () => {
