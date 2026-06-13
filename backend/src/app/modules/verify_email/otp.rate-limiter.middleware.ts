@@ -1,155 +1,94 @@
 import { Request, Response, NextFunction } from "express";
+import ApiError from "../../../errors/api_error";
+import httpStatus from "http-status";
+import mongoose, { Schema, Document } from "mongoose";
 
-export class AppError extends Error {
-  public readonly statusCode: number;
-  public readonly isOperational: boolean;
-
-  constructor(message: string, statusCode: number = 500) {
-    super(message);
-    this.name = "AppError";
-    this.statusCode = statusCode;
-    this.isOperational = true; 
-    Error.captureStackTrace(this, this.constructor);
-  }
+export interface IOtpRateLimit extends Document {
+  email: string;
+  attempts: number;
+  blockUntil: Date | null;
 }
 
-interface MongoError extends Error {
-  code?: number;
-  keyValue?: Record<string, unknown>;
-}
+const otpRateLimitSchema = new Schema<IOtpRateLimit>(
+  {
+    email: { type: String, required: true, unique: true, lowercase: true, index: true },
+    attempts: { type: Number, default: 0 },
+    blockUntil: { type: Date, default: null },
+  },
+  { timestamps: true }
+);
 
-interface MongoValidationError extends Error {
-  name: "ValidationError";
-  errors: Record<string, { message: string }>;
-}
+export const OtpRateLimit = mongoose.model<IOtpRateLimit>("OtpRateLimit", otpRateLimitSchema);
 
-interface MongoCastError extends Error {
-  name: "CastError";
-  path?: string;
-  value?: unknown;
-}
+const PHASE_1_MAX_ATTEMPTS = 5;
+const COOLDOWN_TIME = 5 * 60 * 1000; // 5 minutes
+const PHASE_2_MAX_ATTEMPTS = 8; // 5 + 3 final chances
+const PERMANENT_BLOCK_TIME = 24 * 60 * 60 * 1000; // 24 hours block
 
-function isMongoError(err: unknown): err is MongoError {
-  return err instanceof Error && "code" in err;
-}
-
-function isValidationError(err: unknown): err is MongoValidationError {
-  return err instanceof Error && err.name === "ValidationError";
-}
-
-function isCastError(err: unknown): err is MongoCastError {
-  return err instanceof Error && err.name === "CastError";
-}
-
-function isJsonWebTokenError(err: unknown): err is Error {
-  return (
-    err instanceof Error &&
-    (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError")
-  );
-}
-
-export const globalErrorHandler = (
-  err: unknown,
+export const otpRateLimiter = async (
   req: Request,
   res: Response,
-  
-  _next: NextFunction
-): void => {
-  const isProd = process.env.NODE_ENV === "production";
+  next: NextFunction
+) => {
+  try {
+    const email = req.body?.email;
 
-  if (err instanceof AppError) {
-    res.status(err.statusCode).json({
-      success: false,
-      error: err.message,
-      ...(isProd ? {} : { stack: err.stack }),
-    });
-    return;
+    if (!email) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Email is required");
+    }
+
+    const normalizedEmail = email.toString().toLowerCase().trim();
+    const now = new Date();
+
+    // Find or create the rate limit record in MongoDB
+    let record = await OtpRateLimit.findOne({ email: normalizedEmail });
+    if (!record) {
+      record = new OtpRateLimit({ email: normalizedEmail, attempts: 0, blockUntil: null });
+    }
+
+    // Check if currently blocked
+    if (record.blockUntil && record.blockUntil.getTime() > now.getTime()) {
+      const timeLeftMs = record.blockUntil.getTime() - now.getTime();
+      const minsLeft = Math.ceil(timeLeftMs / 60000);
+      const hoursLeft = Math.ceil(timeLeftMs / (60000 * 60));
+      
+      if (record.attempts >= PHASE_2_MAX_ATTEMPTS) {
+        throw new ApiError(
+          httpStatus.TOO_MANY_REQUESTS,
+          `You have been blocked from verifying due to too many attempts. Please try again after ${hoursLeft} hours.`
+        );
+      } else {
+        throw new ApiError(
+          httpStatus.TOO_MANY_REQUESTS,
+          `Too many OTP verification attempts. Please try again after ${minsLeft} minutes.`
+        );
+      }
+    }
+
+    // If the block time has passed, we reset attempts
+    if (record.blockUntil && now.getTime() > record.blockUntil.getTime()) {
+      record.attempts = 0;
+      record.blockUntil = null;
+    }
+
+    // Increment attempts
+    record.attempts += 1;
+
+    // Apply cooldowns based on new attempt count
+    if (record.attempts === PHASE_1_MAX_ATTEMPTS) {
+      record.blockUntil = new Date(now.getTime() + COOLDOWN_TIME);
+    } else if (record.attempts >= PHASE_2_MAX_ATTEMPTS) {
+      record.blockUntil = new Date(now.getTime() + PERMANENT_BLOCK_TIME);
+    }
+
+    await record.save();
+    next();
+  } catch (error) {
+    next(error);
   }
-
-  if (isMongoError(err) && err.code === 11000) {
-    const duplicateField = err.keyValue
-      ? Object.keys(err.keyValue)[0]
-      : "field";
-
-    res.status(409).json({
-      success: false,
-      error: `An account with this ${duplicateField} already exists. Please use a different ${duplicateField} or log in.`,
-    });
-    return;
-  }
-  
-  if (isValidationError(err)) {
-    const messages = Object.values(err.errors)
-      .map((e) => e.message)
-      .join(" ");
-
-    res.status(400).json({
-      success: false,
-      error: `Validation failed: ${messages}`,
-    });
-    return;
-  }
-  if (isCastError(err)) {
-    res.status(400).json({
-      success: false,
-      error: `Invalid value "${err.value}" for field "${err.path}".`,
-    });
-    return;
-  }
-
-  if (isJsonWebTokenError(err)) {
-    const message =
-      (err as Error).name === "TokenExpiredError"
-        ? "Your session has expired. Please log in again."
-        : "Invalid authentication token. Please log in again.";
-
-    res.status(401).json({ success: false, error: message });
-    return;
-  }
-
-  if (
-    err instanceof Error &&
-    "statusCode" in err &&
-    typeof (err as Record<string, unknown>).statusCode === "number"
-  ) {
-    const razorErr = err as Error & { statusCode: number; error?: { description?: string } };
-    const clientMessage = isProd
-      ? "A payment processing error occurred. Please try again."
-      : razorErr.message;
-
-    res.status(razorErr.statusCode).json({
-      success: false,
-      error: clientMessage,
-    });
-    return;
-  }
-
-  console.error("[Unhandled Error]", {
-    method: req.method,
-    path: req.path,
-    error: err instanceof Error ? err.message : String(err),
-    stack: err instanceof Error ? err.stack : undefined,
-    timestamp: new Date().toISOString(),
-  });
-
-  res.status(500).json({
-    success: false,
-    error: isProd
-      ? "An unexpected error occurred. Please try again later."
-      : err instanceof Error
-        ? err.message
-        : "Unknown error",
-    ...(isProd ? {} : { stack: err instanceof Error ? err.stack : undefined }),
-  });
 };
 
-export const notFoundHandler = (
-  req: Request,
-  res: Response,
-  _next: NextFunction
-): void => {
-  res.status(404).json({
-    success: false,
-    error: `Route ${req.method} ${req.originalUrl} not found.`,
-  });
+export const clearOtpAttempts = async (email: string) => {
+  const normalizedEmail = email.toString().toLowerCase().trim();
+  await OtpRateLimit.deleteOne({ email: normalizedEmail });
 };
