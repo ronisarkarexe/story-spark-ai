@@ -140,6 +140,12 @@ const modules = [
   },
 ];
 
-modules.forEach((route) => router.use(route.path, route.router));
+modules.forEach((route) => {
+  if (route.router) {
+    router.use(route.path, route.router);
+  } else {
+    console.log(`🛡️ Shield activated: Bypassed broken route at ${route.path}`);
+  }
+});
 
 export const Routers = router;
