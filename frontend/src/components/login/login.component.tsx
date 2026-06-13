@@ -324,8 +324,9 @@ const LoginComponent = () => {
                 OR
 
             {/* Google Login */}
-            <div className="flex justify-center w-full box-border overflow-hidden">
+            <div className="w-[250px] overflow-hidden rounded-lg mx-auto flex justify-center">
               <GoogleLogin
+                width="250"
                 onSuccess={handleGoogleLoginSuccess}
                 onError={handleGoogleLoginError}
               />
