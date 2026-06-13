@@ -55,36 +55,39 @@ const buildUserInfo = (decodedData: RawJwtPayload): AuthUserInfo => ({
   avatar: decodedData?.avatar || "",
 });
 
-const getValidDecodedToken = () => {
+// Check if token is expired
+const isTokenExpired = (exp: number): boolean => {
+  return exp <= Math.floor(Date.now() / 1000);
+};
+
+export const getValidDecodedToken = (): AuthUserInfo | null => {
   const authToken = getFromLocalStorage(AUTH_KEY);
 
-  if (authToken) {
-    try {
-      const decodedData = decodedToken(authToken);
-          if (
-      typeof decodedData.exp === "number" &&
-      decodedData.exp <= Math.floor(Date.now() / 1000)
-    ) {
-      removeFromLocalStorage(AUTH_KEY);
-      return null;
-    }
-      return buildUserInfo({
-        email: decodedData.email ?? "",
-        role: decodedData.role ?? "",
-        userId: decodedData.userId ?? decodedData._id ?? "",
-        name: decodedData.name ?? "",
-        postsCount: decodedData.postsCount ?? 0,
-        subscriptionType: decodedData.subscriptionType ?? "free",
-        exp: decodedData.exp ?? 0,
-        iat: decodedData.iat ?? 0,
-      });
-    } catch (error) {
-      console.error("Invalid auth token:", error);
-      removeFromLocalStorage(AUTH_KEY);
-      return null;
-    }
+  if (!authToken) {
+    return null;
   }
-  return null;
+
+  try {
+    const decodedData = decodedToken(authToken) as RawJwtPayload;
+    
+    // Check if token is expired
+    if (typeof decodedData.exp === "number" && isTokenExpired(decodedData.exp)) {
+      removeFromLocalStorage(AUTH_KEY);
+      return null;
+    }
+    
+    // Validate required fields
+    if (!decodedData.email && !decodedData.userId && !decodedData._id) {
+      removeFromLocalStorage(AUTH_KEY);
+      return null;
+    }
+    
+    return buildUserInfo(decodedData);
+  } catch (error) {
+    console.error("Invalid auth token:", error);
+    removeFromLocalStorage(AUTH_KEY);
+    return null;
+  }
 };
 
 export const storeUserInfo = ({ accessToken }: AccessToken) => {
@@ -97,7 +100,7 @@ export const getUserInfo = (): AuthUserInfo | null => {
   return getValidDecodedToken();
 };
 
-export const isLoggedIn = () => {
+export const isLoggedIn = (): boolean => {
   return !!getValidDecodedToken();
 };
 

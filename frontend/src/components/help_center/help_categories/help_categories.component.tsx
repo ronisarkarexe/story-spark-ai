@@ -1,17 +1,35 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
+import HelpCategoryCard from '../help_category_card/help_category_card.component';
 
 interface HelpCategory {
+  id: string | number;
   title: string;
   description: string;
   icon: string;
+  color?: string;
+  articleCount?: number;
+  keywords?: string[];
 }
 
 interface HelpCategoriesProps {
   categories: HelpCategory[];
+  onCategoryClick?: (categoryId: string | number) => void;
 }
 
-const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
+const HelpCategories: FC<HelpCategoriesProps> = ({ categories, onCategoryClick }) => {
+  if (!categories.length) {
+    return (
+      <section id="help-categories" className="scroll-mt-28">
+        <div className="text-center py-12">
+          <p className="text-slate-500 dark:text-slate-400">
+            No categories match your search.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="help-categories" className="scroll-mt-28 transition-colors duration-300">
       <div className="mb-10 text-center">
@@ -29,8 +47,18 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {categories.map((category) => (
-          <HelpCategoryCard key={category.id} category={category} />
+        {categories.map((category, index) => (
+          <motion.div
+            key={category.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+          >
+            <HelpCategoryCard 
+              category={category} 
+              onClick={onCategoryClick}
+            />
+          </motion.div>
         ))}
       </div>
     </section>

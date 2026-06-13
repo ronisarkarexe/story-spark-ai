@@ -7,18 +7,22 @@ import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import LoadingAnimation from "./components/loading/loading.component";
 import ProtectedRoute from "./components/ProtectedRoute";
+import StoriesComponent from "./components/stories/stories.component";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import ScrollToTop from "./components/ScrollToTop";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import NotFoundComponent from "./components/not-found.component";
+import CharacterForge from "./pages/CharacterForge/CharacterForge.tsx";
 
 // Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
 const WritingAssistantComponent = lazy(() => import("./components/writing-assistant/writing_assistant.component"));
 const StoryInspirationWrapper = lazy(() => import("./components/StoryInspirationWrapper"));
-const LoginComponent = lazy(() => import("./components/login/login.component"));
+const LoginComponent = lazy(() => 
+  import("./components/login/login.component").then(module => ({ default: module.default }))
+);
 const SignUpComponent = lazy(() => import("./components/signup/signup.component"));
 const ForgotPasswordComponent = lazy(() => import("./components/login/forgot_password.component"));
 const PricingComponent = lazy(() => import("./components/pricing/pricing.component"));
@@ -35,11 +39,12 @@ const GuidelinesComponent = lazy(() => import("./components/footer/guidelines.ts
 const ContributorsComponent = lazy(() => import("./components/footer/contributors.tsx"));
 const ReportBug = lazy(() => import("./components/report-bug/ReportBug"));
 const ExploreComponent = lazy(() => import("./components/post/post.component"));
-const BookmarksComponent = lazy(() => import("./components/post/bookmarks.component"));
+const BookmarksComponent = lazy(() => 
+  import("./components/post/bookmarks.component").then(module => ({ default: module.default }))
+);
 const CommunityComponent = lazy(() => import("./components/community/community.component"));
 const ResourcesListComponent = lazy(() => import("./components/community/resources_list.component"));
 const ResourceDetailComponent = lazy(() => import("./components/community/resource_detail.component"));
-const StoriesComponent = lazy(() => import("./components/stories/stories.component"));
 const BranchingStory = lazy(() => import("./components/stories/BranchingStory"));
 const StoryWorkspace = lazy(() => import("./components/story/StoryWorkspace"));
 const CollabHome = lazy(() => import("./components/collab/CollabHome"));
@@ -53,11 +58,7 @@ const PublishedStoriesComponent = lazy(() => import("./components/dashboard/post
 const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analytics.page"));
 const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
-const PaymentComponent = lazy(() =>
-  import("./components/home/pricing/payment.component").then((module) => ({
-    default: module.PaymentComponent,
-  }))
-);
+const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
@@ -101,10 +102,10 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
-      { path: "contributors", element: <SafeContributorsComponent /> },
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "community", element: <CommunityComponent /> },
       { path: "report-bug", element: <ReportBug /> },
+      { path: "forge", element: <CharacterForge /> },
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [

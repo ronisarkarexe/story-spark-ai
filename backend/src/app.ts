@@ -14,6 +14,7 @@ import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import { User } from "./app/modules/user/user.model";
+import characterRoutes from "./routes/character.routes";
 
 const app: Application = express();
 app.set("trust proxy", 1);
@@ -68,6 +69,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/v1", Routers);
+app.use("/api/v1/characters", characterRoutes);
 
 app.use((req: Request, res: Response, _next: NextFunction) => {
   res.status(httpStatus.NOT_FOUND).json({

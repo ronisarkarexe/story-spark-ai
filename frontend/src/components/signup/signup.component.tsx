@@ -130,6 +130,69 @@ const SignUpComponent = () => {
   const strengthLevel = getStrengthLevel(passedChecks);
   const { label: strengthLabel, barColor, barWidth, textColor } = PASSWORD_STRENGTH_CONFIG[strengthLevel];
 
+  // ✅ Add this function - Handle Resend OTP
+  const handleResendOtp = async () => {
+    if (!registerInfo) {
+      toast.error("Something went wrong. Please restart the process.");
+      return;
+    }
+    
+    if (cooldown > 0) {
+      toast.error(`Please wait ${cooldown} seconds before resending OTP`);
+      return;
+    }
+    
+    setIsBusy(true);
+    try {
+      const otpPayload = {
+        name: registerInfo.name,
+        email: registerInfo.email,
+      };
+      const res = await emailVerify(otpPayload).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        toast.success("OTP resent to your email");
+        setCooldown(60);
+      }
+    } catch (error) {
+      const err = error as { data?: Array<{ message?: string }>; message?: string };
+      const message =
+        err?.data?.[0]?.message ||
+        err?.message ||
+        "Failed to resend OTP. Please try again.";
+      toast.error(message);
+      console.log("error: ", error);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  // ✅ Add this function - Handle Google Login Success
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    setIsBusy(true);
+    try {
+      const { credential } = credentialResponse;
+      const res = await googleLogin({ token: credential }).unwrap();
+      
+      if (res.data.accessToken) {
+        toast.success("Google login successful!");
+        storeUserInfo({ accessToken: res.data.accessToken });
+        navigate("/");
+      }
+    } catch (error) {
+      const err = error as { data?: Array<{ message?: string }>; message?: string };
+      const message =
+        err?.data?.[0]?.message ||
+        err?.message ||
+        "Google login failed. Please try again.";
+      toast.error(message);
+      console.log("error: ", error);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
       const user = {
@@ -166,14 +229,14 @@ const SignUpComponent = () => {
           setCooldown(60);
         }
       } catch (error) {
-  const err = error as { data?: Array<{ message?: string }>; message?: string };
-  const message =
-    err?.data?.[0]?.message ||
-    err?.message ||
-    "Something went wrong. Please try again.";
-  toast.error(message);
-  console.log("error: ", error);
-} finally {
+        const err = error as { data?: Array<{ message?: string }>; message?: string };
+        const message =
+          err?.data?.[0]?.message ||
+          err?.message ||
+          "Something went wrong. Please try again.";
+        toast.error(message);
+        console.log("error: ", error);
+      } finally {
         setIsBusy(false);
       }
     }
@@ -214,13 +277,13 @@ const SignUpComponent = () => {
       } else {
         throw new Error("No verification token received");
       }
-} catch (err: unknown) {
-  const e = err as { data?: Array<{ message?: string }>; message?: string };
-  const message =
-    e?.data?.[0]?.message ||
-    e?.message ||
-    "OTP verification failed. Please check the code and try again.";
-  toast.error(message);
+    } catch (err: unknown) {
+      const e = err as { data?: Array<{ message?: string }>; message?: string };
+      const message =
+        e?.data?.[0]?.message ||
+        e?.message ||
+        "OTP verification failed. Please check the code and try again.";
+      toast.error(message);
       console.log("error: ", err);
     } finally {
       setIsBusy(false);
@@ -243,7 +306,6 @@ const SignUpComponent = () => {
           </h2>
         </div>
 
-        {/* UPDATED: Structured layout classes to lock down maximum inner boundary constraints */}
         <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
           <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
@@ -260,15 +322,16 @@ const SignUpComponent = () => {
                 <div className="w-full border-t border-slate-700/50"></div>
               </div>
               <div className="relative flex justify-center text-xs">
-                {/* FIXED: Changed bg-slate-800 to transparent with an overlay filter or solid card layer color */}
                 <span className="px-4 bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
                   SIGN UP WITH EMAIL
                 </span>
               </div>
             </div>
           )}
+          
           {!showOtpField ? (
             <form className="space-y-5 w-full min-w-0 block box-border overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
+              {/* Form fields remain the same */}
               <div className="w-full min-w-0 box-border">
                 <SSInput
                   label="Name"
@@ -423,9 +486,9 @@ const SignUpComponent = () => {
               </div>
             </div>
           )}
+          
           {!showOtpField && (
             <div className="w-full min-w-0 box-border">
-              {/* FIXED: Switched background from white to dark theme-aware color matching the card backdrop */}
               <div className="relative my-6 w-full box-border">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-700/50" />

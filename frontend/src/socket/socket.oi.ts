@@ -57,3 +57,12 @@ export const disconnectSocket = (): void => {
     socketIoInstance = null;
   }
 };
+
+// Export a getter for the socket instance that automatically connects if needed
+export const socketIo = {
+  get instance(): Socket | null {
+    return getSocketIo();
+  },
+  connect: connectSocket,
+  disconnect: disconnectSocket,
+};
