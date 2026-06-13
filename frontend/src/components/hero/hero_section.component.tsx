@@ -28,7 +28,6 @@ const itemVariants: any = {
 };
 
 const features = [
-// ... (rest of the features array remains the same)
   {
     title: "Infinite Variations",
     description: "Generate multiple unique branches of your story from a single starting prompt. Explore every creative possibility.",
@@ -309,7 +308,7 @@ const HeroSectionComponent = () => {
                 ]}
               />
             </span>
-          </h1>
+          </motion.h1>
 
           <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
             Create, edit, and generate engaging multiple story variations from a single prompt.
@@ -334,8 +333,7 @@ const HeroSectionComponent = () => {
               </div>
             </div>
           </div>
-        </div>
-          </motion.div>
+        </motion.div>
 
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
           <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
@@ -347,9 +345,10 @@ const HeroSectionComponent = () => {
               />
             ))}
           </div>
-          </div>
+        </div>
+      </div>
 
-            <motion.div
+      <motion.div
         variants={itemVariants}
         className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border"
       >

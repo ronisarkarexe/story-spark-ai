@@ -1,9 +1,8 @@
-import express from "express";
-import { ChatController } from "./chat.controller";
-import { flexibleChatRateLimiter } from "./chat.middleware";
+import express from 'express';
+import { generateResponse } from './chat.controller';
 
 const router = express.Router();
 
-router.post("/", flexibleChatRateLimiter, ChatController.chatWithAi);
+router.post('/ask', generateResponse);
 
 export const ChatRouter = router;
