@@ -68,8 +68,10 @@ describe("AiModelService", () => {
       1,
       "Spanish",
       expect.anything(),
-      undefined,
-      undefined
+      undefined, // tone
+      undefined, // genre
+      undefined, // characters
+      undefined  // tones
     );
   });
 
@@ -144,7 +146,10 @@ describe("AiModelService", () => {
       1,        // numStories
       "English", // language default
       expect.any(Object), // AbortSignal
-      "Dark"    // tone
+      "Dark",   // tone
+      undefined, // genre
+      undefined, // characters
+      undefined  // tones
     );
   });
 
@@ -165,7 +170,9 @@ describe("AiModelService", () => {
       "English",
       expect.any(Object),
       "Humorous",
-      undefined
+      undefined, // genre
+      undefined, // characters
+      undefined  // tones
     );
   });
 
@@ -184,7 +191,9 @@ describe("AiModelService", () => {
       "English",
       expect.any(Object),
       undefined, // no tone → undefined, so the util skips the directive
-      undefined
+      undefined, // genre
+      undefined, // characters
+      undefined  // tones
     );
   });
 
@@ -203,8 +212,61 @@ describe("AiModelService", () => {
       1,
       "English",
       expect.any(Object),
-      undefined,
-      undefined
+      undefined, // tone
+      undefined, // genre
+      undefined, // characters
+      undefined  // tones
+    );
+  });
+
+  // ── Style & Tone Matrix tests (Issue #2859) ─────────────────────────────────
+
+  it("passes tones array to generateWithGeminiStories when provided (authenticated)", async () => {
+    mockedGenerate.mockResolvedValue([story, story, story]);
+
+    await AiModelService.aiModelGenerate(
+      {
+        prompt: "test",
+        wordLength: 100,
+        numStories: 3,
+        tones: ["Dark", "Humorous", "Poetic"],
+      },
+      { email: "user@example.com" } as never
+    );
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      100,
+      3,
+      "English",
+      expect.any(Object),
+      undefined, // tone (legacy single-tone)
+      undefined, // genre
+      undefined, // characters
+      ["Dark", "Humorous", "Poetic"] // tones
+    );
+  });
+
+  it("passes tones array to generateWithGeminiStories when provided (free/guest)", async () => {
+    mockedGenerate.mockResolvedValue([story, story]);
+
+    await AiModelService.aiFreeModelGenerate({
+      prompt: "test",
+      wordLength: 150,
+      numStories: 2,
+      tones: ["Cyberpunk", "Whimsical"],
+    });
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      150,
+      2,
+      "English",
+      expect.any(Object),
+      undefined, // tone
+      undefined, // genre
+      undefined, // characters
+      ["Cyberpunk", "Whimsical"] // tones
     );
   });
 });

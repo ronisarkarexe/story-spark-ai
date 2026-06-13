@@ -2,11 +2,13 @@ import { z } from "zod";
 
 const VALID_TONES = [
   "Dark",
+  "Whimsical",
+  "Dramatic",
   "Humorous",
-  "Romantic",
-  "Epic",
-  "Mysterious",
-  "Children's",
+  "Suspenseful",
+  "Heartwarming",
+  "Poetic",
+  "Cyberpunk",
 ] as const;
 
 const aiModel = z.object({
@@ -43,6 +45,18 @@ const aiModel = z.object({
           message: `Tone must be one of: ${VALID_TONES.join(", ")}`,
         }),
       })
+      .optional(),
+
+    // NEW: Style & Tone Matrix (Issue #2859) — up to 3 tones, one per story variation.
+    tones: z
+      .array(
+        z.enum(VALID_TONES, {
+          errorMap: () => ({
+            message: `Each tone must be one of: ${VALID_TONES.join(", ")}`,
+          }),
+        })
+      )
+      .max(3, "You can select up to 3 tones.")
       .optional(),
 
     characters: z

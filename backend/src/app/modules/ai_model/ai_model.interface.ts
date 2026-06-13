@@ -10,6 +10,8 @@ export interface IAIModel {
   numStories: number;
   language?: string;
   tone?: string;
+  // NEW: Style & Tone Matrix (Issue #2859) — up to 3 tones, one per story variation.
+  tones?: string[];
   genre?: string;
   characters?: ICharacter[];
 }
