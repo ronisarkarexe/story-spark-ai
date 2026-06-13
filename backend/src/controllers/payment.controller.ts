@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import User from "../models/user.model";
+import { User } from "../app/modules/user/user.model";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
