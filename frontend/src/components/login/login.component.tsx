@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Link } from "react-router-dom";
 
@@ -12,6 +12,7 @@ import {
 } from "../../redux/apis/auth.api";
 import { storeUserInfo } from "../../services/auth.service";
 import RedirectComponent from "../redirect.component";
+import AuthContext from "../auth.context";
 
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
@@ -25,6 +26,7 @@ type Inputs = {
 const LoginComponent = () => {
   const [loginUser] = useLoginUserMutation();
   const [googleLogin] = useGoogleLoginMutation();
+  const auth = useContext(AuthContext);
 
   const {
     register,
@@ -41,7 +43,11 @@ const LoginComponent = () => {
       const res = await loginUser({ ...data }).unwrap();
       if (res.data.accessToken) {
         toast.success("User logged in successfully!");
-        storeUserInfo({ accessToken: res.data.accessToken });
+        if (auth) {
+          auth.login(res.data.accessToken);
+        } else {
+          storeUserInfo({ accessToken: res.data.accessToken });
+        }
         setIsLoggedIn(true);
       }
     } catch {
@@ -52,11 +58,6 @@ const LoginComponent = () => {
   };
 
 
-  const handleGoogleLoginSuccess = async (
-    credentialResponse: CredentialResponse
-  ) => {
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse,) => {
-
   const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
     setIsBusy(true);
     try {
@@ -65,7 +66,11 @@ const LoginComponent = () => {
       }).unwrap();
       if (res.data.accessToken) {
         toast.success("User logged in successfully with Google!");
-        storeUserInfo({ accessToken: res.data.accessToken });
+        if (auth) {
+          auth.login(res.data.accessToken);
+        } else {
+          storeUserInfo({ accessToken: res.data.accessToken });
+        }
         setIsLoggedIn(true);
       }
     } catch {
