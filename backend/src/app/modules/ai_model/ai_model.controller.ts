@@ -119,7 +119,7 @@ const aiModelGenerateStream = async (req: Request, res: Response) => {
   const { prompt, wordLength, numStories } = req.body;
   const guard = res.locals.quotaRefundGuard;
 
-  if (!guard) {                                           // ← ADD
+  if (!guard) {
     res.status(500).json({ error: "Quota guard missing" });
     return;
   }
@@ -135,6 +135,26 @@ const aiModelGenerateStream = async (req: Request, res: Response) => {
     controller.abort();
   });
 
+  await runWithQuotaCleanup(guard, async () => {
+    try {
+      await generateWithGeminiStoriesStream(
+        prompt,
+        wordLength ?? 250,
+        numStories ?? 2,
+        (chunk: string) => {
+          res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+        },
+        controller.signal
+      );
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      res.end();
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      res.write(`data: ${JSON.stringify({ error: errorMsg })}\n\n`);
+      res.end();
+      throw error;
+    }
+  });
 await runWithQuotaCleanup(guard, async () => {
   try {
     await generateWithGeminiStoriesStream(
@@ -165,6 +185,7 @@ await runWithQuotaCleanup(guard, async () => {
   }
 });
 };
+
 const aiModelRemix = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body as IRemixPayload;
   const guard = res.locals.quotaRefundGuard;

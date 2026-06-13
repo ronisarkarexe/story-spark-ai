@@ -69,27 +69,28 @@ interface Story {
   enhancedPrompt?: string;
 }
 
-// NEW: Map each tone label to a precise writing instruction injected into the AI prompt.
+// Tone matrix instructions — keys must match the frontend ToneSelector labels and
+// VALID_TONES in ai_model.validation.ts (Issue #2859).
 // Keeping these as concrete directives (not vague adjectives) gives Gemini clear stylistic targets.
 const TONE_INSTRUCTIONS: Record<string, string> = {
   Dark:
     "Write in a dark, gritty, and emotionally heavy tone. Explore themes of shadow, loss, moral ambiguity, and consequence. Avoid happy resolutions — let tension linger.",
+  Whimsical:
+    "Write in a light, playful, and imaginative tone full of charm and gentle wonder. Embrace quirky details and a sense of delight.",
+  Dramatic:
+    "Write in a grand, dramatic, and heroic tone. Use vivid, sweeping imagery, high stakes, and bold character actions. Every sentence should feel consequential.",
   Humorous:
     "Write in a light-hearted, witty, and comedic tone. Include clever wordplay, funny observations, and absurd situations. Keep the mood playful throughout.",
-  Romantic:
-    "Write in a warm, tender, and emotionally rich tone. Focus on connection, longing, vulnerability, and heartfelt moments between characters.",
-  Epic:
-    "Write in a grand, dramatic, and heroic tone. Use vivid, sweeping imagery, high stakes, and bold character actions. Every sentence should feel consequential.",
-  Mysterious:
-    "Write in a suspenseful, atmospheric, and unsettling tone. Leave things deliberately unsaid. Build intrigue through detail and implication rather than exposition.",
-  "Children's":
-    "Write in a simple, wholesome, imaginative, and age-appropriate tone. Use short sentences, gentle humour, and a sense of wonder. Suitable for readers aged 5–10.",
+  Suspenseful:
+    "Write in a tense, suspenseful, and atmospheric tone. Leave things deliberately unsaid. Build dread through detail and implication rather than exposition.",
+  Heartwarming:
+    "Write in a warm, tender, and emotionally rich tone. Focus on connection, kindness, vulnerability, and heartfelt moments between characters.",
+  Poetic:
+    "Write in a lyrical, poetic, and richly descriptive tone. Favor evocative imagery, rhythm, and metaphor over plain exposition.",
+  Cyberpunk:
+    "Write in a gritty cyberpunk tone — high-tech, low-life. Emphasize neon-lit urban decay, corporate control, and morally grey characters.",
 };
 
-/**
- * Returns the tone instruction string for injection into the prompt,
- * or an empty string if no tone (or an unrecognised tone) is supplied.
- */
 const GENRE_MODIFIER_INSTRUCTIONS: Record<string, string> = {
   fantasy: "Write in the style of epic fantasy fiction. Include vivid world-building, magic, and heroic themes.",
   horror: "Write in the style of psychological horror. Build dread slowly, use dark imagery, and leave an unsettling feeling.",
@@ -106,11 +107,36 @@ const buildGenreInstruction = (genre?: string): string => {
   return `Genre & Style Directive: ${instruction}\n\n`;
 };
 
+/**
+ * Builds the legacy single-tone instruction block (kept for backward compatibility
+ * with the `tone` field).
+ */
 const buildToneInstruction = (tone?: string): string => {
   if (!tone) return "";
   const instruction = TONE_INSTRUCTIONS[tone];
   if (!instruction) return "";
   return `Tone & Style Directive: ${instruction}\n\n`;
+};
+
+/**
+ * Builds per-variation tone instructions for the Style & Tone Matrix (Issue #2859).
+ * Each selected tone maps to one variation; if there are more variations than
+ * tones, the remaining variations are left to the model's natural creativity.
+ */
+const buildToneMatrixInstruction = (tones: string[] | undefined, numStories: number): string => {
+  if (!tones || tones.length === 0) return "";
+
+  const lines = tones.slice(0, numStories).map((tone, index) => {
+    const instruction = TONE_INSTRUCTIONS[tone];
+    const directive = instruction
+      ? instruction
+      : `Write this version in a "${tone}" literary tone and structural pacing.`;
+    return `Variation ${index + 1}: ${directive}`;
+  });
+
+  return `Style & Tone Matrix — apply a distinct tone to each variation as follows:\n${lines.join(
+    "\n"
+  )}\nAny remaining variations beyond the above may use your own creative judgment for tone.\n\n`;
 };
 
 const throwIfAborted = (signal?: AbortSignal): void => {
@@ -187,15 +213,38 @@ export async function generateWithGeminiStories(
   numStories: number = 2,
   language: string = "English",
   signal?: AbortSignal,
-  tone?: string, // NEW: optional tone parameter
-  genre?: string, // NEW: optional genre parameter
+  tone?: string, // legacy single-tone parameter (kept for backward compatibility)
+  genre?: string,
   characters?: ICharacter[],
+  tones?: string[], // NEW: Style & Tone Matrix (Issue #2859) — up to 3 tones, one per variation
 ): Promise<Story[]> {
   throwIfAborted(signal);
 
   assertGeminiApiKeyConfigured();
 
   try {
+    const chatSession = model.startChat({
+      generationConfig,
+      safetySettings,
+      history: [],
+    });
+
+    const toneInstruction = buildToneInstruction(tone);
+    const toneMatrixInstruction = buildToneMatrixInstruction(tones, numStories);
+    const genreInstruction = buildGenreInstruction(genre);
+    const charactersInstruction = buildCharactersInstruction(characters);
+
+    const response = await chatSession.sendMessage(
+      `${genreInstruction}${toneInstruction}${toneMatrixInstruction}${charactersInstruction}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+      First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
+      Then, generate ${numStories} different short stories based on this ENHANCED prompt.
+      The stories MUST be written entirely in the ${language} language.
+      For each story, also analyze and detect the primary emotional tones (e.g., ["Joy", "Suspense", "Motivation"]) and the specific genre.
+      Each story should be in JSON format with fields: "title", "content", "tag" (the main topic), "emotions" (an array of strings), "genre" (a string), and "enhancedPrompt" (the improved prompt used).
+      Ensure each story is approximately ${wordLength} words long.
+      Return only valid JSON array output.`,
+      { signal }
+    );
     const response = await executeWithRetryAndFallback(async (activeModel) => {
       const chatSession = activeModel.startChat({
         generationConfig,
@@ -759,4 +808,3 @@ export async function chatWithGemini(
     );
   }
 }
-
