@@ -4,10 +4,26 @@ export interface IRecentPrompt {
   id: string;
   prompt: string;
   timestamp: number;
+  lastUsedAt?: number;
+  useCount?: number;
+  isFavorite?: boolean;
 }
 
 const STORAGE_KEY = "story_spark_recent_prompts";
-const MAX_PROMPTS = 5;
+const MAX_PROMPTS = 50;
+
+const normalizePromptEntry = (entry: IRecentPrompt): IRecentPrompt => ({
+  id: entry.id || `${Date.now()}-${Math.random()}`,
+  prompt: entry.prompt,
+  timestamp: entry.timestamp || Date.now(),
+  lastUsedAt: entry.lastUsedAt || entry.timestamp || Date.now(),
+  useCount: entry.useCount || 1,
+  isFavorite: Boolean(entry.isFavorite),
+});
+
+const persistPrompts = (prompts: IRecentPrompt[]) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(prompts));
+};
 
 export const useRecentPrompts = () => {
   const [recentPrompts, setRecentPrompts] = useState<IRecentPrompt[]>([]);
@@ -17,7 +33,13 @@ export const useRecentPrompts = () => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        setRecentPrompts(JSON.parse(stored));
+        const parsed = JSON.parse(stored) as IRecentPrompt[];
+        const normalized = parsed
+          .filter((entry) => entry?.prompt?.trim())
+          .map(normalizePromptEntry)
+          .slice(0, MAX_PROMPTS);
+        setRecentPrompts(normalized);
+        persistPrompts(normalized);
       } catch {
         // If parsing fails, start fresh
         setRecentPrompts([]);
@@ -31,21 +53,53 @@ export const useRecentPrompts = () => {
 
     setRecentPrompts((prev) => {
       // Remove duplicates - if this prompt already exists, move it to top
-      const filtered = prev.filter((p) => p.prompt !== prompt);
+      const existingPrompt = prev.find((p) => p.prompt === prompt.trim());
+      const filtered = prev.filter((p) => p.prompt !== prompt.trim());
 
       // Create new prompt entry
       const newPrompt: IRecentPrompt = {
-        id: `${Date.now()}-${Math.random()}`,
+        id: existingPrompt?.id || `${Date.now()}-${Math.random()}`,
         prompt: prompt.trim(),
-        timestamp: Date.now(),
+        timestamp: existingPrompt?.timestamp || Date.now(),
+        lastUsedAt: Date.now(),
+        useCount: (existingPrompt?.useCount || 0) + 1,
+        isFavorite: Boolean(existingPrompt?.isFavorite),
       };
 
       // Add to the beginning and cap at MAX_PROMPTS
       const updated = [newPrompt, ...filtered].slice(0, MAX_PROMPTS);
 
       // Persist to localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      persistPrompts(updated);
 
+      return updated;
+    });
+  }, []);
+
+  const recordPromptUse = useCallback((id: string) => {
+    setRecentPrompts((prev) => {
+      const updated = prev.map((prompt) =>
+        prompt.id === id
+          ? {
+              ...prompt,
+              lastUsedAt: Date.now(),
+              useCount: (prompt.useCount || 0) + 1,
+            }
+          : prompt
+      );
+      persistPrompts(updated);
+      return updated;
+    });
+  }, []);
+
+  const toggleFavorite = useCallback((id: string) => {
+    setRecentPrompts((prev) => {
+      const updated = prev.map((prompt) =>
+        prompt.id === id
+          ? { ...prompt, isFavorite: !prompt.isFavorite }
+          : prompt
+      );
+      persistPrompts(updated);
       return updated;
     });
   }, []);
@@ -54,7 +108,7 @@ export const useRecentPrompts = () => {
   const removePrompt = useCallback((id: string) => {
     setRecentPrompts((prev) => {
       const updated = prev.filter((p) => p.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      persistPrompts(updated);
       return updated;
     });
   }, []);
@@ -68,6 +122,8 @@ export const useRecentPrompts = () => {
   return {
     recentPrompts,
     addPrompt,
+    recordPromptUse,
+    toggleFavorite,
     removePrompt,
     clearAll,
   };

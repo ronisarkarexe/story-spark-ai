@@ -18,6 +18,7 @@ interface SSInputProps<T extends FieldValues> {
   validation?: RegisterOptions<T>;
   error?: FieldError;
   autoComplete?: string;
+  autoFocus?: boolean;
 }
 
 const SSInput = <T extends FieldValues>({
@@ -25,57 +26,104 @@ const SSInput = <T extends FieldValues>({
   name,
   type = "text",
   placeholder,
+  required,
   icon,
   register,
   validation,
   error,
   autoComplete,
+  autoFocus,
 }: SSInputProps<T>) => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showLocalPassword, setShowLocalPassword] = useState(false);
 
-const inputType =
-  type === "password"
-    ? showPassword
-      ? "text"
-      : "password"
-    : type;
+
+
+
+
+
+  const inputType = type === "password" ? (showPassword ? "text" : "password") : type;
+
   return (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-600 dark:text-gray-400">
+    <div className="w-full min-w-0 box-border">
+      <label htmlFor={name} className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+
         {label}
       </label>
-      <div className="relative mt-2">
+      <div className="relative w-full box-border">
+        {/* Left Icon */}
         {icon && (
-          <span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
+
+          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-500 pointer-events-none">
+
+
+
+
+
             <i className={icon}></i>
           </span>
         )}
+
+
+
+
+
+        {/* The SINGLE Corrected Input Field with Bulletproof Padding and Inline Styles */}
         <input
           type={inputType}
           id={name}
-          className={`w-full pl-8 pr-10 py-1.5 ttext-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border rounded-md sm:text-sm ${
-          error
-          ? "border-red-500 outline-red-500"
-          : "border-gray-300 outline-gray-300 focus:outline-indigo-600"
-          }`}          placeholder={placeholder}
+
+          placeholder={placeholder}
           autoComplete={autoComplete}
+          autoFocus={autoFocus}
           {...register(name, validation)}
+
+          className={`w-full max-w-full h-11 block rounded-xl border bg-transparent text-sm transition-all duration-200 focus:outline-none focus:ring-2 ${
+            icon ? "pl-10" : "px-4"
+          } ${type === "password" ? "pr-10" : "pr-4"} ${
+            error
+              ? "border-rose-500 focus:ring-rose-500/20 focus:border-rose-500 text-rose-900 dark:text-rose-200"
+              : "border-slate-200 dark:border-slate-700 text-gray-900 dark:text-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+          }`}
+          style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
         />
+
+
+
+
+        {/* Right Password Eye Toggle */}
+
         {type === "password" && (
-  <button
-    type="button"
-    onClick={() => setShowPassword(!showPassword)}
-    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
-  >
-    <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
-  </button>
-)}
+
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+
+            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+
+
+
+          >
+            <i className={showLocalPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
+          </button>
+        )}
+
+
       </div>
+
+      {/* Error Message */}
       {error && (
-        <p className="text-red-400 text-sm mt-1">
-        {error.message}
-        </p>
-    )}
+
+
+
+        <p className="text-red-500 text-sm mt-2">{error.message}</p>
+
+      )}
+
+
+
+
+
     </div>
   );
 };
