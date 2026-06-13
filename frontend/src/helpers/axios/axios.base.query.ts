@@ -1,6 +1,6 @@
 import type { BaseQueryFn } from "@reduxjs/toolkit/query";
 import type { AxiosRequestConfig } from "axios";
-import { instance as AxiosInstance } from "./axiosInstance";
+import AxiosInstance from "./axiosInstance";
 import { IMeta, ResponseErrorType } from "../../types";
 
 const axiosBaseQuery =

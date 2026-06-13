@@ -495,21 +495,6 @@ useEffect(() => {
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>(
-  draft?.genre
-    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "ðŸ§™ Fantasy")
-    : "ðŸ§™ Fantasy",
-);
-  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
-  const [textareaValue, setTextareaValue] = useState<string>(() => {
-    return location.state?.prompt || draft?.prompt || "";
-  });
-  const [selectedGenre, setSelectedGenre] = useState<string>("");
-  const [selectedLength, setSelectedLength] = useState<string>("medium");
-  const [textareaValue, setTextareaValue] = useState<string>("");
-
-  
-  const [selectedGenre, setSelectedGenre] = useState<string>(
     draft?.genre
       ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
       : "🧙 Fantasy"
@@ -725,10 +710,7 @@ useEffect(() => {
         setValue("prompt", "");
         // Clear draft after successful generation
         localStorage.removeItem(DRAFT_KEY);
-        setDraftStatus("");
         reset();
-        setCharacters([]);
-        setCurrentStep(1);
         if (selectedGenre) {
           playSoundtrack(selectedGenre);
         }
