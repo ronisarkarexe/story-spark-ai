@@ -7,6 +7,7 @@ import config from "../../../config";
 import httpStatus from "http-status";
 import { OTPModel } from "./otp.model";
 import crypto from "crypto";
+import { clearOtpAttempts } from "./otp.rate-limiter.middleware";
 
 
 const transporter = nodemailer.createTransport({
@@ -169,7 +170,7 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   await storedOtpRecord.save();
 
   // Clear memory rate limit attempts on success
-  clearOtpAttempts(email);
+  await clearOtpAttempts(email);
 
   return { 
     verified: true,
@@ -181,8 +182,4 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
 export const VerifyEmailService = {
   VerifyEmail,
   VerifyOtp,
-};
-
-const clearOtpAttempts = (email: string) => {
-  console.log('Clearing OTP attempts for:', email);
-};
+};
