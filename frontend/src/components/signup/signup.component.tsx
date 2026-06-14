@@ -212,6 +212,47 @@ const SignUpComponent = () => {
     toast.error("Google login failed. Please try again.");
   };
 
+  const handleResendOtp = async () => {
+    if (!registerInfo) return;
+    setIsBusy(true);
+    try {
+      const res = await emailVerify({
+        name: registerInfo.name,
+        email: registerInfo.email,
+      }).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        toast.success("OTP resent successfully!");
+        setCooldown(60);
+      }
+    } catch (error) {
+      toast.error("Failed to resend OTP. Please try again.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      toast.error("Google login failed");
+      return;
+    }
+    setIsBusy(true);
+    try {
+      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
+      if (res?.data?.accessToken) {
+        storeUserInfo({ accessToken: res.data.accessToken });
+        toast.success("Logged in with Google successfully!");
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error("Google authentication failed");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-900 dark:text-slate-100 box-border">
 

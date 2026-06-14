@@ -30,7 +30,10 @@ const LatestPostsComponent = () => {
 
   useEffect(() => {
     setShowAllPosts(false);
-  }, [uniquePosts.length]);
+  }, [posts.length]);
+
+
+
 
   if (isLoading) return <LoadingAnimation />;
 
