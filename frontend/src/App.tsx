@@ -99,7 +99,6 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
-      {/* <Route path="/contributors" element={<SafeContributorsComponent />} /> */ },
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "community", element: <CommunityComponent /> },
       { path: "report-bug", element: <ReportBug /> },

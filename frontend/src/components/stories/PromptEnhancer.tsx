@@ -21,6 +21,7 @@ interface PromptEnhancerProps {
 const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
   const [originalPrompt, setOriginalPrompt] = useState<string | null>(null);
   const [isEnhanced, setIsEnhanced] = useState(false);
+  const [selectedModel, setSelectedModel] = useState("gemini");
 
   const [enhancePrompt, { isLoading: isEnhancing }] = useEnhancePromptMutation();
 
@@ -30,7 +31,7 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
     setOriginalPrompt(prompt);
 
     try {
-      const result = await enhancePrompt({ prompt: prompt.trim() }).unwrap();
+      const result = await enhancePrompt({ prompt: prompt.trim(), provider: selectedModel }).unwrap();
       onPromptChange(result.data.enhancedPrompt);
       setIsEnhanced(true);
       toast.success("Prompt enhanced!");
@@ -50,7 +51,21 @@ const PromptEnhancer = ({ prompt, onPromptChange }: PromptEnhancerProps) => {
   };
 
   return (
-    <div className="flex items-center gap-2 mt-2">
+    <div className="flex items-center gap-3 mt-2 flex-wrap">
+      {/* 🤖 Model Selector */}
+      <select
+        id="model-selector"
+        aria-label="Select AI writing model"
+        value={selectedModel}
+        onChange={(e) => setSelectedModel(e.target.value)}
+        disabled={isEnhancing}
+        className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-800 dark:text-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-cyan-500/50 cursor-pointer transition-all duration-300"
+      >
+        <option value="gemini" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Google Gemini (Default)</option>
+        <option value="openai" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">OpenAI GPT-4</option>
+        <option value="anthropic" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Anthropic Claude 3.5</option>
+      </select>
+
       {/* ✨ Enhance button */}
       <button
         type="button"

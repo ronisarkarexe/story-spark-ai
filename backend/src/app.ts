@@ -4,6 +4,7 @@ import express, {
   Request,
   Response,
 } from "express";
+import { sanitizeAllMiddleware } from "./app/middleware/sanitize.middleware";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -58,6 +59,9 @@ app.use(
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(cookieParser());
+app.use(cookieParser());
+// XSS sanitization — strip dangerous content from all requests
+app.use(sanitizeAllMiddleware);
 
 // Legacy Route Rewrite Rewrite Rules
 app.use((req, res, next) => {

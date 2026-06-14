@@ -115,7 +115,7 @@ const SettingComponent = () => {
               <div className="space-y-5">
                 <div>
                   <label className={labelClass}>Default AI Writing Model</label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <button
                       type="button"
                       onClick={() => handleSelect("aiProvider", "gemini")}
@@ -139,6 +139,18 @@ const SettingComponent = () => {
                     >
                       <i className="fas fa-bolt text-lg"></i>
                       <span>OpenAI GPT-4 (Premium)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelect("aiProvider", "anthropic")}
+                      className={`py-3 px-4 rounded-lg border text-sm font-semibold flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
+                        preferences.aiProvider === "anthropic"
+                          ? "bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-600/20 dark:border-indigo-500 dark:text-indigo-300 shadow-md dark:shadow-indigo-500/10"
+                          : "bg-white border-slate-250 text-slate-500 hover:bg-slate-50 hover:text-slate-850 dark:bg-slate-800/40 dark:border-slate-700/50 dark:text-gray-400 dark:hover:bg-slate-800/80 dark:hover:text-gray-200"
+                      }`}
+                    >
+                      <i className="fas fa-brain text-lg"></i>
+                      <span>Anthropic Claude (Premium)</span>
                     </button>
                   </div>
                 </div>

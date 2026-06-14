@@ -531,6 +531,7 @@ if (passwordField) {
   passwordField.addEventListener("keyup", (event) => {
     const loginCapsWarning = document.getElementById("login-caps-lock-warning");
     const signupCapsWarning = document.getElementById("signup-caps-lock-warning");
+    const confirmCapsWarning = document.getElementById("confirm-caps-lock-warning");
 
     const isCapsLockOn = event.getModifierState("CapsLock");
 
@@ -540,6 +541,9 @@ if (passwordField) {
 
     if (signupCapsWarning) {
       signupCapsWarning.classList.toggle("hidden", !isCapsLockOn);
+    }
+    if (confirmCapsWarning) {
+      confirmCapsWarning.classList.toggle("hidden", !isCapsLockOn);
     }
   });
 }
