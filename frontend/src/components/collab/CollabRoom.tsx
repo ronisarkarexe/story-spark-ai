@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import * as Y from "yjs";
 import { resolveSocketUrl } from "../../helpers/socket-url";
 import { getToken } from "../../services/auth.service";
-import { isLoggedIn, getUserInfo } from "../../services/auth.service";
+import { isLoggedIn } from "../../services/auth.service";
 
 interface RemoteCursor {
   username: string;
@@ -41,10 +41,6 @@ interface CollabRoomResponse {
   message?: string;
 }
 
-interface CollabStoryResponse {
-  story?: StoryChunk[];
-}
-
 export default function CollabRoom() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -52,12 +48,11 @@ export default function CollabRoom() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editorText, setEditorText] = useState("");
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [collabSocket, setCollabSocket] = useState<any>(null);
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [remoteCursors, setRemoteCursors] = useState<{ [userId: string]: RemoteCursor }>({});
-
-  const user = getUserInfo();
 
   // Yjs document instances
   const ydoc = useMemo(() => new Y.Doc(), []);
@@ -109,6 +104,7 @@ export default function CollabRoom() {
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let socketInstance: any;
 
     try {
@@ -152,6 +148,7 @@ export default function CollabRoom() {
       };
 
       // Yjs Init and Update listeners
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       socketInstance.on("collab:yjs_init", ({ yjsState }: { yjsState: any }) => {
         if (yjsState) {
           Y.applyUpdate(ydoc, new Uint8Array(yjsState.data || yjsState));
@@ -160,6 +157,7 @@ export default function CollabRoom() {
         setLoading(false);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       socketInstance.on("collab:yjs_update", ({ update }: { update: any }) => {
         const binaryUpdate = new Uint8Array(update.data || update);
         Y.applyUpdate(ydoc, binaryUpdate, socketInstance);
@@ -186,6 +184,7 @@ export default function CollabRoom() {
       socketInstance.on("collab:error", handleError);
 
       // Yjs Doc changes sync callback
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const handleDocUpdate = (update: Uint8Array, origin: any) => {
         if (origin !== socketInstance) {
           socketInstance.emit("collab:yjs_update", { roomId, update: Array.from(update) });
