@@ -276,29 +276,105 @@ const SignUpComponent = () => {
                 error={errors.name}
               />
 
-              <SSInput
-                label="Email address"
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                required={true}
-                icon="fi fi-rr-envelope"
-                register={register}
-                autoComplete="email"
-                error={errors.email}
-              />
+                <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
 
-              <SSInput
-                label="Password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                required={true}
-                icon="fi fi-rr-lock"
-                register={register}
-                autoComplete="new-password"
-                error={errors.password}
-              />
+                  Full Name
+
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="Enter your full name"
+                  autoComplete="name"
+                  className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
+                  {...register("name", {
+                    required: "Name is required",
+                  })}
+                />
+
+                {errors.name && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {errors.name.message}
+                  </p>
+                )}
+
+              </div>
+
+              {/* EMAIL */}
+
+              <div>
+
+                <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+
+                  Email Address
+
+                </label>
+
+                <input
+                  type="email"
+                  placeholder="name@storyspark.ai"
+                  autoComplete="email"
+                  className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
+                  {...register("email", {
+                    required: "Email is required",
+                  })}
+                />
+
+                {errors.email && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {errors.email.message}
+                  </p>
+                )}
+
+              </div>
+
+              {/* PASSWORD */}
+
+              <div>
+
+                <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+
+                  Password
+
+                </label>
+
+                <input
+                  type="password"
+                  placeholder="Enter your password"
+                  autoComplete="new-password"
+                  className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
+                  {...register("password", {
+                    required: "Password is required",
+                  })}
+                />
+
+                {errors.password && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
+
+              </div>
+
+              {/* CONFIRM PASSWORD */}
+
+              <div>
+
+                <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+
+                  Confirm Password
+
+                </label>
+
+                <input
+                  type="password"
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
+                  {...register("confirmPassword", {
+                    required: "Confirm password is required",
+                  })}
+                />
 
               {password?.length > 0 && (
                 <div className="space-y-3 -mt-1 w-full min-w-0 overflow-hidden box-border">
@@ -361,6 +437,7 @@ const SignUpComponent = () => {
                 required={true}
                 icon="fi fi-rr-key"
                 register={register}
+                autoComplete="one-time-code"
                 validation={{
                   required: "Please enter OTP",
                   minLength: { value: 6, message: "OTP must be 6 digits" },
@@ -396,6 +473,13 @@ const SignUpComponent = () => {
                 </div>
               </div>
 
+    <input
+      type="text"
+      placeholder="Enter OTP"
+      autoComplete="one-time-code"
+      className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
+      {...register("otp")}
+    />
               <div className="flex justify-center w-full box-border overflow-hidden">
                 <GoogleLogin
                   onSuccess={handleGoogleLoginSuccess}

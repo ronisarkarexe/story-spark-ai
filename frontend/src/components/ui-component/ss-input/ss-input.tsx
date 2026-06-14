@@ -7,6 +7,23 @@ import {
   FieldError,
 } from "react-hook-form";
 
+function resolveAutoComplete(
+  name: string,
+  type: string,
+  explicit?: string,
+  passwordIntent: "current" | "new" = "current"
+): string | undefined {
+  if (explicit) return explicit;
+  if (name === "email" || type === "email") return "email";
+  if (name === "name") return "name";
+  if (name === "otp") return "one-time-code";
+  if (name === "confirmPassword") return "new-password";
+  if (name === "password" || type === "password") {
+    return passwordIntent === "new" ? "new-password" : "current-password";
+  }
+  return undefined;
+}
+
 interface SSInputProps<T extends FieldValues> {
   label: string;
   name: Path<T>;
@@ -18,6 +35,7 @@ interface SSInputProps<T extends FieldValues> {
   validation?: RegisterOptions<T>;
   error?: FieldError;
   autoComplete?: string;
+  passwordIntent?: "current" | "new";
   autoFocus?: boolean;
 }
 
@@ -32,10 +50,21 @@ const SSInput = <T extends FieldValues>({
   validation,
   error,
   autoComplete,
+  passwordIntent = "current",
+  autoFocus
   autoFocus,
 }: SSInputProps<T>) => {
   const [showLocalPassword, setShowLocalPassword] = useState(false);
 
+  const inputType =
+    type === "password" ? (showPassword ? "text" : "password") : type;
+
+  const resolvedAutoComplete = resolveAutoComplete(
+    String(name),
+    type,
+    autoComplete,
+    passwordIntent
+  );
 
 
 
@@ -73,6 +102,7 @@ const SSInput = <T extends FieldValues>({
           id={name}
 
           placeholder={placeholder}
+          autoComplete={resolvedAutoComplete}
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           {...register(name, validation)}

@@ -122,6 +122,7 @@ const EmailValidationComponent = () => {
             required={true}
             icon="fas fa-key"
             register={register}
+            autoComplete="one-time-code"
           />
           
           {/* Visual Feedback Banner Row */}

@@ -209,31 +209,32 @@ const LoginComponent = () => {
                 required={true}
                 icon="fi fi-rr-envelope"
                 register={register}
+                autoComplete="email"
                 validation={{ required: "Email is required" }}
                 error={errors.email}
                 autoComplete="email"
               />
 
-              <div>
-                <SSInput
-                  label="Password"
-                  name="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  required={true}
-                  icon="fi fi-rr-lock"
-                  register={register}
-                  validation={{ required: "Password is required" }}
-                  error={errors.password}
-                />
-                <div className="flex justify-end pt-2">
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
-                  >
-                    Forgot Password?
-                  </Link>
-                </div>
+              <SSInput
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required={true}
+                icon="fi fi-rr-lock"
+                register={register}
+                passwordIntent="current"
+                validation={{ required: "Password is required" }}
+                error={errors.password}
+              />
+
+              <div className="flex justify-end -mt-2">
+                <a
+                  href="/forgot-password"
+                  className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                >
+                  Forgot Password?
+                </a>
               </div>
 
               <div className="pt-2">

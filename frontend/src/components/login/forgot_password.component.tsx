@@ -266,6 +266,7 @@ const ForgotPasswordComponent = () => {
                 required={true}
                 icon="fas fa-envelope"
                 register={register}
+                autoComplete="email"
                 error={errors.email}
               />
               <SSButton text="Send OTP" type="submit" isLoading={isBusy} disabled={otpSent} />
@@ -281,6 +282,7 @@ const ForgotPasswordComponent = () => {
                 required={true}
                 icon="fas fa-key"
                 register={register}
+                autoComplete="one-time-code"
               />
               <SSButton text="Verify OTP" type="submit" isLoading={isBusy} />
 
@@ -307,6 +309,7 @@ const ForgotPasswordComponent = () => {
                 required={true}
                 icon="fas fa-lock"
                 register={register}
+                passwordIntent="new"
               />
 
               <div className="space-y-3 -mt-2">
@@ -355,6 +358,7 @@ const ForgotPasswordComponent = () => {
                 required={true}
                 icon="fas fa-eye"
                 register={register}
+                autoComplete="new-password"
               />
 
               <SSButton text="Reset Password" type="submit" isLoading={isBusy} />
