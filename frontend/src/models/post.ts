@@ -30,10 +30,6 @@ interface Reaction {
   _id: string;
 }
 
-interface Bookmark {
-  _id: string;
-}
-
 export interface Post {
   _id: string;
   title: string;
@@ -47,6 +43,7 @@ export interface Post {
   author: Author;
   likesCount: number;
   commentsCount: number;
+  bookmarksCount: number;
   viewsCount: number;
   isPublished: boolean;
   isFeaturedPost: boolean;
@@ -57,8 +54,6 @@ export interface Post {
   attachments: string[];
   comments: Comment[];
   reactions: Reaction[];
-  bookmarks?: Bookmark[];
   createdAt: string;
   updatedAt: string;
-  emotions?: string[];
 }

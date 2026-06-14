@@ -8,36 +8,22 @@ import { ENUM_USER_ROLE } from "../../../enums/user";
 
 const router = express.Router();
 
-/* ============================================================
-   SYSTEM LAYOUT CONFIGURATIONS & CORE INBOUND PUBLIC ENTRIES
-   ============================================================ */
-
+// Create a new post
 router.post(
-  "/create-post",
-  auth(),
+  "/create",
+  auth(
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.USER
+  ),
   validateRequest(PostValidator.createPost),
   PostController.createPost
 );
 
 router.get(
-  "/",
-  PostController.getPosts
-);
-
-router.get(
-  "/latest-posts",
-  PostController.getLatestPosts
-);
-
-router.get(
-  "/featured-posts",
-  PostController.getFeaturedPosts
-);
-
-router.patch(
-  "/featured/:postId",
-  auth(),
-  PostController.doFeaturedPosts
+  "/tag/:tag",
+  PostController.getPostsByTag
 );
 
 router.get(
@@ -46,13 +32,42 @@ router.get(
 );
 
 router.get(
-  "/tag/:tag",
-  PostController.getPostsByTag
+  "/latest-posts",
+  PostController.getLatestPosts
+);
+
+router.get(
+  "/latest-lists",
+  PostController.getLatestPosts
+);
+
+router.get(
+  "/featured-posts",
+  PostController.getFeaturedPosts
+);
+
+router.get(
+  "/feature-lists",
+  PostController.getFeaturedPosts
 );
 
 router.patch(
+  "/featured/:postId",
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  PostController.doFeaturedPosts
+);
+
+router.get("/tag/:tag", PostController.getPostsByTag);
+router.get("/:id", PostController.getSinglePost);
+
+router.patch(
   "/bookmark/:id",
-  auth(),
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   PostController.toggleBookmark
 );
 
@@ -70,34 +85,36 @@ router.patch(
 
 router.delete(
   "/:id",
-  auth(),
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   PostController.deletePost
 );
 
-/* ============================================================
-   PATCHED MODULE ROUTES — GSSoC '26 RESOURCE MANAGEMENT
-   ============================================================ */
-
-/**
- * @route   POST /api/v1/post/remix
- * @desc    Remix an existing story prompt variant using AI models
- * @access  Private (Quota Monitored)
- */
+// AI variation routes
 router.post(
   "/remix",
-  auth(),
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   checkRequestLimit(),
   PostController.remixStory
 );
 
-/**
- * @route   POST /api/v1/post/translate
- * @desc    Translate generated story variations across languages
- * @access  Private (Quota Monitored)
- */
 router.post(
   "/translate",
-  auth(),
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   checkRequestLimit(),
   PostController.translateStory
 );

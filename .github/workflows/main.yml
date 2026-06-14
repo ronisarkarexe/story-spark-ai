@@ -14,17 +14,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.9
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --include=optional
 
-      - name: Work around npm optional dependency bug (Tailwind CSS oxide Linux binary)
-        run: npm install -w story-spark-ai-frontend --no-save @tailwindcss/oxide-linux-x64-gnu
+      - name: Work around npm optional dependency bug (Rollup Linux binary)
+        run: npm install -w story-spark-ai-frontend --no-save @rollup/rollup-linux-x64-gnu
+
+      - name: Work around npm optional dependency bug (Lightning CSS Linux binary)
+        run: |
+          npm install -w story-spark-ai-frontend --no-save lightningcss-linux-x64-gnu
+          pnpm install --no-frozen-lockfile
+
+      - name: Work around npm optional dependency bug (Rollup Linux binary)
+        run: pnpm --filter story-spark-ai-frontend add  @rollup/rollup-linux-x64-gnu
+
+      - name: Work around npm optional dependency bug (Lightning CSS Linux binary)
+        run: pnpm --filter story-spark-ai-frontend add  lightningcss-linux-x64-gnu
 
       - name: Build
-        run: npm run build
+        run: |
+          npm run build
+          pnpm run build

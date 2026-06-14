@@ -1,10 +1,24 @@
 // backend/src/services/ai.service.ts
 
+import { validateAndFormatPrompt, validateOutput } from "../utils/promptSecurity";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const openai = new OpenAI({ apiKey: process.env.OPEN_AI_KEY });
+let openai: OpenAI | null = null;
 const genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    const key = process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY;
+    if (!key) {
+      throw new Error("OpenAI API key is required but was not provided. Please set OPEN_AI_KEY environment variable.");
+    }
+    openai = new OpenAI({ apiKey: key });
+  }
+  return openai;
+}
+
+export const GEMINI_MODEL = "gemini-2.5-flash";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -17,7 +31,8 @@ interface AIResponse {
 // ─── OpenAI call ─────────────────────────────────────────────────────────────
 
 async function generateWithOpenAI(prompt: string): Promise<string> {
-  const response = await openai.chat.completions.create(
+  const client = getOpenAIClient();
+  const response = await client.chat.completions.create(
     {
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
@@ -29,13 +44,12 @@ async function generateWithOpenAI(prompt: string): Promise<string> {
   const text = response.choices[0]?.message?.content;
   if (!text) throw new Error("OpenAI returned an empty response");
   return text;
-
 }
 
 // ─── Gemini call ─────────────────────────────────────────────────────────────
 
 async function generateWithGemini(prompt: string): Promise<string> {
-  const model  = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model  = genAI.getGenerativeModel({ model: GEMINI_MODEL });
   const result = await model.generateContent(prompt);
   const text   = result.response.text();
 
@@ -53,13 +67,13 @@ function isRetryableError(error: unknown): boolean {
   // Rate limits, timeouts, server errors → fallback
   if (msg.includes("rate limit"))      return true;
   if (msg.includes("timeout"))         return true;
-  if (msg.includes("503") || 
-      msg.includes("502") || 
+  if (msg.includes("503") ||
+      msg.includes("502") ||
       msg.includes("500"))             return true;
   if (msg.includes("empty response"))  return true;
 
   // Bad API key → don't bother falling back (won't help)
-  if (msg.includes("401") || 
+  if (msg.includes("401") ||
       msg.includes("invalid api key")) return false;
 
   return true; // fallback by default
@@ -68,9 +82,13 @@ function isRetryableError(error: unknown): boolean {
 // ─── Main exported function ───────────────────────────────────────────────────
 
 export async function generateStory(prompt: string): Promise<AIResponse> {
+  // ── SECURITY LAYER: Validate and wrap input ─────────────────────────
+  const securePrompt = validateAndFormatPrompt(prompt);
+
   // ── Try OpenAI first ──────────────────────────────────────────────────────
   try {
-    const story = await generateWithOpenAI(prompt);
+    let story = await generateWithOpenAI(securePrompt);
+    story = validateOutput(story); // SECURITY LAYER: Validate output
     console.log("[AI] Story generated successfully via OpenAI");
 
     return { story, provider: "openai", fallbackUsed: false };
@@ -93,7 +111,8 @@ export async function generateStory(prompt: string): Promise<AIResponse> {
 
   // ── Try Gemini as fallback ────────────────────────────────────────────────
   try {
-    const story = await generateWithGemini(prompt);
+    let story = await generateWithGemini(securePrompt);
+    story = validateOutput(story); // SECURITY LAYER: Validate output
     console.log("[AI] Story generated successfully via Gemini (fallback)");
 
     return { story, provider: "gemini", fallbackUsed: true };

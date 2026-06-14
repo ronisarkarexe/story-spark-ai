@@ -12,7 +12,7 @@ import { Notification } from "../notification/notification.model";
 import { StoryVersion } from "../story_version/story_version.model";
 import { Report } from "../report/report.model";
 
-const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram"] as const;
+const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram", "github", "discord"] as const;
 
 const getAllUsers = async (): Promise<IUser[]> => {
   const result = await User.find({}).select("-password");
@@ -99,11 +99,6 @@ const deleteUser = async (id: string): Promise<void> => {
   await Comment.deleteMany({ postId: { $in: postIds } });
   await Bookmark.deleteMany({ storyId: { $in: postIds } });
 
-  await Post.updateMany(
-    { bookmarks: id },
-    { $pull: { bookmarks: id } }
-  );
-
   await Bookmark.deleteMany({ userId: id });
   await Reaction.deleteMany({ userId: id });
   await Comment.deleteMany({ userId: id });
@@ -177,17 +172,9 @@ const getProfileInfo = async (token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const publishedPostsCount = await Post.countDocuments({
-    author: user._id,
-    isPublished: true,
-    isDeleted: { $ne: true },
-  });
-
-  if (user.postsCount !== publishedPostsCount) {
-    user.postsCount = publishedPostsCount;
-    await user.save();
-  }
-
+  // postsCount is kept in sync via event-driven increments in createPost and
+  // decrements in deletePost. We do NOT repair it here to keep this GET
+  // endpoint side-effect-free and idempotent (fixes write-on-read anti-pattern).
   return user;
 };
 

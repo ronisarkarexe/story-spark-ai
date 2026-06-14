@@ -1,6 +1,7 @@
 import axios from "axios";
+import { getBaseUrl } from "../helpers/config";
 
-const API_BASE = import.meta.env.VITE_BASE_URL || "http://localhost:5000/api/v1";
+const API_BASE = getBaseUrl();
 
 export interface IChatMessage {
   role: "user" | "model";

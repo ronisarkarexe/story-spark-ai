@@ -1,99 +1,196 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
+import Razorpay from "razorpay";
 import crypto from "crypto";
-import getRazorpay from "../config/razorpay";
-import { getToken } from "../app/middleware/token";
-import { Order } from "../app/modules/payment/order.model";
-import { User } from "../app/modules/user/user.model";
-import { PLAN_PRICING, normalizePlan } from "../app/modules/payment/payment.constant";
+import User from "../models/user.model";
 
-// Creates a Razorpay order for a chosen plan. The price is resolved server
-// side from PLAN_PRICING so the client cannot dictate the amount, and the
-// order is persisted so verifyPayment can map it back to the user and tier.
-export const createOrder = async (req: Request, res: Response) => {
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+});
+
+const PLANS: Record<string, { amountPaise: number; durationDays: number; label: string }> = {
+  monthly: {
+    amountPaise: 49900,   
+    durationDays: 30,
+    label: "Monthly Premium",
+  },
+  yearly: {
+    amountPaise: 499900,  
+    durationDays: 365,
+    label: "Yearly Premium",
+  },
+};
+
+export const createOrder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const token = getToken(req);
-    const plan = normalizePlan(req.body?.plan);
-    if (!plan) {
-      return res.status(400).json({ success: false, message: "Invalid or missing plan" });
+    const { plan } = req.body as { plan?: string };
+    
+    if (!plan || !PLANS[plan]) {
+      res.status(400).json({
+        success: false,
+        error: `Invalid plan. Valid options: ${Object.keys(PLANS).join(", ")}.`,
+      });
+      return;
     }
 
-    const pricing = PLAN_PRICING[plan];
-    const order = await getRazorpay().orders.create({
-      amount: pricing.amount,
-      currency: pricing.currency,
-      receipt: `receipt_${token._id}_${Date.now()}`,
+    const selectedPlan = PLANS[plan];
+
+    const order = await razorpay.orders.create({
+      amount: selectedPlan.amountPaise,  
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+      notes: {
+        plan,
+        label: selectedPlan.label,
+      },
     });
 
-    await Order.create({
-      userId: token._id,
-      razorpayOrderId: order.id,
+    res.status(201).json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
       plan,
-      amount: pricing.amount,
-      currency: pricing.currency,
-      status: "created",
     });
-
-    res.status(200).json({ success: true, order });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Order creation failed" });
+    next(error);
   }
 };
 
-// Verifies the Razorpay signature, then atomically claims the persisted order
-// and upgrades the user's subscription. The atomic status transition makes a
-// replayed verify request a no-op so a tier cannot be granted twice.
-export const verifyPayment = async (req: Request, res: Response) => {
+export const verifyPayment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
-    if (!RAZORPAY_KEY_SECRET) {
-      return res.status(500).json({ success: false, message: "Payment not configured" });
-    }
-
-    const token = getToken(req);
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = req.body as {
+      razorpay_order_id: string;
+      razorpay_payment_id: string;
+      razorpay_signature: string;
+    };
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ success: false, message: "Missing payment details" });
+      res.status(400).json({
+        success: false,
+        error: "Missing required payment fields: order ID, payment ID, or signature.",
+      });
+      return;
     }
-
+    
     const expectedSignature = crypto
-      .createHmac("sha256", RAZORPAY_KEY_SECRET)
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    const expectedBuffer = Buffer.from(expectedSignature, "hex");
-    const receivedBuffer = Buffer.from(razorpay_signature, "hex");
-    const signaturesMatch =
-      expectedBuffer.length === receivedBuffer.length &&
-      crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
-
-    if (!signaturesMatch) {
-      return res.status(400).json({ success: false, message: "Invalid signature" });
-    }
-
-    const order = await Order.findOneAndUpdate(
-      { razorpayOrderId: razorpay_order_id, userId: token._id, status: "created" },
-      { status: "paid", razorpayPaymentId: razorpay_payment_id },
-      { new: true }
+    const isSignatureValid = crypto.timingSafeEqual(
+      Buffer.from(expectedSignature, "hex"),
+      Buffer.from(razorpay_signature, "hex")
     );
 
-    if (!order) {
-      const existing = await Order.findOne({ razorpayOrderId: razorpay_order_id });
-      if (existing && existing.status === "paid" && existing.userId.toString() === token._id) {
-        return res.status(200).json({ success: true, message: "Payment already verified" });
-      }
-      return res.status(400).json({ success: false, message: "Order not found" });
-    }
-
-    const pricing = PLAN_PRICING[order.plan];
-    if (pricing) {
-      await User.findByIdAndUpdate(order.userId, {
-        subscriptionType: pricing.subscriptionType,
+    if (!isSignatureValid) {
+      res.status(400).json({
+        success: false,
+        error: "Payment signature verification failed. This request may be tampered.",
       });
+      return;
+    }
+    
+    const order = await razorpay.orders.fetch(razorpay_order_id);
+    const plan = (order.notes as Record<string, string>)?.plan;
+
+    if (!plan || !PLANS[plan]) {
+      res.status(400).json({
+        success: false,
+        error: "Could not determine the subscription plan from the order.",
+      });
+      return;
     }
 
-    res.status(200).json({ success: true, message: "Payment verified and subscription upgraded" });
+    const selectedPlan = PLANS[plan];
+    const userId = (req as Request & { user?: { _id: string } }).user?._id;
+
+    if (!userId) {
+      res.status(401).json({ success: false, error: "Unauthorised. Please log in." });
+      return;
+    }
+
+    const subscriptionExpiry = new Date(
+      Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
+    );
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        subscriptionType: "premium",
+        subscriptionExpiry,
+        lastPaymentId: razorpay_payment_id,
+        lastOrderId: razorpay_order_id,
+      },
+      { new: true, select: "email subscriptionType subscriptionExpiry" }
+    );
+
+    if (!updatedUser) {
+      res.status(404).json({ success: false, error: "User not found." });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Subscription upgraded to ${selectedPlan.label} successfully.`,
+      subscription: {
+        type: updatedUser.subscriptionType,
+        expiry: updatedUser.subscriptionExpiry,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Payment verification failed" });
+    next(error);
+  }
+};
+
+export const getSubscriptionStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = (req as Request & { user?: { _id: string } }).user?._id;
+
+    if (!userId) {
+      res.status(401).json({ success: false, error: "Unauthorised." });
+      return;
+    }
+
+    const user = await User.findById(userId).select(
+      "subscriptionType subscriptionExpiry"
+    );
+
+    if (!user) {
+      res.status(404).json({ success: false, error: "User not found." });
+      return;
+    }
+
+    const isActive =
+      user.subscriptionType === "premium" &&
+      user.subscriptionExpiry != null &&
+      new Date(user.subscriptionExpiry) > new Date();
+
+    res.status(200).json({
+      success: true,
+      subscription: {
+        type: user.subscriptionType ?? "free",
+        expiry: user.subscriptionExpiry ?? null,
+        isActive,
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 };

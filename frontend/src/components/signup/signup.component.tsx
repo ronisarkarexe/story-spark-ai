@@ -1,15 +1,18 @@
 import { useForm, SubmitHandler } from "react-hook-form";
-
+import SSInput from "../ui-component/ss-input/ss-input";
+import SSButton from "../ui-component/ss-button/ss-button";
 import { useState, useEffect } from "react";
 import { storeUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { Link } from "react-router-dom";
+import { useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import {
   useEmailVerifyMutation,
   useVerifyOtpMutation,
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
-import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface IRegisterInfo {
   name: string;
@@ -23,22 +26,11 @@ interface Inputs extends IRegisterInfo {
 }
 
 const getPasswordError = (password: string) => {
-  if (password.length < 8) {
-    return "Password must be at least 8 characters long";
-  }
-  if (!/[A-Z]/.test(password)) {
-    return "Password must contain at least one uppercase letter";
-  }
-  if (!/[a-z]/.test(password)) {
-    return "Password must contain at least one lowercase letter";
-  }
-  if (!/[0-9]/.test(password)) {
-    return "Password must contain at least one number";
-  }
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    return "Password must contain at least one special character";
-  }
-
+  if (password.length < 8) return "Password must be at least 8 characters long";
+  if (!/[A-Z]/.test(password)) return "Password must contain at least one uppercase letter";
+  if (!/[a-z]/.test(password)) return "Password must contain at least one lowercase letter";
+  if (!/[0-9]/.test(password)) return "Password must contain at least one number";
+  if (!/[^A-Za-z0-9]/.test(password)) return "Password must contain at least one special character";
   return "";
 };
 
@@ -48,24 +40,9 @@ const PASSWORD_STRENGTH_CONFIG: Record<
   StrengthLevel,
   { label: string; barColor: string; barWidth: string; textColor: string }
 > = {
-  weak: {
-    label: "Weak",
-    barColor: "bg-red-500",
-    barWidth: "w-1/3",
-    textColor: "text-red-400",
-  },
-  medium: {
-    label: "Medium",
-    barColor: "bg-yellow-400",
-    barWidth: "w-2/3",
-    textColor: "text-yellow-300",
-  },
-  strong: {
-    label: "Strong",
-    barColor: "bg-green-500",
-    barWidth: "w-full",
-    textColor: "text-green-400",
-  },
+  weak: { label: "Weak", barColor: "bg-red-500", barWidth: "w-1/3", textColor: "text-red-400" },
+  medium: { label: "Medium", barColor: "bg-yellow-400", barWidth: "w-2/3", textColor: "text-yellow-300" },
+  strong: { label: "Strong", barColor: "bg-green-500", barWidth: "w-full", textColor: "text-green-400" },
 };
 
 const getStrengthLevel = (passedChecks: number): StrengthLevel => {
@@ -84,17 +61,19 @@ const PASSWORD_REQUIREMENTS = [
 
 const SignUpComponent = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [emailVerify] = useEmailVerifyMutation();
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerUser] = useRegisterUserMutation();
+  const [googleLogin] = useGoogleLoginMutation();
+
   const {
     register,
     handleSubmit,
     watch,
-    setValue,
+    unregister,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
+
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [showOtpField, setShowOtpField] = useState<boolean>(false);
   const [registerInfo, setRegisterInfo] = useState<IRegisterInfo>();
@@ -112,6 +91,7 @@ const SignUpComponent = () => {
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
   const otp = watch("otp");
+
   const passwordChecks = {
     length: password?.length >= 8,
     uppercase: /[A-Z]/.test(password || ""),
@@ -120,24 +100,15 @@ const SignUpComponent = () => {
     special: /[^A-Za-z0-9]/.test(password || ""),
   };
 
-  const passedChecks =
-    Object.values(passwordChecks).filter(Boolean).length;
-
+  const passedChecks = Object.values(passwordChecks).filter(Boolean).length;
   const strengthLevel = getStrengthLevel(passedChecks);
-  const { label: strengthLabel, barColor, barWidth, textColor } =
-    PASSWORD_STRENGTH_CONFIG[strengthLevel];
+  const { label: strengthLabel, barColor, barWidth, textColor } = PASSWORD_STRENGTH_CONFIG[strengthLevel];
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
-      const user = {
-        name: data.name,
-        email: data.email,
-        password: data.password,
-      };
-      const otpPayload = {
-        name: data.name,
-        email: data.email,
-      };
+      const user = { name: data.name, email: data.email, password: data.password };
+      const otpPayload = { name: data.name, email: data.email };
+
       if (password !== confirmPassword) {
         toast.error("Passwords do not match!");
         return;
@@ -155,14 +126,16 @@ const SignUpComponent = () => {
           setExpiredAt(new Date(expiresAt).getTime());
           toast.success("OTP sent to your email");
           setRegisterInfo(user);
+          unregister("confirmPassword");
+          unregister("password");
+          unregister("name");
+          unregister("email");
           setShowOtpField(true);
           setCooldown(60);
         }
       } catch (error) {
-        const message =
-          (error as { data?: Array<{ message?: string }> })?.data?.[0]
-            ?.message ||
-          "Failed to send OTP. Check backend .env email credentials.";
+        const err = error as { data?: Array<{ message?: string }>; message?: string };
+        const message = err?.data?.[0]?.message || err?.message || "Something went wrong. Please try again.";
         toast.error(message);
       } finally {
         setIsBusy(false);
@@ -172,44 +145,29 @@ const SignUpComponent = () => {
 
   const handleOtpValidation = async () => {
     const enteredOtp = otp?.trim();
-    if (!enteredOtp) {
-      toast.error("Please enter OTP");
-      return;
-    }
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
-    if (Date.now() > expiredAt) {
-      toast.error("OTP expired. Please request a new one.");
-      return;
-    }
+    if (!enteredOtp) { toast.error("Please enter OTP"); return; }
+    if (!registerInfo) { toast.error("Something went wrong. Please restart the process."); return; }
+    if (Date.now() > expiredAt) { toast.error("OTP expired. Please request a new one."); return; }
+
     setIsBusy(true);
     try {
-      const otpResponse = await verifyOtp({
-        email: registerInfo.email,
-        otp: enteredOtp,
-      }).unwrap();
-
+      const otpResponse = await verifyOtp({ email: registerInfo.email, otp: enteredOtp }).unwrap();
       if (otpResponse?.data?.verificationToken) {
         const res = await registerUser({
           ...registerInfo,
           verificationToken: otpResponse.data.verificationToken,
         }).unwrap();
-
         if (res.data.accessToken) {
           toast.success("OTP validated successfully!");
           storeUserInfo({ accessToken: res.data.accessToken });
-          const redirectPath = location.state && location.state.from ? location.state.from : "/";
-          navigate(redirectPath);
+          navigate("/");
         }
       } else {
         throw new Error("No verification token received");
       }
     } catch (err: unknown) {
-      const message =
-        (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-        "OTP verification failed. Please check the code and try again.";
+      const e = err as { data?: Array<{ message?: string }>; message?: string };
+      const message = e?.data?.[0]?.message || e?.message || "OTP verification failed.";
       toast.error(message);
     } finally {
       setIsBusy(false);
@@ -217,120 +175,79 @@ const SignUpComponent = () => {
   };
 
   const handleResendOtp = async () => {
-    if (cooldown > 0 || isBusy) return;
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
+    if (!registerInfo) return;
     setIsBusy(true);
     try {
-      const otpPayload = {
-        name: registerInfo.name,
-        email: registerInfo.email,
-      };
-      const res = await emailVerify({ ...otpPayload }).unwrap();
+      const res = await emailVerify({ name: registerInfo.name, email: registerInfo.email }).unwrap();
       if (res?.data) {
         const { expiresAt } = res.data;
         setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
-        setValue("otp", "");
+        toast.success("OTP resent to your email");
         setCooldown(60);
       }
-    } catch (error) {
-      const message =
-        (error as { data?: Array<{ message?: string }> })?.data?.[0]
-          ?.message || "Failed to resend OTP. Please try again.";
-      toast.error(message);
+    } catch {
+      toast.error("Failed to resend OTP. Please try again.");
     } finally {
       setIsBusy(false);
     }
   };
 
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    setIsBusy(true);
+    try {
+      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
+      if (res.data.accessToken) {
+        toast.success("Signed up with Google successfully!");
+        storeUserInfo({ accessToken: res.data.accessToken });
+        navigate("/");
+      }
+    } catch {
+      toast.error("Google login failed. Please try again.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    toast.error("Google login failed. Please try again.");
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 md:p-6 bg-[#050816] dark:bg-[#050816] bg-white text-black dark:text-white transition-all duration-300">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-900 dark:text-slate-100 box-border">
 
-      <main className="auth-container flex flex-col md:flex-row overflow-hidden rounded-3xl border border-white/10 dark:border-white/10 border-black/10 shadow-[0_0_40px_rgba(168,85,247,0.12)] w-full max-w-6xl bg-white dark:bg-[#0b1020]">
+      {/* Background Glow */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full flex-col justify-center py-12 relative z-10">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-          <h2 className="text-center text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
+      <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-0 min-w-0 box-border mx-auto">
+
+        {/* Title */}
+        <div className="mb-6 text-center">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
         </div>
-        <div className="flex justify-center items-center gap-40">
-        
-                <div className="flex flex-col gap-5">
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
-                    
-                    Turns Ideas into
-                    <br /> 
-                    unforgotable stories
-                    
-                    </h1>
-                  <p>AI powered storytelling that helps you
-                      <br />            
-                     create connect inspire.</p>
-        
-                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-                      <div>
-                        <WandSparkles className="text-violet-600"/>
-                      </div>
-                      <div>
-                        <h1 className="font-bold">Smart writing</h1>
-                        <p>AI that understands your ideas</p>
-                      </div>
-                     </div>
-        
-        
-                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-                      <div>
-                        <BookOpen className="text-violet-600"/>
-                      </div>
-                      <div>
-                        <h1 className="font-bold">Endless Creativity</h1>
-                        <p>Stories that captivate and inspire</p>
-                      </div>
-                     </div>
-        
-        
-                     <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-                      <div>
-                        <UsersRound className="text-violet-600"/>
-                      </div>
-                      <div>
-                        <h1 className="font-bold">Built for everyone</h1>
-                        <p>Writers, Creaters and dreamers</p>
-                      </div>
-                     </div>
-                     <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-                        Create, edit, and generate engaging multiple story
-                        <br />
-                         variations from a single prompt.
-                          <br />                
-                         Perfect for writers, creators, and enthusiasts 
-                         <br />
-                         exploring the future of fiction.
-                     </div>
-                </div>
-        
-        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl">
-          <h3 className="text-center text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
+
+        {/* Card */}
+        <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
+
+          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
 
           {!showOtpField && (
-            <p className="mt-2 mb-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-2 mb-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 px-1">
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
-          <body className="overflow-x-hidden"></body>
+
           {!showOtpField && (
-            <div className="relative mb-6">
+            <div className="relative mb-6 w-full box-border">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-700/50"></div>
+                <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
               </div>
-             <div className="relative flex justify-center text-sm">
-                <span className="bg-white dark:bg-slate-800/60 text-slate-800 dark:text-slate-400 font-semibold">
+              <div className="relative flex justify-center text-xs">
+                <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
                   SIGN UP WITH EMAIL
                 </span>
               </div>
@@ -338,10 +255,7 @@ const SignUpComponent = () => {
           )}
 
           {!showOtpField ? (
-
-            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate> 
-
-            <form className="space-y-5 w-full max-w-full min-w-0" onSubmit={handleSubmit(onSubmit)}>
+            <form className="space-y-5 w-full min-w-0 block box-border" onSubmit={handleSubmit(onSubmit)}>
 
               <SSInput
                 label="Name"
@@ -353,115 +267,14 @@ const SignUpComponent = () => {
                 autoComplete="name"
                 validation={{
                   required: "Name is required",
-                minLength: {
-                value: 3,
-                message: "Name must be at least 3 characters",
-                },
+                  minLength: { value: 2, message: "Name must be at least 2 characters" },
                   pattern: {
                     value: /^[A-Za-z0-9\s._]+$/,
-                    message:
-                      "Only letters, numbers, spaces, underscores, and dots are allowed",
+                    message: "Only letters, numbers, spaces, underscores, and dots are allowed",
                   },
                 }}
+                error={errors.name}
               />
-            ))}
-
-          </div>
-
-          {/* Content */}
-
-          <div className="relative z-10 px-8 md:px-14">
-
-            {/* Brand */}
-
-            <div className="flex items-center gap-3 mb-8">
-
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-
-                <span className="fi fi-rr-sparkles text-white text-sm"></span>
-
-              </div>
-
-              <span className="text-white text-sm tracking-[0.25em] font-bold uppercase">
-
-                Story Spark AI
-
-              </span>
-
-            </div>
-
-            {/* Hero Text */}
-
-            <h1 className="text-4xl md:text-6xl font-black leading-[0.95] text-white drop-shadow-xl">
-
-              One Spark.
-              <br />
-
-              <span className="bg-gradient-to-r from-purple-300 via-pink-300 to-orange-200 bg-clip-text text-transparent">
-
-                Infinite Worlds.
-
-              </span>
-
-            </h1>
-
-            <p className="mt-6 text-white/90 text-lg leading-relaxed max-w-xl font-medium">
-
-              Turn your imagination into fully illustrated
-              multi-variation AI stories.
-
-            </p>
-
-          </div>
-
-        </section>
-
-        {/* RIGHT SIDE */}
-
-        <section className="w-full md:w-[48%] flex items-center justify-center p-4 md:p-6 bg-white dark:bg-[#050816]">
-
-          <div className="w-full max-w-[470px] rounded-3xl border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#09111f]/80 backdrop-blur-xl p-7 md:p-9 shadow-xl">
-
-            {/* Heading */}
-
-            <div className="mb-7">
-
-              <h2 className="text-4xl font-black text-black dark:text-white">
-
-                Create Account
-
-              </h2>
-
-              <p className="mt-2 text-[16px] text-gray-600 dark:text-gray-400">
-
-                Join StorySparkAI and begin your creative journey.
-
-              </p>
-
-            </div>
-
-            {/* Login Header */}
-
-            <div className="border-b border-black/10 dark:border-white/10 mb-8">
-
-              <button className="w-full pb-4 text-base font-bold tracking-widest text-purple-500 border-b-2 border-purple-500">
-
-                Sing Up
-
-              </button>
-
-            </div>
-
-            {/* FORM */}
-
-            <form
-              className="space-y-5"
-              onSubmit={handleSubmit(onSubmit)}
-            >
-
-              {/* NAME */}
-
-              <div>
 
                 <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
 
@@ -563,66 +376,60 @@ const SignUpComponent = () => {
                   })}
                 />
 
-                {errors.confirmPassword && (
-                  <p className="mt-2 text-sm text-red-500">
-                    {errors.confirmPassword.message}
+              {password?.length > 0 && (
+                <div className="space-y-3 -mt-1 w-full min-w-0 overflow-hidden box-border">
+                  <div
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700/50 rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={passedChecks}
+                    aria-valuemin={0}
+                    aria-valuemax={5}
+                  >
+                    <div className={`h-full transition-all duration-300 ${barColor} ${barWidth}`} />
+                  </div>
+                  <p className={`text-xs font-bold uppercase tracking-wider ${textColor}`}>
+                    {strengthLabel} Password
                   </p>
-                )}
-
-              </div>
-{/* PASSWORD STRENGTH */}
-
-{password && (
-  <div className="space-y-2">
-
-    <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-
-      <div
-        className={`h-full transition-all duration-300 ${barColor} ${barWidth}`}
-      />
-
-    </div>
-
-    <p className={`text-sm font-medium ${textColor}`}>
-      Password Strength: {strengthLabel}
-    </p>
-
-    <div className="space-y-1 mt-3">
-
-      {PASSWORD_REQUIREMENTS.map((rule) => (
-        <p
-          key={rule.key}
-          className={`text-xs ${
-            passwordChecks[rule.key]
-              ? "text-green-400"
-              : "text-gray-400"
-          }`}
-        >
-          • {rule.label}
-        </p>
-      ))}
-
-    </div>
-
-  </div>
-)}
+                  <ul className="space-y-1.5 list-none p-0 m-0 w-full box-border text-[11px] font-medium">
+                    {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
+                      const met = passwordChecks[key];
+                      return (
+                        <li key={key} className={`flex items-center gap-2 ${met ? "text-emerald-400" : "text-slate-500"}`}>
+                          <i className={`fa-solid ${met ? "fa-circle-check" : "fa-circle-xmark"} text-xs shrink-0`} aria-hidden="true" />
+                          <span>{label}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
 
               <SSInput
                 label="Confirm Password"
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
-                required={true}
-                icon="fi fi-rr-lock" 
+                required={!showOtpField}
+                icon="fi fi-rr-lock"
                 register={register}
                 autoComplete="new-password"
+                validation={{
+                  validate: (value) => {
+                    if (showOtpField) return true;
+                    if (!value) return "Confirm password is required";
+                    if (value !== password) return "Passwords do not match!";
+                    return true;
+                  },
+                }}
                 error={errors.confirmPassword}
               />
 
-              <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
+              <div className="pt-2 w-full box-border">
+                <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
+              </div>
             </form>
           ) : (
-            <div className="space-y-5 w-full max-w-full min-w-0">
+            <div className="grid grid-cols-1 gap-5 w-full min-w-0 box-border">
               <SSInput
                 label="OTP"
                 name="otp"
@@ -633,25 +440,38 @@ const SignUpComponent = () => {
                 autoComplete="one-time-code"
                 validation={{
                   required: "Please enter OTP",
-                  minLength: {
-                    value: 6,
-                    message: "OTP must be 6 digits",
-                  },
-                  maxLength: {
-                    value: 6,
-                    message: "OTP must be 6 digits",
-                  },
-                  pattern: {
-                    value: /^[0-9]{6}$/,
-                    message: "OTP must contain only numbers",
-                  },
+                  minLength: { value: 6, message: "OTP must be 6 digits" },
+                  maxLength: { value: 6, message: "OTP must be 6 digits" },
+                  pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
                 }}
                 error={errors.otp}
               />
+              <SSButton text="Verify OTP" type="button" onClick={handleOtpValidation} isLoading={isBusy} />
+              <div className="text-center pt-1">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={cooldown > 0 || isBusy}
+                  className="text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 disabled:text-slate-600 transition-colors duration-150 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
+                </button>
+              </div>
+            </div>
+          )}
 
-    <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-      OTP Code
-    </label>
+          {!showOtpField && (
+            <div className="w-full min-w-0 box-border">
+              <div className="relative my-6 w-full box-border">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white dark:bg-slate-800 px-4 text-slate-400 font-medium rounded-md">
+                    Or
+                  </span>
+                </div>
+              </div>
 
     <input
       type="text"
@@ -660,24 +480,28 @@ const SignUpComponent = () => {
       className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
       {...register("otp")}
     />
+              <div className="flex justify-center w-full box-border overflow-hidden">
+                <GoogleLogin
+                  onSuccess={handleGoogleLoginSuccess}
+                  onError={handleGoogleLoginError}
+                />
+              </div>
 
-          {!showOtpField && (
-            <p className="mt-8 text-center text-sm text-slate-400">
-              Already have an account?{" "}
-              <a
-                href="/login"
-                className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
-              >
-                Sign In
-              </a>
-            </p>
+              <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                Already have an account?{" "}
+                <Link to="/login" className="font-semibold text-blue-400 hover:underline transition-colors">
+                  Sign In
+                </Link>
+              </p>
+            </div>
           )}
         </div>
       </div>
+
       <Toaster position="top-right" reverseOrder={false} />
-    </div>
     </div>
   );
 };
 
 export default SignUpComponent;
+
