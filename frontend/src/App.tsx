@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import ScrollToTop from "./components/ScrollToTop";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import ThemeSwitcher from "./components/theme-switcher/ThemeSwitcher";
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import NotFoundComponent from "./components/not-found.component";
@@ -70,6 +71,7 @@ const router = createBrowserRouter([
       <>
         <ScrollToTopButton />
         <MagicCursorComponent />
+        <ThemeSwitcher />
         <ScrollToTop />
         <RootLayout>
           <Suspense fallback={<LoadingAnimation />}>

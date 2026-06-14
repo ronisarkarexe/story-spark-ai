@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="book-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="spark-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Base (Optional for contrast, but transparent is usually best) -->
+  <rect width="100" height="100" rx="20" fill="#0F172A" />
+
+  <!-- Book Base -->
+  <path d="M25 65 C 25 55, 45 45, 50 45 C 55 45, 75 55, 75 65 V 35 C 75 25, 55 15, 50 15 C 45 15, 25 25, 25 35 Z" 
+        fill="url(#book-grad)" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" />
+        
+  <!-- Book Pages / Lines -->
+  <path d="M32 35 C 38 31, 45 28, 50 28 M32 45 C 38 41, 45 38, 50 38 M32 55 C 38 51, 45 48, 50 48" 
+        stroke="#93C5FD" stroke-width="2" stroke-linecap="round" />
+  <path d="M68 35 C 62 31, 55 28, 50 28 M68 45 C 62 41, 55 38, 50 38 M68 55 C 62 51, 55 48, 50 48" 
+        stroke="#93C5FD" stroke-width="2" stroke-linecap="round" />
+        
+  <!-- Center Book Crease -->
+  <line x1="50" y1="15" x2="50" y2="45" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+
+  <!-- AI Spark / Star glow -->
+  <g filter="url(#glow)">
+    <path d="M 50 60 Q 50 75 35 75 Q 50 75 50 90 Q 50 75 65 75 Q 50 75 50 60 Z" fill="url(#spark-grad)" />
+    
+    <!-- Mini sparks -->
+    <path d="M 30 50 Q 30 58 22 58 Q 30 58 30 66 Q 30 58 38 58 Q 30 58 30 50 Z" fill="#FDE047" />
+    <path d="M 70 45 Q 70 51 64 51 Q 70 51 70 57 Q 70 51 76 51 Q 70 51 70 45 Z" fill="#FDE047" />
+  </g>
+</svg>

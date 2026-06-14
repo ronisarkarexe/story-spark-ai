@@ -140,5 +140,173 @@ export const inspirationData: StoryInspiration[] = [
       "Write a romance set in a community where matches are decided by an infallible algorithm, but two people fall in love outside its recommendations."
     ],
     "image": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "wizard-of-oz",
+    title: "The Wonderful Wizard of Oz",
+    author: "L. Frank Baum",
+    genre: "Fantasy",
+    summary: "A Kansas girl named Dorothy is swept by a tornado into the magical land of Oz, where she sets off on a journey to find the Great Wizard and return home, making unlikely companions along the way.",
+    themes: ["Home & Belonging", "Courage & Self-Belief", "Illusion vs. Reality", "Friendship"],
+    prompts: [
+      "A teenager is transported into a retro video game world and must gather three scattered power-ups to find the legendary programmer who can send them home.",
+      "Write about a group of strangers each seeking something they believe they lack, only to discover they possessed it all along.",
+      "A social media influencer wakes up in a world that mirrors their curated online persona, and must unravel its distorted reality."
+    ],
+    image: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "midsummer-night",
+    title: "A Midsummer Night's Dream",
+    author: "William Shakespeare",
+    genre: "Fantasy",
+    summary: "The romantic fates of four Athenian lovers and a troupe of amateur actors are entangled with the feuding king and queen of the fairies, leading to magical chaos and comic misunderstandings in an enchanted forest.",
+    themes: ["Love & Illusion", "Order vs. Chaos", "Dreams vs. Reality", "Power & Mischief"],
+    prompts: [
+      "A corporate team-building retreat in a fog-bound forest goes sideways when an experimental app starts swapping everyone's romantic feelings.",
+      "Write a comedy where a mischievous AI plays matchmaker at a midnight gala, reassigning feelings at random with unpredictable results.",
+      "Two sworn rivals discover they have been unknowingly writing love letters to each other through an anonymous online forum."
+    ],
+    image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "tell-tale-heart",
+    title: "The Tell-Tale Heart",
+    author: "Edgar Allan Poe",
+    genre: "Horror",
+    summary: "An unnamed narrator insists on their sanity while recounting the meticulous murder of an old man whose 'vulture eye' disturbed them, only to be undone by the imagined sound of the victim's beating heart.",
+    themes: ["Guilt & Paranoia", "Obsession", "Unreliable Narration", "Psychological Horror"],
+    prompts: [
+      "A security analyst who committed a data breach starts hearing phantom keyboard clicks wherever they go, each keystroke sounding like an accusation.",
+      "Write a story from the perspective of someone who is convinced their smart-home devices are replaying recorded sounds of a past crime.",
+      "A caretaker hides evidence of a terrible accident, but an ordinary household sound begins to magnify in their mind until it consumes them."
+    ],
+    image: "https://images.unsplash.com/photo-1509909756405-be0199881695?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "jekyll-hyde",
+    title: "Strange Case of Dr Jekyll and Mr Hyde",
+    author: "Robert Louis Stevenson",
+    genre: "Horror",
+    summary: "The mild-mannered Dr. Henry Jekyll experiments with a serum that separates his respectable persona from his dark impulses, releasing the monstrous Edward Hyde who grows stronger with each transformation.",
+    themes: ["Duality of Human Nature", "Repression & Release", "Science & Ethics", "Identity"],
+    prompts: [
+      "A tech founder develops a neural interface that lets users suppress social inhibitions, only to find the suppressed traits form a separate, destructive personality.",
+      "Write a thriller where a therapist realizes their most volatile patient and their most upstanding client share the exact same memories.",
+      "A biohacker tests a gene-editing formula promising peak performance but gradually loses control of who they are after sundown."
+    ],
+    image: "https://images.unsplash.com/photo-1580274455191-1c62238fa333?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "war-of-worlds",
+    title: "The War of the Worlds",
+    author: "H.G. Wells",
+    genre: "Sci-Fi",
+    summary: "Martian invaders land in England and devastate civilization with their heat-rays and black smoke, reducing humanity to scattered survivors — until the aliens are felled by Earth's bacteria rather than human resistance.",
+    themes: ["Colonialism & Conquest", "Human Vulnerability", "Survival Instinct", "Hubris of Civilization"],
+    prompts: [
+      "An advanced alien probe arrives on Earth not with weapons, but with a dataset of every human mistake ever recorded, offering it as a warning.",
+      "Write a survival story set in a city where invisible drones have silently mapped every human routine, preparing for an unknown purpose.",
+      "Humanity prepares to colonize a distant planet, only to discover they are the invaders in an alien civilization's history books."
+    ],
+    image: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "brave-new-world",
+    title: "Brave New World",
+    author: "Aldous Huxley",
+    genre: "Sci-Fi",
+    summary: "In a dystopian future ruled by pleasure and conditioning, a 'Savage' raised outside the World State confronts a society where individuality, art, and family have been eradicated in favour of stability and happiness.",
+    themes: ["Freedom vs. Conformity", "Technology & Control", "Consumerism", "Loss of Humanity"],
+    prompts: [
+      "In a near-future city, citizens are genetically assigned careers at birth and contentment drugs are piped through the water supply. One person develops the ability to refuse.",
+      "A government program promises to eliminate unhappiness through mandatory neural updates, but one engineer discovers the updates also erase memories of loved ones.",
+      "Write about a person raised in a settlement without social media who is suddenly immersed in a hyper-connected society addicted to algorithmic approval."
+    ],
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "and-then-there-were-none",
+    title: "And Then There Were None",
+    author: "Agatha Christie",
+    genre: "Mystery",
+    summary: "Ten strangers are lured to a remote island under false pretences and are killed one by one, each death mirroring a line in a nursery rhyme, leaving no apparent killer among the dead.",
+    themes: ["Justice & Retribution", "Isolation", "Guilt & Secrets", "Trust & Deception"],
+    prompts: [
+      "Eight executives wake up locked inside their company headquarters with a message stating one of them committed a crime that ruined seven lives.",
+      "Write a mystery set on a malfunctioning orbital station where each crew member is eliminated in a pattern corresponding to an old Earth legend.",
+      "A group of strangers receives personalised invitations to a luxury escape room, only to discover the puzzles use secrets from their own pasts."
+    ],
+    image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "murders-rue-morgue",
+    title: "The Murders in the Rue Morgue",
+    author: "Edgar Allan Poe",
+    genre: "Mystery",
+    summary: "Amateur detective C. Auguste Dupin investigates a baffling double murder in a locked Parisian apartment, pioneering the genre of analytical detective fiction through pure logical reasoning.",
+    themes: ["Analytical Reasoning", "Impossible Crime", "Observation vs. Assumption", "Hidden Truth"],
+    prompts: [
+      "A cybersecurity expert is called to investigate a data breach where the logs show the intrusion occurred from a system that was physically offline.",
+      "Write a mystery where every witness swears the perpetrator was speaking a different language, yet all the descriptions of the crime are identical.",
+      "A crime scene analyst discovers evidence of a crime that defies known physics, forcing them to question the foundations of the case."
+    ],
+    image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "robinson-crusoe",
+    title: "Robinson Crusoe",
+    author: "Daniel Defoe",
+    genre: "Adventure",
+    summary: "Shipwrecked on a deserted island for 28 years, Robinson Crusoe resourcefully builds a life from scratch, tames wild animals, cultivates crops, and eventually encounters the mysterious Friday.",
+    themes: ["Self-Reliance & Ingenuity", "Isolation", "Colonialism", "Civilisation vs. Nature"],
+    prompts: [
+      "An astronaut's capsule is stranded on a barren moon. With only a broken communication array and a survival kit, they must rebuild contact with Earth.",
+      "Write about a software developer whose internet connection is permanently severed and who must reconstruct their life and work without digital infrastructure.",
+      "A survivalist enters a year-long solo wilderness challenge but discovers a faint signal suggesting they are not entirely alone."
+    ],
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "around-world-eighty-days",
+    title: "Around the World in Eighty Days",
+    author: "Jules Verne",
+    genre: "Adventure",
+    summary: "The composed English gentleman Phileas Fogg wagers his fortune that he can circumnavigate the globe in exactly eighty days, racing against time with his resourceful valet Passepartout.",
+    themes: ["Precision & Determination", "Cross-Cultural Encounters", "Speed & Technology", "Reputation & Honour"],
+    prompts: [
+      "A programmer bets their entire career on completing a distributed system deployment across 12 global data centres in a single 24-hour window.",
+      "Write an adventure story where the protagonist must collect a unique item from each of the world's continents within 30 days or forfeit everything they own.",
+      "Two rival travel journalists compete to complete the same extraordinary journey using entirely different modes of transport."
+    ],
+    image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "jane-eyre",
+    title: "Jane Eyre",
+    author: "Charlotte Bronte",
+    genre: "Romance",
+    summary: "Orphaned and plain-spoken Jane Eyre takes a governess position at Thornfield Hall and falls into a turbulent romance with the brooding Mr. Rochester, whose dark secret threatens to destroy their chance at happiness.",
+    themes: ["Independence & Self-Respect", "Social Class", "Hidden Secrets", "Moral Integrity in Love"],
+    prompts: [
+      "A junior engineer at a prestigious firm falls for her brilliant but secretive manager, only to uncover a professional secret that could end both their careers.",
+      "Write a romance where the protagonist refuses to compromise their principles for love, and the partner must prove they are worthy rather than just desired.",
+      "A nanny hired by a reclusive artist in a remote mountain retreat uncovers a locked room and a history that redefines everything she thought she knew about them."
+    ],
+    image: "https://images.unsplash.com/photo-1474552226712-ac0f0961a954?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    id: "sense-sensibility",
+    title: "Sense and Sensibility",
+    author: "Jane Austen",
+    genre: "Romance",
+    summary: "Sisters Elinor and Marianne Dashwood navigate love, heartbreak, and social expectation after their family is left financially precarious, embodying the tension between rational restraint and passionate feeling.",
+    themes: ["Reason vs. Emotion", "Financial Insecurity & Marriage", "Heartbreak & Resilience", "Sisterhood"],
+    prompts: [
+      "Two sisters with opposite personalities both fall for unsuitable partners. One plans every move; the other follows every feeling. Write their year of reckoning.",
+      "A story about a pair of roommates — one a meticulous planner, the other an impulsive romantic — navigating the same complicated love triangle from their own perspectives.",
+      "Write a modern romance exploring how social media makes it impossible to grieve a relationship privately, and how two very different people handle that exposure."
+    ],
+    image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop"
   }
 ];

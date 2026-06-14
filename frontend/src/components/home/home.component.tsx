@@ -12,6 +12,7 @@ import StartWritingComponent from "./start_writing/start_writing.component";
 import PersonalizedRecommendationsComponent from "./personalized_recommendations/personalized_recommendations.component";
 import { isLoggedIn } from "../../services/auth.service";
 import BackToTop from "../ScrollToTopButton";
+import StoryInspirationHomeCard from "./story_inspiration_card/StoryInspirationHomeCard";
 
 const HomeComponent = () => {
   const isLogin = isLoggedIn();
@@ -37,6 +38,7 @@ const HomeComponent = () => {
           <div className="space-y-6 lg:sticky lg:top-24 w-full box-border">
             {isLogin && <FeatureProfileComponent />}
             {isLogin && <PersonalizedRecommendationsComponent />}
+            <StoryInspirationHomeCard />
             <TrendingTopicComponent />
             <RecommendedWritersComponent />
           </div>

@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import confetti from "canvas-confetti";
 import { Achievement } from "../types";
 import AchievementBadge from "./AchievementBadge";
 
@@ -14,6 +15,74 @@ const AchievementsGrid: React.FC<AchievementsGridProps> = ({
   isLoading,
 }) => {
   const [activeTab, setActiveTab] = useState<CategoryFilter>("all");
+
+  useEffect(() => {
+    if (isLoading || !achievements || achievements.length === 0) return;
+
+    const unlockedBadges = achievements.filter((ach) => !!ach.unlockedAt);
+    if (unlockedBadges.length === 0) return;
+
+    const celebratedBadgesStr = localStorage.getItem("celebrated_badges");
+    let celebratedBadges: string[] = [];
+    if (celebratedBadgesStr) {
+      try {
+        const parsed = JSON.parse(celebratedBadgesStr);
+        celebratedBadges = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.error("Error parsing celebrated_badges from localStorage:", e);
+        localStorage.removeItem("celebrated_badges");
+      }
+    }
+
+    const newlyUnlocked = unlockedBadges.filter(
+      (ach) => !celebratedBadges.includes(ach.id)
+    );
+
+    let animationFrameId: number;
+
+    if (newlyUnlocked.length > 0) {
+      // Trigger a beautiful, premium, double-sided cascade of confetti!
+      const duration = 1.5 * 1000;
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ["#f59e0b", "#eab308", "#3b82f6", "#6366f1", "#10b981"],
+        });
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ["#f59e0b", "#eab308", "#3b82f6", "#6366f1", "#10b981"],
+        });
+
+        if (Date.now() < end) {
+          animationFrameId = requestAnimationFrame(frame);
+        }
+      };
+
+      frame();
+
+      // Update celebrated badges list in localStorage
+      const updatedCelebrated = [
+        ...celebratedBadges,
+        ...newlyUnlocked.map((ach) => ach.id),
+      ];
+      localStorage.setItem("celebrated_badges", JSON.stringify(updatedCelebrated));
+    }
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [achievements, isLoading]);
+
 
   const categories: { label: string; value: CategoryFilter }[] = [
     { label: "All Achievements", value: "all" },

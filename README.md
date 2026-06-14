@@ -377,3 +377,11 @@ Thanks to everyone who has helped build **Story Spark AI**. This grid updates au
 
 Thank you for contributing to our open-source project! We appreciate your support 🚀 <br>
 Don't forget to leave a star ⭐
+
+### Proposed Feature: Trending Topics & UI Enhancements
+- Added responsive writing genres (Fantasy, Mystery, Romance) next to recommended writers.
+- Implemented a clean 'How It Works' section to polish the landing page layout.
+
+### Proposed Feature: Trending Topics & UI Enhancements
+- Added responsive writing genres (Fantasy, Mystery, Romance) next to recommended writers.
+- Implemented a clean 'How It Works' section to polish the landing page layout.

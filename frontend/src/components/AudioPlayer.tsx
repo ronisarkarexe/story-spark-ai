@@ -236,7 +236,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           </div>
         ) : (
           <div className="mt-4 space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <button
                 type="button"
                 role="button"
@@ -435,7 +435,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 >
                   Voice
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}

@@ -485,6 +485,7 @@ const StoriesComponent = () => {
   );
   
   const [loading, setLoading] = useState<boolean>(false);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
 
