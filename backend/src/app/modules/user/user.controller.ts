@@ -9,60 +9,37 @@ import ApiError from "../../../errors/api_error";
 import { User } from "./user.model";
 import { WritingStreakService } from "../gamification/writing_streak.service";
 
-const getAllUsers = async (req: Request, res: Response) => {
-  try {
-    const result = await UserService.getAllUsers();
+const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.getAllUsers();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "OK!",
+    data: result,
+  });
+});
 
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "OK!",
-      data: result,
-    });
-  } catch (error) {
-    res.status(httpStatus.BAD_REQUEST).json({
-      message: "Fail to get users!",
-    });
-  }
-};
+const getUser = catchAsync(async (req: Request, res: Response) => {
+  const id = routeParam(req.params.id);
+  const result = await UserService.getUser(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "OK!",
+    data: result,
+  });
+});
 
-const getUser = async (req: Request, res: Response) => {
-  try {
-    const id = routeParam(req.params.id);
-
-    const result = await UserService.getUser(id);
-
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "OK!",
-      data: result,
-    });
-  } catch (error) {
-    res.status(httpStatus.BAD_REQUEST).json({
-      message: "Fail to get users!",
-    });
-  }
-};
-
-const updateUser = async (req: Request, res: Response) => {
-  try {
-    const token = await getToken(req);
-
-    const result = await UserService.updateUser(token, req.body);
-
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "User update successfully!",
-      data: result,
-    });
-  } catch (error) {
-    res.status(httpStatus.BAD_REQUEST).json({
-      message: "Fail to get users!",
-    });
-  }
-};
+const updateUser = catchAsync(async (req: Request, res: Response) => {
+  const token = await getToken(req);
+  const result = await UserService.updateUser(token, req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User update successfully!",
+    data: result,
+  });
+});
 
 const deleteUser = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
