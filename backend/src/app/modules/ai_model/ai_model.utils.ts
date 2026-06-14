@@ -204,7 +204,17 @@ export async function generateWithGeminiStories(
       });
 
       return chatSession.sendMessage(
+      return chatSession.sendMessage(
         `${buildGenreInstruction(genre)}${buildToneInstruction(tone)}${buildCharactersInstruction(characters)}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+        First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
+        Then, generate ${numStories} different short stories based on this ENHANCED prompt.
+        The stories MUST be written entirely in the ${language} language.
+        For each story, also analyze and detect the primary emotional tones (e.g., ["Joy", "Suspense", "Motivation"]) and the specific genre.
+        Each story should be in JSON format with fields: "title", "content", "tag" (the main topic), "emotions" (an array of strings), "genre" (a string), and "enhancedPrompt" (the improved prompt used).
+        Ensure each story is approximately ${wordLength} words long.
+        Return only valid JSON array output.`,
+        { signal }
+      );
         First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
         Then, generate ${numStories} different short stories based on this ENHANCED prompt.
         The stories MUST be written entirely in the ${language} language.
