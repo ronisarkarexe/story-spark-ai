@@ -7,6 +7,7 @@ import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { WriterApplication } from "../writer_application/writer_application.model";
 
+<<<<<<< HEAD
 const getDashboardAnalysis = async (user: any) => {
   // Extract user details and roles cleanly
   const role = user.role;
@@ -15,9 +16,27 @@ const getDashboardAnalysis = async (user: any) => {
   const applicationStatus = "NONE"; 
   const postsPerMonth: number[] = Array(12).fill(0);
   const topicCount: Record<string, number> = {};
+=======
+const getDashboardAnalysis = async (userId: string) => {
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+
+  const role = user.role;
+
+  if (role === ENUM_USER_ROLE.WRITER) {
+    const totalPosts = await Post.countDocuments({ author: user._id, isDeleted: { $ne: true } });
+    const totalReaders = user.followers?.length || 0;
+
+    const writerApp = await WriterApplication.findOne({ user: user._id }).lean();
+    const applicationStatus = writerApp?.status || "not_applied";
+
+    const postsPerMonth: Record<string, number> = {};
+    const topicCount: Record<string, number> = {};
+>>>>>>> upstream/main
 
   return {
     role,
+<<<<<<< HEAD
     writerStats: {
       totalReaders,
       totalPosts,
@@ -29,6 +48,10 @@ const getDashboardAnalysis = async (user: any) => {
       perMonth: postsPerMonth,
       topics: topicCount,
     }
+=======
+    subscriptionStatus: user.subscriptionType?.toUpperCase() || SUBSCRIPTION_TYPE.FREE,
+    status: user.status || USER_STATUS.ACTIVE,
+>>>>>>> upstream/main
   };
 };
 
