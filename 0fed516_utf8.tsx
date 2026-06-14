@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+﻿import React, { useEffect, useState, useRef, useMemo } from "react";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
@@ -10,22 +10,19 @@ import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
+ImageFallback
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
 import ImageFallback from "../ImageFallback";
-import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
 export interface IStories {
   uuid: string;
   title: string;
   content: string;
   tag: string;
-  emotions?: string[];
-  enhancedPrompt?: string;
   imageURL: string;
   language?: string;
-  genre?: string;
 }
 
 interface IPost extends IStories {
@@ -98,7 +95,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
-const [, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -129,19 +125,6 @@ const [, setShowRemix] = useState<boolean>(false);
       }));
     }
   }, [selectedStory, originalStoryContent]);
-
-  useEffect(() => {
-    if (narrationState === "playing") {
-      const activeWordElement = document.querySelector('[data-active-word="true"]');
-      if (activeWordElement) {
-        activeWordElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest"
-        });
-      }
-    }
-  }, [narrationWordIndex, narrationState]);
 
   const handleGenerateAlternateEndings = async () => {
     if (!selectedStory) return;
@@ -207,77 +190,6 @@ const [, setShowRemix] = useState<boolean>(false);
     );
     toast.success("Reverted to original story ending!");
   };
-
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleTextToSpeech = () => {
-    if (!selectedStory?.content) return;
-
-    if (!("speechSynthesis" in window)) {
-      toast.error("Text-to-speech is not supported in this browser.");
-      return;
-    }
-
-    if (isPlayingAudio) {
-      if (isPausedAudio) {
-        window.speechSynthesis.resume();
-        setIsPausedAudio(false);
-        toast.success("Resumed reading story");
-      } else {
-        window.speechSynthesis.pause();
-        setIsPausedAudio(true);
-        toast.success("Paused reading story");
-      }
-    } else {
-      window.speechSynthesis.cancel();
-      const cleanContent = selectedStory.content.replace(/<[^>]*>/g, "");
-      const utterance = new SpeechSynthesisUtterance(cleanContent);
-      
-      utterance.onend = () => {
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      utterance.onerror = (e) => {
-        console.error("SpeechSynthesis error:", e);
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(
-        (v) => v.lang.startsWith("en-") && v.name.includes("Google")
-      ) || voices.find((v) => v.lang.startsWith("en-"));
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
-      setIsPlayingAudio(true);
-      setIsPausedAudio(false);
-      toast.success("Playing story audio");
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleStopAudio = () => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-    setIsPlayingAudio(false);
-    setIsPausedAudio(false);
-    toast.success("Stopped audio playback");
-  };
-
-  useEffect(() => {
-    return () => {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, []);
 
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
@@ -423,8 +335,11 @@ const [, setShowRemix] = useState<boolean>(false);
   };
 
   const handleExportPDF = async () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
+    if (!selectedStory) {
+      toast.error("No story available to export.");
+      return;
+    }
+
     const toastId = toast.loading("Preparing your premium PDF...");
 
     try {
@@ -646,36 +561,53 @@ const [, setShowRemix] = useState<boolean>(false);
     }
   };
 
-  const downloadBlob = (blob: Blob, filename: string) => {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-};
+  const handleExportMarkdown = () => {
+    if (!selectedStory) {
+      toast.error("No story available to export.");
+      return;
+    }
 
-const getSafeFileName = (title: string, ext: string) => {
-  const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  return `${cleanTitle || "story"}.${ext}`;
-};
-
-const handleExportMarkdown = () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
     try {
       const title = selectedStory.title || "Story";
       const content = selectedStory.content || "";
       const tag = selectedStory.tag || "General";
       const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
       const isoDate = new Date().toISOString().split("T")[0];
-      const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
-      const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
-      downloadBlob(blob, getSafeFileName(title, "md"));
-      toast.success("Markdown downloaded!");
-    } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
-  };
 
+      const cleanTitle = title.replace(/"/g, '\\"');
+      const cleanTag = tag.replace(/"/g, '\\"');
+      const cleanAuthor = authorName.replace(/"/g, '\\"');
+
+      const markdownContent = `---
+title: "${cleanTitle}"
+tag: "${cleanTag}"
+author: "${cleanAuthor}"
+date: "${isoDate}"
+---
+
+# ${title}
+
+${content}
+`;
+
+      const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      
+      const fileName = title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story";
+      link.setAttribute("download", `${fileName}.md`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success("Markdown downloaded!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export Markdown.");
+    }
+  };
   const handelPublishStory = async () => {
     if (!isLogin) {
       toast.error("Please login to publish the story.");
@@ -723,7 +655,6 @@ const handleExportMarkdown = () => {
 
   const isNarrationActive = narrationState !== "idle";
 
-
 if (isLoading) {
   return (
     <div className="flex items-center justify-center py-20">
@@ -757,16 +688,11 @@ if (isLoading) {
               </h1>
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center rounded-full bg-purple-900/60 text-purple-300 border border-purple-700/50 py-1 px-3 text-xs font-semibold">
-                  Γëí╞Æ├ä┬í {selectedStory.tag}
+                  ≡ƒÄ¡ {selectedStory.tag}
                 </span>
                 <span className="inline-flex items-center rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
-                  Γëí╞Æ├«├ë {selectedStory.language || "English"}
+                  ≡ƒîÉ {selectedStory.language || "English"}
                 </span>
-                {selectedStory.emotions && selectedStory.emotions.length > 0 && (
-                  <span className="inline-flex items-center rounded-full bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 py-1 px-3 text-xs font-semibold">
-                    Γëí╞Æ├┐├¿ {selectedStory.emotions.join(", ")}
-                  </span>
-                )}
               </div>
             </div>
             <div className="flex justify-start sm:justify-end">
@@ -782,7 +708,7 @@ if (isLoading) {
                       } hover:scale-110 transition-transform duration-200 focus:outline-none`}
                       onClick={() => handelStorySelection(story)}
                     >
-                      <img
+                      <ImageFallback
                         src={story.imageURL}
                         alt={story.title}
                         className="w-full h-full object-cover rounded-full"
@@ -825,7 +751,7 @@ if (isLoading) {
                   onClick={handleExportMarkdown}
                   disabled={!selectedStory}
                 >
-                  Γ¼ç∩╕Å Export as Markdown
+                  Γ¼ç∩╕Å Export Markdown
                 </button>
                 <button
                   type="button"
@@ -833,15 +759,7 @@ if (isLoading) {
                   onClick={() => setShowWorldMap(true)}
                   disabled={!selectedStory}
                 >
-                  Γëí╞Æ├╣ΓòæΓê⌐Γòò├à World Map
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowRemix(true)}
-                  disabled={!selectedStory}
-                >
-                  Γëí╞Æ├╢├ç Remix
+                  ≡ƒù║∩╕Å World Map
                 </button>
                 <button
                   type="button"
@@ -856,18 +774,6 @@ if (isLoading) {
                 </button>
               </div>
             </div>
-
-            {selectedStory.enhancedPrompt && (
-              <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
-                <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
-                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
-                </h4>
-                <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">
-                  {selectedStory.enhancedPrompt}
-                </p>
-              </div>
-            )}
-
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
               <p className="break-words whitespace-pre-wrap">
                 {sentenceSegments.length > 0 ? (
@@ -877,80 +783,21 @@ if (isLoading) {
                       narrationWordIndex >= segment.startWordIndex &&
                       narrationWordIndex <= segment.endWordIndex;
 
-                    const rawParts = segment.text.split(/(\s+)/);
-                    let wordOffset = 0;
-
                     return (
                       <span
                         key={segment.id}
-                        className={isActiveSentence ? "text-slate-100 font-medium transition-colors duration-300" : undefined}
+                        className={
+                          isActiveSentence
+                            ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-100 ring-1 ring-indigo-400/30"
+                            : undefined
+                        }
                       >
-                        {rawParts.map((part, partIdx) => {
-                          if (part === "") return null;
-                          if (/^\s+$/.test(part)) {
-                            return part;
-                          }
-
-                          const absoluteWordIndex = segment.startWordIndex + wordOffset;
-                          wordOffset++;
-
-                          const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                          if (isActiveWord) {
-                            return (
-                              <span
-                                key={partIdx}
-                                className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
-                                data-active-word="true"
-                              >
-                                {part}
-                              </span>
-                            );
-                          }
-
-                          return (
-                            <span key={partIdx}>
-                              {part}
-                            </span>
-                          );
-                        })}
+                        {segment.text}
                       </span>
                     );
                   })
                 ) : (
-                  (() => {
-                    const rawParts = selectedStory.content.split(/(\s+)/);
-                    let wordOffset = 0;
-                    return rawParts.map((part, partIdx) => {
-                      if (part === "") return null;
-                      if (/^\s+$/.test(part)) {
-                        return part;
-                      }
-
-                      const absoluteWordIndex = wordOffset;
-                      wordOffset++;
-
-                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                      if (isActiveWord) {
-                        return (
-                          <span
-                            key={partIdx}
-                            className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
-                            data-active-word="true"
-                          >
-                            {part}
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <span key={partIdx}>
-                          {part}
-                        </span>
-                      );
-                    });
-                  })()
+                  selectedStory.content
                 )}
               </p>
             </div>
@@ -1171,13 +1018,6 @@ if (isLoading) {
         </div>
 
         <div className="col-span-1 lg:col-span-4">
-          <GeneratedStoryTimeline
-            content={selectedStory.content}
-            title={selectedStory.title}
-            narrationState={narrationState}
-            narrationWordIndex={narrationWordIndex}
-          />
-
           <div className="mb-5">
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
               Preview
@@ -1199,10 +1039,10 @@ if (isLoading) {
                       {selectedStory.tag.toUpperCase()}
                     </div>
                     <div className="inline-flex items-center rounded-full bg-indigo-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                      Γëí╞Æ├«├ë {(selectedStory.language || "English").toUpperCase()}
+                      ≡ƒîÉ {(selectedStory.language || "English").toUpperCase()}
                     </div>
                     <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
-                      ╬ô├àΓûÆΓê⌐Γòò├à {calculateReadingTime(selectedStory.content)} min read
+                      ΓÅ▒∩╕Å {calculateReadingTime(selectedStory.content)} min read
                     </div>
                   </div>
                   <div>

@@ -1,6 +1,4 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState, type MouseEvent } from "react";
-import type { ReactNode } from "react";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
@@ -20,7 +18,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: any = {
   hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
@@ -63,13 +61,11 @@ const features = [
   }
 ];
 
-type Feature = {
 interface Feature {
   title: string;
   description: string;
   bgClass: string;
   icon: ReactNode;
-};
 }
 
 const FeatureCard = ({ feature }: { feature: Feature }) => {
@@ -216,6 +212,7 @@ const HeroSectionComponent = () => {
   const nextStarId = useRef(1);
   const starTimers = useRef<number[]>([]);
   const badgeRef = useRef<HTMLDivElement>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useGSAP(() => {
     const badge = badgeRef.current;
@@ -323,12 +320,33 @@ const HeroSectionComponent = () => {
           <div className="w-full box-border flex flex-col items-center justify-center">
             <div className="relative max-w-3xl w-full box-border">
               <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
-                <Link to="/stories" className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
-                    <i className="fa fa-wand-magic-sparkles text-sm"></i>
-                    <span>Get Started</span>
-                  </button>
-                </Link>
+                <button
+  onClick={() => {
+    setIsNavigating(true);
+    setTimeout(() => { window.location.href = "/stories"; }, 400);
+  }}
+  disabled={isNavigating}
+  className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 transition-all duration-150 flex items-center justify-center gap-2.5 uppercase tracking-wider ${
+    isNavigating
+      ? "opacity-75 cursor-not-allowed"
+      : "hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+  }`}
+>
+  {isNavigating ? (
+    <>
+      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+      </svg>
+      <span>Loading...</span>
+    </>
+  ) : (
+    <>
+      <i className="fa fa-wand-magic-sparkles text-sm"></i>
+      <span>Get Started</span>
+    </>
+  )}
+</button>
                 <Link to="/collab" className="w-full sm:w-auto">
                   <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
                     <span>✍️</span>
@@ -351,17 +369,17 @@ const HeroSectionComponent = () => {
               />
             ))}
           </div>
-        </div>
-        </div>
+          </div>
 
-      <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
+            <motion.div
+        variants={itemVariants}
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border"
+      >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">
           {features.map((feature, index) => (
             <FeatureCard feature={feature} key={index} />
           ))}
         </div>
-      </div>
-    </div>
       </motion.div>
     </motion.div>
   );
