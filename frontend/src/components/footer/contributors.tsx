@@ -6,7 +6,6 @@ import {
   Star,
   ExternalLink,
   Code2,
-  Trophy,
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -91,9 +90,7 @@ const ParticleField = () => {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `hsla(240, 60%, 70%, ${
-              0.06 * (1 - dist / 100)
-            })`;
+            ctx.strokeStyle = `hsla(240, 60%, 70%, ${0.06 * (1 - dist / 100)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -290,9 +287,7 @@ const ContributorCard = ({
         background: isTop3
           ? `linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,27,75,0.7) 50%, rgba(15,23,42,0.9) 100%)`
           : `linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(20,20,50,0.5) 100%)`,
-        border: `1px solid ${
-          isTop3 ? rank!.borderColor : "rgba(148,163,184,0.08)"
-        }`,
+        border: `1px solid ${isTop3 ? rank!.borderColor : "rgba(148,163,184,0.08)"}`,
         transformStyle: "preserve-3d",
         transition: "box-shadow 0.3s ease",
       }}
@@ -350,10 +345,7 @@ const ContributorCard = ({
       </h3>
 
       {/* Contributions Bar */}
-      <div
-        className="w-full mt-3 mb-4"
-        style={{ transform: "translateZ(15px)" }}
-      >
+      <div className="w-full mt-3 mb-4" style={{ transform: "translateZ(15px)" }}>
         <div className="flex justify-between text-xs text-slate-500 mb-1.5">
           <span>Contributions</span>
           <span className="text-indigo-400 font-semibold">
@@ -430,7 +422,6 @@ const ContributorsComponent = () => {
   useEffect(() => {
     if (loading) return;
 
-    // Small delay to let the DOM settle after state change
     const timer = setTimeout(() => {
       // HERO animations
       if (heroRef.current) {
@@ -611,7 +602,7 @@ const ContributorsComponent = () => {
           "linear-gradient(180deg, #030712 0%, #0c0a1f 35%, #0f172a 65%, #030712 100%)",
       }}
     >
-      {/* Particle Field */}
+      {/* Particle Field Layer */}
       <ParticleField />
 
       {/* Ambient Glow Orbs */}
@@ -749,11 +740,11 @@ const ContributorsComponent = () => {
                 <p className="text-sm text-slate-500 uppercase tracking-widest font-medium mb-2">
                   {stat.label}
                 </p>
-                <p
+                <div
                   className={`text-4xl font-black bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}
                 >
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-                </p>
+                </div>
               </div>
             </div>
           ))}
@@ -832,8 +823,7 @@ const ContributorsComponent = () => {
                 <span
                   className="bg-clip-text text-transparent"
                   style={{
-                    backgroundImage:
-                      "linear-gradient(135deg, #818cf8, #e879f9)",
+                    backgroundImage: "linear-gradient(135deg, #818cf8, #e879f9)",
                   }}
                 >
                   Contribute
@@ -852,8 +842,7 @@ const ContributorsComponent = () => {
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-white text-lg transition-all duration-300 hover:scale-105"
                 style={{
-                  background:
-                    "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
                   boxShadow: "0 8px 32px rgba(99,102,241,0.3)",
                 }}
               >

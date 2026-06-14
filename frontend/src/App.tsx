@@ -99,22 +99,25 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
-      { path: "contributors", element: <SafeContributorsComponent /> },
+      
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "community", element: <CommunityComponent /> },
       { path: "report-bug", element: <ReportBug /> },
-      {
-        element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-        children: [
-          { path: "explore", element: <ExploreComponent /> },
-          { path: "bookmarks", element: <BookmarksComponent /> },
-          { path: "resources", element: <ResourcesListComponent /> },
-          { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
-          { path: "stories", element: <StoriesComponent /> },
-          { path: "branching-story", element: <BranchingStory /> },
-          { path: "story-workspace", element: <StoryWorkspace /> },
-        ],
-      },
+      // Public routes
+{ path: "explore", element: lazyPage(<ExploreComponent />) },
+{ path: "resources", element: <ResourcesListComponent /> },
+{ path: "resources/:resourceName", element: <ResourceDetailComponent /> },
+
+// Protected routes
+{
+  element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+  children: [
+    { path: "bookmarks", element: <BookmarksComponent /> },
+    { path: "stories", element: <StoriesComponent /> },
+    { path: "branching-story", element: <BranchingStory /> },
+    { path: "story-workspace", element: <StoryWorkspace /> },
+  ],
+},
       { path: "*", element: <NotFoundComponent /> },
     ],
   },

@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import compromise from "compromise";
 
+const escapeRegex = (s: string): string =>
+  s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 /**
  * Very fast, synchronous PII scrubber using compromise (NLP) and RegEx.
  * Replaces names, emails, and phone numbers with generic placeholders.
@@ -28,7 +31,7 @@ export const scrubPII = (text: string): string => {
   for (const person of people) {
     if (person.length > 2) {
       // Create a global regex to replace the specific name exactly (case insensitive)
-      const nameRegex = new RegExp(`\\b${person}\\b`, "gi");
+      const nameRegex = new RegExp(`\\b${escapeRegex(person)}\\b`, "gi");
       scrubbed = scrubbed.replace(nameRegex, "[REDACTED_NAME]");
     }
   }

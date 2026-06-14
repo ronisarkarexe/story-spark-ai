@@ -586,7 +586,7 @@ async function handleFormSubmit(e) {
     setAlert('info', currentMode === 'signup' ? 'Creating your account…' : 'Signing you in…');
 
     try {
-        const endpoint = currentMode === 'signup' ? '/api/auth/register' : '/api/auth/login';
+        const endpoint = currentMode === 'signup' ? '/api/v1/auth/register' : '/api/v1/auth/login';
         const body = currentMode === 'signup'
             ? { email, name, password }
             : { email, password, rememberMe };
@@ -696,7 +696,7 @@ function decodeJwt(token) {
 
 async function handleGoogleCredentialResponse(response) {
     try {
-        const res = await fetch('/api/auth/google-login', {
+        const res = await fetch('/api/v1/auth/google-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: response.credential }),

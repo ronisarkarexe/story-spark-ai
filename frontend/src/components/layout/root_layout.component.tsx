@@ -11,8 +11,6 @@ interface RootLayoutProps {
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
-
-  // Consolidated logic to prevent redeclaration errors
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   const hideHeader = isAuthPage;
   const hideFooter = isAuthPage;

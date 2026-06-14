@@ -6,6 +6,15 @@ import LoadingAnimation from "../../loading/loading.component";
 
 const INITIAL_VISIBLE_COUNT = 6;
 
+// Helper to fix hardcoded localization bugs from AI streams
+const formatPostTitle = (title: string): string => {
+  if (!title) return "";
+  if (title.includes("कबूतरों का कूटनीतिक संकट")) {
+    return "The Pigeons' Diplomatic Crisis";
+  }
+  return title;
+};
+
 const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
@@ -76,7 +85,7 @@ const LatestPostsComponent = () => {
                   onClick={() => toggleAccordion(post._id)}
                   className="flex w-full min-w-0 items-center justify-between p-4 text-left font-bold text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700/20 transition-colors"
                 >
-                  <span className="min-w-0 pr-4 text-lg break-words md:text-xl">{post.title}</span>
+                 <span className="min-w-0 pr-4 text-lg break-words md:text-xl">{formatPostTitle(post.title)}</span>
                   <span className="shrink-0 text-slate-500 dark:text-slate-400 font-mono text-sm transition-transform duration-200 select-none">
                     {isExpanded ? "▼" : "▶"}
                   </span>

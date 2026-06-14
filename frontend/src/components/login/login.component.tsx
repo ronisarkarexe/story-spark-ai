@@ -289,10 +289,18 @@ const LoginComponent = () => {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-center list-none w-full box-border">
-              <GoogleLogin
-                onSuccess={handleGoogleLoginSuccess}
-                onError={handleGoogleLoginError}
+            <SSInput
+              label="Email address"
+              name="email"
+              type="email"
+              placeholder="Enter your email"
+              required={true}
+              icon="fi fi-rr-envelope"
+              register={register}
+              validation={{ required: "Email is required" }}
+              error={errors.email}
+              autoComplete="email"
+          className="w-full box-border"
               />
             </div>
 

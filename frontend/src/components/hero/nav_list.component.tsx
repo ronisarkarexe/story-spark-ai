@@ -98,91 +98,33 @@ const NavListComponent = () => {
               Beta
             </div>
           </Link>
-          <div className="hidden md:flex items-center space-x-4">
-            <NavLink to="/" end className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  HOME
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/explore" className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  EXPLORE
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/story-inspiration" className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  INSPIRING STORIES
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/story-consistency" className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  CONSISTENCY
-                </>
-              )}
-            </NavLink>
-            <NavLink
-              to="/contact-us" className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  CONTACT US
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/community" className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  COMMUNITY
-                </>
-              )}
-            </NavLink>
-            {isLogin && (
-              <>
-                <NavLink to="/bookmarks" className={({ isActive }) => getLinkClass(isActive)}>
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                      )}
-                      SAVED STORIES
-                    </>
-                  )}
-                </NavLink>
-                {isAdmin && (
-                  <NavLink to="/dashboard" className={({ isActive }) => getLinkClass(isActive)}>
-                    {({ isActive }) => (
-                      <>
-                        {isActive && (
-                          <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                        )}
-                        DASHBOARD
-                      </>
-                    )}
-                  </NavLink>
+        </motion.div>
+
+        <nav className="hidden items-center rounded-full border border-slate-200/80 bg-white/55 p-1 shadow-sm shadow-slate-900/5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] lg:flex">
+          {navItems.map((item, index) => (
+            <motion.div
+              key={item.to}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.28, delay: index * 0.04 }}
+              whileHover={{ y: -1 }}
+            >
+              <NavLink
+                to={item.to}
+                end={item.to === "/"}
+                onClick={handleNavClick}
+                className={`group relative flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-all duration-300 ${
+                  isActive(item.to)
+                    ? "text-white shadow-sm"
+                    : "text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+                }`}
+              >
+                {isActive(item.to) && (
+                  <motion.span
+                    layoutId="activeIndicator"
+                    className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 shadow-lg shadow-indigo-600/25"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  />
                 )}
                 {!isActive(item.to) && (
                   <span className="absolute inset-0 rounded-full bg-slate-900/0 transition-colors duration-300 group-hover:bg-slate-900/5 dark:group-hover:bg-white/10" />
