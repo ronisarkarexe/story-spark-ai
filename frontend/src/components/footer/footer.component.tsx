@@ -245,7 +245,7 @@ const FooterComponent: React.FC = () => {
               noValidate
               className="mt-1 flex flex-col gap-2"
             >
-              <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06] focus-within:border-blue-500/30 transition-all duration-300">
+              <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
                 <i
                   className="fa-solid fa-envelope text-slate-500 text-[13px]"
                   aria-hidden="true"

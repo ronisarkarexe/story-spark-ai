@@ -306,6 +306,7 @@ export const useSpeechSynthesis = (
         if (event.name !== "word") {
           return;
         }
+
         const nextWordIndex = getWordIndexAtCharIndex(
           event.charIndex,
           wordRangesRef.current,
@@ -329,17 +330,35 @@ export const useSpeechSynthesis = (
         }
       };
 
+      const loadedVoices = speechSynthesis.getVoices();
+      browserVoicesRef.current = loadedVoices;
+      setBrowserVoices(loadedVoices);
+      setIsReady(loadedVoices.length > 0);
+
       synthRef.current.speak(utterance);
     },
     [availableVoices, isSupported, rateState, pitchState, volumeState, selectedVoiceId, selectedVoiceIndex, selectedLanguage, stop],
   );
 
-  useEffect(() => {
-    if (!hasSpeechSupport()) {
-      setIsSupported(false);
-      setIsReady(false);
-      setError("Text-to-speech is not supported in this browser.");
-      return;
+  const setPitch = useCallback((nextPitch: number) => {
+    setPitchState(nextPitch);
+
+    if (utteranceRef.current) {
+      utteranceRef.current.pitch = nextPitch;
+    }
+  }, []);
+
+  const setVolume = useCallback((nextVolume: number) => {
+    setVolumeState(nextVolume);
+
+    if (utteranceRef.current) {
+      utteranceRef.current.volume = nextVolume;
+    }
+  }, []);
+
+  const pause = useCallback(() => {
+    if (synthRef.current && isSpeaking && !isPaused) {
+      synthRef.current.pause();
     }
 
     const speechSynthesis = window.speechSynthesis;
