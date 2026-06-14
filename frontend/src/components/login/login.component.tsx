@@ -202,6 +202,7 @@ const LoginComponent = () => {
                 required={true}
                 icon="fi fi-rr-envelope"
                 register={register}
+                autoComplete="email"
                 validation={{ required: "Email is required" }}
                 error={errors.email}
               />
@@ -214,6 +215,7 @@ const LoginComponent = () => {
                 required={true}
                 icon="fi fi-rr-lock"
                 register={register}
+                passwordIntent="current"
                 validation={{ required: "Password is required" }}
                 error={errors.password}
               />

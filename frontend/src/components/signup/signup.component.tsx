@@ -472,6 +472,7 @@ const SignUpComponent = () => {
                 <input
                   type="text"
                   placeholder="Enter your full name"
+                  autoComplete="name"
                   className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
                   {...register("name", {
                     required: "Name is required",
@@ -499,6 +500,7 @@ const SignUpComponent = () => {
                 <input
                   type="email"
                   placeholder="name@storyspark.ai"
+                  autoComplete="email"
                   className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
                   {...register("email", {
                     required: "Email is required",
@@ -526,6 +528,7 @@ const SignUpComponent = () => {
                 <input
                   type="password"
                   placeholder="Enter your password"
+                  autoComplete="new-password"
                   className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
                   {...register("password", {
                     required: "Password is required",
@@ -553,6 +556,7 @@ const SignUpComponent = () => {
                 <input
                   type="password"
                   placeholder="Confirm your password"
+                  autoComplete="new-password"
                   className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
                   {...register("confirmPassword", {
                     required: "Confirm password is required",
@@ -626,6 +630,7 @@ const SignUpComponent = () => {
                 required={true}
                 icon="fi fi-rr-key"
                 register={register}
+                autoComplete="one-time-code"
                 validation={{
                   required: "Please enter OTP",
                   minLength: {
@@ -651,6 +656,7 @@ const SignUpComponent = () => {
     <input
       type="text"
       placeholder="Enter OTP"
+      autoComplete="one-time-code"
       className="w-full h-[52px] rounded-2xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-[#131c2f] px-5 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 outline-none focus:border-purple-500 transition-all"
       {...register("otp")}
     />

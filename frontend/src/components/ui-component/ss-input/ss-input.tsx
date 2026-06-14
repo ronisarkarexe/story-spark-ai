@@ -7,6 +7,23 @@ import {
   FieldError,
 } from "react-hook-form";
 
+function resolveAutoComplete(
+  name: string,
+  type: string,
+  explicit?: string,
+  passwordIntent: "current" | "new" = "current"
+): string | undefined {
+  if (explicit) return explicit;
+  if (name === "email" || type === "email") return "email";
+  if (name === "name") return "name";
+  if (name === "otp") return "one-time-code";
+  if (name === "confirmPassword") return "new-password";
+  if (name === "password" || type === "password") {
+    return passwordIntent === "new" ? "new-password" : "current-password";
+  }
+  return undefined;
+}
+
 interface SSInputProps<T extends FieldValues> {
   label: string;
   name: Path<T>;
@@ -18,6 +35,7 @@ interface SSInputProps<T extends FieldValues> {
   validation?: RegisterOptions<T>;
   error?: FieldError;
   autoComplete?: string;
+  passwordIntent?: "current" | "new";
   autoFocus?: boolean;
 }
 
@@ -31,17 +49,20 @@ const SSInput = <T extends FieldValues>({
   validation,
   error,
   autoComplete,
+  passwordIntent = "current",
   autoFocus
 }: SSInputProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
 
-
-
   const inputType =
-
     type === "password" ? (showPassword ? "text" : "password") : type;
 
-
+  const resolvedAutoComplete = resolveAutoComplete(
+    String(name),
+    type,
+    autoComplete,
+    passwordIntent
+  );
 
   return (
     <div className="w-full min-w-0">
@@ -67,7 +88,7 @@ const SSInput = <T extends FieldValues>({
               : "border-gray-300 dark:border-gray-600 outline-gray-300 focus:border-indigo-600 focus:outline-indigo-600"
           }`}
           placeholder={placeholder}
-          autoComplete={autoComplete}
+          autoComplete={resolvedAutoComplete}
           {...register(name, validation)}
         />
 

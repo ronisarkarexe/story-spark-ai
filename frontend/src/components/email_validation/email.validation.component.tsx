@@ -37,6 +37,7 @@ const EmailValidationComponent = () => {
             required={true}
             icon="fas fa-key"
             register={register}
+            autoComplete="one-time-code"
           />
           <SSButton text="Verify OTP" type="button" />
         </div>
