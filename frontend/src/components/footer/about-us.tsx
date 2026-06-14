@@ -1,7 +1,9 @@
 import logo from "../../assets/logoNew.png";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 const AboutUs = () => {
+  useEffect(() => { document.title = "StorySparkAI | About Us"; }, []);
   const stats = [
     { number: "200K+", label: "Creative Writers" },
     { number: "50K+", label: "Stories Generated" },

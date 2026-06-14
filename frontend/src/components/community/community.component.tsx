@@ -1,3 +1,9 @@
+import { useEffect } from "react";
+
+export default function CommunityCardsPreview() {
+  useEffect(() => { document.title = "StorySparkAI | Community"; }, []);
+  
+  const genres = [
 import React from 'react';
 import { Link } from 'react-router-dom';
 import GenreCard from './genre_card.component';

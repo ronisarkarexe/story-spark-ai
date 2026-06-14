@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
 import { Link } from "react-router-dom";
@@ -8,6 +8,8 @@ import { useDebounced } from "../../hooks/global";
 import PaginationComponent from "../pagination/pagination.component";
 
 const ExploreComponent = () => {
+  useEffect(() => { document.title = "StorySparkAI | Explore"; }, []);
+  
   const [sortBy, setSortBy] = useState<string>("createdAt");
   const [sortOrder, setSortOrder] = useState<string>("desc");
   const [searchTerm, setSearchTerm] = useState<string>("");

@@ -2,7 +2,6 @@ import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 
 import { USER_ROLE } from "./constants/role";
-
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import LoadingAnimation from "./components/loading/loading.component";
@@ -101,7 +100,6 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
-      { path: "contributors", element: <SafeContributorsComponent /> },
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "community", element: <CommunityComponent /> },
       { path: "report-bug", element: <ReportBug /> },
@@ -172,4 +170,4 @@ function App() {
   return <RouterProvider router={router} />;
 }
 
-export default App;
+export default App; 

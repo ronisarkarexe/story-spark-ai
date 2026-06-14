@@ -1,73 +1,9 @@
 import logo from "../../assets/logoNew.png";
 import { Link } from "react-router-dom";
-import {
-  ShieldCheck,
-  FileText,
-  Lock,
-  AlertTriangle,
-  Sparkles,
-  Scale,
-  Mail,
-} from "lucide-react";
-
-const sections = [
-  {
-    icon: FileText,
-    title: "Introduction",
-    content:
-      "Welcome to StorySparkAI. By accessing or using our platform, you agree to be bound by these Terms and Conditions. Our platform provides AI-assisted storytelling tools to help you create, edit, and explore engaging narratives.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Acceptance of Terms",
-    content:
-      "By registering an account, accessing, or otherwise utilizing StorySparkAI, you acknowledge that you have read, understood, and agree to be bound by these Terms. If you do not agree, please do not use the service.",
-  },
-  {
-    icon: Lock,
-    title: "User Responsibilities",
-    content:
-      "Users are responsible for safeguarding their account credentials and ensuring appropriate usage of the platform. You agree to provide accurate information and avoid misuse of StorySparkAI services.",
-  },
-  {
-    icon: Sparkles,
-    title: "Intellectual Property",
-    content:
-      "StorySparkAI respects intellectual property rights and expects users to do the same. Content generated using AI tools is subject to the policies of the respective AI providers.",
-  },
-  {
-    icon: Scale,
-    title: "Limitation of Liability",
-    content:
-      'The platform is provided "as is" without warranties of any kind. StorySparkAI shall not be liable for indirect or consequential damages resulting from the use of the service.',
-  },
-  {
-    icon: ShieldCheck,
-    title: "Privacy Policy Reference",
-    content:
-      "Your use of StorySparkAI is also governed by our Privacy Policy, which explains how we collect, use, and protect user data.",
-  },
-  {
-    icon: AlertTriangle,
-    title: "Prohibited Activities",
-    content:
-      "Users may not generate or distribute hateful, explicit, illegal, or abusive content. Violations may result in account suspension or termination.",
-  },
-  {
-    icon: FileText,
-    title: "Changes to Terms",
-    content:
-      "We reserve the right to modify these Terms at any time. Continued use of the platform after updates constitutes acceptance of the revised Terms.",
-  },
-  {
-    icon: Mail,
-    title: "Contact Information",
-    content:
-      "If you have any questions regarding these Terms, please contact us through our Contact page or at support@storyspark.ai.",
-  },
-];
+import { useEffect } from "react";
 
 const Terms = () => {
+  useEffect(() => { document.title = "StorySparkAI | Terms"; }, []);
   return (
     <div className="relative min-h-screen overflow-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-[#050816] dark:text-white">
 

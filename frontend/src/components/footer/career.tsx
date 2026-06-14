@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
+import { useEffect } from "react";
 
 const opportunities = [
   {
@@ -91,6 +92,7 @@ const applicationSteps = [
 ];
 
 const Career = () => {
+  useEffect(() => { document.title = "StorySparkAI | Careers"; }, []);
   return (
     <div className="relative overflow-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-[#050816] dark:text-white">
 

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 import { LucideIcon } from "lucide-react";
 import {
   Handshake,
@@ -121,6 +122,10 @@ const workflowSteps = [
 ];
 
 const Guidelines = () => {
+  useEffect(() => {
+    document.title = "StorySparkAI | Guidelines";
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white">
       <section className="relative overflow-hidden border-b border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 py-16 px-4">

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 import { isLoggedIn } from "../../../services/auth.service";
 import { useToggleFollowMutation } from "../../../redux/apis/user.api";
 
@@ -29,6 +30,10 @@ const RecommendedWritersComponent = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [toggleFollowMutation, { isLoading }] = useToggleFollowMutation();
 
+  useEffect(() => {
+    document.title = "StorySparkAI | Recommended Writers";
+  }, []);
+
   const toggleFollow = async (index: number, authorId: string) => {
     if (!isLoggedIn()) {
       setShowLoginModal(true);
@@ -37,7 +42,6 @@ const RecommendedWritersComponent = () => {
 
     try {
       await toggleFollowMutation(authorId).unwrap();
-
       if (following.includes(index)) {
         setFollowing(following.filter((id) => id !== index));
       } else {
@@ -64,7 +68,6 @@ const RecommendedWritersComponent = () => {
                   src={writer.image}
                   alt={writer.name}
                 />
-
                 <div className="ml-3">
                   <p className="text-sm font-medium text-slate-700 dark:text-gray-400">
                     {writer.name}

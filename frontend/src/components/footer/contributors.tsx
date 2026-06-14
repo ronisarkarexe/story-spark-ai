@@ -13,6 +13,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+
 interface Contributor {
   login: string;
   avatar_url: string;
@@ -388,6 +389,7 @@ const ContributorCard = ({
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════ */
 const ContributorsComponent = () => {
+  useEffect(() => { document.title = "StorySparkAI | Contributors"; }, []);
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(true);
   const heroRef = useRef<HTMLDivElement>(null);
