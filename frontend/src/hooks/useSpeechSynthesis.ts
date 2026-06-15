@@ -273,7 +273,10 @@ export const useSpeechSynthesis = (
       };
 
       utterance.onboundary = (event) => {
-        if (event.name !== "word") return;
+        if (event.name !== "word") {
+          return;
+        }
+
         const nextWordIndex = getWordIndexAtCharIndex(
           event.charIndex,
           wordRangesRef.current,
@@ -297,12 +300,33 @@ export const useSpeechSynthesis = (
         setError("Unable to play narration. Please try again.");
       };
 
+      const loadedVoices = speechSynthesis.getVoices();
+      browserVoicesRef.current = loadedVoices;
+      setBrowserVoices(loadedVoices);
+      setIsReady(loadedVoices.length > 0);
+
       utteranceRef.current = utterance;
       synthRef.current.cancel();
       synthRef.current.speak(utterance);
     },
     [clearUtterance, isSupported, rateState, pitchState, volumeState, selectedLanguage, resolveBrowserVoice, selectedVoiceId, stop]
   );
+
+  const setPitch = useCallback((nextPitch: number) => {
+    setPitchState(nextPitch);
+
+    if (utteranceRef.current) {
+      utteranceRef.current.pitch = nextPitch;
+    }
+  }, []);
+
+  const setVolume = useCallback((nextVolume: number) => {
+    setVolumeState(nextVolume);
+
+    if (utteranceRef.current) {
+      utteranceRef.current.volume = nextVolume;
+    }
+  }, []);
 
   const pause = useCallback(() => {
     if (synthRef.current && isSpeaking && !isPaused) {

@@ -61,7 +61,7 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories, onCategoryClick }
           </motion.div>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 };
 

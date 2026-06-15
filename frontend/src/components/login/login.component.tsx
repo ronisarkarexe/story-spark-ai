@@ -278,10 +278,37 @@ const LoginComponent = () => {
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Sign in to your Story Spark AI account</p>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-            <SSInput label="Email address" name="email" type="email" placeholder="Enter your email" required={true} icon="fi fi-rr-envelope" register={register} validation={{ required: "Email is required" }} error={errors.email} />
-            <SSInput label="Password" name="password" type="password" placeholder="Enter your password" required={true} icon="fi fi-rr-lock" register={register} validation={{ required: "Password is required" }} error={errors.password} />
-            
+
+          <form className="space-y-5 w-full min-w-0 box-border" onSubmit={handleSubmit(onSubmit)}>
+
+            <SSInput
+              label="Email address"
+              name="email"
+              type="email"
+              placeholder="Enter your email"
+              required={true}
+              icon="fi fi-rr-envelope"
+              register={register}
+              validation={{ required: "Email is required" }}
+              error={errors.email}
+              autoComplete="email"
+          className="w-full box-border"
+              />
+
+            {/* Password field — eye icon toggle is provided by SSInput when type="password" */}
+            <SSInput
+              label="Password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              required={true}
+              icon="fi fi-rr-lock"
+              register={register}
+              validation={{ required: "Password is required" }}
+              error={errors.password}
+              autoComplete="password"
+            />
+
             <div className="flex justify-end -mt-2">
               <Link to="/forgot-password" className="text-xs font-semibold text-blue-400 hover:text-blue-300">Forgot Password?</Link>
             </div>

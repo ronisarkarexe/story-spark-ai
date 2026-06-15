@@ -19,11 +19,10 @@ const HelpCategoryCard: FC<HelpCategoryCardProps> = ({ category, onClick }) => {
   const colorGradient = category.color || "from-blue-500 to-indigo-500";
   
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.2 }}
-      onClick={() => onClick?.(category.id)}
-      className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111827]/40 p-6 cursor-pointer hover:shadow-xl transition-all duration-300"
+    <button
+      type="button"
+      onClick={handleClick}
+      className="group text-left bg-white dark:bg-[#111827]/40 border border-slate-200 dark:border-white/10 hover:border-blue-500/40 dark:hover:border-blue-500/30 p-5 sm:p-6 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 cursor-pointer flex flex-col justify-between box-border"
     >
       {/* Icon */}
       <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${colorGradient} flex items-center justify-center mb-4 shadow-lg`}>

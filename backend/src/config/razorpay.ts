@@ -2,7 +2,7 @@ import Razorpay from "razorpay";
 
 let razorpayInstance: InstanceType<typeof Razorpay> | null = null;
 
-const getRazorpay = (): InstanceType<typeof Razorpay> => {
+export const getRazorpay = (): InstanceType<typeof Razorpay> => {
   if (!razorpayInstance) {
     razorpayInstance = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID!,

@@ -11,6 +11,7 @@ import StoriesComponent from "./components/stories/stories.component";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import ScrollToTop from "./components/ScrollToTop";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import ThemeSwitcher from "./components/theme-switcher/ThemeSwitcher";
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import NotFoundComponent from "./components/not-found.component";
@@ -75,6 +76,7 @@ const router = createBrowserRouter([
       <>
         <ScrollToTopButton />
         <MagicCursorComponent />
+        <ThemeSwitcher />
         <ScrollToTop />
         <RootLayout>
           <Suspense fallback={<LoadingAnimation />}>
@@ -102,22 +104,26 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
+      
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "community", element: <CommunityComponent /> },
       { path: "report-bug", element: <ReportBug /> },
-      { path: "forge", element: <CharacterForge /> },
-      {
-        element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-        children: [
-          { path: "explore", element: <ExploreComponent /> },
-          { path: "bookmarks", element: <BookmarksComponent /> },
-          { path: "resources", element: <ResourcesListComponent /> },
-          { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
-          { path: "stories", element: <StoriesComponent /> },
-          { path: "branching-story", element: <BranchingStory /> },
-          { path: "story-workspace", element: <StoryWorkspace /> },
-        ],
-      },
+      // Public routes
+{ path: "explore", element: lazyPage(<ExploreComponent />) },
+{ path: "resources", element: <ResourcesListComponent /> },
+{ path: "resources/:resourceName", element: <ResourceDetailComponent /> },
+{ path: "forge", element: <CharacterForge /> },
+
+// Protected routes
+{
+  element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+  children: [
+    { path: "bookmarks", element: <BookmarksComponent /> },
+    { path: "stories", element: <StoriesComponent /> },
+    { path: "branching-story", element: <BranchingStory /> },
+    { path: "story-workspace", element: <StoryWorkspace /> },
+  ],
+},
       { path: "*", element: <NotFoundComponent /> },
     ],
   },

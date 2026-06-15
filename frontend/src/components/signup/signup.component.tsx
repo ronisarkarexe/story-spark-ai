@@ -198,17 +198,8 @@ const SignUpComponent = () => {
         }
       } catch (error) {
         const err = error as { data?: Array<{ message?: string }>; message?: string };
-<<<<<<< HEAD
-        const message =
-          err?.data?.[0]?.message ||
-          err?.message ||
-          "Something went wrong. Please try again.";
-        toast.error(message);
-        console.log("error: ", error);
-=======
         const message = err?.data?.[0]?.message || err?.message || "Something went wrong. Please try again.";
         toast.error(message);
->>>>>>> upstream/main
       } finally {
         setIsBusy(false);
       }
@@ -239,14 +230,6 @@ const SignUpComponent = () => {
       }
     } catch (err: unknown) {
       const e = err as { data?: Array<{ message?: string }>; message?: string };
-<<<<<<< HEAD
-      const message =
-        e?.data?.[0]?.message ||
-        e?.message ||
-        "OTP verification failed. Please check the code and try again.";
-      toast.error(message);
-      console.log("error: ", err);
-=======
       const message = e?.data?.[0]?.message || e?.message || "OTP verification failed.";
       toast.error(message);
     } finally {
@@ -283,7 +266,6 @@ const SignUpComponent = () => {
       }
     } catch {
       toast.error("Google login failed. Please try again.");
->>>>>>> upstream/main
     } finally {
       setIsBusy(false);
     }
@@ -309,15 +291,10 @@ const SignUpComponent = () => {
           </h2>
         </div>
 
-<<<<<<< HEAD
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-200">
-=======
         {/* Card */}
         <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
 
           <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
->>>>>>> upstream/main
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
 
@@ -333,49 +310,15 @@ const SignUpComponent = () => {
                 <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
               </div>
               <div className="relative flex justify-center text-xs">
-<<<<<<< HEAD
-                <span className="px-4 bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
-=======
                 <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
->>>>>>> upstream/main
                   SIGN UP WITH EMAIL
                 </span>
               </div>
             </div>
           )}
-<<<<<<< HEAD
-          
-          {!showOtpField ? (
-            <form className="space-y-5 w-full min-w-0 block box-border overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
-              {/* Form fields remain the same */}
-              <div className="w-full min-w-0 box-border">
-                <SSInput
-                  label="Name"
-                  name="name"
-                  placeholder="Enter your name"
-                  required={true}
-                  icon="fi fi-rr-user"
-                  register={register}
-                  autoComplete="name"
-                  validation={{
-                    required: "Name is required",
-                    minLength: {
-                      value: 2,
-                      message: "Name must be at least 2 characters",
-                    },
-                    pattern: {
-                      value: /^[A-Za-z0-9\s._]+$/,
-                      message: "Only letters, numbers, spaces, underscores, and dots are allowed",
-                    },
-                  }}
-                  error={errors.name}
-                />
-              </div>
-=======
 
           {!showOtpField ? (
             <form className="space-y-5 w-full min-w-0 block box-border" onSubmit={handleSubmit(onSubmit)}>
->>>>>>> upstream/main
 
               <SSInput
                 label="Name"
@@ -502,11 +445,6 @@ const SignUpComponent = () => {
               </div>
             </div>
           )}
-<<<<<<< HEAD
-          
-=======
-
->>>>>>> upstream/main
           {!showOtpField && (
             <div className="w-full min-w-0 box-border">
               <div className="relative my-6 w-full box-border">
@@ -543,9 +481,5 @@ const SignUpComponent = () => {
   );
 };
 
-<<<<<<< HEAD
-export default SignUpComponent;
-=======
 export default SignUpComponent;
 
->>>>>>> upstream/main

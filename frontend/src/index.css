@@ -1355,3 +1355,5 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
   transform: none;
 }
 
+/* Core UI Fix for Authentication Component Inputs */ 
+.login-container input, .form-control, input[type='email'], input[type='password'] { box-sizing: border-box !important; max-width: 100% !important; } 
