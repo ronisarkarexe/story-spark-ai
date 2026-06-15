@@ -125,24 +125,8 @@ const BookmarksComponent = () => {
                   Stories you've saved for later inspiration
                 </p>
               </div>
+
               {activeTab === "posts" && allPosts.length > 0 && (
-                <div className="flex items-center space-x-4">
-                  <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
-                  <select
-                    className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                    value={size}
-                    onChange={(e) => {
-                      setSize(Number(e.target.value));
-                      setPage(1);
-                    }}
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                  <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
-              {allPosts.length > 0 && (
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center space-x-2">
                     <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Sort By</label>
@@ -231,41 +215,35 @@ const BookmarksComponent = () => {
                   </div>
                 ) : (
                   <ExploreViewListComponent
-                    posts={filteredPosts}
+                    posts={sortedPosts}
                     isLoading={isLoading}
                   />
                 )
+              ) : sessionStories.length === 0 ? (
+                /* Elegant Responsive Empty State for Generated Drafts */
+                <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-[2.5rem] border border-slate-200/60 shadow-xl backdrop-blur-md dark:bg-[#0f172a]/60 dark:border-white/5 dark:text-white">
+                  <div className="w-24 h-24 rounded-full bg-indigo-50 dark:bg-blue-500/10 flex items-center justify-center mb-8 text-indigo-500 dark:text-blue-400 border border-indigo-100/50 dark:border-blue-500/10 shadow-inner">
+                    <i className="far fa-bookmark text-4xl"></i>
+                  </div>
+                  <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight dark:text-gray-200">
+                    No saved drafts yet
+                  </h3>
+                  <p className="text-slate-500 max-w-sm mb-10 text-lg leading-relaxed dark:text-gray-400">
+                    Generate stories and bookmark them to build a collection of your favorite drafts for this session.
+                  </p>
+                  <button
+                    onClick={() => navigate("/stories")}
+                    className="cursor-pointer !rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 py-4 shadow-lg shadow-slate-200 transition-all duration-300 hover:-translate-y-1 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:shadow-none"
+                  >
+                    Create a Story
+                  </button>
+                </div>
               ) : (
-                sessionStories.length === 0 ? (
-                  /* Elegant Responsive Empty State for Generated Drafts */
-                  <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-[2.5rem] border border-slate-200/60 shadow-xl backdrop-blur-md dark:bg-[#0f172a]/60 dark:border-white/5 dark:text-white">
-                    <div className="w-24 h-24 rounded-full bg-indigo-50 dark:bg-blue-500/10 flex items-center justify-center mb-8 text-indigo-500 dark:text-blue-400 border border-indigo-100/50 dark:border-blue-500/10 shadow-inner">
-                      <i className="far fa-bookmark text-4xl"></i>
-                    </div>
-                    <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight dark:text-gray-200">
-                      No saved drafts yet
-                    </h3>
-                    <p className="text-slate-500 max-w-sm mb-10 text-lg leading-relaxed dark:text-gray-400">
-                      Generate stories and bookmark them to build a collection of your favorite drafts for this session.
-                    </p>
-                    <button
-                      onClick={() => navigate("/stories")}
-                      className="cursor-pointer !rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 py-4 shadow-lg shadow-slate-200 transition-all duration-300 hover:-translate-y-1 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:shadow-none"
-                    >
-                      Create a Story
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
-                    {filteredSessionStories.map((story) => (
-                      <StoryTradingCard key={story.uuid} story={story} />
-                    ))}
-                  </div>
-                )
-                <ExploreViewListComponent
-                  posts={sortedPosts}
-                  isLoading={isLoading}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
+                  {filteredSessionStories.map((story) => (
+                    <StoryTradingCard key={story.uuid} story={story} />
+                  ))}
+                </div>
               )}
             </div>
 

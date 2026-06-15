@@ -17,9 +17,9 @@ const globalErrorHandler: ErrorRequestHandler = (
   next: NextFunction
 ) => {
   if (config.env === "development") {
-    logger.info(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
+    logger.info(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"} at [${req.method}] ${req.originalUrl}`);
   } else {
-    logger.error(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
+    logger.error(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"} at [${req.method}] ${req.originalUrl}`);
   }
 
   let statusCode = 500;

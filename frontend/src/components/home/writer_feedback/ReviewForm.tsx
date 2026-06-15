@@ -300,12 +300,10 @@ const ReviewForm = () => {
                 "Share Review ✨"
               )}
             </button>
+          </div>
+        </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
-  );
     </div>
   );
 };

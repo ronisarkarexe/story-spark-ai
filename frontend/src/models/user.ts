@@ -24,7 +24,7 @@ export interface UserConnection {
   profilePicture: string;
 }
 
-export type UserRole = "user" | "writer" | "admin";
+export type UserRole = "user" | "writer" | "admin" | "super_admin";
 
 export type UserStatus = "active" | "inactive" | "banned";
 
@@ -50,6 +50,7 @@ export interface User {
   posts: string[];
 
   hasAppliedForWriter: boolean;
+  isApplyForWriter?: boolean;
 
   createdAt: string;
   updatedAt: string;

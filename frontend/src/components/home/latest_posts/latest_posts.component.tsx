@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
-import { Post } from "../../../models/post";
-import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
 import LoadingAnimation from "../../loading/loading.component";
 
 const INITIAL_VISIBLE_COUNT = 6;
@@ -21,26 +19,18 @@ const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
   const [showAllPosts, setShowAllPosts] = useState(false);
-
-  const posts = (data?.posts ?? []) as Post[];
-  const shouldShowLoadMore = posts.length >= 7;
-  const visiblePosts = showAllPosts || !shouldShowLoadMore ? posts : posts.slice(0, 6);
+  const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
   useEffect(() => {
     setShowAllPosts(false);
-  }, [posts.length]);
-
-
-
+  }, [data?.posts?.length]);
 
   if (isLoading) return <LoadingAnimation />;
 
   if (isError) {
     return (
       <section className="mb-12 text-slate-100">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-200 mb-6">
-  Latest Posts
-</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-200 mb-6">Latest Posts</h2>
         <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-center text-red-200">
           <p className="mb-3 font-semibold">Failed to load latest posts.</p>
           <button
@@ -62,10 +52,9 @@ const LatestPostsComponent = () => {
   });
 
   const shouldShowLoadMore = uniquePosts.length > INITIAL_VISIBLE_COUNT;
-  const visiblePosts =
-    showAllPosts || !shouldShowLoadMore
-      ? uniquePosts
-      : uniquePosts.slice(0, INITIAL_VISIBLE_COUNT);
+  const visiblePosts = showAllPosts || !shouldShowLoadMore
+    ? uniquePosts
+    : uniquePosts.slice(0, INITIAL_VISIBLE_COUNT);
 
   const toggleAccordion = (postId: string) => {
     setExpandedPostId((prevId) => (prevId === postId ? null : postId));
