@@ -1,4 +1,4 @@
-๏ปฟimport { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import {
   Mail,
@@ -17,7 +17,7 @@ import { instance as axios } from "../../helpers/axios/axiosInstance";
 import { getBaseUrl } from "../../helpers/config";
 import storybook from "../../assets/storybook.png";
 
-// ฮ“รถรฮ“รถรฮ“รถร Types ฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถร
+// G๖วG๖วG๖ว Types G๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖ว
 
 type FormData = {
   fullname: string;
@@ -28,7 +28,7 @@ type FormData = {
 
 type FormField = keyof FormData;
 
-// ฮ“รถรฮ“รถรฮ“รถร Constants ฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถร
+// G๖วG๖วG๖ว Constants G๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖ว
 
 const INITIAL_FORM_DATA: FormData = {
   fullname: "",
@@ -102,7 +102,7 @@ const STATS = [
   { value: "Open", label: "Source project" },
 ] as const;
 
-// ฮ“รถรฮ“รถรฮ“รถร FloatingLabelInput ฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถร
+// G๖วG๖วG๖ว FloatingLabelInput G๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖ว
 
 interface FloatingLabelInputProps {
   id: string;
@@ -179,7 +179,7 @@ const FloatingLabelInput = ({
   );
 };
 
-// ฮ“รถรฮ“รถรฮ“รถร FloatingLabelTextarea ฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถร
+// G๖วG๖วG๖ว FloatingLabelTextarea G๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖ว
 
 interface FloatingLabelTextareaProps {
   value: string;
@@ -245,7 +245,7 @@ const FloatingLabelTextarea = ({
   );
 };
 
-// ฮ“รถรฮ“รถรฮ“รถร Main Contact component ฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถรฮ“รถร
+// G๖วG๖วG๖ว Main Contact component G๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖วG๖ว
 
 export default function Contact() {
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
@@ -352,14 +352,14 @@ export default function Contact() {
       aria-labelledby="contact-heading"
       className="contact-section relative overflow-hidden bg-[#020617] text-white"
     >
-      {/* ฮ“รถรฮ“รถร Layered background ฮ“รถรฮ“รถร */}
+      {/* G๖วG๖ว Layered background G๖วG๖ว */}
       <div aria-hidden="true" className="contact-bg-mesh" />
       <div aria-hidden="true" className="contact-orb contact-orb-blue" />
       <div aria-hidden="true" className="contact-orb contact-orb-purple" />
       <div aria-hidden="true" className="contact-orb contact-orb-pink" />
       <div aria-hidden="true" className="contact-grid-overlay" />
 
-      {/* ฮ“รถรฮ“รถร Page content ฮ“รถรฮ“รถร */}
+      {/* G๖วG๖ว Page content G๖วG๖ว */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-18 lg:px-12 lg:py-20 xl:px-16">
 
         {/* Mobile badge */}
@@ -375,7 +375,7 @@ export default function Contact() {
 
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-14 xl:gap-20">
 
-          {/* ฮ“รถรฮ“รถร LEFT COLUMN ฮ“รถรฮ“รถร */}
+          {/* G๖วG๖ว LEFT COLUMN G๖วG๖ว */}
           <div
             className={`contact-col-left flex flex-col transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
               }`}
@@ -440,7 +440,7 @@ export default function Contact() {
                       className={`contact-channel-link group flex items-center gap-3.5 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3.5 backdrop-blur-sm ${hoverBorder}`}
                     >
                       <span
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${color} ${iconColor}`}
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br ${color} ${iconColor}`}
                       >
                         <Icon className="h-4 w-4" aria-hidden="true" />
                       </span>
@@ -478,7 +478,7 @@ export default function Contact() {
             </div>
           </div>
 
-          {/* ฮ“รถรฮ“รถร RIGHT COLUMN ฮ“รรถ FORM ฮ“รถรฮ“รถร */}
+          {/* G๖วG๖ว RIGHT COLUMN Gว๖ FORM G๖วG๖ว */}
           <div
             className={`contact-col-right w-full lg:sticky lg:top-24 transition-all duration-700 delay-150 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
               }`}
@@ -533,14 +533,14 @@ export default function Contact() {
                     type="submit"
                     disabled={loading}
                     aria-busy={loading}
-                    aria-label={loading ? "Sending messageฮ“รยช" : "Send message"}
+                    aria-label={loading ? "Sending messageGวช" : "Send message"}
                     className="contact-submit-btn group relative mt-1 flex h-12 w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl text-sm font-bold text-white sm:h-[3.125rem] sm:text-base"
                   >
                     <span aria-hidden="true" className="contact-btn-gradient absolute inset-0" />
                     {/* Shimmer sweep on hover */}
                     <span
                       aria-hidden="true"
-                      className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.12] to-transparent transition-transform duration-700 group-hover:translate-x-full"
+                      className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/[0.12] to-transparent transition-transform duration-700 group-hover:translate-x-full"
                     />
                     <span className="relative flex items-center gap-2.5">
                       {loading ? (
@@ -549,7 +549,7 @@ export default function Contact() {
                             aria-hidden="true"
                             className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
                           />
-                          <span>Sendingฮ“รยช</span>
+                          <span>SendingGวช</span>
                         </>
                       ) : (
                         <>
@@ -575,7 +575,7 @@ export default function Contact() {
                         aria-hidden="true"
                       />
                       <p className="text-sm font-medium text-emerald-400">
-                        Message sent ฮ“รรถ we'll get back to you within 24 hours.
+                        Message sent Gว๖ we'll get back to you within 24 hours.
                       </p>
                     </div>
                   )}

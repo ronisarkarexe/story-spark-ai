@@ -186,7 +186,7 @@ const DashboardComponent = () => {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* HERO SECTION */}
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-50 p-5 shadow-xl dark:border-white/[0.07] dark:from-[#0f1c3a] dark:via-[#0d1a3a] dark:to-[#111433] sm:p-6 lg:p-8">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-linear-to-br from-indigo-50 via-slate-50 to-blue-50 p-5 shadow-xl dark:border-white/[0.07] dark:from-[#0f1c3a] dark:via-[#0d1a3a] dark:to-[#111433] sm:p-6 lg:p-8">
         <div className="absolute -top-16 -right-16 w-64 h-64 bg-blue-600/15 rounded-full blur-[60px]" />
         <div className="absolute bottom-0 left-8 w-48 h-48 bg-indigo-500/10 rounded-full blur-[50px]" />
 
@@ -336,7 +336,7 @@ const DashboardComponent = () => {
               </div>
 
               {/* Collab Banner */}
-              <div className="flex flex-col gap-6 rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 p-6 dark:border-indigo-500/10 dark:from-indigo-500/10 dark:to-purple-500/10 md:flex-row md:items-center md:justify-between sm:p-8">
+              <div className="flex flex-col gap-6 rounded-2xl border border-indigo-100 bg-linear-to-br from-indigo-500/5 to-purple-500/5 p-6 dark:border-indigo-500/10 dark:from-indigo-500/10 dark:to-purple-500/10 md:flex-row md:items-center md:justify-between sm:p-8">
                 <div className="max-w-2xl min-w-0">
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 mb-4 font-bold">
                     <i className="fas fa-users text-xl"></i>
@@ -348,7 +348,7 @@ const DashboardComponent = () => {
                 </div>
                 <a
                   href="/collab"
-                  className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 px-8 py-4 font-bold text-white shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] hover:from-indigo-600 hover:to-blue-700 sm:w-auto"
+                  className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-linear-to-r from-indigo-500 to-blue-600 px-8 py-4 font-bold text-white shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] hover:from-indigo-600 hover:to-blue-700 sm:w-auto"
                 >
                   <i className="fas fa-satellite-dish animate-pulse"></i> Open Collab Space
                 </a>

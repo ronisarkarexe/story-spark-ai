@@ -111,7 +111,7 @@ const Career = () => {
 
             <h1 className="text-5xl sm:text-7xl font-extrabold leading-tight tracking-tight">
               Build the future of{" "}
-              <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-blue-500 via-indigo-500 to-cyan-400 bg-clip-text text-transparent">
                 AI storytelling
               </span>
             </h1>
@@ -124,7 +124,7 @@ const Career = () => {
             <div className="mt-10 flex flex-wrap gap-4">
               <a
                 href="#open-roles"
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-7 py-4 text-white font-semibold shadow-xl hover:scale-105 hover:shadow-blue-500/30 transition-all duration-300"
+                className="inline-flex items-center gap-2 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 px-7 py-4 text-white font-semibold shadow-xl hover:scale-105 hover:shadow-blue-500/30 transition-all duration-300"
               >
                 Explore Roles
                 <ArrowRight size={18} />
@@ -141,7 +141,7 @@ const Career = () => {
 
           {/* RIGHT SIDE GLASS CARD */}
           <div className="relative mx-auto w-full max-w-lg">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl rounded-full"></div>
+            <div className="absolute inset-0 bg-linear-to-r from-blue-500/20 to-purple-500/20 blur-3xl rounded-full"></div>
 
             <div className="relative rounded-[2rem] border border-white/10 bg-white/70 dark:bg-slate-900/70 p-8 shadow-2xl backdrop-blur-xl">
 
@@ -278,7 +278,7 @@ const Career = () => {
                     href={`mailto:careers@storysparkai.com?subject=Application%3A%20${encodeURIComponent(
                       title
                     )}`}
-                    className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3.5 text-white font-semibold shadow-lg hover:scale-[1.02] hover:shadow-blue-500/25 transition-all duration-300"
+                    className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 px-5 py-3.5 text-white font-semibold shadow-lg hover:scale-[1.02] hover:shadow-blue-500/25 transition-all duration-300"
                   >
                     Apply Now
                     <ArrowRight size={17} />
@@ -330,7 +330,7 @@ const Career = () => {
 
       {/* CTA SECTION */}
       <section className="px-6 pb-24">
-        <div className="mx-auto max-w-6xl rounded-[2.5rem] bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-10 sm:p-14 text-white shadow-2xl">
+        <div className="mx-auto max-w-6xl rounded-[2.5rem] bg-linear-to-r from-blue-700 via-indigo-700 to-slate-900 p-10 sm:p-14 text-white shadow-2xl">
 
           <div className="grid gap-10 lg:grid-cols-2 items-center">
 

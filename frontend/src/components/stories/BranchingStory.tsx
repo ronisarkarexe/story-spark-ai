@@ -124,7 +124,7 @@ const BranchingStory = () => {
                     onClick={() => setGenre(item === genre ? "" : item)}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all duration-150 cursor-pointer active:scale-[0.97] ${
                       genre === item
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-transparent text-white shadow-sm"
+                        ? "bg-linear-to-r from-blue-600 to-indigo-600 border-transparent text-white shadow-sm"
                         : "bg-slate-50 border-slate-200/60 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:border-white/5 dark:text-slate-400 dark:hover:bg-white/10"
                     }`}
                   >

@@ -30,7 +30,7 @@ const ContactUs = () => {
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Contact{" "}
-            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
               Us
             </span>
           </h1>
@@ -47,7 +47,7 @@ const ContactUs = () => {
             <ul className="space-y-3 text-left" aria-label="Contact information">
               {CONTACT_ITEMS.map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 sm:text-base">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/15 to-purple-500/15 text-purple-400">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-blue-500/15 to-purple-500/15 text-purple-400">
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                   </span>
                   {text}
@@ -60,7 +60,7 @@ const ContactUs = () => {
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               to="/contact-us"
-              className="motion-cta group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-purple-500/20 sm:text-base"
+              className="motion-cta group inline-flex items-center gap-2 rounded-full bg-linear-to-r from-blue-600 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-purple-500/20 sm:text-base"
             >
               Open Contact Form
               <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true" />

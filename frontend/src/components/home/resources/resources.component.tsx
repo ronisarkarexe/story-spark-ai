@@ -75,13 +75,13 @@ const ResourceComponent = () => {
               key={resource.title}
               className={`group relative overflow-hidden rounded-3xl border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
                 resource.featured
-                  ? "bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 border-blue-500 text-white lg:scale-105 shadow-xl"
+                  ? "bg-linear-to-br from-blue-600 via-blue-700 to-indigo-700 border-blue-500 text-white lg:scale-105 shadow-xl"
                   : "bg-white dark:bg-slate-900/70 backdrop-blur-xl border-slate-200 dark:border-slate-800 hover:border-blue-500/40"
               }`}
             >
               {/* Hover Gradient */}
               {!resource.featured && (
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-linear-to-br from-blue-500/5 via-transparent to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               )}
 
               <div className="relative z-10 p-7 sm:p-8 h-full flex flex-col">

@@ -115,7 +115,7 @@ const GithubcontributorsComponent: React.FC = () => {
               Our GitHub{" "}
               <span
                 className="
-                bg-gradient-to-r
+                bg-linear-to-r
                 from-blue-500
                 via-violet-500
                 to-fuchsia-500
@@ -167,7 +167,7 @@ const GithubcontributorsComponent: React.FC = () => {
             {/* Floating Glow Particles */}
 
           
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-violet-500/5 to-fuchsia-500/10 blur-3xl"></div>
+            <div className="absolute inset-0 bg-linear-to-tr from-blue-500/10 via-violet-500/5 to-fuchsia-500/10 blur-3xl"></div>
 
             <div className="absolute top-12 left-20 w-3 h-3 bg-cyan-400 rounded-full blur-[2px] animate-pulse"></div>
 
@@ -505,7 +505,7 @@ const GithubcontributorsComponent: React.FC = () => {
             }}
             className="
             px-7 py-3 rounded-full
-            bg-gradient-to-r from-violet-600 to-blue-600
+            bg-linear-to-r from-violet-600 to-blue-600
             text-white font-semibold
           "
           >
@@ -543,7 +543,7 @@ const GithubcontributorsComponent: React.FC = () => {
             rel="noreferrer"
             className="
             px-8 py-5 rounded-2xl
-            bg-gradient-to-r from-violet-600 to-fuchsia-600
+            bg-linear-to-r from-violet-600 to-fuchsia-600
             hover:scale-105
             text-white font-bold text-lg
             shadow-2xl

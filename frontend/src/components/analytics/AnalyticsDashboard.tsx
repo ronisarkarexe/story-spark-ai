@@ -160,7 +160,7 @@ export default function AnalyticsDashboard() {
         {/* Header */}
 <div className="flex items-center justify-between mb-10">
   <div>
-    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+    <h1 className="text-4xl font-bold bg-linear-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
       📊 Story Analytics
     </h1>
     <p className="text-white/40 mt-2">

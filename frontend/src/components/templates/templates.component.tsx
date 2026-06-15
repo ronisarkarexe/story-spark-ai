@@ -31,7 +31,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
     <div className="group relative bg-white dark:bg-white/[0.02] backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-lg hover:shadow-indigo-500/20 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition-all duration-500 flex flex-col h-full transform hover:-translate-y-1">
       {/* Banner Image with Zoom Effect */}
       <div className="relative h-48 overflow-hidden w-full shrink-0 bg-slate-100 dark:bg-[#0B0F19]">
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 dark:from-[#0B0F19] dark:via-[#0B0F19]/40 to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-linear-to-t from-white via-white/40 dark:from-[#0B0F19] dark:via-[#0B0F19]/40 to-transparent z-10 pointer-events-none"></div>
         <ImageFallback
           src={image}
           alt={title}
@@ -206,7 +206,7 @@ const TemplatesComponent = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-br animate-gradient-slow min-h-screen pb-24 relative overflow-hidden dark:bg-transparent">
+    <div className="bg-linear-to-br animate-gradient-slow min-h-screen pb-24 relative overflow-hidden dark:bg-transparent">
       {/* Background decorations */}
       <div className="absolute top-[-200px] right-[-100px] w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
       <div className="absolute bottom-[20%] left-[-150px] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
@@ -234,7 +234,7 @@ const TemplatesComponent = () => {
             </span>
             Professional Writing Templates
           </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-indigo-800 to-indigo-600 dark:from-white dark:via-blue-100 dark:to-indigo-300 mb-8 tracking-tight drop-shadow-sm dark:drop-shadow-2xl">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 via-indigo-800 to-indigo-600 dark:from-white dark:via-blue-100 dark:to-indigo-300 mb-8 tracking-tight drop-shadow-sm dark:drop-shadow-2xl">
             Writing Templates
           </h1>
           <p className="text-xl text-slate-600 dark:text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed font-light">
@@ -243,7 +243,7 @@ const TemplatesComponent = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
             <button 
               onClick={() => navigate('/stories')}
-              className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg shadow-[0_0_30px_rgba(79,70,229,0.3)] hover:shadow-[0_0_40px_rgba(79,70,229,0.5)] transition-all duration-300 transform hover:-translate-y-1 w-full sm:w-auto flex items-center justify-center gap-2"
+              className="px-8 py-4 rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg shadow-[0_0_30px_rgba(79,70,229,0.3)] hover:shadow-[0_0_40px_rgba(79,70,229,0.5)] transition-all duration-300 transform hover:-translate-y-1 w-full sm:w-auto flex items-center justify-center gap-2"
             >
               Start Writing <i className="fas fa-magic"></i>
             </button>
@@ -263,7 +263,7 @@ const TemplatesComponent = () => {
                 <i className="fas fa-book-open"></i>
               </div>
               <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-100">Story Writing</h2>
-              <div className="h-px bg-gradient-to-r from-emerald-500/50 to-transparent flex-grow ml-4"></div>
+              <div className="h-px bg-linear-to-r from-emerald-500/50 to-transparent flex-grow ml-4"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {storyTemplates.map((template, index) => (
@@ -279,7 +279,7 @@ const TemplatesComponent = () => {
                 <i className="fas fa-pen-nib"></i>
               </div>
               <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-100">Creative Writing</h2>
-              <div className="h-px bg-gradient-to-r from-purple-500/50 to-transparent flex-grow ml-4"></div>
+              <div className="h-px bg-linear-to-r from-purple-500/50 to-transparent flex-grow ml-4"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {creativeTemplates.map((template, index) => (
@@ -295,7 +295,7 @@ const TemplatesComponent = () => {
                 <i className="fas fa-lightbulb"></i>
               </div>
               <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-100">Writing Inspiration</h2>
-              <div className="h-px bg-gradient-to-r from-pink-500/50 to-transparent flex-grow ml-4"></div>
+              <div className="h-px bg-linear-to-r from-pink-500/50 to-transparent flex-grow ml-4"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {inspirationTemplates.map((template, index) => (
@@ -307,14 +307,14 @@ const TemplatesComponent = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="mt-32 mb-10 relative rounded-3xl p-[1px] bg-gradient-to-b from-indigo-500/40 via-indigo-500/10 to-transparent overflow-hidden group">
+        <div className="mt-32 mb-10 relative rounded-3xl p-[1px] bg-linear-to-b from-indigo-500/40 via-indigo-500/10 to-transparent overflow-hidden group">
           <div className="absolute inset-0 bg-indigo-500/10 blur-2xl group-hover:bg-indigo-500/20 transition-all duration-700"></div>
-          <div className="relative bg-gradient-to-b from-white to-slate-50 dark:from-[#0f1423]/90 dark:to-[#0B0F19]/90 backdrop-blur-xl rounded-3xl p-12 md:p-20 border border-slate-200 dark:border-white/5 text-center overflow-hidden h-full w-full shadow-xl dark:shadow-2xl">
+          <div className="relative bg-linear-to-b from-white to-slate-50 dark:from-[#0f1423]/90 dark:to-[#0B0F19]/90 backdrop-blur-xl rounded-3xl p-12 md:p-20 border border-slate-200 dark:border-white/5 text-center overflow-hidden h-full w-full shadow-xl dark:shadow-2xl">
             <div className="absolute -top-32 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] -z-10 pointer-events-none transition-all duration-700 group-hover:bg-blue-500/30"></div>
             <div className="absolute -bottom-32 left-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-[100px] -z-10 pointer-events-none transition-all duration-700 group-hover:bg-indigo-500/30"></div>
             
             <div className="relative z-10 flex flex-col items-center">
-              <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-indigo-800 to-indigo-600 dark:from-white dark:via-indigo-100 dark:to-indigo-300 mb-6 tracking-tight drop-shadow-sm dark:drop-shadow-xl">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 via-indigo-800 to-indigo-600 dark:from-white dark:via-indigo-100 dark:to-indigo-300 mb-6 tracking-tight drop-shadow-sm dark:drop-shadow-xl">
                 Your next great story starts here ✨
               </h2>
               <p className="text-xl text-slate-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
@@ -322,7 +322,7 @@ const TemplatesComponent = () => {
               </p>
               <button 
                 onClick={() => navigate('/stories')}
-                className="group/btn px-10 py-4 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg shadow-[0_0_30px_rgba(79,70,229,0.4)] hover:shadow-[0_0_50px_rgba(79,70,229,0.6)] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 mx-auto border border-slate-200 dark:border-white/10"
+                className="group/btn px-10 py-4 rounded-full bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg shadow-[0_0_30px_rgba(79,70,229,0.4)] hover:shadow-[0_0_50px_rgba(79,70,229,0.6)] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 mx-auto border border-slate-200 dark:border-white/10"
               >
                 <span>Start Creating</span>
                 <i className="fas fa-arrow-right transform group-hover/btn:translate-x-1 transition-transform"></i>

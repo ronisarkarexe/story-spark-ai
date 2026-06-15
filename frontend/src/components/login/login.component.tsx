@@ -102,7 +102,7 @@ const LoginComponent = () => {
       <div className="flex w-full max-w-5xl flex-row justify-center gap-16 py-12 relative z-10 box-border items-center">
         {/* Left side — feature highlights */}
         <div className="hidden lg:flex flex-col gap-5 max-w-sm">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-linear-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
             Turns Ideas into
             <br />
             unforgettable stories
@@ -192,7 +192,7 @@ const LoginComponent = () => {
           </button>
 
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
+            <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-indigo-400">
               Welcome back
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">

@@ -238,7 +238,7 @@ const SignUpComponent = () => {
 
       <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-4 min-w-0 box-border">
         <div className="sm:mx-auto sm:w-full mb-6">
-          <h2 className="text-center text-3xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
+          <h2 className="text-center text-3xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
             STORY SPARK AI
           </h2>
         </div>

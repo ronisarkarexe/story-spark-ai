@@ -225,7 +225,7 @@ export default function CollabRoom() {
           {/* Story Editor Area */}
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6 mb-6 shadow-sm">
-              <h1 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold mb-4 bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                 Collab Room Canvas
               </h1>
               <p className="text-xs text-slate-400 dark:text-slate-500 mb-2">Room ID: {roomId}</p>
@@ -291,7 +291,7 @@ export default function CollabRoom() {
 
           {/* Participants Sidebar */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6 shadow-sm self-start">
-            <h2 className="text-lg font-bold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+            <h2 className="text-lg font-bold mb-4 bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               Active Writers ({room?.participants.length || 0})
             </h2>
             <div className="space-y-3">

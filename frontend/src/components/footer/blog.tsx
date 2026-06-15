@@ -53,7 +53,7 @@ const Blog = () => {
         </div>
 
         {/* FEATURED SECTION */}
-        <div className="mb-10 p-8 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
+        <div className="mb-10 p-8 rounded-2xl bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-lg">
           <h2 className="text-2xl font-bold mb-2">🔥 Featured Article</h2>
           <p className="text-lg font-semibold">
             Introducing StorySparkAI v2.0 — A new era of AI storytelling

@@ -169,7 +169,7 @@ export const RevisionSuggestionsPanel: React.FC<RevisionSuggestionsPanelProps> =
                       {suggestion.suggestedText && (
                         <button
                           onClick={() => onApply(suggestion)}
-                          className="flex-1 md:w-20 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm shadow-blue-500/10"
+                          className="flex-1 md:w-20 px-3 py-1.5 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm shadow-blue-500/10"
                         >
                           Apply
                         </button>

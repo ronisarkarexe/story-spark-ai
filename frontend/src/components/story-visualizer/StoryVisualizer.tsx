@@ -41,7 +41,7 @@ const IllustrationPreview = ({ scene }: IllustrationPreviewProps) => {
         : "AI-generated artwork will appear here when image generation is available.";
 
   return (
-    <div className="flex aspect-[4/3] min-h-64 items-center justify-center overflow-hidden rounded-2xl border border-indigo-300/20 bg-gradient-to-br from-slate-700 via-indigo-900/80 to-purple-950 p-6 text-center shadow-inner">
+    <div className="flex aspect-[4/3] min-h-64 items-center justify-center overflow-hidden rounded-2xl border border-indigo-300/20 bg-linear-to-br from-slate-700 via-indigo-900/80 to-purple-950 p-6 text-center shadow-inner">
       <div className="max-w-sm rounded-2xl border border-white/10 bg-slate-950/30 px-6 py-7 backdrop-blur-sm">
         <div className="mb-3 text-4xl" aria-hidden="true">
           Image

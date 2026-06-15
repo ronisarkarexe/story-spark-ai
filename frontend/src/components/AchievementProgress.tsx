@@ -30,7 +30,7 @@ const AchievementProgress: React.FC<AchievementProgressProps> = ({
         aria-label={label || "Achievement progress"}
       >
         <div
-          className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full transition-all duration-700 ease-out"
+          className="h-full bg-linear-to-r from-indigo-500 to-blue-500 rounded-full transition-all duration-700 ease-out"
           style={{ width: `${percentage}%` }}
         />
       </div>

@@ -88,7 +88,7 @@ const CookiePolicy: React.FC = () => {
             </p>
           </section>
 
-          <section className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 shadow-lg text-center">
+          <section className="bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl p-8 shadow-lg text-center">
             <h2 className="text-3xl font-bold mb-4">Have Questions?</h2>
             <p className="text-lg text-white/90 mb-3">
               Reach out if you want more detail on how cookies are used on the platform.

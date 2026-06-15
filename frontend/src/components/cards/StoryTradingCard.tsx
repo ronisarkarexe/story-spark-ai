@@ -224,7 +224,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
         transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(0,0,0,0.45)]`}
       >
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${rarityStyle.accent} opacity-20`}
+          className={`absolute inset-0 bg-linear-to-br ${rarityStyle.accent} opacity-20`}
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.24),transparent_28%),radial-gradient(circle_at_80%_12%,rgba(255,255,255,0.18),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.06),transparent_42%)]" />
 
@@ -269,7 +269,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
             >
               <i className={`${isBookmarked ? "fas text-amber-400" : "far text-white/70"} fa-bookmark`}></i>
             </button>
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
               <span
                 className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${genreClass}`}

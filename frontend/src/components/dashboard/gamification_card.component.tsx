@@ -17,10 +17,10 @@ const GamificationCard: React.FC<{ data?: GamificationData }> = ({ data }) => {
   const progressPercent = Math.min(100, Math.max(0, ((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100));
 
   return (
-    <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 p-6 dark:border-blue-500/10 dark:from-blue-500/5 dark:to-indigo-500/5 flex flex-col justify-between">
+    <div className="rounded-2xl border border-blue-100 bg-linear-to-br from-blue-50/50 to-indigo-50/50 p-6 dark:border-blue-500/10 dark:from-blue-500/5 dark:to-indigo-500/5 flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/20 mb-2">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-linear-to-tr from-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/20 mb-2">
             <span className="font-black text-xl">Lvl {level}</span>
           </div>
           <div>
@@ -41,7 +41,7 @@ const GamificationCard: React.FC<{ data?: GamificationData }> = ({ data }) => {
         </div>
         <div className="w-full bg-slate-200 dark:bg-white/[0.05] h-3 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-1000 relative"
+            className="h-full bg-linear-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-1000 relative"
             style={{ width: `${progressPercent}%` }}
           >
             <div className="absolute top-0 right-0 bottom-0 left-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTTAgNDBsNDAtNDBIMzBMMCAzMHYxMHptNDAgMEw0MCAwSDBMMCA0MGg0MHoiIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iLjIiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYSkiLz48L3N2Zz4=')] opacity-50"></div>

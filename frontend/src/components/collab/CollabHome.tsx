@@ -87,7 +87,7 @@ export default function CollabHome() {
 
         <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-sm hover:shadow-xl transition-shadow duration-300 w-full box-border text-center">
           <div className="text-5xl mb-4 select-none">✍️</div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent mb-3 tracking-tight select-none">
+          <h1 className="text-2xl sm:text-3xl font-extrabold bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent mb-3 tracking-tight select-none">
             Story Collab Mode
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium leading-relaxed mb-8 select-none">
@@ -105,7 +105,7 @@ export default function CollabHome() {
             <button
               onClick={createRoom}
               disabled={isCreating}
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none cursor-pointer"
+              className="w-full h-12 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none cursor-pointer"
             >
               {isCreating ? "Creating Room..." : "✨ Create a New Story Room"}
             </button>

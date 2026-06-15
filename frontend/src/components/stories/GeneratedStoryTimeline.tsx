@@ -129,7 +129,7 @@ const GeneratedStoryTimeline = ({
 
       <div className="mb-5 h-2 overflow-hidden rounded-full bg-slate-800">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-400 to-fuchsia-400"
+          className="h-full rounded-full bg-linear-to-r from-cyan-400 via-indigo-400 to-fuchsia-400"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.35, ease: "easeOut" }}
@@ -137,7 +137,7 @@ const GeneratedStoryTimeline = ({
       </div>
 
       <div className="relative">
-        <div className="absolute left-4 top-4 hidden h-[calc(100%-2rem)] w-px bg-gradient-to-b from-cyan-400/50 via-indigo-400/30 to-transparent md:block" />
+        <div className="absolute left-4 top-4 hidden h-[calc(100%-2rem)] w-px bg-linear-to-b from-cyan-400/50 via-indigo-400/30 to-transparent md:block" />
         <div className="grid gap-3">
           {events.map((event, index) => {
             const isActive = event.id === activeEventId;

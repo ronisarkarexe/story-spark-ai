@@ -59,7 +59,7 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
               className="group overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111827]/40 backdrop-blur-xl shadow-sm hover:shadow-md transition-all duration-300 w-full box-border"
             >
               <div
-                className={`h-[2px] w-full bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 transition-opacity duration-300 ${
+                className={`h-[2px] w-full bg-linear-to-r from-indigo-500 via-blue-500 to-purple-500 transition-opacity duration-300 ${
                   isOpen ? "opacity-100" : "opacity-0"
                 }`}
               />

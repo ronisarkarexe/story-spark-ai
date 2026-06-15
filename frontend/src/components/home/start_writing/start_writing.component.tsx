@@ -21,7 +21,7 @@ const StartWritingComponent = () => {
               with our AI-powered platform pipelines.
             </p>
             <Link to="/stories" className="w-full sm:w-auto inline-block">
-              <button className="w-full sm:w-auto inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-8 py-3.5 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] cursor-pointer group/btn uppercase tracking-wider select-none">
+              <button className="w-full sm:w-auto inline-flex items-center justify-center bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-8 py-3.5 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] cursor-pointer group/btn uppercase tracking-wider select-none">
                 Get Started Free
                 <i className="fa-solid fa-wand-magic-sparkles text-xs ml-2.5 transition-transform duration-200 group-hover/btn:rotate-12 shrink-0"></i>
               </button>

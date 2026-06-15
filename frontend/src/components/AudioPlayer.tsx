@@ -244,7 +244,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                   className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
                 >
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 transition-all duration-300"
+                    className="h-full rounded-full bg-linear-to-r from-indigo-500 via-violet-500 to-fuchsia-500 transition-all duration-300"
                     style={{ width: `${Math.round(speech.progress.percentage * 100)}%` }}
                   />
                 </div>

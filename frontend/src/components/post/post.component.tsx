@@ -217,7 +217,7 @@ const ExploreComponent = () => {
                     onClick={() => setFeaturedPost(false)}
                     className={`text-3xl font-extrabold mb-6 cursor-pointer transition-all duration-300 ${
                       !featuredPost
-                        ? "bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-500 drop-shadow-sm"
+                        ? "bg-clip-text text-transparent bg-linear-to-r from-blue-500 to-indigo-500 drop-shadow-sm"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-500 dark:hover:text-slate-300"
                     }`}
                   >
@@ -227,7 +227,7 @@ const ExploreComponent = () => {
                   <h2
                     className={`text-2xl font-bold mb-6 cursor-pointer transition-all duration-300 flex items-center ${
                       featuredPost
-                        ? "bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-amber-500 drop-shadow-sm"
+                        ? "bg-clip-text text-transparent bg-linear-to-r from-yellow-500 to-amber-500 drop-shadow-sm"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-500 dark:hover:text-slate-300"
                     }`}
                     onClick={() => setFeaturedPost(!featuredPost)}

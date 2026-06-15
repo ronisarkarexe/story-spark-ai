@@ -1105,11 +1105,11 @@ useEffect(() => {
         <div className="mt-11">
           <h1 className="text-slate-900 dark:text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">
             âœ¨ {text.titleStart}{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
+            <span className="bg-clip-text text-transparent bg-linear-to-r from-purple-300 to-blue-400">
         <div className="mb-12 max-w-3xl mx-auto text-center select-none">
           <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
             ✨ {text.titleStart}{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+            <span className="bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
               {text.titleAccent}
             </span>{" "}
             âœ¨
@@ -1183,7 +1183,7 @@ useEffect(() => {
                           }}
                           className={`px-3.5 py-1.5 rounded-xl text-xs font-bold tracking-wide uppercase border transition-all duration-150 cursor-pointer active:scale-[0.97] ${
                             selectedGenre === genre.value
-                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-transparent text-white shadow-md shadow-blue-500/10"
+                              ? "bg-linear-to-r from-blue-600 to-indigo-600 border-transparent text-white shadow-md shadow-blue-500/10"
                               : "bg-slate-50 border-slate-200/60 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:border-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200"
                           }`}
                         >
@@ -1354,7 +1354,7 @@ useEffect(() => {
                       aria-label={text.recentPrompts}
                       title={text.recentPrompts}
                       onClick={handleNextStep}
-                      className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full sm:w-auto bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <span>Next: Cast of Characters ➡️</span>
                     </button>
@@ -1528,7 +1528,7 @@ useEffect(() => {
                       disabled={loading || isOverLimit}
                       aria-busy={loading}
                       aria-disabled={loading || isOverLimit}
-                      className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
+                      className={`w-full sm:w-auto bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
                         loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                       } group`}
                     >
@@ -1732,7 +1732,7 @@ useEffect(() => {
         disabled={loading || isOverLimit}
         aria-busy={loading}
         aria-disabled={loading || isOverLimit}
-        className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
+        className={`rounded-lg bg-linear-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
           loading || isOverLimit
             ? "opacity-50 cursor-not-allowed"
             : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
@@ -1759,7 +1759,7 @@ useEffect(() => {
                   disabled={loading || isOverLimit}
                   aria-busy={loading}
                   aria-disabled={loading || isOverLimit}
-                  className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
+                  className={`w-full sm:w-auto bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
                     loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                   } group`}
                 >
@@ -1943,7 +1943,7 @@ useEffect(() => {
               <div className="flex flex-col gap-3">
                 <Link
                   to="/login"
-                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
+                  className="w-full bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
                 >
                   {text.login}
                 </Link>

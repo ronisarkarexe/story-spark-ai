@@ -165,7 +165,7 @@ const CommunitySpotlightComponent = () => {
                     onClick={() => navigate(`/post/${writer.topPost._id}`)}
                     className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-5 text-left shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700/60 dark:bg-slate-900/70 dark:hover:border-blue-400/50 dark:focus:ring-offset-slate-950 box-border w-full"
                   >
-                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-violet-500 to-amber-400"></div>
+                    <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-blue-500 via-violet-500 to-amber-400"></div>
 
                     <div className="mb-6 flex items-start justify-between gap-4 w-full box-border">
                       <div className="flex min-w-0 items-center gap-4">

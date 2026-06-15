@@ -207,7 +207,7 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
         <div className="flex flex-col gap-2.5 xl:w-[280px] shrink-0 xl:pt-11 w-full">
           <button
             onClick={handleAcceptAll}
-            className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-blue-600/10 transition-all duration-150 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider"
+            className="w-full rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-blue-600/10 transition-all duration-150 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider"
           >
             Accept all cookies
           </button>

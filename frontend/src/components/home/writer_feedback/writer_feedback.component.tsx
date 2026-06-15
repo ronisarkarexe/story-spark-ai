@@ -80,7 +80,7 @@ const WriterFeedbackComponent = () => {
 
         {/* Featured Testimonial */}
         {featuredReview && (
-          <div className="relative mb-16 overflow-hidden rounded-3xl border border-blue-500/20 bg-gradient-to-r from-blue-500/10 via-cyan-500/5 to-purple-500/10 p-8 md:p-10">
+          <div className="relative mb-16 overflow-hidden rounded-3xl border border-blue-500/20 bg-linear-to-r from-blue-500/10 via-cyan-500/5 to-purple-500/10 p-8 md:p-10">
             <div className="absolute right-6 top-6 opacity-20">
               <Quote size={80} />
             </div>

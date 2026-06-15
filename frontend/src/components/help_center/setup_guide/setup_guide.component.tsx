@@ -38,7 +38,7 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
       <div className="relative max-w-4xl mx-auto px-4 sm:px-0 w-full box-border">
         {/* Vertical connector line (desktop) */}
         <div
-          className="absolute left-6 top-8 bottom-8 hidden md:block w-px bg-gradient-to-b from-indigo-500/50 via-blue-500/30 to-transparent pointer-events-none"
+          className="absolute left-6 top-8 bottom-8 hidden md:block w-px bg-linear-to-b from-indigo-500/50 via-blue-500/30 to-transparent pointer-events-none"
           aria-hidden="true"
         />
 
@@ -104,7 +104,7 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
                 )}
 
                 {/* Visual Ambient Bottom Accent Line */}
-                <div className="mt-6 h-1 w-20 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 opacity-70 transition-all duration-300 group-hover:w-32" />
+                <div className="mt-6 h-1 w-20 rounded-full bg-linear-to-r from-indigo-500 to-blue-500 opacity-70 transition-all duration-300 group-hover:w-32" />
               </div>
             </motion.li>
           ))}
@@ -117,7 +117,7 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.1 }}
         viewport={{ once: true }}
-        className="mt-12 overflow-hidden rounded-2xl sm:rounded-3xl border border-indigo-200 bg-gradient-to-r from-indigo-50/50 via-white to-blue-50/50 p-5 sm:p-6 shadow-sm dark:border-indigo-500/20 dark:from-indigo-950/20 dark:via-slate-900/60 dark:to-blue-950/20 max-w-4xl mx-auto px-4 sm:px-6 w-full box-border"
+        className="mt-12 overflow-hidden rounded-2xl sm:rounded-3xl border border-indigo-200 bg-linear-to-r from-indigo-50/50 via-white to-blue-50/50 p-5 sm:p-6 shadow-sm dark:border-indigo-500/20 dark:from-indigo-950/20 dark:via-slate-900/60 dark:to-blue-950/20 max-w-4xl mx-auto px-4 sm:px-6 w-full box-border"
       >
         <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5 w-full box-border">
           {/* Info Icon Container */}
