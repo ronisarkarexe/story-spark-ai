@@ -18,6 +18,7 @@ jest.mock("../post.model", () => ({
 jest.mock("../../user/user.model", () => ({
   User: {
     findOne: jest.fn(),
+    findByIdAndUpdate: jest.fn(),
   },
 }));
 
@@ -143,7 +144,7 @@ describe("escapeRegex", () => {
   });
 
   it("leaves plain alphanumeric strings unchanged", () => {
-    expect(escapeRegex("hello world")).toBe("hello world");
+    expect(escapeRegex("helloworld")).toBe("helloworld");
   });
 
   it("escapes a hyphen", () => {

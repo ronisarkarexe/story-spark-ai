@@ -41,7 +41,7 @@ describe("AiModelService - Chat", () => {
     );
 
     expect(result).toBe("Hello there!");
-    expect(mockedChat).toHaveBeenCalledWith("Hi", []);
+    expect(mockedChat).toHaveBeenCalledWith("Hi", [], expect.any(Object));
   });
 
   it("returns chat response for guest user", async () => {
@@ -50,7 +50,7 @@ describe("AiModelService - Chat", () => {
     const result = await AiModelService.aiFreeModelChat({ message: "Hi", history: [] });
 
     expect(result).toBe("Hi guest!");
-    expect(mockedChat).toHaveBeenCalledWith("Hi", []);
+    expect(mockedChat).toHaveBeenCalledWith("Hi", [], expect.any(Object));
   });
 
   it("throws gateway timeout on timeout", async () => {

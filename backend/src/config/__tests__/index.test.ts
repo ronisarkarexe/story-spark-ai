@@ -11,6 +11,7 @@ describe("backend config startup validation", () => {
   });
 
   it("throws when JWT_SECRET is missing", () => {
+    process.env.NODE_ENV = "development";
     process.env.DATABASE_URL = "mongodb://localhost/test";
     delete process.env.JWT_SECRET;
     process.env.JWT_REFRESH_SECRET = "refresh-secret";
@@ -21,6 +22,7 @@ describe("backend config startup validation", () => {
   });
 
   it("throws when JWT_REFRESH_SECRET is missing", () => {
+    process.env.NODE_ENV = "development";
     process.env.DATABASE_URL = "mongodb://localhost/test";
     process.env.JWT_SECRET = "secret";
     delete process.env.JWT_REFRESH_SECRET;
