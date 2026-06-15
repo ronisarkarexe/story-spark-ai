@@ -100,9 +100,13 @@ const SSInput = <T extends FieldValues>({
       </div>
 
       {error && (
+<<<<<<< HEAD
+        <p className="text-red-500 text-sm mt-2">{error.message}</p>
+=======
         <p className="text-xs font-medium text-rose-500 mt-1.5 text-left w-full break-words overflow-hidden">
           {error.message}
         </p>
+>>>>>>> upstream/main
       )}
     </div>
   );

@@ -4,18 +4,80 @@ import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
+<<<<<<< HEAD
+import {
+  fetchImageAsBlob,
+  blobToBase64,
+  exportStoryToPDF,
+  exportStoryToEPUB
+} from "../../services/export.service";
+=======
 import StoryWorldMap from "../story-map/StoryWorldMap";
+>>>>>>> upstream/main
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
+<<<<<<< HEAD
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setStory } from "../../redux/slices/storySlice";
+import ContinueStoryButton from "../story/ContinueStoryButton";
+import StoryCoverImage from "./StoryCoverImage";
+import { useApiError } from "../../hooks/useApiError";
+=======
 import { useLocation } from "react-router-dom";
+>>>>>>> upstream/main
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
 import ImageFallback from "../ImageFallback";
+<<<<<<< HEAD
+import ContinueStoryModal from "./ContinueStoryModal";
+
+// --- Custom Error Classes & Helper Types ---
+export class ApiError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.status === 429) {
+      return "The AI service is currently busy. Please wait a moment and try again.";
+    }
+    if ([502, 503, 504].includes(error.status)) {
+      return "The server took too long to respond. Please try again shortly.";
+    }
+    if (error.status >= 500) {
+      return "A server error occurred. Please try again later.";
+    }
+  }
+  if (error instanceof TypeError) {
+    return "Could not reach the server. Please check your connection and try again.";
+  }
+  return "An unexpected error occurred. Please try again.";
+}
+
+// Dummy themes helper
+const getGenreTheme = (tag: string) => {
+  return { gradient: "45deg, #1e1b4b, #311042", accent: "#a855f7", icon: "✨" };
+};
+
+const getInitials = (title: string) => title.slice(0, 2).toUpperCase();
+
+const formatReadingStats = (content: string): string => {
+  const words = getWordCount(content);
+  const minutes = Math.max(1, Math.ceil(words / 200));
+  return `${minutes} min read • ${words} words`;
+};
+
+=======
 import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
+>>>>>>> upstream/main
 export interface IStories {
   uuid: string;
   title: string;
@@ -80,17 +142,150 @@ const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
   return segments;
 };
 
+<<<<<<< HEAD
+const getSafeFileName = (title: string, extension: string): string => {
+  const safeTitle = (title || "story")
+    .trim()
+    .replace(/[^a-z0-9]+/gi, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase();
+
+  return `${safeTitle || "story"}.${extension}`;
+};
+
+const downloadBlob = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  URL.revokeObjectURL(url);
+};
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+const createDocxBlob = ({
+  title,
+  content,
+  tag,
+  author,
+}: {
+  title: string;
+  content: string;
+  tag: string;
+  author: string;
+}): Blob => {
+  const paragraphs = content
+    .split(/\n+/)
+    .map((paragraph) => `<p>${escapeHtml(paragraph.trim())}</p>`)
+    .join("");
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>${escapeHtml(title)}</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; }
+    h1 { color: #312e81; }
+    .meta { color: #64748b; font-size: 12px; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(title)}</h1>
+  <div class="meta">Tag: ${escapeHtml(tag)} | Author: ${escapeHtml(author)}</div>
+  ${paragraphs}
+</body>
+</html>`;
+
+  return new Blob([html], {
+    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8",
+  });
+};
+
+// Lazy-loaded components
+const StoryWorldMap = React.lazy(() => import("../story-map/StoryWorldMap"));
+const StoryRemix = React.lazy(() => import("../remix/StoryRemix"));
+const StoryVisualizer = React.lazy(() => import("../story-visualizer/StoryVisualizer"));
+
+// Cast to the correct type with default export
+const StoryWorldMapModal = StoryWorldMap as React.ComponentType<any>;
+const StoryRemixModal = StoryRemix as React.ComponentType<any>;
+
+export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
+  const navigate = useNavigate();
+  const filteredPosts = posts.filter((post) => post._id !== currentPostId);
+
+  return (
+    <div className="mt-8">
+      <h4 className="text-lg font-bold text-slate-200 mb-4">Related Content</h4>
+      {filteredPosts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredPosts.map((post) => (
+            <div
+              key={post._id}
+              onClick={() => navigate(`/stories/${post._id}`)}
+              className="p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/60 transition-colors"
+            >
+              <p className="text-sm font-semibold text-white truncate">{post.title}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-slate-500 py-4 border border-dashed border-slate-700 rounded-xl">No related stories found.</p>
+      )}
+    </div>
+  );
+};
+
+// ─── Main Component ─────────────────────────────────────────────────────────
+=======
+>>>>>>> upstream/main
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
   setStories,
-  isLoading,
+  isLoading: externalLoading,
   onPublishSuccess,
 }) => {
   const location = useLocation();
+<<<<<<< HEAD
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const storyScrollContainerRef = useRef<HTMLDivElement>(null);
+  const {
+    isPlaying: isAntiGravityPlaying,
+    setIsPlaying: setIsAntiGravityPlaying,
+    targetSpeed: antiGravitySpeed,
+    setTargetSpeed: setAntiGravitySpeed,
+  } = useAntiGravityScroll(storyScrollContainerRef);
+
+  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const dropdownMenuRef = useRef<HTMLDivElement>(null);
+
+  // States
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Export states
+  const [exportState, setExportState] = useState<"idle" | "processing" | "compiling" | "success" | "error">("idle");
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState<boolean>(false);
+
+  // Standard functional states
+=======
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
 
   // Start with a clean state that adapts dynamically
+>>>>>>> upstream/main
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
@@ -98,7 +293,18 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
+<<<<<<< HEAD
+  const [showRemix, setShowRemix] = useState<boolean>(false);
+  const [showStoryVisualizer, setShowStoryVisualizer] = useState<boolean>(false);
+  const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]);
+  const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [showContinueModal, setShowContinueModal] = useState<boolean>(false);
+
+=======
 const [, setShowRemix] = useState<boolean>(false);
+>>>>>>> upstream/main
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -113,13 +319,90 @@ const [, setShowRemix] = useState<boolean>(false);
   const [originalStoryContent, setOriginalStoryContent] = useState<{
     [uuid: string]: string;
   }>({});
+<<<<<<< HEAD
+=======
   const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
   const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
+>>>>>>> upstream/main
   const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
   const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
 
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+<<<<<<< HEAD
+  const [generateStoryVisuals, { isLoading: isGeneratingVisuals }] = useGenerateStoryVisualsMutation();
+  const { setError, clearError } = useApiError();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownMenuRef.current && !dropdownMenuRef.current.contains(event.target as Node)) {
+        setIsExportDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleExport = async (format: "pdf" | "epub") => {
+    if (!selectedStory) return;
+    
+    setIsExportDropdownOpen(false);
+    setExportState("processing");
+    const toastId = toast.loading(`Preparing story for ${format.toUpperCase()} export...`);
+
+    try {
+      let imageBlob: Blob | null = null;
+      let base64Image: string | null = null;
+
+      if (selectedStory.imageURL) {
+        try {
+          imageBlob = await fetchImageAsBlob(selectedStory.imageURL);
+          base64Image = await blobToBase64(imageBlob);
+        } catch (err) {
+          console.error("Could not fetch story illustration for export:", err);
+          toast.error("Story illustration could not be loaded. Exporting text only.");
+        }
+      }
+
+      setExportState("compiling");
+      toast.loading(`Compiling ${format.toUpperCase()} file...`, { id: toastId });
+
+      if (format === "pdf") {
+        await exportStoryToPDF(selectedStory, base64Image);
+      } else {
+        await exportStoryToEPUB(selectedStory, imageBlob);
+      }
+
+      setExportState("success");
+      toast.success(`${format.toUpperCase()} downloaded successfully!`, { id: toastId });
+      setTimeout(() => setExportState("idle"), 2000);
+    } catch (err) {
+      console.error(`Failed to export to ${format}:`, err);
+      setExportState("error");
+      toast.error(`Failed to generate ${format.toUpperCase()}.`, { id: toastId });
+      setTimeout(() => setExportState("idle"), 2000);
+    }
+  };
+
+  const getExportButtonText = () => {
+    switch (exportState) {
+      case "processing":
+        return "Processing Images...";
+      case "compiling":
+        return "Compiling Book...";
+      case "success":
+        return "Success!";
+      case "error":
+        return "Failed";
+      default:
+        return "📥 Export";
+    }
+  };
+=======
+>>>>>>> upstream/main
 
   useEffect(() => {
     if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
@@ -293,6 +576,10 @@ const [, setShowRemix] = useState<boolean>(false);
   useEffect(() => {
     setNarrationWordIndex(0);
     setNarrationState("idle");
+<<<<<<< HEAD
+    setErrorMessage(null);
+=======
+>>>>>>> upstream/main
   }, [selectedStory?.uuid]);
 
   const sentenceSegments = useMemo(() => {
@@ -360,7 +647,7 @@ const [, setShowRemix] = useState<boolean>(false);
     return () => clearTimeout(timer);
   }, [selectedStory, selectedStory?.content, isLogin, selectTopics, createPost]);
 
-  const handelStorySelection = (story: IStories) => {
+  const handleStorySelection = (story: IStories) => {
     setSelectedStory(story);
   };
 
@@ -423,16 +710,37 @@ const [, setShowRemix] = useState<boolean>(false);
   };
 
   const handleExportPDF = async () => {
+<<<<<<< HEAD
+    if (!selectedStory) {
+      toast.error("No story available to export.");
+      return;
+    }
+    if (!selectedStory.content?.trim()) {
+      toast.error("Story content is empty. Cannot export.");
+      return;
+    }
+    
+    setIsExportDropdownOpen(false);
+    const toastId = toast.loading("Preparing your premium PDF...");
+    
+    try {
+=======
     if (!selectedStory) { toast.error("No story available to export."); return; }
     if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
     const toastId = toast.loading("Preparing your premium PDF...");
 
     try {
       // Helper to load image assets asynchronously with a safe timeout
+>>>>>>> upstream/main
       const loadImageWithTimeout = (src: string, timeoutMs: number = 3000): Promise<HTMLImageElement> => {
         return new Promise((resolve, reject) => {
           const img = new Image();
           img.crossOrigin = "anonymous";
+<<<<<<< HEAD
+          const timeout = setTimeout(() => { img.src = ""; reject(new Error(`Timeout loading image: ${src}`)); }, timeoutMs);
+          img.onload = () => { clearTimeout(timeout); resolve(img); };
+          img.onerror = (e) => { clearTimeout(timeout); reject(e); };
+=======
           const timeout = setTimeout(() => {
             img.src = ""; // stop loading
             reject(new Error(`Timeout loading image: ${src}`));
@@ -446,6 +754,7 @@ const [, setShowRemix] = useState<boolean>(false);
             clearTimeout(timeout);
             reject(e);
           };
+>>>>>>> upstream/main
           img.src = src;
         });
       };
@@ -453,6 +762,23 @@ const [, setShowRemix] = useState<boolean>(false);
       let logoImg: HTMLImageElement | null = null;
       let storyImg: HTMLImageElement | null = null;
 
+<<<<<<< HEAD
+      try { logoImg = await loadImageWithTimeout(logo); } catch (err) { console.warn("Failed to load logo", err); }
+      if (selectedStory.imageURL) {
+        try { storyImg = await loadImageWithTimeout(selectedStory.imageURL); } catch (err) { console.warn("Failed to load story banner", err); }
+      }
+
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const title = selectedStory.title || "Untitled Story";
+      const content = selectedStory.content || "";
+      const tag = (selectedStory.tag || "STORY").toUpperCase();
+      const leftMargin = 20, rightMargin = 20;
+      const printableWidth = 210 - leftMargin - rightMargin;
+      const maxY = 297 - 20 - 10;
+      let yCursor = 20;
+
+      // Header
+=======
       try {
         logoImg = await loadImageWithTimeout(logo);
       } catch (err) {
@@ -488,11 +814,26 @@ const [, setShowRemix] = useState<boolean>(false);
       let yCursor = topMargin;
 
       // 1. Header (Logo & Sub-header)
+>>>>>>> upstream/main
       if (logoImg) {
         const logoHeight = 8;
         const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
         doc.addImage(logoImg, "PNG", leftMargin, yCursor, logoWidth, logoHeight);
       } else {
+<<<<<<< HEAD
+        doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(99, 102, 241);
+        doc.text("StorySparkAI", leftMargin, yCursor + 6);
+      }
+      
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
+      doc.text("PREMIUM AI GENERATED STORY", 190, yCursor + 5, { align: "right" });
+      yCursor += 10;
+      
+      doc.setDrawColor(99, 102, 241); doc.setLineWidth(0.5); doc.line(leftMargin, yCursor, 190, yCursor);
+      yCursor += 8;
+
+      // Story Banner Image
+=======
         doc.setFont("helvetica", "bold");
         doc.setFontSize(14);
         doc.setTextColor(99, 102, 241); // Brand Indigo
@@ -514,12 +855,70 @@ const [, setShowRemix] = useState<boolean>(false);
       yCursor += 8;
 
       // 2. Story Banner Image (only on Page 1)
+>>>>>>> upstream/main
       if (storyImg) {
         const bannerHeight = 55;
         doc.addImage(storyImg, "JPEG", leftMargin, yCursor, printableWidth, bannerHeight);
         yCursor += bannerHeight + 8;
       }
 
+<<<<<<< HEAD
+      doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(30, 41, 59);
+      const splitTitle = doc.splitTextToSize(title, printableWidth);
+      splitTitle.forEach((line: string) => { doc.text(line, leftMargin, yCursor); yCursor += 9; });
+      yCursor += 1;
+
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+      const formattedDate = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+      doc.text(`Generated on ${formattedDate}`, leftMargin, yCursor);
+      
+      doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
+      const tagWidth = doc.getTextWidth(tag);
+      const chipWidth = tagWidth + 5, chipHeight = 5, chipX = 190 - chipWidth, chipY = yCursor - 3.8;
+      doc.setFillColor(99, 102, 241); doc.roundedRect(chipX, chipY, chipWidth, chipHeight, 1, 1, "F");
+      doc.setTextColor(255, 255, 255); doc.text(tag, chipX + 2.5, chipY + 3.5);
+      
+      yCursor += 4.5;
+      doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.2); doc.line(leftMargin, yCursor, 190, yCursor);
+      yCursor += 10;
+
+      const paragraphs = content.split(/\n+/);
+      paragraphs.forEach((para: string, pIdx: number) => {
+        const cleanPara = para.trim();
+        if (!cleanPara) return;
+        const lines = doc.splitTextToSize(cleanPara, printableWidth);
+        lines.forEach((line: string) => {
+          if (yCursor > maxY) { doc.addPage(); yCursor = 30; }
+          doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(30, 41, 59);
+          doc.text(line, leftMargin, yCursor); yCursor += 6.5;
+        });
+        if (pIdx < paragraphs.length - 1) yCursor += 4.5;
+      });
+
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setDrawColor(241, 245, 249); doc.setLineWidth(0.25); doc.line(leftMargin, 280, 190, 280);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(100, 116, 139);
+        doc.text("Generated with StorySparkAI", leftMargin, 285);
+        doc.text(`Page ${i} of ${totalPages}`, 190, 285, { align: "right" });
+        if (i > 1) {
+          doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(99, 102, 241);
+          doc.text("StorySparkAI", leftMargin, 14);
+          doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
+          const headerTitle = title.length > 50 ? title.substring(0, 50) + "..." : title;
+          doc.text(headerTitle, 190, 14, { align: "right" });
+          doc.setDrawColor(241, 245, 249); doc.setLineWidth(0.2); doc.line(leftMargin, 17, 190, 17);
+        }
+      }
+
+      doc.save(getSafeFileName(title, "pdf"));
+      toast.dismiss(toastId);
+      toast.success("Premium PDF downloaded!");
+    } catch (error) {
+      console.error(error); 
+      toast.dismiss(toastId); 
+=======
       // 3. Story Title
       doc.setFont("helvetica", "bold");
       doc.setFontSize(22);
@@ -642,10 +1041,18 @@ const [, setShowRemix] = useState<boolean>(false);
     } catch (error) {
       console.error(error);
       toast.dismiss(toastId);
+>>>>>>> upstream/main
       toast.error("Failed to export PDF.");
     }
   };
 
+<<<<<<< HEAD
+  const handleExportMarkdown = () => {
+    if (!selectedStory) { toast.error("No story available to export."); return; }
+    if (!selectedStory.content?.trim()) { toast.error("Story content is empty. Cannot export."); return; }
+    setIsExportDropdownOpen(false);
+
+=======
   const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -663,6 +1070,7 @@ const getSafeFileName = (title: string, ext: string) => {
 const handleExportMarkdown = () => {
     if (!selectedStory) { toast.error("No story available to export."); return; }
     if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
+>>>>>>> upstream/main
     try {
       const title = selectedStory.title || "Story";
       const content = selectedStory.content || "";
@@ -671,6 +1079,66 @@ const handleExportMarkdown = () => {
       const isoDate = new Date().toISOString().split("T")[0];
       const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
       const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
+<<<<<<< HEAD
+
+      downloadBlob(blob, getSafeFileName(title, "md"));
+      toast.success("Markdown downloaded!");
+    } catch (error) { 
+      console.error(error); 
+      toast.error("Failed to export Markdown."); 
+    }
+  };
+
+  const handleExportDOCX = () => {
+    if (!selectedStory) { toast.error("No story available to export."); return; }
+    if (!selectedStory.content?.trim()) { toast.error("Story content is empty. Cannot export."); return; }
+    setIsExportDropdownOpen(false);
+    
+    try {
+      const title = selectedStory.title || "Untitled Story";
+      const docxBlob = createDocxBlob({
+        title,
+        content: selectedStory.content || "",
+        tag: selectedStory.tag || "Story",
+        author: isLogin && profile?.name ? profile.name : "Anonymous",
+      });
+      downloadBlob(docxBlob, getSafeFileName(title, "docx"));
+      toast.success("DOCX downloaded!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export DOCX.");
+    }
+  };
+
+  const handlePublishStory = async () => {
+    if (!isLogin) { toast.error("Please login to publish the story."); return; }
+    if (!selectedStory) { toast.error("No story available. Please generate a story first."); return; }
+    if (selectTopics.length < 2) { toast.error("Please select at least 2 topics."); return; }
+    
+    const post: IPost = { ...selectedStory, topic: selectTopics, isPublished: true };
+    setLoading(true);
+    
+    try {
+      if (savedPostIdRef.current) {
+        try { await deletePost(savedPostIdRef.current).unwrap(); }
+        catch (deleteError) { console.warn("Failed to delete draft:", deleteError); }
+      }
+      const result = await createPost(post).unwrap();
+      if (result) { 
+        toast.success("Story published successfully!"); 
+        setStories([]); 
+        setSelectedStory(null); 
+        onPublishSuccess?.(); 
+      }
+    } catch { 
+      toast.error("Something went wrong. Please try again."); 
+    } finally { 
+      setLoading(false); 
+    }
+  };
+
+  const handleGenerateStoryVisuals = async () => {
+=======
       downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
     } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
@@ -681,10 +1149,111 @@ const handleExportMarkdown = () => {
       toast.error("Please login to publish the story.");
       return;
     }
+>>>>>>> upstream/main
     if (!selectedStory) {
       toast.error("No story available. Please generate a story first.");
       return;
     }
+<<<<<<< HEAD
+
+    const toastId = toast.loading("Generating visuals...");
+    try {
+      const res = await generateStoryVisuals({
+        title: selectedStory.title,
+        content: selectedStory.content,
+        genre: selectedStory.genre,
+        language: selectedStory.language,
+      }).unwrap();
+
+      if (res?.data?.scenes?.length) {
+        setStoryboardScenes(res.data.scenes);
+        setStoryboardStyleGuide(res.data.styleGuide);
+        setShowStoryVisualizer(true);
+        toast.success("Storyboard visuals generated successfully!");
+      } else {
+        toast.error("No storyboard scenes were returned.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate visuals. Please try again.");
+    } finally {
+      toast.dismiss(toastId);
+    }
+  };
+
+  const handleGenerateAlternateEndings = async () => {
+    if (!selectedStory) return;
+
+    clearError();
+    setErrorMessage(null);
+    setIsGeneratingEndings(true);
+    const toastId = toast.loading("Generating alternate endings...");
+
+    try {
+      const payload = {
+        title: selectedStory.title,
+        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
+        tag: selectedStory.tag,
+        language: selectedStory.language || "English",
+      };
+
+      const generationRequest = isLogin
+        ? generateAlternateEndings(payload)
+        : generateFreeAlternateEndings(payload);
+
+      const res = await generationRequest.unwrap();
+
+      if (!res || !Array.isArray(res.data)) {
+        throw new Error("Invalid response from server");
+      }
+
+      setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
+      toast.success("Alternate endings generated successfully!");
+    } catch (err: any) {
+      console.error("[StoriesView Alternate Ending Flow Failure]:", err);
+      const errObj = err as Record<string, any>;
+      const errorStatus = errObj?.status || errObj?.data?.status;
+      const parsedMessage = errorStatus
+        ? getErrorMessage(new ApiError(errorStatus, errObj?.data?.message || ""))
+        : err?.message || "An unexpected failure occurred.";
+      
+      setErrorMessage(parsedMessage);
+      toast.error("Failed to generate alternate endings.");
+    } finally {
+      toast.dismiss(toastId);
+      setIsGeneratingEndings(false);
+    }
+  };
+
+  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
+    if (!selectedStory) return;
+    const updatedStory = {
+      ...selectedStory,
+      content: endingData.fullStory,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success(`${endingData.style} applied to story!`);
+  };
+
+  const handleResetEnding = () => {
+    if (!selectedStory) return;
+    const originalContent = originalStoryContent[selectedStory.uuid];
+    if (!originalContent) return;
+    const updatedStory = {
+      ...selectedStory,
+      content: originalContent,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success("Reverted to original story ending!");
+  };
+
+=======
     if (selectTopics.length < 2) {
       toast.error("Please select at least 2 topics.");
       return;
@@ -716,6 +1285,7 @@ const handleExportMarkdown = () => {
     }
   };
 
+>>>>>>> upstream/main
   const calculateReadingTime = (content: string): number => {
     const words = getWordCount(content);
     return Math.max(1, Math.ceil(words / 200));
@@ -723,6 +1293,26 @@ const handleExportMarkdown = () => {
 
   const isNarrationActive = narrationState !== "idle";
 
+<<<<<<< HEAD
+  if (externalLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <StoryGeneratingAnimation />
+      </div>
+    );
+  }
+
+  if (!stories || !stories.length) {
+    return (
+      <div className="w-full text-center text-slate-400 dark:text-slate-500 py-16">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-sm font-medium">
+          No stories generated yet. Start by entering a prompt ✨
+        </div>
+      </div>
+    );
+  }
+
+=======
 
 if (isLoading) {
   return (
@@ -731,11 +1321,60 @@ if (isLoading) {
     </div>
   );
 }
+>>>>>>> upstream/main
   if (!selectedStory) {
     return null;
   }
 
   return (
+<<<<<<< HEAD
+    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 pb-16 relative overflow-hidden box-border">
+      <Toaster position="top-right" reverseOrder={false} />
+      
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
+
+      {/* Error Banner */}
+      {errorMessage && (
+        <div className="error-banner mb-6 p-4 bg-amber-500/20 border border-amber-500 rounded-xl text-amber-200 flex justify-between items-center animate-fadeIn relative z-20">
+          <div className="flex items-center gap-3">
+            <span>⚠️</span>
+            <p className="text-sm font-medium">{errorMessage}</p>
+          </div>
+          <button 
+            onClick={() => setErrorMessage(null)} 
+            className="text-xs uppercase font-bold tracking-wider hover:text-white px-2 py-1 cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start relative z-10 w-full box-border">
+        
+        {/* ── Left Column ── */}
+        <div className="col-span-1 lg:col-span-8 flex flex-col space-y-6 w-full box-border">
+          
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 w-full box-border border-b border-slate-200/60 dark:border-white/5 pb-6">
+            <div className="text-left">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
+                {selectedStory.title}
+              </h1>
+              <div className="flex flex-wrap gap-2 select-none">
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                  🎭 {selectedStory.tag}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-purple-500/5 text-purple-600 dark:text-purple-400 border border-purple-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                  🌐 {selectedStory.language || "English"}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800/5 text-slate-600 dark:text-slate-400 border border-slate-700/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                  📖 {formatReadingStats(selectedStory.content)}
+                </span>
+                {selectedStory.emotions && selectedStory.emotions.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                    😊 {selectedStory.emotions.join(", ")}
+                  </span>
+=======
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
       <style>
         {`
@@ -1028,10 +1667,285 @@ if (isLoading) {
                   <p className="text-gray-400">
                     No topics available. Please generate a story first.
                   </p>
+>>>>>>> upstream/main
                 )}
               </div>
             </div>
 
+<<<<<<< HEAD
+            {/* Story selector thumbnails */}
+            <div className="flex justify-start sm:justify-end shrink-0 select-none mt-4 sm:mt-0">
+              <div className="flex -space-x-4">
+                {stories.map((story) => (
+                  <button
+                    key={story.uuid}
+                    className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 ${
+                      selectedStory?.uuid === story.uuid ? "border-blue-500 scale-110 z-10 shadow-md" : "border-white dark:border-slate-800"
+                    } hover:scale-110 hover:z-10 transition-all duration-150 focus:outline-none overflow-hidden cursor-pointer`}
+                    onClick={() => handleStorySelection(story)}
+                    title={story.title}
+                  >
+                    {story.imageURL ? (
+                      <ImageFallback src={story.imageURL} alt={story.title} className="w-full h-full object-cover rounded-full" />
+                    ) : (
+                      <StoryCoverImage title={story.title} tag={story.tag} size="thumb" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Story content card */}
+          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm w-full box-border text-left relative overflow-hidden">
+            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-white/5 select-none relative z-10">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Workspace Blueprint</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={handleCopyStory}>
+                  {isCopied ? "✓ Copied" : "📋 Copy"}
+                </button>
+                
+                {/* Export Story Dropdown Menu */}
+                <div className="relative inline-block text-left" ref={dropdownMenuRef}>
+                  <button
+                    type="button"
+                    disabled={exportState !== "idle"}
+                    onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+                    className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer flex items-center gap-2"
+                  >
+                    {getExportButtonText()} <i className="fa-solid fa-chevron-down text-[10px]" />
+                  </button>
+                  {isExportDropdownOpen && (
+                    <div className="absolute left-0 sm:right-0 mt-2 z-50 w-52 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-1">
+                      <button onClick={handleExportPDF} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                        <span>📄</span> Premium PDF
+                      </button>
+                      <button onClick={() => handleExport("epub")} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                        <span>📘</span> Kindle EPUB
+                      </button>
+                      <button onClick={handleExportMarkdown} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                        <span>⬇️</span> Markdown
+                      </button>
+                      <button onClick={handleExportDOCX} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                        <span>📝</span> DOCX
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowWorldMap(true)}>
+                  🗺️ Map
+                </button>
+                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowRemix(true)}>
+                  🔀 Remix
+                </button>
+                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowTranslator(true)}>
+                  🌍 Translate
+                </button>
+                <button type="button" className="rounded-xl px-3 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white border border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-sm" onClick={() => setShowContinueModal(true)}>
+                  ✦ Continue →
+                </button>
+                <button type="button" className={`rounded-xl px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50 ${loading ? 'opacity-70' : ''}`} onClick={handlePublishStory} disabled={loading}>
+                  {loading ? "Publishing..." : "Publish"}
+                </button>
+              </div>
+            </div>
+
+            {selectedStory.enhancedPrompt && (
+              <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
+                <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
+                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
+                </h4>
+                <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">
+                  {selectedStory.enhancedPrompt}
+                </p>
+              </div>
+            )}
+
+            <div id="story-content" className="prose prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed tracking-wide relative z-10">
+              <p className="break-words whitespace-pre-wrap">
+                {sentenceSegments.length > 0 ? (
+                  sentenceSegments.map((segment: StorySentenceSegment) => {
+                    const isActiveSentence = isNarrationActive && narrationWordIndex >= segment.startWordIndex && narrationWordIndex <= segment.endWordIndex;
+                    return (
+                      <span
+                        key={segment.id}
+                        className={isActiveSentence ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-800 dark:text-indigo-100 ring-1 ring-indigo-400/30 transition-all duration-200" : undefined}
+                      >
+                        {DOMPurify.sanitize(segment.text)}
+                      </span>
+                    );
+                  })
+                ) : (
+                  DOMPurify.sanitize(selectedStory.content)
+                )}
+              </p>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
+              <AudioPlayer 
+                ref={audioPlayerRef} 
+                text={selectedStory.content} 
+                title={selectedStory.title} 
+                onWordIndexChange={setNarrationWordIndex} 
+                onPlaybackStateChange={setNarrationState} 
+              />
+            </div>
+          </div>
+
+          {/* Alternate Endings Section */}
+          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl sm:rounded-3xl shadow-xl p-6 mt-2 relative overflow-hidden">
+            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                  Alternate Endings
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Explore alternate narrative styles for your story context.
+                </p>
+              </div>
+              {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
+                <button
+                  type="button"
+                  onClick={handleResetEnding}
+                  className="rounded-lg px-4 py-2 bg-red-100 dark:bg-red-950/40 hover:bg-red-200 dark:hover:bg-red-900/60 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                >
+                  <i className="fa-solid fa-rotate-left"></i> Reset to Original
+                </button>
+              )}
+            </div>
+
+            {isGeneratingEndings ? (
+              <div className="flex flex-col items-center justify-center py-10">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mb-4"></div>
+                <p className="text-slate-600 dark:text-slate-300 text-sm font-medium animate-pulse">
+                  Generating alternate endings...
+                </p>
+              </div>
+            ) : endingsCache[selectedStory.uuid]?.length > 0 ? (
+              <div>
+                <div className="flex border-b border-slate-200 dark:border-slate-700/50 mb-6 overflow-x-auto whitespace-nowrap scrollbar-none">
+                  {[
+                    { name: "Happy Ending" },
+                    { name: "Dark Ending" },
+                    { name: "Plot Twist Ending" },
+                    { name: "Open Ending" },
+                    { name: "Cliffhanger Ending" }
+                  ].map((s) => {
+                    const hasEndings = endingsCache[selectedStory.uuid] || [];
+                    const endingData = hasEndings.find((e) => e.style === s.name);
+                    const isApplied = endingData && selectedStory.content === endingData.fullStory;
+                    
+                    return (
+                      <button
+                        key={s.name}
+                        type="button"
+                        onClick={() => setActiveEndingTab(s.name)}
+                        className={`px-5 py-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                          activeEndingTab === s.name
+                            ? "border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/5"
+                            : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
+                        }`}
+                      >
+                        <span>{s.name}</span>
+                        {isApplied && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {(() => {
+                  const currentEndings = endingsCache[selectedStory.uuid] || [];
+                  const currentEndingData = currentEndings.find((e) => e.style === activeEndingTab);
+                  if (!currentEndingData) return null;
+                  
+                  const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
+                  
+                  return (
+                    <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-6 border border-slate-200 dark:border-slate-700/30">
+                      <div className="flex justify-between items-center mb-4">
+                        <h4 className="text-lg font-bold text-slate-800 dark:text-slate-200">
+                          {activeEndingTab} Suggestion
+                        </h4>
+                        <div>
+                          {isCurrentlyApplied ? (
+                            <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
+                              <i className="fa-solid fa-check"></i> Applied to Story
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleApplyEnding(currentEndingData)}
+                              className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
+                            >
+                              Apply to Story
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {/* Anti-Gravity Scroll Control Panel */}
+                        <div className="bg-slate-100 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-slate-800/80 p-3.5 rounded-xl flex flex-wrap items-center justify-between gap-4 shadow-xl select-none">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-extrabold uppercase tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-cyan-500 dark:from-indigo-400 dark:to-cyan-400">
+                              Anti-Gravity Engine
+                            </span>
+                            <span className="text-[9px] bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20 px-1.5 py-0.5 rounded-full font-bold uppercase">
+                              {isAntiGravityPlaying ? "Active" : "Idle"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4 flex-wrap">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                Speed: {antiGravitySpeed.toFixed(1)}x
+                              </span>
+                              <input
+                                type="range"
+                                min="0.5"
+                                max="5.0"
+                                step="0.1"
+                                value={antiGravitySpeed}
+                                onChange={(e) => setAntiGravitySpeed(parseFloat(e.target.value))}
+                                disabled={!isAntiGravityPlaying}
+                                className="w-24 h-1.5 bg-slate-300 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setIsAntiGravityPlaying(!isAntiGravityPlaying)}
+                              className={`px-3.5 py-2 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                                isAntiGravityPlaying
+                                  ? "bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 hover:bg-red-200 dark:hover:bg-red-500/20 active:scale-95"
+                                  : "bg-gradient-to-r from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-700 hover:from-indigo-600 hover:to-indigo-700 text-white shadow-md shadow-indigo-500/20 border border-indigo-500/30 active:scale-95"
+                              }`}
+                            >
+                              {isAntiGravityPlaying ? (
+                                <>
+                                  <i className="fa-solid fa-pause text-[9px] animate-pulse" />
+                                  <span>Pause Engine</span>
+                                </>
+                              ) : (
+                                <>
+                                  <i className="fa-solid fa-play text-[9px]" />
+                                  <span>Engage Scroll</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div ref={storyScrollContainerRef} className="bg-white dark:bg-slate-950/60 p-5 rounded-xl border border-slate-200 dark:border-slate-800 leading-relaxed text-slate-700 dark:text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap max-h-[520px] overflow-y-auto">
+                          <p>{currentEndingData.ending}</p>
+                        </div>
+=======
             {/* Alternate Endings Section */}
             {selectedStory && (
               <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
@@ -1078,6 +1992,7 @@ if (isLoading) {
                         const hasEndings = endingsCache[selectedStory.uuid] || [];
                         const endingData = hasEndings.find((e) => e.style === s.name);
                         const isApplied = endingData && selectedStory.content === endingData.fullStory;
+>>>>>>> upstream/main
                         
                         return (
                           <button
@@ -1168,6 +2083,43 @@ if (isLoading) {
               </div>
             )}
           </div>
+<<<<<<< HEAD
+
+          {/* Topics management section */}
+          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm w-full box-border text-left">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500 mb-4 select-none">Categorization Indexes</h3>
+            <div className="flex flex-col sm:flex-row gap-3 mb-5 select-none w-full box-border">
+              <input
+                type="text"
+                value={newTopicTitle}
+                onChange={(event) => setNewTopicTitle(event.target.value)}
+                onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); handleAddTopic(); } }}
+                placeholder="Add contextual keyword index tag..."
+                className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/60 px-4 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:border-blue-500/40 focus:outline-none transition-colors"
+              />
+              <button type="button" className="rounded-xl px-4 py-2.5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors active:scale-[0.98] cursor-pointer" onClick={handleAddTopic}>
+                Add Tag
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2 w-full box-border">
+              {topics.length > 0 ? (
+                topics.map((topic, index) => (
+                  <span key={index} className={`inline-flex items-center gap-2 px-3 py-1.5 ${topic.className} rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm border border-slate-200 dark:border-transparent select-none`}>
+                    <button type="button" className="cursor-pointer font-bold uppercase flex items-center gap-1.5" onClick={() => handleTopicClick(index)}>
+                      {topic.selected ? <i className="fa-solid fa-check" /> : <i className="fa-solid fa-plus" />} {topic.title}
+                    </button>
+                    <button type="button" className="cursor-pointer border-l border-current/20 pl-2 opacity-50 hover:opacity-100 disabled:cursor-not-allowed" onClick={() => handleRemoveTopic(index)} disabled={topics.length <= 2} aria-label={`Remove ${topic.title}`}>
+                      <i className="fa-solid fa-xmark" />
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <p className="text-xs font-medium text-slate-400 dark:text-slate-500 m-0">No keyword topics registered.</p>
+              )}
+            </div>
+          </div>
+=======
+>>>>>>> upstream/main
         </div>
 
         <div className="col-span-1 lg:col-span-4">
@@ -1218,9 +2170,65 @@ if (isLoading) {
               </div>
             </div>
           </div>
+<<<<<<< HEAD
+          
+          <div className="mt-8">
+            {/* If posts were supplied by context, they would render here */}
+          </div>
+=======
+>>>>>>> upstream/main
         </div>
       </div>
       {showWorldMap && selectedStory && (
+<<<<<<< HEAD
+        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 text-white font-semibold">Loading Map...</div>}>
+          <StoryWorldMapModal
+            story={selectedStory.content}
+            title={selectedStory.title}
+            onClose={() => setShowWorldMap(false)}
+          />
+        </Suspense>
+      )}
+
+      {showRemix && selectedStory && (
+        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 text-white font-semibold">Loading Remix...</div>}>
+          <StoryRemixModal
+            story={selectedStory.content}
+            title={selectedStory.title}
+            selectedStory={selectedStory}
+            onClose={() => setShowRemix(false)}
+            onApplyRemix={(content: string) => {
+              const updatedStory = { ...selectedStory, content };
+              setSelectedStory(updatedStory);
+              setStories(stories.map((story) => (story.uuid === selectedStory.uuid ? updatedStory : story)));
+              setShowRemix(false);
+            }}
+          />
+        </Suspense>
+      )}
+
+      {showStoryVisualizer && storyboardScenes.length > 0 && (
+        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 text-white font-semibold">Loading Visualizer...</div>}>
+          <StoryVisualizer
+            title={selectedStory?.title ?? ""}
+            scenes={storyboardScenes}
+            styleGuide={storyboardStyleGuide}
+            onClose={() => setShowStoryVisualizer(false)}
+          />
+        </Suspense>
+      )}
+
+      {showContinueModal && selectedStory && (
+        <ContinueStoryModal
+          story={{
+            title: selectedStory.title,
+            content: selectedStory.content,
+            language: selectedStory.language ?? "English",
+          }}
+          onClose={() => setShowContinueModal(false)}
+        />
+      )}
+=======
         <StoryWorldMap
           story={selectedStory.content}
           title={selectedStory.title}
@@ -1228,6 +2236,7 @@ if (isLoading) {
         />
       )}
       <Toaster position="top-right" reverseOrder={false} />
+>>>>>>> upstream/main
     </div>
   );
 };

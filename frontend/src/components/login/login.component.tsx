@@ -1,10 +1,18 @@
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+<<<<<<< HEAD
+import toast, { Toaster } from "react-hot-toast";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
 
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
-import { motion } from "framer-motion";
+import RedirectComponent from "../redirect.component";
+import { useLoginUserMutation, useGoogleLoginMutation } from "../../redux/apis/auth.api";
+import { storeUserInfo } from "../../services/auth.service";
+=======
 
 import {
   useLoginUserMutation,
@@ -16,6 +24,7 @@ import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { WandSparkles } from "lucide-react";
+>>>>>>> upstream/main
 
 type Inputs = {
   email: string;
@@ -152,15 +161,14 @@ const LoginComponent = () => {
             <BookOpen className="text-violet-600 shrink-0" />
             <div>
               <h2 className="font-bold">Endless Creativity</h2>
-              <p>Stories that captivate and inspire</p>
+              <p className="text-sm">Stories that captivate and inspire</p>
             </div>
           </div>
-
-          <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+          <div className="flex items-center gap-6 border border-gray-300 dark:border-slate-700 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800">
             <UsersRound className="text-violet-600 shrink-0" />
             <div>
               <h2 className="font-bold">Built for everyone</h2>
-              <p>Writers, Creators and dreamers</p>
+              <p className="text-sm">Writers, Creators and dreamers</p>
             </div>
           </div>
           <motion.div 
@@ -267,9 +275,7 @@ const LoginComponent = () => {
             <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
               Welcome back
             </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Sign in to your Story Spark AI account
-            </p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Sign in to your Story Spark AI account</p>
           </div>
 
 
@@ -304,12 +310,7 @@ const LoginComponent = () => {
             />
 
             <div className="flex justify-end -mt-2">
-              <Link
-                to="/forgot-password"
-                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
-              >
-                Forgot Password?
-              </Link>
+              <Link to="/forgot-password" className="text-xs font-semibold text-blue-400 hover:text-blue-300">Forgot Password?</Link>
             </div>
 
             <SSButton text="Sign In" type="submit" isLoading={isBusy} />
@@ -356,15 +357,8 @@ const LoginComponent = () => {
 
 
           <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
-            Don&apos;t have an account?{" "}
-          <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
             Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
-            >
-              Sign up for free
-            </Link>
+            <Link to="/signup" className="font-semibold text-blue-400 hover:text-blue-300">Sign up for free</Link>
           </p>
         </div>
       </div>

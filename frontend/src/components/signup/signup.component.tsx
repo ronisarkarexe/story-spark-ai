@@ -104,6 +104,69 @@ const SignUpComponent = () => {
   const strengthLevel = getStrengthLevel(passedChecks);
   const { label: strengthLabel, barColor, barWidth, textColor } = PASSWORD_STRENGTH_CONFIG[strengthLevel];
 
+  // ✅ Add this function - Handle Resend OTP
+  const handleResendOtp = async () => {
+    if (!registerInfo) {
+      toast.error("Something went wrong. Please restart the process.");
+      return;
+    }
+    
+    if (cooldown > 0) {
+      toast.error(`Please wait ${cooldown} seconds before resending OTP`);
+      return;
+    }
+    
+    setIsBusy(true);
+    try {
+      const otpPayload = {
+        name: registerInfo.name,
+        email: registerInfo.email,
+      };
+      const res = await emailVerify(otpPayload).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        toast.success("OTP resent to your email");
+        setCooldown(60);
+      }
+    } catch (error) {
+      const err = error as { data?: Array<{ message?: string }>; message?: string };
+      const message =
+        err?.data?.[0]?.message ||
+        err?.message ||
+        "Failed to resend OTP. Please try again.";
+      toast.error(message);
+      console.log("error: ", error);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  // ✅ Add this function - Handle Google Login Success
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    setIsBusy(true);
+    try {
+      const { credential } = credentialResponse;
+      const res = await googleLogin({ token: credential }).unwrap();
+      
+      if (res.data.accessToken) {
+        toast.success("Google login successful!");
+        storeUserInfo({ accessToken: res.data.accessToken });
+        navigate("/");
+      }
+    } catch (error) {
+      const err = error as { data?: Array<{ message?: string }>; message?: string };
+      const message =
+        err?.data?.[0]?.message ||
+        err?.message ||
+        "Google login failed. Please try again.";
+      toast.error(message);
+      console.log("error: ", error);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
       const user = { name: data.name, email: data.email, password: data.password };
@@ -210,47 +273,6 @@ const SignUpComponent = () => {
 
   const handleGoogleLoginError = () => {
     toast.error("Google login failed. Please try again.");
-  };
-
-  const handleResendOtp = async () => {
-    if (!registerInfo) return;
-    setIsBusy(true);
-    try {
-      const res = await emailVerify({
-        name: registerInfo.name,
-        email: registerInfo.email,
-      }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
-        setCooldown(60);
-      }
-    } catch (error) {
-      toast.error("Failed to resend OTP. Please try again.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    if (!credentialResponse.credential) {
-      toast.error("Google login failed");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
-      if (res?.data?.accessToken) {
-        storeUserInfo({ accessToken: res.data.accessToken });
-        toast.success("Logged in with Google successfully!");
-        navigate("/");
-      }
-    } catch (error) {
-      toast.error("Google authentication failed");
-    } finally {
-      setIsBusy(false);
-    }
   };
 
   return (
@@ -423,7 +445,6 @@ const SignUpComponent = () => {
               </div>
             </div>
           )}
-
           {!showOtpField && (
             <div className="w-full min-w-0 box-border">
               <div className="relative my-6 w-full box-border">

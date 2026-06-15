@@ -20,8 +20,12 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
   target: SimNode | string;
 }
 
-const getNodePosition = (node: string | number | SimNode, axis: "x" | "y") =>
-  typeof node === "object" ? node[axis] ?? 0 : 0;
+const getNodePosition = (node: string | number | SimNode, axis: "x" | "y"): number => {
+  if (typeof node === "object" && node !== null) {
+    return node[axis] ?? 0;
+  }
+  return 0;
+};
 
 export default function StoryWorldMap({ story, title, onClose }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -73,12 +77,12 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
     const simulation = d3.forceSimulation<SimNode>(simNodes)
       .force("link", d3.forceLink<SimNode, SimLink>(simLinks)
         .id((d: SimNode) => d.id)
-        .id((node: SimNode) => node.id)
         .distance(120))
       .force("charge", d3.forceManyBody().strength(-400))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force("collision", d3.forceCollide(50));
 
+    // Draw links
     const link = container.append("g")
       .selectAll<SVGLineElement, SimLink>("line")
       .data(simLinks)
@@ -87,6 +91,7 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
       .attr("stroke-width", 1.5)
       .attr("stroke-dasharray", "4,4");
 
+    // Draw nodes with drag behavior
     const node = container.append("g")
       .selectAll<SVGGElement, SimNode>("g")
       .data(simNodes)
@@ -110,12 +115,8 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
           })
       );
 
+    // Add circles
     node.append("circle")
-      .attr("r", (d: SimNode) => d.type === "location" ? 28 : 20)
-      .attr("fill", (d: SimNode) => d.type === "location"
-        ? "rgba(99,102,241,0.2)"
-        : "rgba(236,72,153,0.2)")
-      .attr("stroke", (d: SimNode) => d.type === "location" ? "#6366f1" : "#ec4899")
       .attr("r", (node: SimNode) => node.type === "location" ? 28 : 20)
       .attr("fill", (node: SimNode) => node.type === "location"
         ? "rgba(99,102,241,0.2)"
@@ -123,30 +124,14 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
       .attr("stroke", (node: SimNode) => node.type === "location" ? "#6366f1" : "#ec4899")
       .attr("stroke-width", 2);
 
+    // Add emoji/icons
     node.append("text")
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "central")
-      .attr("font-size", (d: SimNode) => d.type === "location" ? "18px" : "14px")
-      .text((d: SimNode) => d.type === "location" ? "📍" : "👤");
-
-    node.append("text")
-      .attr("text-anchor", "middle")
-      .attr("y", (d: SimNode) => d.type === "location" ? 40 : 32)
-      .attr("fill", (d: SimNode) => d.type === "location" ? "#a5b4fc" : "#f9a8d4")
-      .attr("font-size", "11px")
-      .attr("font-weight", "600")
-      .text((d: SimNode) => d.name);
-
-    simulation.on("tick", () => {
-      link
-        .attr("x1", (d: SimLink) => (typeof d.source === "string" ? 0 : d.source.x ?? 0))
-        .attr("y1", (d: SimLink) => (typeof d.source === "string" ? 0 : d.source.y ?? 0))
-        .attr("x2", (d: SimLink) => (typeof d.target === "string" ? 0 : d.target.x ?? 0))
-        .attr("y2", (d: SimLink) => (typeof d.target === "string" ? 0 : d.target.y ?? 0));
-      node.attr("transform", (d: SimNode) => `translate(${d.x || 0},${d.y || 0})`);
       .attr("font-size", (node: SimNode) => node.type === "location" ? "18px" : "14px")
-      .text((node: SimNode) => node.type === "location" ? "Pin" : "User");
+      .text((node: SimNode) => node.type === "location" ? "📍" : "👤");
 
+    // Add labels
     node.append("text")
       .attr("text-anchor", "middle")
       .attr("y", (node: SimNode) => node.type === "location" ? 40 : 32)
@@ -155,12 +140,18 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
       .attr("font-weight", "600")
       .text((node: SimNode) => node.name);
 
+    // Add tooltips on hover
+    node.append("title")
+      .text((node: SimNode) => node.excerpt || node.name);
+
+    // Update positions on tick
     simulation.on("tick", () => {
       link
         .attr("x1", (link: SimLink) => getNodePosition(link.source, "x"))
         .attr("y1", (link: SimLink) => getNodePosition(link.source, "y"))
         .attr("x2", (link: SimLink) => getNodePosition(link.target, "x"))
         .attr("y2", (link: SimLink) => getNodePosition(link.target, "y"));
+      
       node.attr("transform", (node: SimNode) => `translate(${node.x ?? 0},${node.y ?? 0})`);
     });
 
@@ -188,14 +179,19 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
                 Characters
               </span>
             </div>
-            <button onClick={onClose} className="text-white/40 hover:text-white transition text-xl">Close</button>
+            <button 
+              onClick={onClose} 
+              className="text-white/40 hover:text-white transition text-xl cursor-pointer"
+            >
+              ✕
+            </button>
           </div>
         </div>
         <div style={{ height: "500px" }}>
           <svg ref={svgRef} width="100%" height="500" />
         </div>
         <div className="border-t border-white/10 px-6 py-3">
-          <p className="text-xs text-white/30">Drag to rearrange. Scroll to zoom. Click to explore.</p>
+          <p className="text-xs text-white/30">Drag to rearrange. Scroll to zoom. Hover for details.</p>
         </div>
       </div>
     </div>
