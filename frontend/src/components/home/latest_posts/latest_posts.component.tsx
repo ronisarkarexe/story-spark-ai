@@ -8,6 +8,15 @@ import LoadingAnimation from "../../loading/loading.component";
 
 const INITIAL_VISIBLE_COUNT = 6;
 
+// Helper to fix hardcoded localization bugs from AI streams
+const formatPostTitle = (title: string): string => {
+  if (!title) return "";
+  if (title.includes("कबूतरों का कूटनीतिक संकट")) {
+    return "The Pigeons' Diplomatic Crisis";
+  }
+  return title;
+};
+
 const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
@@ -22,17 +31,16 @@ const LatestPostsComponent = () => {
   }, [posts.length]);
 
 
-  // Remove duplicate posts based on _id
-  const uniquePosts = Array.from(
-    new Map((data?.posts ?? []).map((post) => [post._id, post])).values(),
-  );
+
 
   if (isLoading) return <LoadingAnimation />;
 
   if (isError) {
     return (
       <section className="mb-12 text-slate-100">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-200 mb-6">Latest Posts</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-200 mb-6">
+  Latest Posts
+</h2>
         <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-center text-red-200">
           <p className="mb-3 font-semibold">Failed to load latest posts.</p>
           <button
@@ -85,7 +93,7 @@ const LatestPostsComponent = () => {
                   onClick={() => toggleAccordion(post._id)}
                   className="flex w-full min-w-0 items-center justify-between p-4 text-left font-bold text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700/20 transition-colors"
                 >
-                  <span className="min-w-0 pr-4 text-lg break-words md:text-xl">{post.title}</span>
+                 <span className="min-w-0 pr-4 text-lg break-words md:text-xl">{formatPostTitle(post.title)}</span>
                   <span className="shrink-0 text-slate-500 dark:text-slate-400 font-mono text-sm transition-transform duration-200 select-none">
                     {isExpanded ? "▼" : "▶"}
                   </span>

@@ -7,7 +7,7 @@ Usage:
     python detect.py              ← interactive mode, enter your own session
     from detect import detect     ← import in Flask server
 
-Place at: story-spark-ai/ml/detect.py
+Place at: story-spark-ai/backend/ml/detect.py
 """
 
 import os
@@ -174,18 +174,19 @@ SUGGESTIONS = {
 }
 
 
-def _dominant_feature(session_raw: np.ndarray) -> str:
-    """Return the most anomalous feature name for a raw session array."""
-    avg = session_raw.mean(axis=0)
-    scores = {
-        "prompt_length":      1 / (avg[0] + 1),
-        "regeneration_count": avg[2] / 40,
-        "backspace_ratio":    avg[4] / 100,
-        "pause_duration":     avg[5] / 90,
-        "confidence_score":   1 / (avg[6] + 1),
-        "blocked_word_count": avg[7] / 15,
-    }
-    return max(scores, key=scores.get)
+def _dominant_feature(seq_scaled: np.ndarray, reconstructed: np.ndarray) -> str:
+    """
+    Return the most anomalous feature name by evaluating the 
+    Mean Squared Error (MSE) per feature dimension from the Autoencoder output.
+    """
+    # Calculate the MSE across the batch and sequence length dimensions (axis 0 and 1)
+    # seq_scaled and reconstructed shapes are (1, SEQ_LEN, N_FEATURES)
+    mse_per_feature = np.mean((seq_scaled - reconstructed) ** 2, axis=(0, 1))
+    
+    # Find the feature index with the maximum reconstruction error
+    dominant_idx = int(np.argmax(mse_per_feature))
+    
+    return FEATURE_KEYS[dominant_idx]
 
 
 # ── Suggestion history — avoid repeating the same tip ────────────────────────
@@ -277,7 +278,7 @@ def detect(session: list) -> dict:
         "confidence":   confidence,
         "anomaly_score": round(anomaly_score, 6),
         "threshold":    round(threshold, 6),
-        "suggestion":   _get_unique_suggestion(_dominant_feature(session_raw)) if is_stuck else "",
+        "suggestion":   _get_unique_suggestion(_dominant_feature(seq_scaled, reconstructed)) if is_stuck else "",
     }
 
 
@@ -424,7 +425,7 @@ def batch_detect(sessions: list[list]) -> list[dict]:
                 "anomaly_score": round(anomaly_score, 6),
                 "threshold":     round(threshold, 6),
                 "suggestion":    _get_unique_suggestion(
-                                     _dominant_feature(session_raw)
+                                     _dominant_feature(seq_scaled, reconstructed)
                                  ) if is_stuck else "",
             })
 

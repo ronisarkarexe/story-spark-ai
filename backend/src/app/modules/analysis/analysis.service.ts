@@ -7,7 +7,21 @@ import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { WriterApplication } from "../writer_application/writer_application.model";
 
-main
+const getDashboardAnalysis = async (userId: string) => {
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+
+  const role = user.role;
+
+  if (role === ENUM_USER_ROLE.WRITER) {
+    const totalPosts = await Post.countDocuments({ author: user._id, isDeleted: { $ne: true } });
+    const totalReaders = user.followers?.length || 0;
+
+    const writerApp = await WriterApplication.findOne({ user: user._id }).lean();
+    const applicationStatus = writerApp?.status || "not_applied";
+
+    const postsPerMonth: Record<string, number> = {};
+    const topicCount: Record<string, number> = {};
 
     return {
       role,
@@ -27,7 +41,9 @@ main
 
   // Else standard user
   return {
-main
+    role,
+    subscriptionStatus: user.subscriptionType?.toUpperCase() || SUBSCRIPTION_TYPE.FREE,
+    status: user.status || USER_STATUS.ACTIVE,
   };
 };
 

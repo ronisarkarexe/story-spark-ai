@@ -52,7 +52,23 @@ const controlButtonBaseClass =
 
 const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
   ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
-    const [voiceGender, setVoiceGender] = useState<"female" | "male">("female");
+    const [voiceGender, setVoiceGender] = useState<"female" | "male">(() => {
+      try {
+        const saved = localStorage.getItem("story-spark-narration-gender");
+        return (saved === "female" || saved === "male") ? saved : "female";
+      } catch {
+        return "female";
+      }
+    });
+
+    useEffect(() => {
+      try {
+        localStorage.setItem("story-spark-narration-gender", voiceGender);
+      } catch (e) {
+        console.warn(e);
+      }
+    }, [voiceGender]);
+
     const speech = useSpeechSynthesis(text, voiceGender);
     const preview = useVoicePreview();
     const favorites = useVoiceFavorites();
@@ -106,7 +122,53 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
-    }, [showFavoritesOnly, displayedVoices, speech]);
+    useEffect(() => {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        const target = event.target as HTMLElement;
+        if (
+          target &&
+          (target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            target.tagName === "SELECT" ||
+            target.isContentEditable)
+        ) {
+          return;
+        }
+
+        if (event.key === " ") {
+          event.preventDefault();
+          if (speech.isPlaying) {
+            speech.pause();
+          } else if (speech.isPaused) {
+            speech.resume();
+          } else {
+            speech.play();
+          }
+        } else if (event.key === "ArrowUp" || event.key === "ArrowRight") {
+          event.preventDefault();
+          const currentIndex = SPEED_OPTIONS.indexOf(speech.rate as any);
+          if (currentIndex !== -1 && currentIndex < SPEED_OPTIONS.length - 1) {
+            speech.setRate(SPEED_OPTIONS[currentIndex + 1]);
+          } else if (speech.rate < 2) {
+            speech.setRate(Math.min(2, speech.rate + 0.25));
+          }
+        } else if (event.key === "ArrowDown" || event.key === "ArrowLeft") {
+          event.preventDefault();
+          const currentIndex = SPEED_OPTIONS.indexOf(speech.rate as any);
+          if (currentIndex !== -1 && currentIndex > 0) {
+            speech.setRate(SPEED_OPTIONS[currentIndex - 1]);
+          } else if (speech.rate > 0.5) {
+            speech.setRate(Math.max(0.5, speech.rate - 0.25));
+          }
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }, [speech]);
+
 
     const isLoading = speech.isSupported && !speech.isReady;
     const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
@@ -174,7 +236,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           </div>
         ) : (
           <div className="mt-4 space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <button
                 type="button"
                 role="button"
@@ -373,7 +435,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 >
                   Voice
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
