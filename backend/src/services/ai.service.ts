@@ -3,11 +3,13 @@
 import { validateAndFormatPrompt, validateOutput } from "../utils/promptSecurity";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import Anthropic from "@anthropic-ai/sdk";
 
 let openai: OpenAI | null = null;
+let anthropic: Anthropic | null = null;
 const genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-function getOpenAIClient(): OpenAI {
+export function getOpenAIClient(): OpenAI {
   if (!openai) {
     const key = process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY;
     if (!key) {
@@ -18,13 +20,26 @@ function getOpenAIClient(): OpenAI {
   return openai;
 }
 
+export function getAnthropicClient(): Anthropic {
+  if (!anthropic) {
+    const key = process.env.ANTHROPIC_API_KEY;
+    if (!key) {
+      throw new Error("Anthropic API key is required but was not provided. Please set ANTHROPIC_API_KEY environment variable.");
+    }
+    anthropic = new Anthropic({ apiKey: key });
+  }
+  return anthropic;
+}
+
 export const GEMINI_MODEL = "gemini-2.5-flash";
+export const CLAUDE_MODEL = "claude-3-5-sonnet-20241022";
+export const OPENAI_MODEL = "gpt-4";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface AIResponse {
   story: string;
-  provider: "openai" | "gemini";
+  provider: "openai" | "gemini" | "anthropic";
   fallbackUsed: boolean;
 }
 
@@ -34,7 +49,7 @@ async function generateWithOpenAI(prompt: string): Promise<string> {
   const client = getOpenAIClient();
   const response = await client.chat.completions.create(
     {
-      model: "gpt-3.5-turbo",
+      model: OPENAI_MODEL,
       messages: [{ role: "user", content: prompt }],
       max_tokens: 1000,
     },
@@ -43,6 +58,25 @@ async function generateWithOpenAI(prompt: string): Promise<string> {
 
   const text = response.choices[0]?.message?.content;
   if (!text) throw new Error("OpenAI returned an empty response");
+  return text;
+}
+
+// ─── Anthropic call ──────────────────────────────────────────────────────────
+
+async function generateWithAnthropic(prompt: string): Promise<string> {
+  const client = getAnthropicClient();
+  const response = await client.messages.create(
+    {
+      model: CLAUDE_MODEL,
+      max_tokens: 1000,
+      messages: [{ role: "user", content: prompt }],
+    },
+    { timeout: 10000 }
+  );
+
+  const textBlock = response.content.find((block) => block.type === "text");
+  const text = textBlock && "text" in textBlock ? textBlock.text : "";
+  if (!text) throw new Error("Anthropic returned an empty response");
   return text;
 }
 
@@ -81,41 +115,73 @@ function isRetryableError(error: unknown): boolean {
 
 // ─── Main exported function ───────────────────────────────────────────────────
 
-export async function generateStory(prompt: string): Promise<AIResponse> {
+export async function generateStory(prompt: string, provider?: string): Promise<AIResponse> {
   // ── SECURITY LAYER: Validate and wrap input ─────────────────────────
   const securePrompt = validateAndFormatPrompt(prompt);
 
-  // ── Try OpenAI first ──────────────────────────────────────────────────────
-  try {
-    let story = await generateWithOpenAI(securePrompt);
-    story = validateOutput(story); // SECURITY LAYER: Validate output
-    console.log("[AI] Story generated successfully via OpenAI");
+  const chosenProvider = provider?.toLowerCase();
+  let didFallbackToGemini = false;
 
-    return { story, provider: "openai", fallbackUsed: false };
-
-  } catch (openAIError) {
-    console.warn(
-      "[AI] OpenAI failed:",
-      openAIError instanceof Error ? openAIError.message : openAIError
-    );
-
-    // Only fall back if the error type warrants it
-    if (!isRetryableError(openAIError)) {
-      throw new Error(
-        "OpenAI request failed with a non-retryable error. Please check your API key."
+  if (chosenProvider === "anthropic" || chosenProvider === "claude") {
+    // ── Try Anthropic first ──────────────────────────────────────────────────
+    try {
+      let story = await generateWithAnthropic(securePrompt);
+      story = validateOutput(story); // SECURITY LAYER: Validate output
+      console.log("[AI] Story generated successfully via Anthropic");
+      return { story, provider: "anthropic", fallbackUsed: false };
+    } catch (anthropicError) {
+      console.warn(
+        "[AI] Anthropic failed:",
+        anthropicError instanceof Error ? anthropicError.message : anthropicError
       );
-    }
 
-    console.log("[AI] Falling back to Gemini...");
+      if (!isRetryableError(anthropicError)) {
+        throw new Error(
+          "Anthropic request failed with a non-retryable error. Please check your API key."
+        );
+      }
+      didFallbackToGemini = true;
+      console.log("[AI] Falling back to Gemini...");
+    }
+  } else if (chosenProvider === "openai" || !chosenProvider) {
+    // ── Try OpenAI first ──────────────────────────────────────────────────────
+    try {
+      let story = await generateWithOpenAI(securePrompt);
+      story = validateOutput(story); // SECURITY LAYER: Validate output
+      console.log("[AI] Story generated successfully via OpenAI");
+
+      return { story, provider: "openai", fallbackUsed: false };
+
+    } catch (openAIError) {
+      console.warn(
+        "[AI] OpenAI failed:",
+        openAIError instanceof Error ? openAIError.message : openAIError
+      );
+
+      // Only fall back if the error type warrants it
+      if (!isRetryableError(openAIError)) {
+        throw new Error(
+          "OpenAI request failed with a non-retryable error. Please check your API key."
+        );
+      }
+
+      didFallbackToGemini = true;
+      console.log("[AI] Falling back to Gemini...");
+    }
+  } else if (chosenProvider === "gemini") {
+    // Skip OpenAI/Anthropic blocks
+  } else {
+    // Unknown provider
+    throw new Error(`Unsupported AI provider: ${provider}`);
   }
 
-  // ── Try Gemini as fallback ────────────────────────────────────────────────
+  // ── Try Gemini as fallback / direct ───────────────────────────────────────
   try {
     let story = await generateWithGemini(securePrompt);
     story = validateOutput(story); // SECURITY LAYER: Validate output
-    console.log("[AI] Story generated successfully via Gemini (fallback)");
+    console.log(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
 
-    return { story, provider: "gemini", fallbackUsed: true };
+    return { story, provider: "gemini", fallbackUsed: didFallbackToGemini };
 
   } catch (geminiError) {
     console.error(
@@ -123,9 +189,9 @@ export async function generateStory(prompt: string): Promise<AIResponse> {
       geminiError instanceof Error ? geminiError.message : geminiError
     );
 
-    // Both failed — throw a clean user-facing error
+    // All failed — throw a clean user-facing error
     throw new Error(
-      "Story generation failed. Both AI providers are currently unavailable. Please try again later."
+      "Story generation failed. All AI providers are currently unavailable. Please try again later."
     );
   }
 }

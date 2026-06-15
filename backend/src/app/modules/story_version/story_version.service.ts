@@ -1,4 +1,4 @@
-import { enhancePromptWithGemini } from "./enhance_prompt.utils";
+import { enhancePromptWithGemini, enhancePromptWithOpenAI, enhancePromptWithAnthropic } from "./enhance_prompt.utils";
 import { raceGenerationWithTimeout, GenerationTimeoutError } from "../../../utils/generation_timeout";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
@@ -320,10 +320,19 @@ const restoreVersion = async (
 
 const ENHANCE_TIMEOUT_MS = 60000;
 
-const enhancePrompt = async (prompt: string): Promise<string> => {
+const enhancePrompt = async (prompt: string, provider?: string): Promise<string> => {
   try {
     const enhanced = await raceGenerationWithTimeout(
-      (signal) => enhancePromptWithGemini(prompt, signal),
+      (signal) => {
+        const p = provider?.toLowerCase();
+        if (p === "anthropic" || p === "claude") {
+          return enhancePromptWithAnthropic(prompt, signal);
+        } else if (p === "openai") {
+          return enhancePromptWithOpenAI(prompt, signal);
+        } else {
+          return enhancePromptWithGemini(prompt, signal);
+        }
+      },
       ENHANCE_TIMEOUT_MS
     );
 
