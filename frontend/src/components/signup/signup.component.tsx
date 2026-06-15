@@ -70,9 +70,8 @@ const SignUpComponent = () => {
     register,
     handleSubmit,
     watch,
-    unregister,
     formState: { errors },
-  } = useForm<Inputs>({ mode: "onChange" });
+  } = useForm<Inputs>({ mode: "onChange", shouldUnregister: true });
 
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [showOtpField, setShowOtpField] = useState<boolean>(false);
@@ -126,10 +125,6 @@ const SignUpComponent = () => {
           setExpiredAt(new Date(expiresAt).getTime());
           toast.success("OTP sent to your email");
           setRegisterInfo(user);
-          unregister("confirmPassword");
-          unregister("password");
-          unregister("name");
-          unregister("email");
           setShowOtpField(true);
           setCooldown(60);
         }
@@ -193,47 +188,6 @@ const SignUpComponent = () => {
   };
 
   const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
-      if (res.data.accessToken) {
-        toast.success("Signed up with Google successfully!");
-        storeUserInfo({ accessToken: res.data.accessToken });
-        navigate("/");
-      }
-    } catch {
-      toast.error("Google login failed. Please try again.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginError = () => {
-    toast.error("Google login failed. Please try again.");
-  };
-
-  const handleResendOtp = async () => {
-    if (!registerInfo) return;
-    setIsBusy(true);
-    try {
-      const res = await emailVerify({
-        name: registerInfo.name,
-        email: registerInfo.email,
-      }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
-        setCooldown(60);
-      }
-    } catch (error) {
-      toast.error("Failed to resend OTP. Please try again.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
     if (!credentialResponse.credential) {
       toast.error("Google login failed");
       return;
@@ -246,11 +200,15 @@ const SignUpComponent = () => {
         toast.success("Logged in with Google successfully!");
         navigate("/");
       }
-    } catch (error) {
+    } catch {
       toast.error("Google authentication failed");
     } finally {
       setIsBusy(false);
     }
+  };
+
+  const handleGoogleLoginError = () => {
+    toast.error("Google login failed. Please try again.");
   };
 
   return (
@@ -308,7 +266,7 @@ const SignUpComponent = () => {
                 autoComplete="name"
                 validation={{
                   required: "Name is required",
-                  minLength: { value: 2, message: "Name must be at least 2 characters" },
+                  minLength: { value: 5, message: "Name must be at least 5 characters" },
                   pattern: {
                     value: /^[A-Za-z0-9\s._]+$/,
                     message: "Only letters, numbers, spaces, underscores, and dots are allowed",

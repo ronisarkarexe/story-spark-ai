@@ -1,12 +1,11 @@
 import React from "react";
-import PricingComponent from "../home/pricing/pricing.component";
 
-const PricingMainComponent = () => {
+const PricingComponent = () => {
   return (
-    <div>
-      <PricingComponent />
+    <div className="w-full py-16 text-center text-slate-500 dark:text-slate-400">
+      <p>Pricing coming soon.</p>
     </div>
   );
 };
 
-export default PricingMainComponent;
+export default PricingComponent;

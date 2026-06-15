@@ -292,8 +292,8 @@ const DashboardComponent = () => {
                 </div>
                 <div className="min-w-0 lg:col-span-2">
                   <WritingStatsPanel
-                    totalStories={achievementsData?.achievements.find((a) => a.id === "story_1")?.progress || 0}
-                    totalWords={achievementsData?.achievements.find((a) => a.id === "words_1000")?.progress || 0}
+                    totalStories={achievementsData?.achievements?.find((a) => a.id === "story_1")?.progress || 0}
+                    totalWords={achievementsData?.achievements?.find((a) => a.id === "words_1000")?.progress || 0}
                     activeDays={streakData?.totalWritingDays || 0}
                     longestStreak={streakData?.longestStreak || 0}
                     monthlyActivity={data.posts?.perMonth}
@@ -366,8 +366,8 @@ const DashboardComponent = () => {
                 </div>
                 <div className="min-w-0 lg:col-span-2">
                   <WritingStatsPanel
-                    totalStories={achievementsData?.achievements.find((a) => a.id === "story_1")?.progress || 0}
-                    totalWords={achievementsData?.achievements.find((a) => a.id === "words_1000")?.progress || 0}
+                    totalStories={achievementsData?.achievements?.find((a) => a.id === "story_1")?.progress || 0}
+                    totalWords={achievementsData?.achievements?.find((a) => a.id === "words_1000")?.progress || 0}
                     activeDays={streakData?.totalWritingDays || 0}
                     longestStreak={streakData?.longestStreak || 0}
                     monthlyActivity={data.posts?.perMonth}

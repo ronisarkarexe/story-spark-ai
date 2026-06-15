@@ -39,11 +39,6 @@ const updateDailyStreak = async (userId: string) => {
           },
           $inc: { "gamification.xp": DAILY_LOGIN_XP },
           $max: { "gamification.level": newLevel },
-          $setOnInsert: {
-            "gamification.xp": 0,
-            "gamification.level": 1,
-            "gamification.badges": [],
-          },
         }
       );
 

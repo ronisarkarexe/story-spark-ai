@@ -25,6 +25,7 @@ jest.mock("../../post/post.model", () => ({
   Post: {
     findOne: jest.fn(),
     updateOne: jest.fn(),
+    findByIdAndUpdate: jest.fn(),
   },
 }));
 
