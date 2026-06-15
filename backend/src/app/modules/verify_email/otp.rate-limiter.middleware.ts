@@ -1,155 +1,80 @@
 import { Request, Response, NextFunction } from "express";
+import logger from "../../../utils/logger.util";
 
-export class AppError extends Error {
-  public readonly statusCode: number;
-  public readonly isOperational: boolean;
+interface WindowEntry {
+  timestamps: number[];
+}
 
-  constructor(message: string, statusCode: number = 500) {
-    super(message);
-    this.name = "AppError";
-    this.statusCode = statusCode;
-    this.isOperational = true; 
-    Error.captureStackTrace(this, this.constructor);
+const store = new Map<string, WindowEntry>();
+
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes sliding window
+const MAX_REQUESTS = 5; // max 5 requests per window
+const PRUNE_INTERVAL_MS = 60_000; // at most one full prune per minute
+let lastPruneAt = 0;
+
+function pruneStaleEntries(now: number): void {
+  if (now - lastPruneAt < PRUNE_INTERVAL_MS) return;
+  lastPruneAt = now;
+
+  let removed = 0;
+  let trimmed = 0;
+  for (const [key, entry] of store.entries()) {
+    const active = entry.timestamps.filter((t) => now - t < WINDOW_MS);
+    if (active.length === 0) {
+      store.delete(key);
+      removed++;
+    } else if (active.length !== entry.timestamps.length) {
+      store.set(key, { timestamps: active });
+      trimmed++;
+    }
+  }
+
+  if (removed > 0 || trimmed > 0) {
+    logger.debug(
+      `otpRateLimiter: pruned ${removed} empty entries, trimmed ${trimmed} entries`
+    );
   }
 }
 
-interface MongoError extends Error {
-  code?: number;
-  keyValue?: Record<string, unknown>;
-}
-
-interface MongoValidationError extends Error {
-  name: "ValidationError";
-  errors: Record<string, { message: string }>;
-}
-
-interface MongoCastError extends Error {
-  name: "CastError";
-  path?: string;
-  value?: unknown;
-}
-
-function isMongoError(err: unknown): err is MongoError {
-  return err instanceof Error && "code" in err;
-}
-
-function isValidationError(err: unknown): err is MongoValidationError {
-  return err instanceof Error && err.name === "ValidationError";
-}
-
-function isCastError(err: unknown): err is MongoCastError {
-  return err instanceof Error && err.name === "CastError";
-}
-
-function isJsonWebTokenError(err: unknown): err is Error {
-  return (
-    err instanceof Error &&
-    (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError")
-  );
-}
-
-export const globalErrorHandler = (
-  err: unknown,
+export function otpRateLimiter(
   req: Request,
   res: Response,
-  
-  _next: NextFunction
-): void => {
-  const isProd = process.env.NODE_ENV === "production";
+  next: NextFunction
+): void {
+  const key: string =
+    (req as any).user?.id ??
+    req.body?.email ??
+    req.ip ??
+    "anonymous";
 
-  if (err instanceof AppError) {
-    res.status(err.statusCode).json({
+  const now = Date.now();
+  pruneStaleEntries(now);
+  const entry = store.get(key) ?? { timestamps: [] };
+
+  // Evict timestamps outside the sliding window
+  entry.timestamps = entry.timestamps.filter((t) => now - t < WINDOW_MS);
+
+  if (entry.timestamps.length >= MAX_REQUESTS) {
+    const oldestTs = entry.timestamps[0];
+    const retryAfterMs = WINDOW_MS - (now - oldestTs);
+    const retryAfterSec = Math.ceil(retryAfterMs / 1000);
+
+    res.setHeader("Retry-After", String(retryAfterSec));
+    res.status(429).json({
       success: false,
-      error: err.message,
-      ...(isProd ? {} : { stack: err.stack }),
+      message: `Too many OTP verification attempts. You can make ${MAX_REQUESTS} attempts every 15 minutes. Please retry after ${retryAfterSec} seconds.`,
+      retryAfter: retryAfterSec,
+      limit: MAX_REQUESTS,
+      windowMs: WINDOW_MS,
     });
     return;
   }
 
-  if (isMongoError(err) && err.code === 11000) {
-    const duplicateField = err.keyValue
-      ? Object.keys(err.keyValue)[0]
-      : "field";
+  entry.timestamps.push(now);
+  store.set(key, entry);
+  next();
+}
 
-    res.status(409).json({
-      success: false,
-      error: `An account with this ${duplicateField} already exists. Please use a different ${duplicateField} or log in.`,
-    });
-    return;
-  }
-  
-  if (isValidationError(err)) {
-    const messages = Object.values(err.errors)
-      .map((e) => e.message)
-      .join(" ");
-
-    res.status(400).json({
-      success: false,
-      error: `Validation failed: ${messages}`,
-    });
-    return;
-  }
-  if (isCastError(err)) {
-    res.status(400).json({
-      success: false,
-      error: `Invalid value "${err.value}" for field "${err.path}".`,
-    });
-    return;
-  }
-
-  if (isJsonWebTokenError(err)) {
-    const message =
-      (err as Error).name === "TokenExpiredError"
-        ? "Your session has expired. Please log in again."
-        : "Invalid authentication token. Please log in again.";
-
-    res.status(401).json({ success: false, error: message });
-    return;
-  }
-
-  if (
-    err instanceof Error &&
-    "statusCode" in err &&
-    typeof (err as Record<string, unknown>).statusCode === "number"
-  ) {
-    const razorErr = err as Error & { statusCode: number; error?: { description?: string } };
-    const clientMessage = isProd
-      ? "A payment processing error occurred. Please try again."
-      : razorErr.message;
-
-    res.status(razorErr.statusCode).json({
-      success: false,
-      error: clientMessage,
-    });
-    return;
-  }
-
-  console.error("[Unhandled Error]", {
-    method: req.method,
-    path: req.path,
-    error: err instanceof Error ? err.message : String(err),
-    stack: err instanceof Error ? err.stack : undefined,
-    timestamp: new Date().toISOString(),
-  });
-
-  res.status(500).json({
-    success: false,
-    error: isProd
-      ? "An unexpected error occurred. Please try again later."
-      : err instanceof Error
-        ? err.message
-        : "Unknown error",
-    ...(isProd ? {} : { stack: err instanceof Error ? err.stack : undefined }),
-  });
-};
-
-export const notFoundHandler = (
-  req: Request,
-  res: Response,
-  _next: NextFunction
-): void => {
-  res.status(404).json({
-    success: false,
-    error: `Route ${req.method} ${req.originalUrl} not found.`,
-  });
-};
+export function clearOtpRateLimitStore(key?: string): void {
+  key ? store.delete(key) : store.clear();
+}

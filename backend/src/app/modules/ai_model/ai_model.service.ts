@@ -244,6 +244,29 @@ const aiFreeStoryContinuation = async (payload: { prompt: string; language?: str
   }
 };
 
+const aiFreeStoryContinuationMultiple = async (
+  payload: { prompt: string; language?: string; count?: number },
+  signal?: AbortSignal
+) => {
+  const { prompt, language = "English", count = 3 } = payload;
+  const safeCount = Math.min(Math.max(1, count), 5);
+
+  const promises = Array.from({ length: safeCount }).map(() =>
+    raceGenerationWithTimeout(
+      (s) => generateStoryContinuationWithGemini(prompt, language, s),
+      FREE_GENERATION_TIMEOUT_MS,
+      signal
+    )
+  );
+
+  try {
+    const results = await Promise.all(promises);
+    return results;
+  } catch (error) {
+    mapGenerationError(error, "Multiple story continuations failed.");
+  }
+};
+
 const aiModelChat = async (payload: IChatPayload, _token?: ITokenPayload, signal?: AbortSignal) => {
   const { message, history = [] } = payload;
 
@@ -295,6 +318,7 @@ export const AiModelService = {
   aiFreeModelTranslate,
   aiModelStoryContinuation,
   aiFreeStoryContinuation,
+  aiFreeStoryContinuationMultiple,
   aiModelChat,
   aiFreeModelChat,
 };
