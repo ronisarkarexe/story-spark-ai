@@ -1024,6 +1024,7 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
   transform: translateZ(0);
   will-change: transform, box-shadow;
   transition: transform 180ms ease, box-shadow 220ms ease, opacity 180ms ease, filter 200ms ease;
+  filter 200ms ease; 
 }
 
 .contact-btn-gradient {
@@ -1315,23 +1316,8 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
   animation-play-state: running;
 }
 
-/* Submit button */
-.contact-submit-btn {
-  transform: translateZ(0);
-  transition:
-    transform 180ms ease,
-    box-shadow 220ms ease,
-    opacity 180ms ease;
-  will-change: transform;
-}
 
-.contact-btn-gradient {
-  border-radius: inherit;
-  background: linear-gradient(115deg, #2563eb 0%, #7c3aed 50%, #db2777 100%);
-  background-size: 200% 200%;
-  animation: border-gradient 4s ease infinite;
-  transition: filter 200ms ease;
-}
+
 
 .contact-submit-btn:not(:disabled):hover {
   transform: translate3d(0, -2px, 0) scale(1.005);
