@@ -1,7 +1,7 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { storeUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
@@ -13,6 +13,7 @@ import {
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../auth.context";
 
 interface IRegisterInfo {
   name: string;
@@ -65,6 +66,7 @@ const SignUpComponent = () => {
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerUser] = useRegisterUserMutation();
   const [googleLogin] = useGoogleLoginMutation();
+  const auth = useContext(AuthContext);
 
   const {
     register,
@@ -159,7 +161,11 @@ const SignUpComponent = () => {
         }).unwrap();
         if (res.data.accessToken) {
           toast.success("OTP validated successfully!");
-          storeUserInfo({ accessToken: res.data.accessToken });
+          if (auth) {
+            auth.login(res.data.accessToken);
+          } else {
+            storeUserInfo({ accessToken: res.data.accessToken });
+          }
           navigate("/");
         }
       } else {
@@ -198,7 +204,11 @@ const SignUpComponent = () => {
       const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
       if (res.data.accessToken) {
         toast.success("Signed up with Google successfully!");
-        storeUserInfo({ accessToken: res.data.accessToken });
+        if (auth) {
+          auth.login(res.data.accessToken);
+        } else {
+          storeUserInfo({ accessToken: res.data.accessToken });
+        }
         navigate("/");
       }
     } catch {
