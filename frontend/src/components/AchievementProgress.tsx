@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 interface AchievementProgressProps {
   progress: number;
@@ -12,6 +12,15 @@ const AchievementProgress: React.FC<AchievementProgressProps> = ({
   label,
 }) => {
   const percentage = Math.min(100, Math.max(0, (progress / target) * 100));
+  const [animatedWidth, setAnimatedWidth] = useState(0);
+
+  useEffect(() => {
+    // Start animation on mount or when percentage changes on the next paint
+    const animationFrameId = requestAnimationFrame(() => {
+      setAnimatedWidth(percentage);
+    });
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [percentage]);
 
   return (
     <div className="w-full">
@@ -39,3 +48,4 @@ const AchievementProgress: React.FC<AchievementProgressProps> = ({
 };
 
 export default AchievementProgress;
+

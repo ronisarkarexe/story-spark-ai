@@ -21,9 +21,6 @@ const toggleReaction = async (
   }
 
   const post = await Post.findOne({
-  _id: postId,
-  isDeleted: { $ne: true },
-}).select("likesCount reactions");
     _id: postId,
     isDeleted: { $ne: true },
   }).select("likesCount reactions");
@@ -32,9 +29,6 @@ const toggleReaction = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
-//  main
-    const newReaction = await Reaction.create({
-      postId: new Types.ObjectId(postId),
   const existingReaction = await Reaction.findOne({
     postId: post._id,
     userId: user._id,

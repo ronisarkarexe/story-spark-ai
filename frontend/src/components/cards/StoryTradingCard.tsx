@@ -1,6 +1,4 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
-import html2canvas from "html2canvas";
-import React, { useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import type { IStories } from "../stories/stories.view.component";
 import { getWordCount } from "../stories/stories.utils";
@@ -141,6 +139,21 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
   const genreClass =
     genreColorMap[genre.toLowerCase()] ||
     "bg-purple-500/20 text-purple-100 border-purple-300/40";
+
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyStory = async () => {
+    const text = cleanText(story.content);
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      toast.success("Story copied to clipboard!");
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {
+      toast.error("Could not copy story text.");
+    }
+  };
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
@@ -336,6 +349,15 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
           >
             <i className="fa-solid fa-download"></i>
             Download PNG
+          </button>
+          <button
+            type="button"
+            onClick={handleCopyStory}
+            aria-label="Copy story to clipboard"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-violet-500 active:scale-95"
+          >
+            <i className={`fa-solid ${isCopied ? "fa-check" : "fa-clipboard"}`}></i>
+            {isCopied ? "Copied!" : "Copy Story"}
           </button>
           <button
             type="button"

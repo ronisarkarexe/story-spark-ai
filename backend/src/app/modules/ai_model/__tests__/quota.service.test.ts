@@ -126,6 +126,17 @@ describe("guest quota", () => {
     await expect(reserveGuestQuota("guest-1")).rejects.toBeInstanceOf(ApiError);
   });
 
+  it("rejects with 403 Forbidden when findOneAndUpdate throws a duplicate key error", async () => {
+    const duplicateKeyError = new Error("Duplicate key");
+    (duplicateKeyError as any).code = 11000;
+    mockedGuestUsage.findOneAndUpdate.mockRejectedValue(duplicateKeyError);
+
+    await expect(reserveGuestQuota("guest-1")).rejects.toMatchObject({
+      statusCode: httpStatus.FORBIDDEN,
+      message: "You have reached the maximum limit of 3 story generations.",
+    });
+  });
+
   it("refunds guest quota on rollback", async () => {
     mockedGuestUsage.findOneAndUpdate.mockResolvedValue({
       requestCount: 1,

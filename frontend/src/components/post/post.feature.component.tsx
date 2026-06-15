@@ -56,7 +56,7 @@ const ExploreFeatureComponent = () => {
         data?.posts?.map((post: Post) => (
           <div key={post._id} className="relative group overflow-hidden rounded-3xl border border-gray-200 shadow-2xl cursor-pointer bg-white text-slate-900 dark:bg-transparent dark:border-slate-700/50 dark:text-white">
             <ImageFallback
-                  src="broken-url"
+                  src={post.imageURL}
                   alt={post.title || "Post Image"}
                   className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />

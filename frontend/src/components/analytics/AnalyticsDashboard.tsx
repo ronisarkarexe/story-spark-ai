@@ -113,26 +113,7 @@ export default function AnalyticsDashboard() {
     </div>
   );
 
-  if (error) return (
-    <div className="min-h-screen bg-[#0d0d14] text-white px-6 py-10">
-      <div className="max-w-3xl mx-auto">
-        <Link
-          to="/"
-          className="inline-block px-4 py-2 rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/30 transition mb-8"
-        >
-          ← Back to Home
-        </Link>
-        <div className="bg-red-500/10 border border-red-400/30 rounded-2xl p-6">
-          <h1 className="text-2xl font-semibold text-red-200">Analytics unavailable</h1>
-          <p className="text-red-100/80 mt-2">{error}</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const maxHour = hours.length > 0
-    ? hours.reduce((max, h) => h.count > max.count ? h : max, hours[0])
-    : null;
+  const maxHour = hours.reduce((max, h) => h.count > max.count ? h : max, hours[0] || { hour: 0, count: 0 });
 
   // Derived Data
   const storyLengthData = overview?.storyLengths ? [
