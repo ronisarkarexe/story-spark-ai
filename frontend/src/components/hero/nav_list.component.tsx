@@ -229,7 +229,6 @@ const NavListComponent = () => {
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
-
           {loggedIn ? (
             <button
               type="button"
@@ -239,12 +238,7 @@ const NavListComponent = () => {
               Logout
             </button>
           ) : (
-            <Link
-              to="/login"
-              className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200"
-            >
-              Login
-            </Link>
+            <Link to="/login" className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Login</Link>
           )}
 
           <button

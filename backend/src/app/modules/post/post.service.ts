@@ -238,10 +238,7 @@ const getPosts = async (
     andCondition.push({
       $or: genreList.map((genre) => ({
         tag: {
-          $regex: new RegExp(
-            `^${genre.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
-            "i",
-          ),
+          $regex: new RegExp(`^${escapeRegex(genre)}$`, "i"),
         },
       })),
     });

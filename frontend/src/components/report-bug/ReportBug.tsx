@@ -58,6 +58,7 @@ const ReportBug = () => {
     reset,
     formState: { errors }
   } = useForm<ReportBugFormData>();
+  const { ref: screenshotRef, ...screenshotRegister } = register("screenshot");
 
   const onSubmit = async (data: ReportBugFormData) => {
     try {
