@@ -15,12 +15,12 @@ jest.mock("../../../../utils/generation_timeout", () => ({
   raceGenerationWithTimeout: jest.fn(),
 }));
 
-const mockedGenerate = generateWithGeminiStories as jest.MockedFunction<
-  typeof generateWithGeminiStories
->;
-const mockedRace = raceGenerationWithTimeout as jest.MockedFunction<
-  typeof raceGenerationWithTimeout
->;
+const mockedGenerate = generateWithGeminiStories as jest.MockedFunction
+typeof generateWithGeminiStories
+  >;
+const mockedRace = raceGenerationWithTimeout as jest.MockedFunction
+typeof raceGenerationWithTimeout
+  >;
 
 const story = {
   title: "x",
@@ -53,11 +53,32 @@ describe("AiModelService", () => {
       { email: "user@example.com" } as never
     );
 
+    // ↓ undefined added for the new genre position before signal
     expect(mockedGenerate).toHaveBeenCalledWith(
       "test",
       100,
       1,
       "Spanish",
+      undefined,        // ← ADDED (genre is undefined here)
+      expect.anything()
+    );
+  });
+
+  // ← NEW TEST
+  it("passes the selected genre through to story generation", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiModelGenerate(
+      { prompt: "test", wordLength: 100, numStories: 1, genre: "Horror" },
+      { email: "user@example.com" } as never
+    );
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      100,
+      1,
+      "English",
+      "Horror",         // ← genre passed through
       expect.anything()
     );
   });
