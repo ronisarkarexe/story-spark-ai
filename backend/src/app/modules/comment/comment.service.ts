@@ -6,6 +6,7 @@ import httpStatus from "http-status";
 import { Comment } from "./comment.model";
 import { Types } from "mongoose";
 import { Post } from "../post/post.model";
+import { PostService } from "../post/post.service";
 
 const createComment = async (
   payload: ICommentPayload,
@@ -39,6 +40,7 @@ const createComment = async (
     );
   }
   const res = await Comment.create(commentData);
+  PostService.clearPostCache().catch(console.error);
   return res;
 };
 
@@ -112,6 +114,7 @@ const deleteComment = async (commentId: string, token: ITokenPayload) => {
   await Post.findByIdAndUpdate(comment.postId, {
     $inc: { commentsCount: -1 },
   });
+  PostService.clearPostCache().catch(console.error);
   return { message: "Comment deleted successfully!" };
 };
 

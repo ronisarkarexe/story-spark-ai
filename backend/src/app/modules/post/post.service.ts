@@ -14,10 +14,58 @@ import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
 import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
+import redis from "../../utils/redis.client";
+import crypto from "crypto";
+
 const MAX_SEARCH_TERM_LENGTH = 100;
 
 const escapeRegex = (text: string): string => {
   return text.replace(/[-[\]{}()*+?.,\^$|#\s]/g, "\$&");
+};
+
+const getSearchCacheKey = (filters: IPostSearchFields, pagination: IPaginationOptions): string => {
+  const cleanFilters = Object.keys(filters)
+    .sort()
+    .reduce((acc, key) => {
+      const val = filters[key as keyof IPostSearchFields];
+      if (val !== undefined) {
+        acc[key] = val;
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+  const cleanPagination = Object.keys(pagination)
+    .sort()
+    .reduce((acc, key) => {
+      const val = pagination[key as keyof IPaginationOptions];
+      if (val !== undefined) {
+        acc[key] = val;
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+  const hash = crypto
+    .createHash("sha256")
+    .update(JSON.stringify({ filters: cleanFilters, pagination: cleanPagination }))
+    .digest("hex");
+
+  return `posts:search:${hash}`;
+};
+
+const clearPostCache = async (): Promise<void> => {
+  try {
+    await redis.del("posts:latest", "posts:featured");
+    let cursor = "0";
+    do {
+      const [newCursor, keys] = await redis.scan(cursor, "MATCH", "posts:search:*", "COUNT", 100);
+      cursor = newCursor;
+      if (keys.length > 0) {
+        await redis.del(...keys);
+      }
+    } while (cursor !== "0");
+  } catch (error) {
+    console.error("Error clearing post cache:", error);
+  }
 };
 // const MAX_SEARCH_TERM_LENGTH = 100;
 
@@ -122,6 +170,7 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
         GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
       }
     }
+    clearPostCache().catch(console.error);
     return res;
   } catch (error) {
     throw new ApiError(
@@ -135,6 +184,16 @@ const getPosts = async (
   filters: IPostSearchFields,
   pagination: IPaginationOptions
 ): Promise<IGenericResponse<IPost[]>> => {
+  const cacheKey = getSearchCacheKey(filters, pagination);
+  try {
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
+  } catch (error) {
+    console.error("Redis getPosts read error:", error);
+  }
+
   const { page, limit, cursor, sortBy, orderBy } = paginationHelper(
     pagination,
   );
@@ -227,7 +286,7 @@ const getPosts = async (
   const total = await Post.countDocuments(countCondition);
   const nextCursor = result.length === limit ? encodeCursor(result[result.length - 1], sortBy) : undefined;
 
-  return {
+  const response = {
     meta: {
       page,
       limit,
@@ -237,6 +296,14 @@ const getPosts = async (
     },
     data: result,
   };
+
+  try {
+    await redis.setex(cacheKey, 86400, JSON.stringify(response));
+  } catch (error) {
+    console.error("Redis getPosts write error:", error);
+  }
+
+  return response;
 };
 
 const getPublishedPostsByAuthor = async (
@@ -304,6 +371,16 @@ const getPublishedPostsByAuthor = async (
 };
 
 const getLatestPosts = async () => {
+  const cacheKey = "posts:latest";
+  try {
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
+  } catch (error) {
+    console.error("Redis getLatestPosts read error:", error);
+  }
+
   try {
     const res = await Post.find({ isDeleted: { $ne: true }, isPublished: true })
       .sort({ createdAt: -1 })
@@ -314,6 +391,13 @@ const getLatestPosts = async () => {
         populate: { path: "userId", select: "email" },
       })
       .populate("bookmarks", "email");
+
+    try {
+      await redis.setex(cacheKey, 86400, JSON.stringify(res));
+    } catch (error) {
+      console.error("Redis getLatestPosts write error:", error);
+    }
+
     return res;
   } catch (error) {
     throw new ApiError(
@@ -324,6 +408,16 @@ const getLatestPosts = async () => {
 };
 
 const getFeaturedPosts = async () => {
+  const cacheKey = "posts:featured";
+  try {
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
+  } catch (error) {
+    console.error("Redis getFeaturedPosts read error:", error);
+  }
+
   try {
     const res = await Post.find({
       isFeaturedPost: true,
@@ -338,6 +432,13 @@ const getFeaturedPosts = async () => {
         populate: { path: "userId", select: "email" },
       })
       .populate("bookmarks", "email");
+
+    try {
+      await redis.setex(cacheKey, 86400, JSON.stringify(res));
+    } catch (error) {
+      console.error("Redis getFeaturedPosts write error:", error);
+    }
+
     return res;
   } catch (error) {
     throw new ApiError(
@@ -354,6 +455,9 @@ const doFeaturedPosts = async (postId: string) => {
       { isFeaturedPost: true },
       { new: true }
     );
+    if (res) {
+      clearPostCache().catch(console.error);
+    }
     return res;
   } catch (error) {
     throw new ApiError(
@@ -422,6 +526,8 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
       { $pull: { bookmarks: user._id } }
     );
 
+    clearPostCache().catch(console.error);
+
     return {
       message: "Bookmark removed",
       bookmarked: false,
@@ -432,6 +538,8 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
     { _id: postId },
     { $addToSet: { bookmarks: user._id } }
   );
+
+  clearPostCache().catch(console.error);
 
   return {
     message: "Bookmark added",
@@ -478,6 +586,8 @@ const updatePost = async (
   post.updatedBy = user._id;
   await post.save();
 
+  clearPostCache().catch(console.error);
+
   return post;
 };
 
@@ -520,6 +630,8 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
 
   await Bookmark.deleteMany({ storyId: postId });
 
+  clearPostCache().catch(console.error);
+
   return post;
 };
 
@@ -556,6 +668,7 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
       user._id,
       { $inc: { postsCount: 1 } }
     );
+    clearPostCache().catch(console.error);
   }
 
   return res;
@@ -594,6 +707,7 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
       user._id,
       { $inc: { postsCount: 1 } }
     );
+    clearPostCache().catch(console.error);
   }
 
   return res;
@@ -620,5 +734,6 @@ export const PostService = {
   remixStory,
   translateStory,
   getGenres,
+  clearPostCache,
 };
 
