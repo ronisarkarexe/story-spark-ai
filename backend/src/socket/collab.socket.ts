@@ -161,8 +161,8 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // Yjs document updates
-socket.on("collab:yjs-update", ({ roomId, update }) => {
-  const room = rooms.get(roomId);
+socket.on("collab:yjs-update", async ({ roomId, update }) => {
+  const room = await CollabRoom.findOne({ roomId });
 
   if (!room) {
     socket.emit("collab:error", {
@@ -177,8 +177,8 @@ socket.on("collab:yjs-update", ({ roomId, update }) => {
 });
 
 // Awareness / cursor updates
-socket.on("collab:awareness", ({ roomId, awareness }) => {
-  const room = rooms.get(roomId);
+socket.on("collab:awareness", async ({ roomId, awareness }) => {
+  const room = await CollabRoom.findOne({ roomId });
 
   if (!room) {
     socket.emit("collab:error", {

@@ -22,9 +22,7 @@ export interface IUser {
       twitter: string;
       linkedin: string;
       instagram: string;
-    github: string;
-    discord: string;
-      github: string;  
+      github: string;
       discord: string;
     };
   };
@@ -32,6 +30,9 @@ export interface IUser {
   lastRequestDate: Date;
   posts: Types.ObjectId[];
   isApplyForWriter: boolean;
+  subscriptionExpiry?: Date;
+  lastPaymentId?: string;
+  lastOrderId?: string;
   tokenVersion?: number;
   gamification: {
     xp: number;
