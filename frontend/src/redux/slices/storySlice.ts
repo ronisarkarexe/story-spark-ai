@@ -1,8 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Story } from "../../types/story.types";
 
+interface StoryVersion {
+  id: string;
+  title: string;
+  chapterCount: number;
+  timestamp: string;
+}
+
 interface StoryState {
   currentStory: Story | null;
+  versions: StoryVersion[];
 }
 
 const loadStoryFromStorage = (): Story | null => {
@@ -17,6 +25,7 @@ const loadStoryFromStorage = (): Story | null => {
 
 const initialState: StoryState = {
   currentStory: loadStoryFromStorage(),
+  versions: [],
 }; 
 
 const storySlice = createSlice({
@@ -37,11 +46,12 @@ const storySlice = createSlice({
         };
         
         localStorage.setItem(storageKey, JSON.stringify(safeData));
-      } catch (error: any) {
-        if (error.name === "QuotaExceededError") {
+      } catch (error: unknown) {
+        const err = error as Error;
+        if (err.name === "QuotaExceededError") {
           console.error("Storage limit reached. Cannot save story locally.");
         } else {
-          console.error("Error saving story to storage", error);
+          console.error("Error saving story to storage", err);
         }
       }
     },
@@ -68,17 +78,28 @@ const storySlice = createSlice({
         };
         
         localStorage.setItem(storageKey, JSON.stringify(safeData));
-      } catch (error: any) {
-        if (error.name === "QuotaExceededError") {
+      } catch (error: unknown) {
+        const err = error as Error;
+        if (err.name === "QuotaExceededError") {
           console.error("Storage limit reached. Cannot save story locally.");
         } else {
-          console.error("Error saving story to storage", error);
+          console.error("Error saving story to storage", err);
         }
       }
+    },
+
+    restoreVersion(state, action: PayloadAction<string>) {
+      // Stub for compilation
+      console.log("Restoring version", state.versions, action.payload);
+    },
+
+    deleteVersion(state, action: PayloadAction<string>) {
+      // Stub for compilation
+      console.log("Deleting version", state.versions, action.payload);
     },
   },
 });
 
-export const { setStory, addChapter } = storySlice.actions;
+export const { setStory, addChapter, restoreVersion, deleteVersion } = storySlice.actions;
 
 export default storySlice.reducer;
