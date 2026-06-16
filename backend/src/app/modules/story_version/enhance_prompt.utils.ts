@@ -75,7 +75,7 @@ Prompt: ${prompt}`;
     { signal }
   );
 
-  const textBlock = response.content.find((block) => block.type === "text");
+  const textBlock = response.content.find((block: any) => block.type === "text");
   const text = textBlock && "text" in textBlock ? textBlock.text.trim() : "";
   if (!text) throw new Error("Anthropic returned an empty response");
   return text;

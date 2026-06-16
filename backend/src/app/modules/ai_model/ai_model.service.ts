@@ -284,6 +284,17 @@ const aiFreeModelChat = async (payload: IChatPayload, signal?: AbortSignal) => {
   }
 };
 
+const aiFreeStoryContinuationMultiple = async (
+  payload: { prompt: string; language?: string; count?: number },
+  signal?: AbortSignal
+) => {
+  const { prompt, language, count = 3 } = payload;
+  const tasks = Array.from({ length: Math.min(Math.max(count, 1), 5) }, () =>
+    aiFreeStoryContinuation({ prompt, language }, signal)
+  );
+  return Promise.all(tasks);
+};
+
 export const AiModelService = {
   aiModelGenerate,
   aiFreeModelGenerate,
@@ -295,6 +306,7 @@ export const AiModelService = {
   aiFreeModelTranslate,
   aiModelStoryContinuation,
   aiFreeStoryContinuation,
+  aiFreeStoryContinuationMultiple,
   aiModelChat,
   aiFreeModelChat,
 };

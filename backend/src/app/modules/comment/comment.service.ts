@@ -4,7 +4,7 @@ import { User } from "../user/user.model";
 import { IComment, ICommentDTO, ICommentPayload, ILeanComment } from "./comment.interface";
 import httpStatus from "http-status";
 import { Comment } from "./comment.model";
-import { Types } from "mongoose";
+import { startSession, Types } from "mongoose";
 import { Post } from "../post/post.model";
 import { PostService } from "../post/post.service";
 
@@ -22,26 +22,66 @@ const createComment = async (
     isDeleted: { $ne: true },
   });
   if (!post) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
-  // Use an atomic $inc update instead of the read-modify-write pattern.
-  // With concurrent requests, both would read the same commentsCount value
-  // and both would write count + 1, losing one increment per race.
-  // findByIdAndUpdate with $inc is a single atomic MongoDB operation.
-  await Post.findByIdAndUpdate(post._id, { $inc: { commentsCount: 1 } });
-  const commentData: Omit<IComment, "parentCommentId"> = {
-    postId: new Types.ObjectId(payload.postId),
-    userId: user._id,
-    comment: payload.comment,
-  };
+
   if (payload.parentCommentId) {
-    (commentData as IComment).parentCommentId = new Types.ObjectId(
-      payload.parentCommentId
-    );
+    if (!Types.ObjectId.isValid(payload.parentCommentId)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid parentCommentId");
+    }
+    const parentComment = await Comment.findOne({
+      _id: payload.parentCommentId,
+      postId: payload.postId,
+    });
+    if (!parentComment) {
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        "Parent comment not found for this post!"
+      );
+    }
+    if (parentComment.parentCommentId) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Replies can only be added to top-level comments!"
+      );
+    }
   }
-  const res = await Comment.create(commentData);
-  PostService.clearPostCache().catch(console.error);
-  return res;
+
+  const session = await startSession();
+  try {
+    session.startTransaction();
+
+    const commentData: any = {
+      postId: new Types.ObjectId(payload.postId),
+      userId: user._id,
+      comment: payload.comment,
+    };
+    if (payload.parentCommentId) {
+      commentData.parentCommentId = new Types.ObjectId(payload.parentCommentId);
+    }
+
+    const createdComments = await Comment.create([commentData], { session });
+    const createdComment = createdComments[0];
+
+    const updateResult = await Post.updateOne(
+      { _id: post._id, isDeleted: { $ne: true } },
+      { $inc: { commentsCount: 1 } },
+      { session }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+    }
+
+    await session.commitTransaction();
+    PostService.clearPostCache().catch(console.error);
+    return createdComment;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    await session.endSession();
+  }
 };
 
 const getCommentsByPostId = async (postId: string) => {

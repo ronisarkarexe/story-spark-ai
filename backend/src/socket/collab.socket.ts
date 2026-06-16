@@ -170,36 +170,36 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // Yjs document updates
-socket.on("collab:yjs-update", ({ roomId, update }) => {
-  const room = rooms.get(roomId);
+    socket.on("collab:yjs-update", async ({ roomId, update }) => {
+      const roomExists = await CollabRoom.exists({ roomId });
 
-  if (!room) {
-    socket.emit("collab:error", {
-      message: "Room not found",
+      if (!roomExists) {
+        socket.emit("collab:error", {
+          message: "Room not found",
+        });
+        return;
+      }
+
+      socket.to(roomId).emit("collab:yjs-update", {
+        update,
+      });
     });
-    return;
-  }
 
-  socket.to(roomId).emit("collab:yjs-update", {
-    update,
-  });
-});
+    // Awareness / cursor updates
+    socket.on("collab:awareness", async ({ roomId, awareness }) => {
+      const roomExists = await CollabRoom.exists({ roomId });
 
-// Awareness / cursor updates
-socket.on("collab:awareness", ({ roomId, awareness }) => {
-  const room = rooms.get(roomId);
+      if (!roomExists) {
+        socket.emit("collab:error", {
+          message: "Room not found",
+        });
+        return;
+      }
 
-  if (!room) {
-    socket.emit("collab:error", {
-      message: "Room not found",
+      socket.to(roomId).emit("collab:awareness", {
+        awareness,
+      });
     });
-    return;
-  }
-
-  socket.to(roomId).emit("collab:awareness", {
-    awareness,
-  });
-});
 
     // AI continues the story
     socket.on("collab:ai_continue", async ({ roomId }) => {

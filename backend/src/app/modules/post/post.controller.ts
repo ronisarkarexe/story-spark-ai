@@ -97,7 +97,7 @@ const getSinglePost = catchAsync(async (req: Request, res: Response) => {
     // Guest or unauthenticated request
   }
 
-  const result = await PostService.getSinglePost(id, token);
+  const result = await PostService.getSinglePost(id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

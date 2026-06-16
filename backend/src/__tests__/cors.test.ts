@@ -26,7 +26,7 @@ describe('CORS Configuration', () => {
   });
 
   it('should reject requests missing the Origin header', async () => {
-    process.env.NODE_ENV = 'development';
+    process.env.NODE_ENV = 'production';
     const response = await request(app)
       .get('/api/v1');
     
