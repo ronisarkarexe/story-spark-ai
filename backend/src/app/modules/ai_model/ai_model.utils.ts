@@ -78,11 +78,67 @@ const sanitizeJsonText = (rawText: string): string => {
     .trim();
 };
 
+// ─── GENRE SUPPORT (NEW) ────────────────────────────────────────────────────
+
+// Genre-specific writing guidance injected into the Gemini prompt so each
+// genre produces distinctly themed output (acceptance criterion 3).
+export const GENRE_STYLE_GUIDES: Record<string, string> = {
+  Horror:
+    "Write with a dark, suspenseful tone. Build dread gradually through unsettling imagery, an ominous atmosphere, and mounting tension, leading to a frightening or unnerving climax.",
+  Romance:
+    "Center the narrative on emotional connection and the development of a romantic relationship between characters. Use warm, intimate, emotionally expressive language and focus on feelings, chemistry, and personal growth.",
+  "Sci-Fi":
+    "Set the story in a futuristic, technology-driven, or speculative world. Incorporate scientific concepts, advanced technology, or space/future settings, and explore their impact on the characters.",
+  Fantasy:
+    "Build a richly imagined world featuring magic, mythical creatures, or fantastical elements. Emphasize wonder, adventure, and high stakes within this magical setting.",
+  Mystery:
+    "Construct the narrative around an intriguing puzzle or crime. Plant clues, build suspense, and work toward a satisfying reveal or twist, using an investigative or detective tone.",
+  Drama:
+    "Focus on realistic, emotionally resonant character conflicts and relationships. Emphasize emotional depth, personal stakes, and meaningful character growth.",
+  Comedy:
+    "Use a lighthearted, humorous tone with witty dialogue, comedic situations, or absurd scenarios designed to entertain and amuse.",
+  Adventure:
+    "Center the story on an exciting journey or quest, filled with action, exploration, and a sense of discovery or danger.",
+};
+
+// Strips emoji and symbols (e.g. "😱 Horror" → "Horror") so genre labels
+// match GENRE_STYLE_GUIDES regardless of how they were supplied by the frontend.
+const normalizeGenreLabel = (value: string): string =>
+  value.replace(/[^\p{L}\p{N}\- ]/gu, "").trim();
+
+// The frontend embeds the chosen genre as a "[Genre: X]" prefix on the prompt.
+// Detect it so genre-aware prompting works even without an explicit `genre` field.
+const extractGenreFromPrompt = (prompt: string): string | undefined => {
+  const match = prompt.match(/^\[Genre:\s*([^\]]+)\]/i);
+  return match ? normalizeGenreLabel(match[1]) : undefined;
+};
+
+// Resolves an explicit genre (or one embedded in the prompt) to a concrete
+// writing-style instruction. Returns undefined for unknown/missing genres.
+export const resolveGenreInstruction = (
+  genre: string | undefined,
+  prompt: string
+): string | undefined => {
+  const candidate = genre
+    ? normalizeGenreLabel(genre)
+    : extractGenreFromPrompt(prompt);
+
+  if (!candidate) return undefined;
+
+  const styleGuide = GENRE_STYLE_GUIDES[candidate];
+  if (!styleGuide) return undefined;
+
+  return `The story must clearly fit the "${candidate}" genre. ${styleGuide}`;
+};
+
+// ─── STORY GENERATION ───────────────────────────────────────────────────────
+
 export async function generateWithGeminiStories(
   prompt: string,
   wordLength: number = 250,
   numStories: number = 2,
   language: string = "English",
+  genre?: string,        // ← ADDED
   signal?: AbortSignal
 ): Promise<Story[]> {
   throwIfAborted(signal);
@@ -96,11 +152,17 @@ export async function generateWithGeminiStories(
       history: [],
     });
 
+    // Build optional genre instruction line injected into the prompt
+    const genreInstruction = resolveGenreInstruction(genre, prompt);
+    const genreInstructionLine = genreInstruction
+      ? `\n        ${genreInstruction}`
+      : "";
+
     const response = await chatSession.sendMessage(
       `You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
         First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
         Then, generate ${numStories} different short stories based on this ENHANCED prompt.
-        The stories MUST be written entirely in the ${language} language.
+        The stories MUST be written entirely in the ${language} language.${genreInstructionLine}
         For each story, also analyze and detect the primary emotional tones (e.g., ["Joy", "Suspense", "Motivation"]) and the specific genre.
         Each story should be in JSON format with fields: "title", "content", "tag" (the main topic), "emotions" (an array of strings), "genre" (a string), and "enhancedPrompt" (the improved prompt used).
         Ensure each story is approximately ${wordLength} words long.
@@ -129,7 +191,7 @@ export async function generateWithGeminiStories(
         return "";
       }
     });
-    
+
     const imageUrls = await Promise.all(imagePromises);
 
     return stories.map((story, index) => ({
@@ -150,6 +212,8 @@ export async function generateWithGeminiStories(
     );
   }
 }
+
+// ─── ALTERNATE ENDINGS (UNCHANGED) ──────────────────────────────────────────
 
 export async function generateAlternateEndingsWithGemini(
   title: string,
@@ -186,7 +250,7 @@ export async function generateAlternateEndingsWithGemini(
       Return the output as a JSON array of objects with the fields: "style", "ending", and "fullStory".`
     );
     const text = response.response.text();
-    
+
     let parsed: any;
     try {
       parsed = JSON.parse(sanitizeJsonText(text));
@@ -233,6 +297,8 @@ export async function generateAlternateEndingsWithGemini(
     );
   }
 }
+
+// ─── REMIX (UNCHANGED) ──────────────────────────────────────────────────────
 
 export async function generateRemixWithGemini(
   title: string,
@@ -296,6 +362,8 @@ Write the remixed story in ${language}. Return a JSON object with this exact str
     );
   }
 }
+
+// ─── TRANSLATE (UNCHANGED) ──────────────────────────────────────────────────
 
 export async function translateStoryWithGemini(
   title: string,

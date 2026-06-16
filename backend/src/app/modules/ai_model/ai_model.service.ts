@@ -38,6 +38,7 @@ const normalizeStoryPayload = (payload: IAIModel) => ({
   wordLength: payload.wordLength ?? 250,
   numStories: payload.numStories ?? 2,
   language: payload.language ?? "English",
+  genre: payload.genre, // ← ADDED
 });
 
 const mapGenerationError = (error: unknown, message: string): never => {
@@ -58,7 +59,8 @@ const mapGenerationError = (error: unknown, message: string): never => {
 
 const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
   const { email } = token;
-  const { prompt, wordLength, numStories, language } = normalizeStoryPayload(payload);
+  // ↓ genre added to destructure
+  const { prompt, wordLength, numStories, language, genre } = normalizeStoryPayload(payload);
 
   const currentDate = new Date();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
@@ -91,6 +93,7 @@ const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
           wordLength,
           numStories,
           language,
+          genre,   // ← ADDED
           signal
         ),
       AUTHENTICATED_GENERATION_TIMEOUT_MS
@@ -104,7 +107,8 @@ const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel) => {
-  const { prompt, wordLength, numStories, language } = normalizeStoryPayload(payload);
+  // ↓ genre added to destructure
+  const { prompt, wordLength, numStories, language, genre } = normalizeStoryPayload(payload);
 
   try {
     const result = await raceGenerationWithTimeout(
@@ -114,6 +118,7 @@ const aiFreeModelGenerate = async (payload: IAIModel) => {
           wordLength,
           numStories,
           language,
+          genre,   // ← ADDED
           signal
         ),
       FREE_GENERATION_TIMEOUT_MS

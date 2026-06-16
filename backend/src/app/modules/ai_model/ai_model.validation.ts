@@ -4,6 +4,7 @@ const aiModel = z.object({
   body: z.object({
     prompt: z.string({ required_error: "Prompt is required!" }),
     language: z.string().optional(),
+    genre: z.string().optional(), // ← ADDED
   }),
 });
 
@@ -16,10 +17,7 @@ const aiAlternateEndings = z.object({
   }),
 });
 
-
-
 export const AIModelValidator = {
   aiModel,
   aiAlternateEndings,
 };
-

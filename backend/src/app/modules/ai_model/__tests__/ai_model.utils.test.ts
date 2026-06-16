@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import {
   generateAlternateEndingsWithGemini,
   generateWithGeminiStories,
+  resolveGenreInstruction, // ← ADDED
 } from "../ai_model.utils";
 
 jest.mock("@google/generative-ai", () => ({
@@ -41,5 +42,40 @@ describe("ai_model.utils Gemini configuration", () => {
       statusCode: httpStatus.INTERNAL_SERVER_ERROR,
       message: expect.stringContaining("Gemini API key is not configured"),
     });
+  });
+});
+
+// ← NEW describe block below
+describe("resolveGenreInstruction", () => {
+  it("returns a Horror-specific instruction for an explicit genre", () => {
+    const instruction = resolveGenreInstruction("Horror", "A creepy old house");
+
+    expect(instruction).toContain("Horror");
+    expect(instruction).toContain("dread");
+  });
+
+  it("detects genre from a '[Genre: X]' prefix when no explicit genre is given", () => {
+    const instruction = resolveGenreInstruction(
+      undefined,
+      "[Genre: 🚀 Sci-Fi] A colony ship arrives at a new star system"
+    );
+
+    expect(instruction).toContain("Sci-Fi");
+    expect(instruction).toContain("futuristic");
+  });
+
+  it("prefers an explicit genre over one embedded in the prompt", () => {
+    const instruction = resolveGenreInstruction(
+      "Romance",
+      "[Genre: 😱 Horror] Two strangers meet on a train"
+    );
+
+    expect(instruction).toContain("Romance");
+    expect(instruction).not.toContain("Horror");
+  });
+
+  it("returns undefined when no genre is provided or recognized", () => {
+    expect(resolveGenreInstruction(undefined, "A walk in the park")).toBeUndefined();
+    expect(resolveGenreInstruction("Western", "A walk in the park")).toBeUndefined();
   });
 });
