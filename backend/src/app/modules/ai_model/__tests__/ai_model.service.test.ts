@@ -6,6 +6,14 @@ import {
   raceGenerationWithTimeout,
 } from "../../../../utils/generation_timeout";
 
+jest.mock("../../user/user.model", () => ({
+  User: {
+    findOne: jest.fn(),
+    findOneAndUpdate: jest.fn(),
+    updateOne: jest.fn(),
+  },
+}));
+
 jest.mock("../ai_model.utils", () => ({
   generateWithGeminiStories: jest.fn(),
 }));
@@ -15,12 +23,26 @@ jest.mock("../../../../utils/generation_timeout", () => ({
   raceGenerationWithTimeout: jest.fn(),
 }));
 
-const mockedGenerate = generateWithGeminiStories as jest.MockedFunction
-typeof generateWithGeminiStories
-  >;
-const mockedRace = raceGenerationWithTimeout as jest.MockedFunction
-typeof raceGenerationWithTimeout
-  >;
+jest.mock("../quota.lifecycle", () => ({
+  ...jest.requireActual("../quota.lifecycle"),
+  assertSuccessfulGeneration: jest.fn((result: unknown, message: string) => {
+    if (!Array.isArray(result) || result.length === 0) {
+      const ApiError = jest.requireActual("../../../../errors/api_error").default;
+      throw new ApiError(httpStatus.BAD_GATEWAY, message);
+    }
+  }),
+}));
+
+// ↓ both kept on one line to avoid TS multi-line generic parsing bug
+const mockedGenerate = generateWithGeminiStories as jest.MockedFunction<typeof generateWithGeminiStories>;
+const mockedRace = raceGenerationWithTimeout as jest.MockedFunction<typeof raceGenerationWithTimeout>;
+
+// Use requireMock to access the User model mock
+const MockedUser = jest.requireMock("../../user/user.model").User as {
+  findOne: jest.Mock;
+  findOneAndUpdate: jest.Mock;
+  updateOne: jest.Mock;
+};
 
 const story = {
   title: "x",
@@ -28,10 +50,22 @@ const story = {
   tag: "adventure",
 };
 
+const mockUser = {
+  email: "user@example.com",
+  subscriptionType: "free",
+  requestsThisMonth: 0,
+  lastRequestDate: null,
+};
+
 describe("AiModelService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedRace.mockImplementation(async (operation) => operation({} as AbortSignal));
+
+    // Simulate a user that exists and has quota remaining
+    MockedUser.findOne.mockResolvedValue(mockUser);
+    MockedUser.findOneAndUpdate.mockResolvedValue({ ...mockUser, requestsThisMonth: 1 });
+    MockedUser.updateOne.mockResolvedValue({});
   });
 
   it("returns stories on success without empty-array masking", async () => {
@@ -53,18 +87,16 @@ describe("AiModelService", () => {
       { email: "user@example.com" } as never
     );
 
-    // ↓ undefined added for the new genre position before signal
     expect(mockedGenerate).toHaveBeenCalledWith(
       "test",
       100,
       1,
       "Spanish",
-      undefined,        // ← ADDED (genre is undefined here)
+      undefined,
       expect.anything()
     );
   });
 
-  // ← NEW TEST
   it("passes the selected genre through to story generation", async () => {
     mockedGenerate.mockResolvedValue([story]);
 
@@ -78,7 +110,7 @@ describe("AiModelService", () => {
       100,
       1,
       "English",
-      "Horror",         // ← genre passed through
+      "Horror",
       expect.anything()
     );
   });
