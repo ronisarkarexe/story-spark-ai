@@ -1,3 +1,4 @@
+import { escapeHtml } from '../../../utils/email.util';
 import nodemailer from "nodemailer";
 import { IEmailBody } from "./verify_email.interface";
 import { IVerifyOtpBody } from "./verify_email.interface";
@@ -180,4 +181,8 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
 export const VerifyEmailService = {
   VerifyEmail,
   VerifyOtp,
+};
+
+const clearOtpAttempts = (email: string) => {
+  console.log('Clearing OTP attempts for:', email);
 };

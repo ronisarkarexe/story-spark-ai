@@ -1,6 +1,7 @@
+const bcrypt = require("bcryptjs");
 import { Schema, model } from "mongoose";
 import { IUser, UserModel } from "./user.interface";
-import * as bcrypt from "bcryptjs";
+
 import config from "../../../config";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";

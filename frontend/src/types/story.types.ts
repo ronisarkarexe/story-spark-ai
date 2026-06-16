@@ -10,3 +10,11 @@ export interface Story {
   title: string;
   chapters: Chapter[];
 }
+
+export interface StoryVersion {
+  id: string;
+  timestamp: string;
+  title: string;
+  chapterCount: number;
+  storySnapshot: Story;
+}

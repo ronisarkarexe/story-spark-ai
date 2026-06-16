@@ -5,7 +5,7 @@ const CommentSchema: Schema<IComment> = new Schema<IComment, CommentModel>(
   {
     postId: { type: Schema.Types.ObjectId, ref: "Post", required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    comment: { type: String, required: true },
+    comment: { type: String, required: true, maxlength: 5000 },
     parentCommentId: {
       type: Schema.Types.ObjectId,
       ref: "Comment",

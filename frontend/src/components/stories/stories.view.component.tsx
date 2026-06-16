@@ -6,7 +6,6 @@ import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
 import StoryWorldMap from "../story-map/StoryWorldMap";
 import BookmarkButton from "../BookmarkButton";
-import CardCollection from "../cards/CardCollection";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
@@ -130,6 +129,19 @@ const [, setShowRemix] = useState<boolean>(false);
       }));
     }
   }, [selectedStory, originalStoryContent]);
+
+  useEffect(() => {
+    if (narrationState === "playing") {
+      const activeWordElement = document.querySelector('[data-active-word="true"]');
+      if (activeWordElement) {
+        activeWordElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest"
+        });
+      }
+    }
+  }, [narrationWordIndex, narrationState]);
 
   const handleGenerateAlternateEndings = async () => {
     if (!selectedStory) return;
@@ -745,14 +757,14 @@ if (isLoading) {
               </h1>
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center rounded-full bg-purple-900/60 text-purple-300 border border-purple-700/50 py-1 px-3 text-xs font-semibold">
-                  ≡ƒÄ¡ {selectedStory.tag}
+                  Γëí╞Æ├ä┬í {selectedStory.tag}
                 </span>
                 <span className="inline-flex items-center rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
-                  ≡ƒîÉ {selectedStory.language || "English"}
+                  Γëí╞Æ├«├ë {selectedStory.language || "English"}
                 </span>
                 {selectedStory.emotions && selectedStory.emotions.length > 0 && (
                   <span className="inline-flex items-center rounded-full bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 py-1 px-3 text-xs font-semibold">
-                    ≡ƒÿè {selectedStory.emotions.join(", ")}
+                    Γëí╞Æ├┐├¿ {selectedStory.emotions.join(", ")}
                   </span>
                 )}
               </div>
@@ -797,7 +809,7 @@ if (isLoading) {
                   onClick={handleCopyStory}
                   disabled={!selectedStory}
                 >
-                  {isCopied ? "✓ Copied" : "📋 Copy"}
+                  {isCopied ? "Γ£ô Copied" : "≡ƒôï Copy"}
                 </button>
                 <button
                   type="button"
@@ -805,7 +817,7 @@ if (isLoading) {
                   onClick={handleExportPDF}
                   disabled={!selectedStory}
                 >
-                  📄 Export PDF
+                  ≡ƒôä Export PDF
                 </button>
                 <button
                   type="button"
@@ -813,7 +825,7 @@ if (isLoading) {
                   onClick={handleExportMarkdown}
                   disabled={!selectedStory}
                 >
-                  ⬇️ Export as Markdown
+                  Γ¼ç∩╕Å Export as Markdown
                 </button>
                 <button
                   type="button"
@@ -821,7 +833,7 @@ if (isLoading) {
                   onClick={() => setShowWorldMap(true)}
                   disabled={!selectedStory}
                 >
-                  ≡ƒù║∩╕Å World Map
+                  Γëí╞Æ├╣ΓòæΓê⌐Γòò├à World Map
                 </button>
                 <button
                   type="button"
@@ -829,7 +841,7 @@ if (isLoading) {
                   onClick={() => setShowRemix(true)}
                   disabled={!selectedStory}
                 >
-                  ≡ƒöÇ Remix
+                  Γëí╞Æ├╢├ç Remix
                 </button>
                 <button
                   type="button"
@@ -865,21 +877,80 @@ if (isLoading) {
                       narrationWordIndex >= segment.startWordIndex &&
                       narrationWordIndex <= segment.endWordIndex;
 
+                    const rawParts = segment.text.split(/(\s+)/);
+                    let wordOffset = 0;
+
                     return (
                       <span
                         key={segment.id}
-                        className={
-                          isActiveSentence
-                            ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-100 ring-1 ring-indigo-400/30"
-                            : undefined
-                        }
+                        className={isActiveSentence ? "text-slate-100 font-medium transition-colors duration-300" : undefined}
                       >
-                        {segment.text}
+                        {rawParts.map((part, partIdx) => {
+                          if (part === "") return null;
+                          if (/^\s+$/.test(part)) {
+                            return part;
+                          }
+
+                          const absoluteWordIndex = segment.startWordIndex + wordOffset;
+                          wordOffset++;
+
+                          const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+
+                          if (isActiveWord) {
+                            return (
+                              <span
+                                key={partIdx}
+                                className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
+                                data-active-word="true"
+                              >
+                                {part}
+                              </span>
+                            );
+                          }
+
+                          return (
+                            <span key={partIdx}>
+                              {part}
+                            </span>
+                          );
+                        })}
                       </span>
                     );
                   })
                 ) : (
-                  selectedStory.content
+                  (() => {
+                    const rawParts = selectedStory.content.split(/(\s+)/);
+                    let wordOffset = 0;
+                    return rawParts.map((part, partIdx) => {
+                      if (part === "") return null;
+                      if (/^\s+$/.test(part)) {
+                        return part;
+                      }
+
+                      const absoluteWordIndex = wordOffset;
+                      wordOffset++;
+
+                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+
+                      if (isActiveWord) {
+                        return (
+                          <span
+                            key={partIdx}
+                            className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
+                            data-active-word="true"
+                          >
+                            {part}
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <span key={partIdx}>
+                          {part}
+                        </span>
+                      );
+                    });
+                  })()
                 )}
               </p>
             </div>
@@ -1068,7 +1139,7 @@ if (isLoading) {
                               <details className="group border border-slate-800 rounded-lg overflow-hidden bg-slate-950/20">
                                 <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none">
                                   <span>PREVIEW FULL STORY WITH THIS ENDING</span>
-                                  <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
+                                  <span className="transition-transform duration-200 group-open:rotate-180">Γû╝</span>
                                 </summary>
                                 <div className="p-4 border-t border-slate-800/80 text-xs text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
                                   {currentEndingData.fullStory}
@@ -1128,10 +1199,10 @@ if (isLoading) {
                       {selectedStory.tag.toUpperCase()}
                     </div>
                     <div className="inline-flex items-center rounded-full bg-indigo-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                      ≡ƒîÉ {(selectedStory.language || "English").toUpperCase()}
+                      Γëí╞Æ├«├ë {(selectedStory.language || "English").toUpperCase()}
                     </div>
                     <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
-                      ΓÅ▒∩╕Å {calculateReadingTime(selectedStory.content)} min read
+                      ╬ô├àΓûÆΓê⌐Γòò├à {calculateReadingTime(selectedStory.content)} min read
                     </div>
                   </div>
                   <div>

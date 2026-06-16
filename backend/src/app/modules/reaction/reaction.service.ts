@@ -65,7 +65,6 @@ const toggleReaction = async (
       userId: user._id,
       type: type,
     });
-
     post.reactions = post.reactions || [];
     post.reactions.push(newReaction._id);
     post.likesCount = (post.likesCount || 0) + 1;

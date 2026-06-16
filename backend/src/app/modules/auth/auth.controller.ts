@@ -68,14 +68,8 @@ const logout = catchAsync(async (req: Request, res: Response) => {
 
   if (activeToken) {
     try {
-      const decoded = jwt.decode(activeToken) as jwt.JwtPayload | null;
-      const expiresAt = decoded && decoded.exp 
-        ? new Date(decoded.exp * 1000) 
-        : new Date(Date.now() + 24 * 60 * 60 * 1000); // fallback if no exp is present
-
       await TokenBlacklist.create({
         token: activeToken,
-        expiresAt,
       });
     } catch (err) {
       console.error("Error blacklisting token on logout:", err);

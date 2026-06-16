@@ -46,6 +46,11 @@
 
 ## Features 💪
 
+- **Dark-Mode**: Toggle between light and dark themes for a comfortable reading experience.
+- **Google Login**: Sign in quickly and securely using your Google account.
+- **User Reviews**: Share your experience and explore reviews from the community.
+- **Subscription Plans**: Access unlimited story generation and team collaboration with paid plans.
+- **Featured Posts**: Discover featured posts curated from the community.
 - **AI-Powered Story Generation**: Create unique stories instantly using advanced AI models.
 - **Prompt-Based Storytelling**: Simply provide a prompt or idea and watch it come to life.
 - **Story Bookmarks/History**: Save your favorite generated stories and revisit your past creations.
@@ -67,7 +72,7 @@
 2. **Install dependencies** (single install at the repo root — npm workspaces)
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Environment files**
@@ -93,11 +98,11 @@
    - **Both** (two terminals or one combined process):
 
      ```bash
-     npm run dev
+     pnpm dev
      ```
 
-   - **Backend only:** `npm run dev:backend` — API (default port **5000** if `PORT` is unset).
-   - **Frontend only:** `npm run dev:frontend` — Vite dev server on **http://localhost:4001**
+   - **Backend only:** `pnpm dev:backend` — API (default port **5000** if `PORT` is unset).
+   - **Frontend only:** `pnpm dev:frontend` — Vite dev server on **http://localhost:4001**
 
 6. **Production builds**
 
@@ -133,35 +138,174 @@ Use **two** Vercel projects from this monorepo:
 After cloning, create your env files from the examples in the repo:
 
 ```bash
-cp backend/.env.example backend/.env
+# 1. Clone the repository
+git clone https://github.com/ronisarkarexe/story-spark-ai.git
+cd story-spark-ai
+
+# 2. Install all dependencies (npm workspaces — single install)
+npm install
+```
+### Environment Variables
+
+Copy the example env files and fill in your values:
+
+```bash
+cp backend/.env.example  backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
 #### Backend (`backend/.env`)
+Variables marked Yes are required... Variables marked for a feature are only required when you use that feature.
 
-Variables marked **Yes** are required for local development. Variables marked **No** are optional and can usually use the default value. Variables marked for a feature are only required when you use that feature.
+#### 🖥️ Server Configuration (Backend)
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `NODE_ENV` | `development` | ✅ Yes | Environment mode |
+| `PORT` | `5000` | ✅ Yes | Backend server port |
+| `CORS_ORIGINS` | `http://localhost:4001` | ✅ Yes | Allowed frontend origin |
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | MongoDB connection string. Use a local URI such as `mongodb://localhost:27017/storysparkai` or an Atlas URI. |
-| `PORT` | No | API port number. Defaults to `5000` if unset. |
-| `NODE_ENV` | No | Runtime mode, usually `development` locally or `production` in deploys. |
-| `CORS_ORIGINS` | No | Comma-separated frontend URLs allowed for CORS requests, e.g. `http://localhost:4001`. |
-| `SALT_ROUNDS` | Yes | Bcrypt cost factor as a number, e.g. `10`. |
-| `JWT_SECRET` | Yes | Access token signing secret, e.g. `your-jwt-secret`. Use a strong random value outside local testing. |
-| `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret, e.g. `your-refresh-secret`. Use a different strong value from `JWT_SECRET`. |
-| `JWT_EXPIRES_IN` | Yes | Access token lifetime, e.g. `60d`, `24h`, or another valid duration string. |
-| `JWT_REFRESH_EXPIRES_IN` | Yes | Refresh token lifetime, e.g. `120d`, `30d`, or another valid duration string. |
-| `DEFAULT_ADMIN_PASSWORD` | Yes | Initial admin password used during seeding, e.g. `admin123` for local development only. |
-| `OPEN_AI_KEY` | For OpenAI | [OpenAI API key](https://platform.openai.com/api-keys), required only when using OpenAI-backed features. |
-| `GEMINI_API_KEY` | For Gemini | [Google AI Studio key](https://aistudio.google.com/apikey), required only when using Gemini-backed features. |
-| `UNSPLASH_KEY_API` | For images | [Unsplash Access Key](https://unsplash.com/developers), required only for Unsplash image features. |
-| `UNSPLASH_KEY_API_SECRET` | For images | Unsplash secret, required only for Unsplash image features that need it. |
-| `VERIFY_EMAIL` | For email | SMTP sender address, required only for email verification or email notifications. |
-| `VERIFY_PASSWORD` | For email | SMTP password or app password, required only for email verification or email notifications. |
-| `GOOGLE_CLIENT_ID` | For login with google | Google OAuth client ID from https://console.cloud.google.com, required only for Google login. |
+#### 🗄️ Database
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `DATABASE_URL` | `mongodb://127.0.0.1:27017/story_spark_ai` | ✅ Yes | MongoDB connection string ([Atlas](https://www.mongodb.com/cloud/atlas) or local) |
 
-Example backend `.env`:
+#### 🔐 Authentication
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `SALT_ROUNDS` | `10` | ✅ Yes | bcrypt hashing rounds |
+| `JWT_SECRET` | `any_random_string` | ✅ Yes | Access token signing secret |
+| `JWT_REFRESH_SECRET` | `another_random_string` | ✅ Yes | Refresh token signing secret |
+| `JWT_EXPIRES_IN` | `60d` | ✅ Yes | Access token expiry |
+| `JWT_REFRESH_EXPIRES_IN` | `120d` | ✅ Yes | Refresh token expiry |
+| `DEFAULT_ADMIN_PASSWORD` | `admin123` | ✅ Yes | Initial admin password for seeding |
+| `ADMIN_EMAIL` | `admin@example.com` | ✅ Yes | Admin account email |
+| `ADMIN_PASSWORD` | `secure-password` | ✅ Yes | Admin account password |
+
+#### 🤖 AI Providers
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `OPEN_AI_KEY` | `sk-...` | ⚠️ Optional | Required for OpenAI story generation |
+| `GEMINI_API_KEY` | `AIza...` | ⚠️ Optional | Required for Gemini story generation |
+| `AI_API_KEYS` | `key1,key2,key3` | ⚠️ Optional | Comma-separated keys for round-robin rotation |
+| `AI_CONCURRENCY` | `3` | ⚠️ Optional | Max simultaneous AI calls (default: 3) |
+
+> ℹ️ You need **at least one** of `OPEN_AI_KEY`, `GEMINI_API_KEY`, or `AI_API_KEYS` for story generation to work.
+
+#### 🖼️ Image Provider (Unsplash)
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `UNSPLASH_KEY_API` | `your_access_key` | ⚠️ Optional | Required for story cover images |
+| `UNSPLASH_KEY_API_SECRET` | `your_secret` | ⚠️ Optional | Unsplash API secret |
+
+#### 📧 Email Verification
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `VERIFY_EMAIL` | `noreply@example.com` | ⚠️ Optional | Sender email for verification mails |
+| `VERIFY_PASSWORD` | `app_password` | ⚠️ Optional | Email app password (not your login password) |
+
+#### 🔑 Google OAuth
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | ⚠️ Optional | Required for Google Login |
+
+#### Frontend — `frontend/.env`
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `VITE_BASE_URL` | `http://localhost:5000/api/v1` | ✅ Yes | Backend API base URL |
+| `VITE_SOCKET_URL` | `http://localhost:5000` | ✅ Yes | WebSocket server URL |
+| `VITE_GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | ✅ Yes | Google OAuth Client ID |
+
+#### ⚡ Minimum Setup for Local Development
+
+Only these variables are needed to run core features:
+
+**`backend/.env`**
+```env
+NODE_ENV=development
+PORT=5000
+CORS_ORIGINS=http://localhost:4001
+DATABASE_URL=mongodb://127.0.0.1:27017/story_spark_ai
+SALT_ROUNDS=10
+JWT_SECRET=any_random_string
+JWT_REFRESH_SECRET=another_random_string
+JWT_EXPIRES_IN=60d
+JWT_REFRESH_EXPIRES_IN=120d
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
+DEFAULT_ADMIN_PASSWORD=admin123
+```
+
+**`frontend/.env`**
+```env
+VITE_BASE_URL=http://localhost:5000/api/v1
+VITE_SOCKET_URL=http://localhost:5000
+```
+
+#### 🔧 Troubleshooting
+
+**Stories not generating?**
+→ Set at least one of `OPEN_AI_KEY`, `GEMINI_API_KEY`, or `AI_API_KEYS`.
+
+**Google Login not working?**
+→ `GOOGLE_CLIENT_ID` is missing. Get it from [Google Cloud Console](https://console.cloud.google.com/).
+
+**Story cover images not loading?**
+→ `UNSPLASH_KEY_API` is not set. Register at [Unsplash Developers](https://unsplash.com/developers).
+
+**Verification email not sent?**
+→ For Gmail, use an [App Password](https://myaccount.google.com/apppasswords), not your account password.
+
+**MongoDB connection failed?**
+→ Ensure MongoDB is running locally: `mongod`
+→ Or use Atlas URI: `mongodb+srv://user:pass@cluster.mongodb.net/story_spark_ai`
+
+**CORS error in browser?**
+→ `CORS_ORIGINS` must exactly match your frontend URL including port. No trailing slash.
+
+### Running Locally
+
+**Step 1 — Seed the admin user** *(first time only)*
+
+Before starting the server for the first time, create an admin account:
+
+```bash
+cd backend
+npx ts-node scripts/seed-admin.ts
+```
+
+Make sure `DEFAULT_ADMIN_PASSWORD` and `ADMIN_EMAIL` are set in `backend/.env`.
+
+**Step 2 — Start development servers**
+
+```bash
+# Run both frontend & backend concurrently (from repo root)
+npm run dev
+
+# Or run individually:
+npm run dev:backend    # API on http://localhost:5000
+npm run dev:frontend   # Vite on http://localhost:4001
+```
+
+**Step 3 — Production build**
+
+```bash
+npm run build
+npm run start:backend    # requires build:backend first
+npm run start:frontend   # serves built static app (preview)
+```
+
+---
+
+## ☁️ Deployment (Vercel)
+
+This monorepo deploys as **two separate Vercel projects**:
+
+| Project | Root Directory | Example Domain |
+|---|---|---|
+| 🖥️ Frontend | `frontend` | `storysparkai.vercel.app` |
+| ⚙️ Backend API | `backend` | `apistorysparkai.vercel.app` |
+
+**Frontend environment variables** *(set in Vercel dashboard → redeploy after changes)*:
 
 ```env
 DATABASE_URL=mongodb://localhost:27017/storysparkai
@@ -216,9 +360,9 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 #### Dependency installation issues
 
-- **Problem:** `npm install` fails or installed packages behave unexpectedly.
+- **Problem:** `pnpm install` fails or installed packages behave unexpectedly.
 - **Possible cause:** Cached dependencies, a stale lock file, or an incomplete install.
-- **Suggested solution:** Delete `node_modules` and the lock file, then reinstall dependencies from the repository root with `npm install`.
+- **Suggested solution:** Delete `node_modules` and the lock file, then reinstall dependencies from the repository root with `pnpm install`.
 
 #### Admin seeding issues
 
@@ -236,7 +380,7 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 1. Fork the repository and clone your fork.
 2. Create a branch: `git checkout -b your-feature-branch`
-3. Install with `npm install` at the repo root, configure `.env` files, then `git add`, `git commit`, `git push`, and open a pull request.
+3. Install with `pnpm install` at the repo root, configure `.env` files, then `git add`, `git commit`, `git push`, and open a pull request.
 
 
 
@@ -263,7 +407,7 @@ Running into issues during setup? Here are the most common errors and how to fix
 
 Then re-run:
 ```bash
-npm install
+pnpm install
 ```
 
 ---
@@ -300,7 +444,7 @@ Once the update completes, click **Try Again** in Docker Desktop. If the issue p
 
 **Fix:** At the **repo root**, regenerate the lockfile:
 ```bash
-npm install
+pnpm install
 ```
 Then commit the updated `package-lock.json` before rebuilding your Docker image:
 ```bash
@@ -377,3 +521,11 @@ Thanks to everyone who has helped build **Story Spark AI**. This grid updates au
 
 Thank you for contributing to our open-source project! We appreciate your support 🚀 <br>
 Don't forget to leave a star ⭐
+
+### Proposed Feature: Trending Topics & UI Enhancements
+- Added responsive writing genres (Fantasy, Mystery, Romance) next to recommended writers.
+- Implemented a clean 'How It Works' section to polish the landing page layout.
+
+### Proposed Feature: Trending Topics & UI Enhancements
+- Added responsive writing genres (Fantasy, Mystery, Romance) next to recommended writers.
+- Implemented a clean 'How It Works' section to polish the landing page layout.

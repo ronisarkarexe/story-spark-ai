@@ -62,26 +62,22 @@ const mapGenerationError = (error: unknown, message: string): never => {
 
 // Bug fix 1: quota.lifecycle owns rollback — no manual User.updateOne needed.
 // Bug fix 2: _token kept as unused param (quota handled upstream by middleware).
-const aiModelGenerate = async (
-  payload: IAIModel,
-  _token?: ITokenPayload,
-  signal?: AbortSignal
-) => {
+const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal?: AbortSignal) => {
   const { prompt, wordLength, numStories, language, tone, genre, characters } =
     normalizeStoryPayload(payload);
 
   try {
     const result = await raceGenerationWithTimeout(
-      (sig) =>
+      (signal) =>
         generateWithGeminiStories(
           prompt,
           wordLength,
           numStories,
           language,
-          sig,
+          signal,
           tone,
           genre,
-          characters
+          characters,
         ),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
       signal
@@ -99,16 +95,16 @@ const aiFreeModelGenerate = async (payload: IAIModel, signal?: AbortSignal) => {
 
   try {
     const result = await raceGenerationWithTimeout(
-      (sig) =>
+      (signal) =>
         generateWithGeminiStories(
           prompt,
           wordLength,
           numStories,
           language,
-          sig,
+          signal,
           tone,
           genre,
-          characters
+          characters,
         ),
       FREE_GENERATION_TIMEOUT_MS,
       signal
@@ -120,6 +116,8 @@ const aiFreeModelGenerate = async (payload: IAIModel, signal?: AbortSignal) => {
   }
 };
 
+// Bug fix 3: migrated from old inline quota pattern to quota.lifecycle,
+// consistent with aiModelGenerate and all other authenticated functions.
 const aiModelAlternateEndings = async (
   payload: IAlternateEndingPayload,
   _token?: ITokenPayload,
@@ -129,7 +127,7 @@ const aiModelAlternateEndings = async (
 
   try {
     const result = await raceGenerationWithTimeout(
-      (sig) => generateAlternateEndingsWithGemini(title, content, tag, language, sig),
+      (s) => generateAlternateEndingsWithGemini(title, content, tag, language, s),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -140,15 +138,12 @@ const aiModelAlternateEndings = async (
   }
 };
 
-const aiFreeModelAlternateEndings = async (
-  payload: IAlternateEndingPayload,
-  signal?: AbortSignal
-) => {
+const aiFreeModelAlternateEndings = async (payload: IAlternateEndingPayload, signal?: AbortSignal) => {
   const { title, content, tag, language = "English" } = payload;
 
   try {
     const result = await raceGenerationWithTimeout(
-      (sig) => generateAlternateEndingsWithGemini(title, content, tag, language, sig),
+      (s) => generateAlternateEndingsWithGemini(title, content, tag, language, s),
       FREE_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -159,15 +154,11 @@ const aiFreeModelAlternateEndings = async (
   }
 };
 
-const aiModelRemix = async (
-  payload: IRemixPayload,
-  _token?: ITokenPayload,
-  signal?: AbortSignal
-) => {
+const aiModelRemix = async (payload: IRemixPayload, _token?: ITokenPayload, signal?: AbortSignal) => {
   const { title, content, tag, remixType, remixOption = "", language = "English" } = payload;
   try {
     const result = await raceGenerationWithTimeout(
-      (sig) => generateRemixWithGemini(title, content, tag, remixType, remixOption, language, sig),
+      (s) => generateRemixWithGemini(title, content, tag, remixType, remixOption, language, s),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -181,7 +172,7 @@ const aiFreeModelRemix = async (payload: IRemixPayload, signal?: AbortSignal) =>
   const { title, content, tag, remixType, remixOption = "", language = "English" } = payload;
   try {
     const result = await raceGenerationWithTimeout(
-      (sig) => generateRemixWithGemini(title, content, tag, remixType, remixOption, language, sig),
+      (s) => generateRemixWithGemini(title, content, tag, remixType, remixOption, language, s),
       FREE_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -191,15 +182,11 @@ const aiFreeModelRemix = async (payload: IRemixPayload, signal?: AbortSignal) =>
   }
 };
 
-const aiModelTranslate = async (
-  payload: ITranslatePayload,
-  _token?: ITokenPayload,
-  signal?: AbortSignal
-) => {
+const aiModelTranslate = async (payload: ITranslatePayload, _token?: ITokenPayload, signal?: AbortSignal) => {
   const { title, content, targetLanguage } = payload;
   try {
     const result = await raceGenerationWithTimeout(
-      (sig) => translateStoryWithGemini(title, content, targetLanguage, sig),
+      (s) => translateStoryWithGemini(title, content, targetLanguage, s),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -213,7 +200,7 @@ const aiFreeModelTranslate = async (payload: ITranslatePayload, signal?: AbortSi
   const { title, content, targetLanguage } = payload;
   try {
     const result = await raceGenerationWithTimeout(
-      (sig) => translateStoryWithGemini(title, content, targetLanguage, sig),
+      (s) => translateStoryWithGemini(title, content, targetLanguage, s),
       FREE_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -232,7 +219,7 @@ const aiModelStoryContinuation = async (
 
   try {
     const result = await raceGenerationWithTimeout(
-      (sig) => generateStoryContinuationWithGemini(prompt, language, sig),
+      (s) => generateStoryContinuationWithGemini(prompt, language, s),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -242,15 +229,12 @@ const aiModelStoryContinuation = async (
   }
 };
 
-const aiFreeStoryContinuation = async (
-  payload: { prompt: string; language?: string },
-  signal?: AbortSignal
-) => {
+const aiFreeStoryContinuation = async (payload: { prompt: string; language?: string }, signal?: AbortSignal) => {
   const { prompt, language = "English" } = payload;
 
   try {
     const result = await raceGenerationWithTimeout(
-      (sig) => generateStoryContinuationWithGemini(prompt, language, sig),
+      (s) => generateStoryContinuationWithGemini(prompt, language, s),
       FREE_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -260,11 +244,7 @@ const aiFreeStoryContinuation = async (
   }
 };
 
-const aiModelChat = async (
-  payload: IChatPayload,
-  _token?: ITokenPayload,
-  signal?: AbortSignal
-) => {
+const aiModelChat = async (payload: IChatPayload, _token?: ITokenPayload, signal?: AbortSignal) => {
   const { message, history = [] } = payload;
 
   try {
@@ -274,7 +254,7 @@ const aiModelChat = async (
     }));
 
     const result = await raceGenerationWithTimeout(
-      (sig) => chatWithGemini(message, formattedHistory, sig),
+      (s) => chatWithGemini(message, formattedHistory, s),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -294,7 +274,7 @@ const aiFreeModelChat = async (payload: IChatPayload, signal?: AbortSignal) => {
     }));
 
     const result = await raceGenerationWithTimeout(
-      (sig) => chatWithGemini(message, formattedHistory, sig),
+      (s) => chatWithGemini(message, formattedHistory, s),
       FREE_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -303,7 +283,6 @@ const aiFreeModelChat = async (payload: IChatPayload, signal?: AbortSignal) => {
     mapGenerationError(error, "AI chat failed.");
   }
 };
-
 
 export const AiModelService = {
   aiModelGenerate,

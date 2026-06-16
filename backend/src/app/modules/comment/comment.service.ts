@@ -107,11 +107,11 @@ const deleteComment = async (commentId: string, token: ITokenPayload) => {
       "You are not authorized to delete this comment!"
     );
   }
-  await Comment.findByIdAndUpdate(commentId, {
-  isDeleted: true,
-  deletedAt: new Date(),
-  comment: "This comment was deleted",
-});
+  await Comment.findByIdAndDelete(commentId);
+  // Decrement commentsCount on the post atomically
+  await Post.findByIdAndUpdate(comment.postId, {
+    $inc: { commentsCount: -1 },
+  });
   return { message: "Comment deleted successfully!" };
 };
 

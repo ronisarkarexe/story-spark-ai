@@ -1,4 +1,5 @@
-import * as bcrypt from "bcryptjs";
+const bcrypt = require("bcryptjs");
+
 import httpStatus from "http-status";
 import jwt, { Secret } from "jsonwebtoken";
 import crypto from "crypto";
@@ -43,8 +44,9 @@ const issueAccessToken = (user: any, expiresIn?: string): string =>
   JwtHelpers.createToken(
     buildClaims(user),
     config.jwt.secret as Secret,
-    expiresIn || config.jwt.expires_in || "15m"
+    expiresIn ?? (config.jwt.expires_in as string)
   );
+
 // Issues a refresh token with a unique jti and records its session for rotation.
 const issueRefreshToken = async (user: any): Promise<string> => {
   const jti = crypto.randomBytes(16).toString("hex");
@@ -272,7 +274,7 @@ const googleLogin = async (payload: { token: string }) => {
         email: email as string,
         name: (googleName || email || "Google User").slice(0, 100),
         status: "Active",
-        subscriptionType: "Free",
+        subscriptionType: "free",
         profile: {
           avatar: (picture as string) || "",
           bio: "",
@@ -381,12 +383,12 @@ const resetPassword = async (payload: {
   }
   
   const getPasswordError = (pwd: string) => {
-    if (pwd.length < 8) return "Password must be of at least 8 characters long";
-  if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter(A-Z)";
-  if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter(a-z)";
-  if (!/[0-9]/.test(pwd)) return "Password must contain at least one number(0-9)";
-  if (!/[^A-Za-z0-9]/.test(pwd)) return "Password must contain at least one special character(e.g. !@#$%^&*)";
-    return " ";
+    if (pwd.length < 8) return "Password must be at least 8 characters long";
+    if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
+    if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter";
+    if (!/[0-9]/.test(pwd)) return "Password must contain at least one number";
+    if (!/[^A-Za-z0-9]/.test(pwd)) return "Password must contain at least one special character";
+    return "";
   };
   const passwordError = getPasswordError(password);
   if (passwordError) {
@@ -407,7 +409,7 @@ const resetPassword = async (payload: {
   if (!otpRecord) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      "Invalid or expired verification token. Please verify your email again..."
+      "Invalid or expired verification token. Please verify your email again."
     );
   }
 
@@ -417,7 +419,7 @@ const resetPassword = async (payload: {
   ) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      "Verification token has expired. Please verify your email again..."
+      "Verification token has expired. Please verify your email again."
     );
   }
 

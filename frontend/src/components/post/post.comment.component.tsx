@@ -40,7 +40,18 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
       return;
     }
     if (data.comment.trim() === "") {
-      toast.error("Please enter a comment.");
+      toast.custom((t) => (
+  <div className="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+    <span>Please enter a comment.</span>
+
+    <button
+      onClick={() => toast.dismiss(t.id)}
+      className="ml-2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition"
+    >
+      ×
+    </button>
+  </div>
+));
       return;
     }
     const createPostComment = {

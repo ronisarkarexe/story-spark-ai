@@ -26,7 +26,6 @@ export default function CollabHome() {
       setIsCreating(true);
       setError("");
 
-      const socket = connectSocket();
       let socket = getSocketIo();
       if (!socket) {
         socket = connectSocket();

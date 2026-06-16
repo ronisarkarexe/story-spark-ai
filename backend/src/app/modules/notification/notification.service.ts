@@ -76,9 +76,25 @@ const markNotificationAsRead = async (
   return notification;
 };
 
+const markAllNotificationsAsRead = async (token: ITokenPayload) => {
+  const userId = await resolveUserId(token);
+  await Notification.updateMany({ userId, isRead: false }, { isRead: true });
+  emitNotificationStateToUser(userId, "notification:all-read", {});
+  return { message: "All notifications marked as read!" };
+};
+
+const deleteAllNotifications = async (token: ITokenPayload) => {
+  const userId = await resolveUserId(token);
+  await Notification.deleteMany({ userId });
+  emitNotificationStateToUser(userId, "notification:all-cleared", {});
+  return { message: "All notifications cleared!" };
+};
+
 export const NotificationService = {
   createNotification,
   getUserNotifications,
   markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteAllNotifications,
   resolveUserId,
 };

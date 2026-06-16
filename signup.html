@@ -153,7 +153,7 @@
 
             <!-- Google Auth Status Banner -->
             <div id="google-auth-status" class="hidden mb-3 p-3 rounded-xl border border-primary/20 bg-primary/5 flex items-center gap-3">
-                <img id="google-user-avatar" class="w-8 h-8 rounded-full border border-white/10" src="" alt=""/>
+                <img loading="lazy" id="google-user-avatar" class="w-8 h-8 rounded-full border border-white/10" src="" alt=""/>
                 <div class="flex-1 min-w-0">
                     <div class="text-sm font-semibold text-on-surface truncate" id="google-user-name"></div>
                     <div class="text-xs text-on-surface-variant truncate" id="google-user-email"></div>
@@ -224,6 +224,11 @@
                     <p class="ds-help" id="confirm-password-help">Passwords must match to create your account.</p>
                     <p class="ds-feedback password-match-feedback" id="confirm-password-feedback" role="status" aria-live="polite"></p>
                     <p class="ds-error" id="confirm-password-error" role="alert" aria-live="polite"></p>
+                    <p
+                        id="confirm-caps-lock-warning"
+                        class="hidden text-yellow-400 text-sm mt-2">
+                        Caps Lock is ON
+                    </p>
                 </div>
                 <div class="flex items-center gap-2">
                     <input class="w-4 h-4 rounded border-white/10 bg-surface-container-high text-primary focus:ring-primary ring-offset-surface" id="remember" type="checkbox"/>
