@@ -45,6 +45,8 @@ const aiModel = z.object({
       })
       .optional(),
 
+    genre: z.string().optional(),
+
     characters: z
       .array(
         z.object({
@@ -64,7 +66,7 @@ const aiStoryContinuation = z.object({
       .min(10, "Prompt must be at least 10 characters long.")
       .max(5000, "Prompt must not exceed 5000 characters."),
     language: z.string().optional(),
-    genre: z.string().optional(), // ← ADDED
+    genre: z.string().optional(),
   }),
 });
 
@@ -83,11 +85,6 @@ const aiAlternateEndings = z.object({
   }),
 });
 
-<<<<<<< HEAD
-export const AIModelValidator = {
-  aiModel,
-  aiAlternateEndings,
-=======
 const aiChat = z.object({
   body: z.object({
     message: z
@@ -136,5 +133,4 @@ export const AIModelValidator = {
   aiChat,
   aiRemix,
   aiTranslate,
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
 };

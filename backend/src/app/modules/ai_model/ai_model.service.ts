@@ -39,13 +39,9 @@ const normalizeStoryPayload = (payload: IAIModel) => ({
   wordLength: payload.wordLength ?? 250,
   numStories: payload.numStories ?? 2,
   language: payload.language ?? "English",
-<<<<<<< HEAD
-  genre: payload.genre, // ← ADDED
-=======
   tone: payload.tone ?? undefined,
   genre: payload.genre ?? undefined,
   characters: payload.characters ?? undefined,
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
 });
 
 const mapGenerationError = (error: unknown, message: string): never => {
@@ -64,41 +60,11 @@ const mapGenerationError = (error: unknown, message: string): never => {
   throw new ApiError(httpStatus.BAD_GATEWAY, `${message} (${errorMsg})`);
 };
 
-<<<<<<< HEAD
-const aiModelGenerate = async (payload: IAIModel, token: ITokenPayload) => {
-  const { email } = token;
-  // ↓ genre added to destructure
-  const { prompt, wordLength, numStories, language, genre } = normalizeStoryPayload(payload);
-
-  const currentDate = new Date();
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-
-  const user = await User.findOne({ email: email });
-  if (!user) throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
-
-  if (user.lastRequestDate && user.lastRequestDate < firstDayOfMonth) {
-    await User.updateOne(
-      { email: email, lastRequestDate: { $lt: firstDayOfMonth } },
-      { $set: { requestsThisMonth: 0, lastRequestDate: currentDate } }
-    );
-  }
-
-  const requestLimit = REQUEST_LIMITS[user.subscriptionType as keyof typeof REQUEST_LIMITS] || REQUEST_LIMITS.free;
-
-  const updatedUser = await User.findOneAndUpdate(
-    { email: email, requestsThisMonth: { $lt: requestLimit } },
-    { $inc: { requestsThisMonth: 1 }, $set: { lastRequestDate: currentDate } },
-    { new: true }
-  );
-
-  if (!updatedUser) throw new ApiError(httpStatus.CONFLICT, "Monthly request limit exceeded!");
-=======
 // Bug fix 1: quota.lifecycle owns rollback — no manual User.updateOne needed.
 // Bug fix 2: _token kept as unused param (quota handled upstream by middleware).
 const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal?: AbortSignal) => {
   const { prompt, wordLength, numStories, language, tone, genre, characters } =
     normalizeStoryPayload(payload);
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
 
   try {
     const result = await raceGenerationWithTimeout(
@@ -108,15 +74,10 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal
           wordLength,
           numStories,
           language,
-<<<<<<< HEAD
-          genre,   // ← ADDED
-          signal
-=======
           signal,
           tone,
           genre,
           characters,
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
         ),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
       signal
@@ -128,15 +89,9 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal
   }
 };
 
-<<<<<<< HEAD
-const aiFreeModelGenerate = async (payload: IAIModel) => {
-  // ↓ genre added to destructure
-  const { prompt, wordLength, numStories, language, genre } = normalizeStoryPayload(payload);
-=======
 const aiFreeModelGenerate = async (payload: IAIModel, signal?: AbortSignal) => {
   const { prompt, wordLength, numStories, language, tone, genre, characters } =
     normalizeStoryPayload(payload);
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
 
   try {
     const result = await raceGenerationWithTimeout(
@@ -146,15 +101,10 @@ const aiFreeModelGenerate = async (payload: IAIModel, signal?: AbortSignal) => {
           wordLength,
           numStories,
           language,
-<<<<<<< HEAD
-          genre,   // ← ADDED
-          signal
-=======
           signal,
           tone,
           genre,
           characters,
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
         ),
       FREE_GENERATION_TIMEOUT_MS,
       signal
@@ -343,12 +293,8 @@ export const AiModelService = {
   aiFreeModelRemix,
   aiModelTranslate,
   aiFreeModelTranslate,
-<<<<<<< HEAD
-};
-=======
   aiModelStoryContinuation,
   aiFreeStoryContinuation,
   aiModelChat,
   aiFreeModelChat,
 };
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99

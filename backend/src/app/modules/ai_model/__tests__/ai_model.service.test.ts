@@ -23,15 +23,6 @@ jest.mock("../../../../utils/generation_timeout", () => ({
   raceGenerationWithTimeout: jest.fn(),
 }));
 
-// Mock User to avoid DATABASE_URL check in config
-jest.mock("../../user/user.model", () => ({
-  User: {
-    findOne: jest.fn(),
-    findOneAndUpdate: jest.fn(),
-    updateOne: jest.fn(),
-  },
-}));
-
 jest.mock("../quota.lifecycle", () => ({
   ...jest.requireActual("../quota.lifecycle"),
   assertSuccessfulGeneration: jest.fn((result: unknown, message: string) => {
@@ -46,24 +37,10 @@ jest.mock("../quota.lifecycle", () => ({
 const mockedGenerate = generateWithGeminiStories as jest.MockedFunction<typeof generateWithGeminiStories>;
 const mockedRace = raceGenerationWithTimeout as jest.MockedFunction<typeof raceGenerationWithTimeout>;
 
-// Use requireMock to access the User model mock
-const MockedUser = jest.requireMock("../../user/user.model").User as {
-  findOne: jest.Mock;
-  findOneAndUpdate: jest.Mock;
-  updateOne: jest.Mock;
-};
-
 const story = {
   title: "x",
   content: "body",
   tag: "adventure",
-};
-
-const mockUser = {
-  email: "user@example.com",
-  subscriptionType: "free",
-  requestsThisMonth: 0,
-  lastRequestDate: null,
 };
 
 describe("AiModelService", () => {
@@ -94,7 +71,30 @@ describe("AiModelService", () => {
       100,
       1,
       "Spanish",
-      expect.anything()
+      expect.anything(),
+      undefined,
+      undefined,
+      undefined
+    );
+  });
+
+  it("passes the selected genre through to story generation", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiModelGenerate(
+      { prompt: "test", wordLength: 100, numStories: 1, genre: "Horror" },
+      { email: "user@example.com" } as never
+    );
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      100,
+      1,
+      "English",
+      expect.anything(),
+      undefined,   // tone
+      "Horror",    // genre
+      undefined    // characters
     );
   });
 
@@ -162,14 +162,15 @@ describe("AiModelService", () => {
       { email: "user@example.com" } as never
     );
 
-    // The 6th argument to generateWithGeminiStories should be the tone string
     expect(mockedGenerate).toHaveBeenCalledWith(
-      "test",   // prompt
-      100,      // wordLength
-      1,        // numStories
-      "English", // language default
+      "test",
+      100,
+      1,
+      "English",
       expect.any(Object), // AbortSignal
-      "Dark"    // tone
+      "Dark",             // tone
+      undefined,          // genre
+      undefined           // characters
     );
   });
 
@@ -190,6 +191,7 @@ describe("AiModelService", () => {
       "English",
       expect.any(Object),
       "Humorous",
+      undefined,
       undefined
     );
   });
@@ -208,7 +210,8 @@ describe("AiModelService", () => {
       1,
       "English",
       expect.any(Object),
-      undefined, // no tone → undefined, so the util skips the directive
+      undefined,
+      undefined,
       undefined
     );
   });
@@ -228,6 +231,7 @@ describe("AiModelService", () => {
       1,
       "English",
       expect.any(Object),
+      undefined,
       undefined,
       undefined
     );

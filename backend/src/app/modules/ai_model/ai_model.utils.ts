@@ -135,8 +135,7 @@ const sanitizeJsonText = (rawText: string): string => {
     .trim();
 };
 
-<<<<<<< HEAD
-// ─── GENRE SUPPORT (NEW) ────────────────────────────────────────────────────
+// ─── GENRE SUPPORT ──────────────────────────────────────────────────────────
 
 // Genre-specific writing guidance injected into the Gemini prompt so each
 // genre produces distinctly themed output (acceptance criterion 3).
@@ -189,9 +188,8 @@ export const resolveGenreInstruction = (
   return `The story must clearly fit the "${candidate}" genre. ${styleGuide}`;
 };
 
-// ─── STORY GENERATION ───────────────────────────────────────────────────────
+// ─── CHARACTERS SUPPORT ─────────────────────────────────────────────────────
 
-=======
 const buildCharactersInstruction = (characters?: ICharacter[]): string => {
   if (!characters || characters.length === 0) return "";
   const charsString = characters
@@ -202,6 +200,8 @@ const buildCharactersInstruction = (characters?: ICharacter[]): string => {
     .join("\n");
   return `Cast of Characters (You MUST incorporate these characters into all generated stories and maintain their roles, relationship dynamics, and traits consistently):\n${charsString}\n\n`;
 };
+
+// ─── RETRY / FALLBACK ───────────────────────────────────────────────────────
 
 import { GenerativeModel } from "@google/generative-ai";
 
@@ -256,21 +256,17 @@ const executeWithRetryAndFallback = async <T>(
   }
 };
 
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
+// ─── STORY GENERATION ───────────────────────────────────────────────────────
+
 export async function generateWithGeminiStories(
   prompt: string,
   wordLength: number = 250,
   numStories: number = 2,
   language: string = "English",
-<<<<<<< HEAD
-  genre?: string,        // ← ADDED
-  signal?: AbortSignal
-=======
   signal?: AbortSignal,
-  tone?: string, // NEW: optional tone parameter
-  genre?: string, // NEW: optional genre parameter
+  tone?: string,
+  genre?: string,
   characters?: ICharacter[],
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
 ): Promise<Story[]> {
   throwIfAborted(signal);
 
@@ -284,19 +280,14 @@ export async function generateWithGeminiStories(
         history: [],
       });
 
-<<<<<<< HEAD
-    // Build optional genre instruction line injected into the prompt
-    const genreInstruction = resolveGenreInstruction(genre, prompt);
-    const genreInstructionLine = genreInstruction
-      ? `\n        ${genreInstruction}`
-      : "";
+      // Build optional genre instruction line injected into the prompt
+      const genreInstruction = resolveGenreInstruction(genre, prompt);
+      const genreInstructionLine = genreInstruction
+        ? `\n        ${genreInstruction}`
+        : "";
 
-    const response = await chatSession.sendMessage(
-      `You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
-=======
       return chatSession.sendMessage(
         `${buildGenreInstruction(genre)}${buildToneInstruction(tone)}${buildCharactersInstruction(characters)}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
         First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
         Then, generate ${numStories} different short stories based on this ENHANCED prompt.
         The stories MUST be written entirely in the ${language} language.${genreInstructionLine}
@@ -334,8 +325,6 @@ export async function generateWithGeminiStories(
       }
     });
 
-<<<<<<< HEAD
-=======
     // Fetch cover images for stories sequentially
     const coverImages: string[] = [];
     for (const story of stories) {
@@ -369,7 +358,6 @@ export async function generateWithGeminiStories(
       }
     }
 
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
     const imageUrls = await Promise.all(imagePromises);
 
     return stories.map((story, index) => ({
@@ -392,7 +380,7 @@ export async function generateWithGeminiStories(
   }
 }
 
-// ─── ALTERNATE ENDINGS (UNCHANGED) ──────────────────────────────────────────
+// ─── ALTERNATE ENDINGS ──────────────────────────────────────────────────────
 
 export async function generateAlternateEndingsWithGemini(
   title: string,
@@ -436,11 +424,7 @@ export async function generateAlternateEndingsWithGemini(
     throwIfAborted(signal);
     const text = response.response.text();
 
-<<<<<<< HEAD
-    let parsed: any;
-=======
     let parsed: unknown;
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
     try {
       parsed = JSON.parse(sanitizeJsonText(text));
     } catch (parseError: unknown) {
@@ -488,10 +472,8 @@ export async function generateAlternateEndingsWithGemini(
   }
 }
 
-<<<<<<< HEAD
-// ─── REMIX (UNCHANGED) ──────────────────────────────────────────────────────
+// ─── STREAMING ──────────────────────────────────────────────────────────────
 
-=======
 export async function generateWithGeminiStoriesStream(
   prompt: string,
   wordLength: number = 250,
@@ -554,7 +536,9 @@ export async function generateWithGeminiStoriesStream(
     );
   }
 }
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
+
+// ─── REMIX ──────────────────────────────────────────────────────────────────
+
 export async function generateRemixWithGemini(
   title: string,
   content: string,
@@ -623,6 +607,8 @@ Write the remixed story in ${language}. Return a JSON object with this exact str
     );
   }
 }
+
+// ─── STORY CONTINUATION ────────────────────────────────────────────────────
 
 export async function generateStoryContinuationWithGemini(
   storyContext: string,
@@ -695,7 +681,7 @@ Return only valid JSON with this exact structure:
   }
 }
 
-// ─── TRANSLATE (UNCHANGED) ──────────────────────────────────────────────────
+// ─── TRANSLATE ──────────────────────────────────────────────────────────────
 
 export async function translateStoryWithGemini(
   title: string,
@@ -749,9 +735,9 @@ Preserve the story's tone, style and meaning. Only translate — do not modify t
       `AI translation failed: ${errorMsg}`,
     );
   }
-<<<<<<< HEAD
-=======
 }
+
+// ─── STORYBOARD ─────────────────────────────────────────────────────────────
 
 export async function generateStoryboardWithGemini(
   payload: IStoryVisualizerPayload,
@@ -860,6 +846,8 @@ Rules:
   }
 }
 
+// ─── CHAT ───────────────────────────────────────────────────────────────────
+
 export async function chatWithGemini(
   message: string,
   history: { role: string; parts: { text: string }[] }[] = [],
@@ -891,5 +879,4 @@ export async function chatWithGemini(
       `AI chat failed: ${errorMsg}`,
     );
   }
->>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
 }
