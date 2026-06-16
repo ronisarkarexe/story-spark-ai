@@ -16,6 +16,7 @@ const bugReportSchema = new Schema<IBugReport>(
       enum: ["Open", "In Progress", "Resolved", "Closed"],
       default: "Open",
     },
+    screenshotUrl: { type: String },
   },
   { timestamps: true }
 );

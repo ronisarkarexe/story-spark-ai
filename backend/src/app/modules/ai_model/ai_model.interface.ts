@@ -1,9 +1,21 @@
+export interface ICharacter {
+  name: string;
+  role: string;
+  personality: string;
+}
+
 export interface IAIModel {
   prompt: string;
   wordLength: number;
   numStories: number;
   language?: string;
+<<<<<<< HEAD
   genre?: string; // ← ADDED
+=======
+  tone?: string;
+  genre?: string;
+  characters?: ICharacter[];
+>>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99
 }
 
 export interface IStory {
@@ -42,4 +54,17 @@ export interface IAlternateEndingPayload {
   content: string;
   tag: string;
   language?: string;
+<<<<<<< HEAD
 }
+=======
+}
+export interface IChatMessage {
+  role: "user" | "model";
+  parts: string;
+}
+
+export interface IChatPayload {
+  message: string;
+  history?: IChatMessage[];
+}
+>>>>>>> 4e00323bafbab3077b109b69274ecb3e313a5d99

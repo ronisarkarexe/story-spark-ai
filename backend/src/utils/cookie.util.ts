@@ -30,6 +30,13 @@ export const setRefreshTokenCookie = (
 };
 
 /**
+ * Clears the refreshToken cookie. Options must match those used to set it.
+ */
+export const clearRefreshTokenCookie = (res: Response): void => {
+    res.clearCookie("refreshToken", cookieOptions);
+};
+
+/**
  * Sets the guest userId tracking cookie.
  */
 export const setGuestUserIdCookie = (

@@ -10,7 +10,7 @@ import {
   useForgotPasswordMutation,
   useResetPasswordMutation,
 } from "../../redux/apis/auth.api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 interface Inputs {
   email: string;
@@ -56,6 +56,7 @@ const ForgotPasswordComponent = () => {
   const [emailAddress, setEmailAddress] = useState<string>("");
   const [verificationToken, setVerificationToken] = useState<string>("");
   const [isBusy, setIsBusy] = useState<boolean>(false);
+  const [otpSent, setOtpSent] = useState<boolean>(false);
   const [cooldown, setCooldown] = useState<number>(0);
   const [expiredAt, setExpiredAt] = useState<number>(0);
 
@@ -123,6 +124,7 @@ const ForgotPasswordComponent = () => {
         setExpiredAt(new Date(expiresAt).getTime());
         setEmailAddress(data.email);
         toast.success("OTP sent to your email successfully!");
+        setOtpSent(true);
         setCooldown(60);
         setStep(2);
       }
@@ -266,7 +268,7 @@ const ForgotPasswordComponent = () => {
                 register={register}
                 error={errors.email}
               />
-              <SSButton text="Send OTP" type="submit" isLoading={isBusy} />
+              <SSButton text="Send OTP" type="submit" isLoading={isBusy} disabled={otpSent} />
             </form>
           )}
 
@@ -360,9 +362,9 @@ const ForgotPasswordComponent = () => {
           )}
 
           <div className="text-center text-sm text-indigo-600">
-            <a href="/login" className="block text-custom hover:underline">
+            <Link to="/login" className="block text-custom hover:underline">
               Back to Sign In
-            </a>
+            </Link>
           </div>
         </div>
       </AuthLayout>

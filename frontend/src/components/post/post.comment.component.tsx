@@ -4,6 +4,7 @@ import {
   useCreateCommentMutation,
   useGetCommentsListQuery,
   useToggleCommentLikeMutation,
+  useDeleteCommentMutation,
 } from "../../redux/apis/comment";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
@@ -32,14 +33,25 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
   const { data: commentList } = useGetCommentsListQuery(postId);
   const [createComment] = useCreateCommentMutation();
   const [toggleCommentLike] = useToggleCommentLikeMutation();
-
+  const [deleteComment] = useDeleteCommentMutation();
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (!isLogin) {
       toast.error("Please login to post a comment.");
       return;
     }
     if (data.comment.trim() === "") {
-      toast.error("Please enter a comment.");
+      toast.custom((t) => (
+  <div className="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+    <span>Please enter a comment.</span>
+
+    <button
+      onClick={() => toast.dismiss(t.id)}
+      className="ml-2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition"
+    >
+      ×
+    </button>
+  </div>
+));
       return;
     }
     const createPostComment = {
@@ -107,7 +119,20 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
       toast.error(getErrorMessage(err));
     }
   };
+  const handleDeleteComment = async (commentId: string) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this comment?"
+  );
 
+  if (!confirmed) return;
+
+  try {
+    await deleteComment(commentId).unwrap();
+    toast.success("Comment deleted successfully!");
+  } catch (err: unknown) {
+    toast.error(getErrorMessage(err));
+  }
+};
   return (
     <div>
       <form className="mb-8" onSubmit={handleSubmit(onSubmit)}>
@@ -161,8 +186,17 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                     onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
                     className="hover:text-blue-400 transition-colors"
                   >
+                  
                     <i className="far fa-comment mr-1"></i> Reply
                   </button>
+                  {currentUser?.userId === comment?.userId?._id && (
+                  <button
+                  onClick={() => handleDeleteComment(comment._id)}
+                  className="hover:text-red-500 transition-colors"
+                  >
+    <i className="far fa-trash-alt mr-1"></i> Delete
+  </button>
+)}
                 </div>
 
                 {replyingTo === comment._id && (

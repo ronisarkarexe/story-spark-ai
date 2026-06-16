@@ -32,6 +32,7 @@ const NotificationComponent: React.FC<INotificationComponentProps> = ({
         <button
           className="rounded-full p-2 text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
           onClick={() => setShowNotification(false)}
+          aria-label="Close notifications"
         >
           <i className="fas fa-times text-sm"></i>
         </button>

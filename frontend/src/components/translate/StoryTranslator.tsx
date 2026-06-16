@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 import { useTranslateStoryMutation, useTranslateFreeStoryMutation } from "../../redux/apis/ai.model.api";
 import { IStories } from "../stories/stories.view.component";
 
@@ -24,12 +26,15 @@ const LANGUAGES = [
 ];
 
 export default function StoryTranslator({ story, isLogin, onClose }: Props) {
+  const navigate = useNavigate();
+
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
   const [translatedTitle, setTranslatedTitle] = useState<string>("");
   const [translatedContent, setTranslatedContent] = useState<string>("");
   const [isTranslating, setIsTranslating] = useState(false);
   const [error, setError] = useState("");
   const [isDone, setIsDone] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const [translateStory] = useTranslateStoryMutation();
   const [translateFreeStory] = useTranslateFreeStoryMutation();
@@ -63,8 +68,59 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
     }
   };
 
+  // ── Action 1: Copy to clipboard ──────────────────────────────────────────
+  const handleCopy = async () => {
+    const text = `${translatedTitle}\n\n${translatedContent}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      toast.success("Translation copied to clipboard!");
+      setTimeout(() => setIsCopied(false), 2500);
+    } catch {
+      toast.error("Failed to copy. Please try again.");
+    }
+  };
+
+  // ── Action 2: Download as .txt ───────────────────────────────────────────
+  const handleDownload = () => {
+    const text = `${translatedTitle}\n\n${translatedContent}`;
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${translatedTitle || "translated-story"}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Story downloaded!");
+  };
+
+  // ── Action 3: Save as Draft ──────────────────────────────────────────────
+  const handleSaveAsDraft = () => {
+    const draftData = {
+      prompt: translatedContent,
+      genre: story.tag || "",
+      length: "medium",
+      language: selectedLanguage,
+    };
+    try {
+      localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
+      toast.success("Saved as draft! Redirecting to story generator...");
+      setTimeout(() => {
+        onClose();
+        navigate("/stories", {
+          state: { prompt: translatedContent },
+        });
+      }, 1200);
+    } catch {
+      toast.error("Could not save draft. Storage limit may be full.");
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur flex items-center justify-center p-4">
+      <Toaster position="top-center" />
       <div className="w-full max-w-4xl bg-[#0f1117] rounded-2xl border border-white/10 overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
 
         {/* Header */}
@@ -127,6 +183,7 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
                   Translate Again
                 </button>
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Original */}
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
@@ -142,6 +199,47 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
                   <p className="text-sm font-semibold text-white mb-2">{translatedTitle}</p>
                   <p className="text-xs text-white/60 leading-relaxed max-h-48 overflow-y-auto">{translatedContent}</p>
                 </div>
+              </div>
+
+              {/* ── Action Buttons ── */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+
+                {/* Copy to Clipboard */}
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white text-sm font-medium transition-all"
+                >
+                  {isCopied ? (
+                    <>
+                      <span>✅</span>
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>📋</span>
+                      <span>Copy Translation</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Download as .txt */}
+                <button
+                  onClick={handleDownload}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white text-sm font-medium transition-all"
+                >
+                  <span>⬇️</span>
+                  <span>Download .txt</span>
+                </button>
+
+                {/* Save as Draft */}
+                <button
+                  onClick={handleSaveAsDraft}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 text-sm font-medium transition-all"
+                >
+                  <span>✍️</span>
+                  <span>Save as Draft</span>
+                </button>
+
               </div>
             </div>
           )}

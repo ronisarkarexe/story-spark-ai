@@ -6,6 +6,7 @@ import {
 import { User } from "../../../models/user";
 import toast, { Toaster } from "react-hot-toast";
 import { ProfileSettingComponent } from "./profile.setting.component";
+import { ProfileSavedStoriesSection } from "./profile.saved_stories.component";
 import { WriterApplicationForm } from "./writer_application.form";
 
 const ProfileComponent = () => {
@@ -28,8 +29,8 @@ const ProfileComponent = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 animate-pulse">
-        <div className="max-w-3xl mx-auto">
+      <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 lg:px-8 animate-pulse">
+        <div className="w-full">
           <div className="bg-slate-50 border border-slate-200 dark:bg-slate-800/40 dark:border-slate-700/50 rounded-xl shadow-lg overflow-hidden">
             {/* Header Skeleton */}
             <div className="bg-indigo-650 px-6 py-5 border-b border-slate-200 dark:border-slate-700/50">
@@ -103,7 +104,7 @@ const ProfileComponent = () => {
   }
 
   return (
-    <div className="pb-12">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 pb-12">
       {data && (
         <>
           <ProfileSettingComponent
@@ -111,6 +112,7 @@ const ProfileComponent = () => {
             onSave={onSave}
             loading={loading}
           />
+          <ProfileSavedStoriesSection />
           <WriterApplicationForm user={data} />
         </>
       )}

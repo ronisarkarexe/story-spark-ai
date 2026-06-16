@@ -21,11 +21,28 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
+  name: "Published Stories",
+  icon: "fas fa-book",
+  path: "/dashboard/published-stories",
+  roles: [USER_ROLE.USER, USER_ROLE.WRITER],
+},
+  {
     name: "Analytics",
     icon: "fas fa-chart-line",
     path: "/dashboard/analytics",
     roles: [
       USER_ROLE.WRITER,
+    ],
+  },
+  {
+    name: "Published Stories",
+    icon: "fas fa-book-open",
+    path: "/dashboard/published-stories",
+    roles: [
+      USER_ROLE.USER,
+      USER_ROLE.WRITER,
+      USER_ROLE.ADMIN,
+      USER_ROLE.SUPER_ADMIN,
     ],
   },
   {
