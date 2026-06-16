@@ -8,7 +8,7 @@ import { generateStoryboardImage } from "../../../utils/storyboard_image_generat
 import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
-import { IAlternateEnding, ICharacter } from "./ai_model.interface";
+import { IAlternateEnding, ICharacter, ICharacterMemory } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import type {
@@ -536,6 +536,56 @@ Write the remixed story in ${language}. Return a JSON object with this exact str
   }
 }
 
+export async function extractCharacterMemory(
+  storyContext: string,
+  signal?: AbortSignal
+): Promise<ICharacterMemory[]> {
+  if (!geminiApiKey) {
+    console.warn("[AI] Gemini key not configured, returning empty character memory.");
+    return [];
+  }
+
+  if (!storyContext || storyContext.trim().length < 50) {
+    return [];
+  }
+
+  try {
+    const response = await executeWithRetryAndFallback(async (activeModel) => {
+      const prompt = `You are a narrative analysis agent. Analyze the story context below and extract details for all active characters.
+For each character, identify:
+1. "name": Character's name
+2. "appearance": Physical description, clothing, or unique visual details (if mentioned)
+3. "personality": Personality traits, demeanor, or emotional states shown
+4. "keyActions": Crucial actions, events, decisions, or things they have done in the story
+5. "goals": What they are trying to achieve (if mentioned or implied)
+6. "relationships": Key connections/interactions they have with other characters
+
+Story Content:
+"${storyContext}"
+
+Return ONLY a valid JSON array of objects with the fields: "name", "appearance", "personality", "keyActions", "goals", "relationships". Keep descriptions concise.`;
+
+      return activeModel.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: "application/json",
+        },
+      }, { signal });
+    }, signal);
+
+    const text = response.response.text();
+    const parsed = JSON.parse(sanitizeJsonText(text));
+    if (Array.isArray(parsed)) {
+      return parsed as ICharacterMemory[];
+    }
+    return [];
+  } catch (error) {
+    console.error("[AI] Character memory extraction failed:", error);
+    return [];
+  }
+}
+
 export async function generateStoryContinuationWithGemini(
   storyContext: string,
   language: string = "English",
@@ -545,6 +595,30 @@ export async function generateStoryContinuationWithGemini(
   assertGeminiApiKeyConfigured();
 
   try {
+    // 1. Extract character memory dynamically from context
+    const characterMemory = await extractCharacterMemory(storyContext, signal);
+    throwIfAborted(signal);
+
+    // 2. Build the character memory prompt section
+    let memoryBlock = "";
+    if (characterMemory && characterMemory.length > 0) {
+      const formattedChars = characterMemory
+        .map(
+          (c) =>
+            `- Character Name: ${c.name}
+  Appearance Details: ${c.appearance || "Unknown"}
+  Personality & Demeanor: ${c.personality || "Unknown"}
+  Actions & Narrative History: ${c.keyActions || "None"}
+  Current Goals: ${c.goals || "Unknown"}
+  Relationships: ${c.relationships || "Unknown"}`
+        )
+        .join("\n\n");
+
+      memoryBlock = `[CHARACTER MEMORY SYSTEM]
+Below is the tracked memory of characters and events in the story. You MUST reference this stored context to ensure all characters behave consistently, their appearance details, goals, relationships remain coherent, and previous actions/narrative history are preserved:
+${formattedChars}\n\n`;
+    }
+
     const response = await executeWithRetryAndFallback(async (activeModel) => {
       const chatSession = activeModel.startChat({
         generationConfig: {
@@ -556,11 +630,11 @@ export async function generateStoryContinuationWithGemini(
       });
 
       return chatSession.sendMessage(
-        `You are an expert storyteller. The user has written the following story so far:
+        `${memoryBlock}You are an expert storyteller. The user has written the following story so far:
 
 "${storyContext}"
 
-Continue this story naturally with 2-4 paragraphs that maintain the same tone, style, and narrative direction. The continuation MUST be written entirely in ${language}.
+Continue this story naturally with 2-4 paragraphs that maintain the same tone, style, and narrative direction. Make sure to reference the [CHARACTER MEMORY SYSTEM] context to maintain character consistency. The continuation MUST be written entirely in ${language}.
 
 Return only valid JSON with this exact structure:
 {

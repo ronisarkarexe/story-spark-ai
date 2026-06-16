@@ -4,6 +4,15 @@ export interface ICharacter {
   personality: string;
 }
 
+export interface ICharacterMemory {
+  name: string;
+  appearance?: string;
+  personality?: string;
+  keyActions?: string;
+  goals?: string;
+  relationships?: string;
+}
+
 export interface IAIModel {
   prompt: string;
   wordLength: number;
