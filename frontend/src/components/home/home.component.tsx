@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import CommunitySpotlightComponent from "./community_spotlight/community_spotlight.component";
 import FeatureComponent from "./feature/feature.component";
 import LatestPostsComponent from "./latest_posts/latest_posts.component";
@@ -36,12 +36,15 @@ const itemVariants = {
 };
 
 const HomeComponent = () => {
-  const isLogin = isLoggedIn();
+  // 1. Safe state initialization to avoid crashing on render/SSR
+  const [isLogin, setIsLogin] = useState(false);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
+    if (typeof window !== "undefined") {
+      setIsLogin(isLoggedIn());
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
   }, []);
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 w-full box-border overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-12 items-start gap-6 py-8 sm:py-12 lg:gap-8 lg:py-16 w-full box-border">

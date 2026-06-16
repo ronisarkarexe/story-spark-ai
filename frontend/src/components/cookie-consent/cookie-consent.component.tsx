@@ -103,9 +103,14 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
     saveCookiePreferences(updated);
   };
 
+  // Dynamic Theme Styling Definitions
   const bannerClasses = isDark
-    ? "fixed inset-x-0 bottom-0 z-50 bg-slate-950/95 border-t border-slate-200/10 dark:border-white/10 py-6 shadow-2xl backdrop-blur-xl text-white transition-colors duration-300 max-h-[85vh] overflow-y-auto sidebar"
-    : "fixed inset-x-0 bottom-0 z-50 bg-white/95 border-t border-slate-200 py-6 shadow-2xl backdrop-blur-xl text-slate-900 transition-colors duration-300 max-h-[85vh] overflow-y-auto sidebar";
+    ? "fixed inset-x-0 bottom-0 z-50 px-4 pb-4 text-white sm:px-6 lg:px-8 max-h-[85vh] overflow-y-auto sidebar"
+    : "fixed inset-x-0 bottom-0 z-50 px-4 pb-4 text-slate-900 sm:px-6 lg:px-8 max-h-[85vh] overflow-y-auto sidebar";
+
+  const trackingBoxClasses = isDark
+    ? "mx-auto flex max-w-6xl flex-col gap-6 rounded-2xl border border-slate-800 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl sm:p-5 xl:flex-row xl:items-start xl:justify-between xl:gap-8"
+    : "mx-auto flex max-w-6xl flex-col gap-6 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-2xl backdrop-blur-xl sm:p-5 xl:flex-row xl:items-start xl:justify-between xl:gap-8";
 
   const panelClasses = isDark
     ? "rounded-2xl border border-slate-200/10 dark:border-white/5 bg-slate-900/40 p-4 sm:p-5"
@@ -118,30 +123,30 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
   const primaryText = isDark ? "text-white" : "text-slate-900";
   const secondaryText = isDark ? "text-slate-300" : "text-slate-600";
   const mutedText = isDark ? "text-slate-400" : "text-slate-500";
+
   const subtleLabel = isDark
     ? "font-semibold uppercase tracking-wider text-[10px] bg-slate-800 px-2 py-0.5 rounded-md text-slate-400 group-hover:text-white transition-colors"
     : "font-semibold uppercase tracking-wider text-[10px] bg-slate-100 px-2 py-0.5 rounded-md text-slate-500 group-hover:text-slate-900 transition-colors";
+
   const checkboxClasses = isDark
     ? "h-4 w-4 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500/30 transition-colors cursor-pointer"
     : "h-4 w-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500/30 transition-colors cursor-pointer";
+
   const actionButtonClasses = isDark
     ? "w-full rounded-xl border border-slate-200/10 dark:border-white/10 bg-slate-900 px-5 py-3 text-xs font-bold text-white transition-all duration-150 hover:bg-slate-800 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider"
     : "w-full rounded-xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-900 transition-all duration-150 hover:bg-slate-100 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider";
 
   return (
-    <div ref={bannerRef} className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-h-[82vh] max-w-5xl flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-700 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl sm:p-5 xl:flex-row xl:items-start xl:justify-between xl:gap-6">
-        <div className="max-w-3xl space-y-3">
-          <p className="text-xs uppercase tracking-[0.26em] text-slate-400">Cookie Preferences</p>
-          <h2 className="text-xl font-semibold text-white sm:text-2xl">Manage your cookie settings</h2>
-          <p className="text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:px-8 xl:flex-row xl:items-start xl:justify-between xl:gap-8">
+    <div ref={bannerRef} className={bannerClasses}>
+      <div className={trackingBoxClasses}>
+
+        {/* Information Grid Suite */}
         <div className="max-w-3xl space-y-4">
           <div className="space-y-1.5">
             <p className={`text-xs font-bold uppercase tracking-[0.24em] ${mutedText}`}>Cookie Preferences</p>
             <h2 className={`text-xl sm:text-2xl font-bold tracking-tight ${primaryText}`}>Manage your cookie settings</h2>
           </div>
-          
+
           <p className={`text-sm sm:text-base leading-relaxed ${secondaryText}`}>
             StorySpark AI uses cookies to keep the experience secure and smooth. Select which cookie categories you want to allow, or accept all for the best experience.
             <Link to="/cookie-policy" className="ml-1.5 text-blue-600 dark:text-blue-400 underline font-medium hover:text-blue-500 dark:hover:text-blue-300 transition-colors">Learn more</Link>.
@@ -149,6 +154,8 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
 
           <div className={panelClasses}>
             <div className="grid gap-3 sm:grid-cols-2">
+
+              {/* Essential Layer Block */}
               <div className={cardClasses}>
                 <div className="space-y-1">
                   <p className={`font-bold text-sm ${primaryText}`}>Essential Cookies</p>
@@ -159,6 +166,7 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
                 </div>
               </div>
 
+              {/* Functional Layer Block */}
               <div className={cardClasses}>
                 <div className="space-y-1">
                   <p className={`font-bold text-sm ${primaryText}`}>Functional Cookies</p>
@@ -179,6 +187,7 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
                 </div>
               </div>
 
+              {/* Analytics Layer Block */}
               <div className={`${cardClasses} sm:col-span-2 flex-col sm:flex-row sm:items-center sm:justify-between gap-4`}>
                 <div className="space-y-1 max-w-xl">
                   <p className={`font-bold text-sm ${primaryText}`}>Analytics Cookies</p>
@@ -198,10 +207,12 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
                   </label>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
 
+        {/* Call to Actions Controls Panel */}
         <div className="flex flex-col gap-2.5 xl:w-[280px] shrink-0 xl:pt-11 w-full">
           <button
             onClick={handleAcceptAll}
@@ -222,8 +233,10 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
             Reject non-essential
           </button>
         </div>
+
       </div>
-    
+    </div>
   );
 };
+
 export default CookieConsentBanner;

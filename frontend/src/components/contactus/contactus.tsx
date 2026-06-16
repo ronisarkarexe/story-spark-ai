@@ -262,7 +262,7 @@ export default function Contact() {
   }, []);
 
   const changeHandler = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,,
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ): void => {
     const fieldName = e.target.name as FormField;
     setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }));
@@ -341,7 +341,7 @@ export default function Contact() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 box-border">
-        
+
         <div className="mb-8 flex flex-col items-center text-center lg:hidden select-none">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/10 dark:border-white/10 bg-blue-500/5 text-blue-600 dark:text-blue-400 px-4 py-1.5 text-xs font-bold uppercase tracking-wider">
             <Zap className="h-3 w-3" aria-hidden="true" />

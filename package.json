@@ -42,6 +42,7 @@
     "@react-oauth/google": "^0.13.5",
     "bcryptjs": "^3.0.3",
     "express": "^4.21.1",
+    "express-rate-limit": "^8.5.2",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
     "razorpay": "^2.9.6",

@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import AnimatedBook from "../hero/AnimatedBook";
-// Register the GSAP plugin
+import { Variants } from 'framer-motion';
 import Typewriter from "./typewriter.component";
 
+// Register the GSAP plugin properly
 gsap.registerPlugin(useGSAP);
 
 const containerVariants = {
@@ -20,17 +21,16 @@ const containerVariants = {
   },
 };
 
-const itemVariants: any = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
   },
 };
 
 const features = [
-// ... (rest of the features array remains the same)
   {
     title: "Infinite Variations",
     description: "Generate multiple unique branches of your story from a single starting prompt. Explore every creative possibility.",
@@ -78,7 +78,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
     const card = cardRef.current;
     if (!card) return;
 
-    const handleMouseMove = (e: globalThis.MouseEvent) => {
+    const handleMouseMove = (e: any) => {
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
@@ -130,7 +130,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
         ref={cardRef}
         className={`motion-card relative overflow-hidden backdrop-blur-xl border border-slate-200/50 dark:border-white/10 rounded-3xl p-6 sm:p-8 transition-shadow duration-500 shadow-sm group cursor-pointer ${feature.bgClass} hover:shadow-[0_0_40px_rgba(255,255,255,0.12)] h-full w-full box-border`}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
         <div ref={contentRef} className="relative z-10 pointer-events-none w-full box-border">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-5 sm:mb-6 bg-white/10 shadow-md group-hover:scale-105 transition-transform duration-300 shrink-0">
@@ -210,10 +210,9 @@ const HeroParticles = () => {
 };
 
 const HeroSectionComponent = () => {
-  const [stars, setStars] = useState<Array<{ id: number; x: number; y: number; size: number }>>([]);
-  const nextStarId = useRef(1);
-  const starTimers = useRef<number[]>([]);
   const badgeRef = useRef<HTMLDivElement>(null);
+  const starContainerRef = useRef<HTMLDivElement>(null);
+  const lastSpawnTime = useRef<number>(0);
   const [isNavigating, setIsNavigating] = useState(false);
 
   useGSAP(() => {
@@ -240,46 +239,58 @@ const HeroSectionComponent = () => {
     });
 
     gsap.to(badge, {
-      borderColor: "rgba(244, 114, 182, 0.6)",
-      duration: 1,
+      duration: 4,
       repeat: -1,
-      yoyo: true,
       ease: "none",
-      keyframes: {
-        "0%": { borderColor: "rgba(59, 130, 246, 0.4)" },
-        "25%": { borderColor: "rgba(167, 139, 250, 0.4)" },
-        "50%": { borderColor: "rgba(244, 114, 182, 0.4)" },
-        "75%": { borderColor: "rgba(52, 211, 153, 0.4)" },
-        "100%": { borderColor: "rgba(59, 130, 246, 0.4)" }
-      }
+      keyframes: [
+        { borderColor: "rgba(59, 130, 246, 0.4)", duration: 1 },
+        { borderColor: "rgba(167, 139, 250, 0.4)", duration: 1 },
+        { borderColor: "rgba(244, 114, 182, 0.4)", duration: 1 },
+        { borderColor: "rgba(52, 211, 153, 0.4)", duration: 1 },
+      ]
     });
-  });
+  }, { scope: badgeRef });
 
   const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
+    const now = Date.now();
+    if (now - lastSpawnTime.current < 45) return; // Slightly wider window to prevent overload
+    lastSpawnTime.current = now;
+
+    const container = starContainerRef.current;
+    if (!container) return;
+
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const id = nextStarId.current++;
     const size = 8 + Math.floor(Math.random() * 8);
 
-    setStars((prev) => {
-      const next = [...prev, { id, x, y, size }];
-      return next.slice(-18);
+    const star = document.createElement("span");
+    star.className = `hero-cursor-star ${size > 12 ? "hero-cursor-star-large" : ""}`;
+
+    // CRITICAL PERFORMANCE FIX: Added explicit style declarations to avoid collision crash loops
+    star.style.position = "absolute";
+    star.style.pointerEvents = "none"; // Bypasses bubbling event feedback loops completely
+    star.style.left = `${x}px`;
+    star.style.top = `${y}px`;
+    star.style.width = `${size}px`;
+    star.style.height = `${size}px`;
+    star.style.zIndex = "0";
+
+    container.appendChild(star);
+
+    gsap.to(star, {
+      opacity: 0,
+      scale: 0.1,
+      y: "+=20",
+      duration: 0.6,
+      ease: "power2.out",
+      onComplete: () => {
+        if (star.parentNode === container) {
+          container.removeChild(star);
+        }
+      }
     });
-
-    const timerId = window.setTimeout(() => {
-      setStars((prev) => prev.filter((star) => star.id !== id));
-      starTimers.current = starTimers.current.filter((timer) => timer !== timerId);
-    }, 650);
-    starTimers.current.push(timerId);
   };
-
-  useEffect(() => {
-    return () => {
-      starTimers.current.forEach((timerId) => window.clearTimeout(timerId));
-      starTimers.current = [];
-    };
-  }, []);
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden transition-colors duration-300 w-full box-border">
@@ -288,115 +299,109 @@ const HeroSectionComponent = () => {
 
       <HeroParticles />
 
-   
-     <div className="relative overflow-hidden" onMouseMove={handleMouseMove}>
-<div className="text-center lg:text-left"></div>
-<div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">          <div
-   
-   ref={badgeRef}
-            className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 dark:bg-slate-800/60 border border-blue-400/30 dark:border-blue-500/30 backdrop-blur-md mb-8 shadow-sm cursor-pointer transition-all duration-300"
-      <div className="relative overflow-hidden w-full box-border" onMouseMove={handleMouseMove}>
-        <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border">
-          <div
-            ref={badgeRef}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 backdrop-blur-md mb-8 shadow-sm cursor-pointer select-none"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-            </span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">StorySparkAI v2.0 is live</span>
-          </div>
-<div className="grid lg:grid-cols-2 gap-12 items-center">
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+      {/* Main Interactive Track Layout */}
+      <div className="relative overflow-hidden w-full box-border">
 
-          <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none tracking-tight">
-            Ignite Your Imagination With <br className="hidden sm:block" />
-            <span className="hero-gradient-text pb-2">
-              <Typewriter
-                phrases={[
-                  "AI-Driven Storytelling",
-                  "Creative Story Generation",
-                  "Smart Writing Assistant",
-                ]}
-              />
-            </span>
-          </h1>
-<div className="flex justify-center lg:justify-end">
-  <AnimatedBook />
-</div>
-          <p className="max-w-2xl lg:mx-0 mx-auto text-lg sm:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 transition-colors duration-300">
+        {/* FIXED: Dedicated interaction capture overlay to avoid virtual DOM tree disruption */}
+        <div
+          className="absolute inset-0 z-30 cursor-default style={{ pointerEvents: 'auto' }}"
+          onMouseMove={handleMouseMove}
+        />
 
-          <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
-            Create, edit, and generate engaging multiple story variations from a single prompt.
-            Perfect for writers, creators, and enthusiasts exploring the future of fiction.
-          </p>
-          
-          <div className="flex-grow flex flex-col items-center justify-center">
-            <div className="relative max-w-3xl w-full before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-purple-500/20 before:via-indigo-500/20 before:to-blue-500/20 before:blur-xl before:animate-pulse">
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                
-                <Link to="/stories">
-                  <button className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-blue-500/25 dark:shadow-indigo-500/15 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
-                    <i className="fa fa-wand-magic-sparkles"></i>
-          <div className="w-full box-border flex flex-col items-center justify-center">
-            <div className="relative max-w-3xl w-full box-border">
-              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
-                <button
-  onClick={() => {
-    setIsNavigating(true);
-    setTimeout(() => { window.location.href = "/stories"; }, 400);
-  }}
-  disabled={isNavigating}
-  className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 transition-all duration-150 flex items-center justify-center gap-2.5 uppercase tracking-wider ${
-    isNavigating
-      ? "opacity-75 cursor-not-allowed"
-      : "hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-  }`}
->
-  {isNavigating ? (
-    <>
-      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
-      </svg>
-      <span>Loading...</span>
-    </>
-  ) : (
-    <>
-      <i className="fa fa-wand-magic-sparkles text-sm"></i>
-      <span>Get Started</span>
-    </>
-  )}
-</button>
-                <Link to="/collab" className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
-                    <span>✍️</span>
-                    <span>Collab Mode</span>
-                  </button>
-                </Link>
-                
-              </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 w-full box-border pointer-events-none">
+
+          {/* Re-enable interactions exclusively for content layout elements inside pointer-events wrapper */}
+          <div className="flex justify-center lg:justify-start pointer-events-auto">
+            <div
+              ref={badgeRef}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 backdrop-blur-md mb-8 shadow-sm cursor-pointer select-none"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">StorySparkAI v2.0 is live</span>
             </div>
           </div>
+
+          {/* Grid Layout Container */}
+          <div className="grid lg:grid-cols-2 gap-12 items-center text-center lg:text-left">
+            <div className="pointer-events-auto">
+              <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none">
+                Ignite Your Imagination With <br className="hidden sm:block" />
+                <span className="hero-gradient-text pb-2 block sm:inline">
+                  <Typewriter
+                    phrases={[
+                      "AI-Driven Storytelling",
+                      "Creative Story Generation",
+                      "Smart Writing Assistant",
+                      "Warm Collaborator",
+                    ]}
+                  />
+                </span>
+              </motion.h1>
+
+              <p className="max-w-2xl mx-auto lg:mx-0 text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
+                Create, edit, and generate engaging multiple story variations from a single prompt.
+                Perfect for writers, creators, and enthusiasts exploring the future of fiction.
+              </p>
+
+              <div className="w-full flex flex-col items-center lg:items-start justify-center">
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 select-none w-full">
+                  <button
+                    onClick={() => {
+                      setIsNavigating(true);
+                      setTimeout(() => { window.location.href = "/stories"; }, 400);
+                    }}
+                    disabled={isNavigating}
+                    className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 transition-all duration-150 flex items-center justify-center gap-2.5 uppercase tracking-wider ${
+                      isNavigating
+                        ? "opacity-75 cursor-not-allowed"
+                        : "hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    }`}
+                  >
+                    {isNavigating ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                        </svg>
+                        <span>Loading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa fa-wand-magic-sparkles text-sm"></i>
+                        <span>Get Started</span>
+                      </>
+                    )}
+                  </button>
+
+                  <Link to="/collab" className="w-full sm:w-auto">
+                    <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
+                      <span>✍️</span>
+                      <span>Collab Mode</span>
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column Content Box */}
+            <div className="flex justify-center lg:justify-end pointer-events-auto">
+              <AnimatedBook />
+            </div>
+          </div>
+
         </div>
-          </motion.div>
+      </div>
 
-</div>
-        <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
-          <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
-            {stars.map((star) => (
-              <span
-                key={star.id}
-                className={`hero-cursor-star ${star.size > 12 ? "hero-cursor-star-large" : ""}`}
-                style={{ left: star.x, top: star.y, width: star.size, height: star.size }}
-              />
-            ))}
-          </div>
-          </div>
+      {/* Background Trail Stars Layer */}
+      <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
+        <div ref={starContainerRef} className="hero-cursor-stars absolute inset-0" aria-hidden="true" />
+      </div>
 
-            <motion.div
+      {/* Features Content Container */}
+      <motion.div
         variants={itemVariants}
         className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border"
       >

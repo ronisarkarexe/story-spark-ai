@@ -1,18 +1,14 @@
 import { useForm, SubmitHandler } from "react-hook-form";
-import SSInput from "../ui-component/ss-input/ss-input";
-import SSButton from "../ui-component/ss-button/ss-button";
 import { useState, useEffect } from "react";
-import { storeUserInfo } from "../../services/auth.service";
+import { Link, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { Link } from "react-router-dom";
-import { useGoogleLoginMutation } from "../../redux/apis/auth.api";
-import {
-  useEmailVerifyMutation,
-  useVerifyOtpMutation,
-} from "../../redux/apis/otp.verify.api";
-import { useRegisterUserMutation } from "../../redux/apis/auth.api";
-import { useNavigate } from "react-router-dom";
+
+import SSInput from "../ui-component/ss-input/ss-input";
+import SSButton from "../ui-component/ss-button/ss-button";
+import { storeUserInfo } from "../../services/auth.service";
+import { useGoogleLoginMutation, useRegisterUserMutation } from "../../redux/apis/auth.api";
+import { useEmailVerifyMutation, useVerifyOtpMutation } from "../../redux/apis/otp.verify.api";
 
 interface IRegisterInfo {
   name: string;
@@ -70,13 +66,13 @@ const SignUpComponent = () => {
     register,
     handleSubmit,
     watch,
-    unregister,
+    trigger,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
 
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [showOtpField, setShowOtpField] = useState<boolean>(false);
-  const [registerInfo, setRegisterInfo] = useState<IRegisterInfo>();
+  const [registerInfo, setRegisterInfo] = useState<IRegisterInfo | null>(null);
   const [expiredAt, setExpiredAt] = useState(0);
   const [cooldown, setCooldown] = useState(0);
 
@@ -89,7 +85,6 @@ const SignUpComponent = () => {
   }, [cooldown]);
 
   const password = watch("password");
-  const confirmPassword = watch("confirmPassword");
   const otp = watch("otp");
 
   const passwordChecks = {
@@ -104,50 +99,49 @@ const SignUpComponent = () => {
   const strengthLevel = getStrengthLevel(passedChecks);
   const { label: strengthLabel, barColor, barWidth, textColor } = PASSWORD_STRENGTH_CONFIG[strengthLevel];
 
-  const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    if (data) {
-      const user = { name: data.name, email: data.email, password: data.password };
-      const otpPayload = { name: data.name, email: data.email };
+  // Phase 1: Submit email details & request OTP
+  const onSubmitEmailForm: SubmitHandler<Inputs> = async (data) => {
+    const passwordError = getPasswordError(data.password);
+    if (passwordError) {
+      toast.error(passwordError);
+      return;
+    }
 
-      if (password !== confirmPassword) {
-        toast.error("Passwords do not match!");
-        return;
+    setIsBusy(true);
+    try {
+      const res = await emailVerify({ name: data.name, email: data.email }).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        toast.success("OTP sent to your email");
+        setRegisterInfo({ name: data.name, email: data.email, password: data.password });
+        setShowOtpField(true);
+        setCooldown(60);
       }
-      const passwordError = getPasswordError(data.password);
-      if (passwordError) {
-        toast.error(passwordError);
-        return;
-      }
-      setIsBusy(true);
-      try {
-        const res = await emailVerify({ ...otpPayload }).unwrap();
-        if (res?.data) {
-          const { expiresAt } = res.data;
-          setExpiredAt(new Date(expiresAt).getTime());
-          toast.success("OTP sent to your email");
-          setRegisterInfo(user);
-          unregister("confirmPassword");
-          unregister("password");
-          unregister("name");
-          unregister("email");
-          setShowOtpField(true);
-          setCooldown(60);
-        }
-      } catch (error) {
-        const err = error as { data?: Array<{ message?: string }>; message?: string };
-        const message = err?.data?.[0]?.message || err?.message || "Something went wrong. Please try again.";
-        toast.error(message);
-      } finally {
-        setIsBusy(false);
-      }
+    } catch (error) {
+      const err = error as { data?: Array<{ message?: string }>; message?: string };
+      const message = err?.data?.[0]?.message || err?.message || "Something went wrong. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsBusy(false);
     }
   };
 
+  // Phase 2: Validate OTP & Complete registration
   const handleOtpValidation = async () => {
+    // Manually trigger react-hook-form validation for the OTP field
+    const isValidOtp = await trigger("otp");
+    if (!isValidOtp) return;
+
     const enteredOtp = otp?.trim();
-    if (!enteredOtp) { toast.error("Please enter OTP"); return; }
-    if (!registerInfo) { toast.error("Something went wrong. Please restart the process."); return; }
-    if (Date.now() > expiredAt) { toast.error("OTP expired. Please request a new one."); return; }
+    if (!registerInfo) {
+      toast.error("Session missing. Please restart registration.");
+      return;
+    }
+    if (Date.now() > expiredAt) {
+      toast.error("OTP expired. Please request a new one.");
+      return;
+    }
 
     setIsBusy(true);
     try {
@@ -157,8 +151,9 @@ const SignUpComponent = () => {
           ...registerInfo,
           verificationToken: otpResponse.data.verificationToken,
         }).unwrap();
-        if (res.data.accessToken) {
-          toast.success("OTP validated successfully!");
+
+        if (res?.data?.accessToken) {
+          toast.success("Account created successfully!");
           storeUserInfo({ accessToken: res.data.accessToken });
           navigate("/");
         }
@@ -182,51 +177,10 @@ const SignUpComponent = () => {
       if (res?.data) {
         const { expiresAt } = res.data;
         setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent to your email");
-        setCooldown(60);
-      }
-    } catch {
-      toast.error("Failed to resend OTP. Please try again.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
-      if (res.data.accessToken) {
-        toast.success("Signed up with Google successfully!");
-        storeUserInfo({ accessToken: res.data.accessToken });
-        navigate("/");
-      }
-    } catch {
-      toast.error("Google login failed. Please try again.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginError = () => {
-    toast.error("Google login failed. Please try again.");
-  };
-
-  const handleResendOtp = async () => {
-    if (!registerInfo) return;
-    setIsBusy(true);
-    try {
-      const res = await emailVerify({
-        name: registerInfo.name,
-        email: registerInfo.email,
-      }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
         toast.success("OTP resent successfully!");
         setCooldown(60);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to resend OTP. Please try again.");
     } finally {
       setIsBusy(false);
@@ -235,7 +189,7 @@ const SignUpComponent = () => {
 
   const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
     if (!credentialResponse.credential) {
-      toast.error("Google login failed");
+      toast.error("Google authentication missing payload.");
       return;
     }
     setIsBusy(true);
@@ -246,22 +200,24 @@ const SignUpComponent = () => {
         toast.success("Logged in with Google successfully!");
         navigate("/");
       }
-    } catch (error) {
-      toast.error("Google authentication failed");
+    } catch {
+      toast.error("Google authentication failed.");
     } finally {
       setIsBusy(false);
     }
   };
 
+  const handleGoogleLoginError = () => {
+    toast.error("Google login interface closed or unexpected error.");
+  };
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-900 dark:text-slate-100 box-border">
-
       {/* Background Glow */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-0 min-w-0 box-border mx-auto">
-
         {/* Title */}
         <div className="mb-6 text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
@@ -271,33 +227,30 @@ const SignUpComponent = () => {
 
         {/* Card */}
         <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-
           <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
 
           {!showOtpField && (
-            <p className="mt-2 mb-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 px-1">
-              Join StorySparkAI and begin your creative journey.
-            </p>
-          )}
-
-          {!showOtpField && (
-            <div className="relative mb-6 w-full box-border">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
+            <>
+              <p className="mt-2 mb-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 px-1">
+                Join StorySparkAI and begin your creative journey.
+              </p>
+              <div className="relative mb-6 w-full box-border">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
+                    SIGN UP WITH EMAIL
+                  </span>
+                </div>
               </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
-                  SIGN UP WITH EMAIL
-                </span>
-              </div>
-            </div>
+            </>
           )}
 
           {!showOtpField ? (
-            <form className="space-y-5 w-full min-w-0 block box-border" onSubmit={handleSubmit(onSubmit)}>
-
+            <form className="space-y-5 w-full min-w-0 block box-border" onSubmit={handleSubmit(onSubmitEmailForm)}>
               <SSInput
                 label="Name"
                 name="name"
@@ -374,13 +327,12 @@ const SignUpComponent = () => {
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
-                required={!showOtpField}
+                required={true}
                 icon="fi fi-rr-lock"
                 register={register}
                 autoComplete="new-password"
                 validation={{
                   validate: (value) => {
-                    if (showOtpField) return true;
                     if (!value) return "Confirm password is required";
                     if (value !== password) return "Passwords do not match!";
                     return true;
@@ -461,4 +413,3 @@ const SignUpComponent = () => {
 };
 
 export default SignUpComponent;
-

@@ -199,7 +199,8 @@ const PrivacyPolicy: React.FC = () => {
             <p className="mt-8 max-w-3xl mx-auto text-lg sm:text-xl leading-8 text-slate-600 dark:text-slate-300">
               Your privacy matters to us at StorySpark AI. Learn how we collect,
               use, and protect your data while providing a safe and creative
-              storytelling experience.
+                        storytelling experience.
+            </p>
           {/* 5 */}
           <section className="bg-[#1e293b] rounded-2xl p-8 shadow-lg">
             <h2 className="text-2xl font-semibold mb-4">5. Cookies & Local Storage</h2>
@@ -219,7 +220,7 @@ const PrivacyPolicy: React.FC = () => {
               legal obligations. Users may request deletion of their account and associated
               data at any time.
             </p>
-          </div>
+          </section>
 
           {/* PRIVACY CARDS */}
           <div className="grid gap-8">
@@ -396,10 +397,17 @@ const PrivacyPolicy: React.FC = () => {
             <p className="font-semibold">support@storysparkai.com</p>
           </section>
 
+        </p>
+      </section>
+    </section>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+      </div>
+  )};
 
 export default PrivacyPolicy;
