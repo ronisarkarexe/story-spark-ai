@@ -84,8 +84,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
   setStories,
-  isLoading,
   onPublishSuccess,
+  isLoading,
 }) => {
   const location = useLocation();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
@@ -453,18 +453,9 @@ const [, setShowRemix] = useState<boolean>(false);
       let logoImg: HTMLImageElement | null = null;
       let storyImg: HTMLImageElement | null = null;
 
-      try {
-        logoImg = await loadImageWithTimeout(logo);
-      } catch (err) {
-        console.warn("Failed to load StorySparkAI logo for PDF", err);
-      }
-
+      try { logoImg = await loadImageWithTimeout(logo); } catch (err) { console.warn("Failed to load logo", err); }
       if (selectedStory.imageURL) {
-        try {
-          storyImg = await loadImageWithTimeout(selectedStory.imageURL);
-        } catch (err) {
-          console.warn("Failed to load story banner image for PDF", err);
-        }
+        try { storyImg = await loadImageWithTimeout(selectedStory.imageURL); } catch (err) { console.warn("Failed to load story banner", err); }
       }
 
       // Initialize A4 PDF document (210mm x 297mm)
@@ -503,7 +494,6 @@ const [, setShowRemix] = useState<boolean>(false);
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184); // Slate 400
       doc.text("PREMIUM AI GENERATED STORY", 190, yCursor + 5, { align: "right" });
-
       yCursor += 10;
 
       // Header Divider Line
@@ -525,11 +515,7 @@ const [, setShowRemix] = useState<boolean>(false);
       doc.setFontSize(22);
       doc.setTextColor(30, 41, 59); // Slate 800
       const splitTitle = doc.splitTextToSize(title, printableWidth);
-      splitTitle.forEach((line: string) => {
-        doc.text(line, leftMargin, yCursor);
-        yCursor += 9;
-      });
-
+      splitTitle.forEach((line: string) => { doc.text(line, leftMargin, yCursor); yCursor += 9; });
       yCursor += 1;
 
       // 4. Meta Row (Generated Date & Genre Pill Badge)
@@ -579,7 +565,6 @@ const [, setShowRemix] = useState<boolean>(false);
       paragraphs.forEach((para: string, pIdx: number) => {
         const cleanPara = para.trim();
         if (!cleanPara) return;
-
         const lines = doc.splitTextToSize(cleanPara, printableWidth);
         lines.forEach((line: string) => {
           if (yCursor > maxY) {
@@ -592,10 +577,7 @@ const [, setShowRemix] = useState<boolean>(false);
           doc.text(line, leftMargin, yCursor);
           yCursor += lineHeight;
         });
-
-        if (pIdx < paragraphs.length - 1) {
-          yCursor += paragraphSpacing;
-        }
+        if (pIdx < paragraphs.length - 1) yCursor += 4.5;
       });
 
       // 6. Running Header and Footer generation
@@ -627,10 +609,7 @@ const [, setShowRemix] = useState<boolean>(false);
           doc.setTextColor(148, 163, 184); // Slate 400
           const headerTitle = title.length > 50 ? title.substring(0, 50) + "..." : title;
           doc.text(headerTitle, 190, 14, { align: "right" });
-
-          doc.setDrawColor(241, 245, 249);
-          doc.setLineWidth(0.2);
-          doc.line(leftMargin, 17, 190, 17);
+          doc.setDrawColor(241, 245, 249); doc.setLineWidth(0.2); doc.line(leftMargin, 17, 190, 17);
         }
       }
 
@@ -640,8 +619,8 @@ const [, setShowRemix] = useState<boolean>(false);
       toast.dismiss(toastId);
       toast.success("Premium PDF downloaded!");
     } catch (error) {
-      console.error(error);
-      toast.dismiss(toastId);
+      console.error(error); 
+      toast.dismiss(toastId); 
       toast.error("Failed to export PDF.");
     }
   };

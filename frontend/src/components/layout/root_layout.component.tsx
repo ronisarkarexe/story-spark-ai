@@ -14,7 +14,9 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   const hideHeader = isAuthPage;
   const hideFooter = isAuthPage;
+
   const [cookieBannerHeight, setCookieBannerHeight] = useState(0);
+
   const handleCookieLayoutChange = useCallback((height: number) => {
     setCookieBannerHeight(height);
   }, []);
@@ -25,7 +27,6 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
       style={{ paddingBottom: isAuthPage ? 0 : cookieBannerHeight }}
     >
       {!hideHeader && <NavListComponent />}
-
       <CookieConsentBanner onLayoutChange={handleCookieLayoutChange} />
       <div className="flex-grow min-h-0">{children}</div>
       {!hideFooter && <FooterComponent />}

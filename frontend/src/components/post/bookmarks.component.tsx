@@ -67,7 +67,7 @@ const BookmarksComponent = () => {
       case "title-asc":
         return (a.title || "").localeCompare(b.title || "");
       case "title-desc":
-        return (b.title || "").localeCompare(a.title || "");
+        return (b.title || "").localeCompare(b.title || "");
       case "length-asc":
         return (a.content || "").length - (b.content || "").length;
       case "length-desc":
@@ -125,24 +125,8 @@ const BookmarksComponent = () => {
                   Stories you've saved for later inspiration
                 </p>
               </div>
+
               {activeTab === "posts" && allPosts.length > 0 && (
-                <div className="flex items-center space-x-4">
-                  <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
-                  <select
-                    className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                    value={size}
-                    onChange={(e) => {
-                      setSize(Number(e.target.value));
-                      setPage(1);
-                    }}
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                  <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
-              {allPosts.length > 0 && (
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center space-x-2">
                     <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Sort By</label>
@@ -231,7 +215,7 @@ const BookmarksComponent = () => {
                   </div>
                 ) : (
                   <ExploreViewListComponent
-                    posts={filteredPosts}
+                    posts={sortedPosts}
                     isLoading={isLoading}
                   />
                 )
@@ -262,10 +246,6 @@ const BookmarksComponent = () => {
                     ))}
                   </div>
                 )
-                <ExploreViewListComponent
-                  posts={sortedPosts}
-                  isLoading={isLoading}
-                />
               )}
             </div>
 

@@ -156,13 +156,14 @@ const LoginComponent = () => {
             </div>
           </div>
 
-          <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+          <div className="flex items-center gap-6 border border-gray-300 dark:border-slate-700 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
             <UsersRound className="text-violet-600 shrink-0" />
             <div>
               <h2 className="font-bold">Built for everyone</h2>
               <p>Writers, Creators and dreamers</p>
             </div>
           </div>
+
           <motion.div 
 
             initial={{ opacity: 0, scale: 0.95 }}
@@ -252,28 +253,41 @@ const LoginComponent = () => {
                 </span>
               </div>
 
-        {/* Right side — login form card */}
+              <SSInput
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required={true}
+                icon="fi fi-rr-lock"
+                register={register}
+                validation={{ required: "Password is required" }}
+                error={errors.password}
+                autoComplete="password"
+              />
 
-        <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl box-border overflow-hidden relative">
-          {/* Back to Home */}
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-          >
-            ← Back to Home
-          </button>
+              <div className="flex justify-end -mt-2">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
 
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
-              Welcome back
-            </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Sign in to your Story Spark AI account
-            </p>
-          </div>
+              <SSButton text="Sign In" type="submit" isLoading={isBusy} />
+            </form>
 
-
-          <form className="space-y-5 w-full min-w-0 box-border" onSubmit={handleSubmit(onSubmit)}>
+            <div className="mt-6 relative w-full">
+              <div className="absolute inset-0 flex items-center w-full">
+                <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase w-full">
+                <span className="bg-slate-50 dark:bg-slate-800 px-4 text-slate-400 dark:text-slate-500 font-semibold tracking-wide">
+                  Or
+                </span>
+              </div>
+            </div>
 
             <SSInput
               label="Email address"
@@ -288,27 +302,15 @@ const LoginComponent = () => {
               autoComplete="email"
           className="w-full box-border"
               />
+            </div>
 
-            {/* Password field — eye icon toggle is provided by SSInput when type="password" */}
-            <SSInput
-              label="Password"
-              name="password"
-              type="password"
-              placeholder="Enter your password"
-              required={true}
-              icon="fi fi-rr-lock"
-              register={register}
-              validation={{ required: "Password is required" }}
-              error={errors.password}
-              autoComplete="password"
-            />
-
-            <div className="flex justify-end -mt-2">
+            <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
+              Don't have an account?{" "}
               <Link
-                to="/forgot-password"
-                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                to="/signup"
+                className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
               >
-                Forgot Password?
+                Sign up for free
               </Link>
             </div>
 
@@ -367,7 +369,6 @@ const LoginComponent = () => {
             </Link>
           </p>
         </div>
-      </div>
 
 
         </div>

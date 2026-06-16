@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
-import { Post } from "../../../models/post";
-import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
 import LoadingAnimation from "../../loading/loading.component";
 
 const INITIAL_VISIBLE_COUNT = 6;
@@ -21,10 +19,14 @@ const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
   const [showAllPosts, setShowAllPosts] = useState(false);
+  const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
-  const posts = (data?.posts ?? []) as Post[];
-  const shouldShowLoadMore = posts.length >= 7;
-  const visiblePosts = showAllPosts || !shouldShowLoadMore ? posts : posts.slice(0, 6);
+  const seenIds = new Set<string>();
+  const uniquePosts = (data?.posts ?? []).filter((post: Post) => {
+    if (!post?._id || seenIds.has(post._id)) return false;
+    seenIds.add(post._id);
+    return true;
+  });
 
   useEffect(() => {
     setShowAllPosts(false);
@@ -53,13 +55,6 @@ const LatestPostsComponent = () => {
       </section>
     );
   }
-
-  const seenIds = new Set<string>();
-  const uniquePosts = (data?.posts ?? []).filter((post: Post) => {
-    if (!post?._id || seenIds.has(post._id)) return false;
-    seenIds.add(post._id);
-    return true;
-  });
 
   const shouldShowLoadMore = uniquePosts.length > INITIAL_VISIBLE_COUNT;
   const visiblePosts =
@@ -100,9 +95,8 @@ const LatestPostsComponent = () => {
                 </button>
 
                 <div
-                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isExpanded ? "max-h-[500px] border-t border-slate-200 dark:border-slate-700/30" : "max-h-0"
-                  }`}
+                  className={`transition-all duration-300 ease-in-out overflow-hidden ${isExpanded ? "max-h-[500px] border-t border-slate-200 dark:border-slate-700/30" : "max-h-0"
+                    }`}
                 >
                   <div className="min-w-0 p-5 bg-slate-50 dark:bg-slate-800/50">
                     <p className="text-slate-700 dark:text-slate-400 text-sm md:text-base leading-relaxed mb-4 whitespace-pre-wrap break-words">
@@ -125,9 +119,9 @@ const LatestPostsComponent = () => {
           })
         ) : (
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400">
-            
+
             Posts are not available.
-          
+
           </div>
         )}
       </div>

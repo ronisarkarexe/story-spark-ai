@@ -491,18 +491,14 @@ const StoriesComponent = () => {
 
   const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
 
-  const filteredStories = useMemo(() => {
-    if (!searchQuery.trim()) return uniqueStories;
   const debouncedSearchQuery = useDebounce(searchQuery, 350);
   const debouncedPrompt = useDebounce(textareaValue, 500);
-
 
   const filteredStories = useMemo(() => {
     if (!debouncedSearchQuery.trim()) return stories;
     const query = debouncedSearchQuery.toLowerCase();
     
     return uniqueStories.filter((story) => {
-    return stories.filter((story) => {
       switch (searchFilter) {
         case "title":
           return story.title?.toLowerCase().includes(query);
@@ -519,8 +515,8 @@ const StoriesComponent = () => {
           );
       }
     });
-  }, [uniqueStories, searchQuery, searchFilter]);
-  }, [stories, debouncedSearchQuery, searchFilter]);
+  }, [uniqueStories, debouncedSearchQuery, searchFilter]);
+
   const indexOfLastStory = currentPage * storiesPerPage;
   const indexOfFirstStory = indexOfLastStory - storiesPerPage;
 
