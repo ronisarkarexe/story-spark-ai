@@ -286,6 +286,7 @@ const LoginComponent = () => {
               validation={{ required: "Email is required" }}
               error={errors.email}
               autoComplete="email"
+          className="w-full box-border"
               />
 
             {/* Password field — eye icon toggle is provided by SSInput when type="password" */}

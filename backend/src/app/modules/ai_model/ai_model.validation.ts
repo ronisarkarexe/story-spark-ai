@@ -14,8 +14,8 @@ const aiModel = z.object({
     prompt: z
       .string({ required_error: "Prompt is required!" })
       .trim()
-      .min(1, "Prompt cannot be empty or whitespace only!")
-      .max(2000, "Prompt must not exceed 2000 characters.")
+      .min(3, "Prompt must be at least 3 characters!")
+      .max(1000, "Prompt must not exceed 1000 characters.")
       .refine((val) => {
         const stripped = val.replace(/^\[Genre:.*?\]\s*/, "").trim();
         return stripped.length > 0;

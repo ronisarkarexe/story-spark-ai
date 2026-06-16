@@ -12,6 +12,7 @@ const STORY_VERSION_URL = "story-version";
 
 export interface IEnhancePromptRequest {
   prompt: string;
+  provider?: string;
 }
 
 export interface IEnhancePromptResponse {
@@ -25,7 +26,8 @@ const enhancePromptApi = baseApi.injectEndpoints({
       query: (data) => ({
         url: `/${STORY_VERSION_URL}/enhance-prompt`,
         method: "POST",
-        data: data,
+        data: { prompt: data.prompt },
+        headers: data.provider ? { "x-model-provider": data.provider } : undefined,
       }),
       transformResponse: (response: IEnhancePromptResponse) => {
         return { data: response.data, message: response.message };
