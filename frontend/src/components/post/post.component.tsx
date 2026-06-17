@@ -7,7 +7,7 @@ import type { Post } from "../../models/post";
 import { useDebounced } from "../../hooks/global";
 import PaginationComponent from "../pagination/pagination.component";
 
-const ExploreComponent = () => {
+export const ExploreComponent = () => {
   const [sortBy, setSortBy] = useState<string>("createdAt");
   const [sortOrder, setSortOrder] = useState<string>("desc");
   const [searchTerm, setSearchTerm] = useState<string>("");

@@ -61,3 +61,9 @@ node_modules/
 dist/
 .claude
 .refact
+temp*.tsx
+test.tsx
+tatus
+vzdfx
+*.save
+*.txt

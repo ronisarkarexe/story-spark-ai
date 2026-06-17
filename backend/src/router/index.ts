@@ -27,6 +27,8 @@ import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_i
 import { EngagementRouter } from "../app/modules/engagement/engagement.router";
 import { ChatRouter } from "../app/modules/chat/chat.router";
 
+import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
+
 const router = express.Router();
 
 const modules = [
@@ -82,61 +84,10 @@ const modules = [
     path: "/bookmarks",
     router: BookmarkRouter,
   },
+
   {
-    path: "/payment",
-    router: paymentRouter,
-  },
-  {
-    path: "/story",
-    router: StoryVersionRouter,
-  },
-  {
-    path: "/analytics",
-    router: AnalyticsRouter,
-  },
-  {
-    path: "/stories",
-    router: StoriesRouter,
-  },
-  {
-    path: "/story-continuation",
-    router: storyRoutes,
-  },
-  {
-    path: "/story-inspiration",
-    router: StoryInspirationRouter,
-  },
-  {
-    path: "/engagement",
-    router: EngagementRouter,
-  },
-  {
-    path: "/contact",
-    router: ContactRoutes,
-  },
-  {
-    path: "/reports",
-    router: ReportRouter,
-  },
-  {
-    path: "/bug-reports",
-    router: BugReportRouter,
-  },
-  {
-    path: "/recommendations",
-    router: RecommendationRouter,
-  },
-  {
-    path: "/writer-applications",
-    router: WriterApplicationRoutes,
-  },
-  {
-    path: "/ai-editor",
-    router: AIEditorRouter,
-  },
-  {
-    path: "/chat",
-    router: ChatRouter,
+    path: "/story-consistency",
+    router: StoryConsistencyRouter,
   },
 ];
 
