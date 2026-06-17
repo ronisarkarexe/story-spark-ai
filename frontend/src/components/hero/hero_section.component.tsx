@@ -22,6 +22,10 @@ const containerVariants = {
 
 const itemVariants: any = {
   hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } as const 
   visible: {
     opacity: 1,
     y: 0,
@@ -321,6 +325,7 @@ const HeroSectionComponent = () => {
                 ]}
               />
             </span>
+          </motion.h1>
           </h1>
 <div className="flex justify-center lg:justify-end">
   <AnimatedBook />

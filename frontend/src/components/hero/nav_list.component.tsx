@@ -56,9 +56,24 @@ const NavListComponent = () => {
       transition: { delay: i * 0.05 },
     }),
   };
+
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `relative flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-all duration-300 ${
+      isActive
+        ? "text-slate-900 dark:text-white"
+        : "text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+    }`;
+
+  const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `block rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
+      isActive
+        ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white"
+        : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10"
+    }`;
+
   return (
     <header className="sticky top-0 z-50 w-full">
-      <div className="absolute inset-0 border-b border-white/50 bg-white/70 shadow-sm shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-black/20" />
+      <div className="absolute inset-0 border-b border-slate-200/70 bg-white/70 shadow-sm shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-black/20" />
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-500/35 to-transparent" />
 
       <div className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -275,38 +290,6 @@ const NavListComponent = () => {
             )}
           </div>
 
-          <button
-            type="button"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-600 dark:text-slate-400 transition-all duration-300 hover:bg-slate-200/60 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white lg:hidden"
-          >
-            {menuOpen ? "✕" : "☰"}
-          </button>
-        </div>
-      </div>
-
-      {menuOpen && (
-        <div className="lg:hidden border-t border-slate-200/70 dark:border-white/10 bg-white dark:bg-[#0B1120]/95 px-4 py-3">
-          <NavLink to="/" end className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Home
-          </NavLink>
-          <NavLink to="/explore" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Explore
-          </NavLink>
-          <NavLink to="/story-inspiration" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Stories
-          </NavLink>
-          <NavLink to="/community" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Community
-          </NavLink>
-          {loggedIn && (
-            <NavLink to="/dashboard" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-              Dashboard
-            </NavLink>
-          )}
-        </div>
-      )}
           <motion.button
             whileTap={{ scale: 0.9 }}
             type="button"

@@ -1,9 +1,10 @@
 // @ts-nocheck
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Story } from "../../types/story.types";
+import { Story, StoryVersion } from "../../types/story.types";
 
 interface StoryState {
   currentStory: Story | null;
+  versions: StoryVersion[];
 }
 
 const loadStoryFromStorage = (): Story | null => {
@@ -18,6 +19,7 @@ const loadStoryFromStorage = (): Story | null => {
 
 const initialState: StoryState = {
   currentStory: loadStoryFromStorage(),
+  versions: [],
 }; 
 
 const storySlice = createSlice({
@@ -77,10 +79,21 @@ const storySlice = createSlice({
         }
       }
     },
+
+    restoreVersion(state, action: PayloadAction<string>) {
+      const version = state.versions.find((v) => v.id === action.payload);
+      if (version) {
+        state.currentStory = version.storySnapshot;
+      }
+    },
+
+    deleteVersion(state, action: PayloadAction<string>) {
+      state.versions = state.versions.filter((v) => v.id !== action.payload);
+    },
   },
 });
 
-export const { setStory, addChapter } = storySlice.actions;
+export const { setStory, addChapter, restoreVersion, deleteVersion } = storySlice.actions;
 
 export default storySlice.reducer;
 

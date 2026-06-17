@@ -58,16 +58,13 @@ body {
   padding: 0;
   scroll-behavior: smooth;
   background:
-    radial-gradient(circle at 20% 0%, rgba(99, 102, 241, 0.12), transparent 28rem),
-    linear-gradient(180deg, #f8fafc 0%, #eef2ff 48%, #f8fafc 100%);
-  color: #0f172a;
+    radial-gradient(circle at 20% 0%, rgba(37, 99, 235, 0.14), transparent 28rem),
+    linear-gradient(180deg, #0b1120 0%, #111827 48%, #0f172a 100%);
   min-width: 320px;
 }
 
 html.dark body {
-  background:
-    radial-gradient(circle at 20% 0%, rgba(37, 99, 235, 0.14), transparent 28rem),
-    linear-gradient(180deg, #0b1120 0%, #111827 48%, #0f172a 100%);
+  background-color: #0b1120;
   color: #f8fafc;
 }
 

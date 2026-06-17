@@ -4,6 +4,7 @@ import { Post } from "../../models/post";
 import BookmarkButton from "../BookmarkButton";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
 import { formatReadingStats } from "../../utils/story-utils";
+import { SkeletonGrid } from "../cards/SkeletonCard";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
@@ -33,36 +34,7 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   };
 
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={i}
-            className="animate-pulse bg-[#f8fafc]/90 border border-slate-200/60 shadow-lg rounded-[2.5rem] overflow-hidden flex flex-col h-[520px] dark:bg-slate-900/40 dark:border-white/5 dark:shadow-2xl"
-          >
-            <div className="relative aspect-video bg-slate-200/80 dark:bg-slate-800/50">
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-100 to-transparent dark:from-[#03050C] opacity-60"></div>
-              <div className="absolute top-6 left-6 h-7 w-20 bg-slate-300/50 rounded-full border border-slate-300/30 dark:bg-blue-500/10 dark:border-blue-500/10" />
-            </div>
-            <div className="p-6 flex-1 flex flex-col">
-              <div className="h-6 bg-slate-300/60 rounded-lg w-3/4 mb-4 dark:bg-slate-800/60" />
-              <div className="space-y-3 mb-8 flex-1">
-                <div className="h-3.5 bg-slate-200/70 rounded-lg w-full dark:bg-slate-800/40" />
-                <div className="h-3.5 bg-slate-200/70 rounded-lg w-full dark:bg-slate-800/40" />
-                <div className="h-3.5 bg-slate-200/70 rounded-lg w-5/6 dark:bg-slate-800/40" />
-              </div>
-              <div className="border-t border-slate-200 dark:border-white/5 pt-6 mt-auto flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-slate-300/50 dark:bg-slate-800/60" />
-                <div className="space-y-1.5 flex-1">
-                  <div className="h-3 bg-slate-300/60 rounded-md w-1/3 dark:bg-slate-800/60" />
-                  <div className="h-2 bg-slate-200/50 rounded-md w-1/4 dark:bg-slate-800/30" />
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <SkeletonGrid count={8} variant="default" />;
   }
 
   return (
