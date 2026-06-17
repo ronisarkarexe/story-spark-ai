@@ -14,12 +14,8 @@ import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
 import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
+import { escapeRegex } from "../../../utils/regex.util";
 const MAX_SEARCH_TERM_LENGTH = 100;
-
-const escapeRegex = (text: string): string => {
-  return text.replace(/[-[\]{}()*+?.,\^$|#\s]/g, "\$&");
-};
-// const MAX_SEARCH_TERM_LENGTH = 100;
 
 interface ICursorPayload {
   value: string;
@@ -177,6 +173,7 @@ const getPosts = async (
 
   if (genreList.length > 0) {
     andCondition.push({
+
       $or: genreList.flatMap((genre) => [
         {
           tag: {
@@ -185,6 +182,11 @@ const getPosts = async (
               "i",
             ),
           },
+
+      $or: genreList.map((genre) => ({
+        tag: {
+          $regex: new RegExp(`^${escapeRegex(genre)}$`, "i"),
+
         },
         {
           genre: {

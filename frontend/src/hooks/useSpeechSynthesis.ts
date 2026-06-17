@@ -337,6 +337,7 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
       if (event.error !== "interrupted") {
         setError("Narration failed to play.");
       }
+
     };
 
     utteranceRef.current = utterance;
@@ -358,6 +359,7 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
     if (!isSupported || !utteranceRef.current) {
       return;
     }
+
 
     const speechSynthesis = window.speechSynthesis;
     if (!speechSynthesis.speaking || speechSynthesis.paused) {
@@ -387,6 +389,7 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
   }, [isSupported]);
 
   const currentWordIndexRef = useRef(0);
+
 
   const setRate = useCallback((nextRate: number) => {
     setRateState(nextRate);
@@ -419,6 +422,12 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
       .slice(resumeFromWord)
       .join(" ");
 
+      utterance.onboundary = (event) => {
+        if (event.name !== "word") {
+          return;
+        }
+
+
     if (!remainingText.trim()) return;
 
     sessionRef.current += 1;
@@ -428,6 +437,7 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
     utterance.rate = nextRate;
     utterance.lang = window.navigator.language || "en-US";
 
+
     utterance.onboundary = (event: SpeechSynthesisEvent) => {
       if (sessionRef.current !== sessionId) return;
       if (typeof event.charIndex === "number") {
@@ -436,6 +446,18 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
         currentWordIndexRef.current = resumeFromWord + localIndex;
       }
     };
+
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setError("Unable to play narration. Please try again.");
+      };
+
+      const loadedVoices = speechSynthesis.getVoices();
+      browserVoicesRef.current = loadedVoices;
+      setBrowserVoices(loadedVoices);
+      setIsReady(loadedVoices.length > 0);
+
 
     utterance.onend = () => {
       if (sessionRef.current !== sessionId) return;
@@ -447,6 +469,7 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
       currentWordIndexRef.current = totalWords;
     };
 
+
     utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
       if (sessionRef.current !== sessionId) return;
       utteranceRef.current = null;
@@ -455,6 +478,29 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
       setIsSpeaking(false);
       if (event.error !== "interrupted") setError("Narration failed to play.");
     };
+
+  const setPitch = useCallback((nextPitch: number) => {
+    setPitchState(nextPitch);
+
+    if (utteranceRef.current) {
+      utteranceRef.current.pitch = nextPitch;
+    }
+  }, []);
+
+  const setVolume = useCallback((nextVolume: number) => {
+    setVolumeState(nextVolume);
+
+    if (utteranceRef.current) {
+      utteranceRef.current.volume = nextVolume;
+    }
+  }, []);
+
+  const pause = useCallback(() => {
+    if (synthRef.current && isSpeaking && !isPaused) {
+      synthRef.current.pause();
+    }
+  }, [isPaused, isSpeaking]);
+
 
     utteranceRef.current = utterance;
     speechSynthesis.speak(utterance);
