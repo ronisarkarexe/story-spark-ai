@@ -5,17 +5,26 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
 export const enhancePromptWithGemini = async (
   prompt: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  compressedContext?: string
 ): Promise<string> => {
   const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
 
-  const metaPrompt = `You are a creative writing assistant. Rewrite the following story prompt to be more vivid, specific, and engaging. Add a character name, setting details, and a central conflict. Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
+  const metaPrompt = `You are a creative writing assistant.
+
+Use the following story context if available:
+
+${compressedContext ?? "No previous context"}
+
+Rewrite the following story prompt to be more vivid, specific, and engaging.
+Add a character name, setting details, and a central conflict.
+
+Return ONLY the enhanced prompt, nothing else.
 
 Prompt: ${prompt}`;
 
   const resultPromise = model.generateContent(metaPrompt);
 
-  // Respect abort signal if provided
   const result = signal
     ? await Promise.race([
         resultPromise,

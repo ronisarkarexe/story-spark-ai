@@ -16,13 +16,11 @@ from pathlib import Path
 import numpy as np
 import joblib
 import random
-
+from typing import Any
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 from tensorflow.keras.models import load_model
 from model import SEQ_LEN, N_FEATURES
-
-from pathlib import Path
 ML_DIR = Path(__file__).resolve().parent
 MODEL_PATH = ML_DIR / "saved" / "model.keras"
 SCALER_PATH = ML_DIR / "saved" / "scaler.pkl"
@@ -67,6 +65,12 @@ def _validate_session(session: list, idx: int | None = None) -> str | None:
         return f"{label}: needs at least {SEQ_LEN} entries, got {len(session)}"
 
     window = session[-SEQ_LEN:]
+    
+    has_dicts = any(isinstance(x, dict) for x in window)
+    has_lists = any(isinstance(x, (list, np.ndarray)) for x in window)
+
+    if has_dicts and has_lists:
+        return f"{label}: mixed dict/list session entries are not allowed"
 
     if isinstance(window[0], dict):
         missing_keys = [
@@ -191,34 +195,86 @@ def _dominant_feature(seq_scaled: np.ndarray, reconstructed: np.ndarray) -> str:
 
 # ── Suggestion history — avoid repeating the same tip ────────────────────────
 
-_suggestion_history: list[str] = []
 MAX_HISTORY = 6
 
 
-def _get_unique_suggestion(feature: str) -> str:
-    """
-    Pick a suggestion for the given feature that hasn't been shown recently.
-    Falls back to any suggestion if all have been shown.
-    """
+def _get_unique_suggestion(
+    feature: str,
+    history: list[str] | None = None,
+) -> str:
+
+    history = history or []
+
     pool = SUGGESTIONS.get(feature, SUGGESTIONS["general"])
-    unseen = [s for s in pool if s not in _suggestion_history]
+
+    unseen = [s for s in pool if s not in history]
 
     chosen = random.choice(unseen) if unseen else random.choice(pool)
 
-    _suggestion_history.append(chosen)
-    if len(_suggestion_history) > MAX_HISTORY:
-        _suggestion_history.pop(0)
+    history.append(chosen)
+
+    if len(history) > MAX_HISTORY:
+        history.pop(0)
 
     return chosen
 
 
+
+#------------helper function------------
+
+def _run_inference(
+    session_raw: np.ndarray,
+    scaler,
+    model,
+    threshold: float,
+) -> tuple[np.ndarray, np.ndarray, float, str, bool]:
+    seq_scaled = scaler.transform(session_raw).reshape(
+        1,
+        SEQ_LEN,
+        N_FEATURES,
+    )
+
+    reconstructed = model.predict(
+        seq_scaled,
+        verbose=0,
+    )
+
+    anomaly_score = float(
+        np.mean((seq_scaled - reconstructed) ** 2)
+    )
+
+    is_stuck = anomaly_score > threshold
+
+    ratio = anomaly_score / threshold
+
+    if not is_stuck:
+        confidence = "N/A"
+    elif ratio > 2.0:
+        confidence = "High"
+    elif ratio > 1.2:
+        confidence = "Medium"
+    else:
+        confidence = "Low"
+
+    return (
+        seq_scaled,
+        reconstructed,
+        anomaly_score,
+        confidence,
+        is_stuck,
+    )
+
+
 # ── Core detect function ──────────────────────────────────────────────────────
 
-def detect(session: list) -> dict:
+
+def detect(
+    session: list[dict[str, float]] | list[list[float]]
+) -> dict[str, Any]:
     """
     Parameters
     ----------
-    session : list[dict] or list[list]
+    session : list[dict[str, float]] | list[list[float]]
         At least SEQ_LEN entries. Each entry is either:
           - a dict with keys matching FEATURE_KEYS
           - a list of 8 floats in FEATURE_KEYS order
@@ -257,22 +313,20 @@ def detect(session: list) -> dict:
             f"got {session_raw.shape}. Check FEATURE_KEYS order."
         )
 
-    seq_scaled    = scaler.transform(session_raw).reshape(1, SEQ_LEN, N_FEATURES)
-    reconstructed = model.predict(seq_scaled, verbose=0)
-    anomaly_score = float(np.mean((seq_scaled - reconstructed) ** 2))
+    (
+    seq_scaled,
+    reconstructed,
+    anomaly_score,
+    confidence,
+    is_stuck,
+) = _run_inference(
+    session_raw,
+    scaler,
+    model,
+    threshold,
+)
 
-    is_stuck = anomaly_score > threshold
-    ratio    = anomaly_score / threshold
-
-    if not is_stuck:
-        confidence = "N/A"
-    elif ratio > 2.0:
-        confidence = "High"
-    elif ratio > 1.2:
-        confidence = "Medium"
-    else:
-        confidence = "Low"
-
+   
     return {
         "is_stuck":     is_stuck,
         "confidence":   confidence,
@@ -353,7 +407,11 @@ def _interactive():
 
 # ── Batch detect ──────────────────────────────────────────────────────────────
 
-def batch_detect(sessions: list[list]) -> list[dict]:
+SessionType = list[dict[str, float]] | list[list[float]]
+
+def batch_detect(
+    sessions: list[SessionType]
+) -> list[dict[str, Any]]:
     """
     Run writer's block detection on multiple sessions in one call.
     Loads ML assets once and reuses them across all sessions.
@@ -402,21 +460,18 @@ def batch_detect(sessions: list[list]) -> list[dict]:
                     f"got {session_raw.shape}"
                 )
 
-            seq_scaled    = scaler.transform(session_raw).reshape(1, SEQ_LEN, N_FEATURES)
-            reconstructed = model.predict(seq_scaled, verbose=0)
-            anomaly_score = float(np.mean((seq_scaled - reconstructed) ** 2))
-
-            is_stuck = anomaly_score > threshold
-            ratio    = anomaly_score / threshold
-
-            if not is_stuck:
-                confidence = "N/A"
-            elif ratio > 2.0:
-                confidence = "High"
-            elif ratio > 1.2:
-                confidence = "Medium"
-            else:
-                confidence = "Low"
+            (
+            seq_scaled,
+            reconstructed,
+            anomaly_score,
+            confidence,
+            is_stuck,
+        ) = _run_inference(
+            session_raw,
+            scaler,
+            model,
+            threshold,
+        )
 
             results.append({
                 "index":         idx,

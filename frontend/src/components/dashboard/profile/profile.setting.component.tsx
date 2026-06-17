@@ -4,10 +4,18 @@ import { User } from "../../../models/user";
 interface ProfileSettingComponentProps {
   user: User;
   onSave: (updatedUser: Partial<User>) => void;
+  onDeleteAccount: () => void;
   loading: boolean;
+  deleting: boolean;
 }
 
-export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettingComponentProps) => {
+export const ProfileSettingComponent = ({
+  user,
+  onSave,
+  onDeleteAccount,
+  loading,
+  deleting,
+}: ProfileSettingComponentProps) => {
   const [formData, setFormData] = useState({
     name: user.name,
     bio: user.profile?.bio || "",
@@ -338,6 +346,14 @@ export const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin
               </div>
 
               <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-8 sm:flex-row sm:justify-end sm:space-x-4 sm:space-x-reverse dark:border-slate-700/50">
+                <button
+                  type="button"
+                  onClick={onDeleteAccount}
+                  disabled={deleting}
+                  className="px-6 py-2 border border-rose-300 rounded-lg text-rose-700 font-medium hover:bg-rose-50 dark:border-rose-900/50 dark:text-rose-300 dark:hover:bg-rose-950/30 transition disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {deleting ? "Deleting..." : "Delete Account"}
+                </button>
                 <button
                   type="button"
                   className="px-6 py-2 border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-100 dark:border-slate-700/50 dark:text-slate-300 dark:hover:bg-slate-800 transition"

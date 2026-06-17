@@ -211,7 +211,7 @@ const ContinueStoryModal = ({ story, onClose }: ContinueStoryModalProps) => {
 
             {/* ── Prompt Editor ───────────────────────────────────────────── */}
             <section>
-              <label
+             <label
                 htmlFor="continue-story-prompt"
                 className="mb-2 block text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400"
               >
@@ -219,21 +219,29 @@ const ContinueStoryModal = ({ story, onClose }: ContinueStoryModalProps) => {
                   ? `Continuing from Branch ${branches.indexOf(activeBranch) + 1}`
                   : "Story Context (pre-seeded)"}
               </label>
-              <textarea
-                id="continue-story-prompt"
-                rows={8}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="The story continues..."
-                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-400/50 focus:ring-1 focus:ring-indigo-400/20 transition-all leading-6"
-              />
-              <p className="mt-1.5 text-[10px] text-slate-600">
-                {!isAuthenticated && (
-                  <span className="text-amber-400">
-                    ⚡ Using free tier — sign in for higher limits.{" "}
-                  </span>
-                )}
-                Edit the context above, then generate the next part.
+              <div className="relative w-full">
+                <textarea
+                  id="continue-story-prompt"
+                  rows={8}
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="The story continues..."
+                  className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-400/50 focus:ring-1 focus:ring-indigo-400/20 transition-all leading-6"
+                />
+                {/* ── Dynamic Character Counter ── */}
+                 <div className="absolute bottom-3 right-4 text-[11px] font-medium text-slate-400 bg-slate-950/80 px-2 py-0.5 rounded-md backdrop-blur-sm pointer-events-none select-none tracking-wider border border-white/5">
+                 {prompt ? prompt.length : 0} / 500
+                 </div>
+              </div>
+              <p className="mt-1.5 text-[10px] text-slate-600 flex justify-between items-center">
+                <span>
+                  {!isAuthenticated && (
+                    <span className="text-amber-400">
+                      ⚡ Using free tier — sign in for higher limits.{" "}
+                    </span>
+                  )}
+                  Edit the context above, then generate the next part.
+                </span>
               </p>
             </section>
 

@@ -151,6 +151,16 @@ const LoginComponent = () => {
           <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
             <BookOpen className="text-violet-600 shrink-0" />
             <div>
+              <h2 className="font-bold text-slate-900 dark:text-slate-100">Endless Creativity</h2>
+              <p className="text-xs sm:text-sm text-slate-500">Stories that captivate and inspire</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+            <UsersRound className="text-violet-600 shrink-0" />
+            <div>
+              <h2 className="font-bold text-slate-900 dark:text-slate-100">Built for everyone</h2>
+              <p className="text-xs sm:text-sm text-slate-500">Writers, Creators and dreamers</p>
               <h2 className="font-bold">Endless Creativity</h2>
               <p>Stories that captivate and inspire</p>
             </div>
@@ -289,6 +299,29 @@ const LoginComponent = () => {
           className="w-full box-border"
               />
 
+            <div>
+              <SSInput
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required={true}
+                icon="fi fi-rr-lock"
+                register={register}
+                validation={{ required: "Password is required" }}
+                error={errors.password}
+                autoComplete="password"
+              />
+              />
+              <div className="flex justify-end pt-2">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+            </div>
             {/* Password field — eye icon toggle is provided by SSInput when type="password" */}
             <SSInput
               label="Password"

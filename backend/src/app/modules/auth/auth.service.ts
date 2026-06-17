@@ -283,6 +283,39 @@ const googleLogin = async (payload: { token: string }) => {
             twitter: "",
             linkedin: "",
             instagram: "",
+            github: "",
+            discord: "",
+          },
+        },
+      };
+
+
+    const payload_data = ticket.getPayload();
+    if (!payload_data || !payload_data.email) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid Google token");
+    }
+
+    if (!payload_data.email_verified) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Google email is not verified");
+    }
+
+    const { email, name: googleName, picture } = payload_data;
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const newUser: Partial<IUser> = {
+        email: email as string,
+        name: (googleName || email || "Google User").slice(0, 100),
+        status: "Active",
+        subscriptionType: "free",
+        profile: {
+          avatar: (picture as string) || "",
+          bio: "",
+          social: {
+            facebook: "",
+            twitter: "",
+            linkedin: "",
+            instagram: "",
           },
         },
       };
@@ -352,6 +385,19 @@ const forgotPassword = async (email: string) => {
 
   // Same response for real and unknown emails to prevent account enumeration.
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+  const user = await User.findOne({ email });
+  if (user) {
+    // Fire and forget so response timing does not vary with account existence.
+    VerifyEmailService.VerifyEmail({
+      email: user.email,
+      name: user.name || "User",
+    }).catch((err) => {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error(`forgotPassword OTP send failed for ${user.email}: ${message}`);
+    });
+  }
+
 
   const user = await User.findOne({ email });
   if (user) {
@@ -442,6 +488,26 @@ const resetPassword = async (payload: {
   };
 };
 
+
+  // Bump tokenVersion and revoke sessions so the reset invalidates old logins.
+  user.password = password;
+  user.tokenVersion = (user.tokenVersion ?? 0) + 1;
+  await user.save();
+  await RefreshSession.updateMany({ userId: user._id }, { revoked: true });
+
+  // Clean up OTP record
+  await OTPModel.deleteOne({ email });
+
+  // Generate JWT tokens for auto-login with the new tokenVersion.
+  const accessToken = issueAccessToken(user);
+  const refreshToken = await issueRefreshToken(user);
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
 export const AuthService = {
   login,
   register,
@@ -451,4 +517,5 @@ export const AuthService = {
   changePassword,
   forgotPassword,
   resetPassword,
+};
 };

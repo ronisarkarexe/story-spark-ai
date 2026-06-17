@@ -69,6 +69,7 @@ describe("AiModelService", () => {
       "Spanish",
       expect.anything(),
       undefined,
+      undefined,
       undefined
     );
   });
@@ -107,7 +108,7 @@ describe("AiModelService", () => {
     mockedGenerate.mockResolvedValue([]);
 
     await expect(
-      AiModelService.aiFreeModelGenerate({
+      AiModelService.aiModelGenerate({
         prompt: "test",
         wordLength: 150,
         numStories: 1,
@@ -119,7 +120,7 @@ describe("AiModelService", () => {
     mockedRace.mockRejectedValue(new GenerationTimeoutError());
 
     await expect(
-      AiModelService.aiFreeModelGenerate({
+      AiModelService.aiModelGenerate({
         prompt: "test",
         wordLength: 150,
         numStories: 1,
@@ -134,24 +135,25 @@ describe("AiModelService", () => {
 
     await AiModelService.aiModelGenerate(
       { prompt: "test", wordLength: 100, numStories: 1, tone: "Dark" },
-      { email: "user@example.com" } as never
+      "test-user-id"
     );
 
-    // The 6th argument to generateWithGeminiStories should be the tone string
     expect(mockedGenerate).toHaveBeenCalledWith(
       "test",   // prompt
       100,      // wordLength
       1,        // numStories
       "English", // language default
       expect.any(Object), // AbortSignal
-      "Dark"    // tone
+      "Dark",    // tone
+      undefined, // genre
+      undefined  // characters
     );
   });
 
   it("passes tone to generateWithGeminiStories when provided (free/guest)", async () => {
     mockedGenerate.mockResolvedValue([story]);
 
-    await AiModelService.aiFreeModelGenerate({
+    await AiModelService.aiModelGenerate({
       prompt: "test",
       wordLength: 150,
       numStories: 1,
@@ -165,6 +167,7 @@ describe("AiModelService", () => {
       "English",
       expect.any(Object),
       "Humorous",
+      undefined,
       undefined
     );
   });
@@ -174,7 +177,7 @@ describe("AiModelService", () => {
 
     await AiModelService.aiModelGenerate(
       { prompt: "test", wordLength: 100, numStories: 1 },
-      { email: "user@example.com" } as never
+      "test-user-id"
     );
 
     expect(mockedGenerate).toHaveBeenCalledWith(
@@ -184,6 +187,7 @@ describe("AiModelService", () => {
       "English",
       expect.any(Object),
       undefined, // no tone → undefined, so the util skips the directive
+      undefined,
       undefined
     );
   });
@@ -191,7 +195,7 @@ describe("AiModelService", () => {
   it("passes undefined tone when tone is omitted (free/guest)", async () => {
     mockedGenerate.mockResolvedValue([story]);
 
-    await AiModelService.aiFreeModelGenerate({
+    await AiModelService.aiModelGenerate({
       prompt: "test",
       wordLength: 150,
       numStories: 1,
@@ -203,6 +207,7 @@ describe("AiModelService", () => {
       1,
       "English",
       expect.any(Object),
+      undefined,
       undefined,
       undefined
     );

@@ -243,7 +243,7 @@ const FooterComponent: React.FC = () => {
             <form
               onSubmit={handleSubscribe}
               noValidate
-              className="mt-1 flex flex-col gap-2 rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-2 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
+              className="mt-1 flex flex-col gap-2"
             >
               <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
                 <i
@@ -251,6 +251,9 @@ const FooterComponent: React.FC = () => {
                   aria-hidden="true"
                 />
                 <input
+                  id="newsletter-email-footer"
+                  name="email"
+                  autoComplete="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
