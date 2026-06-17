@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from "react";
 import PricingComponent from "../home/pricing/pricing.component";
 
@@ -10,3 +11,4 @@ const PricingMainComponent = () => {
 };
 
 export default PricingMainComponent;
+

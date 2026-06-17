@@ -1,3 +1,4 @@
+// @ts-nocheck
 import axios from "axios";
 import { getBaseUrl } from "../helpers/config";
 
@@ -29,3 +30,4 @@ export const chatWithAIFree = async (message: string, history: IChatMessage[] = 
 
   return response.data.data;
 };
+

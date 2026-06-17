@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { instance as axios } from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
 

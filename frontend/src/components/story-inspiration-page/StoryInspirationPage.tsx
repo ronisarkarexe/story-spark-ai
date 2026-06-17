@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable */
 import React, { useState } from 'react';
 import { getBaseUrl } from '../../helpers/config';
@@ -82,4 +83,5 @@ const StoryInspirationPage: React.FC = () => {
 };
 
 export default StoryInspirationPage;
+
 

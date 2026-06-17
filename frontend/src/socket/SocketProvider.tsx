@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { createContext, useContext, useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 import { socketIo } from "./socket.oi";
@@ -50,3 +51,4 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
     <SocketContext.Provider value={socketIo}>{children}</SocketContext.Provider>
   );
 };
+

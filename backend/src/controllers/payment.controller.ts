@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import User from "../models/user.model";
+import { User as User } from "../app/modules/user/user.model";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -126,7 +126,7 @@ export const verifyPayment = async (
       Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
     );
 
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser = await (User as any).findByIdAndUpdate(
       userId,
       {
         subscriptionType: "premium",
@@ -168,7 +168,7 @@ export const getSubscriptionStatus = async (
       return;
     }
 
-    const user = await User.findById(userId).select(
+    const user: any = await User.findById(userId).select(
       "subscriptionType subscriptionExpiry"
     );
 

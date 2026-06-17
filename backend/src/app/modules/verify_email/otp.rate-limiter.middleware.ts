@@ -153,3 +153,35 @@ export const notFoundHandler = (
     error: `Route ${req.method} ${req.originalUrl} not found.`,
   });
 };
+
+// Simple in-memory OTP rate limiter: max 5 attempts per 15 minutes per IP.
+const otpStore = new Map<string, number[]>();
+const OTP_WINDOW_MS = 15 * 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
+
+export const otpRateLimiter = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const key = req.ip ?? "anonymous";
+  const now = Date.now();
+  const timestamps = (otpStore.get(key) ?? []).filter(
+    (t) => now - t < OTP_WINDOW_MS
+  );
+
+  if (timestamps.length >= OTP_MAX_ATTEMPTS) {
+    const retryAfterSec = Math.ceil(
+      (OTP_WINDOW_MS - (now - timestamps[0])) / 1000
+    );
+    res.status(429).json({
+      success: false,
+      message: `Too many OTP attempts. Please try again after ${retryAfterSec} seconds.`,
+    });
+    return;
+  }
+
+  timestamps.push(now);
+  otpStore.set(key, timestamps);
+  next();
+};

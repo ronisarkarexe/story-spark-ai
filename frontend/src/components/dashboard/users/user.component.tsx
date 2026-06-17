@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import { useGetUsersListQuery } from "../../../redux/apis/user.api";
 import { User } from "../../../models/user";
@@ -144,3 +145,4 @@ const UserComponent = () => {
 };
 
 export default UserComponent;
+

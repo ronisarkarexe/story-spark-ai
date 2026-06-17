@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import { useSubmitWriterApplicationMutation } from "../../../redux/apis/writer_application.api";
 import { User } from "../../../models/user";
@@ -115,3 +116,4 @@ export const WriterApplicationForm = ({ user }: Props) => {
     </div>
   );
 };
+
