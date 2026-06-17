@@ -12,15 +12,12 @@ import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
 import ImageFallback from "../ImageFallback";
-import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
-import StoryRemix from "../remix/StoryRemix";
-import StoryWorldMap from "../story-map/StoryWorldMap";
 import StoryVisualizer from "../story-visualizer/StoryVisualizer";
 
 export class ApiError extends Error {
@@ -48,6 +45,14 @@ function getErrorMessage(error: unknown): string {
   }
 
   return "An unexpected error occurred. Please try again.";
+}
+
+interface StoryCoverImageProps {
+  title?: string;
+  tag?: string;
+  size?: "full" | "thumb";
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
@@ -189,10 +194,6 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 
-import ImageFallback from "../ImageFallback";
-
-
-import ImageFallback from "../ImageFallback";
 import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
 
 export interface IStories {
@@ -212,6 +213,7 @@ interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
+  isLoading?: boolean;
   onPublishSuccess?: () => void;
 }
 
@@ -374,49 +376,6 @@ export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = 
   );
 };
 
-const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
-  stories,
-  isLogin,
-  setStories,
-  isLoading,
-  onPublishSuccess,
-}) => {
-  const location = useLocation();
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
-
-  const { error, setError, clearError } = useApiError();
-
-  if (!content.trim()) {
-    return [];
-  }
-
-  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
-  const segments: StorySentenceSegment[] = [];
-  let wordCursor = 0;
-
-  sentenceMatches.forEach((sentence, index) => {
-    const trimmedSentence = sentence.trim();
-    if (!trimmedSentence) {
-      return;
-    }
-
-    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
-    const startWordIndex = wordCursor;
-    const endWordIndex =
-      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
-
-    segments.push({
-      id: `${index}-${startWordIndex}-${endWordIndex}`,
-      text: sentence,
-      startWordIndex,
-      endWordIndex,
-    });
-
-    wordCursor += wordsInSentence;
-  });
-
-  return segments;
-};
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
@@ -425,18 +384,10 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   isLoading,
   onPublishSuccess,
 }) => {
-
-
-  const location = useLocation();
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
-  const dispatch = useDispatch();
-
-
   const location = useLocation();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
 
   // Start with a clean state that adapts dynamically
-
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
@@ -446,13 +397,10 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
   const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
   
-  const [createPost] = useCreatePostMutation();
-  const [deletePost] = useDeletePostMutation();
-  const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
-  
-const [, setShowRemix] = useState<boolean>(false);
-
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -461,12 +409,6 @@ const [, setShowRemix] = useState<boolean>(false);
   const hasSavedSessionRef = useRef<boolean>(false);
   const savedPostIdRef = useRef<string | null>(null);
 
-  const [endingsCache, setEndingsCache] = useState<{
-    [uuid: string]: { style: string; ending: string; fullStory: string }[];
-  }>({});
-  const [originalStoryContent, setOriginalStoryContent] = useState<{ [uuid: string]: string }>({});
-
-  // Alternate ending state & hooks
   const [endingsCache, setEndingsCache] = useState<{
     [uuid: string]: { style: string; ending: string; fullStory: string }[];
   }>({});
@@ -481,125 +423,11 @@ const [, setShowRemix] = useState<boolean>(false);
   const [readingStreak, setReadingStreak] = useState<number>(0);
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
-  useEffect(() => {
-  if (!selectedStory) return;
 
-  useEffect(() => {
-    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
+  // Helper function to clear errors
+  const clearError = () => setError("");
 
-      setOriginalStoryContent((prev) => ({ ...prev, [selectedStory.uuid]: selectedStory.content }));
-
-      setOriginalStoryContent((prev) => ({
-        ...prev,
-        [selectedStory.uuid]: selectedStory.content,
-      }));
-
-    }
-  }, [selectedStory, originalStoryContent]);
-
-  const handleGenerateAlternateEndings = async () => {
-    if (!selectedStory) return;
-    clearError();
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Generating alternate endings...");
-    
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Generating alternate endings...");
-    try {
-      const payload = {
-        title: selectedStory.title,
-        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
-        tag: selectedStory.tag,
-        language: selectedStory.language || "English",
-
-        language: selectedStory.language || "English",
-      };
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
-      const res = await generationRequest.unwrap();
-      if (res && res.data) {
-        setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
-
-
-        language: selectedStory.language || "English",
-
-      };
-      
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
-        
-      const res = await generationRequest.unwrap();
-      
-      if (!res || !Array.isArray(res.data)) {
-        throw new Error("Unexpected response format from the AI service.");
-      }
-      
-      setEndingsCache((prev) => ({ ...prev, [selectedStory.uuid]: res.data }));
-      toast.success("Alternate endings generated successfully!");
-    } catch (err: any) {
-      console.error("[StoriesView Alternate Ending Flow Failure]:", err);
-      const errorStatus = err?.status || err?.data?.status;
-      if (errorStatus) {
-        setError(getErrorMessage(new ApiError(errorStatus, err?.data?.message || "")));
-      } else {
-        setError(getErrorMessage(err));
-      }
-      toast.error("Failed to generate alternate endings.");
-    } finally {
-      toast.dismiss(toastId);
-      setIsGeneratingEndings(false);
-    }
-  };
-
-  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
-    if (!selectedStory) return;
-
-    const updatedStory = { ...selectedStory, content: endingData.fullStory };
-    setSelectedStory(updatedStory);
-    setStories(stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)));
-
-    const updatedStory = {
-      ...selectedStory,
-      content: endingData.fullStory,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-
-    toast.success(`${endingData.style} applied to story!`);
-  };
-
-  const handleResetEnding = () => {
-    if (!selectedStory) return;
-    const originalContent = originalStoryContent[selectedStory.uuid];
-    if (!originalContent) return;
-
-    const updatedStory = { ...selectedStory, content: originalContent };
-    setSelectedStory(updatedStory);
-    setStories(stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)));
-    toast.success("Reverted to original story ending!");
-  };
-
-
-    const updatedStory = {
-      ...selectedStory,
-      content: originalContent,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success("Reverted to original story ending!");
-  };
-
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleTextToSpeech = () => {
+  // ─── useEffect Hooks ───
     if (!selectedStory?.content) return;
 
     if (!("speechSynthesis" in window)) {

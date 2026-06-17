@@ -30,19 +30,9 @@ const ExploreComponent = () => {
       sortBy,
       sortOrder,
     };
-
-    if (normalizedSearchTerm) {
-      args.searchTerm = normalizedSearchTerm;
-    }
-
-    if (genresParam) {
-      args.genres = genresParam;
-    }
-
-    if (cursor) {
-      args.cursor = cursor;
-    }
-
+    if (normalizedSearchTerm) args.searchTerm = normalizedSearchTerm;
+    if (genresParam) args.genres = genresParam;
+    if (cursor) args.cursor = cursor;
     return args;
   }, [size, sortBy, sortOrder, normalizedSearchTerm, genresParam, cursor]);
 
@@ -52,14 +42,8 @@ const ExploreComponent = () => {
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
   const querySignature = useMemo(
     () =>
-      JSON.stringify({
-        size,
-        sortBy,
-        sortOrder,
-        normalizedSearchTerm,
-        genresParam,
-      }),
-    [size, sortBy, sortOrder, normalizedSearchTerm, genresParam],
+      JSON.stringify({ size, sortBy, sortOrder, normalizedSearchTerm, genresParam }),
+    [size, sortBy, sortOrder, normalizedSearchTerm, genresParam]
   );
   const previousQuerySignature = useRef<string>(querySignature);
 
@@ -72,15 +56,11 @@ const ExploreComponent = () => {
   }, [querySignature]);
 
   useEffect(() => {
-    if (!data?.posts) {
-      return;
-    }
-
+    if (!data?.posts) return;
     if (!cursor) {
       setPosts(data.posts);
       return;
     }
-
     if (data.posts.length > 0) {
       setPosts((prevPosts) => [...prevPosts, ...data.posts]);
     }
@@ -88,9 +68,7 @@ const ExploreComponent = () => {
 
   useEffect(() => {
     const trigger = loadMoreTriggerRef.current;
-    if (!trigger) {
-      return;
-    }
+    if (!trigger) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -106,16 +84,11 @@ const ExploreComponent = () => {
           setCursor(data.meta.nextCursor);
         }
       },
-      {
-        rootMargin: "200px",
-      },
+      { rootMargin: "200px" }
     );
 
     observer.observe(trigger);
-
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, [cursor, data?.meta?.hasMore, data?.meta?.nextCursor, isFetching, isLoading]);
 
   const filteredPosts = posts;
@@ -131,7 +104,7 @@ const ExploreComponent = () => {
 
   const handleTagClick = (tag: string) => {
     setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
 
@@ -140,8 +113,8 @@ const ExploreComponent = () => {
       posts
         .map((post: Post) => post.tag)
         .filter(Boolean)
-        .map((tag: string) => `#${tag.toLowerCase().trim()}`),
-    ),
+        .map((tag: string) => `#${tag.toLowerCase().trim()}`)
+    )
   ).slice(0, 8);
 
   const availableGenres = genres ?? [];
@@ -149,12 +122,13 @@ const ExploreComponent = () => {
   return (
     <div className="pt-0 min-h-screen bg-white text-slate-900 relative overflow-hidden transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+
         {/* Top Section */}
         <div className="pt-2 pb-6 flex flex-col md:flex-row gap-4 md:gap-8">
           <div className="w-full md:w-64">
             <Link to="/">
               <div className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded border border-gray-200 dark:border-white/10">
-                <i className="fa-solid fa-left-long"></i>
+                <i className="fa-solid fa-left-long" />
                 BACK
               </div>
             </Link>
@@ -169,10 +143,15 @@ const ExploreComponent = () => {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-
+                }}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Main Layout */}
         <div className="flex flex-col md:flex-row gap-8">
+
           {/* Sidebar */}
           <div className="w-full md:w-64 flex-shrink-0">
             <div className="sticky top-4 bg-gray-50 border border-gray-200 text-slate-900 backdrop-blur-xl rounded-2xl p-6 shadow-xl z-10 transition-colors duration-300 dark:bg-slate-900/50 dark:border-none dark:text-white">
@@ -180,7 +159,6 @@ const ExploreComponent = () => {
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   Filters
                 </h3>
-
                 <button
                   onClick={resetAllStates}
                   className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400 dark:hover:text-blue-300"
@@ -195,7 +173,6 @@ const ExploreComponent = () => {
                   <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
                     Genres
                   </h4>
-
                   <div className="space-y-2">
                     {availableGenres.map((genre) => (
                       <label key={genre} className="flex items-center">
@@ -215,10 +192,9 @@ const ExploreComponent = () => {
 
                 {/* Tags */}
                 <div>
-                    <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
                     Trending Tags
                   </h4>
-
                   <div className="flex flex-wrap gap-2">
                     {availableTags.map((tag) => (
                       <span
@@ -238,13 +214,12 @@ const ExploreComponent = () => {
 
                 {/* Sort */}
                 <div>
-                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">Sort By</h4>
-
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                    Sort By
+                  </h4>
                   <select
                     value={sortBy}
-                    onChange={(e) => {
-                      setSortBy(e.target.value);
-                    }}
+                    onChange={(e) => setSortBy(e.target.value)}
                     className="w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 text-slate-900 p-2.5 outline-none transition-all cursor-pointer appearance-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200"
                   >
                     <option value="createdAt">Latest</option>
@@ -256,13 +231,12 @@ const ExploreComponent = () => {
 
                 {/* Order */}
                 <div>
-                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">Order</h4>
-
+                  <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
+                    Order
+                  </h4>
                   <select
                     value={sortOrder}
-                    onChange={(e) => {
-                      setSortOrder(e.target.value);
-                    }}
+                    onChange={(e) => setSortOrder(e.target.value)}
                     className="w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 text-slate-900 p-2.5 outline-none transition-all cursor-pointer appearance-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200"
                   >
                     <option value="desc">Descending</option>
@@ -297,7 +271,7 @@ const ExploreComponent = () => {
                     }`}
                     onClick={() => setFeaturedPost(!featuredPost)}
                   >
-                    <i className="fas fa-star mr-2 text-yellow-500"></i>
+                    <i className="fas fa-star mr-2 text-yellow-500" />
                     Featured
                   </h2>
                 </div>
@@ -306,9 +280,7 @@ const ExploreComponent = () => {
                   <select
                     className="!rounded-button border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-gray-100 text-slate-900 py-1.5 px-3 outline-none transition-all appearance-none cursor-pointer dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
                     value={size}
-                    onChange={(e) => {
-                      setSize(Number(e.target.value));
-                    }}
+                    onChange={(e) => setSize(Number(e.target.value))}
                   >
                     <option value={10}>10</option>
                     <option value={25}>25</option>
@@ -325,22 +297,15 @@ const ExploreComponent = () => {
               {!isLoading && filteredPosts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] text-center">
                   <div className="text-6xl mb-4">📚</div>
-
                   <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
                     No stories found
                     {searchTerm && (
-                      <span className="text-indigo-400">
-                        {" "}
-                        for "{searchTerm}"
-                      </span>
+                      <span className="text-indigo-400"> for "{searchTerm}"</span>
                     )}
                   </h2>
-
                   <p className="text-slate-600 dark:text-gray-400 max-w-md">
-                    Try searching with different keywords or explore trending
-                    tags and genres.
+                    Try searching with different keywords or explore trending tags and genres.
                   </p>
-
                   <button
                     onClick={resetAllStates}
                     className="mt-6 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 transition-colors rounded-md text-white"
@@ -377,9 +342,8 @@ const ExploreComponent = () => {
         </div>
       </div>
 
-      <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
-
-      <div className="fixed bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+      <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10" />
     </div>
   );
 };

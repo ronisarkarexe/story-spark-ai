@@ -69,9 +69,10 @@ const WriterFeedbackComponent = () => {
               Reviews Submitted
             </p>
           </div>
-
-          <div className="rounded-2xl border border-white/10 bg-white/50 p-6 text-center backdrop-blur dark:bg-slate-900/50">
-            <h3 className="text-3xl font-bold text-yellow-500">4.9★</h3>
+          <div className="group rounded-2xl border border-white/10 bg-white/50 p-6 text-center backdrop-blur dark:bg-slate-900/50 transition-all duration-500 ease-out hover:scale-105 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] cursor-pointer">
+            <h3 className="text-3xl font-bold text-yellow-500 transition-all duration-500 group-hover:scale-110 group-hover:text-yellow-400">
+              4.9★
+            </h3>
             <p className="mt-2 text-sm text-slate-600 dark:text-gray-400">
               Average Rating
             </p>

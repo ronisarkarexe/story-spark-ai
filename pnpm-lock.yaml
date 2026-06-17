@@ -190,6 +190,9 @@ importers:
       docx:
         specifier: ^9.7.1
         version: 9.7.1
+      dompurify:
+        specifier: ^3.4.7
+        version: 3.4.7
       eventemitter3:
         specifier: ^5.0.4
         version: 5.0.4
@@ -276,6 +279,9 @@ importers:
       '@types/d3':
         specifier: ^7.4.3
         version: 7.4.3
+      '@types/dompurify':
+        specifier: ^3.0.5
+        version: 3.2.0
       '@types/file-saver':
         specifier: ^2.0.7
         version: 2.0.7
@@ -1256,6 +1262,10 @@ packages:
 
   '@types/d3@7.4.3':
     resolution: {integrity: sha512-lZXZ9ckh5R8uiFVt8ogUNf+pIrK4EsWrx2Np75WvF/eTpJ0FMHNhjXk8CKEx/+gpHbNQyJWehbFaTvqmHWB3ww==}
+
+  '@types/dompurify@3.2.0':
+    resolution: {integrity: sha512-Fgg31wv9QbLDA0SpTOXO3MaxySc4DKGLi8sna4/Utjo4r3ZRPdCt4UQee8BWr+Q5z21yifghREPJGYaEOEIACg==}
+    deprecated: This is a stub types definition. dompurify provides its own type definitions, so you do not need this installed.
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -5187,6 +5197,10 @@ snapshots:
       '@types/d3-transition': 3.0.9
       '@types/d3-zoom': 3.0.8
 
+  '@types/dompurify@3.2.0':
+    dependencies:
+      dompurify: 3.4.7
+
   '@types/estree@1.0.8': {}
 
   '@types/estree@1.0.9': {}
@@ -6115,7 +6129,6 @@ snapshots:
   dompurify@3.4.7:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
-    optional: true
 
   dotenv@16.6.1: {}
 

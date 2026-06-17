@@ -29,16 +29,18 @@ const toggleReaction = async (
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
+const newReaction = await Reaction.create({
+    postId: new Types.ObjectId(postId),
+    userId: user._id,
+    type: type,
+  });
 
- main
-    const newReaction = await Reaction.create({
-      postId: new Types.ObjectId(postId),
-      userId: user._id,
-      type: type,
-    });
- main
-    };
-  }
+  const updatedPost = await Post.findById(postId).select("likesCount");
+
+  return {
+    message: "Reaction toggled successfully",
+    likesCount: updatedPost?.likesCount ?? 0,
+  };
 };
 
 export const ReactionService = {

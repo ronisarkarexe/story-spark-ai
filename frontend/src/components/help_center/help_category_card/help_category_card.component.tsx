@@ -32,7 +32,6 @@ const HelpCategoryCard: FC<HelpCategoryCardProps> = ({ category }) => {
         Browse Section
 
       className="group text-left w-full bg-white hover:bg-slate-50 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 border border-slate-200 dark:border-white/5 hover:border-indigo-500/30 p-6 rounded-xl shadow-md transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-    >
       <div className="text-3xl mb-4 text-indigo-500 dark:text-indigo-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
         <i className={category.icon} aria-hidden="true"></i>
       </div>
@@ -47,6 +46,7 @@ const HelpCategoryCard: FC<HelpCategoryCardProps> = ({ category }) => {
 
       <span className="inline-flex items-center gap-1 mt-4 text-sm text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 font-medium">
         Learn more
+        </span>
 
         <i
           className="fa-solid fa-arrow-right text-[10px] sm:text-xs transition-transform group-hover:translate-x-1 shrink-0"

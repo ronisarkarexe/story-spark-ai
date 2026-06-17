@@ -22,35 +22,41 @@ const REVIEWS_CACHE_TTL = Number(process.env.REVIEWS_CACHE_TTL) || 300; // secon
 const createReview = (payload, token) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield review_model_1.Review.create(Object.assign(Object.assign({}, payload), { userId: token._id }));
     // Invalidate cache (best-effort)
-    try {
-        yield redis_client_1.default.del(PUBLISHED_REVIEWS_KEY);
-    }
-    catch (err) {
-        console.warn("Redis DEL failed (createReview):", err);
+    if (redis_client_1.default.status === "ready") {
+        try {
+            yield redis_client_1.default.del(PUBLISHED_REVIEWS_KEY);
+        }
+        catch (err) {
+            console.warn("Redis DEL failed (createReview):", err);
+        }
     }
     return result;
 });
 const getPublishedReviews = () => __awaiter(void 0, void 0, void 0, function* () {
     // Try cache first
-    try {
-        const cached = yield redis_client_1.default.get(PUBLISHED_REVIEWS_KEY);
-        if (cached) {
-            return JSON.parse(cached);
+    if (redis_client_1.default.status === "ready") {
+        try {
+            const cached = yield redis_client_1.default.get(PUBLISHED_REVIEWS_KEY);
+            if (cached) {
+                return JSON.parse(cached);
+            }
         }
-    }
-    catch (err) {
-        console.warn("Redis GET failed (getPublishedReviews):", err);
+        catch (err) {
+            console.warn("Redis GET failed (getPublishedReviews):", err);
+        }
     }
     // Fallback to DB
     const result = yield review_model_1.Review.find({ isPublished: true })
         .sort({ sortOrder: 1, createdAt: -1 })
         .lean();
     // Populate cache (best-effort)
-    try {
-        yield redis_client_1.default.set(PUBLISHED_REVIEWS_KEY, JSON.stringify(result), "EX", REVIEWS_CACHE_TTL);
-    }
-    catch (err) {
-        console.warn("Redis SET failed (getPublishedReviews):", err);
+    if (redis_client_1.default.status === "ready") {
+        try {
+            yield redis_client_1.default.set(PUBLISHED_REVIEWS_KEY, JSON.stringify(result), "EX", REVIEWS_CACHE_TTL);
+        }
+        catch (err) {
+            console.warn("Redis SET failed (getPublishedReviews):", err);
+        }
     }
     return result;
 });
