@@ -28,6 +28,7 @@ const createPost = z.object({
       .min(2, { message: "At least two topics are required!" })
       .max(20),
     language: z.string().max(50).optional(),
+    genre: z.string().max(50).optional(),
   }),
 });
 
@@ -39,6 +40,7 @@ const updatePost = z.object({
     imageURL: z.string().url().max(2000).optional(),
     topic: z.array(TopicSchema).min(2).max(20).optional(),
     language: z.string().max(50).optional(),
+    genre: z.string().max(50).optional(),
     isPublished: z.boolean().optional(),
   }),
 });

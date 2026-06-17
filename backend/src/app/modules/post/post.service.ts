@@ -177,14 +177,24 @@ const getPosts = async (
 
   if (genreList.length > 0) {
     andCondition.push({
-      $or: genreList.map((genre) => ({
-        tag: {
-          $regex: new RegExp(
-            `^${genre.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
-            "i",
-          ),
+      $or: genreList.flatMap((genre) => [
+        {
+          tag: {
+            $regex: new RegExp(
+              `^${genre.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+              "i",
+            ),
+          },
         },
-      })),
+        {
+          genre: {
+            $regex: new RegExp(
+              `^${genre.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+              "i",
+            ),
+          },
+        },
+      ]),
     });
   }
 
