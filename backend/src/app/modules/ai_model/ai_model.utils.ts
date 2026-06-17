@@ -89,6 +89,18 @@ const TONE_INSTRUCTIONS: Record<string, string> = {
  * or an empty string if no tone (or an unrecognised tone) is supplied.
  */
 const GENRE_MODIFIER_INSTRUCTIONS: Record<string, string> = {
+
+  fantasy: "Write in the style of epic fantasy fiction. Include vivid world-building, magic, and heroic themes.",
+  horror: "Write in the style of psychological horror. Build dread slowly, use dark imagery, and leave an unsettling feeling.",
+  romance: "Write in the style of contemporary romance. Focus on emotional tension, character chemistry, and satisfying resolution.",
+  scifi: "Write in the style of science fiction. Ground the story in plausible technology or speculative concepts.",
+  mystery: "Write in the style of a mystery thriller. Plant subtle clues, build suspense, and deliver a reveal.",
+  childrens: "Write in the style of a children's picture book. Use simple language, a warm tone, and a clear moral.",
+  adventure: "Write in the style of adventure fiction. Focus on journey, exploration, action, overcoming obstacles, and high stakes.",
+  thriller: "Write in the style of a thriller. Keep the pacing fast, with high stakes, constant tension, excitement, and unexpected twists.",
+  historicalfiction: "Write in the style of historical fiction. Set the story in a detailed, realistic historical period, capturing the customs, events, and atmosphere of that era.",
+  comedy: "Write in the style of comedy fiction. Include light-hearted humor, witty dialogue, funny situations, and amusing character quirks."
+
   fantasy:
     "Write in the style of epic fantasy fiction. Include vivid world-building, magic, and heroic themes.",
   horror:
@@ -101,11 +113,23 @@ const GENRE_MODIFIER_INSTRUCTIONS: Record<string, string> = {
     "Write in the style of a mystery thriller. Plant subtle clues, build suspense, and deliver a reveal.",
   childrens:
     "Write in the style of a children's picture book. Use simple language, a warm tone, and a clear moral.",
+
 };
 
 const buildGenreInstruction = (genre?: string): string => {
   if (!genre) return "";
-  const instruction = GENRE_MODIFIER_INSTRUCTIONS[genre];
+  const normalizedGenre = genre.toLowerCase().replace(/[^a-z0-9]/g, "");
+  
+  let key: string = normalizedGenre;
+  if (normalizedGenre === "sciencefiction" || normalizedGenre === "scifi") {
+    key = "scifi";
+  } else if (normalizedGenre === "historicalfiction") {
+    key = "historicalfiction";
+  } else if (normalizedGenre === "anygenre" || normalizedGenre === "any") {
+    return "";
+  }
+  
+  const instruction = GENRE_MODIFIER_INSTRUCTIONS[key];
   if (!instruction) return "";
   return `Genre & Style Directive: ${instruction}\n\n`;
 };

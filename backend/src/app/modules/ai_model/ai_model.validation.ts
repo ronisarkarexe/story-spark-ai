@@ -9,6 +9,19 @@ const VALID_TONES = [
   "Children's",
 ] as const;
 
+const VALID_GENRES = [
+  "Fantasy",
+  "Science Fiction",
+  "Mystery",
+  "Romance",
+  "Horror",
+  "Adventure",
+  "Thriller",
+  "Historical Fiction",
+  "Comedy",
+  "Any Genre",
+] as const;
+
 const aiModel = z.object({
   body: z.object({
     prompt: z
@@ -44,6 +57,15 @@ const aiModel = z.object({
         }),
       })
       .optional(),
+
+    genre: z
+      .enum(VALID_GENRES, {
+        errorMap: () => ({
+          message: `Genre must be one of: ${VALID_GENRES.join(", ")}`,
+        }),
+      })
+      .optional()
+      .or(z.literal("")),
 
     characters: z
       .array(

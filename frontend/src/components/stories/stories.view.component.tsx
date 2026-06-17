@@ -759,8 +759,18 @@ if (isLoading) {
                 <span className="inline-flex items-center rounded-full bg-purple-900/60 text-purple-300 border border-purple-700/50 py-1 px-3 text-xs font-semibold">
                   Γëí╞Æ├ä┬í {selectedStory.tag}
                 </span>
+
+                {selectedStory.genre && (
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 border border-indigo-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                    ✨ {selectedStory.genre}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-purple-500/5 text-purple-600 dark:text-purple-400 border border-purple-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                  🌐 {selectedStory.language || "English"}
+
                 <span className="inline-flex items-center rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
                   Γëí╞Æ├«├ë {selectedStory.language || "English"}
+
                 </span>
                 {selectedStory.emotions && selectedStory.emotions.length > 0 && (
                   <span className="inline-flex items-center rounded-full bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 py-1 px-3 text-xs font-semibold">
