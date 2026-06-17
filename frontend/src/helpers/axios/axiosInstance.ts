@@ -25,4 +25,6 @@ instance.interceptors.response.use(
   }
 );
 
+export { instance };
 export default instance;
+

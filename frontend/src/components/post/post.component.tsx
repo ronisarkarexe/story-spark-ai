@@ -292,7 +292,7 @@ export const ExploreComponent = () => {
               )}
             </div>
 
-            {!featuredPost && data?.meta && (
+            {!featuredPost && data?.meta && data.meta.total > 0 && (
 
               <div className="sticky bottom-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 z-20 mt-8 shadow-[0_-10px_40px_-10px_rgba(15,23,42,0.12)] transition-colors duration-300 dark:bg-[#0b1329]/80 dark:border-slate-800 dark:shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)]">
                 <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3">

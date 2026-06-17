@@ -143,18 +143,18 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-<<<<<<< feat-context-compression
- const post = storyId ? await Post.findById(storyId) : null;
+const post = storyId ? await Post.findById(storyId) : null;
+
+const rawProvider = req.headers?.["x-model-provider"];
+const provider = Array.isArray(rawProvider)
+  ? rawProvider[0]
+  : rawProvider;
 
 const enhancedPrompt = await StoryVersionService.enhancePrompt(
   prompt.trim(),
-  post?.content
+  post?.content,
+  provider
 );
-=======
-  const rawProvider = req.headers?.["x-model-provider"];
-  const provider = Array.isArray(rawProvider) ? rawProvider[0] : rawProvider;
-  const enhancedPrompt = await StoryVersionService.enhancePrompt(prompt.trim(), provider);
->>>>>>> main
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

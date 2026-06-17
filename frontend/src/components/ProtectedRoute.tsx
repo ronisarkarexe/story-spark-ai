@@ -1,10 +1,10 @@
-import { ReactNode } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { isLoggedIn, getUserInfo } from '../services/auth.service';
+import React from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { getUserInfo, isLoggedIn } from "../services/auth.service";
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
 /**
@@ -13,15 +13,6 @@ interface ProtectedRouteProps {
  * and checks the user's role if allowedRoles is provided.
  */
 const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { isLoggedIn } from "../services/auth.service";
-
-interface ProtectedRouteProps {
-  children?: React.ReactNode;
-  allowedRoles?: string[];
-}
-
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation();
 
   if (!isLoggedIn()) {
@@ -39,3 +30,4 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 };
 
 export default ProtectedRoute;
+
