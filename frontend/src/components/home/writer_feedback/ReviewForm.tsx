@@ -30,7 +30,7 @@ const StarRating = ({
                 : "text-gray-600"
             }`}
           >
-            ★
+            Ã¢Ëœâ€¦
           </button>
         ))}
       </div>
@@ -107,7 +107,7 @@ const ReviewForm = () => {
           {/* Header */}
           <div className="mb-8">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-400">
-              ✍️ Share Your Story
+              Ã¢Å“ÂÃ¯Â¸Â Share Your Story
             </div>
 
             <h3 className="text-2xl font-bold text-white">
@@ -125,7 +125,7 @@ const ReviewForm = () => {
               aria-live="polite"
               className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400 transition-all duration-300"
             >
-              <span className="text-lg">🎉</span>
+              <span className="text-lg">Ã°Å¸Å½â€°</span>
               <span>
                 Thank you! Your review has been submitted for approval.
               </span>
@@ -138,7 +138,7 @@ const ReviewForm = () => {
               aria-live="polite"
               className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
             >
-              <span className="text-lg">⚠️</span>
+              <span className="text-lg">Ã¢Å¡Â Ã¯Â¸Â</span>
               <span>{errors.submit}</span>
             </div>
           )}
@@ -150,7 +150,7 @@ const ReviewForm = () => {
                 htmlFor="name"
                 className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300"
               >
-                <span className="text-blue-400">👤</span>
+                <span className="text-blue-400">Ã°Å¸â€˜Â¤</span>
                 Name
                 <span className="text-red-400">*</span>
               </label>
@@ -167,7 +167,7 @@ const ReviewForm = () => {
 
               {errors.name && (
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
+                  <span>Ã¢Å¡Â </span>
                   {errors.name}
                 </p>
               )}
@@ -179,7 +179,7 @@ const ReviewForm = () => {
                 htmlFor="role"
                 className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300"
               >
-                <span className="text-blue-400">💼</span>
+                <span className="text-blue-400">Ã°Å¸â€™Â¼</span>
                 Role
                 <span className="text-red-400">*</span>
               </label>
@@ -196,7 +196,7 @@ const ReviewForm = () => {
 
               {errors.role && (
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
+                  <span>Ã¢Å¡Â </span>
                   {errors.role}
                 </p>
               )}
@@ -208,7 +208,7 @@ const ReviewForm = () => {
                 htmlFor="feedback"
                 className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300"
               >
-                <span className="text-blue-400">💬</span>
+                <span className="text-blue-400">Ã°Å¸â€™Â¬</span>
                 Review
                 <span className="text-red-400">*</span>
               </label>
@@ -227,7 +227,7 @@ const ReviewForm = () => {
               <div className="mt-1 flex items-center justify-between max-w-lg">
                 {errors.feedback ? (
                   <p className="flex items-center gap-1 text-xs text-red-400">
-                    <span>⚠</span>
+                    <span>Ã¢Å¡Â </span>
                     {errors.feedback}
                   </p>
                 ) : (
@@ -247,7 +247,7 @@ const ReviewForm = () => {
             {/* Rating */}
             <div>
               <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
-                <span className="text-blue-400">⭐</span>
+                <span className="text-blue-400">Ã¢Â­Â</span>
                 Rating
                 <span className="text-red-400">*</span>
               </label>
@@ -260,7 +260,7 @@ const ReviewForm = () => {
 
               {errors.rating && (
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
+                  <span>Ã¢Å¡Â </span>
                   {errors.rating}
                 </p>
               )}
@@ -297,7 +297,7 @@ const ReviewForm = () => {
                   Submitting...
                 </span>
               ) : (
-                "Share Review ✨"
+                "Share Review Ã¢Å“Â¨"
               )}
             </button>
         </div>
@@ -305,8 +305,6 @@ const ReviewForm = () => {
     </div>
   </div>
 </div>
-  );
-    </div>
   );
 };
 

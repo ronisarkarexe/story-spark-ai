@@ -87,14 +87,13 @@ const LoginComponent = () => {
     <div className="min-h-screen w-full bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6 lg:px-8 box-border">
 
       {/* Background Glow */}
-
       <motion.div
 
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="flex w-full max-w-5xl flex-row justify-center gap-16 py-12 relative z-10 box-border items-center">
-        {/* Left side — feature highlights */}
+        {/* Left side â€” feature highlights */}
         <div className="hidden lg:flex flex-col gap-5 max-w-sm">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-700 bg-clip-text text-transparent">
             Turns Ideas into
@@ -130,7 +129,7 @@ const LoginComponent = () => {
       {/* Main Grid */}
       <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 box-border">
 
-        {/* Left Column — hidden on mobile, visible on laptop */}
+        {/* Left Column â€” hidden on mobile, visible on laptop */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -178,7 +177,7 @@ const LoginComponent = () => {
           </motion.div>
         </motion.div>
 
-        {/* Right Column — Login Form */}
+        {/* Right Column â€” Login Form */}
         <div className="flex justify-center w-full box-border">
           <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
 
@@ -187,7 +186,7 @@ const LoginComponent = () => {
               onClick={() => (window.location.href = "/")}
               className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
             >
-              ← Back to Home
+              â† Back to Home
             </button>
 
             <div className="mb-6 text-center">
@@ -252,7 +251,7 @@ const LoginComponent = () => {
                 </span>
               </div>
 
-        {/* Right side — login form card */}
+        {/* Right side â€” login form card */}
 
         <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl box-border overflow-hidden relative">
           {/* Back to Home */}
@@ -260,7 +259,7 @@ const LoginComponent = () => {
             onClick={() => (window.location.href = "/")}
             className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
           >
-            ← Back to Home
+            â† Back to Home
           </button>
 
           <div className="mb-6 text-center">
@@ -289,7 +288,7 @@ const LoginComponent = () => {
           className="w-full box-border"
               />
 
-            {/* Password field — eye icon toggle is provided by SSInput when type="password" */}
+            {/* Password field â€” eye icon toggle is provided by SSInput when type="password" */}
             <SSInput
               label="Password"
               name="password"
