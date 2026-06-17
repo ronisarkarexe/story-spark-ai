@@ -16,6 +16,7 @@ import {
 } from "../../redux/apis/ai.model.api";
 import ImageFallback from "../ImageFallback";
 import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
+import StoryPitchDeck from "../pitch/StoryPitchDeck";
 export interface IStories {
   uuid: string;
   title: string;
@@ -98,6 +99,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
+const [showPitchDeck, setShowPitchDeck] = useState<boolean>(false);
 const [, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
@@ -845,6 +847,14 @@ if (isLoading) {
                 </button>
                 <button
                   type="button"
+                  className="rounded-lg px-4 py-2 bg-violet-600 text-slate-200 font-semibold cursor-pointer hover:bg-violet-500 transition-colors"
+                  onClick={() => setShowPitchDeck(true)}
+                  disabled={!selectedStory}
+                >
+                  📋 Pitch Deck
+                </button>
+                <button
+                  type="button"
                   id="publish-story-btn"
                   className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                     loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
@@ -1225,6 +1235,15 @@ if (isLoading) {
           story={selectedStory.content}
           title={selectedStory.title}
           onClose={() => setShowWorldMap(false)}
+        />
+      )}
+      {showPitchDeck && selectedStory && (
+        <StoryPitchDeck
+          title={selectedStory.title}
+          content={selectedStory.content}
+          tag={selectedStory.tag}
+          isLogin={isLogin}
+          onClose={() => setShowPitchDeck(false)}
         />
       )}
       <Toaster position="top-right" reverseOrder={false} />
