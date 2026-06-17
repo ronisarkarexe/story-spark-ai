@@ -318,11 +318,6 @@ export const useSpeechSynthesis = (
         }
       };
 
-      const loadedVoices = speechSynthesis.getVoices();
-      browserVoicesRef.current = loadedVoices;
-      setBrowserVoices(loadedVoices);
-      setIsReady(loadedVoices.length > 0);
-
       utteranceRef.current = utterance;
       synthRef.current.speak(utterance);
     },
@@ -347,25 +342,6 @@ export const useSpeechSynthesis = (
       setIsReady(false);
       setError("Text-to-speech is not supported in this browser.");
       return;
-  const setPitch = useCallback((nextPitch: number) => {
-    setPitchState(nextPitch);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.pitch = nextPitch;
-    }
-  }, []);
-
-  const setVolume = useCallback((nextVolume: number) => {
-    setVolumeState(nextVolume);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.volume = nextVolume;
-    }
-  }, []);
-
-  const pause = useCallback(() => {
-    if (synthRef.current && isSpeaking && !isPaused) {
-      synthRef.current.pause();
     }
 
     const speechSynthesis = window.speechSynthesis;

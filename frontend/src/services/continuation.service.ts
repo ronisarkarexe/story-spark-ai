@@ -1,4 +1,4 @@
-import { instance as axios } from "../helpers/axios/axiosInstance";
+import axios from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;

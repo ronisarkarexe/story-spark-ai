@@ -4,9 +4,9 @@ import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/re
 import '@testing-library/jest-dom/vitest';
 import StoriesViewComponent, {
   ApiError,
-  RelatedStoriesComponent,
   IStories
 } from './stories.view.component';
+import RelatedStoriesComponent from '../post/related.stories.view.component';
 
 // --- Cleanup after every single test ---
 afterEach(() => {
@@ -86,14 +86,14 @@ describe('RelatedStoriesComponent', () => {
   });
 
   it('renders correctly and filters out the current post', () => {
-    render(<RelatedStoriesComponent posts={mockPosts} currentPostId="post-1" />);
+    render(<RelatedStoriesComponent posts={mockPosts as any} currentPostId="post-1" />);
     
     expect(screen.queryByText('Story One')).not.toBeInTheDocument();
     expect(screen.getByText('Story Two')).toBeInTheDocument();
   });
 
   it('navigates to the correct URL when a related story is clicked', () => {
-    render(<RelatedStoriesComponent posts={mockPosts} currentPostId="post-1" />);
+    render(<RelatedStoriesComponent posts={mockPosts as any} currentPostId="post-1" />);
     
     const storyCard = screen.getByText('Story Two');
     fireEvent.click(storyCard);

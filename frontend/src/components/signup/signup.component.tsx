@@ -268,17 +268,14 @@ const otpPayload = {
         </div>
 
 
-        {/* UPDATED: Structured layout classes to lock down maximum inner boundary constraints */}
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-
         <Link
-  to="/"
-  className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
->
-  <span>←</span>
-  <span>Back to Home</span>
-</Link>
-          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-200">
+          to="/"
+          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
+        >
+          <span>←</span>
+          <span>Back to Home</span>
+        </Link>
+
         {/* Card */}
         <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
 
@@ -383,6 +380,21 @@ const otpPayload = {
                     {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
                       const met = passwordChecks[key];
                       return (
+                        <li
+                          key={key}
+                          className={`flex items-center gap-1.5 ${
+                            met
+                              ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+                              : "text-slate-500 dark:text-slate-400"
+                          }`}
+                        >
+                          <i
+                            className={
+                              met
+                                ? "fi fi-rr-check text-emerald-600 dark:text-emerald-400 font-bold"
+                                : "fi fi-rr-cross-small text-slate-400"
+                            }
+                          />
                           <span>{label}</span>
                         </li>
                       );

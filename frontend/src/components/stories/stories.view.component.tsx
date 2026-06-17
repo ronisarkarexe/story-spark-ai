@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo, Suspense } from "react";
+import DOMPurify from "dompurify";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
@@ -11,7 +11,6 @@ import {
   exportStoryToPDF,
   exportStoryToEPUB
 } from "../../services/export.service";
-import StoryWorldMap from "../story-map/StoryWorldMap";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
@@ -21,7 +20,6 @@ import { useDispatch } from "react-redux";
 import { setStory } from "../../redux/slices/storySlice";
 import ContinueStoryButton from "../story/ContinueStoryButton";
 import { useApiError } from "../../hooks/useApiError";
-import { useLocation } from "react-router-dom";
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
@@ -29,6 +27,8 @@ import {
 import ImageFallback from "../ImageFallback";
 import StoryVisualizer from "../story-visualizer/StoryVisualizer";
 import ContinueStoryModal from "./ContinueStoryModal";
+import useAntiGravityScroll from "../../hooks/useAntiGravityScroll";
+import { StoryboardScene, useGenerateStoryVisualsMutation } from "../../redux/apis/story.visualizer.api";
 
 const StoryWorldMap = React.lazy(() => import("../story-map/StoryWorldMap"));
 const StoryRemix = React.lazy(() => import("../remix/StoryRemix"));
@@ -157,6 +157,7 @@ interface IPost extends IStories {
 interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
+  isLoading?: boolean;
   setStories: (stories: IStories[]) => void;
   onPublishSuccess?: () => void;
 }
@@ -218,36 +219,8 @@ const downloadBlob = (blob: Blob, fileName: string) => {
   document.body.appendChild(link);
   link.click();
   link.remove();
-
-    wordCursor += wordsInSentence;
-  });
-
-export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
-  const navigate = useNavigate();
-  const filteredPosts = posts.filter((post) => post._id !== currentPostId);
-
-  return (
-    <div className="mt-8">
-      <h4 className="text-lg font-bold text-slate-200 mb-4">Related Content</h4>
-      {filteredPosts.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredPosts.map((post) => (
-            <div
-              key={post._id}
-              onClick={() => navigate(`/stories/${post._id}`)}
-              className="p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/60 transition-colors"
-            >
-              <p className="text-sm font-semibold text-white truncate">{post.title}</p>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-center text-slate-500 py-4 border border-dashed border-slate-700 rounded-xl">No related stories found.</p>
-      )}
-    </div>
-  );
-  return segments;
 };
+
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
@@ -278,9 +251,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState<boolean>(false);
   const dropdownMenuRef = useRef<HTMLDivElement>(null);
 
-  // Standard functional states
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
-
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
@@ -299,11 +269,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]);
   const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-
-  const [loading, setLoading] = useState<boolean>(false);
-  const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
-const [, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -351,70 +316,7 @@ const [, setShowRemix] = useState<boolean>(false);
     }
   }, [narrationWordIndex, narrationState]);
 
-  const handleGenerateAlternateEndings = async () => {
-    if (!selectedStory) return;
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Generating alternate endings...");
-    try {
-      const payload = {
-        title: selectedStory.title,
-        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
-        tag: selectedStory.tag,
 
-        language: selectedStory.language || "English",
-
-      };
-      
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
-        
-      const res = await generationRequest.unwrap();
-      if (res && res.data) {
-        setEndingsCache((prev) => ({
-          ...prev,
-          [selectedStory.uuid]: res.data,
-        }));
-        toast.success("Alternate endings generated successfully!");
-      } else {
-        toast.error("Failed to generate alternate endings.");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to generate alternate endings. Please try again.");
-    } finally {
-      toast.dismiss(toastId);
-      setIsGeneratingEndings(false);
-    }
-  };
-
-  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
-    if (!selectedStory) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: endingData.fullStory,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success(`${endingData.style} applied to story!`);
-  };
-
-  const handleResetEnding = () => {
-    if (!selectedStory) return;
-    const originalContent = originalStoryContent[selectedStory.uuid];
-    if (!originalContent) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: originalContent,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success("Reverted to original story ending!");
-  };
 
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
@@ -894,9 +796,6 @@ const [, setShowRemix] = useState<boolean>(false);
 
       const safeTitle = getSafeFileName(title, "pdf");
       doc.save(safeTitle);
-      // Save PDF with sanitized name
-      const safeTitle = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-      doc.save(`${safeTitle}.pdf`);
       toast.dismiss(toastId);
       toast.success("Premium PDF downloaded!");
     } catch (error) {
@@ -905,20 +804,6 @@ const [, setShowRemix] = useState<boolean>(false);
       toast.error("Failed to export PDF.");
     }
   };
-
-  const downloadBlob = (blob: Blob, filename: string) => {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-const getSafeFileName = (title: string, ext: string) => {
-  const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  return `${cleanTitle || "story"}.${ext}`;
-};
 
 const handleExportMarkdown = () => {
     if (!selectedStory) { toast.error("No story available to export."); return; }
@@ -995,9 +880,6 @@ const handleExportMarkdown = () => {
       toast.dismiss(toastId);
       toast.error("Failed to export DOCX.");
     }
-      downloadBlob(blob, getSafeFileName(title, "md"));
-      toast.success("Markdown downloaded!");
-    } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
   };
 
   const handelPublishStory = async () => {
@@ -1171,64 +1053,6 @@ const handleExportMarkdown = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 pb-16 relative overflow-hidden box-border">
-      <Toaster position="top-right" reverseOrder={false} />
-      
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
-
-      {/* Error Banner */}
-      {errorMessage && (
-        <div className="error-banner mb-6 p-4 bg-amber-500/20 border border-amber-500 rounded-xl text-amber-200 flex justify-between items-center animate-fadeIn relative z-20">
-          <div className="flex items-center gap-3">
-            <span>⚠️</span>
-            <p className="text-sm font-medium">{errorMessage}</p>
-          </div>
-          <button 
-            onClick={() => setErrorMessage(null)} 
-            className="text-xs uppercase font-bold tracking-wider hover:text-white px-2 py-1 cursor-pointer"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start relative z-10 w-full box-border">
-        
-        {/* ── Left Column ── */}
-        <div className="col-span-1 lg:col-span-8 flex flex-col space-y-6 w-full box-border animate-fade-in-up">
-          
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 w-full box-border border-b border-slate-200/60 dark:border-white/5 pb-6">
-            <div className="text-left">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
-                {selectedStory.title}
-              </h1>
-              <div className="flex flex-wrap gap-2 select-none">
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
-                  🎭 {selectedStory.tag}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-purple-500/5 text-purple-600 dark:text-purple-400 border border-purple-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
-                  🌐 {selectedStory.language || "English"}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800/5 text-slate-600 dark:text-slate-400 border border-slate-700/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
-                  📖 {formatReadingStats(selectedStory.content)}
-                </span>
-                {selectedStory.emotions && selectedStory.emotions.length > 0 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
-                    😊 {selectedStory.emotions.join(", ")}
-
-if (isLoading) {
-  return (
-    <div className="flex items-center justify-center py-20">
-      <StoryGeneratingAnimation />
-    </div>
-  );
-}
-  if (!selectedStory) {
-    return null;
-  }
-
-  return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
       <style>
         {`
@@ -1282,84 +1106,9 @@ if (isLoading) {
                     )}
                   </button>
                 ))}
-            <div className="flex justify-start sm:justify-end">
-              <div className="flex -space-x-5">
-                {stories && stories.length > 0 && (
-                  stories.map((story) => (
-                    <button
-                      key={story.uuid}
-                      className={`relative w-16 h-16 rounded-full border-2 ${
-                        selectedStory?.uuid === story.uuid
-                          ? "border-blue-500 scale-110"
-                          : "border-white"
-                      } hover:scale-110 transition-transform duration-200 focus:outline-none`}
-                      onClick={() => handelStorySelection(story)}
-                    >
-                      <img
-                        src={story.imageURL}
-                        alt={story.title}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    </button>
-                  ))
-                )}
               </div>
             </div>
           </div>
-
-          {/* Story content card */}
-          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm w-full box-border text-left relative overflow-hidden">
-            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-white/5 select-none relative z-10">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Workspace Blueprint</h3>
-              <div className="flex flex-wrap items-center gap-2">
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={handleCopyStory}>
-                  {isCopied ? "✓ Copied" : "📋 Copy"}
-                </button>
-                
-                {/* Export Story Dropdown Menu */}
-                <div className="relative inline-block text-left" ref={dropdownMenuRef}>
-                  <button
-                    type="button"
-                    disabled={exportState !== "idle"}
-                    onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
-                    className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer flex items-center gap-2"
-                  >
-                    {getExportButtonText()} <i className="fa-solid fa-chevron-down text-[10px]" />
-                  </button>
-                  {isExportDropdownOpen && (
-                    <div className="absolute left-0 sm:right-0 mt-2 z-50 w-52 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-1 animate-fadeIn">
-                      <button onClick={handleExportPDF} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
-                        <span>📄</span> Premium PDF
-                      </button>
-                      <button onClick={() => handleExport("epub")} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
-                        <span>📘</span> Kindle EPUB
-                      </button>
-                      <button onClick={handleExportMarkdown} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
-                        <span>⬇️</span> Markdown
-                      </button>
-                      <button onClick={handleExportDOCX} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
-                        <span>📝</span> DOCX
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowWorldMap(true)}>
-                  🗺️ Map
-                </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowRemix(true)}>
-                  🔀 Remix
-                </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowTranslator(true)}>
-                  🌍 Translate
-                </button>
-                <button type="button" className="rounded-xl px-3 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white border border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-sm" onClick={() => setShowContinueModal(true)}>
-                  ✦ Continue →
-                </button>
-                <button type="button" className={`rounded-xl px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50 ${loading ? 'opacity-70' : ''}`} onClick={handelPublishStory} disabled={loading}>
           <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
             <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -1434,17 +1183,6 @@ if (isLoading) {
               </div>
             )}
 
-            <div id="story-content" className="prose prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed tracking-wide relative z-10">
-              <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence = isNarrationActive && narrationWordIndex >= segment.startWordIndex && narrationWordIndex <= segment.endWordIndex;
-                    return (
-                      <span
-                        key={segment.id}
-                        className={isActiveSentence ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-800 dark:text-indigo-100 ring-1 ring-indigo-400/30 transition-all duration-200" : undefined}
-                      >
-                        {DOMPurify.sanitize(segment.text)}
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
               <p className="break-words whitespace-pre-wrap">
                 {sentenceSegments.length > 0 ? (
@@ -1495,7 +1233,6 @@ if (isLoading) {
                     );
                   })
                 ) : (
-                  DOMPurify.sanitize(selectedStory.content)
                   (() => {
                     const rawParts = selectedStory.content.split(/(\s+)/);
                     let wordOffset = 0;
@@ -1673,11 +1410,82 @@ if (isLoading) {
           </div>
         </div>
 
-        {/* ── Right Column: Preview Panel ── */}
-        <div className="col-span-1 lg:col-span-4 w-full box-border lg:sticky lg:top-6">
-          <div className="mb-4 text-left select-none px-0.5">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Compilation Preview</h2>
+        {/* ── Right Column: Preview & Controls Panel ── */}
+        <div className="col-span-1 lg:col-span-4 w-full box-border lg:sticky lg:top-6 flex flex-col space-y-6">
+          
+          <GeneratedStoryTimeline
+            content={selectedStory.content}
+            title={selectedStory.title}
+            narrationState={narrationState}
+            narrationWordIndex={narrationWordIndex}
+          />
+
+          <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6">
+            <h3 className="text-lg font-bold text-slate-200 mb-4">
+              Select Topics
+            </h3>
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <input
+                type="text"
+                value={newTopicTitle}
+                onChange={(event) => setNewTopicTitle(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    handleAddTopic();
+                  }
+                }}
+                placeholder="Add related topic"
+                className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              />
+              <button
+                type="button"
+                className="rounded-lg px-4 py-2 bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-500 transition-colors"
+                onClick={handleAddTopic}
+              >
+                Add Topic
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {selectedStory ? (
+                <>
+                  {topics.map((topic, index) => (
+                    <span
+                      key={index}
+                      className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
+                    >
+                      <button
+                        type="button"
+                        className="cursor-pointer"
+                        onClick={() => handleTopicClick(index)}
+                      >
+                        {topic.selected ? (
+                          <i className="fa-solid fa-check"></i>
+                        ) : (
+                          <i className="fa-solid fa-plus"></i>
+                        )}{" "}
+                        {topic.title}
+                      </button>
+                      <button
+                        type="button"
+                        className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40"
+                        onClick={() => handleRemoveTopic(index)}
+                        disabled={topics.length <= 2}
+                        aria-label={`Remove ${topic.title}`}
+                      >
+                        <i className="fa-solid fa-xmark"></i>
+                      </button>
+                    </span>
+                  ))}
+                </>
+              ) : (
+                <p className="text-gray-400">
+                  No topics available. Please generate a story first.
+                </p>
+              )}
+            </div>
           </div>
+
           <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden group w-full box-border text-left">
             <div className="flex flex-col w-full box-border">
               <div className="relative p-3 overflow-hidden text-white w-full box-border" style={{ height: "192px" }}>
@@ -1708,271 +1516,13 @@ if (isLoading) {
                 </div>
                 <h3 className="mb-2 text-slate-900 dark:text-slate-200 text-lg sm:text-xl font-extrabold tracking-tight leading-snug">{selectedStory.title}</h3>
                 <p className="text-slate-500 dark:text-slate-400 font-medium break-words text-xs sm:text-sm leading-relaxed m-0">{getShortenedText(selectedStory.content)}</p>
-            <div className="relative z-10 mt-6">
-              <AudioPlayer
-                ref={audioPlayerRef}
-                text={selectedStory.content}
-                title={selectedStory.title}
-                onWordIndexChange={setNarrationWordIndex}
-                onPlaybackStateChange={setNarrationState}
-              />
-            </div>
-          </div>
-          <div className="mt-7">
-            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
-              <h3 className="text-lg font-bold text-slate-200 mb-4">
-                Select Topics
-              </h3>
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <input
-                  type="text"
-                  value={newTopicTitle}
-                  onChange={(event) => setNewTopicTitle(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      handleAddTopic();
-                    }
-                  }}
-                  placeholder="Add related topic"
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                />
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-500 transition-colors"
-                  onClick={handleAddTopic}
-                >
-                  Add Topic
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedStory ? (
-                  <>
-                    {topics.map((topic, index) => (
-                      <span
-                        key={index}
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
-                      >
-                        <button
-                          type="button"
-                          className="cursor-pointer"
-                          onClick={() => handleTopicClick(index)}
-                        >
-                          {topic.selected ? (
-                            <i className="fa-solid fa-check"></i>
-                          ) : (
-                            <i className="fa-solid fa-plus"></i>
-                          )}{" "}
-                          {topic.title}
-                        </button>
-                        <button
-                          type="button"
-                          className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40"
-                          onClick={() => handleRemoveTopic(index)}
-                          disabled={topics.length <= 2}
-                          aria-label={`Remove ${topic.title}`}
-                        >
-                          <i className="fa-solid fa-xmark"></i>
-                        </button>
-                      </span>
-                    ))}
-                  </>
-                ) : (
-                  <p className="text-gray-400">
-                    No topics available. Please generate a story first.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Alternate Endings Section */}
-            {selectedStory && (
-              <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
-                <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-200 flex items-center gap-2">
-                      Alternate Endings
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Explore alternate narrative styles for your story context.
-                    </p>
-                  </div>
-                  {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
-                    <button
-                      type="button"
-                      onClick={handleResetEnding}
-                      className="rounded-lg px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-200 border border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
-                    >
-                      <i className="fa-solid fa-rotate-left"></i> Reset to Original
-                    </button>
-                  )}
-                </div>
-
-                {isGeneratingEndings ? (
-                  <div className="flex flex-col items-center justify-center py-10">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-                    <p className="text-slate-300 text-sm font-medium animate-pulse">
-                      Generating alternate endings...
-                    </p>
-                  </div>
-                ) : endingsCache[selectedStory.uuid]?.length > 0 ? (
-                  <div>
-                    {/* Tabs */}
-                    <div className="flex border-b border-slate-700/50 mb-6 overflow-x-auto whitespace-nowrap scrollbar-none">
-                      {[
-                        { name: "Happy Ending" },
-                        { name: "Dark Ending" },
-                        { name: "Plot Twist Ending" },
-                        { name: "Open Ending" },
-                        { name: "Cliffhanger Ending" }
-                      ].map((s) => {
-                        const hasEndings = endingsCache[selectedStory.uuid] || [];
-                        const endingData = hasEndings.find((e) => e.style === s.name);
-                        const isApplied = endingData && selectedStory.content === endingData.fullStory;
-                        
-                        return (
-                          <button
-                            key={s.name}
-                            type="button"
-                            onClick={() => setActiveEndingTab(s.name)}
-                            className={`px-5 py-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
-                              activeEndingTab === s.name
-                                ? "border-purple-500 text-purple-400 bg-purple-500/5"
-                                : "border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700"
-                            }`}
-                          >
-                            <span>{s.name}</span>
-                            {isApplied && (
-                              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Tab content */}
-                    {(() => {
-                      const currentEndings = endingsCache[selectedStory.uuid] || [];
-                      const currentEndingData = currentEndings.find((e) => e.style === activeEndingTab);
-                      if (!currentEndingData) return null;
-                      
-                      const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
-                      
-                      return (
-                        <div className="bg-slate-900/40 rounded-xl p-6 border border-slate-700/30">
-                          <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-lg font-bold text-slate-200">
-                              {activeEndingTab} Suggestion
-                            </h4>
-                            <div>
-                              {isCurrentlyApplied ? (
-                                <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
-                                  <i className="fa-solid fa-check"></i> Applied to Story
-                                </span>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleApplyEnding(currentEndingData)}
-                                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
-                                >
-                                  Apply to Story
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-4">
-                            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800 leading-relaxed text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap">
-                              <p>{currentEndingData.ending}</p>
-                            </div>
-                            
-                            <div>
-                              <details className="group border border-slate-800 rounded-lg overflow-hidden bg-slate-950/20">
-                                <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none">
-                                  <span>PREVIEW FULL STORY WITH THIS ENDING</span>
-                                  <span className="transition-transform duration-200 group-open:rotate-180">Γû╝</span>
-                                </summary>
-                                <div className="p-4 border-t border-slate-800/80 text-xs text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
-                                  {currentEndingData.fullStory}
-                                </div>
-                              </details>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8 bg-slate-900/20 border border-dashed border-slate-700/40 rounded-xl">
-                    <button
-                      type="button"
-                      onClick={handleGenerateAlternateEndings}
-                      className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer"
-                    >
-                      Generate Alternate Endings
-                    </button>
-                    <p className="text-xs text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
-                      Uses the story context to produce 5 unique ending variations (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="col-span-1 lg:col-span-4">
-          <GeneratedStoryTimeline
-            content={selectedStory.content}
-            title={selectedStory.title}
-            narrationState={narrationState}
-            narrationWordIndex={narrationWordIndex}
-          />
-
-          <div className="mb-5">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-              Preview
-            </h1>
-          </div>
-          <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
-            <div className="relative flex flex-col rounded-lg">
-              <div className="relative m-3 overflow-hidden text-white rounded-xl">
-                <ImageFallback
-                  src={selectedStory.imageURL}
-                  alt="card-image"
-                  className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="px-3 py-1">
-                <div className="flex justify-between items-center mb-2 w-full">
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                      {selectedStory.tag.toUpperCase()}
-                    </div>
-                    <div className="inline-flex items-center rounded-full bg-indigo-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                      Γëí╞Æ├«├ë {(selectedStory.language || "English").toUpperCase()}
-                    </div>
-                    <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
-                      ╬ô├àΓûÆΓê⌐Γòò├à {calculateReadingTime(selectedStory.content)} min read
-                    </div>
-                  </div>
-                  <div>
-                    <BookmarkButton storyId={selectedStory.uuid} />
-                  </div>
-                </div>
-                <h6 className="mb-1 text-gray-300 text-xl font-semibold">
-                  {selectedStory.title}
-                </h6>
-                <p className="text-gray-400 font-light breakwords text-sm sm:text-base">
-                  {getShortenedText(selectedStory.content)}
-                </p>
               </div>
             </div>
           </div>
+
         </div>
       </div>
+
       {showWorldMap && selectedStory && (
         <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 text-white font-semibold">Loading Map...</div>}>
           <StoryWorldMap
@@ -2015,12 +1565,6 @@ if (isLoading) {
             language: selectedStory.language ?? "English",
           }}
           onClose={() => setShowContinueModal(false)}
-        />
-      )}
-        <StoryWorldMap
-          story={selectedStory.content}
-          title={selectedStory.title}
-          onClose={() => setShowWorldMap(false)}
         />
       )}
       <Toaster position="top-right" reverseOrder={false} />

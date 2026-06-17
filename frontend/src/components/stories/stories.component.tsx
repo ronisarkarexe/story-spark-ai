@@ -1,13 +1,19 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
-import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import StoriesViewComponent, { IStories } from "./stories.view.component";
+import RecentPromptsPanel from "./RecentPromptsPanel";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getUserInfo, isLoggedIn } from "../../services/auth.service";
+import { getRequestLimit, getWordCount, prompts } from "./stories.utils";
+import {
+  useGenerateFreeModelMutation,
+  useGenerateModelMutation,
+} from "../../redux/apis/ai.model.api";
 import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
-import jsPDF from "jspdf";
-import StoryWorldMap from "../story-map/StoryWorldMap";
-import BookmarkButton from "../BookmarkButton";
-import logo from "../../assets/logoNew.png";
+import { getErrorMessage } from "../../error/error.message";
+import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
+import { useRecentPrompts } from "../../hooks/useRecentPrompts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import { useDebounce } from "../../hooks/useDebounce";
 
@@ -26,7 +32,7 @@ type Inputs = {
   prompt: string;
 };
 
-const MAX_PROMPT_LENGTH = 1000;
+const MAX_PROMPT_LENGTH = 2000;
 const WARN_THRESHOLD = 0.85;
 
 const LANGUAGES = [
@@ -54,7 +60,6 @@ const GENRES = [
   { value: "🔍 Mystery", icon: "🔍", name: "Mystery" },
   { value: "🌟 Adventure", icon: "🌟", name: "Adventure" },
 ] as const;
-
 
 type GenreName = (typeof GENRES)[number]["name"];
 
@@ -381,72 +386,33 @@ const TonePicker: React.FC<TonePickerProps> = React.memo(({ selected, onChange }
     </div>
   );
 });
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
-import { useLocation } from "react-router-dom";
-import {
-  useGenerateAlternateEndingsMutation,
-  useGenerateFreeAlternateEndingsMutation,
-} from "../../redux/apis/ai.model.api";
-import ImageFallback from "../ImageFallback";
-import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
-export interface IStories {
-  uuid: string;
-  title: string;
-  content: string;
-  tag: string;
-  emotions?: string[];
-  enhancedPrompt?: string;
-  imageURL: string;
-  language?: string;
-  genre?: string;
-}
 
-interface IPost extends IStories {
-  topic: ITopicData[];
-}
+const getStoryDedupKey = (story: IStories) => {
+  const storyData = story as Partial<IStories> & {
+    id?: string;
+    _id?: string;
+    uuid?: string;
+  };
+  const title = String(storyData.title ?? "").trim().toLowerCase();
+  const content = String(storyData.content ?? "").trim().toLowerCase();
+  const tag = String(storyData.tag ?? "").trim().toLowerCase();
 
-interface StoriesComponentProps {
-  stories: IStories[];
-  isLogin: boolean;
-  setStories: (stories: IStories[]) => void;
-  onPublishSuccess?: () => void;
-}
-
-type StorySentenceSegment = {
-  id: string;
-  text: string;
-  startWordIndex: number;
-  endWordIndex: number;
+  return title || content || tag
+    ? `${title}-${content}-${tag}`
+    : String(storyData.uuid ?? storyData._id ?? storyData.id ?? "");
 };
 
-const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
-  if (!content.trim()) {
-    return [];
-  }
+const getUniqueStories = (storyList: IStories[]) => {
+  const seenStories = new Set<string>();
 
-  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
-  const segments: StorySentenceSegment[] = [];
-  let wordCursor = 0;
+  return storyList.filter((story) => {
+    const dedupKey = getStoryDedupKey(story);
 
-  sentenceMatches.forEach((sentence, index) => {
-    const trimmedSentence = sentence.trim();
-    if (!trimmedSentence) {
-      return;
-    }
+    if (!dedupKey) return true;
+    if (seenStories.has(dedupKey)) return false;
 
-    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
-    const startWordIndex = wordCursor;
-    const endWordIndex =
-      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
-
-    segments.push({
-      id: `${index}-${startWordIndex}-${endWordIndex}`,
-      text: sentence,
-      startWordIndex,
-      endWordIndex,
-    });
-
-    wordCursor += wordsInSentence;
+    seenStories.add(dedupKey);
+    return true;
   });
 };
 
@@ -457,46 +423,32 @@ interface ICharacter {
   personality: string;
 }
 
-  return segments;
-};
-
-const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
-  stories,
-  isLogin,
-  setStories,
-  isLoading,
-  onPublishSuccess,
-}) => {
+const StoriesComponent = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const storiesPerPage = 10;
   const location = useLocation();
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const navigate = useNavigate();
+  const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
 
-  // Start with a clean state that adapts dynamically
-  const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
-  const [topics, setTopics] = useState<ITopicData[]>(topicsData);
-  const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
-  const [newTopicTitle, setNewTopicTitle] = useState<string>("");
+  const draft = useMemo(() => {
+    try {
+      const saved = localStorage.getItem("story_spark_draft");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const [stories, setStories] = useState<IStories[]>(
+    draft?.stories?.length ? getUniqueStories(draft.stories) : []
+  );
+  
   const [loading, setLoading] = useState<boolean>(false);
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
 
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string>(
-  draft?.genre
-    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "ðŸ§™ Fantasy")
-    : "ðŸ§™ Fantasy",
-);
-  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
-  const [textareaValue, setTextareaValue] = useState<string>(() => {
-    return location.state?.prompt || draft?.prompt || "";
-  });
-  const [selectedGenre, setSelectedGenre] = useState<string>("");
-  const [selectedLength, setSelectedLength] = useState<string>("medium");
-  const [textareaValue, setTextareaValue] = useState<string>("");
-
-  
   const [selectedGenre, setSelectedGenre] = useState<string>(
     draft?.genre
       ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
@@ -528,120 +480,35 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
-  const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
-const [, setShowRemix] = useState<boolean>(false);
-  const [createPost] = useCreatePostMutation();
-  const [deletePost] = useDeletePostMutation();
-  const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
-  const lastSavedContentRef = useRef<string>("");
-  const isSavingRef = useRef<boolean>(false);
-  const hasSavedSessionRef = useRef<boolean>(false);
-  const savedPostIdRef = useRef<string | null>(null);
-  // Alternate ending state & hooks
-  const [endingsCache, setEndingsCache] = useState<{
-    [uuid: string]: { style: string; ending: string; fullStory: string }[];
-  }>({});
-  const [originalStoryContent, setOriginalStoryContent] = useState<{
-    [uuid: string]: string;
-  }>({});
-  const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
-  const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
-  const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
-  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+    }
 
-  const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
-  const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+    const audio = new Audio(soundtrack);
+    audio.loop = true;
+    audio.volume = 0.3;
+
+    audio.play().catch((err) => {
+      console.log("Audio playback failed:", err);
+    });
+
+    audioRef.current = audio;
+  }, []);
+
+  const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
+  const isGenerationInProgressRef = useRef(false);
+  
+  const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
+    parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
+  );
+  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+  const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
+  const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
+  
+  const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
+  const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
 
   useEffect(() => {
-    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
-      setOriginalStoryContent((prev) => ({
-        ...prev,
-        [selectedStory.uuid]: selectedStory.content,
-      }));
-    }
-  }, [selectedStory, originalStoryContent]);
-
-  useEffect(() => {
-    if (narrationState === "playing") {
-      const activeWordElement = document.querySelector('[data-active-word="true"]');
-      if (activeWordElement) {
-        activeWordElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest"
-        });
-      }
-    }
-  }, [narrationWordIndex, narrationState]);
-
-  const handleGenerateAlternateEndings = async () => {
-    if (!selectedStory) return;
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Generating alternate endings...");
-    try {
-      const payload = {
-        title: selectedStory.title,
-        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
-        tag: selectedStory.tag,
-
-        language: selectedStory.language || "English",
-
-      };
-      
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
-        
-      const res = await generationRequest.unwrap();
-      if (res && res.data) {
-        setEndingsCache((prev) => ({
-          ...prev,
-          [selectedStory.uuid]: res.data,
-        }));
-        toast.success("Alternate endings generated successfully!");
-      } else {
-        toast.error("Failed to generate alternate endings.");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to generate alternate endings. Please try again.");
-    } finally {
-      toast.dismiss(toastId);
-      setIsGeneratingEndings(false);
-    }
-  };
-
-  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
-    if (!selectedStory) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: endingData.fullStory,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success(`${endingData.style} applied to story!`);
-  };
-
-  const handleResetEnding = () => {
-    if (!selectedStory) return;
-    const originalContent = originalStoryContent[selectedStory.uuid];
-    if (!originalContent) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: originalContent,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success("Reverted to original story ending!");
-  };
-
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   // Autosave Draft
   useEffect(() => {
@@ -654,82 +521,70 @@ const [, setShowRemix] = useState<boolean>(false);
         tone: selectedTone,
       };
       try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+        localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
       } catch (err) {
         if (err instanceof DOMException && err.name === "QuotaExceededError") {
           toast.error("Couldn't autosave draft — storage limit reached.");
         }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleTextToSpeech = () => {
-    if (!selectedStory?.content) return;
-
-    if (!("speechSynthesis" in window)) {
-      toast.error("Text-to-speech is not supported in this browser.");
-      return;
-    }
-
-    if (isPlayingAudio) {
-      if (isPausedAudio) {
-        window.speechSynthesis.resume();
-        setIsPausedAudio(false);
-        toast.success("Resumed reading story");
-      } else {
-        window.speechSynthesis.pause();
-        setIsPausedAudio(true);
-        toast.success("Paused reading story");
       }
-    } else {
-      window.speechSynthesis.cancel();
-      const cleanContent = selectedStory.content.replace(/<[^>]*>/g, "");
-      const utterance = new SpeechSynthesisUtterance(cleanContent);
-      
-      utterance.onend = () => {
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      utterance.onerror = (e) => {
-        console.error("SpeechSynthesis error:", e);
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(
-        (v) => v.lang.startsWith("en-") && v.name.includes("Google")
-      ) || voices.find((v) => v.lang.startsWith("en-"));
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
-      setIsPlayingAudio(true);
-      setIsPausedAudio(false);
-      toast.success("Playing story audio");
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleStopAudio = () => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-    setIsPlayingAudio(false);
-    setIsPausedAudio(false);
-    toast.success("Stopped audio playback");
-  };
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, selectedTone]);
 
   useEffect(() => {
-    return () => {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+    const selectedLocale =
+      LANGUAGES.find((language) => language.name === selectedLanguage)?.code ?? "en";
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, selectedLanguage);
+    document.documentElement.lang = selectedLocale;
+  }, [selectedLanguage]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
       }
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLanguageDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false);
+        setIsLanguageDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
   useEffect(() => {
-    setSelectTopics(topics.filter((topic) => topic.selected));
-  }, [topics]);
+    if (location.state) {
+      if (location.state.prompt) {
+        setTextareaValue(location.state.prompt);
+      }
+      if (location.state.genre) {
+        const matchedGenre = GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
+        setSelectedGenre(matchedGenre);
+      }
+      navigate(location.pathname, {
+        replace: true,
+        state: {},
+      });
+    }
+  }, [location, navigate, setSelectedGenre, setTextareaValue]);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 350);
   const debouncedPrompt = useDebounce(textareaValue, 500);
@@ -737,90 +592,39 @@ const [, setShowRemix] = useState<boolean>(false);
   useEffect(() => {
     setValue("prompt", debouncedPrompt);
   }, [debouncedPrompt, setValue]);
-    setNarrationWordIndex(0);
-    setNarrationState("idle");
-  }, [selectedStory?.uuid]);
-
-  const sentenceSegments = useMemo(() => {
-    return buildSentenceSegments(selectedStory?.content ?? "");
-  }, [selectedStory?.content]);
-
-  // Sync state instantly whenever a new template is submitted or selected
-  useEffect(() => {
-    if (stories && stories.length > 0) {
-      setSelectedStory(stories[0]);
-    } else {
-      setSelectedStory(null);
-    }
-    // Reset auto-save status for new story session
-    lastSavedContentRef.current = "";
-    hasSavedSessionRef.current = false;
-    savedPostIdRef.current = null;
-  }, [stories]);
 
   useEffect(() => {
-    const autoSaveStory = async () => {
-      // 1. Prevent guest auto-save requests
-      if (!isLogin || !selectedStory) return;
-
-      // 2. Prevent duplicate auto-save requests for unchanged story content
-      if (selectedStory.content === lastSavedContentRef.current) {
-        return;
-      }
-
-      // 3. Only one draft/post is created per story session (prevent variation/topic duplicates)
-      if (hasSavedSessionRef.current) {
-        return;
-      }
-
-      // 4. Prevent duplicate network calls while a save is already running
-      if (isSavingRef.current) return;
-
-      isSavingRef.current = true;
-
-      const post: IPost = {
-        ...selectedStory,
-        topic: selectTopics,
-      };
-
-      try {
-        const result = await createPost(post).unwrap();
-        if (result && result.data && result.data._id) {
-          savedPostIdRef.current = result.data._id;
-        }
-        lastSavedContentRef.current = selectedStory.content;
-        hasSavedSessionRef.current = true;
-        toast.success("Story auto-saved!");
-      } catch (error) {
-        console.error("Auto-save failed", error);
-      } finally {
-        isSavingRef.current = false;
-      }
+    return () => {
+      activeGenerationRef.current?.abort();
     };
+  }, []);
 
-    // Debounce to prevent multiple immediate renders/rerenders from triggering save
-    const timer = setTimeout(() => {
-      autoSaveStory();
-    }, 1000);
+  const handleCancelGeneration = useCallback((isTimeout = false) => {
+    activeGenerationRef.current?.abort();
+    activeGenerationRef.current = null;
+    isGenerationInProgressRef.current = false;
+    setLoading(false);
+    if (!isTimeout) {
+      toast("Story generation cancelled.");
+    }
+  }, []);
 
-    return () => clearTimeout(timer);
-  }, [selectedStory, selectedStory?.content, isLogin, selectTopics, createPost]);
+  const handleClearPrompt = useCallback(() => {
+    setTextareaValue("");
+    setSelectedPrompt("");
+    setValue("prompt", "");
 
-  const handelStorySelection = (story: IStories) => {
-    setSelectedStory(story);
-  };
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [setValue]);
 
-  const handleTopicClick = (index: number) => {
-    setTopics((currentTopics) =>
-      currentTopics.map((topic, topicIndex) =>
-        topicIndex === index
-          ? { ...topic, selected: !topic.selected }
-          : topic
-      )
-    );
-  };
-  const handleAddTopic = () => {
-    const title = newTopicTitle.trim();
+  const handlePublishSuccess = useCallback(() => {
+    setTextareaValue("");
+    setSelectedPrompt("");
+    setValue("prompt", "");
+    reset();
+  }, [setValue, reset]);
 
   const [generateModel] = useGenerateModelMutation();
   const [generateFreeModel] = useGenerateFreeModelMutation();
@@ -830,142 +634,44 @@ const [, setShowRemix] = useState<boolean>(false);
 
   const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
     if (isGenerationInProgressRef.current) {
-    if (!title) {
-      toast.error("Please enter a topic.");
       return;
     }
 
-    const normalizedTitle = title.startsWith("#") ? title : `#${title}`;
-    const topicExists = topics.some(
-      (topic) => topic.title.toLowerCase() === normalizedTitle.toLowerCase()
-    );
-
-    if (topicExists) {
-      toast.error("This topic already exists.");
+    if (!login && guestRequestCount >= 3) {
+      setShowLimitModal(true);
       return;
     }
 
-    setTopics((currentTopics) => [
-      ...currentTopics,
-      {
-        title: normalizedTitle,
-        className: SELECTED_TOPIC_CLASSES,
-        color: SELECTED_TOPIC_CLASSES,
-        selected: true,
-      },
-    ]);
-    setNewTopicTitle("");
-  };
-
-  const handleRemoveTopic = (index: number) => {
-    if (topics.length <= 2) {
-      toast.error("At least 2 topics are required.");
+    if (!data.prompt.trim()) {
+      toast.error("Please enter a prompt to generate a story.");
       return;
     }
-
-    setTopics((currentTopics) =>
-      currentTopics.filter((_, topicIndex) => topicIndex !== index)
-    );
-  };
-  const handleCopyStory = async () => {
-    if (selectedStory?.content) {
-      await navigator.clipboard.writeText(selectedStory.content);
-      setIsCopied(true);
-      toast.success("Story copied!");
-      setTimeout(() => setIsCopied(false), 2000);
-    }
-  };
 
     if (getWordCount(data.prompt) < 10) {
       toast.error("Please enter a prompt with at least 10 words to generate a story.");
-      toast.error(
-        "Please enter a prompt with at least 10 words to generate a story."
-      );
       return;
     }
-  const handleExportPDF = async () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
-    const toastId = toast.loading("Preparing your premium PDF...");
 
-    try {
-      // Helper to load image assets asynchronously with a safe timeout
-      const loadImageWithTimeout = (src: string, timeoutMs: number = 3000): Promise<HTMLImageElement> => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          const timeout = setTimeout(() => {
-            img.src = ""; // stop loading
-            reject(new Error(`Timeout loading image: ${src}`));
-          }, timeoutMs);
-
-          img.onload = () => {
-            clearTimeout(timeout);
-            resolve(img);
-          };
-          img.onerror = (e) => {
-            clearTimeout(timeout);
-            reject(e);
-          };
-          img.src = src;
-        });
-      };
-
-      let logoImg: HTMLImageElement | null = null;
-      let storyImg: HTMLImageElement | null = null;
-
-      try {
-        logoImg = await loadImageWithTimeout(logo);
-      } catch (err) {
-        console.warn("Failed to load StorySparkAI logo for PDF", err);
+    // Validate characters array
+    for (const char of characters) {
+      if (!char.name.trim()) {
+        toast.error("Please provide a name for all characters.");
+        return;
       }
-
-      if (selectedStory.imageURL) {
-        try {
-          storyImg = await loadImageWithTimeout(selectedStory.imageURL);
-        } catch (err) {
-          console.warn("Failed to load story banner image for PDF", err);
-        }
+      if (!char.role.trim()) {
+        toast.error("Please select a role for all characters.");
+        return;
       }
-
-      // Initialize A4 PDF document (210mm x 297mm)
-      const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const title = selectedStory.title || "Untitled Story";
-      const content = selectedStory.content || "";
-      const tag = (selectedStory.tag || "STORY").toUpperCase();
-
-      const leftMargin = 20;
-      const rightMargin = 20;
-      const topMargin = 20;
-      const bottomMargin = 20;
-      const printableWidth = 210 - leftMargin - rightMargin; // 170 mm
-      const maxY = 297 - bottomMargin - 10; // Bottom boundary (267mm) leaving room for footer
-
-      let yCursor = topMargin;
-
-      // 1. Header (Logo & Sub-header)
-      if (logoImg) {
-        const logoHeight = 8;
-        const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
-        doc.addImage(logoImg, "PNG", leftMargin, yCursor, logoWidth, logoHeight);
-      } else {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.setTextColor(99, 102, 241); // Brand Indigo
-        doc.text("StorySparkAI", leftMargin, yCursor + 6);
+      if (!char.personality.trim()) {
+        toast.error("Please describe the personality/traits for all characters.");
+        return;
       }
+    }
 
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(148, 163, 184); // Slate 400
-      doc.text("PREMIUM AI GENERATED STORY", 190, yCursor + 5, { align: "right" });
+    isGenerationInProgressRef.current = true;
+    setLoading(true);
 
-      yCursor += 10;
+    let timeoutId: NodeJS.Timeout | null = null;
 
     try {
       timeoutId = setTimeout(() => {
@@ -974,34 +680,16 @@ const [, setShowRemix] = useState<boolean>(false);
           handleCancelGeneration(true);
         }
       }, 60000);
-      // Header Divider Line
-      doc.setDrawColor(99, 102, 241); // Brand Indigo
-      doc.setLineWidth(0.5);
-      doc.line(leftMargin, yCursor, 190, yCursor);
-
-      yCursor += 8;
 
       const payload = {
         prompt: selectedGenre ? `[Genre: ${selectedGenre}] ${data.prompt}` : data.prompt,
         wordLength: selectedLength === "short" ? 175 : selectedLength === "long" ? 800 : 450,
-        prompt: selectedGenre
-          ? `[Genre: ${selectedGenre}] ${data.prompt}`
-          : data.prompt,
-        wordLength:
-          selectedLength === "short"
-            ? 175
-            : selectedLength === "long"
-            ? 800
-            : 450,
         language: selectedLanguage,
         tone: selectedTone || undefined,
         characters: characters.map(({ name, role, personality }) => ({ name, role, personality })),
       };
 
       const generationRequest = login ? generateModel(payload) : generateFreeModel(payload);
-      const generationRequest = login
-        ? generateModel(payload)
-        : generateFreeModel(payload);
       activeGenerationRef.current = generationRequest;
       const res = await generationRequest.unwrap();
       if (res) {
@@ -1011,7 +699,7 @@ const [, setShowRemix] = useState<boolean>(false);
         setTextareaValue("");
         setSelectedPrompt("");
         setValue("prompt", "");
-        // Clear draft after successful generation
+        localStorage.removeItem("story_spark_draft");
         localStorage.removeItem(DRAFT_KEY);
         setDraftStatus("");
         reset();
@@ -1019,124 +707,11 @@ const [, setShowRemix] = useState<boolean>(false);
         setCurrentStep(1);
         if (selectedGenre) {
           playSoundtrack(selectedGenre);
-      // 2. Story Banner Image (only on Page 1)
-      if (storyImg) {
-        const bannerHeight = 55;
-        doc.addImage(storyImg, "JPEG", leftMargin, yCursor, printableWidth, bannerHeight);
-        yCursor += bannerHeight + 8;
-      }
-
-      // 3. Story Title
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(22);
-      doc.setTextColor(30, 41, 59); // Slate 800
-      const splitTitle = doc.splitTextToSize(title, printableWidth);
-      splitTitle.forEach((line: string) => {
-        doc.text(line, leftMargin, yCursor);
-        yCursor += 9;
-      });
-
-      yCursor += 1;
-
-      // 4. Meta Row (Generated Date & Genre Pill Badge)
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(100, 116, 139); // Slate 500
-      const formattedDate = new Date().toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-      doc.text(`Generated on ${formattedDate}`, leftMargin, yCursor);
-
-      // Genre pill badge on the right
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      const tagWidth = doc.getTextWidth(tag);
-      const chipWidth = tagWidth + 5;
-      const chipHeight = 5;
-      const chipX = 190 - chipWidth;
-      const chipY = yCursor - 3.8;
-
-      doc.setFillColor(99, 102, 241); // Brand Indigo background
-      doc.roundedRect(chipX, chipY, chipWidth, chipHeight, 1, 1, "F");
-
-      doc.setTextColor(255, 255, 255); // White text inside pill
-      doc.text(tag, chipX + 2.5, chipY + 3.5);
-
-      yCursor += 4.5;
-
-      // Meta row bottom line
-      doc.setDrawColor(226, 232, 240); // Slate 200
-      doc.setLineWidth(0.2);
-      doc.line(leftMargin, yCursor, 190, yCursor);
-
-      yCursor += 10;
-
-      // 5. Story Paragraphs Flowing
-      const paragraphs = content.split(/\n+/);
-      const lineHeight = 6.5;
-      const paragraphSpacing = 4.5;
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.setTextColor(30, 41, 59); // Slate 800
-
-      paragraphs.forEach((para: string, pIdx: number) => {
-        const cleanPara = para.trim();
-        if (!cleanPara) return;
-
-        const lines = doc.splitTextToSize(cleanPara, printableWidth);
-        lines.forEach((line: string) => {
-          if (yCursor > maxY) {
-            doc.addPage();
-            yCursor = 30; // Top padding for subsequent pages
-          }
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(11);
-          doc.setTextColor(30, 41, 59); // Slate 800
-          doc.text(line, leftMargin, yCursor);
-          yCursor += lineHeight;
-        });
-
-        if (pIdx < paragraphs.length - 1) {
-          yCursor += paragraphSpacing;
         }
-      });
-
-      // 6. Running Header and Footer generation
-      const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-
-        // Footer line
-        doc.setDrawColor(241, 245, 249);
-        doc.setLineWidth(0.25);
-        doc.line(leftMargin, 280, 190, 280);
-
-        // Footer Text
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(100, 116, 139); // Slate 500
-        doc.text("Generated with StorySparkAI", leftMargin, 285);
-        doc.text(`Page ${i} of ${totalPages}`, 190, 285, { align: "right" });
-
-        // Header on pages 2+
-        if (i > 1) {
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8);
-          doc.setTextColor(99, 102, 241); // Brand Indigo
-          doc.text("StorySparkAI", leftMargin, 14);
-
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8);
-          doc.setTextColor(148, 163, 184); // Slate 400
-          const headerTitle = title.length > 50 ? title.substring(0, 50) + "..." : title;
-          doc.text(headerTitle, 190, 14, { align: "right" });
-
-          doc.setDrawColor(241, 245, 249);
-          doc.setLineWidth(0.2);
-          doc.line(leftMargin, 17, 190, 17);
+        if (!login) {
+          const newCount = guestRequestCount + 1;
+          setGuestRequestCount(newCount);
+          localStorage.setItem("guestRequestCount", String(newCount));
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -1149,13 +724,9 @@ const [, setShowRemix] = useState<boolean>(false);
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      if (latencyTimeoutId) {
-        clearTimeout(latencyTimeoutId);
-      }
       activeGenerationRef.current = null;
       isGenerationInProgressRef.current = false;
       setLoading(false);
-      setIsHighLatency(false);
     }
   }, [
     login,
@@ -1174,7 +745,7 @@ const [, setShowRemix] = useState<boolean>(false);
     reset,
   ]);
 
-  const isOverLimit = textareaValue.length > MAX_PROMPT_LENGTH;
+  const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
   const isGenerateDisabled = loading || isOverLimit || !textareaValue.trim();
 
@@ -1200,97 +771,84 @@ const [, setShowRemix] = useState<boolean>(false);
   }, []);
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
+
+  const handleAddCharacter = () => {
+    setCharacters([
+      ...characters,
+      { id: generateId(), name: "", role: "Protagonist", personality: "" },
+    ]);
+  };
+
+  const handleCharacterChange = (id: string, field: keyof Omit<ICharacter, "id">, value: string) => {
+    setCharacters(
+      characters.map((char) => (char.id === id ? { ...char, [field]: value } : char))
+    );
+  };
+
+  const handleRemoveCharacter = (id: string) => {
+    setCharacters(characters.filter((char) => char.id !== id));
+  };
+
+  const handleNextStep = () => {
+    if (!textareaValue.trim()) {
+      toast.error("Please enter a prompt to generate a story.");
+      return;
+    }
+    if (getWordCount(textareaValue) < 10) {
+      toast.error("Please enter a prompt with at least 10 words to generate a story.");
+      return;
+    }
+    setCurrentStep(2);
+  };
+
+  useKeyboardShortcuts({
+    onOpenHelp: () => setShowHelpModal(true),
+    onCloseHelp: () => setShowHelpModal(false),
+    onGenerate: () => {
+      if (isGenerateDisabled) {
+        return;
       }
-
-      // Save PDF with sanitized name
-      const safeTitle = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-      doc.save(`${safeTitle}.pdf`);
-      toast.dismiss(toastId);
-      toast.success("Premium PDF downloaded!");
-    } catch (error) {
-      console.error(error);
-      toast.dismiss(toastId);
-      toast.error("Failed to export PDF.");
-    }
-  };
-
-  const downloadBlob = (blob: Blob, filename: string) => {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-const getSafeFileName = (title: string, ext: string) => {
-  const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  return `${cleanTitle || "story"}.${ext}`;
-};
-
-const handleExportMarkdown = () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
-    try {
-      const title = selectedStory.title || "Story";
-      const content = selectedStory.content || "";
-      const tag = selectedStory.tag || "General";
-      const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
-      const isoDate = new Date().toISOString().split("T")[0];
-      const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
-      const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
-      downloadBlob(blob, getSafeFileName(title, "md"));
-      toast.success("Markdown downloaded!");
-    } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
-  };
-
-  const handelPublishStory = async () => {
-    if (!isLogin) {
-      toast.error("Please login to publish the story.");
-      return;
-    }
-    if (!selectedStory) {
-      toast.error("No story available. Please generate a story first.");
-      return;
-    }
-    if (selectTopics.length < 2) {
-      toast.error("Please select at least 2 topics.");
-      return;
-    }
-    const post: IPost = {
-      ...selectedStory,
-      topic: selectTopics,
-    };
-    setLoading(true);
-    try {
-      if (savedPostIdRef.current) {
-        try {
-          await deletePost(savedPostIdRef.current).unwrap();
-        } catch (deleteError) {
-          console.warn("Failed to delete auto-saved draft before publishing:", deleteError);
+      if (currentStep === 1) {
+        handleNextStep();
+      } else {
+        if (inputRef.current) {
+          const form = inputRef.current.closest("form");
+          if (form) form.requestSubmit();
         }
       }
-      const result = await createPost(post).unwrap();
-      if (result) {
-        toast.success("Story published successfully!");
-        setStories([]);
-        setSelectedStory(null);
-        onPublishSuccess?.();
-      }
-    } catch {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    onPublish: () => {
+      const publishBtn = document.getElementById("publish-story-btn");
+      publishBtn?.click();
+    },
+    focusPrompt: () => {
+      inputRef.current?.focus();
+    },
+    hasStory: stories.length > 0,
+  });
 
-  const calculateReadingTime = (content: string): number => {
-    const words = getWordCount(content);
-    return Math.max(1, Math.ceil(words / 200));
-  };
+  const handleSelectRecentPrompt = useCallback((prompt: string) => {
+    setTextareaValue(prompt);
+    setValue("prompt", prompt);
+    setIsRecentPromptsOpen(false);
+  }, [setValue]);
 
-  const isNarrationActive = narrationState !== "idle";
+  const handleToggleRecentPrompts = useCallback(() => {
+    setIsRecentPromptsOpen((prev) => !prev);
+  }, []);
 
+  const handleToggleDropdown = useCallback(() => {
+    setIsDropdownOpen((prev) => !prev);
+  }, []);
+
+  const recentPromptsText = useMemo(() => ({
+    recentPrompts: text.recentPrompts,
+    usePrompt: text.usePrompt,
+    delete: text.delete,
+    clearAll: text.clearAll,
+    noRecentPrompts: text.noRecentPrompts,
+    close: text.close,
+  }), [text]);
 
   const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
 
@@ -1331,75 +889,66 @@ const handleExportMarkdown = () => {
     setCurrentPage(1);
   }, [debouncedSearchQuery, searchFilter]);
 
-if (isLoading) {
   return (
-    <div className="flex items-center justify-center py-20">
-      <StoryGeneratingAnimation />
-    </div>
-  );
-}
-  if (!selectedStory) {
-    return null;
-  }
+    <div className="min-h-screen bg-white text-slate-900 animate-gradient-slow transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+        <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
+          <div className="pt-2 w-full md:w-auto flex justify-start">
+            <Link to="/">
+              <div className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
+                <i className="fa-solid fa-left-long"></i> {text.back}
+              </div>
+            </Link>
+          </div>
 
-  return (
-    <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
-      <style>
-        {`
-          @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-fade-in-up {
-            animation: fadeInUp 0.6s ease-out forwards;
-          }
-        `}
-      </style>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in-up">
-        <div className="col-span-1 lg:col-span-8 flex flex-col">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <div>
-              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400 mb-2">
-                {selectedStory?.title}
-              </h1>
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center rounded-full bg-purple-900/60 text-purple-300 border border-purple-700/50 py-1 px-3 text-xs font-semibold">
-                  Γëí╞Æ├ä┬í {selectedStory.tag}
+          {!login && (
+            <div className="pt-2 text-center">
+              <div className="!rounded-button bg-gray-100/80 text-slate-600 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed border border-gray-200 dark:bg-white/20 dark:text-gray-400 dark:border-white/10">
+                <span>
+                  {text.freeAccess} -{" "}
+                  <Link to="/login">
+                    <span className="text-indigo-400 underline font-semibold">
+                      {text.login}
+                    </span>
+                  </Link>{" "}
+                  {text.forMore}
                 </span>
-                <span className="inline-flex items-center rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
-                  Γëí╞Æ├«├ë {selectedStory.language || "English"}
-                </span>
-                {selectedStory.emotions && selectedStory.emotions.length > 0 && (
-                  <span className="inline-flex items-center rounded-full bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 py-1 px-3 text-xs font-semibold">
-                    Γëí╞Æ├┐├¿ {selectedStory.emotions.join(", ")}
-                  </span>
-                )}
               </div>
             </div>
-            <div className="flex justify-start sm:justify-end">
-              <div className="flex -space-x-5">
-                {stories && stories.length > 0 && (
-                  stories.map((story) => (
-                    <button
-                      key={story.uuid}
-                      className={`relative w-16 h-16 rounded-full border-2 ${
-                        selectedStory?.uuid === story.uuid
-                          ? "border-blue-500 scale-110"
-                          : "border-white"
-                      } hover:scale-110 transition-transform duration-200 focus:outline-none`}
-                      onClick={() => handelStorySelection(story)}
-                    >
-                      <img
-                        src={story.imageURL}
-                        alt={story.title}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    </button>
-                  ))
-                )}
-              </div>
+          )}
+
+          <div className="flex flex-col items-center md:items-end pt-2 w-full md:w-auto">
+            <button className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
+              <span>
+                {" "}
+                <span className="text-gray-400 text-xs">{text.perMonth}</span>{" "}
+                {getRequestLimit(userRole?.subscriptionType as string)}
+              </span>
+              <Link to="/pricing" className="border-1 border-white/20 pl-2 text-gray-300">
+                {text.upgrade}
+              </Link>
+              <i className="fas fa-bolt text-yellow-400"></i>
+            </button>
+            <div className="mt-3 text-slate-500 text-xs text-center md:text-right dark:text-gray-500">
+              <span>
+                {text.monthlyRequests}:{" "}
+                {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}
+              </span>
+              <br />
+              <span>{text.totalPosts}: {login ? (data?.postsCount ?? 0) : 0}</span>
+
+              <span className="h-3.5 w-px bg-slate-200 dark:bg-white/10" />
+              <Link to="/pricing" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 flex items-center gap-1.5">
+                <span>{text.upgrade}</span>
+                <i className="fas fa-bolt text-amber-400 text-[11px]" />
+              </Link>
+            </div>
+            <div className="mt-2.5 text-[11px] font-semibold tracking-wide text-slate-400 dark:text-slate-500 text-center sm:text-right uppercase space-y-0.5">
+              <div>{text.monthlyRequests}: {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}</div>
+              <div>{text.totalPosts}: {login ? (data?.postsCount ?? 0) : 0}</div>
             </div>
           </div>
+        </div>
 
         <div className="mb-12 max-w-3xl mx-auto text-center select-none mt-11">
           <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
@@ -1410,219 +959,73 @@ if (isLoading) {
             ✨
           </h1>
         </div>
-          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <h3 className="text-xl font-bold text-slate-200 relative z-10">
-                Generated Story
-              </h3>
-              <div className="flex flex-wrap items-center gap-2 relative z-10">
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleCopyStory}
-                  disabled={!selectedStory}
-                >
-                  {isCopied ? "Γ£ô Copied" : "≡ƒôï Copy"}
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportPDF}
-                  disabled={!selectedStory}
-                >
-                  ≡ƒôä Export PDF
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportMarkdown}
-                  disabled={!selectedStory}
-                >
-                  Γ¼ç∩╕Å Export as Markdown
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowWorldMap(true)}
-                  disabled={!selectedStory}
-                >
-                  Γëí╞Æ├╣ΓòæΓê⌐Γòò├à World Map
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowRemix(true)}
-                  disabled={!selectedStory}
-                >
-                  Γëí╞Æ├╢├ç Remix
-                </button>
-                <button
-                  type="button"
-                  id="publish-story-btn"
-                  className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
-                  }`}
-                  onClick={handelPublishStory}
-                  disabled={loading || !selectedStory}
-                >
-                  {loading ? "Publishing..." : "Publish"}
-                </button>
-              </div>
-            </div>
 
-            {selectedStory.enhancedPrompt && (
-              <div className="mb-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-xl relative z-10">
-                <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
-                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
-                </h4>
-                <p className="text-slate-300 text-sm italic break-words whitespace-pre-wrap">
-                  {selectedStory.enhancedPrompt}
-                </p>
-              </div>
-            )}
+        <div className="max-w-3xl mx-auto w-full box-border space-y-6">
+          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-sm hover:shadow-xl transition-shadow duration-300 w-full box-border">
+            <form className="space-y-6 w-full box-border" onSubmit={handleSubmit(onSubmit)}>
+              {currentStep === 1 ? (
+                <>
+                  {/* Step 1 Content */}
+                  <div className="w-full box-border select-none">
+                    <div className="flex flex-wrap gap-2">
+                      {GENRES.map((genre) => (
+                        <button
+                          key={genre.value}
+                          type="button"
+                          onClick={() => {
+                            const newGenre = selectedGenre === genre.value ? "" : genre.value;
+                            setSelectedGenre(newGenre);
+                            if (newGenre) {
+                              playSoundtrack(newGenre);
+                            } else if (audioRef.current) {
+                              audioRef.current.pause();
+                              audioRef.current.currentTime = 0;
+                            }
+                          }}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold tracking-wide uppercase border transition-all duration-150 cursor-pointer active:scale-[0.97] ${
+                            selectedGenre === genre.value
+                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-transparent text-white shadow-md shadow-blue-500/10"
+                              : "bg-slate-50 border-slate-200/60 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:border-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200"
+                          }`}
+                        >
+                          <span className="mr-1">{genre.icon}</span>
+                          <span>{genreLabels[genre.name]}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-            <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
-              <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence =
-                      isNarrationActive &&
-                      narrationWordIndex >= segment.startWordIndex &&
-                      narrationWordIndex <= segment.endWordIndex;
+                  {/* Tone picker row */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-white/5 select-none">
+                    <TonePicker selected={selectedTone} onChange={setSelectedTone} />
+                  </div>
 
-                    const rawParts = segment.text.split(/(\s+)/);
-                    let wordOffset = 0;
-
-                    return (
-                      <span
-                        key={segment.id}
-                        className={isActiveSentence ? "text-slate-100 font-medium transition-colors duration-300" : undefined}
-                      >
-                        {rawParts.map((part, partIdx) => {
-                          if (part === "") return null;
-                          if (/^\s+$/.test(part)) {
-                            return part;
-                          }
-
-                          const absoluteWordIndex = segment.startWordIndex + wordOffset;
-                          wordOffset++;
-
-                          const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                          if (isActiveWord) {
-                            return (
-                              <span
-                                key={partIdx}
-                                className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
-                                data-active-word="true"
-                              >
-                                {part}
-                              </span>
-                            );
-                          }
-
-                          return (
-                            <span key={partIdx}>
-                              {part}
-                            </span>
-                          );
-                        })}
-                      </span>
-                    );
-                  })
-                ) : (
-                  (() => {
-                    const rawParts = selectedStory.content.split(/(\s+)/);
-                    let wordOffset = 0;
-                    return rawParts.map((part, partIdx) => {
-                      if (part === "") return null;
-                      if (/^\s+$/.test(part)) {
-                        return part;
-                      }
-
-                      const absoluteWordIndex = wordOffset;
-                      wordOffset++;
-
-                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                      if (isActiveWord) {
-                        return (
-                          <span
-                            key={partIdx}
-                            className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
-                            data-active-word="true"
-                          >
-                            {part}
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <span key={partIdx}>
-                          {part}
-                        </span>
-                      );
-                    });
-                  })()
-                )}
-              </p>
-            </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-slate-100 dark:border-white/5 w-full box-border select-none">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1">📏 {text.length}:</span>
+                      {(["short", "medium", "long"] as const).map((length) => (
+                        <button
+                          key={length}
+                          type="button"
+                          onClick={() => setSelectedLength(length)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide border transition-all duration-150 cursor-pointer ${
+                            selectedLength === length
+                              ? "bg-blue-600 border-transparent text-white shadow-sm"
+                              : "bg-slate-50 border-slate-200/60 text-slate-500 hover:bg-slate-100 dark:bg-white/5 dark:border-white/5 dark:text-slate-400 dark:hover:bg-white/10"
+                          }`}
+                        >
+                          {text[length]}
+                        </button>
+                      ))}
+                    </div>
 
                     <div className="flex items-center gap-2" ref={languageDropdownRef}>
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1">🌐 {text.language}:</span>
                       <div className="relative">
-            <div className="relative z-10 mt-6">
-              <AudioPlayer
-                ref={audioPlayerRef}
-                text={selectedStory.content}
-                title={selectedStory.title}
-                onWordIndexChange={setNarrationWordIndex}
-                onPlaybackStateChange={setNarrationState}
-              />
-            </div>
-          </div>
-          <div className="mt-7">
-            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
-              <h3 className="text-lg font-bold text-slate-200 mb-4">
-                Select Topics
-              </h3>
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <input
-                  type="text"
-                  value={newTopicTitle}
-                  onChange={(event) => setNewTopicTitle(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      handleAddTopic();
-                    }
-                  }}
-                  placeholder="Add related topic"
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                />
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-500 transition-colors"
-                  onClick={handleAddTopic}
-                >
-                  Add Topic
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedStory ? (
-                  <>
-                    {topics.map((topic, index) => (
-                      <span
-                        key={index}
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
-                      >
                         <button
                           type="button"
-                          className="cursor-pointer"
-                          onClick={() => handleTopicClick(index)}
+                          onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                          className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-50 text-slate-600 border border-slate-200 dark:bg-white/5 dark:border-white/5 dark:text-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-150 cursor-pointer select-none"
                         >
                           <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
                           <span className="text-slate-400 dark:text-slate-500 text-[9px]">▼</span>
@@ -1678,32 +1081,59 @@ if (isLoading) {
 
                     <div className="absolute right-3.5 top-3.5 flex flex-col gap-2.5">
                       {textareaValue.length > 0 && (
-                          {topic.selected ? (
-                            <i className="fa-solid fa-check"></i>
-                          ) : (
-                            <i className="fa-solid fa-plus"></i>
-                          )}{" "}
-                          {topic.title}
-                        </button>
                         <button
                           type="button"
-                          className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40"
-                          onClick={() => handleRemoveTopic(index)}
-                          disabled={topics.length <= 2}
-                          aria-label={`Remove ${topic.title}`}
+                          onClick={handleClearPrompt}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 hover:text-red-500 dark:hover:text-red-400 shadow-sm transition-colors duration-150 cursor-pointer"
+                          aria-label={text.close}
+                          title={text.close}
                         >
-                          <i className="fa-solid fa-xmark"></i>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
                         </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setIsRecentPromptsOpen(!isRecentPromptsOpen)}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm hover:bg-blue-500 transition-colors duration-150 cursor-pointer"
+                        aria-label={text.recentPrompts}
+                        title={text.recentPrompts}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-200/40 dark:border-white/5 select-none w-full box-border">
+                      <div className="flex-1 min-w-0 pr-4">
+                        {isOverLimit ? (
+                          <p className="text-[11px] font-semibold text-red-500 dark:text-red-400 flex items-center gap-1 truncate m-0">
+                            <span>⚠</span> {text.characterLimit}
+                          </p>
+                        ) : isNearLimit ? (
+                          <p className="text-[11px] font-semibold text-amber-500 dark:text-amber-400 flex items-center gap-1 truncate m-0">
+                            <span>⚠</span> {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      <span className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
+                        isOverLimit ? "text-red-500 dark:text-red-400" : isNearLimit ? "text-amber-500" : "text-slate-400"
+                      }`}>
+                        {textareaValue.length} / {MAX_PROMPT_LENGTH}
                       </span>
-                    ))}
-                  </>
-                ) : (
-                  <p className="text-gray-400">
-                    No topics available. Please generate a story first.
-                  </p>
-                )}
-              </div>
-            </div>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] font-medium leading-relaxed text-slate-400 dark:text-slate-500 select-none w-full box-border">
+                    💡 <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">{text.keyboardTip}</span>
+                    {text.press} <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Enter</kbd> to continue &bull;{" "}
+                    <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Ctrl + Enter</kbd> also works &bull;{" "}
+                    <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Shift + Enter</kbd> {text.forNewLine}
+                  </div>
 
                   <div className="flex justify-end pt-2 w-full box-border">
                     <button
@@ -1713,30 +1143,21 @@ if (isLoading) {
                     >
                       <span>Next: Cast of Characters ➡️</span>
                     </button>
-            {/* Alternate Endings Section */}
-            {selectedStory && (
-              <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
-                <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-200 flex items-center gap-2">
-                      Alternate Endings
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Explore alternate narrative styles for your story context.
-                    </p>
                   </div>
-                  {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
+                </>
+              ) : (
+                <>
+                  {/* Step 2 Content: Cast of Characters */}
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5 select-none w-full">
                     <button
                       type="button"
-                      onClick={handleResetEnding}
-                      className="rounded-lg px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-200 border border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                      onClick={() => setCurrentStep(1)}
+                      className="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                     >
-                      <i className="fa-solid fa-rotate-left"></i> Reset to Original
+                      ⬅️ Back to Story Details
                     </button>
-                  )}
-                </div>
+                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Step 2 of 2</span>
+                  </div>
 
                   <div className="space-y-2 select-none">
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Cast of Characters</h2>
@@ -1815,299 +1236,30 @@ if (isLoading) {
                       <span>Add Another Character</span>
                     </button>
                   </div>
-                {isGeneratingEndings ? (
-                  <div className="flex flex-col items-center justify-center py-10">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-                    <p className="text-slate-300 text-sm font-medium animate-pulse">
-                      Generating alternate endings...
-                    </p>
-                  </div>
-                ) : endingsCache[selectedStory.uuid]?.length > 0 ? (
-                  <div>
-                    {/* Tabs */}
-                    <div className="flex border-b border-slate-700/50 mb-6 overflow-x-auto whitespace-nowrap scrollbar-none">
-                      {[
-                        { name: "Happy Ending" },
-                        { name: "Dark Ending" },
-                        { name: "Plot Twist Ending" },
-                        { name: "Open Ending" },
-                        { name: "Cliffhanger Ending" }
-                      ].map((s) => {
-                        const hasEndings = endingsCache[selectedStory.uuid] || [];
-                        const endingData = hasEndings.find((e) => e.style === s.name);
-                        const isApplied = endingData && selectedStory.content === endingData.fullStory;
-                        
-                        return (
-                          <button
-                            key={s.name}
-                            type="button"
-                            onClick={() => setActiveEndingTab(s.name)}
-                            className={`px-5 py-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
-                              activeEndingTab === s.name
-                                ? "border-purple-500 text-purple-400 bg-purple-500/5"
-                                : "border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700"
-                            }`}
-                          >
-                            <span>{s.name}</span>
-                            {isApplied && (
-                              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
 
-                    {/* Tab content */}
-                    {(() => {
-                      const currentEndings = endingsCache[selectedStory.uuid] || [];
-                      const currentEndingData = currentEndings.find((e) => e.style === activeEndingTab);
-                      if (!currentEndingData) return null;
-                      
-                      const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
-                      
-                      return (
-                        <div className="bg-slate-900/40 rounded-xl p-6 border border-slate-700/30">
-                          <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-lg font-bold text-slate-200">
-                              {activeEndingTab} Suggestion
-                            </h4>
-                            <div>
-                              {isCurrentlyApplied ? (
-                                <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
-                                  <i className="fa-solid fa-check"></i> Applied to Story
-                                </span>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleApplyEnding(currentEndingData)}
-                                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
-                                >
-                                  Apply to Story
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-4">
-                            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800 leading-relaxed text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap">
-                              <p>{currentEndingData.ending}</p>
-                            </div>
-                            
-                            <div>
-                              <details className="group border border-slate-800 rounded-lg overflow-hidden bg-slate-950/20">
-                                <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none">
-                                  <span>PREVIEW FULL STORY WITH THIS ENDING</span>
-                                  <span className="transition-transform duration-200 group-open:rotate-180">Γû╝</span>
-                                </summary>
-                                <div className="p-4 border-t border-slate-800/80 text-xs text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
-                                  {currentEndingData.fullStory}
-                                </div>
-                              </details>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8 bg-slate-900/20 border border-dashed border-slate-700/40 rounded-xl">
+                  <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5 w-full box-border select-none">
                     <button
-                      type="button"
-                      onClick={handleGenerateAlternateEndings}
-                      className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer"
+                      type="submit"
+                      disabled={loading || isOverLimit}
+                      aria-busy={loading}
+                      aria-disabled={loading || isOverLimit}
+                      className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
+                        loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                      } group`}
                     >
-                      Generate Alternate Endings
+                      {loading ? (
+                        <i className="fas fa-circle-notch text-sm animate-spin" />
+                      ) : (
+                        <i className="fas fa-wand-magic-sparkles text-sm group-hover:scale-110 transition-transform duration-200" />
+                      )}
+                      <span>{loading ? text.generating : text.generate}</span>
                     </button>
-                    <p className="text-xs text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
-                      Uses the story context to produce 5 unique ending variations (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.
-                    </p>
                   </div>
-
-                  <span className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
-                    isOverLimit ? "text-red-500 dark:text-red-400" : isNearLimit ? "text-amber-500" : "text-slate-400"
-                  }`}>
-                    {textareaValue.length} / {MAX_PROMPT_LENGTH}
-                  </span>
-                </div>
-              </div>
-
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      {/* Clear prompt button - next to language selector */}
-      {textareaValue.length > 0 && (
-        <button
-          type="button"
-          onClick={handleClearPrompt}
-          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200 border border-red-500/20"
-          aria-label={text.close}
-          title="Clear prompt"
-        >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Clear
-        </button>
-      )}
-    </div>
-    {showRestorePrompt && (
-  <div className="mb-3 p-3 rounded-lg border border-indigo-500/40 bg-indigo-500/10">
-    <p className="text-sm text-gray-300 mb-2">
-      📄 A previously saved draft was found. Restore it?
-    </p>
-
-    <div className="flex gap-2">
-      <button
-        type="button"
-        onClick={handleRestoreDraft}
-        className="px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-sm"
-      >
-        Restore
-      </button>
-
-      <button
-        type="button"
-        onClick={handleDiscardDraft}
-        className="px-3 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm"
-      >
-        Discard
-      </button>
-    </div>
-  </div>
-)}
-    <div className="relative">
-      <textarea
-  {...register("prompt")}
-  ref={(el) => {
-    register("prompt").ref(el);
-    inputRef.current = el;
-  }}
-        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-4 transition-colors duration-200 ${
-          isOverLimit
-            ? "ring-1 ring-red-500 rounded"
-            : isNearLimit
-            ? "ring-1 ring-yellow-400 rounded"
-            : ""
-        }`}
-        placeholder={text.promptPlaceholder}
-        value={textareaValue}
-        maxLength={MAX_PROMPT_LENGTH}
-        onChange={(e) => {
-          setTextareaValue(e.target.value);
-          if (validationError) {
-            setValidationError("");
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            const form = e.currentTarget.closest("form");
-            if (form) form.requestSubmit();
-          }
-        }}
-        />
-
-
-      <div className="flex items-center justify-between mt-1 px-1">
-        {validationError ? (
-          <p className="text-xs text-red-400 flex items-center gap-1">
-            <span>⚠</span> {validationError}
-          </p>
-        ) : isOverLimit ? (
-          <p className="text-xs text-red-400 flex items-center gap-1">
-            <span>⚠</span> Character limit reached — generate is disabled
-          </p>
-        ) : isNearLimit ? (
-          <p className="text-xs text-yellow-400 flex items-center gap-1">
-            <span>⚠</span>{" "}
-            {MAX_PROMPT_LENGTH - textareaValue.length} characters remaining
-          </p>
-        ) : (
-          <span />
-        )}
-
-        <span
-          className={`text-xs tabular-nums ml-auto ${
-            isOverLimit
-              ? "text-red-400 font-medium"
-              : isNearLimit
-              ? "text-yellow-400"
-              : "text-gray-500"
-          }`}
-        >
-          {textareaValue.length} / {MAX_PROMPT_LENGTH}
-        </span>
-      </div>
-    </div>
-    
-
-{draftStatus && (
-   <p className="text-xs text-green-500 mt-2 px-1">
-    💾 {draftStatus}
-   </p>
-)}
-    
-    <p className="text-xs text-gray-500 mt-1 px-1">
-      💡  <span className="font-medium">Keyboard tip:</span> Press{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-        Enter
-      </kbd>{" "}
-      to generate &bull;{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-        Ctrl + Enter
-      </kbd>{" "}
-      also works &bull;{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-        Shift + Enter
-      </kbd>{" "}
-      for new line
-    </p>
-
-    <div className="flex justify-end mt-2 w-full">
-      <button
-        type="submit"
-        disabled={loading || isOverLimit}
-        aria-busy={loading}
-        aria-disabled={loading || isOverLimit}
-        className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-          loading || isOverLimit
-            ? "opacity-50 cursor-not-allowed"
-            : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
-        } transition-all duration-300 transform flex items-center space-x-2 group`}
-      >
-        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
-        {loading ? "Generating..." : "Generate"}
-      </button>
-    </div>
-  </form>
-</div>
-            </div>
-
-              <div className="text-[11px] font-medium leading-relaxed text-slate-400 dark:text-slate-500 select-none w-full box-border">
-                💡 <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">{text.keyboardTip}</span>
-                {text.press} <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Enter</kbd> {text.toGenerate} &bull;{" "}
-                <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Ctrl + Enter</kbd> {text.alsoWorks} &bull;{" "}
-                <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Shift + Enter</kbd> {text.forNewLine}
-              </div>
-
-              <div className="flex justify-end pt-2 w-full box-border">
-                <button
-                  type="submit"
-                  disabled={loading || isOverLimit}
-                  aria-busy={loading}
-                  aria-disabled={loading || isOverLimit}
-                  className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
-                    loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-                  } group`}
-                >
-                  <i className="fas fa-wand-magic-sparkles text-sm group-hover:scale-110 transition-transform duration-200" />
-                  <span>{loading ? text.generating : text.generate}</span>
-                </button>
-              </div>
+                  {loading && (
+                    <p className="text-sm text-indigo-300 mt-3 text-right" aria-live="polite">
+                      Your story is being generated. You can cancel the request if it takes too long.
+                    </p>
+                  )}
                 </>
               )}
             </form>
@@ -2152,11 +1304,9 @@ if (isLoading) {
                 </ul>
               )}
             </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
+      </div>
 
       <RecentPromptsPanel
         recentPrompts={recentPrompts}
@@ -2193,7 +1343,7 @@ if (isLoading) {
         </div>
       )}
 
-      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} isHighLatency={isHighLatency} />}
+      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
 
       {stories.length > 0 && (
         <div className="mb-6 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-4 rounded-2xl">
@@ -2241,67 +1391,59 @@ if (isLoading) {
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i className="fas fa-lock text-2xl text-blue-400"></i>
-        <div className="col-span-1 lg:col-span-4">
-          <GeneratedStoryTimeline
-            content={selectedStory.content}
-            title={selectedStory.title}
-            narrationState={narrationState}
-            narrationWordIndex={narrationWordIndex}
-          />
-
-          <div className="mb-5">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-              Preview
-            </h1>
-          </div>
-          <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
-            <div className="relative flex flex-col rounded-lg">
-              <div className="relative m-3 overflow-hidden text-white rounded-xl">
-                <ImageFallback
-                  src={selectedStory.imageURL}
-                  alt="card-image"
-                  className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
-                />
               </div>
-              <div className="px-3 py-1">
-                <div className="flex justify-between items-center mb-2 w-full">
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                      {selectedStory.tag.toUpperCase()}
-                    </div>
-                    <div className="inline-flex items-center rounded-full bg-indigo-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                      Γëí╞Æ├«├ë {(selectedStory.language || "English").toUpperCase()}
-                    </div>
-                    <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
-                      ╬ô├àΓûÆΓê⌐Γòò├à {calculateReadingTime(selectedStory.content)} min read
-                    </div>
-                  </div>
-                  <div>
-                    <BookmarkButton storyId={selectedStory.uuid} />
-                  </div>
-                </div>
-                <h6 className="mb-1 text-gray-300 text-xl font-semibold">
-                  {selectedStory.title}
-                </h6>
-                <p className="text-gray-400 font-light breakwords text-sm sm:text-base">
-                  {getShortenedText(selectedStory.content)}
-                </p>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2 dark:text-gray-200">
+                {text.freeLimitReached}
+              </h3>
+              <p className="text-slate-600 mb-6 leading-relaxed dark:text-gray-400">
+                {text.freeLimitMessage}
+              </p>
+              <div className="flex flex-col gap-3">
+                <Link
+                  to="/login"
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
+                >
+                  {text.login}
+                </Link>
+                <button
+                  onClick={() => setShowLimitModal(false)}
+                  className="w-full bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-medium py-3 px-4 rounded-xl transition-all dark:hover:bg-white/5 dark:text-gray-400 dark:hover:text-gray-300"
+                >
+                  {text.continueBrowsing}
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      {showWorldMap && selectedStory && (
-        <StoryWorldMap
-          story={selectedStory.content}
-          title={selectedStory.title}
-          onClose={() => setShowWorldMap(false)}
-        />
       )}
+     
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setCurrentPage((p) => p - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50 cursor-pointer"
+          >
+            Previous
+          </button>
+
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            onClick={() => setCurrentPage((p) => p + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50 cursor-pointer"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };
 
 export default StoriesComponent;
-export default StoriesViewComponent;
