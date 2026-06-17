@@ -1,6 +1,7 @@
 import React from "react";
 import { Post } from "../../models/post";
 import { useNavigate } from "react-router-dom";
+import ImageFallback from "../ImageFallback";
 
 interface IRelatedStoriesComponentProps {
   posts: Post[],
@@ -13,9 +14,14 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
   const navigate = useNavigate();
   const filteredPosts=posts.filter((post)=>post._id!==currentPostId)
   return (
-    <div className="grid grid-cols-2 gap-6">
-      {filteredPosts.length > 0 ? (
-        filteredPosts.map((post: Post) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  {filteredPosts.length > 0 ? (
+  filteredPosts.map((post: Post) => {
+
+    console.log("Story:", post.title);
+    console.log("Image URL:", post.imageURL);
+
+    return (
           <div
             onClick={() => navigate(`/post/${post._id}`)}
             key={post._id}
@@ -38,7 +44,9 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
               </p>
             </div>
           </div>
-        ))
+        );
+        
+        })
       ) : (
         <p className="text-center text-slate-500 col-span-2 py-8">No related stories found.</p>
       )}

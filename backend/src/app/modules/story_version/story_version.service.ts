@@ -1,140 +1,139 @@
-import httpStatus from "http-status";
-import ApiError from "../../../errors/api_error";
-import { Post } from "../post/post.model";
-import { StoryVersion } from "./story_version.model";
-import { IStoryVersion } from "./story_version.interface";
-import { IPost } from "../post/post.interface";
+import { get_encoding } from "tiktoken";
 
-const createVersionSnapshot = async (
-  storyId: string,
-  userId: string,
-  prompt: string = "",
-  generationType: string = "edited"
-): Promise<IStoryVersion | null> => {
+export interface LorePayload {
+  characters: CharacterEntry[];
+  setting: string[];
+  core_events: string[];
+}
+
+export interface CharacterEntry {
+  name: string;
+  traits: string[];
+  lastSeen?: string;
+}
+
+export interface StoryNode {
+  id: string;
+  text: string;
+  branchId?: string;
+}
+
+export interface CompressedContext {
+  lore: LorePayload;
+  window: StoryNode[];
+  totalTokens: number;
+  droppedNodeCount: number;
+}
+
+export function countTokens(text: string): number {
   try {
-    const post = await Post.findById(storyId);
-    if (!post) {
-      return null;
-    }
-
-    const maxRetries = 5;
-    for (let attempt = 0; attempt < maxRetries; attempt += 1) {
-      try {
-        // Re-read the latest version number on each attempt so concurrent writers
-        // that win the race cause a retry instead of silently skipping a snapshot.
-        const lastVersion = await StoryVersion.findOne({ storyId })
-          .sort({ versionNumber: -1 })
-          .select("versionNumber");
-
-        const nextVersionNumber = lastVersion ? lastVersion.versionNumber + 1 : 1;
-
-        const snapshot = await StoryVersion.create({
-          storyId: post._id,
-          content: post.content,
-          title: post.title,
-          prompt: prompt,
-          generationType: generationType,
-          versionNumber: nextVersionNumber,
-          createdBy: userId,
-        });
-
-        return snapshot;
-      } catch (error: any) {
-        if (error?.code === 11000 && attempt < maxRetries - 1) {
-          continue;
-        }
-        throw error;
-      }
-    }
-    return null;
-  } catch (error) {
-    // Non-blocking catch to ensure AI generation routes do not crash due to versioning failures
-    console.error("Story version snapshot creation failed:", error);
-    return null;
+    const enc = get_encoding("cl100k_base");
+    const tokens = enc.encode(text).length;
+    enc.free();
+    return tokens;
+  } catch {
+    return Math.ceil(text.split(/\s+/).length / 0.75);
   }
-};
+}
 
-const getVersionsByStoryId = async (
-  storyId: string,
-  userId: string
-): Promise<IStoryVersion[]> => {
-  const post = await Post.findById(storyId);
-  if (!post) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
+const CHARACTER_RE = /\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\b/g;
+const SETTING_KEYWORDS = [
+  "forest", "castle", "city", "village", "mountain", "ocean",
+  "realm", "kingdom", "dungeon", "tower", "market", "desert",
+  "cave", "ship", "island",
+];
+
+export function extractLore(nodes: StoryNode[]): LorePayload {
+  const nameFreq: Record<string, number> = {};
+  const allText = nodes.map((n) => n.text).join(" ");
+
+  CHARACTER_RE.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = CHARACTER_RE.exec(allText)) !== null) {
+    const name = match[1];
+    nameFreq[name] = (nameFreq[name] ?? 0) + 1;
   }
 
-  // Enforce access control - users can only view their own stories
-  if (post.author.toString() !== userId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story history!");
+  const characters: CharacterEntry[] = Object.entries(nameFreq)
+    .filter(([, freq]) => freq >= 2)
+    .map(([name]) => ({
+      name,
+      traits: [],
+      lastSeen: nodes
+        .slice()
+        .reverse()
+        .find((n) => n.text.includes(name))?.id,
+    }));
+
+  const settingSet = new Set<string>();
+  nodes.forEach((node) => {
+    SETTING_KEYWORDS.forEach((kw) => {
+      if (node.text.toLowerCase().includes(kw)) settingSet.add(kw);
+    });
+  });
+
+  const core_events = nodes
+    .map((n) => n.text.split(/[.!?]/)[0]?.trim())
+    .filter(Boolean) as string[];
+
+  return {
+    characters,
+    setting: Array.from(settingSet),
+    core_events,
+  };
+}
+
+export function serializeLore(lore: LorePayload): string {
+  const parts: string[] = ["[STORY LORE]"];
+
+  if (lore.characters.length) {
+    parts.push("Characters: " + lore.characters.map((c) => c.name).join(", "));
+  }
+  if (lore.setting.length) {
+    parts.push("Settings: " + lore.setting.join(", "));
+  }
+  if (lore.core_events.length) {
+    parts.push("Key events: " + lore.core_events.slice(-5).join(" | "));
   }
 
-  return await StoryVersion.find({ storyId }).sort({ versionNumber: -1 });
-};
+  return parts.join("\n");
+}
 
-const getVersionById = async (
-  versionId: string,
-  userId: string
-): Promise<IStoryVersion> => {
-  const version = await StoryVersion.findById(versionId);
-  if (!version) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Story version snapshot not found!");
+export function compressContext(
+  nodes: StoryNode[],
+  maxTokens?: number
+): CompressedContext {
+  const MAX = maxTokens ?? parseInt(process.env.MAX_CONTEXT_TOKENS ?? "4096", 10);
+
+  const lore = extractLore(nodes);
+  const loreSummary = serializeLore(lore);
+  const loreTokens = countTokens(loreSummary);
+
+  let budget = MAX - loreTokens;
+  if (budget <= 0) {
+    return {
+      lore,
+      window: [],
+      totalTokens: loreTokens,
+      droppedNodeCount: nodes.length,
+    };
   }
 
-  // Fetch the post to verify ownership
-  const post = await Post.findById(version.storyId);
-  if (!post || post.author.toString() !== userId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have access to this story version!");
+  const window: StoryNode[] = [];
+  let usedTokens = loreTokens;
+
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const nodeTokens = countTokens(nodes[i].text);
+    if (nodeTokens > budget) break;
+    window.unshift(nodes[i]);
+    budget -= nodeTokens;
+    usedTokens += nodeTokens;
   }
 
-  return version;
-};
-
-const restoreVersion = async (
-  versionId: string,
-  userId: string
-): Promise<IPost> => {
-  const version = await StoryVersion.findById(versionId);
-  if (!version) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Story version snapshot not found!");
-  }
-
-  const post = await Post.findById(version.storyId);
-  if (!post) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Original story not found!");
-  }
-
-  // Access check
-  if (post.author.toString() !== userId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You do not have permission to restore this story!");
-  }
-
-  // 1. Create a version snapshot of the CURRENT active post content so we preserve it (avoiding data loss)
-  await createVersionSnapshot(
-    post._id.toString(),
-    userId,
-    "Snapshot created automatically before restoration",
-    "pre-restoration"
-  );
-
-  // 2. Overwrite active post with chosen version
-  post.content = version.content;
-  post.title = version.title;
-  await post.save();
-
-  // 3. Create a final snapshot documenting that a restore event occurred
-  await createVersionSnapshot(
-    post._id.toString(),
-    userId,
-    `Restored to Version ${version.versionNumber}`,
-    "restored"
-  );
-
-  return post;
-};
-
-export const StoryVersionService = {
-  createVersionSnapshot,
-  getVersionsByStoryId,
-  getVersionById,
-  restoreVersion,
-};
+  return {
+    lore,
+    window,
+    totalTokens: usedTokens,
+    droppedNodeCount: nodes.length - window.length,
+  };
+}

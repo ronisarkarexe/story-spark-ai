@@ -3,18 +3,28 @@ import { AiModelController } from "./ai_model.controller";
 import validateRequest from "../../middleware/validate.request";
 import { AIModelValidator } from "./ai_model.validation";
 import checkRequestLimit from "../../middleware/check.request.limit";
+import auth from "../../middleware/auth.middleware";
 import freeAiRateLimiter from "../../middleware/free-ai.rate-limiter";
+import {
+  aiGenerationRateLimiter,
+} from "../../middleware/ip.rate-limiter";
+import storyGenerationRateLimiter from "../../middleware/story.rate-limiter";
 const router = express.Router();
 
-// Generate Model
+// ========== GENERATE STORIES ==========
+
+// Generate Model - PROTECTED (authenticated users only)
+// auth() runs first so req.user is populated for the tier-aware limiter.
 router.post(
   "/generate-model",
+  auth(),
+  storyGenerationRateLimiter,
   validateRequest(AIModelValidator.aiModel),
   checkRequestLimit(),
   AiModelController.aiModelGenerate
 );
 
-// Generate Free Model
+// Generate Free Model - PUBLIC (guests allowed)
 router.post(
   "/generate-free-model",
   validateRequest(AIModelValidator.aiModel),
@@ -22,15 +32,29 @@ router.post(
   AiModelController.aiFreeModelGenerate
 );
 
-// Generate Alternate Endings
+// Generate Model Stream - PROTECTED
+router.post(
+  "/generate-model-stream",
+  aiGenerationRateLimiter,
+  auth(),
+  validateRequest(AIModelValidator.aiModel),
+  checkRequestLimit(),
+  AiModelController.aiModelGenerateStream
+);
+
+// ========== ALTERNATE ENDINGS ==========
+
+// Generate Alternate Endings - PROTECTED (authenticated users only)
 router.post(
   "/generate-alternate-endings",
+  auth(),
+  storyGenerationRateLimiter,
   validateRequest(AIModelValidator.aiAlternateEndings),
   checkRequestLimit(),
   AiModelController.aiModelAlternateEndings
 );
 
-// Generate Free Alternate Endings
+// Generate Free Alternate Endings - PUBLIC (guests allowed)
 router.post(
   "/generate-free-alternate-endings",
   validateRequest(AIModelValidator.aiAlternateEndings),
@@ -38,28 +62,85 @@ router.post(
   AiModelController.aiFreeModelAlternateEndings
 );
 
-// Remix Story
+// ========== REMIX ==========
+
+// Remix Story - PROTECTED
 router.post(
   "/remix",
+  auth(),
+  storyGenerationRateLimiter,
   checkRequestLimit(),
+  validateRequest(AIModelValidator.aiRemix),
   AiModelController.aiModelRemix
 );
-// Remix Story Free
+
+// Remix Story Free - PUBLIC
 router.post(
   "/remix-free",
   freeAiRateLimiter,
+  validateRequest(AIModelValidator.aiRemix),
   AiModelController.aiFreeModelRemix
 );
-// Translate Story
+
+// ========== TRANSLATE ==========
+
+// Translate Story - PROTECTED
 router.post(
   "/translate",
+  auth(),
+  storyGenerationRateLimiter,
   checkRequestLimit(),
+  validateRequest(AIModelValidator.aiTranslate),
   AiModelController.aiModelTranslate
 );
-// Translate Story Free
+
+// Translate Story Free - PUBLIC
 router.post(
   "/translate-free",
   freeAiRateLimiter,
+  validateRequest(AIModelValidator.aiTranslate),
   AiModelController.aiFreeModelTranslate
 );
+
+// ========== STORY CONTINUATION ==========
+
+// Continue Story - PROTECTED
+router.post(
+  "/continue-story",
+  auth(),
+  storyGenerationRateLimiter,
+  validateRequest(AIModelValidator.aiStoryContinuation),
+  checkRequestLimit(),
+  AiModelController.aiStoryContinuation
+);
+
+// Continue Story Free - PUBLIC
+router.post(
+  "/continue-story-free",
+  validateRequest(AIModelValidator.aiStoryContinuation),
+  freeAiRateLimiter,
+  AiModelController.aiFreeStoryContinuation
+);
+
+// ========== AI CHAT ==========
+
+// AI Chat - PROTECTED
+
+router.post(
+  "/chat",
+  auth(),
+  storyGenerationRateLimiter,
+  validateRequest(AIModelValidator.aiChat),
+  checkRequestLimit(),
+  AiModelController.aiModelChat
+);
+
+// AI Chat Free - PUBLIC
+router.post(
+  "/chat-free",
+  validateRequest(AIModelValidator.aiChat),
+  freeAiRateLimiter,
+  AiModelController.aiFreeModelChat
+);
+
 export const AIModelRouter = router;

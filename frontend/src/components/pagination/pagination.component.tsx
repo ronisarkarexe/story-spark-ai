@@ -60,6 +60,8 @@ const PaginationComponent: React.FC<PaginationProps> = ({
         <button
           key={pageNum}
           onClick={() => handlePageChange(pageNum as number)}
+          aria-label={`Go to page ${pageNum}`}
+          aria-current={isActive ? "page" : undefined}
           className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-sm font-medium transition-colors ${
             isActive
               ? "bg-blue-600 text-white shadow-sm"
@@ -98,6 +100,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
         <button
           onClick={() => handlePageChange(current - 1)}
           disabled={current === 1}
+          aria-label="Go to previous page"
           className="inline-flex items-center gap-1 px-3 h-8 rounded-md border border-slate-700 bg-slate-800 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-800 disabled:hover:text-slate-300"
         >
           <i className="fas fa-chevron-left text-xs opacity-70"></i>
@@ -111,6 +114,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
         <button
           onClick={() => handlePageChange(current + 1)}
           disabled={current === totalPages}
+          aria-label="Go to next page"
           className="inline-flex items-center gap-1 px-3 h-8 rounded-md border border-slate-700 bg-slate-800 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-800 disabled:hover:text-slate-300"
         >
           Next

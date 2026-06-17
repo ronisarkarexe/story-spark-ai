@@ -14,7 +14,9 @@ import {
   MessageSquare,
   ClipboardList,
   Target,
-  FileWarning
+  FileWarning,
+  Image as ImageIcon,
+  X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -55,10 +57,17 @@ const ReportBug = () => {
     reset,
     formState: { errors }
   } = useForm<ReportBugFormData>();
+  const { ref: screenshotRef, ...screenshotRegister } = register("screenshot");
 
   const onSubmit = async (data: ReportBugFormData) => {
     try {
-      await submitBugReport(data).unwrap();
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, val]) => {
+        if (val !== undefined) {
+          formData.append(key, val);
+        }
+      });
+      await submitBugReport(formData).unwrap();
       
       setIsSuccess(true);
       toast.success("Bug report submitted successfully!");

@@ -15,6 +15,15 @@ import joblib
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
+import tensorflow as tf
+
+# Set random seeds for reproducible training results
+SEED = 42
+
+random.seed(SEED)
+np.random.seed(SEED)
+tf.random.set_seed(SEED)
+
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from scorer import build_model, MAX_VOCAB, MAX_LEN, SAVE_DIR
@@ -170,33 +179,33 @@ if __name__ == "__main__":
     print(f"Saved to {SAVE_DIR}/")
     
     
-import matplotlib.pyplot as plt
-import numpy as np
+    import matplotlib.pyplot as plt
+    import numpy as np
 
-# Predictions lao
-val_size = int(0.15 * len(stories))
-val_stories = story_enc[-val_size:]
-val_prompts = prompt_enc[-val_size:]
-val_coh, val_cre, val_rel = coh[-val_size:], cre[-val_size:], rel[-val_size:]
+    # Predictions lao
+    val_size = int(0.15 * len(stories))
+    val_stories = story_enc[-val_size:]
+    val_prompts = prompt_enc[-val_size:]
+    val_coh, val_cre, val_rel = coh[-val_size:], cre[-val_size:], rel[-val_size:]
 
-pred_coh, pred_cre, pred_rel = model.predict(
-    {"story": val_stories, "prompt": val_prompts}, verbose=0
-)
+    pred_coh, pred_cre, pred_rel = model.predict(
+        {"story": val_stories, "prompt": val_prompts}, verbose=0
+    )
 
-fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
-for ax, true, pred, title in zip(
-    axes,
-    [val_coh, val_cre, val_rel],
-    [pred_coh, pred_cre, pred_rel],
-    ["Coherence", "Creativity", "Relevance"]
-):
-    ax.scatter(true, pred.flatten(), alpha=0.5, s=10)
-    ax.plot([0, 1], [0, 1], 'r--')   # perfect prediction line
-    ax.set_xlabel("True")
-    ax.set_ylabel("Predicted")
-    ax.set_title(title)
+    for ax, true, pred, title in zip(
+        axes,
+        [val_coh, val_cre, val_rel],
+        [pred_coh, pred_cre, pred_rel],
+        ["Coherence", "Creativity", "Relevance"]
+    ):
+        ax.scatter(true, pred.flatten(), alpha=0.5, s=10)
+        ax.plot([0, 1], [0, 1], 'r--')   # perfect prediction line
+        ax.set_xlabel("True")
+        ax.set_ylabel("Predicted")
+        ax.set_title(title)
 
-plt.tight_layout()
-plt.savefig("scorer_eval.png")
-print("scorer_eval.png save ho gayi!")
+    plt.tight_layout()
+    plt.savefig("scorer_eval.png")
+    print("scorer_eval.png save ho gayi!")

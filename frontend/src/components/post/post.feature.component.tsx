@@ -1,6 +1,8 @@
 import React from "react";
 import { useGetFeaturedListsQuery } from "../../redux/apis/post.api";
 import { Post } from "../../models/post";
+import ImageFallback from "../ImageFallback";
+import { SkeletonGrid } from "../cards/SkeletonCard";
 
 const ExploreFeatureComponent = () => {
   const { data, isLoading, isError } = useGetFeaturedListsQuery(undefined);
@@ -12,7 +14,7 @@ const ExploreFeatureComponent = () => {
             key={i}
             className="animate-pulse relative overflow-hidden rounded-3xl border border-slate-200 bg-[#f8fafc]/90 h-[400px] flex flex-col justify-end p-8 dark:bg-slate-900/40 dark:border-slate-700/50"
           >
-            {/* Cinematic Gradient overlay */}
+            {/* Cinematic linear overlay */}
             <div className="absolute inset-0 bg-linear-to-t from-slate-200/80 via-slate-100/30 to-transparent dark:from-slate-950 dark:via-slate-900/60 dark:to-transparent" />
             
             {/* Title Skeleton */}
@@ -38,11 +40,16 @@ const ExploreFeatureComponent = () => {
     );
   }
   if (isError) {
-    return (
-      <div className="rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-900/20 px-4 py-5 text-red-700 dark:text-red-400">
-        Failed to load featured posts. Please try again later.
-      </div>
-    );
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {[1, 2, 3].map((item) => (
+        <div
+          key={item}
+          className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72"
+        ></div>
+      ))}
+    </div>
+  );
   }
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -68,7 +75,7 @@ const ExploreFeatureComponent = () => {
           </div>
         ))
       ) : (
-        <div>Feature Post is not available!</div>
+        <div className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72 w-full"></div>
       )}
     </div>
   );

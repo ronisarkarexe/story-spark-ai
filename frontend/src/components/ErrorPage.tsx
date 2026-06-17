@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AUTH_KEY } from "../constants/storage-key";
 
 const ErrorPage = () => {
   const [isReloading, setIsReloading] = useState(false);
@@ -13,17 +14,15 @@ const ErrorPage = () => {
   const handleResetCache = () => {
     setIsReloading(true);
     try {
-      // Preserve auth tokens
-      const authToken = localStorage.getItem("authToken");
-      const userPrefs = localStorage.getItem("userPreferences");
-      
+      // Preserve the active auth session so the user stays logged in
+      const authToken = localStorage.getItem(AUTH_KEY);
+
       localStorage.clear();
       sessionStorage.clear();
-      
-      // Restore critical data
-      if (authToken) localStorage.setItem("authToken", authToken);
-      if (userPrefs) localStorage.setItem("userPreferences", userPrefs);
-      
+
+      // Restore the auth token after clearing cache
+      if (authToken) localStorage.setItem(AUTH_KEY, authToken);
+
       setTimeout(() => {
         window.location.reload();
       }, 300);

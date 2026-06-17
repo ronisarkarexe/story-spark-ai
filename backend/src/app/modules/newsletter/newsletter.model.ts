@@ -11,6 +11,7 @@ export interface INewsletterSubscriber {
   isVerified: boolean;
   verificationToken?: string;
   verificationTokenExpires?: Date;
+  unsubscribeToken?: string;
   subscribedAt?: Date;
   unsubscribedAt?: Date;
   createdAt?: Date;
@@ -50,6 +51,10 @@ const NewsletterSubscriberSchema = new Schema<INewsletterSubscriber>(
     },
     verificationTokenExpires: {
       type: Date,
+    },
+    unsubscribeToken: {
+      type: String,
+      index: true,
     },
     subscribedAt: {
       type: Date,

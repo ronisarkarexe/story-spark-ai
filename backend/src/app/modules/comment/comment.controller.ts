@@ -40,8 +40,21 @@ const toggleCommentLike = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteComment = catchAsync(async (req: Request, res: Response) => {
+  const commentId = routeParam(req.params.commentId);
+  const token = await getToken(req);
+  const result = await CommentService.deleteComment(commentId, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Comment deleted successfully!",
+    data: result,
+  });
+});
+
 export const CommentController = {
   createComment,
   getCommentsByPostId,
   toggleCommentLike,
+  deleteComment,
 };

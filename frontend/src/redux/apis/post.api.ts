@@ -59,6 +59,35 @@ const postApi = baseApi.injectEndpoints({
       providesTags: [tagTypes.post],
     }),
 
+    getMyPublishedStories: build.query({
+      query: (arg: Record<string, string | number>) => ({
+        url: `/${POST_URL}/my-published-stories`,
+        method: "GET",
+        params: arg,
+      }),
+
+      transformResponse: (response: {
+        data: Post[];
+        meta: IMeta;
+        message: string;
+      }) => {
+        return {
+          posts: response.data,
+          meta: response.meta,
+          message: response.message,
+        };
+      },
+
+      transformErrorResponse: (response: QueryErrorResponse) => {
+        return {
+          status: response?.status,
+          message: "Unable to fetch your published stories.",
+        };
+      },
+
+      providesTags: [tagTypes.post],
+    }),
+
     getLatestLists: build.query({
       query: () => ({
         url: `/${POST_URL}/latest-lists`,
@@ -169,6 +198,15 @@ const postApi = baseApi.injectEndpoints({
         tagTypes.bookmark,
       ],
     }),
+
+    getGenres: build.query<string[], void>({
+      query: () => ({
+        url: `/${POST_URL}/genres`,
+        method: "GET",
+      }),
+      transformResponse: (response: { data: string[] }) => response.data,
+      providesTags: [tagTypes.post],
+    }),
   }),
 });
 
@@ -176,9 +214,11 @@ export const {
   useCreatePostMutation,
   useUpdatePostMutation,
   useGetPostListsQuery,
+  useGetMyPublishedStoriesQuery,
   useGetLatestListsQuery,
   useGetFeaturedListsQuery,
   useGetPostByIdQuery,
   useGetPostByTagQuery,
   useDeletePostMutation,
+  useGetGenresQuery,
 } = postApi;

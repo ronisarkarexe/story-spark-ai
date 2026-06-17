@@ -13,3 +13,5 @@ export interface NotificationListResponse {
   data: NotificationItem[];
   message?: string;
 }
+
+export type INotification = NotificationItem;

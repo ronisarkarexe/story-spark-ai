@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import ImageFallback from "../ImageFallback";
 
 interface TemplateCardProps {
   category: string;
@@ -27,16 +28,13 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   };
 
   return (
-    <div className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-lg hover:shadow-indigo-500/20 hover:border-indigo-500/50 transition-all duration-500 flex flex-col h-full transform hover:-translate-y-1">
+    <div className="group relative bg-white dark:bg-white/[0.02] backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-lg hover:shadow-indigo-500/20 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition-all duration-500 flex flex-col h-full transform hover:-translate-y-1">
       {/* Banner Image with Zoom Effect */}
-      <div className="relative h-48 overflow-hidden w-full shrink-0 bg-[#0B0F19]">
-        <div className="absolute inset-0 bg-linear-to-t from-[#0B0F19] via-[#0B0F19]/40 to-transparent z-10 pointer-events-none"></div>
-        <img 
-          src={image} 
-          alt={title} 
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
+      <div className="relative h-48 overflow-hidden w-full shrink-0 bg-slate-100 dark:bg-[#0B0F19]">
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 dark:from-[#0B0F19] dark:via-[#0B0F19]/40 to-transparent z-10 pointer-events-none"></div>
+        <ImageFallback
+          src={image}
+          alt={title}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
         />
         {/* Category badge */}
@@ -47,19 +45,19 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
 
       <div className="p-6 flex flex-col flex-grow relative z-20 -mt-10">
         {/* Icon overlay */}
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-md border border-white/20 mb-4 ${color} relative z-30 ring-4 ring-[#0B0F19]`}>
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-md border border-white/50 dark:border-white/20 mb-4 ${color} relative z-30 ring-4 ring-white dark:ring-[#0B0F19]`}>
           <i className={`${icon} text-xl text-white`}></i>
         </div>
         
-        <h3 className="text-xl font-bold text-gray-100 mb-3 group-hover:text-indigo-400 transition-colors duration-300">
+        <h3 className="text-xl font-bold text-slate-900 dark:text-gray-100 mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
           {title}
         </h3>
-        <p className="text-gray-400 mb-6 flex-grow leading-relaxed text-sm">
+        <p className="text-slate-600 dark:text-gray-400 mb-6 flex-grow leading-relaxed text-sm">
           {description}
         </p>
         <button
           onClick={handleUseTemplate}
-          className="mt-auto w-full py-3.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 hover:border-indigo-500/50 text-indigo-300 hover:text-indigo-200 font-semibold transition-all duration-300 flex items-center justify-center gap-2 group/btn"
+          className="mt-auto w-full py-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/30 hover:border-indigo-300 dark:hover:border-indigo-500/50 text-indigo-600 dark:text-indigo-300 hover:text-indigo-700 dark:hover:text-indigo-200 font-semibold transition-all duration-300 flex items-center justify-center gap-2 group/btn"
         >
           <span>Use Template</span>
           <i className="fas fa-arrow-right text-sm transform group-hover/btn:translate-x-1 transition-transform"></i>
@@ -208,7 +206,7 @@ const TemplatesComponent = () => {
   ];
 
   return (
-    <div className="bg-linear-to-br animate-gradient-slow min-h-screen pb-24 relative overflow-hidden">
+    <div className="bg-linear-to-br animate-gradient-slow min-h-screen pb-24 relative overflow-hidden dark:bg-transparent">
       {/* Background decorations */}
       <div className="absolute top-[-200px] right-[-100px] w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
       <div className="absolute bottom-[20%] left-[-150px] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
@@ -219,7 +217,7 @@ const TemplatesComponent = () => {
         <div className="mb-4">
           <button 
             onClick={() => navigate('/')}
-            className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-indigo-500/30 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0)] hover:shadow-[0_0_15px_rgba(99,102,241,0.2)]"
+            className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 hover:border-indigo-300 dark:hover:border-indigo-500/30 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0)] hover:shadow-[0_0_15px_rgba(99,102,241,0.2)]"
           >
             <i className="fas fa-arrow-left text-sm transform group-hover:-translate-x-1 transition-transform"></i>
             <span className="text-sm font-semibold tracking-wide">Back to Home</span>
@@ -227,9 +225,9 @@ const TemplatesComponent = () => {
         </div>
         {/* Hero Section */}
         <div className="text-center mb-24 relative mt-4">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-indigo-600/20 rounded-[100%] blur-[120px] -z-10 pointer-events-none"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-indigo-600/10 dark:bg-indigo-600/20 rounded-[100%] blur-[120px] -z-10 pointer-events-none"></div>
           
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-xs font-semibold tracking-widest uppercase mb-8 backdrop-blur-sm shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-200 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-xs font-semibold tracking-widest uppercase mb-8 backdrop-blur-sm shadow-[0_0_20px_rgba(99,102,241,0.1)] dark:shadow-[0_0_20px_rgba(99,102,241,0.2)]">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
@@ -239,7 +237,7 @@ const TemplatesComponent = () => {
           <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-white via-blue-100 to-indigo-300 mb-8 tracking-tight drop-shadow-2xl">
             Writing Templates
           </h1>
-          <p className="text-xl text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed font-light">
+          <p className="text-xl text-slate-600 dark:text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed font-light">
             Skip the blank page. Choose from beautifully crafted templates for stories, poems, characters, and creative inspiration.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
@@ -249,10 +247,7 @@ const TemplatesComponent = () => {
             >
               Start Writing <i className="fas fa-magic"></i>
             </button>
-            <a 
-              href="#categories"
-              className="px-8 py-4 rounded-xl bg-white/5 border border-white/10 text-gray-200 font-bold text-lg hover:bg-white/10 transition-all duration-300 w-full sm:w-auto text-center backdrop-blur-sm"
-            >
+            <a href="#categories" className="px-8 py-4 rounded-xl border font-bold text-lg transition-all duration-300 backdrop-blur-sm w-full sm:w-auto text-center  bg-white text-slate-700 border-slate-300  hover:bg-slate-100 hover:border-indigo-500 hover:text-indigo-600 hover:-translate-y-1 hover:shadow-lg  dark:bg-white/5 dark:text-gray-200 dark:border-white/10 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300">
               Browse Templates
             </a>
           </div>
@@ -322,7 +317,7 @@ const TemplatesComponent = () => {
               <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-white via-indigo-100 to-indigo-300 mb-6 tracking-tight drop-shadow-xl">
                 Your next great story starts here ✨
               </h2>
-              <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
+              <p className="text-xl text-slate-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
                 Choose a template, spark an idea, and let Story Spark AI turn your imagination into something unforgettable.
               </p>
               <button 

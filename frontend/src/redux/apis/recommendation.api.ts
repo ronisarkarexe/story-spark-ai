@@ -1,15 +1,16 @@
 import baseApi from "../base_api/base.api";
-import { Post } from "../../models/post";
 
 const recommendationApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getPersonalizedRecommendations: build.query<Post[], void>({
+    getPersonalizedRecommendations: build.query({
       query: () => ({
         url: "/recommendations/personalized",
         method: "GET",
       }),
-      transformResponse: (response: { data: Post[] }) => response.data,
-      providesTags: ["Recommendation"],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      transformResponse: (response: any) => response.data,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      providesTags: ["Recommendation"] as any,
     }),
   }),
 });

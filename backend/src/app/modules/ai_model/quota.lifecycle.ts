@@ -15,12 +15,7 @@ export class QuotaRefundGuard {
       return;
     }
     this.refunded = true;
-    try {
-      await this.refund();
-    } catch (error) {
-      this.refunded = false;
-      throw error;
-    }
+    await this.refund();
   }
 
   get hasRefunded(): boolean {
@@ -37,21 +32,19 @@ export const createGuestQuotaGuard = (guestId: string): QuotaRefundGuard =>
 /**
  * Runs an operation and refunds reserved quota in `finally` when it does not complete successfully.
  */
+
 export const runWithQuotaCleanup = async <T>(
-  guard: QuotaRefundGuard,
-  operation: () => Promise<T>
+    guard: QuotaRefundGuard,
+    operation: () => Promise<T>
 ): Promise<T> => {
-  let succeeded = false;
-  try {
-    const result = await operation();
-    succeeded = true;
-    return result;
-  } finally {
-    if (!succeeded) {
-      await guard.refundOnce();
+    try {
+        return await operation();
+    } catch (error) {
+        await guard.refundOnce();
+        throw error;
     }
-  }
 };
+
 
 export const assertSuccessfulGeneration = (
   result: unknown,

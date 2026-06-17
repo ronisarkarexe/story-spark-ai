@@ -6,19 +6,6 @@ import {
 import LoadingAnimation from "../../loading/loading.component";
 import toast, { Toaster } from "react-hot-toast";
 
-interface WriterApp {
-  _id: string;
-  status: string;
-  portfolioLink: string;
-  reason: string;
-  createdAt: string;
-  user?: {
-    name?: string;
-    email?: string;
-    profile?: { avatar?: string };
-  };
-}
-
 const WriterApplicationComponent = () => {
   const { data, isLoading, refetch } = useGetAllWriterApplicationsQuery(undefined);
   const [updateStatus, { isLoading: isUpdating }] = useUpdateWriterApplicationStatusMutation();
@@ -34,16 +21,18 @@ const WriterApplicationComponent = () => {
       await updateStatus({ id, status }).unwrap();
       toast.success(`Application ${status} successfully.`);
       refetch();
-    } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || "Failed to update application status");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update application status");
     } finally {
       setProcessingId(null);
     }
   };
 
-  const pendingApps: WriterApp[] = data?.data?.filter((app: WriterApp) => app.status === "pending") || [];
-  const processedApps: WriterApp[] = data?.data?.filter((app: WriterApp) => app.status !== "pending") || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pendingApps = data?.data?.filter((app: any) => app.status === "pending") || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const processedApps = data?.data?.filter((app: any) => app.status !== "pending") || [];
 
   return (
     <div className="space-y-8">
@@ -72,11 +61,12 @@ const WriterApplicationComponent = () => {
           </div>
         ) : (
           <div className="divide-y divide-slate-200 dark:divide-white/[0.06]">
-            {pendingApps.map((app: WriterApp) => (
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {pendingApps.map((app: any) => (
               <div key={app._id} className="p-6 transition hover:bg-slate-100/50 dark:hover:bg-white/[0.02] flex flex-col md:flex-row gap-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <img 
+                    <img loading="lazy" 
                       src={app.user?.profile?.avatar || `https://ui-avatars.com/api/?name=${app.user?.name}&background=random`} 
                       alt={app.user?.name}
                       className="w-10 h-10 rounded-full object-cover"
@@ -152,11 +142,12 @@ const WriterApplicationComponent = () => {
                 </tr>
               </thead>
               <tbody>
-                {processedApps.map((app: WriterApp) => (
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {processedApps.map((app: any) => (
                   <tr key={app._id} className="border-b border-slate-200 dark:border-white/[0.06] bg-transparent hover:bg-slate-100/50 dark:hover:bg-white/[0.02]">
                     <td className="px-6 py-4 font-medium text-slate-800 dark:text-white whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <img 
+                        <img loading="lazy" 
                           src={app.user?.profile?.avatar || `https://ui-avatars.com/api/?name=${app.user?.name}&background=random`} 
                           alt={app.user?.name}
                           className="w-8 h-8 rounded-full object-cover"

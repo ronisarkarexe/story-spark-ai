@@ -6,6 +6,8 @@ export interface IComment {
   comment: string;
   parentCommentId?: Types.ObjectId;
   likes?: Types.ObjectId[];
+  isDeleted?: boolean;
+  deletedAt?: Date | null;
 }
 
 export type CommentModel = Model<IComment, object>;
