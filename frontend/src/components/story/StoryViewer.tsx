@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Chapter } from "../../types/story.types";
+import ReadingTimeBadge from "../ReadingTimeBadge";
 
 interface Props {
   chapters: Chapter[];
@@ -106,6 +107,11 @@ const StoryViewer: React.FC<Props> = ({
           <h1 className="text-4xl font-extrabold tracking-tight text-white mb-6">
             {chapter.title}
           </h1>
+          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-6">
+            {chapter.title}
+          </h1>
+
+<ReadingTimeBadge text={chapter.content} />
 
           <p className="text-lg text-zinc-300 whitespace-pre-line leading-9">
             {chapter.content}

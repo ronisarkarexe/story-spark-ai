@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
+import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
@@ -37,7 +38,6 @@ interface StoriesComponentProps {
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
   onPublishSuccess?: () => void;
-  isLoading?: boolean;
 }
 
 type StorySentenceSegment = {
@@ -282,13 +282,6 @@ const [, setShowRemix] = useState<boolean>(false);
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
   }, [topics]);
-
-  useEffect(() => {
-    const player = audioPlayerRef.current;
-    return () => {
-      player?.stop();
-    };
-  }, [location.pathname]);
 
   useEffect(() => {
     setNarrationWordIndex(0);
