@@ -95,9 +95,11 @@ const filterVoicesByGender = (
   const pattern = gender === "female" ? femalePattern : malePattern;
   const filtered = browserVoices.filter((voice) => pattern.test(voice.name));
 
-  return filtered.length > 0 ? filtered : browserVoices;
+ if (filtered.length < 3) {
+  return browserVoices;
+}
+return filtered;
 };
-
 const toVoiceOptions = (browserVoices: SpeechSynthesisVoice[]): SpeechVoiceOption[] =>
   browserVoices.map((voice) => ({
     id: getVoiceId(voice),
@@ -116,7 +118,7 @@ const getLanguageLabel = (lang: string): string => {
   }
 };
 
-const buildWordRanges = (inputText: string): WordRange[] => {
+,const buildWordRanges = (inputText: string): WordRange[] => {
   if (!inputText.trim()) {
     return [];
   }
