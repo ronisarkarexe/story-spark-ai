@@ -33,6 +33,7 @@ router.post(
 // Generate Model Stream - PROTECTED
 router.post(
   "/generate-model-stream",
+  aiGenerationRateLimiter,
   auth(),
   validateRequest(AIModelValidator.aiModel),
   checkRequestLimit(),

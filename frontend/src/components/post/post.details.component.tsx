@@ -74,12 +74,7 @@ const PostDetailsComponent = () => {
   );
   
 
-  console.log("Current Post:", post);
-  console.log("Tag:", tag);
-  console.log(
-  "Related Posts Full Data:",
-  JSON.stringify(relatedPost, null, 2)
-);
+ 
   
   const [toggleReaction] = useToggleReactionMutation();
   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
@@ -531,15 +526,21 @@ const PostDetailsComponent = () => {
             )}
 
             <div>
-              <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
-                Related Stories
-              </h3>
+  <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
+    Related Stories
+  </h3>
 
-              <RelatedStoriesComponent
-                posts={relatedPost || []}
-                currentPostId={post?._id || ""}
-              />
-            </div>
+  {relatedPost && relatedPost.length > 0 ? (
+    <RelatedStoriesComponent
+      posts={relatedPost}
+      currentPostId={post?._id || ""}
+    />
+  ) : (
+    <div className="text-center py-8 text-slate-500 dark:text-gray-400">
+      <p>No related stories found.</p>
+    </div>
+  )}
+</div>
           </div>
         </div>
       </div>

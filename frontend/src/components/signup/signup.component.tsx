@@ -18,10 +18,10 @@ interface IRegisterInfo {
   name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 interface Inputs extends IRegisterInfo {
-  confirmPassword: string;
   otp: string;
 }
 
@@ -107,9 +107,17 @@ const SignUpComponent = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
-      const user = { name: data.name, email: data.email, password: data.password };
-      const otpPayload = { name: data.name, email: data.email };
+const user = {
+  name: data.name,
+  email: data.email,
+  password: data.password,
+  confirmPassword: data.confirmPassword,
+};
 
+const otpPayload = {
+  name: data.name,
+  email: data.email,
+};
       if (password !== confirmPassword) {
         toast.error("Passwords do not match!");
         return;
@@ -260,10 +268,23 @@ const SignUpComponent = () => {
           </h2>
         </div>
 
+
+        {/* UPDATED: Structured layout classes to lock down maximum inner boundary constraints */}
+        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
+
+        <Link
+  to="/"
+  className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
+>
+  <span>←</span>
+  <span>Back to Home</span>
+</Link>
+          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-200">
         {/* Card */}
         <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
 
           <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
+
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
           {showOtpField && registerInfo && (

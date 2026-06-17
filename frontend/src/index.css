@@ -58,13 +58,16 @@ body {
   padding: 0;
   scroll-behavior: smooth;
   background:
-    radial-gradient(circle at 20% 0%, rgba(37, 99, 235, 0.14), transparent 28rem),
-    linear-gradient(180deg, #0b1120 0%, #111827 48%, #0f172a 100%);
+    radial-gradient(circle at 20% 0%, rgba(99, 102, 241, 0.12), transparent 28rem),
+    linear-gradient(180deg, #f8fafc 0%, #eef2ff 48%, #f8fafc 100%);
+  color: #0f172a;
   min-width: 320px;
 }
 
 html.dark body {
-  background-color: #0b1120;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(37, 99, 235, 0.14), transparent 28rem),
+    linear-gradient(180deg, #0b1120 0%, #111827 48%, #0f172a 100%);
   color: #f8fafc;
 }
 
@@ -1355,5 +1358,16 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
   transform: none;
 }
 
-/* Core UI Fix for Authentication Component Inputs */ 
-.login-container input, .form-control, input[type='email'], input[type='password'] { box-sizing: border-box !important; max-width: 100% !important; } 
+/* Hide browser-native password reveal button (Edge/IE/Chrome/Safari) */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+}
+

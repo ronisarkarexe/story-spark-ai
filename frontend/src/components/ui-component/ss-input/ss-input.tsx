@@ -40,6 +40,12 @@ const SSInput = <T extends FieldValues>({
     type === "password" ? (showPassword ? "text" : "password") : type;
 
   return (
+    <div className="w-[80%] min-w-0">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-600 dark:text-gray-400">
+    <div className="w-full min-w-0 box-border">
+      <label htmlFor={name} className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+
+        {label}
     <div className="w-full max-w-full flex flex-col box-border">
       <label 
         htmlFor={name} 

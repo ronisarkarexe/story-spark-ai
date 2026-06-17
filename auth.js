@@ -709,7 +709,14 @@ async function handleGoogleCredentialResponse(response) {
             return;
         }
 
-        localStorage.setItem('accessToken', data.data.accessToken);
+        const token = data?.data?.accessToken || data?.accessToken || data?.token || (typeof data?.data === 'string' ? data.data : null);
+        
+        if (!token) {
+            setAlert('error', 'Google login failed. Invalid token received from server.');
+            return;
+        }
+
+        localStorage.setItem('accessToken', token);
         setAlert('success', 'Signed in with Google successfully! Redirecting…');
         setTimeout(() => {
             window.location.href = '/dashboard';
