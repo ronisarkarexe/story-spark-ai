@@ -60,6 +60,7 @@ const Typewriter: React.FC<TypewriterProps> = ({
     }
 
     return () => window.clearTimeout(timer);
+     
   }, [charIndex, isDeleting, phraseIndex, phrases, typingSpeed, deletingSpeed, pause]);
 
   return (

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaXTwitter } from "react-icons/fa6";
+import type { IconType } from "react-icons";
 import logo from "../../assets/logoNew.png";
 
 const DEFAULT_GITHUB_ISSUES_URL =
@@ -79,11 +80,15 @@ const FooterComponent: React.FC = () => {
     { label: "Guidelines", to: "/guidelines" },
   ];
 
-  const socialLinks = [
-    { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
-    { icon: "fa-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
-    { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
-    { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
+  type SocialLink =
+    | { type: "fa"; icon: string; label: string; url: string }
+    | { type: "icon"; Icon: IconType; label: string; url: string };
+
+  const socialLinks: SocialLink[] = [
+    { type: "fa", icon: "fa-instagram", label: "Instagram", url: "https://www.instagram.com/" },
+    { type: "fa", icon: "fa-linkedin", label: "LinkedIn", url: "https://www.linkedin.com/" },
+    { type: "icon", Icon: FaXTwitter, label: "X", url: "https://x.com/" },
+    { type: "fa", icon: "fa-facebook", label: "Facebook", url: "https://www.facebook.com/" },
   ];
 
   const currentYear = new Date().getFullYear();
@@ -205,7 +210,7 @@ const FooterComponent: React.FC = () => {
             </h3>
             <ul className="flex flex-col gap-[12.5px]">
               {socialLinks.map((item) => (
-                <li key={item.icon}>
+                <li key={item.label}>
                   <a
                     href={item.url}
                     target="_blank"
@@ -213,18 +218,14 @@ const FooterComponent: React.FC = () => {
                     aria-label={item.label}
                     className="group flex items-center gap-2.5 text-[14px] text-slate-300/85 hover:text-blue-300 transition-all duration-200"
                   >
-                    {item.icon === "fa-x-twitter" ? (
-                      <FaXTwitter className="text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors" />
-                    ) : (
+                    {item.type === "fa" ? (
                       <i
                         className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
                       />
+                    ) : (
+                      <item.Icon className="text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors" />
                     )}
-                    <span className="capitalize">
-                      {item.icon === "fa-x-twitter"
-                        ? "X (Twitter)"
-                        : item.icon.replace("fa-", "")}
-                    </span>
+                    <span>{item.label}</span>
                   </a>
                 </li>
               ))}
@@ -243,7 +244,7 @@ const FooterComponent: React.FC = () => {
             <form
               onSubmit={handleSubscribe}
               noValidate
-              className="mt-1 flex flex-col gap-2 rounded-xl border border-white/[0.08] bg-[#0D1630]/60 p-2 backdrop-blur-sm transition-all duration-300 focus-within:border-blue-500/30"
+              className="mt-1 flex flex-col gap-2"
             >
               <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
                 <i
@@ -251,6 +252,9 @@ const FooterComponent: React.FC = () => {
                   aria-hidden="true"
                 />
                 <input
+                  id="newsletter-email-footer"
+                  name="email"
+                  autoComplete="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

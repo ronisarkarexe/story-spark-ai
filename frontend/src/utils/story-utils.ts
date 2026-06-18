@@ -1,8 +1,14 @@
 export const getWordCount = (str: string | undefined): number => {
-  if (typeof str !== "string" || !str.trim()) {
+  if (typeof str !== "string") {
     return 0;
   }
-  return str.trim().split(/\s+/).length;
+
+  const normalizedText = str.replace(/[\r\n]+/g, " ").trim();
+  if (!normalizedText) {
+    return 0;
+  }
+
+  return normalizedText.split(/\s+/).length;
 };
 
 export const calculateReadingTime = (content: string | undefined): number => {

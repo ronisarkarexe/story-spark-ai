@@ -1,4 +1,4 @@
-import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
+﻿import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import { USER_STATUS } from "../../../enums/user_status";
 import { Post } from "../post/post.model";
@@ -156,9 +156,7 @@ const getDashboardAnalysis = async (userId: string, role: string) => {
       subscriptionStatus: user.subscriptionType.toUpperCase(),
       applicationStatus,
       gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
-    },
-    subscriptionStatus: user.subscriptionType?.toUpperCase() || SUBSCRIPTION_TYPE.FREE,
-    status: user.status || USER_STATUS.ACTIVE,
+    }
   };
 };
 

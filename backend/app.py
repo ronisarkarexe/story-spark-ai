@@ -463,3 +463,11 @@ if __name__ == "__main__":
 | `Low` | `anomaly_score > threshold` |
 | `N/A` | Not stuck |
 """)
+
+def create_app(testing=True):
+    from flask import Flask
+    from ml.score_api import score_bp
+    app = Flask(__name__)
+    app.config["TESTING"] = testing
+    app.register_blueprint(score_bp)
+    return app

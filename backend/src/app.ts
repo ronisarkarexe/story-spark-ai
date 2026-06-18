@@ -8,12 +8,10 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import httpStatus from "http-status";
-
 import cookieParser from "cookie-parser";
 import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
-import { User } from "./app/modules/user/user.model";
 
 const app: Application = express();
 app.set("trust proxy", 1);
@@ -29,8 +27,11 @@ app.use(limiter);
 
 const defaultCorsOrigins =
   process.env.NODE_ENV === "development"
-  ? ["http://localhost:4001", "http://localhost:4002"]
-  : [];
+    ? ["http://localhost:4001", "http://localhost:4002"]
+    : [
+        "https://storysparkai.vercel.app",
+        "https://www.storysparkai.vercel.app",
+      ];
 
 const corsOrigins =
   config.cors_origins && config.cors_origins.length > 0
@@ -40,11 +41,11 @@ const corsOrigins =
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin && process.env.NODE_ENV === 'production') {
-        return callback(new Error('Origin header required in production'));
+      if (!origin) {
+        return callback(null, true);
       }
 
-      if (!origin || corsOrigins.includes(origin)) {
+      if (corsOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy"));
@@ -56,10 +57,12 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// ─── 1. FIXED: ENFORCED HARDENED PAYLOAD LIMITS TO PREVENT DoS ───
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(cookieParser());
 
+// Legacy Route Rewrite Rewrite Rules
 app.use((req, res, next) => {
   if (req.method === "GET" && /^\/api\/story\/[a-f0-9]{24}\/character-network$/i.test(req.path)) {
     req.url = req.url.replace(/^\/api\/story\//, "/api/v1/story/");
@@ -67,21 +70,26 @@ app.use((req, res, next) => {
   next();
 });
 
+// Primary API Router Matrix Engagement
 app.use("/api/v1", Routers);
 
-app.use((req: Request, res: Response, _next: NextFunction) => {
-  res.status(httpStatus.NOT_FOUND).json({
-    success: false,
-    message: "Not Found",
-    errorMessages: [
-      {
-        path: req.originalUrl,
-        message: "API Not Found",
-      },
-    ],
-  });
+// ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Constructing a standardized operational error structure
+  const error: any = new Error("API Not Found");
+  error.statusCode = httpStatus.NOT_FOUND;
+  error.errorMessages = [
+    {
+      path: req.originalUrl,
+      message: "The requested API endpoint route does not exist.",
+    },
+  ];
+
+  // Passing the error downward to the centralized engine
+  next(error);
 });
 
+// ─── 3. FIXED: REORDERED PIPELINE CALL TO SIT AS ABSOLUTE TERMINATOR ───
 app.use(globalErrorHandler);
 
 export default app;

@@ -54,7 +54,7 @@ const GithubcontributorsComponent: React.FC = () => {
         }
       }
     };
-  
+
     GithubcontributorData();
   
     return () => {
