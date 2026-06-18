@@ -8,7 +8,6 @@ import {
   Send,
   GitBranch,
   Sparkles,
-  Loader2,
   ArrowUpRight,
   Zap,
 } from "lucide-react";

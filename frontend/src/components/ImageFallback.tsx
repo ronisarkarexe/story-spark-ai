@@ -10,7 +10,7 @@ interface ImageFallbackProps {
 }
 
 const FALLBACK =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400' viewBox='0 0 800 400'%3E%3Crect width='800' height='400' fill='%23374151'/%3E%3Ctext x='400' y='200' font-family='sans-serif' font-size='24' fill='%239CA3AF' text-anchor='middle' dominant-baseline='middle'%3EStory Image%3C/text%3E%3C/svg%3E";
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4MDAnIGhlaWdodD0nNDAwJyB2aWV3Qm94PScwIDAgODAwIDQwMCc+PHJlY3Qgd2lkdGg9JzgwMCcgaGVpZ2h0PSc0MDAnIGZpbGw9JyMzNzQxNTEnLz48dGV4dCB4PSc0MDAnIHk9JzIwMCcgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMjQnIGZpbGw9JyM5Q0EzQUYnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnPlN0b3J5IEltYWdlPC90ZXh0Pjwvc3ZnPg==";
   
 
 export default function ImageFallback({

@@ -53,9 +53,7 @@ export interface IUser {
   };
   readingHistory?: Types.ObjectId[];
   writingGoals: IWritingGoals;
-  subscriptionExpiry?: Date;
-  lastPaymentId?: string;
-  lastOrderId?: string;
+
 }
 
 export type UserModel = Model<IUser, object>;
