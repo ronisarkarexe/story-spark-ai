@@ -1,4 +1,5 @@
-<<<<<<< feat-context-compression
+import { get_encoding } from "tiktoken";
+
 export interface ICompressedContext {
   characters: string[];
   keyEvents: string[];
@@ -23,16 +24,13 @@ export function contextCompressor(fullStory: string): ICompressedContext {
   const setting = new Set<string>();
 
   for (const sentence of sentences) {
-    // simple heuristic: capitalized words = characters
     const words = sentence.split(" ");
-
     for (const w of words) {
       if (/^[A-Z][a-z]+$/.test(w)) {
         characters.add(w);
       }
     }
 
-    // event detection (simple rule-based)
     if (
       sentence.includes("killed") ||
       sentence.includes("found") ||
@@ -42,7 +40,6 @@ export function contextCompressor(fullStory: string): ICompressedContext {
       keyEvents.push(sentence);
     }
 
-    // setting detection
     if (
       sentence.includes("forest") ||
       sentence.includes("castle") ||
@@ -62,8 +59,8 @@ Characters: ${Array.from(characters).join(", ")}
 Events: ${keyEvents.slice(0, 5).join(" | ")}
 Settings: ${Array.from(setting).join(" | ")}
     `.trim()
-=======
-import { get_encoding } from "tiktoken";
+  };
+}
 
 export interface LorePayload {
   characters: CharacterEntry[];
@@ -200,6 +197,5 @@ export function compressContext(
     window,
     totalTokens: usedTokens,
     droppedNodeCount: nodes.length - window.length,
->>>>>>> main
   };
 }
