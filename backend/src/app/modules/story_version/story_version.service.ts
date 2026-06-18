@@ -14,6 +14,7 @@ import {
   IGenericResponse,
 } from "../../../interfaces/pagination";
 import { analyzeCharacterNetwork, ICharacterNetworkResponse } from "./character_network.utils";
+import { Types } from "mongoose";
 
 export interface LorePayload {
   characters: CharacterEntry[];
@@ -179,6 +180,9 @@ const createVersionSnapshot = async (
   generationType: string = "edited"
 ): Promise<IStoryVersion | null> => {
   try {
+    if (!Types.ObjectId.isValid(storyId)) {
+      return null;
+    }
     const post = await Post.findById(storyId);
     if (!post) {
       return null;
@@ -227,6 +231,9 @@ const createBranchVersion = async (
   userId: string,
   branchName: string
 ): Promise<IStoryVersion> => {
+  if (!Types.ObjectId.isValid(parentVersionId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid parent version ID!");
+  }
   const parentVersion = await StoryVersion.findById(parentVersionId);
 
   if (!parentVersion) {
@@ -282,6 +289,9 @@ const getStoryTree = async (
   storyId: string,
   userId: string
 ): Promise<IStoryTreeResponse> => {
+  if (!Types.ObjectId.isValid(storyId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid story ID!");
+  }
   const post = await Post.findById(storyId);
 
   if (!post) {
@@ -327,6 +337,9 @@ const getBranchPath = async (
   versionId: string,
   userId: string
 ): Promise<IStoryVersion[]> => {
+  if (!Types.ObjectId.isValid(versionId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid version ID!");
+  }
   const version = await StoryVersion.findById(versionId);
 
   if (!version) {
@@ -365,6 +378,9 @@ const getVersionsByStoryId = async (
   userId: string,
   pagination: IPaginationOptions
 ): Promise<IGenericResponse<IStoryVersion[]>> => {
+  if (!Types.ObjectId.isValid(storyId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid story ID!");
+  }
   const { page, limit, skip } = paginationHelper(pagination);
   const post = await Post.findById(storyId);
   if (!post) {
@@ -397,6 +413,9 @@ const getVersionById = async (
   versionId: string,
   userId: string
 ): Promise<IStoryVersion> => {
+  if (!Types.ObjectId.isValid(versionId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid version ID!");
+  }
   const version = await StoryVersion.findById(versionId);
   if (!version) {
     throw new ApiError(httpStatus.NOT_FOUND, "Story version snapshot not found!");
@@ -415,6 +434,9 @@ const restoreVersion = async (
   versionId: string,
   userId: string
 ): Promise<IPost> => {
+  if (!Types.ObjectId.isValid(versionId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid version ID!");
+  }
   const version = await StoryVersion.findById(versionId);
   if (!version) {
     throw new ApiError(httpStatus.NOT_FOUND, "Story version snapshot not found!");
@@ -508,6 +530,9 @@ const getCharacterNetwork = async (
   storyId: string,
   userId: string
 ): Promise<ICharacterNetworkResponse> => {
+  if (!Types.ObjectId.isValid(storyId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid story ID!");
+  }
   const post = await Post.findById(storyId);
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
