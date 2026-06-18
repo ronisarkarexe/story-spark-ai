@@ -2,6 +2,7 @@
 import React from "react";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import "@testing-library/jest-dom/vitest";
 import TemplatesComponent from "../templates.component";
 
 // Mock useNavigate
@@ -29,36 +30,36 @@ describe("TemplatesComponent", () => {
   it("renders the page title and description", () => {
     render(<TemplatesComponent />);
     
-    expect(screen.getByText("Writing Templates")).toBeDefined();
+    expect(screen.getByText("Writing Templates")).toBeInTheDocument();
     expect(
       screen.getByText(
         "Skip the blank page. Choose from beautifully crafted templates for stories, poems, characters, and creative inspiration."
       )
-    ).toBeDefined();
+    ).toBeInTheDocument();
   });
 
   it("renders all template sections", () => {
     render(<TemplatesComponent />);
 
-    expect(screen.getByRole("heading", { name: "Story Writing" })).toBeDefined();
-    expect(screen.getByRole("heading", { name: "Creative Writing" })).toBeDefined();
-    expect(screen.getByRole("heading", { name: "Writing Inspiration" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Story Writing" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Creative Writing" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Writing Inspiration" })).toBeInTheDocument();
   });
 
   it("renders individual template cards with their details", () => {
     render(<TemplatesComponent />);
 
     // Check for some story template cards
-    expect(screen.getByText("Fantasy Story")).toBeDefined();
-    expect(screen.getByText("Mystery Story")).toBeDefined();
-    expect(screen.getByText("Romance Story")).toBeDefined();
+    expect(screen.getByText("Fantasy Story")).toBeInTheDocument();
+    expect(screen.getByText("Mystery Story")).toBeInTheDocument();
+    expect(screen.getByText("Romance Story")).toBeInTheDocument();
 
     // Check for some creative template cards
-    expect(screen.getByText("Character Backstory")).toBeDefined();
-    expect(screen.getByText("Dialogue Starter")).toBeDefined();
+    expect(screen.getByText("Character Backstory")).toBeInTheDocument();
+    expect(screen.getByText("Dialogue Starter")).toBeInTheDocument();
 
     // Check for some inspiration cards
-    expect(screen.getByText("Story Prompt Generator")).toBeDefined();
+    expect(screen.getByText("Story Prompt Generator")).toBeInTheDocument();
   });
 
   it("navigates to /stories with prompt state when a template is selected", () => {
