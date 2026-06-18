@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * IMPLEMENTATION EXAMPLE: How to integrate PromptAnalysisIntegration into stories.component.tsx
  * 

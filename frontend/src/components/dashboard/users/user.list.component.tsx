@@ -134,7 +134,7 @@ if (
                     <p className="text-sm text-slate-500">{user.subscriptionType}</p>
                   </td>
                   <td className="p-4 py-5">
-                    <p className="text-sm text-slate-500">{user.isApplyForWriter ? "YES" : "NO"}</p>
+                    <p className="text-sm text-slate-500">{user.hasAppliedForWriter ? "YES" : "NO"}</p>
                   </td>
                 </tr>
               ))

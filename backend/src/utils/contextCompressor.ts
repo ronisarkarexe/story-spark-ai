@@ -1,4 +1,5 @@
-<<<<<<< feat-context-compression
+import { get_encoding } from "tiktoken";
+
 export interface ICompressedContext {
   characters: string[];
   keyEvents: string[];
@@ -62,8 +63,8 @@ Characters: ${Array.from(characters).join(", ")}
 Events: ${keyEvents.slice(0, 5).join(" | ")}
 Settings: ${Array.from(setting).join(" | ")}
     `.trim()
-=======
-import { get_encoding } from "tiktoken";
+  };
+}
 
 export interface LorePayload {
   characters: CharacterEntry[];
@@ -200,6 +201,5 @@ export function compressContext(
     window,
     totalTokens: usedTokens,
     droppedNodeCount: nodes.length - window.length,
->>>>>>> main
   };
 }

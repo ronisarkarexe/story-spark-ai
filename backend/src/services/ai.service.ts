@@ -20,7 +20,6 @@ function getGeminiClient(): GoogleGenerativeAI {
 }
 
 let anthropic: Anthropic | null = null;
-const genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export function getOpenAIClient(): OpenAI {
   if (!openai) {
@@ -87,7 +86,7 @@ async function generateWithAnthropic(prompt: string): Promise<string> {
     { timeout: 10000 }
   );
 
-  const textBlock = response.content.find((block) => block.type === "text");
+  const textBlock = response.content.find((block: any) => block.type === "text");
   const text = textBlock && "text" in textBlock ? textBlock.text : "";
   if (!text) throw new Error("Anthropic returned an empty response");
   return text;

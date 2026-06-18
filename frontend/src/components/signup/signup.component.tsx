@@ -5,31 +5,42 @@ import { useState, useEffect } from "react";
 import { storeUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import {
   useEmailVerifyMutation,
   useVerifyOtpMutation,
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
+import { useNavigate } from "react-router-dom";
 
 interface IRegisterInfo {
   name: string;
   email: string;
   password: string;
-  confirmPassword: string;
 }
 
 interface Inputs extends IRegisterInfo {
+  confirmPassword: string;
   otp: string;
 }
 
 const getPasswordError = (password: string) => {
-  if (password.length < 8) return "Password must be at least 8 characters long";
-  if (!/[A-Z]/.test(password)) return "Password must contain at least one uppercase letter";
-  if (!/[a-z]/.test(password)) return "Password must contain at least one lowercase letter";
-  if (!/[0-9]/.test(password)) return "Password must contain at least one number";
-  if (!/[^A-Za-z0-9]/.test(password)) return "Password must contain at least one special character";
+  if (password.length < 8) {
+    return "Password must be at least 8 characters long";
+  }
+  if (!/[A-Z]/.test(password)) {
+    return "Password must contain at least one uppercase letter";
+  }
+  if (!/[a-z]/.test(password)) {
+    return "Password must contain at least one lowercase letter";
+  }
+  if (!/[0-9]/.test(password)) {
+    return "Password must contain at least one number";
+  }
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return "Password must contain at least one special character";
+  }
   return "";
 };
 
@@ -39,9 +50,9 @@ const PASSWORD_STRENGTH_CONFIG: Record<
   StrengthLevel,
   { label: string; barColor: string; barWidth: string; textColor: string }
 > = {
-  weak: { label: "Weak", barColor: "bg-red-500", barWidth: "w-1/3", textColor: "text-red-400" },
-  medium: { label: "Medium", barColor: "bg-yellow-400", barWidth: "w-2/3", textColor: "text-yellow-300" },
-  strong: { label: "Strong", barColor: "bg-green-500", barWidth: "w-full", textColor: "text-green-400" },
+  weak: { label: "Weak", barColor: "bg-red-500", barWidth: "w-1/3", textColor: "text-red-450" },
+  medium: { label: "Medium", barColor: "bg-yellow-400", barWidth: "w-2/3", textColor: "text-yellow-450" },
+  strong: { label: "Strong", barColor: "bg-green-500", barWidth: "w-full", textColor: "text-green-455" },
 };
 
 const getStrengthLevel = (passedChecks: number): StrengthLevel => {
@@ -69,7 +80,6 @@ const SignUpComponent = () => {
     register,
     handleSubmit,
     watch,
-    unregister,
     setValue,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
@@ -93,7 +103,7 @@ const SignUpComponent = () => {
   const otp = watch("otp");
 
   const passwordChecks = {
-    length: password?.length >= 8,
+    length: (password || "").length >= 8,
     uppercase: /[A-Z]/.test(password || ""),
     lowercase: /[a-z]/.test(password || ""),
     number: /[0-9]/.test(password || ""),
@@ -102,21 +112,14 @@ const SignUpComponent = () => {
 
   const passedChecks = Object.values(passwordChecks).filter(Boolean).length;
   const strengthLevel = getStrengthLevel(passedChecks);
-  const { label: strengthLabel, barColor, barWidth, textColor } = PASSWORD_STRENGTH_CONFIG[strengthLevel];
+  const { label: strengthLabel, barColor, barWidth, textColor } =
+    PASSWORD_STRENGTH_CONFIG[strengthLevel];
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
-const user = {
-  name: data.name,
-  email: data.email,
-  password: data.password,
-  confirmPassword: data.confirmPassword,
-};
+      const user = { name: data.name, email: data.email, password: data.password };
+      const otpPayload = { name: data.name, email: data.email };
 
-const otpPayload = {
-  name: data.name,
-  email: data.email,
-};
       if (password !== confirmPassword) {
         toast.error("Passwords do not match!");
         return;
@@ -134,16 +137,13 @@ const otpPayload = {
           setExpiredAt(new Date(expiresAt).getTime());
           toast.success("OTP sent to your email");
           setRegisterInfo(user);
-          unregister("confirmPassword");
-          unregister("password");
-          unregister("name");
-          unregister("email");
           setShowOtpField(true);
           setCooldown(60);
         }
-      } catch (error) {
-        const err = error as { data?: Array<{ message?: string }>; message?: string };
-        const message = err?.data?.[0]?.message || err?.message || "Something went wrong. Please try again.";
+      } catch (error: unknown) {
+        const errPayload = error as { data?: Array<{ message?: string }>; message?: string };
+        const message =
+          errPayload?.data?.[0]?.message || errPayload?.message || "Something went wrong. Please try again.";
         toast.error(message);
       } finally {
         setIsBusy(false);
@@ -153,13 +153,25 @@ const otpPayload = {
 
   const handleOtpValidation = async () => {
     const enteredOtp = otp?.trim();
-    if (!enteredOtp) { toast.error("Please enter OTP"); return; }
-    if (!registerInfo) { toast.error("Something went wrong. Please restart the process."); return; }
-    if (Date.now() > expiredAt) { toast.error("OTP expired. Please request a new one."); return; }
+    if (!enteredOtp) {
+      toast.error("Please enter OTP");
+      return;
+    }
+    if (!registerInfo) {
+      toast.error("Something went wrong. Please restart the process.");
+      return;
+    }
+    if (Date.now() > expiredAt) {
+      toast.error("OTP expired. Please request a new one.");
+      return;
+    }
 
     setIsBusy(true);
     try {
-      const otpResponse = await verifyOtp({ email: registerInfo.email, otp: enteredOtp }).unwrap();
+      const otpResponse = await verifyOtp({
+        email: registerInfo.email,
+        otp: enteredOtp,
+      }).unwrap();
       if (otpResponse?.data?.verificationToken) {
         const res = await registerUser({
           ...registerInfo,
@@ -174,61 +186,10 @@ const otpPayload = {
         throw new Error("No verification token received");
       }
     } catch (err: unknown) {
-      const e = err as { data?: Array<{ message?: string }>; message?: string };
-      const message = e?.data?.[0]?.message || e?.message || "OTP verification failed.";
-      toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (cooldown > 0 || isBusy) return;
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const res = await emailVerify({
-        name: registerInfo.name,
-        email: registerInfo.email,
-      }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        setValue("otp", "");
-        toast.success("OTP resent to your email");
-        setCooldown(60);
-      }
-    } catch (error: unknown) {
-      const e = error as { data?: Array<{ message?: string }>; message?: string };
+      const errPayload = err as { data?: Array<{ message?: string }>; message?: string };
       const message =
-        e?.data?.[0]?.message ||
-        e?.message ||
-        "Failed to resend OTP. Please try again.";
+        errPayload?.data?.[0]?.message || errPayload?.message || "OTP verification failed. Please try again.";
       toast.error(message);
-      console.log("resend error: ", error);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    if (!credentialResponse.credential) {
-      toast.error("Google login failed");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
-      if (res?.data?.accessToken) {
-        storeUserInfo({ accessToken: res.data.accessToken });
-        toast.success("Logged in with Google successfully!");
-        navigate("/");
-      }
-    } catch {
-      toast.error("Google authentication failed");
     } finally {
       setIsBusy(false);
     }
@@ -254,31 +215,26 @@ const otpPayload = {
         setValue("otp", "");
         setCooldown(60);
       }
-    } catch (error) {
-      const message =
-        (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-        "Failed to resend OTP. Please try again.";
+    } catch (error: unknown) {
+      const errPayload = error as { data?: Array<{ message?: string }>; message?: string };
+      const message = errPayload?.data?.[0]?.message || "Failed to resend OTP. Please try again.";
       toast.error(message);
     } finally {
       setIsBusy(false);
     }
   };
 
-  const handleGoogleLoginSuccess = async (
-    credentialResponse: CredentialResponse
-  ) => {
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
     setIsBusy(true);
     try {
-      const res = await googleLogin({
-        token: credentialResponse.credential,
-      }).unwrap();
+      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
       if (res.data.accessToken) {
-        toast.success("User logged in successfully with Google!");
+        toast.success("Signed up with Google successfully!");
         storeUserInfo({ accessToken: res.data.accessToken });
         navigate("/");
       }
     } catch {
-      toast.error("Failed to login with Google. Please try again.");
+      toast.error("Google login failed. Please try again.");
     } finally {
       setIsBusy(false);
     }
@@ -288,28 +244,13 @@ const otpPayload = {
     toast.error("Google login failed. Please try again.");
   };
 
-  const handleGoBack = () => {
-    setShowOtpField(false);
-  };
-
-  useEffect(() => {
-    if (!showOtpField && registerInfo) {
-      setValue("name", registerInfo.name);
-      setValue("email", registerInfo.email);
-      setValue("password", registerInfo.password);
-      setValue("confirmPassword", registerInfo.password);
-    }
-  }, [showOtpField, registerInfo, setValue]);
-
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-900 dark:text-slate-100 box-border">
-
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-955 px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-909 dark:text-slate-101 box-border">
       {/* Background Glow */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-0 min-w-0 box-border mx-auto">
-
         {/* Title */}
         <div className="mb-6 text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
@@ -317,39 +258,12 @@ const otpPayload = {
           </h2>
         </div>
 
-
-        {/* UPDATED: Structured layout classes to lock down maximum inner boundary constraints */}
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-
-        <Link
-  to="/"
-  className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
->
-  <span>←</span>
-  <span>Back to Home</span>
-</Link>
-          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-200">
         {/* Card */}
         <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-
           <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
-
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
-          {showOtpField && registerInfo && (
-            <p className="mt-2 mb-4 text-center text-xs sm:text-sm text-slate-400 px-1">
-              We sent a 6-digit code to{" "}
-              <span className="font-semibold text-blue-400">{registerInfo.email}</span>.
-              {" "}Not the right address?{" "}
-              <button
-                type="button"
-                onClick={handleGoBack}
-                className="font-semibold text-blue-400 hover:text-blue-300 underline transition-colors cursor-pointer"
-              >
-                Change email
-              </button>
-            </p>
-          )}
+
           {!showOtpField && (
             <p className="mt-2 mb-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 px-1">
               Join StorySparkAI and begin your creative journey.
@@ -357,7 +271,7 @@ const otpPayload = {
           )}
 
           {!showOtpField && (
-            <div className="relative mb-6 w-full box-border">
+            <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
               </div>
@@ -371,7 +285,6 @@ const otpPayload = {
 
           {!showOtpField ? (
             <form className="space-y-5 w-full min-w-0 block box-border" onSubmit={handleSubmit(onSubmit)}>
-
               <SSInput
                 label="Name"
                 name="name"
@@ -400,6 +313,7 @@ const otpPayload = {
                 icon="fi fi-rr-envelope"
                 register={register}
                 autoComplete="email"
+                validation={{ required: "Email is required" }}
                 error={errors.email}
               />
 
@@ -412,11 +326,12 @@ const otpPayload = {
                 icon="fi fi-rr-lock"
                 register={register}
                 autoComplete="new-password"
+                validation={{ required: "Password is required" }}
                 error={errors.password}
               />
 
               {password?.length > 0 && (
-                <div className="space-y-3 -mt-1 w-full min-w-0 overflow-hidden box-border">
+                <div className="space-y-3 -mt-2 min-w-0 overflow-hidden">
                   <div
                     className="w-full h-1.5 bg-slate-200 dark:bg-slate-700/50 rounded-full overflow-hidden"
                     role="progressbar"
@@ -433,6 +348,8 @@ const otpPayload = {
                     {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
                       const met = passwordChecks[key];
                       return (
+                        <li key={key} className={`flex items-center gap-2 ${met ? "text-emerald-400" : "text-slate-500"}`}>
+                          <i className={`fa-solid ${met ? "fa-circle-check" : "fa-circle-xmark"} text-xs shrink-0`} aria-hidden="true" />
                           <span>{label}</span>
                         </li>
                       );
@@ -446,14 +363,12 @@ const otpPayload = {
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
-                required={!showOtpField}
-                icon="fi fi-rr-lock"
+                required={true}
+                icon="fi fi-rr-eye"
                 register={register}
                 autoComplete="new-password"
                 validation={{
                   validate: (value) => {
-                    if (showOtpField) return true;
-                    if (!value) return "Confirm password is required";
                     if (value !== password) return "Passwords do not match!";
                     return true;
                   },
@@ -461,13 +376,11 @@ const otpPayload = {
                 error={errors.confirmPassword}
               />
 
-              <div className="pt-2 w-full box-border">
-                <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
-              </div>
+              <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
             </form>
           ) : (
-            <div className="grid grid-cols-1 gap-5 w-full min-w-0 box-border">
-              <div className="w-full min-w-0 box-border">
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 gap-5 w-full min-w-0 box-border">
                 <SSInput
                   label="OTP"
                   name="otp"
@@ -483,34 +396,17 @@ const otpPayload = {
                   }}
                   error={errors.otp}
                 />
-              </div>
-
-              <div className="w-full box-border">
-                <SSButton
-                  text="Verify OTP"
-                  type="button"
-                  onClick={handleOtpValidation}
-                  isLoading={isBusy}
-                />
-              </div>
-
-              <div className="text-center pt-1 select-none flex flex-col items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  disabled={cooldown > 0 || isBusy}
-                  className="text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 disabled:text-slate-600 transition-colors duration-150 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleGoBack}
-                  disabled={isBusy}
-                  className="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-300 transition-colors duration-150 focus:outline-none cursor-pointer mt-1"
-                >
-                  Change Email
-                </button>
+                <SSButton text="Verify OTP" type="button" onClick={handleOtpValidation} isLoading={isBusy} />
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={cooldown > 0 || isBusy}
+                    className="text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 disabled:text-slate-650 transition-colors duration-150 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -552,4 +448,3 @@ const otpPayload = {
 };
 
 export default SignUpComponent;
-

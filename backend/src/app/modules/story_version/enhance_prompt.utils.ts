@@ -12,8 +12,7 @@ export const enhancePromptWithGemini = async (
 
   const metaPrompt = `You are a creative writing assistant.
 
-
-Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ").replace(/\r/g, "")}`;
+Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ").replace(/\r/g, "")}
 
 Use the following story context if available:
 
@@ -24,7 +23,7 @@ Add a character name, setting details, and a central conflict.
 
 Return ONLY the enhanced prompt, nothing else.
 
-Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, "\\\"")}`;
+Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}`;
 
   const resultPromise = model.generateContent(metaPrompt);
 
@@ -87,7 +86,7 @@ Prompt: ${prompt}`;
     { signal }
   );
 
-  const textBlock = response.content.find((block) => block.type === "text");
+  const textBlock = response.content.find((block: any) => block.type === "text");
   const text = textBlock && "text" in textBlock ? textBlock.text.trim() : "";
   if (!text) throw new Error("Anthropic returned an empty response");
   return text;
