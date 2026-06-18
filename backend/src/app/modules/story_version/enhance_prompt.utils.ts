@@ -1,5 +1,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GEMINI_MODEL, CLAUDE_MODEL, OPENAI_MODEL, getOpenAIClient, getAnthropicClient } from "../../../services/ai.service";
+import {
+  GEMINI_MODEL,
+  CLAUDE_MODEL,
+  OPENAI_MODEL,
+  getOpenAIClient,
+  getAnthropicClient,
+} from "../../../services/ai.service";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
@@ -12,9 +18,6 @@ export const enhancePromptWithGemini = async (
 
   const metaPrompt = `You are a creative writing assistant.
 
-
-Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ").replace(/\r/g, "")}`;
-
 Use the following story context if available:
 
 ${compressedContext ?? "No previous context"}
@@ -22,9 +25,9 @@ ${compressedContext ?? "No previous context"}
 Rewrite the following story prompt to be more vivid, specific, and engaging.
 Add a character name, setting details, and a central conflict.
 
-Return ONLY the enhanced prompt, nothing else.
+Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
 
-Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, "\\\"")}`;
+Prompt: ${prompt}`;
 
   const resultPromise = model.generateContent(metaPrompt);
 
@@ -32,16 +35,16 @@ Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, "\\\"")}`;
     ? await Promise.race([
         resultPromise,
         new Promise<never>((_, reject) =>
-          signal.addEventListener("abort", () =>
-            reject(new Error("Generation aborted"))
+          signal.addEventListener(
+            "abort",
+            () => reject(new Error("Generation aborted")),
+            { once: true }
           )
         ),
       ])
     : await resultPromise;
 
-  const text = (result as Awaited<typeof resultPromise>)
-    .response.text()
-    .trim();
+  const text = (result as Awaited<typeof resultPromise>).response.text().trim();
 
   return text;
 };
@@ -51,7 +54,13 @@ export const enhancePromptWithOpenAI = async (
   signal?: AbortSignal
 ): Promise<string> => {
   const client = getOpenAIClient();
-  const metaPrompt = `You are a creative writing assistant. Rewrite the following story prompt to be more vivid, specific, and engaging. Add a character name, setting details, and a central conflict. Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
+
+  const metaPrompt = `You are a creative writing assistant.
+
+Rewrite the following story prompt to be more vivid, specific, and engaging.
+Add a character name, setting details, and a central conflict.
+
+Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
 
 Prompt: ${prompt}`;
 
@@ -65,7 +74,11 @@ Prompt: ${prompt}`;
   );
 
   const text = response.choices[0]?.message?.content?.trim();
-  if (!text) throw new Error("OpenAI returned an empty response");
+
+  if (!text) {
+    throw new Error("OpenAI returned an empty response");
+  }
+
   return text;
 };
 
@@ -74,7 +87,13 @@ export const enhancePromptWithAnthropic = async (
   signal?: AbortSignal
 ): Promise<string> => {
   const client = getAnthropicClient();
-  const metaPrompt = `You are a creative writing assistant. Rewrite the following story prompt to be more vivid, specific, and engaging. Add a character name, setting details, and a central conflict. Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
+
+  const metaPrompt = `You are a creative writing assistant.
+
+Rewrite the following story prompt to be more vivid, specific, and engaging.
+Add a character name, setting details, and a central conflict.
+
+Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
 
 Prompt: ${prompt}`;
 
@@ -89,6 +108,10 @@ Prompt: ${prompt}`;
 
   const textBlock = response.content.find((block) => block.type === "text");
   const text = textBlock && "text" in textBlock ? textBlock.text.trim() : "";
-  if (!text) throw new Error("Anthropic returned an empty response");
+
+  if (!text) {
+    throw new Error("Anthropic returned an empty response");
+  }
+
   return text;
 };

@@ -18,6 +18,37 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 }) => {
   const navigate = useNavigate();
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const [readStories, setReadStories] = useState<Record<string, boolean>>(() => {
+    const readMap: Record<string, boolean> = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("story-read-")) {
+          const storyId = key.replace("story-read-", "");
+          readMap[storyId] = localStorage.getItem(key) === "true";
+        }
+      }
+    } catch (e) {
+      console.error("Error reading localStorage", e);
+    }
+    return readMap;
+  });
+
+  const handleToggleRead = (storyId: string) => {
+    setReadStories((prev) => {
+      const newValue = !prev[storyId];
+      try {
+        if (newValue) {
+          localStorage.setItem(`story-read-${storyId}`, "true");
+        } else {
+          localStorage.removeItem(`story-read-${storyId}`);
+        }
+      } catch (e) {
+        console.error("Error updating localStorage", e);
+      }
+      return { ...prev, [storyId]: newValue };
+    });
+  };
 
   const handleImageError = (storyId: string) => {
     setImageErrors((prev) => ({ ...prev, [storyId]: true }));
@@ -48,7 +79,7 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
               onClick={() => navigate(`/post/${story._id}`)}
               className="cursor-pointer bg-gray-50 text-slate-900 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 overflow-hidden group flex flex-col h-full dark:bg-slate-900/60 dark:text-white dark:border-slate-800"
             >
-              <div className="relative overflow-hidden bg-slate-200 dark:bg-slate-800">
+              <div className="relative overflow-hidden bg-slate-200 dark:bg-slate-800 h-52">
                 {!imageErrors[story._id] && story.imageURL ? (
                   <ImageFallback
                     src={story.imageURL}
@@ -64,14 +95,32 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-transparent to-transparent opacity-100 pointer-events-none dark:from-slate-900/90 dark:via-transparent dark:to-transparent"></div>
 
-                <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
+                <div className="absolute top-4 right-4 z-10 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <label className="flex items-center gap-1.5 backdrop-blur-md bg-white/10 dark:bg-black/25 border border-white/20 hover:bg-white/25 px-2.5 py-1.5 rounded-full shadow-lg cursor-pointer select-none transition-all duration-300">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={!!readStories[story._id]}
+                      onChange={() => handleToggleRead(story._id)}
+                    />
+                    <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-all ${
+                      readStories[story._id]
+                        ? "bg-indigo-600 border-indigo-500 text-white"
+                        : "border-white/40 bg-transparent text-transparent"
+                    }`}>
+                      <i className="fas fa-check text-[8px]"></i>
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-white">
+                      Read
+                    </span>
+                  </label>
                   <BookmarkButton
                     storyId={story._id}
                     className="backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 hover:bg-white/30 p-2 !rounded-full shadow-lg hover:scale-110 transition-all duration-300"
                   />
                 </div>
 
-                <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap max-w-[80%]">
+                <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap max-w-[55%]">
                   <span className="inline-flex items-center px-2 py-0.5 bg-indigo-600 border border-indigo-500/50 text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-lg max-w-[120px] truncate">
                     {story.tag}
                   </span>
@@ -84,7 +133,7 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
               </div>
 
               <div className="px-6 py-5 flex-1 flex flex-col relative z-10">
-                <h3 className="font-extrabold text-xl mb-3 text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-2 dark:text-white dark:group-hover:text-indigo-400">
+                <h3 className="font-extrabold text-xl mb-3 text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-2 break-words overflow-hidden text-ellipsis dark:text-white dark:group-hover:text-indigo-400">
                   {story.title}
                 </h3>
 

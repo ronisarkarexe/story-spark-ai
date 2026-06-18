@@ -149,8 +149,7 @@ const WriterFeedbackComponent = () => {
         {/* Header */}
         <div className="mb-12 text-center">
           <span className="inline-flex items-center rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-600 dark:text-yellow-500">
-            ⭐ 4.9/5 Average Rating
-          </span>
+⭐ 4.9/5 Loved by Writers          </span>
 
           <h2 className="mt-6 text-4xl font-bold text-slate-900 dark:text-white">
             What Our Writers Say
@@ -164,21 +163,21 @@ const WriterFeedbackComponent = () => {
 
         {/* Social Proof Stats */}
         <div className="mb-16 grid grid-cols-2 gap-4 md:grid-cols-4">
-          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
+          <div className="rounded-2xl border border-slate-300 shadow-md dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
             <h3 className="text-3xl font-bold text-blue-600 dark:text-blue-500">10K+</h3>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
               Total Writers
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
+          <div className="rounded-2xl border border-slate-300 shadow-md dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
             <h3 className="text-3xl font-bold text-cyan-600 dark:text-cyan-500">250K+</h3>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
               Stories Generated
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
+          <div className="rounded-2xl border border-slate-300 shadow-md dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
             <h3 className="text-3xl font-bold text-purple-600 dark:text-purple-500">
               {feedbackData.length}+
             </h3>
@@ -186,9 +185,10 @@ const WriterFeedbackComponent = () => {
               Reviews Submitted
             </p>
           </div>
-
-          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
+ <h3 className="text-3xl font-bold text-yellow-600 dark:text-yellow-500">4.9★</h3>
+          <div className="rounded-2xl border border-slate-300 shadow-md dark:border-white/10 bg-white/80 p-6 text-center backdrop-blur dark:bg-slate-900/50">
             <h3 className="text-3xl font-bold text-yellow-600 dark:text-yellow-500">4.9★</h3>
+
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
               Average Rating
             </p>

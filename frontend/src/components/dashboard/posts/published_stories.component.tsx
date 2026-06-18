@@ -1,4 +1,8 @@
+
 import React, { useMemo, useState } from "react";
+import DownloadButtons from '../../../../components/DownloadButtons';
+import React, { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { useDebounced } from "../../../hooks/global";
 import { Post } from "../../../models/post";
@@ -35,7 +39,7 @@ const PublishedStoriesComponent: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [size, setSize] = useState(PAGE_SIZE);
+  const size = PAGE_SIZE;
 
   const debounceTerm = useDebounced({
     searchQuery: searchTerm,
@@ -64,9 +68,10 @@ const PublishedStoriesComponent: React.FC = () => {
     setPage(1);
   };
 
-  const onPaginationChange = (nextPage: number, pageSize: number) => {
-    setPage(nextPage);
-    setSize(pageSize);
+  const loadMore = () => {
+    if (data?.meta && stories.length < data.meta.total) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   return (
@@ -196,7 +201,7 @@ const PublishedStoriesComponent: React.FC = () => {
                     onClick={() => navigate(`/post/${story._id}`)}
                     className="text-left"
                   >
-                    <h3 className="line-clamp-2 text-lg font-black text-slate-900 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-300">
+                    <h3 className="line-clamp-2 break-words text-lg font-black text-slate-900 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-300 overflow-hidden text-ellipsis">
                       {story.title}
                     </h3>
                   </button>
@@ -205,8 +210,9 @@ const PublishedStoriesComponent: React.FC = () => {
                     {getExcerpt(story)}
                   </p>
 
-                  <div className="mt-5 grid grid-cols-3 gap-3 border-t border-slate-100 pt-4 text-center dark:border-white/[0.07]">
-                    <div>
+                  <div className="mt-3 flex justify-end">
+  <DownloadButtons story={story} />
+</div>
                       <p className="text-sm font-bold text-slate-900 dark:text-white">
                         {story.viewsCount}
                       </p>
@@ -238,14 +244,21 @@ const PublishedStoriesComponent: React.FC = () => {
         </div>
       )}
 
-      {data?.meta && data.meta.total > size && (
-        <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-white/[0.07] dark:bg-[#0a1020]">
-          <PaginationComponent
-            current={page}
-            pageSize={size}
-            total={data.meta.total}
-            onChange={onPaginationChange}
-          />
+      {data?.meta && stories.length > 0 && stories.length < data.meta.total && (
+        <div className="flex justify-center mt-6 mb-4">
+          <button
+            onClick={loadMore}
+            disabled={isLoading}
+            className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i> Loading...
+              </>
+            ) : (
+              "Load More"
+            )}
+          </button>
         </div>
       )}
     </div>

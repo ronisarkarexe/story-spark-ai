@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { HELP_SECTIONS } from "../help_center.utils";
+
+const HELP_SECTIONS = [
+  { id: "help-categories", label: "Categories", icon: "fa-layer-group", color: "from-blue-500 to-cyan-500" },
+  { id: "faq-section", label: "FAQs", icon: "fa-circle-question", color: "from-indigo-500 to-purple-500" },
+  { id: "troubleshoot-section", label: "Troubleshooting", icon: "fa-screwdriver-wrench", color: "from-orange-500 to-red-500" },
+  { id: "setup-guide-section", label: "Setup Guide", icon: "fa-rocket", color: "from-emerald-500 to-teal-500" },
+  { id: "support-links-section", label: "Support", icon: "fa-headset", color: "from-pink-500 to-rose-500" },
+];
 
 const HelpSidebar = () => {
   const [activeSection, setActiveSection] = useState<string>(
@@ -34,8 +41,10 @@ const HelpSidebar = () => {
     const handleScroll = () => {
       const scrollBottom = window.innerHeight + window.scrollY;
       const documentHeight = document.documentElement.scrollHeight;
-      if (scrollBottom >= documentHeight - 80) {
-        setActiveSection("support-links-section");
+      if (scrollBottom >= documentHeight - 120) {
+        if (scrollBottom >= documentHeight - 80) {
+          setActiveSection("support-links-section");
+        }
       }
     };
 
@@ -64,7 +73,7 @@ const HelpSidebar = () => {
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="relative overflow-hidden rounded-[2rem] border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-xl p-6"
+            className="relative rounded-[2rem] border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-xl px-8 py-6"
           >
             <div className="absolute -top-16 -right-16 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -83,18 +92,19 @@ const HelpSidebar = () => {
                   Navigate through guides, troubleshooting, setup instructions, and support resources.
                 </p>
               </div>
+            </div>
 
-              <div className="relative space-y-3">
-                {HELP_SECTIONS.map((section) => {
-                  const isActive = activeSection === section.id;
-                  return (
-                    <button
-                      key={section.id}
-                      onClick={() => scrollToSection(section.id)}
-                      className={`relative group w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 overflow-hidden border focus:outline-none ${
-                        isActive
-                          ? "border-blue-300 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-indigo-500/10"
-                          : "border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/[0.03] hover:border-blue-200 dark:hover:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
+            {/* Section Buttons */}
+            <div className="relative space-y-3">
+              {HELP_SECTIONS.map((section) => {
+                const isActive = activeSection === section.id;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => scrollToSection(section.id)}
+                    className={`relative group w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all duration-300 overflow-hidden border focus:outline-none ${isActive
+                      ? "border-blue-300 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-indigo-500/10"
+                      : "border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/[0.03] hover:border-blue-200 dark:hover:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
                       }`}
                     >
                       {isActive && (
@@ -132,23 +142,23 @@ const HelpSidebar = () => {
                       <p className="text-sm text-slate-600 dark:text-slate-400">Contact support</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => scrollToSection("support-links-section")}
-                    className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-blue-500/20"
-                  >
-                    Support Links
-                  </button>
                 </div>
-              </motion.div>
-            </div>
+                <button
+                  onClick={() => scrollToSection("support-links-section")}
+                  className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 text-sm transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-blue-500/20"
+                >
+                  Support Links
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </nav>
 
-      {/* Mobile horizontal scroll nav */}
+      {/* Mobile Horizontal Scroll Nav */}
       <nav
         className="lg:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-white/10 mb-8"
-        aria-label="Help center sections"
+        aria-label="Help center sections mobile"
       >
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
           {HELP_SECTIONS.map((section) => (
@@ -156,11 +166,10 @@ const HelpSidebar = () => {
               key={section.id}
               type="button"
               onClick={() => scrollToSection(section.id)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                activeSection === section.id
-                  ? "bg-indigo-100 dark:bg-indigo-500/30 text-indigo-700 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-500/40"
-                  : "bg-white dark:bg-white/5 text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
-              }`}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${activeSection === section.id
+                ? "bg-indigo-100 dark:bg-indigo-500/30 text-indigo-700 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-500/40"
+                : "bg-white dark:bg-white/5 text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
+                }`}
               aria-current={activeSection === section.id ? "true" : undefined}
             >
               {section.label}

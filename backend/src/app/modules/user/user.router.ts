@@ -122,4 +122,9 @@ router.get(
 );
 
 
+// Note: the standalone "/me/streak/update" endpoint has been removed.
+// Writing streak updates now happen server-side as a side effect of
+// publishing a post (see PostService.createPost), so it cannot be
+// triggered/fabricated directly by a client.
+
 export const UserRouter = router;

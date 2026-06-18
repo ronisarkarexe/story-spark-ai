@@ -127,7 +127,7 @@ export const WriterApplicationForm = ({ user }: Props) => {
                   value={formData.reason}
                   onChange={handleChange}
                   placeholder="Tell us about your background and what kind of stories you want to share..."
-                  className="w-full px-4 py-2 border border-slate-350 rounded-lg bg-white text-slate-800 dark:bg-slate-900/70 dark:text-gray-100 dark:border-slate-700/50 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                  className="w-full max-w-full px-4 py-2 border border-slate-350 rounded-lg bg-white text-slate-800 dark:bg-slate-900/70 dark:text-gray-100 dark:border-slate-700/50 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                 />
               </div>
 

@@ -1,13 +1,6 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import StoriesViewComponent, { IStories } from "./stories.view.component";
-import RecentPromptsPanel from "./RecentPromptsPanel";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { getUserInfo, isLoggedIn } from "../../services/auth.service";
-import { getRequestLimit, getWordCount, prompts } from "./stories.utils";
-import {
-  useGenerateFreeModelMutation,
-  useGenerateModelMutation,
-} from "../../redux/apis/ai.model.api";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
+import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
@@ -15,6 +8,8 @@ import { getErrorMessage } from "../../error/error.message";
 import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import { useRecentPrompts } from "../../hooks/useRecentPrompts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
+import { useDebounce } from "../../hooks/useDebounce";
+import ConfirmDialog from "./ConfirmDialog";
 
 const soundtrackMap: Record<string, string> = {
   "ðŸ§™ Fantasy": "/audio/fantasy.mp3",
@@ -32,6 +27,8 @@ type Inputs = {
 };
 
 const MAX_PROMPT_LENGTH = 2000;
+const WARN_THRESHOLD = 0.85;
+const lengths = ["short", "medium", "long"] as const;
 const WARN_THRESHOLD = 0.8;
 const DANGER_THRESHOLD = 0.95;
 
@@ -444,6 +441,13 @@ const storiesPerPage = 10;
   );
   
   const [loading, setLoading] = useState<boolean>(false);
+  const { data } = useGetProfileInfoQuery(undefined);
+  const userRole = getUserInfo();
+  const subscriptionType = (userRole?.subscriptionType as string) || "free";
+  const login = isLoggedIn();
+  const [generateModel] = useGenerateModelMutation();
+  const [generateFreeModel] = useGenerateFreeModelMutation();
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
 
@@ -505,7 +509,14 @@ useEffect(() => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(draft?.language || "English");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
-  
+  const [draftStatus, setDraftStatus] = useState("");
+  const DRAFT_KEY = "storyspark_story_draft_v1";
+
+  // Custom characters cast setup states:
+  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
+  const [characters, setCharacters] = useState<ICharacter[]>([]);
+  const [showOverwriteConfirm, setShowOverwriteConfirm] = useState<boolean>(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -714,6 +725,26 @@ useEffect(() => {
   const userRole = getUserInfo();
   const login = isLoggedIn();
 
+  const handleGenerateClick = useCallback(() => {
+    if (loading || isOverLimit || !textareaValue.trim()) return;
+    if (stories && stories.length > 0) {
+      setShowOverwriteConfirm(true);
+      return;
+    }
+    const form = inputRef.current?.closest("form");
+    if (form) form.requestSubmit();
+  }, [loading, isOverLimit, textareaValue, stories]);
+
+  const handleConfirmOverwrite = useCallback(() => {
+    setShowOverwriteConfirm(false);
+    const form = inputRef.current?.closest("form");
+    if (form) form.requestSubmit();
+  }, []);
+
+  const handleCancelOverwrite = useCallback(() => {
+    setShowOverwriteConfirm(false);
+  }, []);
+
   const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
     if (isGenerationInProgressRef.current) {
       return;
@@ -897,16 +928,30 @@ useEffect(() => {
   });
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 animate-gradient-slow transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+    <div className="bg-gradient-to-br animate-gradient-slow min-h-screen relative overflow-x-hidden">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
           <div className="pt-2 w-full md:w-auto flex justify-start">
             <Link to="/">
-              <div className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
-                <i className="fa-solid fa-left-long"></i> {text.back}
+              <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
+                <i className="fa-solid fa-left-long"></i> BACK
               </div>
             </Link>
           </div>
+
+          {!login && (
+            <div className="pt-2 text-center">
+              <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed">
+                <span>
+                  Free access for 3 requests — <Link to="/login"><span className="text-indigo-400 underline font-semibold">Login</span></Link> for more!
+    <div className="flex items-center justify-center py-20">
+      <StoryGeneratingAnimation />
+    </div>
+  );
+}
+  if (!selectedStory) {
+    return null;
+  }
 
           {!login && (
             <div className="pt-2 text-center">
@@ -925,24 +970,46 @@ useEffect(() => {
           )}
 
           <div className="flex flex-col items-center md:items-end pt-2 w-full md:w-auto">
-            <button className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
+            <button className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
               <span>
-                {" "}
-                <span className="text-gray-400 text-xs">{text.perMonth}</span>{" "}
-                {getRequestLimit(userRole?.subscriptionType as string)}
+                <span className="text-gray-400 text-xs mr-1">Per Month</span>
+                {getRequestLimit(subscriptionType)}
               </span>
               <Link to="/pricing" className="border-1 border-white/20 pl-2 text-gray-300">
-                {text.upgrade}
+               Upgrade
               </Link>
+              
               <i className="fas fa-bolt text-yellow-400"></i>
             </button>
-            <div className="mt-3 text-slate-500 text-xs text-center md:text-right dark:text-gray-500">
+            <div className="mt-3 text-gray-500 text-xs text-center md:text-right">
               <span>
-                {text.monthlyRequests}:{" "}
+                This month request:{" "}
                 {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}
               </span>
               <br />
-              <span>{text.totalPosts}: {login ? (data?.postsCount ?? 0) : 0}</span>
+              <span>Total posts: {login ? (data?.postsCount ?? 0) : 0}</span>
+            <div className="flex justify-start sm:justify-end">
+              <div className="flex -space-x-5">
+                {stories && stories.length > 0 && (
+                  stories.map((story) => (
+                    <button
+                      key={story.uuid}
+                      className={`relative w-16 h-16 rounded-full border-2 ${
+                        selectedStory?.uuid === story.uuid
+                          ? "border-blue-500 scale-110"
+                          : "border-white"
+                      } hover:scale-110 transition-transform duration-200 focus:outline-none`}
+                      onClick={() => handelStorySelection(story)}
+                    >
+                      <img
+                        src={story.imageURL}
+                        alt={story.title}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    </button>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -1075,11 +1142,30 @@ useEffect(() => {
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();
-                          if (isGenerateDisabled) {
-                            return;
-                          }
-                          const form = e.currentTarget.closest("form");
-                          if (form) form.requestSubmit();
+                          handleNextStep();
+                          return;
+                        }
+
+                        // Ctrl/Cmd + Enter -> generate story (only when prompt editor is focused)
+                        const isMac =
+                          typeof navigator !== "undefined" &&
+                          navigator.platform.toUpperCase().includes("MAC");
+                        const shouldTrigger = isMac ? e.metaKey : e.ctrlKey;
+
+                        if (
+                          e.key === "Enter" &&
+                          shouldTrigger &&
+                          !e.shiftKey &&
+                          !loading &&
+                          !isOverLimit &&
+                          textareaValue.trim().length > 0
+                        ) {
+                          e.preventDefault();
+
+                          // Prevent duplicate requests while generation is already in progress
+                          if (isGenerationInProgressRef.current) return;
+
+                          handleGenerateClick();
                         }
                       }}
                     />
@@ -1261,6 +1347,10 @@ useEffect(() => {
                           </button>
                         </div>
 
+    <div className="flex flex-wrap items-center gap-2 mb-3">
+      <span className="text-xs text-gray-400 mr-1">📏 Length:</span>
+
+      {lengths.map((length) => (
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
@@ -1446,8 +1536,7 @@ useEffect(() => {
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            const form = e.currentTarget.closest("form");
-            if (form) form.requestSubmit();
+            handleGenerateClick();
           }
         }}
         />
@@ -1511,11 +1600,15 @@ useEffect(() => {
     <div className="flex justify-end mt-2 w-full">
       <button
         type="submit"
+        disabled={isGenerateDisabled}
         disabled={loading || isOverLimit}
+        className={`w-full sm:w-auto justify-center rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
         aria-busy={loading}
         aria-disabled={loading || isOverLimit}
+        onClick={handleGenerateClick}
+        aria-disabled={isGenerateDisabled}
         className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-          loading || isOverLimit
+          isGenerateDisabled
             ? "opacity-50 cursor-not-allowed"
             : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
         } transition-all duration-300 transform flex items-center space-x-2 group`}
@@ -1536,8 +1629,13 @@ useEffect(() => {
               <div className="relative" ref={dropdownRef}>
                 <button
                   type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full p-3 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-between text-sm text-left transition-all duration-200"
+                  disabled={loading || isOverLimit}
+                  aria-busy={loading}
+                  aria-disabled={loading || isOverLimit}
+                  onClick={handleGenerateClick}
+                  className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
+                    loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                  } group`}
                 >
                   <span className="truncate pr-4">
                     {selectedPrompt || text.selectPrompt}
@@ -1622,7 +1720,17 @@ useEffect(() => {
       </div>
       )}
 
-      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} />}
+      <ConfirmDialog
+        isOpen={showOverwriteConfirm}
+        onConfirm={handleConfirmOverwrite}
+        onCancel={handleCancelOverwrite}
+        title="Overwrite existing stories?"
+        message="You already have stories in your workspace. Generating a new story will replace them. Do you want to continue?"
+        confirmLabel="Generate"
+        cancelLabel="Cancel"
+      />
+
+      {loading && <StoryGeneratingAnimation onCancel={handleCancelGeneration} isHighLatency={isHighLatency} />}
 
       {/* Search UI */}
       {stories.length > 0 && (
@@ -1728,3 +1836,5 @@ useEffect(() => {
 };
 
 export default StoriesViewComponent;
+
+
