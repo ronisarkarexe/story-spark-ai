@@ -36,7 +36,7 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none"></div>
             </div>
             <div className="p-5 flex flex-col flex-1">
-              <h4 className="font-bold text-lg mb-2 text-slate-100 group-hover:text-blue-400 transition-colors line-clamp-2">
+              <h4 className="font-bold text-lg mb-2 text-slate-100 group-hover:text-blue-400 transition-colors line-clamp-2 break-words overflow-hidden text-ellipsis">
                 {post.title}
               </h4>
               <p className="text-sm text-slate-400 line-clamp-3 leading-relaxed">

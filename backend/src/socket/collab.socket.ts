@@ -178,36 +178,50 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // Yjs document updates
-socket.on("collab:yjs-update", ({ roomId, update }) => {
-  const room = rooms.get(roomId);
+    socket.on("collab:yjs-update", async ({ roomId, update }) => {
+      try {
+        const userId = socket.data.userId;
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found" });
+          return;
+        }
 
-  if (!room) {
-    socket.emit("collab:error", {
-      message: "Room not found",
+        const participant = room.participants.find((p) => p.userId === userId);
+        if (!participant) {
+          socket.emit("collab:error", { message: "You are not a participant of this room" });
+          return;
+        }
+
+        socket.to(roomId).emit("collab:yjs-update", { update });
+      } catch (error) {
+        logger.error("Error in Yjs update", error);
+        socket.emit("collab:error", { message: "Failed to broadcast update" });
+      }
     });
-    return;
-  }
 
-  socket.to(roomId).emit("collab:yjs-update", {
-    update,
-  });
-});
+    // Awareness / cursor updates
+    socket.on("collab:awareness", async ({ roomId, awareness }) => {
+      try {
+        const userId = socket.data.userId;
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found" });
+          return;
+        }
 
-// Awareness / cursor updates
-socket.on("collab:awareness", ({ roomId, awareness }) => {
-  const room = rooms.get(roomId);
+        const participant = room.participants.find((p) => p.userId === userId);
+        if (!participant) {
+          socket.emit("collab:error", { message: "You are not a participant of this room" });
+          return;
+        }
 
-  if (!room) {
-    socket.emit("collab:error", {
-      message: "Room not found",
+        socket.to(roomId).emit("collab:awareness", { awareness });
+      } catch (error) {
+        logger.error("Error in Yjs awareness", error);
+        socket.emit("collab:error", { message: "Failed to broadcast awareness" });
+      }
     });
-    return;
-  }
-
-  socket.to(roomId).emit("collab:awareness", {
-    awareness,
-  });
-});
 
     // AI continues the story
     socket.on("collab:ai_continue", async ({ roomId }) => {

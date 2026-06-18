@@ -219,11 +219,11 @@ const ReviewForm = () => {
             </div>
 
             <h3 className="text-2xl font-bold text-white">
-              Share Your Experience
+            Submit Your Review
             </h3>
 
             <p className="mt-1 text-sm text-gray-400">
-              Your feedback helps us improve StorySparkAI for everyone.
+            Tell us about your experience with StorySparkAI.
             </p>
           </div>
 

@@ -214,6 +214,10 @@ export async function generateWithGeminiStories(
   assertGeminiApiKeyConfigured();
 
   try {
+    const genreInstruction = buildGenreInstruction(genre);
+    const toneInstruction = buildToneInstruction(tone);
+    const charactersInstruction = buildCharactersInstruction(characters);
+
     const response = await executeWithRetryAndFallback(async (activeModel) => {
       const chatSession = activeModel.startChat({
         generationConfig,

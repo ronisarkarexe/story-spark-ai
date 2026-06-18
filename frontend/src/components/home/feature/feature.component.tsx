@@ -119,7 +119,7 @@ const FeatureComponent = () => {
                       </div>
                     </div>
 
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight line-clamp-1">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight line-clamp-2 break-words overflow-hidden text-ellipsis">
                       {post.title}
                     </h3>
 

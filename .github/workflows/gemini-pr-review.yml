@@ -15,7 +15,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,6 +28,10 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "GEMINI_API_KEY is not configured; skipping Gemini PR review."
+            exit 0
+          fi
           python .github/scripts/gemini_pr_review.py
 
       - name: Commit and push auto-fixes
@@ -37,7 +42,7 @@ jobs:
           # Check if there are changes to commit
           if ! git diff --cached --quiet; then
             git commit -s -m "style(clean): auto-fix code style violations via Gemini"
-            git push origin HEAD:${{ github.head_ref }}
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
           else
             echo "No violations to auto-fix."
           fi

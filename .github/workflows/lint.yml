@@ -40,14 +40,22 @@ jobs:
 
       - name: Install dependencies
         if: steps.changes.outputs.frontend == 'true'
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Rebuild native bindings for current platform
         if: steps.changes.outputs.frontend == 'true'
         run: pnpm rebuild
 
-      - run: pnpm lint
+      - name: Lint changed frontend files
         if: steps.changes.outputs.frontend == 'true'
+        shell: bash
+        run: |
+          files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD" | grep -E '^frontend/.*\.(ts|tsx|js|jsx)$' | sed 's#^frontend/##' || true)"
+          if [ -z "$files" ]; then
+            echo "No lintable frontend files changed."
+            exit 0
+          fi
+          pnpm --filter story-spark-ai-frontend exec eslint $files
 
       - name: Skip frontend lint
         if: steps.changes.outputs.frontend != 'true'

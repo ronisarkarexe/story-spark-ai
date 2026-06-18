@@ -99,14 +99,21 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
   try {
-    const isPublished = payload.isPublished ?? true;
-    const res = await Post.create({
-      ...payload,
-      isPublished,
-      publishedAt: isPublished ? new Date() : null,
+    const postPayload = {
+      title: payload.title,
+      content: payload.content,
+      tag: payload.tag,
+      imageURL: payload.imageURL,
+      topic: payload.topic,
+      language: payload.language,
+      emotions: payload.emotions,
+      genre: payload.genre,
+      isPublished: true,
+      publishedAt: new Date(),
       author: user._id,
       updatedBy: user._id,
-    });
+    };
+    const res = await Post.create(postPayload);
 
     if (res && res.isPublished) {
       const updatedUser = await User.findByIdAndUpdate(
@@ -508,7 +515,7 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
 
   if (post.isPublished) {
     await User.findByIdAndUpdate(
-      user._id,
+      post.author,
       { $inc: { postsCount: -1 } }
     );
   }

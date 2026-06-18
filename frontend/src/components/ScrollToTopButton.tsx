@@ -23,7 +23,6 @@ const ScrollToTopButton = () => {
     <button
       onClick={scrollToTop}
       aria-label="Scroll to top"
-<<<<<<< fix/scroll-to-top-inline-styles-3146
       className={`
         fixed bottom-24 right-6
         w-14 h-14 rounded-full
@@ -39,7 +38,6 @@ const ScrollToTopButton = () => {
           : "opacity-0 translate-y-3 pointer-events-none"
         }
       `}
-=======
       style={{
         position: "fixed",
         bottom: "12rem",
@@ -62,7 +60,6 @@ const ScrollToTopButton = () => {
         transition: "opacity 0.3s ease, transform 0.3s ease",
         zIndex: 40,
       }}
->>>>>>> main
     >
       ↑
     </button>

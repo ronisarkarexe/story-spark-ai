@@ -24,7 +24,9 @@ sys.path.insert(0, str(ML_DIR))
 from ml.score_api import score_bp
 import json
 import random
+import pandas as pd
 import numpy as np
+import plotly.express as px
 import streamlit as st
 
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -198,20 +200,37 @@ def get_suggestion(session_raw: np.ndarray) -> str:
 
 
 def run_detection(session_raw: np.ndarray, model, scaler, threshold) -> dict:
+    
     from model import SEQ_LEN, N_FEATURES
     seq_scaled    = scaler.transform(session_raw).reshape(1, SEQ_LEN, N_FEATURES)
     reconstructed = model.predict(seq_scaled, verbose=0)
+    feature_errors = np.mean(
+    np.square(seq_scaled - reconstructed),
+    axis=(0,1)
+    )
+
+    feature_importance = {
+        FEATURE_KEYS[i]: float(feature_errors[i])
+        for i in range(len(FEATURE_KEYS))
+    }
+    
+    top_feature = max(
+        feature_importance,
+        key=feature_importance.get
+    )
     score         = float(np.mean((seq_scaled - reconstructed) ** 2))
     is_stuck      = score > threshold
     ratio         = score / threshold
     confidence    = "N/A" if not is_stuck else ("High" if ratio > 2 else ("Medium" if ratio > 1.2 else "Low"))
     return {
-        "is_stuck":      is_stuck,
-        "confidence":    confidence,
-        "anomaly_score": round(score, 6),
-        "threshold":     round(threshold, 6),
-        "suggestion":    get_suggestion(session_raw) if is_stuck else "",
-    }
+    "is_stuck": is_stuck,
+    "confidence": confidence,
+    "anomaly_score": round(score, 6),
+    "threshold": round(threshold, 6),
+    "suggestion": get_suggestion(session_raw) if is_stuck else "",
+    "feature_importance": feature_importance,
+    "main_cause": top_feature
+}
 
 
 def quick_fill_normal() -> dict:
@@ -342,6 +361,27 @@ with tab_auto:
         for col, key, val in zip(cols, FEATURE_KEYS, avg):
             with col:
                 st.metric(key.replace("_", " "), f"{val:.1f}")
+        st.divider()
+
+    if st.session_state.session_raw is not None:
+
+        st.divider()
+        st.markdown("### Session Timeline Analysis")
+
+        df = pd.DataFrame(
+            st.session_state.session_raw,
+            columns=FEATURE_KEYS
+        )
+
+        st.line_chart(
+            df[
+                [
+                    "confidence_score",
+                    "pause_duration",
+                    "backspace_ratio"
+                ]
+            ]
+        )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -359,29 +399,131 @@ if st.session_state.result:
         '<span class="badge-flow">🟢 NORMAL CREATIVE FLOW</span>'
     )
     st.markdown(status_html, unsafe_allow_html=True)
+    CAUSE_EXPLANATIONS = {
+    "backspace_ratio":
+        "Heavy editing/perfectionism detected.",
+
+    "pause_duration":
+        "Long thinking pauses detected.",
+
+    "confidence_score":
+        "Low writing confidence detected.",
+
+    "regeneration_count":
+        "Too many regenerations detected.",
+
+    "prompt_length":
+        "Prompt may be too short or unclear.",
+
+    "blocked_word_count":
+        "Frustration signals detected."
+}
+
+    cause = r["main_cause"]
+
+    st.info(
+        f"Primary Cause: {cause.replace('_',' ').title()}"
+    )
+    
+
+    if cause in CAUSE_EXPLANATIONS:
+        st.warning(CAUSE_EXPLANATIONS[cause])
 
     st.markdown(f"""
     <div class="metric-row">
-      <div class="metric-box">
+    <div class="metric-box">
         <div class="metric-val">{r['anomaly_score']}</div>
         <div class="metric-lbl">Anomaly Score</div>
-      </div>
-      <div class="metric-box">
+    </div>
+    <div class="metric-box">
         <div class="metric-val">{r['threshold']}</div>
         <div class="metric-lbl">Threshold</div>
-      </div>
-      <div class="metric-box">
+    </div>
+    <div class="metric-box">
         <div class="metric-val">{r['confidence']}</div>
         <div class="metric-lbl">Confidence</div>
-      </div>
+    </div>
     </div>
     """, unsafe_allow_html=True)
 
     if r["is_stuck"] and r["suggestion"]:
-        st.markdown(f'<div class="suggestion">💡 {r["suggestion"]}</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="suggestion">💡 {r["suggestion"]}</div>',
+            unsafe_allow_html=True
+        )
+
+# ==========================
+# Feature Importance Section
+# ==========================
+
+    st.markdown("### Feature Importance Analysis")
+
+    import pandas as pd
+
+    fi_df = pd.DataFrame(
+        list(r["feature_importance"].items()),
+        columns=["Feature", "Importance"]
+    )
+
+    fi_df = fi_df.sort_values(
+        by="Importance",
+        ascending=False
+    )
+
+    st.bar_chart(
+        fi_df.set_index("Feature")
+    )
+    
+    
+    
+    fig = px.pie(
+        fi_df,
+        values="Importance",
+        names="Feature",
+        title="Feature Contribution Breakdown"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    dominance = (
+        fi_df.iloc[0]["Importance"] /
+        fi_df["Importance"].sum()
+    ) * 100
+
+    st.metric(
+        "Top Feature Contribution",
+        f"{dominance:.1f}%"
+    )    
+      
+
+    st.markdown("#### Top Contributing Features")
+
+    top3 = fi_df.head(3)
+    st.markdown("### Root Cause Ranking")
+
+    for rank, (_, row) in enumerate(top3.iterrows(), start=1):
+        st.write(
+            f"{rank}. {row['Feature'].replace('_',' ').title()} "
+            f"({row['Importance']:.6f})"
+        )
+
+    for _, row in top3.iterrows():
+        st.write(
+            f"🔹 **{row['Feature']}** : {row['Importance']:.6f}"
+        )
 
     st.markdown("#### Raw API response (what the frontend receives)")
-    st.markdown(f'<div class="json-block">{json.dumps(r, indent=2)}</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="json-block">{json.dumps(r, indent=2)}</div>',
+        unsafe_allow_html=True
+    )
+    st.download_button(
+        label="📥 Download Result JSON",
+        data=json.dumps(r, indent=2),
+        file_name="writers_block_result.json",
+        mime="application/json"
+    )
+        
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════

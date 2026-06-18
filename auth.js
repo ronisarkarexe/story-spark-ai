@@ -31,8 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Initialize dynamic Google Sign-In text if present
     const googleBtnText = document.getElementById('google-btn-text');
     if (googleBtnText) {
-        googleBtnText.innerText = currentMode === 'signup' ? 'sign in with Google' : 'Sign in with Google';
-    }
+googleBtnText.innerText = currentMode === 'signup' ? 'Sign up with Google' : 'Sign in with Google';    }
 
     // 3. Initialize Particle Canvas System
     initParticleSystem();
@@ -145,8 +144,7 @@ function validateEmail(showInline) {
     const value = (emailField.value || '').trim();
     let message = '';
     if (!value) message = 'Please enter your email address.';
-    else if (!emailField.checkValidity()) message = 'Enter a valid email address (e.g., name@example.com).';
-
+else if (!emailField.checkValidity()) message = 'Please enter a valid email address.';
     if (showInline) setFieldError('email-field', 'email-error', message);
     return !message;
 }
@@ -193,8 +191,7 @@ function validatePassword(showInline) {
     let message = '';
     if (!value) message = 'Please enter your password.';
     else if (value.length < 8) message = 'Password must be at least 8 characters.';
-    else if (!/[A-Za-z]/.test(value) || !/\d/.test(value)) message = 'Use a mix of letters and numbers.';
-
+else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(value)) message = 'Password must contain uppercase, lowercase and a number.';
     if (showInline) setFieldError('password-field', 'password-error', message);
     return !message;
 }
@@ -642,8 +639,8 @@ function initGoogleAuth() {
     google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
+auto_select: true,
+      cancel_on_tap_outside: true,
     });
 }
 
