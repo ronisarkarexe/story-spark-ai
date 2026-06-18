@@ -1,4 +1,5 @@
 import { Post } from "../post/post.model";
+import mongoose from "mongoose";
 import { Request, Response } from "express";
 import httpStatus from "http-status";
 import catchAsync from "../../../shared/catch_async";
@@ -143,7 +144,13 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  const post = storyId ? await Post.findById(storyId) : null;
+  let post = null;
+  if (storyId) {
+    if (!mongoose.Types.ObjectId.isValid(storyId)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid storyId");
+    }
+    post = await Post.findById(storyId);
+  }
 
   const enhancedPrompt = await StoryVersionService.enhancePrompt(
     prompt.trim(),

@@ -151,4 +151,22 @@ export const refreshTokenRateLimiter = createRateLimiter({
   actionLabel: "token refresh",
 });
 
+/** Educational insights: 15 attempts per 15 minutes, 15-minute block */
+export const educationalInsightsRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 15,
+  blockTimeMs: 15 * 60 * 1000,
+  keyPrefix: "edu_insights",
+  actionLabel: "educational insights",
+});
+
+/** Dialogue voice fingerprinting: 15 attempts per 15 minutes, 15-minute block */
+export const dialogueFingerprintRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 15,
+  blockTimeMs: 15 * 60 * 1000,
+  keyPrefix: "dialogue_fp",
+  actionLabel: "dialogue fingerprinting",
+});
+
 export default ipRateLimiter;

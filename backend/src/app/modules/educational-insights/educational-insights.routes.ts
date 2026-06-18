@@ -4,11 +4,13 @@ import auth from "../../middleware/auth.middleware";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import { EducationalInsightsValidator } from "./educational-insights.validation";
 import { EducationalInsightsController } from "./educational-insights.controller";
+import { educationalInsightsRateLimiter } from "../../middleware/ip.rate-limiter";
 
 const router = express.Router();
 
 router.post(
   "/:storyId/educational-insights",
+  educationalInsightsRateLimiter,
   auth(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
