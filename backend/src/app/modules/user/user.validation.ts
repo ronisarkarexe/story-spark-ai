@@ -8,18 +8,17 @@ const passwordSchema = z
   .regex(/[0-9]/, "Password must contain at least one number")
   .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character");
 
-const register = z.object({
-  body: z.object({
-    email: z.string({ required_error: "Email is required" }),
-    name: z
-      .string({ required_error: "Name is required" })
-      .min(2, "Name must be at least 2 characters long"),
-    password: passwordSchema,
-    verificationToken: z
-      .string({ required_error: "Verification token is required" })
-      .min(1, "Verification token is required"),
-  }),
-});
+
+  const register = z.object({
+    body: z.object({
+      email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+      name: z
+        .string({ required_error: "Name is required" })
+        .min(2, "Name must be at least 2 characters long"),
+      password: passwordSchema,
+      otp: z.string({ required_error: "OTP is required" }).length(6, "OTP must be 6 digits"),
+    }),
+  });
 
 const login = z.object({
   body: z.object({
@@ -46,7 +45,7 @@ const resetPassword = z.object({
 const updateUser = z.object({
   body: z
     .object({
-      name: z.string().trim().min(1, "Full Name cannot be empty.").max(100).optional(),
+      name: z.string().trim().min(5, "Name must be at least 5 characters long").max(100).optional(),
       profile: z
         .object({
           avatar: z.string().max(2000).optional(),
@@ -76,6 +75,11 @@ const changePassword = z.object({
     newPassword: passwordSchema,
   }),
 });
+const sendOtp = z.object({
+  body: z.object({
+    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+  }),
+});
 
 export const UserValidator = {
   register,
@@ -84,4 +88,5 @@ export const UserValidator = {
   resetPassword,
   updateUser,
   changePassword,
+  sendOtp
 };

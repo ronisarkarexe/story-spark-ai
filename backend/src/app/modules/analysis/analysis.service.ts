@@ -1,4 +1,4 @@
-import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
+﻿import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import { USER_STATUS } from "../../../enums/user_status";
 import { Post } from "../post/post.model";
@@ -132,21 +132,6 @@ const getDashboardAnalysis = async (userId: string, role: string) => {
     for (const entry of topicCountAgg) {
       topicCount[entry._id] = entry.count;
     }
-const getDashboardAnalysis = async (userId: string) => {
-  const user = await User.findById(userId);
-  if (!user) throw new ApiError(httpStatus.NOT_FOUND, "User not found");
-
-  const role = user.role;
-
-  if (role === ENUM_USER_ROLE.WRITER) {
-    const totalPosts = await Post.countDocuments({ author: user._id, isDeleted: { $ne: true } });
-    const totalReaders = user.followers?.length || 0;
-
-    const writerApp = await WriterApplication.findOne({ user: user._id }).lean();
-    const applicationStatus = writerApp?.status || "not_applied";
-
-    const postsPerMonth: Record<string, number> = {};
-    const topicCount: Record<string, number> = {};
 
     return {
       role,
@@ -172,8 +157,6 @@ const getDashboardAnalysis = async (userId: string) => {
       applicationStatus,
       gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
     }
-    subscriptionStatus: user.subscriptionType?.toUpperCase() || SUBSCRIPTION_TYPE.FREE,
-    status: user.status || USER_STATUS.ACTIVE,
   };
 };
 

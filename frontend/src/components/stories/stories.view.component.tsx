@@ -11,6 +11,9 @@ import {
   exportStoryToPDF,
   exportStoryToEPUB
 } from "../../services/export.service";
+import StoryWorldMap from "../story-map/StoryWorldMap";
+import StoryRemix from "../remix/StoryRemix";
+import StoryTrailer from "../trailer/StoryTrailer";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
@@ -30,8 +33,12 @@ import ContinueStoryModal from "./ContinueStoryModal";
 import useAntiGravityScroll from "../../hooks/useAntiGravityScroll";
 import { StoryboardScene, useGenerateStoryVisualsMutation } from "../../redux/apis/story.visualizer.api";
 
+import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
+import EmptyStoriesState from "./EmptyStoriesState";
+
 const StoryWorldMap = React.lazy(() => import("../story-map/StoryWorldMap"));
 const StoryRemix = React.lazy(() => import("../remix/StoryRemix"));
+
 
 // --- Custom Error Classes & Helper Types ---
 export class ApiError extends Error {
@@ -1044,11 +1051,10 @@ const handleExportMarkdown = () => {
 
   if (!stories || !stories.length || !selectedStory) {
     return (
-      <div className="w-full text-center text-slate-400 dark:text-slate-500 py-16">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-sm font-medium">
-          No stories generated yet. Start by entering a prompt ✨
-        </div>
-      </div>
+      <>
+        {/* Empty state */}
+        <EmptyStoriesState />
+      </>
     );
   }
 
@@ -1109,6 +1115,63 @@ const handleExportMarkdown = () => {
               </div>
             </div>
           </div>
+
+          {/* Story content card */}
+          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm w-full box-border text-left relative overflow-hidden">
+            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-white/5 select-none relative z-10">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Workspace Blueprint</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={handleCopyStory}>
+                  {isCopied ? "✓ Copied" : "📋 Copy"}
+                </button>
+                
+                {/* Export Story Dropdown Menu */}
+                <div className="relative inline-block text-left" ref={dropdownMenuRef}>
+                  <button
+                    type="button"
+                    disabled={exportState !== "idle"}
+                    onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+                    className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer flex items-center gap-2"
+                  >
+                    {getExportButtonText()} <i className="fa-solid fa-chevron-down text-[10px]" />
+                  </button>
+                  {isExportDropdownOpen && (
+                    <div className="absolute left-0 sm:right-0 mt-2 z-50 w-52 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-1 animate-fadeIn">
+                      <button onClick={handleExportPDF} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                        <span>📄</span> Premium PDF
+                      </button>
+                      <button onClick={() => handleExport("epub")} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                        <span>📘</span> Kindle EPUB
+                      </button>
+                      <button onClick={handleExportMarkdown} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                        <span>⬇️</span> Markdown
+                      </button>
+                      <button onClick={handleExportDOCX} className="w-full text-left px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 cursor-pointer">
+                        <span>📝</span> DOCX
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowWorldMap(true)}>
+                  🗺️ Map
+                </button>
+                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowRemix(true)}>
+                  🔀 Remix
+                </button>
+                <button type="button" className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowTranslator(true)}>
+                  🌍 Translate
+                </button>
+                <button type="button" className="rounded-xl px-3 py-2 bg-rose-600 hover:bg-rose-500 text-white border border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer" onClick={() => setShowTrailer(true)}>
+                  🎬 Trailer
+                </button>
+                <button type="button" className="rounded-xl px-3 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white border border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-sm" onClick={() => setShowContinueModal(true)}>
+                  ✦ Continue →
+                </button>
+                <button type="button" className={`rounded-xl px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50 ${loading ? 'opacity-70' : ''}`} onClick={handelPublishStory} disabled={loading}>
           <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
             <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -1557,6 +1620,15 @@ const handleExportMarkdown = () => {
         />
       )}
 
+      {showTrailer && selectedStory && (
+        <StoryTrailer
+          title={selectedStory.title}
+          content={selectedStory.content}
+          tag={selectedStory.tag}
+          isLogin={isLogin}
+          onClose={() => setShowTrailer(false)}
+        />
+      )}
       {showContinueModal && selectedStory && (
         <ContinueStoryModal
           story={{

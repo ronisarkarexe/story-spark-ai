@@ -34,6 +34,8 @@ type Inputs = {
 
 const MAX_PROMPT_LENGTH = 2000;
 const WARN_THRESHOLD = 0.85;
+const WARN_THRESHOLD = 0.8;
+const DANGER_THRESHOLD = 0.95;
 
 const LANGUAGES = [
   { code: "en", name: "English" },
@@ -485,6 +487,48 @@ const StoriesComponent = () => {
     const audio = new Audio(soundtrack);
     audio.loop = true;
     audio.volume = 0.3;
+  useEffect(() => {
+    if (narrationState === "playing") {
+      const activeWordElement = document.querySelector('[data-active-word="true"]');
+      if (activeWordElement) {
+        activeWordElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest"
+        });
+      }
+    }
+  }, [narrationWordIndex, narrationState]);
+
+  const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
+  const isGenerationInProgressRef = useRef(false);
+  
+  const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
+    parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
+  );
+  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+  const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
+  const [isHighLatency, setIsHighLatency] = useState<boolean>(false);
+  const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
+  
+  const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
+  const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const handleGenerateAlternateEndings = async () => {
+    if (!selectedStory) return;
+    setIsGeneratingEndings(true);
+    const toastId = toast.loading("Generating alternate endings...");
+    try {
+      const payload = {
+        title: selectedStory.title,
+        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
+        tag: selectedStory.tag,
+
+        language: selectedStory.language || "English",
 
     audio.play().catch((err) => {
       console.log("Audio playback failed:", err);
@@ -589,6 +633,9 @@ const StoriesComponent = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 350);
   const debouncedPrompt = useDebounce(textareaValue, 500);
 
+  const debouncedSearchQuery = useDebounce(searchQuery, 350);
+  const debouncedPrompt = useDebounce(textareaValue, 500);
+
   useEffect(() => {
     setValue("prompt", debouncedPrompt);
   }, [debouncedPrompt, setValue]);
@@ -625,6 +672,12 @@ const StoriesComponent = () => {
     setValue("prompt", "");
     reset();
   }, [setValue, reset]);
+
+  const [generateModel] = useGenerateModelMutation();
+  const [generateFreeModel] = useGenerateFreeModelMutation();
+  const { data } = useGetProfileInfoQuery(undefined);
+  const userRole = getUserInfo();
+  const login = isLoggedIn();
 
   const [generateModel] = useGenerateModelMutation();
   const [generateFreeModel] = useGenerateFreeModelMutation();
@@ -747,6 +800,9 @@ const StoriesComponent = () => {
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
+  const isDangerLimit = textareaValue.length >= MAX_PROMPT_LENGTH * DANGER_THRESHOLD;
+  const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD && !isDangerLimit;
+
   const isGenerateDisabled = loading || isOverLimit || !textareaValue.trim();
 
   const handleOpenHelp = useCallback(() => setShowHelpModal(true), []);
@@ -849,6 +905,8 @@ const StoriesComponent = () => {
     noRecentPrompts: text.noRecentPrompts,
     close: text.close,
   }), [text]);
+
+  const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
 
   const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
 
@@ -1065,16 +1123,42 @@ const StoriesComponent = () => {
                         inputRef.current = el;
                       }}
                       className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-slate-800 dark:text-slate-200 focus:ring-0 text-sm sm:text-base leading-relaxed placeholder:italic placeholder:text-slate-400 dark:placeholder:text-slate-500 pr-12 transition-colors duration-200 ${
-                        isOverLimit ? "ring-1 ring-red-500 rounded-lg p-2" : isNearLimit ? "ring-1 ring-yellow-400 rounded-lg p-2" : ""
+                        isOverLimit || isDangerLimit ? "ring-1 ring-red-500 rounded-lg p-2" : isNearLimit ? "ring-1 ring-yellow-400 rounded-lg p-2" : ""
                       }`}
                       placeholder={text.promptPlaceholder}
                       value={textareaValue}
                       maxLength={MAX_PROMPT_LENGTH}
                       onChange={(e) => setTextareaValue(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
+onKeyDown={(e) => {
+                        // Keep existing behavior: Enter -> next step (unless Shift is held)
+                        if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
                           e.preventDefault();
                           handleNextStep();
+                          return;
+                        }
+
+                        // Ctrl/Cmd + Enter -> generate story (only when prompt editor is focused)
+                        const isMac =
+                          typeof navigator !== "undefined" &&
+                          navigator.platform.toUpperCase().includes("MAC");
+                        const shouldTrigger = isMac ? e.metaKey : e.ctrlKey;
+
+                        if (
+                          e.key === "Enter" &&
+                          shouldTrigger &&
+                          !e.shiftKey &&
+                          !loading &&
+                          !isOverLimit &&
+                          textareaValue.trim().length > 0
+                        ) {
+                          e.preventDefault();
+
+                          // Prevent duplicate requests while generation is already in progress
+                          if (isGenerationInProgressRef.current) return;
+
+                          // Reuse the same generation flow as clicking the Generate button
+                          const form = e.currentTarget.closest("form");
+                          form?.requestSubmit();
                         }
                       }}
                     />
@@ -1092,6 +1176,7 @@ const StoriesComponent = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
+
                       )}
 
                       <button
@@ -1124,6 +1209,10 @@ const StoriesComponent = () => {
                         isOverLimit ? "text-red-500 dark:text-red-400" : isNearLimit ? "text-amber-500" : "text-slate-400"
                       }`}>
                         {textareaValue.length} / {MAX_PROMPT_LENGTH}
+                        isOverLimit || isDangerLimit ? "text-red-500 dark:text-red-400" : isNearLimit ? "text-amber-500" : "text-slate-400"
+                      }`}>
+                        {textareaValue.length} / {MAX_PROMPT_LENGTH}
+
                       </span>
                     </div>
                   </div>
@@ -1134,6 +1223,10 @@ const StoriesComponent = () => {
                     <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Ctrl + Enter</kbd> also works &bull;{" "}
                     <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Shift + Enter</kbd> {text.forNewLine}
                   </div>
+                    Press <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">{typeof navigator !== "undefined" && navigator.platform.toUpperCase().includes("MAC") ? "Cmd" : "Ctrl"} + Enter</kbd> to generate &bull;{" "}
+                    <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Shift + Enter</kbd> {text.forNewLine}
+                  </div>
+
 
                   <div className="flex justify-end pt-2 w-full box-border">
                     <button
@@ -1166,6 +1259,55 @@ const StoriesComponent = () => {
                     </p>
                   </div>
 
+
+                      <span
+  className={`text-xs tabular-nums ml-auto flex gap-2 ${
+    isOverLimit || isDangerLimit
+      ? "text-red-400 font-medium"
+      : isNearLimit
+      ? "text-yellow-400"
+      : "text-gray-500"
+  }`}
+>
+  <span>
+    {textareaValue.trim() === "" ? 0 : textareaValue.trim().split(/\s+/).length} words
+  </span>
+  <span className="opacity-40">·</span>
+  <span>{textareaValue.length} / {MAX_PROMPT_LENGTH} chars</span>
+</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {characters.map((char, index) => (
+                        <div
+                          key={char.id}
+                          className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl space-y-4 relative"
+                        >
+                          <div className="flex items-center justify-between select-none">
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                              👤 Character #{index + 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCharacter(char.id)}
+                              className="text-xs font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
+                            >
+                              Remove
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Name</label>
+                              <input
+                                type="text"
+                                value={char.name}
+                                onChange={(e) => handleCharacterChange(char.id, "name", e.target.value)}
+                                placeholder="e.g. Leo, Sir Cedric, Bella"
+                                className="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl outline-none focus:border-blue-500/40 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 placeholder:italic"
+                              />
+                            </div>
+
                   <div className="space-y-4">
                     {characters.map((char, index) => (
                       <div
@@ -1184,6 +1326,7 @@ const StoriesComponent = () => {
                             Remove
                           </button>
                         </div>
+
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
@@ -1260,6 +1403,192 @@ const StoriesComponent = () => {
                       Your story is being generated. You can cancel the request if it takes too long.
                     </p>
                   )}
+
+                  <span className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
+                    isOverLimit || isDangerLimit ? "text-red-500 dark:text-red-400" : isNearLimit ? "text-amber-500" : "text-slate-400"
+                  }`}>
+                    {textareaValue.length} / {MAX_PROMPT_LENGTH}
+                  </span>
+                </div>
+              </div>
+
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Clear prompt button - next to language selector */}
+      {textareaValue.length > 0 && (
+        <button
+          type="button"
+          onClick={handleClearPrompt}
+          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200 border border-red-500/20"
+          aria-label={text.close}
+          title="Clear prompt"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear
+        </button>
+      )}
+    </div>
+    {showRestorePrompt && (
+  <div className="mb-3 p-3 rounded-lg border border-indigo-500/40 bg-indigo-500/10">
+    <p className="text-sm text-gray-300 mb-2">
+      📄 A previously saved draft was found. Restore it?
+    </p>
+
+    <div className="flex gap-2">
+      <button
+        type="button"
+        onClick={handleRestoreDraft}
+        className="px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-sm"
+      >
+        Restore
+      </button>
+
+      <button
+        type="button"
+        onClick={handleDiscardDraft}
+        className="px-3 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm"
+      >
+        Discard
+      </button>
+    </div>
+  </div>
+)}
+    <div className="relative">
+      <textarea
+  {...register("prompt")}
+  ref={(el) => {
+    register("prompt").ref(el);
+    inputRef.current = el;
+  }}
+        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-4 transition-colors duration-200 ${
+          isOverLimit || isDangerLimit
+            ? "ring-1 ring-red-500 rounded"
+            : isNearLimit
+            ? "ring-1 ring-yellow-400 rounded"
+            : ""
+        }`}
+        placeholder={text.promptPlaceholder}
+        value={textareaValue}
+        maxLength={MAX_PROMPT_LENGTH}
+        onChange={(e) => {
+          setTextareaValue(e.target.value);
+          if (validationError) {
+            setValidationError("");
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            const form = e.currentTarget.closest("form");
+            if (form) form.requestSubmit();
+          }
+        }}
+        />
+
+
+      <div className="flex items-center justify-between mt-1 px-1">
+        {validationError ? (
+          <p className="text-xs text-red-400 flex items-center gap-1">
+            <span>⚠</span> {validationError}
+          </p>
+        ) : isOverLimit ? (
+          <p className="text-xs text-red-400 flex items-center gap-1">
+            <span>⚠</span> Character limit reached — generate is disabled
+          </p>
+        ) : isNearLimit ? (
+          <p className="text-xs text-yellow-400 flex items-center gap-1">
+            <span>⚠</span>{" "}
+            {MAX_PROMPT_LENGTH - textareaValue.length} characters remaining
+          </p>
+        ) : (
+          <span />
+        )}
+
+        <span
+          className={`text-xs tabular-nums ml-auto ${
+            isOverLimit || isDangerLimit
+              ? "text-red-400 font-medium"
+              : isNearLimit
+              ? "text-yellow-400"
+              : "text-gray-500"
+          }`}
+        >
+          {textareaValue.length} / {MAX_PROMPT_LENGTH}
+        </span>
+      </div>
+    </div>
+    
+
+{draftStatus && (
+   <p className="text-xs text-green-500 mt-2 px-1">
+    💾 {draftStatus}
+   </p>
+)}
+    
+    <p className="text-xs text-gray-500 mt-1 px-1">
+      💡  <span className="font-medium">Keyboard tip:</span> Press{" "}
+      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+        Enter
+      </kbd>{" "}
+      to generate &bull;{" "}
+      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+        Ctrl + Enter
+      </kbd>{" "}
+      also works &bull;{" "}
+      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
+        Shift + Enter
+      </kbd>{" "}
+      for new line
+    </p>
+
+    <div className="flex justify-end mt-2 w-full">
+      <button
+        type="submit"
+        disabled={loading || isOverLimit}
+        aria-busy={loading}
+        aria-disabled={loading || isOverLimit}
+        className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
+          loading || isOverLimit
+            ? "opacity-50 cursor-not-allowed"
+            : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
+        } transition-all duration-300 transform flex items-center space-x-2 group`}
+      >
+        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
+        {loading ? "Generating..." : "Generate"}
+      </button>
+    </div>
+  </form>
+</div>
+            </div>
+
+              <div className="text-[11px] font-medium leading-relaxed text-slate-400 dark:text-slate-500 select-none w-full box-border">
+                💡 <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">{text.keyboardTip}</span>
+                {text.press} <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Enter</kbd> {text.toGenerate} &bull;{" "}
+                <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Ctrl + Enter</kbd> {text.alsoWorks} &bull;{" "}
+                <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Shift + Enter</kbd> {text.forNewLine}
+              </div>
+
+              <div className="flex justify-end pt-2 w-full box-border">
+                <button
+                  type="submit"
+                  disabled={loading || isOverLimit}
+                  aria-busy={loading}
+                  aria-disabled={loading || isOverLimit}
+                  className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
+                    loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                  } group`}
+                >
+                  <i className="fas fa-wand-magic-sparkles text-sm group-hover:scale-110 transition-transform duration-200" />
+                  <span>{loading ? text.generating : text.generate}</span>
+                </button>
+              </div>
                 </>
               )}
             </form>
@@ -1447,3 +1776,4 @@ const StoriesComponent = () => {
 };
 
 export default StoriesComponent;
+export default StoriesViewComponent;

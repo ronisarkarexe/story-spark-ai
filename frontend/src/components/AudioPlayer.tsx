@@ -18,6 +18,7 @@ import {
   Volume,
   ChevronUp,
   ChevronDown,
+ 
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
@@ -83,6 +84,9 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     const scrollToBottom = () => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     };
+
+
+const speedSelectId = useId();
 
     const speedSelectId = useId();
     const voiceGenderSelectId = useId();
@@ -414,7 +418,9 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                   </div>
                 </div>
               </div>
-
+               <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+  Changes to voice, pitch, volume, and playback speed are applied when narration is restarted.
+</p>
               <div className="space-y-2">
                 <label
                   htmlFor={languageSelectId}

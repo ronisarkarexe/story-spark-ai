@@ -20,15 +20,11 @@ const LatestPostsComponent = () => {
   const navigate = useNavigate();
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
-
   const posts = (data?.posts ?? []) as Post[];
 
   useEffect(() => {
     setShowAllPosts(false);
-  }, [posts.length]);
-
-
-
+  }, [data?.posts?.length]);
 
   if (isLoading) return <LoadingAnimation />;
 
@@ -36,8 +32,8 @@ const LatestPostsComponent = () => {
     return (
       <section className="mb-12 text-slate-100">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-200 mb-6">
-  Latest Posts
-</h2>
+          Latest Posts
+        </h2>
         <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-center text-red-200">
           <p className="mb-3 font-semibold">Failed to load latest posts.</p>
           <button
@@ -69,7 +65,6 @@ const LatestPostsComponent = () => {
   };
 
   return (
-
     <section className="w-full min-w-0 max-w-full">
       <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-gray-200">Latest Posts</h2>
 
@@ -81,10 +76,7 @@ const LatestPostsComponent = () => {
             return (
               <div
                 key={post._id}
-
-
                 className="motion-card rounded-xl overflow-hidden border border-slate-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900"
-
               >
                 <button
                   onClick={() => toggleAccordion(post._id)}
@@ -103,7 +95,6 @@ const LatestPostsComponent = () => {
                 >
                   <div className="min-w-0 p-5 bg-slate-50 dark:bg-slate-800/50">
                     <p className="text-slate-700 dark:text-slate-400 text-sm md:text-base leading-relaxed mb-4 whitespace-pre-wrap break-words">
-
                       {post.content || "No preview content available."}
                     </p>
 
@@ -122,9 +113,7 @@ const LatestPostsComponent = () => {
           })
         ) : (
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20 px-4 py-5 text-slate-500 dark:text-slate-400">
-            
             Posts are not available.
-          
           </div>
         )}
       </div>

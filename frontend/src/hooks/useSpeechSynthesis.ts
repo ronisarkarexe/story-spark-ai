@@ -156,6 +156,7 @@ const getWordIndexAtCharIndex = (
 
 export const useSpeechSynthesis = (
   text = "",
+  text: string = "",
   voiceGender?: "female" | "male",
 ): UseSpeechSynthesisResult => {
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -177,6 +178,10 @@ export const useSpeechSynthesis = (
   const [rateState, setRateState] = useState(1);
   const [pitchState, setPitchState] = useState(1);
   const [volumeState, setVolumeState] = useState(1);
+  const [rateState, setRateState] = useState(1);
+  const [pitchState, setPitchState] = useState(1);
+  const [volumeState, setVolumeState] = useState(1);
+  const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("en-US");
 
@@ -201,10 +206,22 @@ export const useSpeechSynthesis = (
   }, [voices]);
 
   // Sync text and word ranges when `text` changes
+  const synthRef = useRef<SpeechSynthesis | null>(null);
+  const textRef = useRef(text);
+  const wordRangesRef = useRef<WordRange[]>(buildWordRanges(text));
+
   useEffect(() => {
     textRef.current = text;
     wordRangesRef.current = buildWordRanges(text);
   }, [text]);
+
+  const resolveBrowserVoice = useCallback(
+    (voiceId: string): SpeechSynthesisVoice | undefined => {
+      const genderFiltered = filterVoicesByGender(browserVoicesRef.current, voiceGender);
+      return genderFiltered.find((voice) => getVoiceId(voice) === voiceId);
+    },
+    [voiceGender],
+  );
 
   const stop = useCallback(() => {
     if (synthRef.current) {
@@ -237,6 +254,36 @@ export const useSpeechSynthesis = (
     },
     [availableVoices],
   );
+    const speechSynthesis = window.speechSynthesis;
+    synthRef.current = speechSynthesis;
+    setIsSupported(true);
+
+    const syncVoices = () => {
+      const loadedVoices = speechSynthesis.getVoices();
+      browserVoicesRef.current = loadedVoices;
+      setBrowserVoices(loadedVoices);
+      setIsReady(loadedVoices.length > 0);
+    };
+
+    syncVoices();
+    speechSynthesis.onvoiceschanged = syncVoices;
+
+    return () => {
+      speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      stop();
+    };
+  }, [stop]);
+
+  useEffect(() => {
+    if (isSpeaking || isPaused) {
+      stop();
+    }
+  }, [text, stop, isPaused, isSpeaking]);
 
   const speakText = useCallback(
     (nextText?: string) => {
@@ -273,6 +320,15 @@ export const useSpeechSynthesis = (
       if (voiceToUse) {
         utterance.voice = voiceToUse;
         utterance.lang = voiceToUse.lang;
+      utteranceRef.current = utterance;
+      utterance.rate = rateState;
+      utterance.pitch = pitchState;
+      utterance.volume = volumeState;
+
+      const browserVoice = resolveBrowserVoice(selectedVoiceId);
+      if (browserVoice) {
+        utterance.voice = browserVoice;
+        utterance.lang = browserVoice.lang;
       }
 
       utterance.onstart = () => {
@@ -334,6 +390,7 @@ export const useSpeechSynthesis = (
       voiceGender,
       volumeState,
     ],
+    [isSupported, rateState, pitchState, volumeState, resolveBrowserVoice, selectedVoiceId, stop],
   );
 
   useEffect(() => {
@@ -386,10 +443,18 @@ export const useSpeechSynthesis = (
 
   const setPitch = useCallback((nextPitch: number) => {
     setPitchState(nextPitch);
+
+    if (utteranceRef.current) {
+      utteranceRef.current.pitch = nextPitch;
+    }
   }, []);
 
   const setVolume = useCallback((nextVolume: number) => {
     setVolumeState(nextVolume);
+
+    if (utteranceRef.current) {
+      utteranceRef.current.volume = nextVolume;
+    }
   }, []);
 
   useEffect(() => {
@@ -462,6 +527,14 @@ export const useSpeechSynthesis = (
     availableVoices,
     selectedVoiceIndex,
     setSelectedVoice: setSelectedVoiceIndex,
+    availableVoices: browserVoices,
+    selectedVoiceIndex: voices.findIndex((v) => v.id === selectedVoiceId),
+    setSelectedVoice: (index: number) => {
+      const voice = voices[index];
+      if (voice) {
+        setSelectedVoiceId(voice.id);
+      }
+    },
     playbackRate: rateState,
     setPlaybackRate,
     voices,

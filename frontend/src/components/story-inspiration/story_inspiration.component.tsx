@@ -121,7 +121,7 @@ const StoryInspirationComponent: React.FC = () => {
             {[
               { value: inspirationData.length, label: "Story Inspirations", icon: "fa-book-open" },
               { value: genres.length - 1, label: "Creative Genres", icon: "fa-layer-group" },
-              { value: "∞", label: "Writing Possibilities", icon: "fa-sparkles" },
+              { value: "∞", label: "Writing Possibilities", icon: "fa-infinity" },
             ].map((item, index) => (
               <motion.div key={index} whileHover={{ y: -6 }} className="relative overflow-hidden rounded-[2rem] border border-white/60 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] backdrop-blur-2xl p-7 shadow-xl shadow-black/[0.04]">
                 <div className="absolute top-0 right-0 w-28 h-28 bg-indigo-500/10 blur-3xl rounded-full" />
