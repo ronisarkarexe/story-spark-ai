@@ -1,5 +1,6 @@
 <div align="center">
-<h1>👩‍💻 StorySparkAI is an open-source platform designed for creative minds to generate and share multiple story variations from a single prompt. Perfect for writers, creators, and enthusiasts exploring AI-powered storytelling!</h1>
+<h1>👩‍💻 StorySparkAI</h1>
+<p>An open-source platform designed for creative minds to generate and share multiple story variations from a single prompt. Perfect for writers, creators, and enthusiasts exploring AI-powered storytelling!</p>
 </div>
 
 <p align="center">
@@ -10,41 +11,50 @@
    <img src="https://img.shields.io/github/forks/ronisarkarexe/story-spark-ai?style=for-the-badge&logo=appveyor" alt="Forks"/>
    </a>
    <a href="https://github.com/ronisarkarexe/story-spark-ai/stargazers" target="blank">
-   <img src="https://img.shields.io/github/stars/ronisarkarexe/story-spark-ai?style=for-the-badge&logo=appveyor" alt="Star"/>
+   <img src="https://img.shields.io/github/stars/ronisarkarexe/story-spark-ai?style=for-the-badge&logo=appveyor" alt="Stars"/>
    </a>
    <a href="https://github.com/ronisarkarexe/story-spark-ai/issues" target="blank">
-   <img src="https://img.shields.io/github/issues/ronisarkarexe/story-spark-ai.svg?style=for-the-badge&logo=appveyor" alt="Click Vote Issue"/>
+   <img src="https://img.shields.io/github/issues/ronisarkarexe/story-spark-ai.svg?style=for-the-badge&logo=appveyor" alt="Issues"/>
    </a>
    <a href="https://github.com/ronisarkarexe/story-spark-ai/pulls" target="blank">
-   <img src="https://img.shields.io/github/issues-pr/ronisarkarexe/story-spark-ai.svg?style=for-the-badge&logo=appveyor" alt="Click Vote Open Pull Request"/>
+   <img src="https://img.shields.io/github/issues-pr/ronisarkarexe/story-spark-ai.svg?style=for-the-badge&logo=appveyor" alt="Pull Requests"/>
    </a>
 </p>
 
-## Table of Contents
+---
 
-- [Table of Contents](#table-of-contents)
-- [About 🚀](#about-)
-- [Features 💪](#features-)
-- [Local development (monorepo)](#local-development-monorepo)
-- [Environment variables](#environment-variables)
-- [Troubleshooting](#troubleshooting)
-- [Contributing 👨‍💻](#contributing-)
-- [Contributors 🤝](#contributors-)
+## 📚 Table of Contents
+- [About 🚀](#about-🚀)
+- [Features 💪](#features-💪)
+- [Local Development](#local-development-monorepo)
+- [Environment Variables](#environment-variables)
+- [Troubleshooting 🛠️](#troubleshooting-🛠️)
+- [Contributing 👨‍💻](#contributing-👨‍💻)
+- [Contributors 🤝](#contributors-🤝)
 - [Maintainers](#maintainers)
-- [License](#license)
-- [Support 🙏](#support-)
+- [License 📜](#license-📜)
+- [Support 🙏](#support-🙏)
 
-<a id="about"></a>
+---
 
 ## About 🚀
+- Website: [StorySparkAI](https://storysparkai.vercel.app/)  
+- **StorySparkAI** empowers creative minds by generating and showcasing AI-crafted stories from user prompts in a simple, engaging way.  
+- Users can:
+  - Input an idea or prompt
+  - Explore multiple story variations
+  - Save favorites
+  - Leverage AI analysis to enhance their creative writing journey
 
-- story-spark-ai - [Website](https://storysparkai.vercel.app/)
-- **`StorySparkAi`** is an open-source platform designed to empower creative minds by generating and showcasing AI-crafted stories from user prompts in a simple, engaging way.
-- With **`StorySparkAi`**, users can input an idea, explore multiple story variations, save their favorites, and leverage AI analysis to enhance their creative writing journey.
-
-<a id="features"></a>
+---
 
 ## Features 💪
+- **AI-Powered Story Generation**: Create unique stories instantly using advanced AI models.  
+- **Prompt-Based Storytelling**: Provide a prompt and watch it come to life.  
+- **Story Bookmarks & History**: Save and revisit your favorite creations.  
+- **AI Analysis**: Get summaries, critiques, and insights on your stories.  
+- **Creative Writing Assistance**: Overcome writer’s block with intelligent suggestions.  
+- **Responsive UI**: Seamless experience across devices.  
 
 - **Dark-Mode**: Toggle between light and dark themes for a comfortable reading experience.
 - **Google Login**: Sign in quickly and securely using your Google account.
@@ -58,31 +68,35 @@
 - **Creative Writing Assistance**: Overcome writer's block with intelligent suggestions and variations.
 - **Responsive User Experience**: Enjoy a seamless and beautiful interface across all devices.
 
-### Local development (monorepo)
+## Local Development (Monorepo)
 
-**Prerequisites:** Node.js **18.18+**, npm **9+**, MongoDB URI for the API.
+**Prerequisites:** Node.js **18.18+**, pnpm **8+**, MongoDB URI for the API.
 
 1. **Clone the repository**
-
    ```bash
    git clone https://github.com/<your-github-username>/story-spark-ai.git
-   cd story-spark-ai
    ```
+2. **Navigate to the project directory**
 
-2. **Install dependencies** (single install at the repo root — npm workspaces)
+   ```bash
+   cd story-spark-ai
+
+
+
+3. **Install dependencies** (single install at the repo root — npm workspaces)
 
    ```bash
    pnpm install
    ```
 
-3. **Environment files**
+4. **Environment files**
 
    - Copy `backend/.env.example` → `backend/.env` and fill in all values (see [Environment variables](#environment-variables)).
   - Copy `frontend/.env.example` → `frontend/.env` and set `VITE_BASE_URL` to your API base URL (e.g. `http://localhost:5000/api/v1` when the backend runs on port 5000). Optionally set `VITE_SOCKET_URL` for real-time notifications; the frontend uses your logged-in access token to join the notification room.
 
    > Never commit `backend/.env` or `frontend/.env`. Only `.env.example` files belong in git.
 
-4. **First-Time Setup (Admin Seeding)**
+5. **First-Time Setup (Admin Seeding)**
 
    Before starting the server for the first time, you must create an admin user:
    
@@ -93,7 +107,7 @@
    
    Make sure `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in your `backend/.env` file.
 
-5. **Run apps**
+6. **Run apps**
 
    - **Both** (two terminals or one combined process):
 
@@ -104,12 +118,12 @@
    - **Backend only:** `pnpm dev:backend` — API (default port **5000** if `PORT` is unset).
    - **Frontend only:** `pnpm dev:frontend` — Vite dev server on **http://localhost:4001**
 
-6. **Production builds**
+7. **Production builds**
 
    ```bash
-   npm run build
-   npm run start:backend    # requires `npm run build:backend` first
-   npm run start:frontend   # serves built static app (preview)
+   pnpm run build
+   pnpm run start:backend    # requires `pnpm run build:backend` first
+   pnpm run start:frontend   # serves built static app (preview)
    ```
 
 ### Deploying on Vercel
@@ -340,11 +354,40 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 ### Troubleshooting
 
+#### `pnpm` command not found
+
+- **Problem:** Running `pnpm` commands returns a "command not found" error.
+- **Possible cause:** `pnpm` is not installed globally on your system.
+- **Suggested solution:** Install `pnpm` globally using npm:
+  ```bash
+  npm install -g pnpm
+  ```
+  Verify the installation by checking the version:
+  ```bash
+  pnpm --version
+  ```
+
+#### Node.js version incompatibility
+
+- **Problem:** The backend or frontend fails to start, or throws unexpected runtime errors.
+- **Possible cause:** Your installed Node.js version is older than the required version. The project requires Node.js **18.18** or later.
+- **Suggested solution:** Check your installed Node.js version:
+  ```bash
+  node -v
+  ```
+  If your version is older than 18.18, please upgrade Node.js to the required version or later (available on the [official Node.js website](https://nodejs.org/)).
+
 #### MongoDB connection errors
 
 - **Problem:** The backend starts with database connection errors or cannot load API data.
 - **Possible cause:** `DATABASE_URL` is missing, incorrect, points to the wrong database, or MongoDB is not running.
 - **Suggested solution:** Check `backend/.env` and verify `DATABASE_URL` matches your local MongoDB or Atlas URI. If you use local MongoDB, make sure the MongoDB service is running before starting the backend.
+
+#### MongoDB Atlas connection issues
+
+- **Problem:** The backend cannot connect to a remote MongoDB Atlas database.
+- **Possible cause:** The `DATABASE_URL` in `backend/.env` contains incorrect credentials, or your current IP address is not whitelisted on MongoDB Atlas.
+- **Suggested solution:** Verify that your `DATABASE_URL` contains the correct database username and password. Ensure that your current IP address is whitelisted in the **Network Access** settings of your MongoDB Atlas dashboard.
 
 #### Missing environment variables
 
@@ -352,17 +395,54 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 - **Possible cause:** Required values are missing from `backend/.env` or `frontend/.env`.
 - **Suggested solution:** Compare your local `.env` files with `backend/.env.example` and `frontend/.env.example`, then add any missing variables.
 
+#### Environment variable changes not taking effect
+
+- **Problem:** Changes made to `.env` files do not seem to apply to the running application.
+- **Possible cause:** The development server only loads environment variables when it starts. Subsequent changes do not auto-reload.
+- **Suggested solution:** Stop your running frontend or backend development server (usually by pressing `Ctrl + C` in the terminal) and restart it (e.g., `npm run dev`) to apply the new configuration.
+
+#### Google OAuth configuration issues
+
+- **Problem:** Users are unable to log in with Google, or Google OAuth returns authentication errors.
+- **Possible cause:** Missing or mismatched Google Client IDs in your environment configuration, or credentials that do not match the Google Cloud Console setup.
+- **Suggested solution:** Verify that `GOOGLE_CLIENT_ID` is set correctly in `backend/.env` and `VITE_GOOGLE_CLIENT_ID` is set correctly in `frontend/.env`. Ensure both values match the client credentials configured for your web application in the [Google Cloud Console](https://console.cloud.google.com).
+
 #### Port conflicts
 
 - **Problem:** The frontend or backend cannot start because a port is already in use.
 - **Possible cause:** Another process is already using port **4001** for the frontend or **5000** for the backend.
-- **Suggested solution:** Find and stop the conflicting process, then restart the app. On Windows, run `netstat -ano | findstr :5000` or `netstat -ano | findstr :4001`, then stop the process with `taskkill /PID <PID> /F`. If needed, change the backend `PORT` in `backend/.env` or update the frontend dev server port in the frontend configuration.
+- **Suggested solution:** Find and stop the conflicting process, then restart the app.
+  - **Windows:** Run `netstat -ano | findstr :5000` or `netstat -ano | findstr :4001`, then stop the process with `taskkill /PID <PID> /F`.
+  - **Linux/macOS:** Run `lsof -i :5000` or `lsof -i :4001` to find the process ID (PID), then stop it with `kill -9 <PID>`.
+  If needed, change the backend `PORT` in `backend/.env` or update the frontend dev server port in the frontend configuration.
 
 #### Dependency installation issues
 
 - **Problem:** `pnpm install` fails or installed packages behave unexpectedly.
 - **Possible cause:** Cached dependencies, a stale lock file, or an incomplete install.
 - **Suggested solution:** Delete `node_modules` and the lock file, then reinstall dependencies from the repository root with `pnpm install`.
+
+#### `pnpm install` failures after switching branches
+
+- **Problem:** Running `pnpm install` fails or packages behave unexpectedly after switching git branches.
+- **Possible cause:** Stale dependencies or mismatched lockfiles from the previous branch are causing conflicts.
+- **Suggested solution:** Remove the `node_modules` directory and reinstall dependencies from the repository root:
+  ```bash
+  # Remove node_modules
+  # On Windows (PowerShell):
+  Remove-Item -Recurse -Force node_modules
+  # On Linux/macOS:
+  rm -rf node_modules
+
+  # Reinstall dependencies
+  pnpm install
+  ```
+
+#### Browser cache or hot reload problems
+
+- **Problem:** UI updates are not visible in the browser, or hot module replacement (HMR) seems to have frozen.
+- **Possible cause:** The browser has cached stale assets, or the Vite dev server's file watcher stopped responding.
+- **Suggested solution:** Perform a hard refresh in your browser (`Ctrl + Shift + R` on Windows/Linux or `Cmd + Shift + R` on macOS). If the issue persists, stop and restart the frontend development server.
 
 #### Admin seeding issues
 
@@ -385,9 +465,8 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 
 <a id="contributing"></a>
-## Troubleshooting 🛠️
 
-Running into issues during setup? Here are the most common errors and how to fix them.
+## Contributing 👨‍💻
 
 ---
 
@@ -446,10 +525,10 @@ Once the update completes, click **Try Again** in Docker Desktop. If the issue p
 ```bash
 pnpm install
 ```
-Then commit the updated `package-lock.json` before rebuilding your Docker image:
+Then commit the updated `pnpm-lock.yaml` before rebuilding your Docker image:
 ```bash
-git add package-lock.json
-git commit -m "chore: regenerate package-lock.json"
+git add pnpm-lock.yaml
+git commit -m "chore: regenerate pnpm-lock.yaml"
 ```
 
 ---
@@ -468,7 +547,7 @@ Contributions make the open source community such an amazing place to learn, ins
 Thanks to everyone who has helped build **Story Spark AI**. This grid updates automatically from [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
 
 <a href="https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&max=500&columns=12" alt="Contributors" />
+  <img src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&max=1000&columns=16" alt="Contributors" />
 </a>
 
 ## Maintainers
@@ -522,10 +601,18 @@ Thanks to everyone who has helped build **Story Spark AI**. This grid updates au
 Thank you for contributing to our open-source project! We appreciate your support 🚀 <br>
 Don't forget to leave a star ⭐
 
+
+## 🌐 Home Page Feature Overview
+
+The Home Page serves as the central hub of Story-Spark-AI. Below is a breakdown of its core UI elements and features:
+
+- **Hero Banner & CTA Buttons:** The primary landing section designed to introduce users to the platform with direct call-to-action buttons.
+- **StorySparkAI v2.0 Live Announcement Badge:** Highlights the latest version features and platform updates.
+- **Feature Cards:** Highlights key functionalities including *Infinite Variations*, *AI Co-Writer*, and *Community Driven* features.
+- **Featured Posts Section:** Displays curated or top-performing user stories.
+- **Trending Topics / Hashtag Discovery:** Allows users to explore popular content categories and discover active discussions.
+- **Cookie Consent Modal:** Manages user privacy preferences regarding Essential, Functional, and Analytics cookies.
 ### Proposed Feature: Trending Topics & UI Enhancements
 - Added responsive writing genres (Fantasy, Mystery, Romance) next to recommended writers.
 - Implemented a clean 'How It Works' section to polish the landing page layout.
 
-### Proposed Feature: Trending Topics & UI Enhancements
-- Added responsive writing genres (Fantasy, Mystery, Romance) next to recommended writers.
-- Implemented a clean 'How It Works' section to polish the landing page layout.

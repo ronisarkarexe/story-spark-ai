@@ -28,7 +28,10 @@ app.use(limiter);
 const defaultCorsOrigins =
   process.env.NODE_ENV === "development"
     ? ["http://localhost:4001", "http://localhost:4002"]
-    : [];
+    : [
+        "https://storysparkai.vercel.app",
+        "https://www.storysparkai.vercel.app",
+      ];
 
 const corsOrigins =
   config.cors_origins && config.cors_origins.length > 0
@@ -38,11 +41,11 @@ const corsOrigins =
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin && process.env.NODE_ENV === 'production') {
-        return callback(new Error('Origin header required in production'));
+      if (!origin) {
+        return callback(null, true);
       }
 
-      if (!origin || corsOrigins.includes(origin)) {
+      if (corsOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy"));

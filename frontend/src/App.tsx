@@ -24,6 +24,7 @@ const SignUpComponent = lazy(() => import("./components/signup/signup.component"
 const ForgotPasswordComponent = lazy(() => import("./components/login/forgot_password.component"));
 const PricingComponent = lazy(() => import("./components/pricing/pricing.component"));
 const PostDetailsComponent = lazy(() => import("./components/post/post.details.component"));
+const PublicProfileComponent = lazy(() => import("./components/profile/public_profile.component"));
 const Contact = lazy(() => import("./components/contactus/contactus"));
 const AboutUsComponent = lazy(() => import("./components/footer/about-us.tsx"));
 const CareerComponent = lazy(() => import("./components/footer/career.tsx"));
@@ -54,11 +55,7 @@ const PublishedStoriesComponent = lazy(() => import("./components/dashboard/post
 const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analytics.page"));
 const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
-const PaymentComponent = lazy(() =>
-  import("./components/home/pricing/payment.component").then((module) => ({
-    default: module.PaymentComponent,
-  }))
-);
+const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
@@ -94,6 +91,7 @@ const router = createBrowserRouter([
       { path: "forgot-password", element: <ForgotPasswordComponent /> },
       { path: "pricing", element: <PricingComponent /> },
       { path: "post/:id", element: <PostDetailsComponent /> },
+      { path: "profile/:id", element: <PublicProfileComponent /> },
       { path: "contact-us", element: <Contact /> },
       { path: "about-us", element: <AboutUsComponent /> },
       { path: "career", element: <CareerComponent /> },

@@ -129,25 +129,27 @@ const FeatureProfileComponent = () => {
             </h2>
 
             {(data.followers?.length ?? 0) > 0 ? (
-              data.followers.map((follower) => (
-                <div
+              (data.followers as any[]).map((follower) => (
+                <Link
                   key={follower._id}
-                  className="flex items-center justify-between p-3 mb-3 bg-gray-50 rounded-xl hover:shadow-md transition"
+                  to={`/profile/${follower._id}`}
+                  onClick={() => setShowFollowers(false)}
+                  className="flex items-center justify-between p-3 mb-3 bg-gray-50 rounded-xl hover:shadow-md transition cursor-pointer w-full text-left"
                 >
                   <div className="flex items-center gap-3">
 
                     <img
-                      src={follower.profilePicture}
-                      alt={follower.username}
+                      src={follower.profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(follower.name)}&background=random`}
+                      alt={follower.name}
                       className="w-11 h-11 rounded-full object-cover border"
                     />
 
                     <p className="font-medium text-gray-800">
-                      {follower.username}
+                      {follower.name}
                     </p>
 
                   </div>
-                </div>
+                </Link>
               ))
             ) : (
               <div className="text-center py-10 text-gray-500">
@@ -177,25 +179,27 @@ const FeatureProfileComponent = () => {
             </h2>
 
             {(data.following?.length ?? 0) > 0 ? (
-              data.following.map((user) => (
-                <div
+              (data.following as any[]).map((user) => (
+                <Link
                   key={user._id}
-                  className="flex items-center justify-between p-3 mb-3 bg-gray-50 rounded-xl hover:shadow-md transition"
+                  to={`/profile/${user._id}`}
+                  onClick={() => setShowFollowing(false)}
+                  className="flex items-center justify-between p-3 mb-3 bg-gray-50 rounded-xl hover:shadow-md transition cursor-pointer w-full text-left"
                 >
                   <div className="flex items-center gap-3">
 
                     <img
-                      src={user.profilePicture}
-                      alt={user.username}
+                      src={user.profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+                      alt={user.name}
                       className="w-11 h-11 rounded-full object-cover border"
                     />
 
                     <p className="font-medium text-gray-800">
-                      {user.username}
+                      {user.name}
                     </p>
 
                   </div>
-                </div>
+                </Link>
               ))
             ) : (
               <div className="text-center py-10 text-gray-500">

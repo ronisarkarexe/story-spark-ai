@@ -4,7 +4,7 @@ import { AuthService } from "../app/modules/auth/auth.service";
 import { User } from "../app/modules/user/user.model";
 import { OTPModel } from "../app/modules/verify_email/otp.model";
 import ApiError from "../errors/api_error";
-import { ENUM_USER_ROLE } from "../enums/user";
+import { ENUM_USER_ROLE } from "../enums/user";   
 
 jest.mock("../app/modules/verify_email/verify_email.service", () => ({
   VerifyEmailService: {
@@ -15,7 +15,7 @@ jest.mock("../app/modules/verify_email/verify_email.service", () => ({
 
 jest.mock("../app/modules/auth/refresh_session.model", () => ({
   RefreshSession: {
-    updateMany: jest.fn().mockResolvedValue({}),
+    updateMany: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     create: jest.fn().mockResolvedValue({}),
   },
 }));

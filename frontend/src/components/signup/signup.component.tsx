@@ -5,23 +5,22 @@ import { useState, useEffect } from "react";
 import { storeUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import {
   useEmailVerifyMutation,
   useVerifyOtpMutation,
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
-import { useNavigate } from "react-router-dom";
 
 interface IRegisterInfo {
   name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 interface Inputs extends IRegisterInfo {
-  confirmPassword: string;
   otp: string;
 }
 
@@ -71,6 +70,7 @@ const SignUpComponent = () => {
     handleSubmit,
     watch,
     unregister,
+    setValue,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
 
@@ -106,9 +106,17 @@ const SignUpComponent = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
-      const user = { name: data.name, email: data.email, password: data.password };
-      const otpPayload = { name: data.name, email: data.email };
+const user = {
+  name: data.name,
+  email: data.email,
+  password: data.password,
+  confirmPassword: data.confirmPassword,
+};
 
+const otpPayload = {
+  name: data.name,
+  email: data.email,
+};
       if (password !== confirmPassword) {
         toast.error("Passwords do not match!");
         return;
@@ -175,45 +183,11 @@ const SignUpComponent = () => {
   };
 
   const handleResendOtp = async () => {
-    if (!registerInfo) return;
-    setIsBusy(true);
-    try {
-      const res = await emailVerify({ name: registerInfo.name, email: registerInfo.email }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent to your email");
-        setCooldown(60);
-      }
-    } catch {
-      toast.error("Failed to resend OTP. Please try again.");
-    } finally {
-      setIsBusy(false);
+    if (cooldown > 0 || isBusy) return;
+    if (!registerInfo) {
+      toast.error("Something went wrong. Please restart the process.");
+      return;
     }
-  };
-
-  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
-      if (res.data.accessToken) {
-        toast.success("Signed up with Google successfully!");
-        storeUserInfo({ accessToken: res.data.accessToken });
-        navigate("/");
-      }
-    } catch {
-      toast.error("Google login failed. Please try again.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginError = () => {
-    toast.error("Google login failed. Please try again.");
-  };
-
-  const handleResendOtp = async () => {
-    if (!registerInfo) return;
     setIsBusy(true);
     try {
       const res = await emailVerify({
@@ -223,11 +197,18 @@ const SignUpComponent = () => {
       if (res?.data) {
         const { expiresAt } = res.data;
         setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
+        setValue("otp", "");
+        toast.success("OTP resent to your email");
         setCooldown(60);
       }
-    } catch (error) {
-      toast.error("Failed to resend OTP. Please try again.");
+    } catch (error: unknown) {
+      const e = error as { data?: Array<{ message?: string }>; message?: string };
+      const message =
+        e?.data?.[0]?.message ||
+        e?.message ||
+        "Failed to resend OTP. Please try again.";
+      toast.error(message);
+      console.log("resend error: ", error);
     } finally {
       setIsBusy(false);
     }
@@ -246,12 +227,79 @@ const SignUpComponent = () => {
         toast.success("Logged in with Google successfully!");
         navigate("/");
       }
-    } catch (error) {
+    } catch {
       toast.error("Google authentication failed");
     } finally {
       setIsBusy(false);
     }
   };
+
+  const handleResendOtp = async () => {
+    if (cooldown > 0 || isBusy) return;
+    if (!registerInfo) {
+      toast.error("Something went wrong. Please restart the process.");
+      return;
+    }
+    setIsBusy(true);
+    try {
+      const otpPayload = {
+        name: registerInfo.name,
+        email: registerInfo.email,
+      };
+      const res = await emailVerify({ ...otpPayload }).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        toast.success("OTP resent successfully!");
+        setValue("otp", "");
+        setCooldown(60);
+      }
+    } catch (error) {
+      const message =
+        (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
+        "Failed to resend OTP. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleGoogleLoginSuccess = async (
+    credentialResponse: CredentialResponse
+  ) => {
+    setIsBusy(true);
+    try {
+      const res = await googleLogin({
+        token: credentialResponse.credential,
+      }).unwrap();
+      if (res.data.accessToken) {
+        toast.success("User logged in successfully with Google!");
+        storeUserInfo({ accessToken: res.data.accessToken });
+        navigate("/");
+      }
+    } catch {
+      toast.error("Failed to login with Google. Please try again.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    toast.error("Google login failed. Please try again.");
+  };
+
+  const handleGoBack = () => {
+    setShowOtpField(false);
+  };
+
+  useEffect(() => {
+    if (!showOtpField && registerInfo) {
+      setValue("name", registerInfo.name);
+      setValue("email", registerInfo.email);
+      setValue("password", registerInfo.password);
+      setValue("confirmPassword", registerInfo.password);
+    }
+  }, [showOtpField, registerInfo, setValue]);
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-900 dark:text-slate-100 box-border">
@@ -269,13 +317,39 @@ const SignUpComponent = () => {
           </h2>
         </div>
 
+
+        {/* UPDATED: Structured layout classes to lock down maximum inner boundary constraints */}
+        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
+
+        <Link
+  to="/"
+  className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
+>
+  <span>←</span>
+  <span>Back to Home</span>
+</Link>
+          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-200">
         {/* Card */}
         <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
 
           <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
+
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
-
+          {showOtpField && registerInfo && (
+            <p className="mt-2 mb-4 text-center text-xs sm:text-sm text-slate-400 px-1">
+              We sent a 6-digit code to{" "}
+              <span className="font-semibold text-blue-400">{registerInfo.email}</span>.
+              {" "}Not the right address?{" "}
+              <button
+                type="button"
+                onClick={handleGoBack}
+                className="font-semibold text-blue-400 hover:text-blue-300 underline transition-colors cursor-pointer"
+              >
+                Change email
+              </button>
+            </p>
+          )}
           {!showOtpField && (
             <p className="mt-2 mb-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 px-1">
               Join StorySparkAI and begin your creative journey.
@@ -359,8 +433,6 @@ const SignUpComponent = () => {
                     {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
                       const met = passwordChecks[key];
                       return (
-                        <li key={key} className={`flex items-center gap-2 ${met ? "text-emerald-400" : "text-slate-500"}`}>
-                          <i className={`fa-solid ${met ? "fa-circle-check" : "fa-circle-xmark"} text-xs shrink-0`} aria-hidden="true" />
                           <span>{label}</span>
                         </li>
                       );
@@ -395,23 +467,34 @@ const SignUpComponent = () => {
             </form>
           ) : (
             <div className="grid grid-cols-1 gap-5 w-full min-w-0 box-border">
-              <SSInput
-                label="OTP"
-                name="otp"
-                placeholder="Enter your OTP"
-                required={true}
-                icon="fi fi-rr-key"
-                register={register}
-                validation={{
-                  required: "Please enter OTP",
-                  minLength: { value: 6, message: "OTP must be 6 digits" },
-                  maxLength: { value: 6, message: "OTP must be 6 digits" },
-                  pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
-                }}
-                error={errors.otp}
-              />
-              <SSButton text="Verify OTP" type="button" onClick={handleOtpValidation} isLoading={isBusy} />
-              <div className="text-center pt-1">
+              <div className="w-full min-w-0 box-border">
+                <SSInput
+                  label="OTP"
+                  name="otp"
+                  placeholder="Enter your OTP"
+                  required={true}
+                  icon="fi fi-rr-key"
+                  register={register}
+                  validation={{
+                    required: "Please enter OTP",
+                    minLength: { value: 6, message: "OTP must be 6 digits" },
+                    maxLength: { value: 6, message: "OTP must be 6 digits" },
+                    pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
+                  }}
+                  error={errors.otp}
+                />
+              </div>
+
+              <div className="w-full box-border">
+                <SSButton
+                  text="Verify OTP"
+                  type="button"
+                  onClick={handleOtpValidation}
+                  isLoading={isBusy}
+                />
+              </div>
+
+              <div className="text-center pt-1 select-none flex flex-col items-center gap-3">
                 <button
                   type="button"
                   onClick={handleResendOtp}
@@ -419,6 +502,14 @@ const SignUpComponent = () => {
                   className="text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 disabled:text-slate-600 transition-colors duration-150 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGoBack}
+                  disabled={isBusy}
+                  className="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-300 transition-colors duration-150 focus:outline-none cursor-pointer mt-1"
+                >
+                  Change Email
                 </button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import express from "express";
 import { PostController } from "./post.controller";
+import { PostMetaController } from "./post.meta.controller";
 import auth from "../../middleware/auth.middleware";
 import checkRequestLimit from "../../middleware/check.request.limit";
 import validateRequest from "../../middleware/validate.request";
@@ -83,6 +84,9 @@ router.delete(
   ),
   PostController.deletePost
 );
+
+// OG meta route for social media bots — must be before /:id
+router.get("/meta/:id", PostMetaController.serveOgShell);
 
 // /:id must be last among GET routes — it matches any segment
 router.get("/:id", PostController.getSinglePost);
