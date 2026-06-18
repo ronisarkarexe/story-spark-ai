@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import ApiError from "../../errors/api_error";
 import httpStatus from "http-status";
 import { consumeRateLimit } from "./rate_limit.store";
+import rateLimit from "express-rate-limit";
 
 interface RateLimiterOptions {
   /** Time window in milliseconds */
@@ -94,12 +95,10 @@ export const resetPasswordRateLimiter = createRateLimiter({
 });
 
 
-export const aiGenerationRateLimiter = createRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 10,
-  blockTimeMs: 5 * 60 * 1000, // 5 minutes
-  keyPrefix: "ai_generation",
-  actionLabel: "AI generation",
+export const aiGenerationRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: "Too many AI generation attempts. Please try again later.",
 });
 
 
@@ -152,21 +151,17 @@ export const refreshTokenRateLimiter = createRateLimiter({
 });
 
 /** Educational insights: 15 attempts per 15 minutes, 15-minute block */
-export const educationalInsightsRateLimiter = createRateLimiter({
+export const educationalInsightsRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  maxRequests: 15,
-  blockTimeMs: 15 * 60 * 1000,
-  keyPrefix: "edu_insights",
-  actionLabel: "educational insights",
+  max: 15,
+  message: "Too many educational insights requests. Please try again later.",
 });
 
 /** Dialogue voice fingerprinting: 15 attempts per 15 minutes, 15-minute block */
-export const dialogueFingerprintRateLimiter = createRateLimiter({
+export const dialogueFingerprintRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  maxRequests: 15,
-  blockTimeMs: 15 * 60 * 1000,
-  keyPrefix: "dialogue_fp",
-  actionLabel: "dialogue fingerprinting",
+  max: 15,
+  message: "Too many dialogue fingerprint requests. Please try again later.",
 });
 
 export default ipRateLimiter;
