@@ -29,7 +29,7 @@ const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
 // This is where the textarea is rendered
 // ============================================================================
 
-{/* BEFORE: This is the existing prompt textarea */}
+/*
 {isLoggedIn ? (
   <>
     {/* Prompt input section */}
@@ -90,6 +90,7 @@ const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
 ) : (
   // ... non-logged-in UI
 )}
+*/
 
 // ============================================================================
 // OPTIONAL: Add this toast notification for better UX
