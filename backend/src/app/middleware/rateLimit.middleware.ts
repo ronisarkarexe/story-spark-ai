@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request } from "express";
 import rateLimit from "express-rate-limit";
 
 export const searchRateLimiter = rateLimit({

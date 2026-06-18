@@ -19,12 +19,17 @@ export default function ImageFallback({
   className = "",
   aspectRatio = "16/9",
 }: ImageFallbackProps) {
-  const [imageSrc, setImageSrc] = useState(src || FALLBACK);
+  // Sanitize src to prevent CodeQL DOM XSS alerts
+  const isSafeSrc = typeof src === "string" ? !src.trim().toLowerCase().startsWith("javascript:") : true;
+  const initialSrc = (isSafeSrc ? src : null) || FALLBACK;
+
+  const [imageSrc, setImageSrc] = useState(initialSrc);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    setImageSrc(src || FALLBACK);
+    const safeUpdateSrc = typeof src === "string" ? !src.trim().toLowerCase().startsWith("javascript:") : true;
+    setImageSrc((safeUpdateSrc ? src : null) || FALLBACK);
     setIsLoading(true);
     setHasError(false);
   }, [src]);
