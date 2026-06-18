@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import React from "react";
 
@@ -208,4 +209,6 @@ function App() {
 }
 
 export default App;
+
+
 

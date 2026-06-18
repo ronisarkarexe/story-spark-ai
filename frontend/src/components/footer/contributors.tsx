@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-empty */
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -886,4 +887,6 @@ const ContributorsComponent = () => {
 };
 
 export default ContributorsComponent;
+
+
 

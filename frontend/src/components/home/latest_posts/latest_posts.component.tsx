@@ -6,14 +6,6 @@ import LoadingAnimation from "../../loading/loading.component";
 
 const INITIAL_VISIBLE_COUNT = 6;
 
-// Helper to fix hardcoded localization bugs from AI streams
-const formatPostTitle = (title: string): string => {
-  if (!title) return "";
-  if (title.includes("कबूतरों का कूटनीतिक संकट")) {
-    return "The Pigeons' Diplomatic Crisis";
-  }
-  return title;
-};
 
 const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
@@ -138,3 +130,4 @@ const LatestPostsComponent = () => {
 };
 
 export default LatestPostsComponent;
+

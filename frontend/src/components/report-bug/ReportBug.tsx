@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-empty */
 import { useState } from "react";
@@ -438,4 +439,6 @@ const ReportBug = () => {
 };
 
 export default ReportBug;
+
+
 

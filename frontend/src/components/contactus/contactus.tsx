@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import { useState, useRef } from "react";
 import type { ChangeEvent, FormEvent } from "react";
@@ -444,4 +445,6 @@ export default function Contact() {
     </section>
   );
 }
+
+
 

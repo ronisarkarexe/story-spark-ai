@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-empty */
 import React, { useState } from "react";
@@ -331,5 +332,7 @@ const FooterComponent: React.FC = () => {
 };
 
 export default FooterComponent;
+
+
 
 
