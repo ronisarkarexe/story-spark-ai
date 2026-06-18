@@ -9,16 +9,16 @@ export const searchRateLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many search requests. Please wait a moment and try again.",
-  },
-  keyGenerator: (req) => {
-    // Prefer real IP behind proxy (trust proxy is set in app.ts)
-    return (
-      (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
-      req.ip ||
-      "unknown"
-    );
-  },
+  message: "Too many search requests. Please wait a moment and try again.",
+});
+
+/**
+ * Dedicated rate limiter for the educational insights endpoint.
+ */
+export const insightsRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Too many educational insights requests. Please try again later.",
 });

@@ -230,24 +230,6 @@ const aiModelStoryContinuation = async (
   }
 };
 
-const aiFreeStoryContinuationMultiple = async (
-  payload: { prompt: string; language?: string; count?: number },
-  signal?: AbortSignal
-) => {
-  const { prompt, language = "English", count = 3 } = payload;
-  const safeCount = Math.min(Math.max(count, 1), 5);
-  const results: { continuation: string }[] = [];
-  for (let i = 0; i < safeCount; i++) {
-    // eslint-disable-next-line no-await-in-loop
-    const result = await raceGenerationWithTimeout(
-      (s) => generateStoryContinuationWithGemini(prompt, language, s),
-      FREE_GENERATION_TIMEOUT_MS,
-      signal
-    );
-    results.push({ continuation: result?.continuation ?? "" });
-  }
-  return results;
-};
 
 const aiFreeStoryContinuation = async (payload: { prompt: string; language?: string }, signal?: AbortSignal) => {
   const { prompt, language = "English" } = payload;

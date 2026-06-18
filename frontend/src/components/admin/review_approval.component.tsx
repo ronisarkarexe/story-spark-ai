@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 
 import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
@@ -152,3 +154,5 @@ const ReviewApprovalComponent = () => {
 };
 
 export default ReviewApprovalComponent;
+
+

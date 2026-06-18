@@ -36,8 +36,7 @@ const features = [
       <svg className="w-7 h-7 text-sky-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
       </svg>
-    ),
-    path: "/create"
+    )
   },
   {
     title: "AI Co-Writer",
@@ -47,8 +46,7 @@ const features = [
       <svg className="w-7 h-7 text-purple-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
       </svg>
-    ),
-    path: "/writing-assistant"
+    )
   },
   {
     title: "Community Driven",
@@ -58,8 +56,7 @@ const features = [
       <svg className="w-7 h-7 text-pink-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
       </svg>
-    ),
-    path: "/community"
+    )
   }
 ];
 
@@ -68,8 +65,6 @@ interface Feature {
   description: string;
   bgClass: string;
   icon: ReactNode;
-  path: string;
-};
 }
 
 const FeatureCard = ({ feature }: { feature: Feature }) => {
@@ -127,21 +122,6 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
   }, { scope: cardRef });
 
   return (
-    <Link to={feature.path} className="h-full">
-      <div style={{ perspective: "1000px" }} className="h-full">
-        <div
-          ref={cardRef}
-          className={`motion-card relative overflow-hidden backdrop-blur-xl border border-white/10 rounded-3xl p-8 transition-shadow duration-500 shadow-xl group cursor-pointer hover:scale-[1.02] ${feature.bgClass} hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] h-full`}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-          <div ref={contentRef} className="relative z-10 pointer-events-none">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 bg-white/10 shadow-lg group-hover:scale-110 transition-transform duration-300">
-              {feature.icon}
-            </div>
-            <h3 className="text-xl font-bold text-white mb-3 group-hover:text-blue-100 transition-colors duration-300">{feature.title}</h3>
-            <p className="text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300">{feature.description}</p>
-          </div>
     <div style={{ perspective: "1000px" }} className="h-full w-full box-border">
       <div
         ref={cardRef}
@@ -157,7 +137,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
           <p className="text-xs sm:text-sm text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300 font-medium">{feature.description}</p>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
