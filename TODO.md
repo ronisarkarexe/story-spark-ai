@@ -1,11 +1,10 @@
 # TODO
 
-- [x] Update `EmptyStoriesState` to be an attractive empty-state component.
-  - [x] Ensure message matches: “No stories yet. Start your creative journey today!”
-  - [x] Ensure illustration/icon is storytelling-related.
-  - [ ] Ensure CTA button is “Generate Your First Story” and routes to the correct story-generation page.
-  - [x] Minor UI polish using Tailwind (spacing, gradients, accessibility).
-- [x] Verify `StoriesViewComponent` already renders `EmptyStoriesState` for empty story list.
-- [ ] Run frontend build/typecheck to confirm no TS/React issues.
+- [x] Inspect existing Trending Topics implementation in `frontend/src/components/home/trending_topic/trending_topic.component.tsx`.
+- [x] Replace previous `topicsData` chip layout with a new `trendingTopics` array containing 8 topics.
+- [x] Implement responsive grid (2/3/4 columns) with Tailwind hover + transition effects.
+- [x] Ensure dark mode support via `dark:` classes.
+- [ ] Verify there are no build/runtime errors (run frontend typecheck/build or dev check).
+- [ ] Run quick manual UI verification on homepage.
 
 

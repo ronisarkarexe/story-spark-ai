@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
 import {
@@ -11,6 +11,17 @@ import { Review } from "../../models/review";
 const ReviewApprovalComponent = () => {
   const { data: reviews = [], isLoading } = useGetPendingReviewsQuery({});
   const [approveReview, { isLoading: isApproving }] = useApproveReviewMutation();
+  const [selectedReviews, setSelectedReviews] = useState<string[]>([]);
+
+
+  const handleCheckbox = (id: string) => {
+    setSelectedReviews((prev) =>
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
+    );
+  };
+
 
   const handleApprove = async (id: string) => {
     try {
@@ -21,6 +32,8 @@ const ReviewApprovalComponent = () => {
       console.error(error);
     }
   };
+
+
 
   if (isLoading) {
     return (
@@ -49,6 +62,15 @@ const ReviewApprovalComponent = () => {
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Pending Reviews
           </h2>
+          <p className="text-sm text-blue-500 mt-2">
+            Selected Reviews: {selectedReviews.length}
+          </p>
+          <button
+            className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg"
+            onClick={handleApproveSelected}
+          >
+            Approve Selected ({selectedReviews.length})
+          </button>
           <p className="mt-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
             Evaluate, approve, or filter user submissions before deployment into the production feedback directory stream.
           </p>
@@ -63,6 +85,14 @@ const ReviewApprovalComponent = () => {
               >
                 <div className="w-full box-border">
                   <div className="flex items-center gap-4 mb-5 select-none w-full box-border">
+
+                    <input
+                      type="checkbox"
+                     checked={review._id ? selectedReviews.includes(review._id) : false}
+                      onChange={() => review._id && handleCheckbox(review._id)}
+                      className="w-4 h-4 cursor-pointer"
+                    />
+
                     <img
                       src={review.imgSrc || "https://i.pravatar.cc/150?img=33"}
                       alt={review.name}

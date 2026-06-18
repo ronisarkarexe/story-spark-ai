@@ -12,6 +12,13 @@ export interface BranchingStoryRequest {
   genre?: string;
 }
 
+export interface BranchingStoryApiResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: BranchingStoryResponse;
+}
+
 const branchingStoryApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createBranchingStory: build.mutation({
@@ -20,10 +27,7 @@ const branchingStoryApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
-      transformResponse: (response: {
-        data: BranchingStoryResponse;
-        message: string;
-      }) => {
+      transformResponse: (response: BranchingStoryApiResponse) => {
         return { data: response.data, message: response.message };
       },
     }),

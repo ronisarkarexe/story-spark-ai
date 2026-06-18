@@ -24,13 +24,22 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
 
   return (
     <div
+ fix/duplicate-navbar
+fix/duplicate-navbar
       className={`flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${
         !isAuthPage ? "pb-20 lg:pb-0" : ""
       }`}
+      
+      className={`flex flex-col min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${!isAuthPage ? "pb-20 lg:pb-0" : ""}`}
+main
+
+      className={`flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${
+        !isAuthPage ? "pb-20 lg:pb-0" : ""
+      }`}
+ main
       style={{ paddingBottom: isAuthPage ? 0 : cookieBannerHeight }}
     >
       {!hideHeader && <NavListComponent />}
-
       <CookieConsentBanner onLayoutChange={handleCookieLayoutChange} />
 
       <div className="flex-grow min-h-0">{children}</div>

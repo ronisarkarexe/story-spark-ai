@@ -53,6 +53,20 @@
   box-sizing: border-box;
 }
 
+/* ==========================================================================
+   Login & Signup Form Overflow Fix
+   Prevents inputs from exceeding their card container boundaries.
+   The @tailwindcss/forms plugin can inject min-width / width values that
+   override Tailwind utilities; these rules ensure containment.
+   ========================================================================== */
+input,
+select,
+textarea,
+button {
+  min-width: 0;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -1561,7 +1575,27 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
   cursor: not-allowed;
   transform: none;
 }
+/* Fix: Prevent Flash of Unstyled Text (FOUT) on Dynamic Generated Text Canvas */
+@layer utilities {
+  .story-canvas-content, 
+  [class*="story-text"], 
+  [class*="generated-content"] {
+    font-display: swap;
+    animation: fontHydrationLock 0.3s ease-in-out forwards;
+  }
 
+
+  @keyframes fontHydrationLock {
+    from {
+      opacity: 0.85;
+      filter: blur(0.5px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0px);
+    }
+  }
+}
 /* Hide browser-native password reveal button (Edge/IE/Chrome/Safari) */
 input::-ms-reveal,
 input::-ms-clear {
@@ -1574,4 +1608,3 @@ input::-webkit-credentials-auto-fill-button {
   display: none !important;
   pointer-events: none;
 }
-

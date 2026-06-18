@@ -13,6 +13,7 @@ import sendResponse from "../shared/send_response";
 import httpStatus from "http-status";
 import { Request, Response } from "express";
 import piiScrubberMiddleware from "../app/middleware/pii_scrubber";
+import { generateStory } from "../services/ai.service";
 
 const router = express.Router();
 
@@ -57,7 +58,7 @@ router.post(
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {
     const { prompt, language, count } = req.body as { prompt: string; language?: string; count?: number };
-    const result = await AiModelService.aiFreeStoryContinuationMultiple({ prompt, language, count });
+    const result = await AiModelService.aiFreeStoryContinuation({ prompt, language });
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -77,6 +78,25 @@ router.post(
   ),
   validateRequest(ReviewValidator.createReview),
   ReviewController.createReview
+);
+
+/** GENERATE STORY */
+router.post(
+  "/generate",
+  // Add auth/rate-limiter middlewares here if needed
+  catchAsync(async (req: Request, res: Response) => {
+    const { prompt, provider, options } = req.body;
+    
+    // Call our newly refactored service
+    const result = await generateStory(prompt, provider, options);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Story generated successfully in structured format!",
+      data: result, // This will return the formatted JSON
+    });
+  })
 );
 
 export default router;

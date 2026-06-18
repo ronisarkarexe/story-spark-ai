@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { AlertCircle, Zap } from "lucide-react";
@@ -37,6 +37,16 @@ const PromptAnalysisCard: React.FC<PromptAnalysisCardProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const previousPromptRef = useRef(prompt);
+
+  useEffect(() => {
+    if (prompt !== previousPromptRef.current) {
+      previousPromptRef.current = prompt;
+      setAnalysis(null);
+      setIsExpanded(false);
+      setError(null);
+    }
+  }, [prompt]);
 
   const handleAnalyze = useCallback(async () => {
     if (!prompt.trim()) {
@@ -68,6 +78,13 @@ const PromptAnalysisCard: React.FC<PromptAnalysisCardProps> = ({
       setIsLoading(false);
     }
   }, [prompt, language, genre, tone, onAnalysisComplete]);
+
+  // Clear stale results when the prompt changes (e.g. navigating to a different story)
+  React.useEffect(() => {
+    setAnalysis(null);
+    setError(null);
+    setIsExpanded(false);
+  }, [prompt]);
 
   // Auto-analyze if enabled and prompt is provided
   React.useEffect(() => {
