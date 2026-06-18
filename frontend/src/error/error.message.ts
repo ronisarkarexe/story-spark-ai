@@ -3,17 +3,6 @@ export function getErrorMessage(err: unknown): string {
     return "Something went wrong";
   }
 
-  // Handle explicit status codes for API responses
-  if ("status" in err) {
-    const status = (err as Record<string, unknown>).status;
-    if (status === 413 || status === "413") {
-      return "The prompt is too large. Please shorten your prompt to 1000 characters or fewer.";
-    }
-    if (status === 400 || status === "400") {
-      return "Invalid request. Please check your prompt and try again.";
-    }
-  }
-
   // Check if it is a standard response error containing data object
   if ("data" in err && err.data && typeof err.data === "object") {
     const data = err.data as Record<string, unknown>;

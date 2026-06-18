@@ -5,7 +5,6 @@ export interface ICollabRoom {
   story: IStoryChunk[];
   createdAt: Date;
   expiresAt: Date;
-  isAiGenerating: boolean;
 }
 
 export interface IParticipant {

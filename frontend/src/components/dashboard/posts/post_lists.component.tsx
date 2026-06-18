@@ -3,7 +3,6 @@ import { useGetPostListsQuery } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
 import { Topic } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
-import ImageFallback from "../../ImageFallback";
 
 const PostListsComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -170,7 +169,7 @@ const PostListsComponent: React.FC = () => {
                     <div className="flex items-center">
                       {post.imageURL && (
                         <div className="flex-shrink-0 h-11 w-11 mr-4 relative">
-                          <ImageFallback
+                          <img
                             className="h-11 w-11 rounded-lg object-cover shadow-md ring-1 ring-white/10"
                             src={post.imageURL}
                             alt={post.title}

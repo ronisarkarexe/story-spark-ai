@@ -29,19 +29,10 @@ align-items: center;
 }
 
 .logo-brand-text {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-light-shade);
-  letter-spacing: -0.5px;
-  text-decoration: none;
-}
-.navbar-logo {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
+font-size: 18px;
+font-weight: 700;
+color: var(--text-light-shade);
+letter-spacing: -0.5px;
 }
 
 /* Right Side: Utilities Wrapper */

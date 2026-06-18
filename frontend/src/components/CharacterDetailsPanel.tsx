@@ -37,7 +37,7 @@ const CharacterDetailsPanel = ({
 
   return (
     <div className="flex flex-col bg-zinc-900 border border-zinc-800 rounded-xl p-4 w-full md:w-80 shadow-md h-fit text-sm text-slate-300">
-      <div className="pb-2 border-b border-zinc-800">
+      <div className="pb-2 border-b border-zinc-850">
         <h3 className="font-bold text-white text-base">Details</h3>
       </div>
 
@@ -69,7 +69,7 @@ const CharacterDetailsPanel = ({
                     <button
                       key={r.id}
                       onClick={() => onNodeSelect(targetId)}
-                      className="flex justify-between items-center bg-zinc-950 hover:bg-zinc-800/50 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-left text-slate-300 transition"
+                      className="flex justify-between items-center bg-zinc-950 hover:bg-zinc-850/50 border border-zinc-850 rounded px-2.5 py-1.5 text-xs text-left text-slate-300 transition"
                     >
                       <span className="font-semibold text-slate-200">{targetName}</span>
                       <span className="text-[10px] bg-slate-800 text-indigo-300 border border-zinc-800 px-1.5 py-0.5 rounded-full font-medium">
@@ -101,7 +101,7 @@ const CharacterDetailsPanel = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 bg-zinc-950 border border-zinc-800 p-2.5 rounded-lg">
+          <div className="grid grid-cols-2 gap-3 bg-zinc-950 border border-zinc-850 p-2.5 rounded-lg">
             <div>
               <span className="text-[10px] text-slate-500 block">Type</span>
               <strong className="text-white text-sm font-semibold">{selectedEdge.type}</strong>
@@ -110,7 +110,7 @@ const CharacterDetailsPanel = ({
               <span className="text-[10px] text-slate-500 block">Strength</span>
               <strong className="text-white text-sm font-semibold">{selectedEdge.strength}/100</strong>
             </div>
-            <div className="col-span-2 pt-1.5 border-t border-zinc-800 mt-1">
+            <div className="col-span-2 pt-1.5 border-t border-zinc-850 mt-1">
               <span className="text-[10px] text-slate-500 block">Direct Interactions</span>
               <strong className="text-white text-sm font-semibold">
                 {selectedEdge.interactionCount}

@@ -1,0 +1,1526 @@
+[1mdiff --git a/backend/src/app/modules/post/post.service.ts b/backend/src/app/modules/post/post.service.ts[m
+[1mindex 72af584..9fd07ec 100644[m
+[1m--- a/backend/src/app/modules/post/post.service.ts[m
+[1m+++ b/backend/src/app/modules/post/post.service.ts[m
+[36m@@ -133,7 +133,7 @@[m [mconst getLatestPosts = async () => {[m
+   try {[m
+     const res = await Post.find({ isDeleted: { $ne: true } })[m
+       .sort({ createdAt: -1 })[m
+[31m-      .limit(2)[m
+[32m+[m[32m      .limit(3)[m
+       .populate("author", "name email createdAt")[m
+       .populate({[m
+         path: "reactions",[m
+[36m@@ -156,7 +156,7 @@[m [mconst getFeaturedPosts = async () => {[m
+       isDeleted: { $ne: true },[m
+     })[m
+       .sort({ createdAt: -1, updatedBy: -1 })[m
+[31m-      .limit(2)[m
+[32m+[m[32m      .limit(3)[m
+       .populate("author", "name email createdAt")[m
+       .populate({[m
+         path: "reactions",[m
+[36m@@ -202,13 +202,20 @@[m [mconst getSinglePost = async (id: string) => {[m
+   return postById;[m
+ };[m
+ [m
+[31m-const getPostsByTag = async (tag: string, excludeId?: string) => {[m
+[32m+[m[32m  const getPostsByTag = async (tag: string, excludeId?: string) => {[m
+[32m+[m
+[32m+[m[32m  if (!tag) {[m
+[32m+[m[32m    return [];[m
+[32m+[m[32m  }[m
+[32m+[m
+   const query: any = { tag, isDeleted: { $ne: true } };[m
+[32m+[m
+   if (excludeId) {[m
+     query._id = { $ne: excludeId };[m
+   }[m
+[32m+[m
+   const result = await Post.find(query)[m
+[31m-    .limit(2)[m
+[32m+[m[32m    .limit(3)[m
+     .populate("author", "name email createdAt")[m
+     .populate({[m
+       path: "reactions",[m
+[1mdiff --git a/frontend/src/components/admin/review_approval.component.tsx b/frontend/src/components/admin/review_approval.component.tsx[m
+[1mindex c63de48..6df78fa 100644[m
+[1m--- a/frontend/src/components/admin/review_approval.component.tsx[m
+[1m+++ b/frontend/src/components/admin/review_approval.component.tsx[m
+[36m@@ -1,3 +1,4 @@[m
+[32m+[m
+ import React from "react";[m
+ import toast, { Toaster } from "react-hot-toast";[m
+ [m
+[36m@@ -6,7 +7,8 @@[m [mimport {[m
+   useGetPendingReviewsQuery,[m
+ } from "../../redux/apis/review.api";[m
+ import { Review } from "../../models/review";[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+[32m+[m[32mImageFallback[m
+ const ReviewApprovalComponent = () => {[m
+   const { data: reviews = [], isLoading } =[m
+     useGetPendingReviewsQuery({});[m
+[36m@@ -48,11 +50,11 @@[m [mconst ReviewApprovalComponent = () => {[m
+             className="border rounded-xl p-5 shadow-md"[m
+           >[m
+             <div className="flex items-center gap-4 mb-4">[m
+[31m-              <img[m
+[31m-                src={review.imgSrc}[m
+[31m-                alt={review.name}[m
+[31m-                className="w-14 h-14 rounded-full"[m
+[31m-              />[m
+[32m+[m[32m              <ImageFallback[m
+[32m+[m[32m                  src={review.imgSrc}[m
+[32m+[m[32m                  alt={review.name}[m
+[32m+[m[32m                  className="w-14 h-14 rounded-full"[m
+[32m+[m[32m                />[m
+ [m
+               <div>[m
+                 <h3 className="font-bold text-lg">[m
+[1mdiff --git a/frontend/src/components/community/Githubcontributors.component.tsx b/frontend/src/components/community/Githubcontributors.component.tsx[m
+[1mindex aa6bd1c..9fd503c 100644[m
+[1m--- a/frontend/src/components/community/Githubcontributors.component.tsx[m
+[1m+++ b/frontend/src/components/community/Githubcontributors.component.tsx[m
+[36m@@ -1,6 +1,6 @@[m
+ import React, { useEffect, useRef, useState } from 'react'[m
+ import githubHero from "../../assets/github-hero.png";[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+ interface GitHubContributor {[m
+   id: number;[m
+   login: string;[m
+[36m@@ -175,7 +175,7 @@[m [mconst GithubcontributorsComponent: React.FC = () => {[m
+               className="[m
+               w-full max-w-[620px][m
+               object-contain[m
+[31m-             drop-shadow-[0_0_60px_rgba(139,92,246,0.45)][m
+[32m+[m[32m              drop-shadow-[0_0_60px_rgba(139,92,246,0.45)][m
+             animate-[float_5s_ease-in-out_infinite][m
+             "[m
+             />[m
+[36m@@ -432,16 +432,16 @@[m [mconst GithubcontributorsComponent: React.FC = () => {[m
+ [m
+                 {/* Avatar */}[m
+                 <div className="flex justify-center mb-5">[m
+[31m-                  <img[m
+[31m-                    src={contributor.avatar_url}[m
+[31m-                    alt={contributor.login}[m
+[31m-                    className="[m
+[31m-                    w-24 h-24 rounded-full[m
+[31m-                    object-cover[m
+[31m-                    border-4 border-white/20[m
+[31m-                    shadow-2xl[m
+[31m-                  "[m
+[31m-                  />[m
+[32m+[m[32m                  <ImageFallback[m
+[32m+[m[32m                      src={contributor.avatar_url}[m
+[32m+[m[32m                      alt={contributor.login}[m
+[32m+[m[32m                      className="[m
+[32m+[m[32m                      w-24 h-24 rounded-full[m
+[32m+[m[32m                      object-cover[m
+[32m+[m[32m                      border-4 border-white/20[m
+[32m+[m[32m                      shadow-2xl[m
+[32m+[m[32m                    "[m
+[32m+[m[32m                    />[m
+                 </div>[m
+ [m
+                 {/* Username */}[m
+[1mdiff --git a/frontend/src/components/community/community.component.tsx b/frontend/src/components/community/community.component.tsx[m
+[1mindex c92934b..8f25134 100644[m
+[1m--- a/frontend/src/components/community/community.component.tsx[m
+[1m+++ b/frontend/src/components/community/community.component.tsx[m
+[36m@@ -4,10 +4,10 @@[m [mimport GenreCard from './genre_card.component';[m
+ import { isLoggedIn } from '../../services/auth.service';[m
+ import { genres, featuredWriters, resources, stats } from './community.data';[m
+ import GithubcontributorsComponent from './Githubcontributors.component';[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+ const CommunityComponent: React.FC = () => {[m
+   const isLogin = isLoggedIn();[m
+[31m- [m
+[32m+[m
+   return ([m
+     <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">[m
+       {/* Hero Section */}[m
+[36m@@ -86,11 +86,11 @@[m [mconst CommunityComponent: React.FC = () => {[m
+               <div key={idx} className="flex flex-col items-center text-center group">[m
+                 <div className="relative mb-6">[m
+                   <div className="absolute inset-0 bg-blue-500 rounded-full blur-2xl opacity-0 group-hover:opacity-20 transition-opacity"></div>[m
+[31m-                  <img [m
+[31m-                    src={writer.avatar} [m
+[31m-                    alt={writer.name} [m
+[31m-                    className="w-24 h-24 rounded-full border-2 border-white/10 group-hover:border-blue-500 transition-colors relative z-10 object-cover" [m
+[31m-                  />[m
+[32m+[m[32m                    <ImageFallback[m
+[32m+[m[32m                      src={writer.avatar}[m
+[32m+[m[32m                      alt={writer.name}[m
+[32m+[m[32m                      className="w-24 h-24 rounded-full border-2 border-white/10 group-hover:border-blue-500 transition-colors relative z-10 object-cover"[m
+[32m+[m[32m                    />[m
+                 </div>[m
+                 <h3 className="text-xl font-bold mb-1 text-slate-900 dark:text-white">{writer.name}</h3>[m
+                 <p className="text-blue-600 dark:text-blue-400 text-sm mb-4">{writer.role}</p>[m
+[1mdiff --git a/frontend/src/components/dashboard/dashboard_layout.component.tsx b/frontend/src/components/dashboard/dashboard_layout.component.tsx[m
+[1mindex 62cbb15..931b6b8 100644[m
+[1m--- a/frontend/src/components/dashboard/dashboard_layout.component.tsx[m
+[1m+++ b/frontend/src/components/dashboard/dashboard_layout.component.tsx[m
+[36m@@ -67,11 +67,11 @@[m
+ //             </span>[m
+ //           </button>[m
+ [m
+[31m-//           <img[m
+[31m-//             className="h-9 w-9 rounded-full"[m
+[31m-//             src="https://avatars.githubusercontent.com/u/76697055?v=4"[m
+[31m-//             alt="profile"[m
+[31m-//           />[m
+[32m+[m[32m//               <ImageFallback[m
+[32m+[m[32m//               className="h-9 w-9 rounded-full"[m
+[32m+[m[32m//               src="https://avatars.githubusercontent.com/u/76697055?v=4"[m
+[32m+[m[32m//               alt="profile"[m
+[32m+[m[32m//             />[m
+ //         </div>[m
+ //       </header>[m
+ [m
+[36m@@ -175,7 +175,7 @@[m [mimport React, { useState } from "react";[m
+ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";[m
+ import { MenuItem, menuItems } from "./dashboard.utils";[m
+ import { getUserInfo } from "../../services/auth.service";[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+ const DashboardLayout: React.FC = () => {[m
+   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);[m
+   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});[m
+[36m@@ -238,12 +238,11 @@[m [mconst DashboardLayout: React.FC = () => {[m
+               5[m
+             </span>[m
+           </button>[m
+[31m-[m
+[31m-          <img[m
+[31m-            className="h-9 w-9 rounded-full"[m
+[31m-            src="https://avatars.githubusercontent.com/u/76697055?v=4"[m
+[31m-            alt="profile"[m
+[31m-          />[m
+[32m+[m[32m              <ImageFallback[m
+[32m+[m[32m                className="h-9 w-9 rounded-full"[m
+[32m+[m[32m                src="https://avatars.githubusercontent.com/u/76697055?v=4"[m
+[32m+[m[32m                alt="profile"[m
+[32m+[m[32m              />[m
+         </div>[m
+       </header>[m
+ [m
+[1mdiff --git a/frontend/src/components/dashboard/posts/post_lists.component.tsx b/frontend/src/components/dashboard/posts/post_lists.component.tsx[m
+[1mindex f7ec0e4..d46e095 100644[m
+[1m--- a/frontend/src/components/dashboard/posts/post_lists.component.tsx[m
+[1m+++ b/frontend/src/components/dashboard/posts/post_lists.component.tsx[m
+[36m@@ -3,7 +3,8 @@[m [mimport { useGetPostListsQuery } from "../../../redux/apis/post.api";[m
+ import { useDebounced } from "../../../hooks/global";[m
+ import { Topic } from "../../../models/post";[m
+ import PaginationComponent from "../../pagination/pagination.component";[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../../ImageFallback";[m
+[32m+[m[32mImageFallback[m
+ const PostListsComponent: React.FC = () => {[m
+   const [searchTerm, setSearchTerm] = useState<string>("");[m
+   const [size, setSize] = useState<number>(10);[m
+[36m@@ -169,9 +170,9 @@[m [mconst PostListsComponent: React.FC = () => {[m
+                     <div className="flex items-center">[m
+                       {post.imageURL && ([m
+                         <div className="flex-shrink-0 h-11 w-11 mr-4 relative">[m
+[31m-                          <img[m
+[32m+[m[32m                          <ImageFallback[m
+                             className="h-11 w-11 rounded-lg object-cover shadow-md ring-1 ring-white/10"[m
+[31m-                            src={post.imageURL}[m
+[32m+[m[32m                            src="broken-url"[m
+                             alt={post.title}[m
+                           />[m
+                         </div>[m
+[1mdiff --git a/frontend/src/components/dashboard/profile/profile.setting.component.tsx b/frontend/src/components/dashboard/profile/profile.setting.component.tsx[m
+[1mindex c710e23..cdaca63 100644[m
+[1m--- a/frontend/src/components/dashboard/profile/profile.setting.component.tsx[m
+[1m+++ b/frontend/src/components/dashboard/profile/profile.setting.component.tsx[m
+[36m@@ -1,6 +1,7 @@[m
+ import { useState } from "react";[m
+ import { User } from "../../../models/user";[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../../ImageFallback";[m
+[32m+[m[32mImageFallback[m
+ interface ProfileSettingComponentProps {[m
+   user: User;[m
+   onSave: (updatedUser: Partial<User>) => void;[m
+[36m@@ -128,7 +129,7 @@[m [mexport const ProfileSettingComponent = ({ user, onSave, loading }: ProfileSettin[m
+                     />[m
+                     {formData.avatar && ([m
+                       <div className="mt-2">[m
+[31m-                        <img[m
+[32m+[m[32m                        <ImageFallback[m
+                           src={formData.avatar}[m
+                           alt="Profile preview"[m
+                           className="h-16 w-16 rounded-full object-cover"[m
+[1mdiff --git a/frontend/src/components/footer/contributors.tsx b/frontend/src/components/footer/contributors.tsx[m
+[1mindex c5b8c93..904de8d 100644[m
+[1m--- a/frontend/src/components/footer/contributors.tsx[m
+[1m+++ b/frontend/src/components/footer/contributors.tsx[m
+[36m@@ -1,6 +1,7 @@[m
+ import { useEffect, useState } from "react";[m
+ import { motion } from "framer-motion";[m
+ import { Globe, GitPullRequest, Users } from "lucide-react";[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+ [m
+ interface Contributor {[m
+   login: string;[m
+[36m@@ -146,7 +147,7 @@[m [mconst ContributorsComponent = () => {[m
+                 className="group rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 flex flex-col items-center text-center transition-all duration-300 hover:border-blue-400/40 hover:bg-white/[0.08]"[m
+               >[m
+                 <div className="relative mb-5">[m
+[31m-                  <img[m
+[32m+[m[32m                  <ImageFallback[m
+                     src={contributor.avatar_url}[m
+                     alt={contributor.login}[m
+                     className="h-24 w-24 rounded-full border-4 border-blue-500/20 object-cover transition-all duration-300 group-hover:border-blue-400/50"[m
+[1mdiff --git a/frontend/src/components/home/community_spotlight/community_spotlight.component.tsx b/frontend/src/components/home/community_spotlight/community_spotlight.component.tsx[m
+[1mindex 36bbb6d..b471bd8 100644[m
+[1m--- a/frontend/src/components/home/community_spotlight/community_spotlight.component.tsx[m
+[1m+++ b/frontend/src/components/home/community_spotlight/community_spotlight.component.tsx[m
+[36m@@ -59,6 +59,9 @@[m [mconst CommunitySpotlightComponent = () => {[m
+   const { data, isLoading, isError } = useGetLatestListsQuery(undefined);[m
+   const navigate = useNavigate();[m
+ [m
+[32m+[m[32m  console.log("Posts Data:", data?.posts);[m
+[32m+[m
+[32m+[m[41m  [m
+   const topWriters = useMemo(() => {[m
+     const writers = new Map<string, Omit<SpotlightWriter, "engagementScore">>();[m
+ [m
+[36m@@ -114,18 +117,24 @@[m [mconst CommunitySpotlightComponent = () => {[m
+           <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-200">[m
+             Community Spotlight[m
+           </h2>[m
+[32m+[m[41m  [m
+           <p className="mt-2 text-slate-600 dark:text-gray-400">[m
+             Top contributors loved by the Story Spark community[m
+           </p>[m
+         </div>[m
+[31m-[m
+[31m-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-5 text-red-700 dark:border-red-900/70 dark:bg-red-900/20 dark:text-red-400">[m
+[31m-          Failed to load community spotlight writers. Please try again later.[m
+[32m+[m[41m  [m
+[32m+[m[32m        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">[m
+[32m+[m[32m          {[1, 2, 3, 4].map((item) => ([m
+[32m+[m[32m            <div[m
+[32m+[m[32m              key={item}[m
+[32m+[m[32m              className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-40"[m
+[32m+[m[32m            ></div>[m
+[32m+[m[32m          ))}[m
+         </div>[m
+       </section>[m
+     );[m
+   }[m
+[31m-[m
+[32m+[m[41m  [m
+   return ([m
+     <section className="px-5 py-10 text-slate-900 dark:text-slate-100">[m
+       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">[m
+[36m@@ -149,7 +158,7 @@[m [mconst CommunitySpotlightComponent = () => {[m
+       </div>[m
+ [m
+       {topWriters.length > 0 ? ([m
+[31m-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">[m
+[32m+[m[32m        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">[m
+           {topWriters.map((writer, index) => {[m
+             const rank = index + 1;[m
+             const style = rankStyles[index];[m
+[36m@@ -162,7 +171,7 @@[m [mconst CommunitySpotlightComponent = () => {[m
+                   writer.author.name || "Unknown User"[m
+                 }`}[m
+                 onClick={() => navigate(`/post/${writer.topPost._id}`)}[m
+[31m-                className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-5 text-left shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700/60 dark:bg-slate-900/70 dark:hover:border-blue-400/50 dark:focus:ring-offset-slate-950"[m
+[32m+[m[32m                className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 text-left transition-all duration-500 ease-out cursor-pointer hover:bg-blue-50 hover:-translate-y-4 hover:scale-105 hover:z-20 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/30"[m
+               >[m
+                 <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-violet-500 to-amber-400"></div>[m
+ [m
+[36m@@ -173,7 +182,7 @@[m [mconst CommunitySpotlightComponent = () => {[m
+                     >[m
+                       <SSProfile[m
+                         name={writer.author.name || "Unknown User"}[m
+[31m-                        size="h-14 w-14"[m
+[32m+[m[32m                        size="h-12 w-12"[m
+                       />[m
+                     </div>[m
+ [m
+[36m@@ -203,7 +212,7 @@[m [mconst CommunitySpotlightComponent = () => {[m
+                   </h3>[m
+                 </div>[m
+ [m
+[31m-                <div className="mt-auto grid grid-cols-2 gap-3 text-sm">[m
+[32m+[m[32m                <div className="mt-auto grid grid-cols-2 gap-2 text-sm">[m
+                   <div className="rounded-xl bg-blue-50 px-3 py-3 dark:bg-blue-500/10">[m
+                     <p className="text-lg font-bold text-blue-700 dark:text-blue-300">[m
+                       {formatMetric(writer.engagementScore)}[m
+[1mdiff --git a/frontend/src/components/home/feature/feature.component.tsx b/frontend/src/components/home/feature/feature.component.tsx[m
+[1mindex f89210e..d8c3f7b 100644[m
+[1m--- a/frontend/src/components/home/feature/feature.component.tsx[m
+[1m+++ b/frontend/src/components/home/feature/feature.component.tsx[m
+[36m@@ -6,9 +6,10 @@[m [mimport SSProfile from "../../ui-component/ss-profile/ss-profile";[m
+ import { useNavigate } from "react-router-dom";[m
+ import BookmarkButton from "../../BookmarkButton";[m
+ import React, { useState } from "react";[m
+[31m-[m
+[32m+[m[32mImageFallback[m
+ import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";[m
+ import { FaXTwitter } from "react-icons/fa6";[m
+[32m+[m[32mimport ImageFallback from "../../ImageFallback";[m
+ [m
+ const FeatureComponent = () => {[m
+   const { data, isLoading, isError } = useGetFeaturedListsQuery(undefined);[m
+[36m@@ -37,15 +38,23 @@[m [mconst FeatureComponent = () => {[m
+   }[m
+ [m
+   if (isError) {[m
+[31m-    return ([m
+[31m-      <div className="mb-12 text-slate-900 dark:text-slate-100">[m
+[31m-        <h2 className="text-2xl font-bold mb-6">Featured Posts</h2>[m
+[31m-        <div className="rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-900/20 px-4 py-5 text-red-700 dark:text-red-400">[m
+[31m-          Failed to load featured posts. Please try again later.[m
+[32m+[m[32m      return ([m
+[32m+[m[32m        <div className="mb-12 text-slate-900 dark:text-slate-100">[m
+[32m+[m[32m          <h2 className="text-2xl font-bold mb-6">[m
+[32m+[m[32m            Featured Posts[m
+[32m+[m[32m          </h2>[m
+[32m+[m[41m    [m
+[32m+[m[32m          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">[m
+[32m+[m[32m            {[1, 2, 3].map((item) => ([m
+[32m+[m[32m              <div[m
+[32m+[m[32m                key={item}[m
+[32m+[m[32m                className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72"[m
+[32m+[m[32m              ></div>[m
+[32m+[m[32m            ))}[m
+[32m+[m[32m          </div>[m
+         </div>[m
+[31m-      </div>[m
+[31m-    );[m
+[31m-  }[m
+[32m+[m[32m      );[m
+[32m+[m[32m    }[m
+ [m
+   return ([m
+     <div className="mb-12 text-slate-900 dark:text-slate-100">[m
+[36m@@ -65,7 +74,7 @@[m [mconst FeatureComponent = () => {[m
+                 className="motion-card h-full bg-blue-500/10 rounded-lg shadow-sm overflow-hidden border border-slate-700/40 cursor-pointer hover:bg-blue-500/20 hover:border-blue-400/30 flex flex-col group"[m
+               >[m
+                 <div className="relative overflow-hidden h-48">[m
+[31m-                  <img[m
+[32m+[m[32m                  <ImageFallback[m
+                     className="motion-image h-full w-full object-cover"[m
+                     src={post.imageURL}[m
+                     alt={post.title || "Featured Post"}[m
+[36m@@ -198,9 +207,7 @@[m [mconst FeatureComponent = () => {[m
+             );[m
+           })[m
+         ) : ([m
+[31m-          <div className="rounded-lg border border-slate-200 dark:border-slate-700/70 bg-slate-100 dark:bg-slate-900/40 px-4 py-5 text-slate-700 dark:text-slate-300">[m
+[31m-            Feature Post is not available![m
+[31m-          </div>[m
+[32m+[m[32m          <div className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72 w-full"></div>[m
+         )}[m
+       </div>[m
+     </div>[m
+[1mdiff --git a/frontend/src/components/home/latest_posts/latest_posts.component.tsx b/frontend/src/components/home/latest_posts/latest_posts.component.tsx[m
+[1mindex 79d886b..cd388f6 100644[m
+[1m--- a/frontend/src/components/home/latest_posts/latest_posts.component.tsx[m
+[1m+++ b/frontend/src/components/home/latest_posts/latest_posts.component.tsx[m
+[36m@@ -17,18 +17,17 @@[m [mconst LatestPostsComponent = () => {[m
+   }[m
+   return ([m
+     <div>[m
+[31m-      <h2 className="text-2xl font-bold text-gray-300 mb-6">Latest Posts</h2>[m
+[32m+[m[32m      <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-200 mb-6"> Latest Posts</h2>[m
+       <div className="space-y-6">[m
+         {data?.posts?.length ?? 0 > 0 ? ([m
+           data?.posts?.map((post: Post) => ([m
+             <div[m
+               key={post._id}[m
+[31m-              className="bg-blue-500/10 rounded-lg shadow-sm p-6"[m
+[31m-            >[m
+[32m+[m[32m              className="bg-blue-500/10 rounded-lg shadow-sm p-6 cursor-pointer transition-all duration-300 ease-out hover:-translate-y-3 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 hover:border-blue-400 hover:ring-2 hover:ring-blue-300 hover:z-10">[m
+               <div className="flex items-center mb-4">[m
+                 <SSProfile name={post.author?.name || 'Unknown User'} size="h-8 w-8" />[m
+                 <div className="ml-4">[m
+[31m-                  <p className="text-sm font-medium text-gray-400">[m
+[32m+[m[32m                  <p className="text-sm font-medium text-slate-700 dark:text-gray-300">[m
+                     {post.author?.name || 'Unknown User'}[m
+                   </p>[m
+                   <p className="text-xs text-gray-500">[m
+[36m@@ -36,21 +35,21 @@[m [mconst LatestPostsComponent = () => {[m
+                   </p>[m
+                 </div>[m
+               </div>[m
+[31m-              <h3 className="text-xl font-semibold text-gray-300 mb-2">[m
+[32m+[m[32m              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">[m
+                 {post.title}[m
+               </h3>[m
+[31m-              <p className="text-gray-400 mb-4">[m
+[32m+[m[32m              <p className="text-slate-700 dark:text-gray-300 mb-4">[m
+                 {post.content.slice(0, 170)}...[m
+               </p>[m
+               <div className="flex items-center justify-between">[m
+[31m-                <div className="flex items-center text-sm text-gray-400">[m
+[32m+[m[32m                <div className="flex items-center text-sm text-slate-600 dark:text-gray-400">[m
+                   <span className="flex items-center mr-4">[m
+                     <i className="far fa-heart mr-1"></i> {post.likesCount}[m
+                   </span>[m
+                   <span className="flex items-center mr-4">[m
+                     <i className="far fa-comment mr-1"></i> {post.commentsCount}[m
+                   </span>[m
+[31m-                  <span className="flex items-center mr-4 bg-blue-500/30 !text-white text-xs font-medium px-2 py-1 rounded-full border border-blue-400/50">[m
+[32m+[m[32m                  <span className="flex items-center mr-4 bg-blue-100 text-blue-800 dark:bg-blue-500/30 dark:text-white text-xs font-medium px-2 py-1 rounded-full border border-blue-300 dark:border-blue-400/50">[m
+                     <i className="far fa-clock mr-1"></i> {getReadingTime(post.content)}[m
+                   </span>[m
+                 </div>[m
+[36m@@ -68,7 +67,7 @@[m [mconst LatestPostsComponent = () => {[m
+             </div>[m
+           ))[m
+         ) : ([m
+[31m-          <div>Post is not available!</div>[m
+[32m+[m[32m          <div className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-64 w-full"></div>[m
+         )}[m
+       </div>[m
+     </div>[m
+[1mdiff --git a/frontend/src/components/home/recommended_writers/recommended_writers.component.tsx b/frontend/src/components/home/recommended_writers/recommended_writers.component.tsx[m
+[1mindex 1191a06..e29b74a 100644[m
+[1m--- a/frontend/src/components/home/recommended_writers/recommended_writers.component.tsx[m
+[1m+++ b/frontend/src/components/home/recommended_writers/recommended_writers.component.tsx[m
+[36m@@ -2,6 +2,8 @@[m [mimport React, { useState } from "react";[m
+ import { Link } from "react-router-dom";[m
+ import { isLoggedIn } from "../../../services/auth.service";[m
+ import { useToggleFollowMutation } from "../../../redux/apis/user.api";[m
+[32m+[m[32mimport ImageFallback from "../../ImageFallback";[m
+[32m+[m[32mImageFallback[m
+ [m
+ const RecommendedWritersComponent = () => {[m
+   const recommendedWriters = [[m
+[36m@@ -59,7 +61,7 @@[m [mconst RecommendedWritersComponent = () => {[m
+           {recommendedWriters.map((writer, index) => ([m
+             <div key={writer.id} className="flex items-center justify-between">[m
+               <div className="flex items-center">[m
+[31m-                <img[m
+[32m+[m[32m                <ImageFallback[m
+                   className="h-10 w-10 rounded-full"[m
+                   src={writer.image}[m
+                   alt={writer.name}[m
+[1mdiff --git a/frontend/src/components/home/writer_feedback/writer_feedback.component.tsx b/frontend/src/components/home/writer_feedback/writer_feedback.component.tsx[m
+[1mindex c164d02..a9edc92 100644[m
+[1m--- a/frontend/src/components/home/writer_feedback/writer_feedback.component.tsx[m
+[1m+++ b/frontend/src/components/home/writer_feedback/writer_feedback.component.tsx[m
+[36m@@ -1,7 +1,8 @@[m
+ import React from "react";[m
+ import { useGetReviewsQuery } from "../../../redux/apis/review.api";[m
+ import { Review } from "../../../models/review";[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../../ImageFallback";[m
+[32m+[m[32mImageFallback[m
+ const WriterFeedbackComponent = () => {[m
+   const { data: feedbackData = [], isLoading } =[m
+     useGetReviewsQuery({});[m
+[36m@@ -34,7 +35,7 @@[m [mconst WriterFeedbackComponent = () => {[m
+               className="bg-blue-500/10 p-6 rounded-xl transform transition-transform hover:scale-105"[m
+             >[m
+               <div className="flex items-center mb-4">[m
+[31m-                <img[m
+[32m+[m[32m                <ImageFallback[m
+                   className="h-12 w-12 rounded-full ring-4 ring-white"[m
+                   src={writer.imgSrc}[m
+                   alt={writer.name}[m
+[1mdiff --git a/frontend/src/components/post/post.details.component.tsx b/frontend/src/components/post/post.details.component.tsx[m
+[1mindex f147404..fbee9dd 100644[m
+[1m--- a/frontend/src/components/post/post.details.component.tsx[m
+[1m+++ b/frontend/src/components/post/post.details.component.tsx[m
+[36m@@ -15,6 +15,7 @@[m [mimport PostCommentComponent from "./post.comment.component";[m
+ [m
+ import LoadingAnimation from "../loading/loading.component";[m
+ import SSProfile from "../ui-component/ss-profile/ss-profile";[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+ import BookmarkButton from "../BookmarkButton";[m
+ [m
+ import { formatDateShort } from "../../utils/time-formate";[m
+[36m@@ -31,6 +32,7 @@[m [mimport { toast } from "react-hot-toast";[m
+ [m
+ import { FaXTwitter } from "react-icons/fa6";[m
+ [m
+[32m+[m
+ interface IStoryVersion {[m
+   _id: string;[m
+   storyId: string;[m
+[36m@@ -51,11 +53,25 @@[m [mconst PostDetailsComponent = () => {[m
+   const { data: post, isLoading } = useGetPostByIdQuery(id || "");[m
+ [m
+   const tag = post?.tag;[m
+[31m-  const { data: relatedPost } = useGetPostByTagQuery({[m
+[31m-    tag: tag || "",[m
+[31m-    excludeId: post?._id || "",[m
+[31m-  });[m
+ [m
+[32m+[m[32m  const { data: relatedPost } = useGetPostByTagQuery([m
+[32m+[m[32m    {[m
+[32m+[m[32m      tag: tag || "",[m
+[32m+[m[32m      excludeId: post?._id || "",[m
+[32m+[m[32m    },[m
+[32m+[m[32m    {[m
+[32m+[m[32m      skip: !tag,[m
+[32m+[m[32m    }[m
+[32m+[m[32m  );[m
+[32m+[m[41m  [m
+[32m+[m
+[32m+[m[32m  console.log("Current Post:", post);[m
+[32m+[m[32m  console.log("Tag:", tag);[m
+[32m+[m[32m  console.log([m
+[32m+[m[32m  "Related Posts Full Data:",[m
+[32m+[m[32m  JSON.stringify(relatedPost, null, 2)[m
+[32m+[m[32m);[m
+[32m+[m[41m  [m
+   const [toggleReaction] = useToggleReactionMutation();[m
+   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();[m
+   const currentUser = getUserInfo();[m
+[36m@@ -353,9 +369,9 @@[m [mconst PostDetailsComponent = () => {[m
+                 )}[m
+ [m
+                 <div className="mb-12">[m
+[31m-                  <img[m
+[32m+[m[32m                  <ImageFallback[m
+                     src={post?.imageURL}[m
+[31m-                    alt={post?.title}[m
+[32m+[m[32m                    alt={post?.title || "Story image"}[m
+                     className="w-full h-[400px] object-cover rounded-lg shadow-md"[m
+                   />[m
+                 </div>[m
+[1mdiff --git a/frontend/src/components/post/post.feature.component.tsx b/frontend/src/components/post/post.feature.component.tsx[m
+[1mindex e24fb7b..945efbd 100644[m
+[1m--- a/frontend/src/components/post/post.feature.component.tsx[m
+[1m+++ b/frontend/src/components/post/post.feature.component.tsx[m
+[36m@@ -2,6 +2,7 @@[m [mimport React from "react";[m
+ import { useGetFeaturedListsQuery } from "../../redux/apis/post.api";[m
+ import { Post } from "../../models/post";[m
+ import LoadingAnimation from "../loading/loading.component";[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+ [m
+ const ExploreFeatureComponent = () => {[m
+   const { data, isLoading, isError } = useGetFeaturedListsQuery(undefined);[m
+[36m@@ -9,18 +10,27 @@[m [mconst ExploreFeatureComponent = () => {[m
+     return <LoadingAnimation />;[m
+   }[m
+   if (isError) {[m
+[31m-    return ([m
+[31m-      <div className="rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-900/20 px-4 py-5 text-red-700 dark:text-red-400">[m
+[31m-        Failed to load featured posts. Please try again later.[m
+[31m-      </div>[m
+[31m-    );[m
+[32m+[m[32m  return ([m
+[32m+[m[32m    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">[m
+[32m+[m[32m      {[1, 2, 3].map((item) => ([m
+[32m+[m[32m        <div[m
+[32m+[m[32m          key={item}[m
+[32m+[m[32m          className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72"[m
+[32m+[m[32m        ></div>[m
+[32m+[m[32m      ))}[m
+[32m+[m[32m    </div>[m
+[32m+[m[32m  );[m
+   }[m
+   return ([m
+     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">[m
+       {(data?.posts?.length ?? 0) > 0 ? ([m
+         data?.posts?.map((post: Post) => ([m
+           <div key={post._id} className="relative group overflow-hidden rounded-3xl border border-gray-200 shadow-2xl cursor-pointer bg-white text-slate-900 dark:bg-transparent dark:border-slate-700/50 dark:text-white">[m
+[31m-            <img src={post.imageURL} className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />[m
+[32m+[m[32m            <ImageFallback[m
+[32m+[m[32m                  src="broken-url"[m
+[32m+[m[32m                  alt={post.title || "Post Image"}[m
+[32m+[m[32m                  className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700 ease-out"[m
+[32m+[m[32m                />[m
+             <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent p-8 flex flex-col justify-end dark:from-slate-950 dark:via-slate-900/60 dark:to-transparent">[m
+               <h3 className="text-slate-900 text-3xl font-bold tracking-tight drop-shadow-md group-hover:text-blue-600 transition-colors dark:text-white dark:group-hover:text-blue-300">{post.title}</h3>[m
+               <p className="text-slate-600 text-base mt-3 leading-relaxed max-w-2xl line-clamp-2 dark:text-slate-300">[m
+[36m@@ -39,7 +49,7 @@[m [mconst ExploreFeatureComponent = () => {[m
+           </div>[m
+         ))[m
+       ) : ([m
+[31m-        <div>Feature Post is not available!</div>[m
+[32m+[m[32m        <div className="animate-pulse rounded-xl bg-gray-200 dark:bg-slate-800 h-72 w-full"></div>[m
+       )}[m
+     </div>[m
+   );[m
+[1mdiff --git a/frontend/src/components/post/post.view.list.component.tsx b/frontend/src/components/post/post.view.list.component.tsx[m
+[1mindex 62800a6..eae35ce 100644[m
+[1m--- a/frontend/src/components/post/post.view.list.component.tsx[m
+[1m+++ b/frontend/src/components/post/post.view.list.component.tsx[m
+[36m@@ -1,7 +1,8 @@[m
+ import React from "react";[m
+ import { useNavigate } from "react-router-dom";[m
+ import { Post } from "../../models/post";[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+[32m+[m[32mImageFallback[m
+ interface IExploreViewListComponentProps {[m
+   posts: Post[];[m
+   isLoading: boolean;[m
+[36m@@ -61,10 +62,10 @@[m [mconst ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({[m
+               className="cursor-pointer bg-gray-50 text-slate-900 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden group flex flex-col h-full dark:bg-slate-900/50 dark:text-white dark:border-none"[m
+             >[m
+               <div className="relative overflow-hidden">[m
+[31m-                <img[m
+[31m-                  src={story.imageURL}[m
+[31m-                  alt={`Cover image for ${story.title}`}[m
+[31m-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"[m
+[32m+[m[32m                <ImageFallback[m
+[32m+[m[32m                    src={story.imageURL}[m
+[32m+[m[32m                    alt={`Cover image for ${story.title}`}[m
+[32m+[m[32m                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"[m
+                 />[m
+ [m
+                 <div className="absolute inset-0 bg-gradient-to-t from-gray-100 to-transparent opacity-70 pointer-events-none dark:from-slate-900 dark:to-transparent dark:opacity-60"></div>[m
+[1mdiff --git a/frontend/src/components/post/related.stories.view.component.tsx b/frontend/src/components/post/related.stories.view.component.tsx[m
+[1mindex 58946ff..7b7d98b 100644[m
+[1m--- a/frontend/src/components/post/related.stories.view.component.tsx[m
+[1m+++ b/frontend/src/components/post/related.stories.view.component.tsx[m
+[36m@@ -1,7 +1,8 @@[m
+ import React from "react";[m
+ import { Post } from "../../models/post";[m
+ import { useNavigate } from "react-router-dom";[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+[32m+[m[32mImageFallback[m
+ interface IRelatedStoriesComponentProps {[m
+   posts: Post[],[m
+   currentPostId: string;[m
+[36m@@ -13,21 +14,26 @@[m [mconst RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({[m
+   const navigate = useNavigate();[m
+   const filteredPosts=posts.filter((post)=>post._id!==currentPostId)[m
+   return ([m
+[31m-    <div className="grid grid-cols-2 gap-6">[m
+[31m-      {filteredPosts.length > 0 ? ([m
+[31m-        filteredPosts.map((post: Post) => ([m
+[32m+[m[32m    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">[m
+[32m+[m[32m  {filteredPosts.length > 0 ? ([m
+[32m+[m[32m  filteredPosts.map((post: Post) => {[m
+[32m+[m
+[32m+[m[32m    console.log("Story:", post.title);[m
+[32m+[m[32m    console.log("Image URL:", post.imageURL);[m
+[32m+[m
+[32m+[m[32m    return ([m
+           <div[m
+             onClick={() => navigate(`/post/${post._id}`)}[m
+             key={post._id}[m
+             className="cursor-pointer bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden group flex flex-col h-full"[m
+           >[m
+             <div className="relative overflow-hidden">[m
+[31m-              <img[m
+[31m-                src={post.imageURL}[m
+[31m-                alt="Related Story"[m
+[31m-                className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"[m
+[31m-              />[m
+[31m-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 pointer-events-none"></div>[m
+[32m+[m[32m                <ImageFallback[m
+[32m+[m[32m                  src={post.imageURL}[m
+[32m+[m[32m                  alt={post.title}[m
+[32m+[m[32m                  className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"[m
+[32m+[m[32m                />[m
+[32m+[m[32m              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none"></div>[m
+             </div>[m
+             <div className="p-5 flex flex-col flex-1">[m
+               <h4 className="font-bold text-lg mb-2 text-slate-100 group-hover:text-blue-400 transition-colors line-clamp-2">[m
+[36m@@ -38,7 +44,9 @@[m [mconst RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({[m
+               </p>[m
+             </div>[m
+           </div>[m
+[31m-        ))[m
+[32m+[m[32m        );[m
+[32m+[m[41m        [m
+[32m+[m[32m        })[m
+       ) : ([m
+         <p className="text-center text-slate-500 col-span-2 py-8">No related stories found.</p>[m
+       )}[m
+[1mdiff --git a/frontend/src/components/stories/stories.view.component.tsx b/frontend/src/components/stories/stories.view.component.tsx[m
+[1mindex 95ff35b..619ae8c 100644[m
+[1m--- a/frontend/src/components/stories/stories.view.component.tsx[m
+[1m+++ b/frontend/src/components/stories/stories.view.component.tsx[m
+[36m@@ -10,11 +10,12 @@[m [mimport logo from "../../assets/logoNew.png";[m
+ import StoryGeneratingAnimation from "../loading/story-generating-animation.component";[m
+ import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";[m
+ import { useLocation } from "react-router-dom";[m
+[31m-[m
+[32m+[m[32mImageFallback[m
+ import {[m
+   useGenerateAlternateEndingsMutation,[m
+   useGenerateFreeAlternateEndingsMutation,[m
+ } from "../../redux/apis/ai.model.api";[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+ export interface IStories {[m
+   uuid: string;[m
+   title: string;[m
+[36m@@ -707,7 +708,7 @@[m [mif (isLoading) {[m
+                       } hover:scale-110 transition-transform duration-200 focus:outline-none`}[m
+                       onClick={() => handelStorySelection(story)}[m
+                     >[m
+[31m-                      <img[m
+[32m+[m[32m                      <ImageFallback[m
+                         src={story.imageURL}[m
+                         alt={story.title}[m
+                         className="w-full h-full object-cover rounded-full"[m
+[36m@@ -1025,7 +1026,7 @@[m [mif (isLoading) {[m
+           <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">[m
+             <div className="relative flex flex-col rounded-lg">[m
+               <div className="relative m-3 overflow-hidden text-white rounded-xl">[m
+[31m-                <img[m
+[32m+[m[32m                <ImageFallback[m
+                   src={selectedStory.imageURL}[m
+                   alt="card-image"[m
+                   className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"[m
+[1mdiff --git a/frontend/src/components/story-inspiration/story_inspiration_card.component.tsx b/frontend/src/components/story-inspiration/story_inspiration_card.component.tsx[m
+[1mindex 73841f3..9be04b2 100644[m
+[1m--- a/frontend/src/components/story-inspiration/story_inspiration_card.component.tsx[m
+[1m+++ b/frontend/src/components/story-inspiration/story_inspiration_card.component.tsx[m
+[36m@@ -1,6 +1,7 @@[m
+ import React, { useState } from "react";[m
+ import { useNavigate } from "react-router-dom";[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+[32m+[m[32mImageFallback[m
+ export interface StoryInspiration {[m
+   id: string;[m
+   title: string;[m
+[36m@@ -92,13 +93,10 @@[m [mconst StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>[m
+       {/* Zoom-in Card Cover Image */}[m
+       <div className="relative h-44 w-full overflow-hidden bg-gray-100 dark:bg-[#0A0E17]">[m
+         <div className="absolute inset-0 bg-gradient-to-t from-gray-100 via-gray-100/50 to-transparent z-10 pointer-events-none dark:from-[#0B0F19] dark:via-[#0B0F19]/50 dark:to-transparent" />[m
+[31m-        <img[m
+[31m-          src={image}[m
+[31m-          alt={title}[m
+[31m-          onError={(e) => {[m
+[31m-            e.currentTarget.style.display = "none";[m
+[31m-          }}[m
+[31m-          className="motion-image w-full h-full object-cover"[m
+[32m+[m[32m        <ImageFallback[m
+[32m+[m[32m            src={image}[m
+[32m+[m[32m            alt={title}[m
+[32m+[m[32m            className="motion-image w-full h-full object-cover"[m
+         />[m
+         [m
+         {/* Genre tag */}[m
+[1mdiff --git a/frontend/src/components/templates/templates.component.tsx b/frontend/src/components/templates/templates.component.tsx[m
+[1mindex 7e4ceb8..8836bcd 100644[m
+[1m--- a/frontend/src/components/templates/templates.component.tsx[m
+[1m+++ b/frontend/src/components/templates/templates.component.tsx[m
+[36m@@ -31,12 +31,9 @@[m [mconst TemplateCard: React.FC<TemplateCardProps> = ({[m
+       {/* Banner Image with Zoom Effect */}[m
+       <div className="relative h-48 overflow-hidden w-full shrink-0 bg-[#0B0F19]">[m
+         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/40 to-transparent z-10 pointer-events-none"></div>[m
+[31m-        <img [m
+[31m-          src={image} [m
+[31m-          alt={title} [m
+[31m-          onError={(e) => {[m
+[31m-            e.currentTarget.style.display = "none";[m
+[31m-          }}[m
+[32m+[m[32m        <ImageFallback[m
+[32m+[m[32m          src={image}[m
+[32m+[m[32m          alt={title}[m
+           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"[m
+         />[m
+         {/* Category badge */}[m
+[1mdiff --git a/frontend/src/components/top_header/top_header.component.tsx b/frontend/src/components/top_header/top_header.component.tsx[m
+[1mindex 32f3493..3d81c6b 100644[m
+[1m--- a/frontend/src/components/top_header/top_header.component.tsx[m
+[1m+++ b/frontend/src/components/top_header/top_header.component.tsx[m
+[36m@@ -1,5 +1,6 @@[m
+ import { useState } from "react";[m
+ import logo from "../../assets/logo.png";[m
+[32m+[m[32mimport ImageFallback from "../ImageFallback";[m
+ [m
+ const TopHeaderComponent = () => {[m
+   const [, setShowNotification] = useState<boolean>(false);[m
+[36m@@ -57,7 +58,7 @@[m [mconst TopHeaderComponent = () => {[m
+                     type="button"[m
+                     className="!rounded-button bg-white flex text-sm rounded-full focus:outline-none"[m
+                   >[m
+[31m-                    <img[m
+[32m+[m[32m                    <ImageFallback[m
+                       className="h-8 w-8 rounded-full"[m
+                       src="https://avatars.githubusercontent.com/u/76697055?v=4"[m
+                       alt="profile"[m
+[1mdiff --git a/frontend/src/components/ui-component/ss-profile/ss-profile.tsx b/frontend/src/components/ui-component/ss-profile/ss-profile.tsx[m
+[1mindex 78ef016..628f212 100644[m
+[1m--- a/frontend/src/components/ui-component/ss-profile/ss-profile.tsx[m
+[1m+++ b/frontend/src/components/ui-component/ss-profile/ss-profile.tsx[m
+[36m@@ -1,5 +1,6 @@[m
+ import React from "react";[m
+[31m-[m
+[32m+[m[32mimport ImageFallback from "../../ImageFallback";[m
+[32m+[m[32mImageFallback[m
+ type SSProfileProps = {[m
+   name: string;[m
+   imageUrl?: string;[m
+[36m@@ -22,10 +23,14 @@[m [mconst SSProfile: React.FC<SSProfileProps> = ({[m
+   const textSize = size.includes("h-8") ? "text-xs" : size.includes("h-12") ? "text-sm" : "text-lg";[m
+   return ([m
+     <div[m
+[31m-      className={`rounded-full flex items-center justify-center text-gray-300 text-lg font-bold overflow-hidden border border-gray-500 ${size} ${textSize}`}[m
+[32m+[m[32m      className={`rounded-full flex items-center justify-center text-slate-700 dark:text-gray-300 text-lg font-bold overflow-hidden border border-gray-500 ${size} ${textSize}`}[m
+     >[m
+       {imageUrl ? ([m
+[31m-        <img className="h-full w-full object-cover" src={imageUrl} alt={name} />[m
+[32m+[m[32m          <ImageFallback[m
+[32m+[m[32m              className="h-full w-full object-cover"[m
+[32m+[m[32m              src={imageUrl}[m
+[32m+[m[32m              alt={name}[m
+[32m+[m[32m            />[m
+       ) : ([m
+         <span>{getInitials(name)}</span>[m
+       )}[m
+[1mdiff --git a/package-lock.json b/package-lock.json[m
+[1mindex 8c748ce..7ef4a3e 100644[m
+[1m--- a/package-lock.json[m
+[1m+++ b/package-lock.json[m
+[36m@@ -35,7 +35,7 @@[m
+       "license": "MIT",[m
+       "dependencies": {[m
+         "@google/generative-ai": "^0.23.0",[m
+[31m-        "bcrypt": "^5.1.1",[m
+[32m+[m[32m        "bcryptjs": "^3.0.3",[m
+         "cookie-parser": "^1.4.7",[m
+         "cors": "^2.8.5",[m
+         "dns": "^0.1.2",[m
+[36m@@ -55,7 +55,7 @@[m
+         "zod": "^3.24.2"[m
+       },[m
+       "devDependencies": {[m
+[31m-        "@types/bcrypt": "^5.0.2",[m
+[32m+[m[32m        "@types/bcryptjs": "^3.0.0",[m
+         "@types/cookie-parser": "^1.4.8",[m
+         "@types/cors": "^2.8.17",[m
+         "@types/express": "^5.0.0",[m
+[36m@@ -166,11 +166,6 @@[m
+         "node": ">= 0.10.0 < 0.11.0"[m
+       }[m
+     },[m
+[31m-    "backend/node_modules/dns/node_modules/async": {[m
+[31m-      "version": "0.2.10",[m
+[31m-      "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz",[m
+[31m-      "integrity": "sha512-eAkdoKxU6/LkKDBzLpT+t6Ff5EtfSF4wx1WfJiPEEV7WNLnDaRXk0oVysiEPm262roaachGexwUv94WhSgN5TQ=="[m
+[31m-    },[m
+     "backend/node_modules/dns/node_modules/winston": {[m
+       "version": "0.7.3",[m
+       "resolved": "https://registry.npmjs.org/winston/-/winston-0.7.3.tgz",[m
+[36m@@ -540,11 +535,6 @@[m
+         "node": ">= 0.8.0 < 0.11.0"[m
+       }[m
+     },[m
+[31m-    "backend/node_modules/tomahawk/node_modules/async": {[m
+[31m-      "version": "0.2.10",[m
+[31m-      "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz",[m
+[31m-      "integrity": "sha512-eAkdoKxU6/LkKDBzLpT+t6Ff5EtfSF4wx1WfJiPEEV7WNLnDaRXk0oVysiEPm262roaachGexwUv94WhSgN5TQ=="[m
+[31m-    },[m
+     "backend/node_modules/tomahawk/node_modules/depd": {[m
+       "version": "0.3.0",[m
+       "resolved": "https://registry.npmjs.org/depd/-/depd-0.3.0.tgz",[m
+[36m@@ -1401,34 +1391,6 @@[m
+       "version": "0.3.4",[m
+       "license": "MIT"[m
+     },[m
+[31m-    "node_modules/@mapbox/node-pre-gyp": {[m
+[31m-      "version": "1.0.11",[m
+[31m-      "license": "BSD-3-Clause",[m
+[31m-      "dependencies": {[m
+[31m-        "detect-libc": "^2.0.0",[m
+[31m-        "https-proxy-agent": "^5.0.0",[m
+[31m-        "make-dir": "^3.1.0",[m
+[31m-        "node-fetch": "^2.6.7",[m
+[31m-        "nopt": "^5.0.0",[m
+[31m-        "npmlog": "^5.0.1",[m
+[31m-        "rimraf": "^3.0.2",[m
+[31m-        "semver": "^7.3.5",[m
+[31m-        "tar": "^6.1.11"[m
+[31m-      },[m
+[31m-      "bin": {[m
+[31m-        "node-pre-gyp": "bin/node-pre-gyp"[m
+[31m-      }[m
+[31m-    },[m
+[31m-    "node_modules/@mapbox/node-pre-gyp/node_modules/semver": {[m
+[31m-      "version": "7.8.0",[m
+[31m-      "license": "ISC",[m
+[31m-      "bin": {[m
+[31m-        "semver": "bin/semver.js"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">=10"[m
+[31m-      }[m
+[31m-    },[m
+     "node_modules/@mongodb-js/saslprep": {[m
+       "version": "1.4.11",[m
+       "license": "MIT",[m
+[36m@@ -1675,12 +1637,15 @@[m
+         "@babel/types": "^7.28.2"[m
+       }[m
+     },[m
+[31m-    "node_modules/@types/bcrypt": {[m
+[31m-      "version": "5.0.2",[m
+[32m+[m[32m    "node_modules/@types/bcryptjs": {[m
+[32m+[m[32m      "version": "3.0.0",[m
+[32m+[m[32m      "resolved": "https://registry.npmjs.org/@types/bcryptjs/-/bcryptjs-3.0.0.tgz",[m
+[32m+[m[32m      "integrity": "sha512-WRZOuCuaz8UcZZE4R5HXTco2goQSI2XxjGY3hbM/xDvwmqFWd4ivooImsMx65OKM6CtNKbnZ5YL+YwAwK7c1dg==",[m
+[32m+[m[32m      "deprecated": "This is a stub types definition. bcryptjs provides its own type definitions, so you do not need this installed.",[m
+       "dev": true,[m
+       "license": "MIT",[m
+       "dependencies": {[m
+[31m-        "@types/node": "*"[m
+[32m+[m[32m        "bcryptjs": "*"[m
+       }[m
+     },[m
+     "node_modules/@types/body-parser": {[m
+[36m@@ -2530,10 +2495,6 @@[m
+         "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"[m
+       }[m
+     },[m
+[31m-    "node_modules/abbrev": {[m
+[31m-      "version": "1.1.1",[m
+[31m-      "license": "ISC"[m
+[31m-    },[m
+     "node_modules/abort-controller": {[m
+       "version": "3.0.0",[m
+       "license": "MIT",[m
+[36m@@ -2625,6 +2586,7 @@[m
+     },[m
+     "node_modules/ansi-regex": {[m
+       "version": "5.0.1",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "MIT",[m
+       "engines": {[m
+         "node": ">=8"[m
+[36m@@ -2660,33 +2622,6 @@[m
+       "version": "1.0.0",[m
+       "license": "MIT"[m
+     },[m
+[31m-    "node_modules/aproba": {[m
+[31m-      "version": "2.1.0",[m
+[31m-      "license": "ISC"[m
+[31m-    },[m
+[31m-    "node_modules/are-we-there-yet": {[m
+[31m-      "version": "2.0.0",[m
+[31m-      "license": "ISC",[m
+[31m-      "dependencies": {[m
+[31m-        "delegates": "^1.0.0",[m
+[31m-        "readable-stream": "^3.6.0"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">=10"[m
+[31m-      }[m
+[31m-    },[m
+[31m-    "node_modules/are-we-there-yet/node_modules/readable-stream": {[m
+[31m-      "version": "3.6.2",[m
+[31m-      "license": "MIT",[m
+[31m-      "dependencies": {[m
+[31m-        "inherits": "^2.0.3",[m
+[31m-        "string_decoder": "^1.1.1",[m
+[31m-        "util-deprecate": "^1.0.1"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">= 6"[m
+[31m-      }[m
+[31m-    },[m
+     "node_modules/arg": {[m
+       "version": "4.1.3",[m
+       "dev": true,[m
+[36m@@ -2736,6 +2671,7 @@[m
+     },[m
+     "node_modules/balanced-match": {[m
+       "version": "1.0.2",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "MIT"[m
+     },[m
+     "node_modules/base64-arraybuffer": {[m
+[36m@@ -2784,16 +2720,13 @@[m
+       "version": "1.0.0",[m
+       "license": "MIT"[m
+     },[m
+[31m-    "node_modules/bcrypt": {[m
+[31m-      "version": "5.1.1",[m
+[31m-      "hasInstallScript": true,[m
+[31m-      "license": "MIT",[m
+[31m-      "dependencies": {[m
+[31m-        "@mapbox/node-pre-gyp": "^1.0.11",[m
+[31m-        "node-addon-api": "^5.0.0"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">= 10.0.0"[m
+[32m+[m[32m    "node_modules/bcryptjs": {[m
+[32m+[m[32m      "version": "3.0.3",[m
+[32m+[m[32m      "resolved": "https://registry.npmjs.org/bcryptjs/-/bcryptjs-3.0.3.tgz",[m
+[32m+[m[32m      "integrity": "sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==",[m
+[32m+[m[32m      "license": "BSD-3-Clause",[m
+[32m+[m[32m      "bin": {[m
+[32m+[m[32m        "bcrypt": "bin/bcrypt"[m
+       }[m
+     },[m
+     "node_modules/better-assert": {[m
+[36m@@ -2882,6 +2815,7 @@[m
+     },[m
+     "node_modules/brace-expansion": {[m
+       "version": "1.1.14",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "MIT",[m
+       "dependencies": {[m
+         "balanced-match": "^1.0.0",[m
+[36m@@ -3123,13 +3057,6 @@[m
+         "node": ">= 6"[m
+       }[m
+     },[m
+[31m-    "node_modules/chownr": {[m
+[31m-      "version": "2.0.0",[m
+[31m-      "license": "ISC",[m
+[31m-      "engines": {[m
+[31m-        "node": ">=10"[m
+[31m-      }[m
+[31m-    },[m
+     "node_modules/ci-info": {[m
+       "version": "3.9.0",[m
+       "resolved": "https://registry.npmjs.org/ci-info/-/ci-info-3.9.0.tgz",[m
+[36m@@ -3214,13 +3141,6 @@[m
+         "node": ">=12.20"[m
+       }[m
+     },[m
+[31m-    "node_modules/color-support": {[m
+[31m-      "version": "1.1.3",[m
+[31m-      "license": "ISC",[m
+[31m-      "bin": {[m
+[31m-        "color-support": "bin.js"[m
+[31m-      }[m
+[31m-    },[m
+     "node_modules/color/node_modules/color-convert": {[m
+       "version": "3.1.3",[m
+       "license": "MIT",[m
+[36m@@ -3271,6 +3191,7 @@[m
+     },[m
+     "node_modules/concat-map": {[m
+       "version": "0.0.1",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "MIT"[m
+     },[m
+     "node_modules/concat-stream": {[m
+[36m@@ -3363,10 +3284,6 @@[m
+         "node": ">= 0.4.0"[m
+       }[m
+     },[m
+[31m-    "node_modules/console-control-strings": {[m
+[31m-      "version": "1.1.0",[m
+[31m-      "license": "ISC"[m
+[31m-    },[m
+     "node_modules/content-disposition": {[m
+       "version": "0.5.4",[m
+       "license": "MIT",[m
+[36m@@ -3968,10 +3885,6 @@[m
+         "node": ">=0.4.0"[m
+       }[m
+     },[m
+[31m-    "node_modules/delegates": {[m
+[31m-      "version": "1.0.0",[m
+[31m-      "license": "MIT"[m
+[31m-    },[m
+     "node_modules/depd": {[m
+       "version": "2.0.0",[m
+       "license": "MIT",[m
+[36m@@ -4076,6 +3989,7 @@[m
+     },[m
+     "node_modules/emoji-regex": {[m
+       "version": "8.0.0",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "MIT"[m
+     },[m
+     "node_modules/enabled": {[m
+[36m@@ -4111,16 +4025,39 @@[m
+       }[m
+     },[m
+     "node_modules/engine.io-client": {[m
+[31m-      "version": "6.6.4",[m
+[32m+[m[32m      "version": "6.6.5",[m
+[32m+[m[32m      "resolved": "https://registry.npmjs.org/engine.io-client/-/engine.io-client-6.6.5.tgz",[m
+[32m+[m[32m      "integrity": "sha512-QCwxUDULPlXv8F6tqMMKx5dNkTe6OaBYRMPYeXKBlyOoKvAmE0ac6pW7fFhSscJ/5SI7666/U/B+MElbsrJlIg==",[m
+       "license": "MIT",[m
+       "dependencies": {[m
+         "@socket.io/component-emitter": "~3.1.0",[m
+         "debug": "~4.4.1",[m
+         "engine.io-parser": "~5.2.1",[m
+[31m-        "ws": "~8.18.3",[m
+[32m+[m[32m        "ws": "~8.20.1",[m
+         "xmlhttprequest-ssl": "~2.1.1"[m
+       }[m
+     },[m
+[32m+[m[32m    "node_modules/engine.io-client/node_modules/ws": {[m
+[32m+[m[32m      "version": "8.20.1",[m
+[32m+[m[32m      "resolved": "https://registry.npmjs.org/ws/-/ws-8.20.1.tgz",[m
+[32m+[m[32m      "integrity": "sha512-It4dO0K5v//JtTXuPkfEOaI3uUN87iYPnqo/ZzqCoG3g8uhA66QUMs/SrM0YK7/NAu+r4LMh/9dq2A7k+rHs+w==",[m
+[32m+[m[32m      "license": "MIT",[m
+[32m+[m[32m      "engines": {[m
+[32m+[m[32m        "node": ">=10.0.0"[m
+[32m+[m[32m      },[m
+[32m+[m[32m      "peerDependencies": {[m
+[32m+[m[32m        "bufferutil": "^4.0.1",[m
+[32m+[m[32m        "utf-8-validate": ">=5.0.2"[m
+[32m+[m[32m      },[m
+[32m+[m[32m      "peerDependenciesMeta": {[m
+[32m+[m[32m        "bufferutil": {[m
+[32m+[m[32m          "optional": true[m
+[32m+[m[32m        },[m
+[32m+[m[32m        "utf-8-validate": {[m
+[32m+[m[32m          "optional": true[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+[32m+[m[32m    },[m
+     "node_modules/engine.io-parser": {[m
+       "version": "5.2.3",[m
+       "license": "MIT",[m
+[36m@@ -4811,32 +4748,9 @@[m
+         "node": ">= 0.6"[m
+       }[m
+     },[m
+[31m-    "node_modules/fs-minipass": {[m
+[31m-      "version": "2.1.0",[m
+[31m-      "license": "ISC",[m
+[31m-      "dependencies": {[m
+[31m-        "minipass": "^3.0.0"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">= 8"[m
+[31m-      }[m
+[31m-    },[m
+[31m-    "node_modules/fs-minipass/node_modules/minipass": {[m
+[31m-      "version": "3.3.6",[m
+[31m-      "license": "ISC",[m
+[31m-      "dependencies": {[m
+[31m-        "yallist": "^4.0.0"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">=8"[m
+[31m-      }[m
+[31m-    },[m
+[31m-    "node_modules/fs-minipass/node_modules/yallist": {[m
+[31m-      "version": "4.0.0",[m
+[31m-      "license": "ISC"[m
+[31m-    },[m
+     "node_modules/fs.realpath": {[m
+       "version": "1.0.0",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "ISC"[m
+     },[m
+     "node_modules/fsevents": {[m
+[36m@@ -4860,24 +4774,6 @@[m
+         "url": "https://github.com/sponsors/ljharb"[m
+       }[m
+     },[m
+[31m-    "node_modules/gauge": {[m
+[31m-      "version": "3.0.2",[m
+[31m-      "license": "ISC",[m
+[31m-      "dependencies": {[m
+[31m-        "aproba": "^1.0.3 || ^2.0.0",[m
+[31m-        "color-support": "^1.1.2",[m
+[31m-        "console-control-strings": "^1.0.0",[m
+[31m-        "has-unicode": "^2.0.1",[m
+[31m-        "object-assign": "^4.1.1",[m
+[31m-        "signal-exit": "^3.0.0",[m
+[31m-        "string-width": "^4.2.3",[m
+[31m-        "strip-ansi": "^6.0.1",[m
+[31m-        "wide-align": "^1.1.2"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">=10"[m
+[31m-      }[m
+[31m-    },[m
+     "node_modules/gaxios": {[m
+       "version": "7.1.4",[m
+       "license": "Apache-2.0",[m
+[36m@@ -4977,6 +4873,7 @@[m
+     },[m
+     "node_modules/glob": {[m
+       "version": "7.2.3",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "ISC",[m
+       "dependencies": {[m
+         "fs.realpath": "^1.0.0",[m
+[36m@@ -5129,10 +5026,6 @@[m
+         "url": "https://github.com/sponsors/ljharb"[m
+       }[m
+     },[m
+[31m-    "node_modules/has-unicode": {[m
+[31m-      "version": "2.0.1",[m
+[31m-      "license": "ISC"[m
+[31m-    },[m
+     "node_modules/hasown": {[m
+       "version": "2.0.3",[m
+       "license": "MIT",[m
+[36m@@ -5280,6 +5173,7 @@[m
+     },[m
+     "node_modules/inflight": {[m
+       "version": "1.0.6",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "ISC",[m
+       "dependencies": {[m
+         "once": "^1.3.0",[m
+[36m@@ -5345,6 +5239,7 @@[m
+     },[m
+     "node_modules/is-fullwidth-code-point": {[m
+       "version": "3.0.0",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "MIT",[m
+       "engines": {[m
+         "node": ">=8"[m
+[36m@@ -5801,19 +5696,6 @@[m
+         "@jridgewell/sourcemap-codec": "^1.5.5"[m
+       }[m
+     },[m
+[31m-    "node_modules/make-dir": {[m
+[31m-      "version": "3.1.0",[m
+[31m-      "license": "MIT",[m
+[31m-      "dependencies": {[m
+[31m-        "semver": "^6.0.0"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">=8"[m
+[31m-      },[m
+[31m-      "funding": {[m
+[31m-        "url": "https://github.com/sponsors/sindresorhus"[m
+[31m-      }[m
+[31m-    },[m
+     "node_modules/make-error": {[m
+       "version": "1.3.6",[m
+       "dev": true,[m
+[36m@@ -5894,6 +5776,7 @@[m
+     },[m
+     "node_modules/minimatch": {[m
+       "version": "3.1.5",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "ISC",[m
+       "dependencies": {[m
+         "brace-expansion": "^1.1.7"[m
+[36m@@ -5909,38 +5792,6 @@[m
+         "url": "https://github.com/sponsors/ljharb"[m
+       }[m
+     },[m
+[31m-    "node_modules/minipass": {[m
+[31m-      "version": "5.0.0",[m
+[31m-      "license": "ISC",[m
+[31m-      "engines": {[m
+[31m-        "node": ">=8"[m
+[31m-      }[m
+[31m-    },[m
+[31m-    "node_modules/minizlib": {[m
+[31m-      "version": "2.1.2",[m
+[31m-      "license": "MIT",[m
+[31m-      "dependencies": {[m
+[31m-        "minipass": "^3.0.0",[m
+[31m-        "yallist": "^4.0.0"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">= 8"[m
+[31m-      }[m
+[31m-    },[m
+[31m-    "node_modules/minizlib/node_modules/minipass": {[m
+[31m-      "version": "3.3.6",[m
+[31m-      "license": "ISC",[m
+[31m-      "dependencies": {[m
+[31m-        "yallist": "^4.0.0"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">=8"[m
+[31m-      }[m
+[31m-    },[m
+[31m-    "node_modules/minizlib/node_modules/yallist": {[m
+[31m-      "version": "4.0.0",[m
+[31m-      "license": "ISC"[m
+[31m-    },[m
+     "node_modules/mkdirp": {[m
+       "version": "0.5.6",[m
+       "license": "MIT",[m
+[36m@@ -6158,10 +6009,6 @@[m
+         "node": ">= 0.6"[m
+       }[m
+     },[m
+[31m-    "node_modules/node-addon-api": {[m
+[31m-      "version": "5.1.0",[m
+[31m-      "license": "MIT"[m
+[31m-    },[m
+     "node_modules/node-cron": {[m
+       "version": "3.0.3",[m
+       "license": "ISC",[m
+[36m@@ -6256,19 +6103,6 @@[m
+         "node": ">=6.0.0"[m
+       }[m
+     },[m
+[31m-    "node_modules/nopt": {[m
+[31m-      "version": "5.0.0",[m
+[31m-      "license": "ISC",[m
+[31m-      "dependencies": {[m
+[31m-        "abbrev": "1"[m
+[31m-      },[m
+[31m-      "bin": {[m
+[31m-        "nopt": "bin/nopt.js"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">=6"[m
+[31m-      }[m
+[31m-    },[m
+     "node_modules/normalize-path": {[m
+       "version": "3.0.0",[m
+       "dev": true,[m
+[36m@@ -6277,16 +6111,6 @@[m
+         "node": ">=0.10.0"[m
+       }[m
+     },[m
+[31m-    "node_modules/npmlog": {[m
+[31m-      "version": "5.0.1",[m
+[31m-      "license": "ISC",[m
+[31m-      "dependencies": {[m
+[31m-        "are-we-there-yet": "^2.0.0",[m
+[31m-        "console-control-strings": "^1.1.0",[m
+[31m-        "gauge": "^3.0.0",[m
+[31m-        "set-blocking": "^2.0.0"[m
+[31m-      }[m
+[31m-    },[m
+     "node_modules/oauth-sign": {[m
+       "version": "0.2.0",[m
+       "engines": {[m
+[36m@@ -6325,6 +6149,7 @@[m
+     },[m
+     "node_modules/once": {[m
+       "version": "1.4.0",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "ISC",[m
+       "dependencies": {[m
+         "wrappy": "1"[m
+[36m@@ -6486,6 +6311,7 @@[m
+     },[m
+     "node_modules/path-is-absolute": {[m
+       "version": "1.0.1",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "MIT",[m
+       "engines": {[m
+         "node": ">=0.10.0"[m
+[36m@@ -7011,19 +6837,6 @@[m
+         "node": ">= 0.8.15"[m
+       }[m
+     },[m
+[31m-    "node_modules/rimraf": {[m
+[31m-      "version": "3.0.2",[m
+[31m-      "license": "ISC",[m
+[31m-      "dependencies": {[m
+[31m-        "glob": "^7.1.3"[m
+[31m-      },[m
+[31m-      "bin": {[m
+[31m-        "rimraf": "bin.js"[m
+[31m-      },[m
+[31m-      "funding": {[m
+[31m-        "url": "https://github.com/sponsors/isaacs"[m
+[31m-      }[m
+[31m-    },[m
+     "node_modules/robust-predicates": {[m
+       "version": "3.0.3",[m
+       "resolved": "https://registry.npmjs.org/robust-predicates/-/robust-predicates-3.0.3.tgz",[m
+[36m@@ -7127,6 +6940,7 @@[m
+     },[m
+     "node_modules/semver": {[m
+       "version": "6.3.1",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "ISC",[m
+       "bin": {[m
+         "semver": "bin/semver.js"[m
+[36m@@ -7178,10 +6992,6 @@[m
+         "node": ">= 0.8.0"[m
+       }[m
+     },[m
+[31m-    "node_modules/set-blocking": {[m
+[31m-      "version": "2.0.0",[m
+[31m-      "license": "ISC"[m
+[31m-    },[m
+     "node_modules/setprototypeof": {[m
+       "version": "1.2.0",[m
+       "license": "ISC"[m
+[36m@@ -7286,10 +7096,6 @@[m
+       "version": "17.1.3",[m
+       "license": "MIT"[m
+     },[m
+[31m-    "node_modules/signal-exit": {[m
+[31m-      "version": "3.0.7",[m
+[31m-      "license": "ISC"[m
+[31m-    },[m
+     "node_modules/slash": {[m
+       "version": "3.0.0",[m
+       "resolved": "https://registry.npmjs.org/slash/-/slash-3.0.0.tgz",[m
+[36m@@ -7466,6 +7272,7 @@[m
+     },[m
+     "node_modules/string-width": {[m
+       "version": "4.2.3",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "MIT",[m
+       "dependencies": {[m
+         "emoji-regex": "^8.0.0",[m
+[36m@@ -7478,6 +7285,7 @@[m
+     },[m
+     "node_modules/strip-ansi": {[m
+       "version": "6.0.1",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "MIT",[m
+       "dependencies": {[m
+         "ansi-regex": "^5.0.1"[m
+[36m@@ -7555,35 +7363,6 @@[m
+         "url": "https://opencollective.com/webpack"[m
+       }[m
+     },[m
+[31m-    "node_modules/tar": {[m
+[31m-      "version": "6.2.1",[m
+[31m-      "license": "ISC",[m
+[31m-      "dependencies": {[m
+[31m-        "chownr": "^2.0.0",[m
+[31m-        "fs-minipass": "^2.0.0",[m
+[31m-        "minipass": "^5.0.0",[m
+[31m-        "minizlib": "^2.1.1",[m
+[31m-        "mkdirp": "^1.0.3",[m
+[31m-        "yallist": "^4.0.0"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">=10"[m
+[31m-      }[m
+[31m-    },[m
+[31m-    "node_modules/tar/node_modules/mkdirp": {[m
+[31m-      "version": "1.0.4",[m
+[31m-      "license": "MIT",[m
+[31m-      "bin": {[m
+[31m-        "mkdirp": "bin/cmd.js"[m
+[31m-      },[m
+[31m-      "engines": {[m
+[31m-        "node": ">=10"[m
+[31m-      }[m
+[31m-    },[m
+[31m-    "node_modules/tar/node_modules/yallist": {[m
+[31m-      "version": "4.0.0",[m
+[31m-      "license": "ISC"[m
+[31m-    },[m
+     "node_modules/text-hex": {[m
+       "version": "1.0.0",[m
+       "license": "MIT"[m
+[36m@@ -8172,13 +7951,6 @@[m
+         "node": ">= 8"[m
+       }[m
+     },[m
+[31m-    "node_modules/wide-align": {[m
+[31m-      "version": "1.1.5",[m
+[31m-      "license": "ISC",[m
+[31m-      "dependencies": {[m
+[31m-        "string-width": "^1.0.2 || 2 || 3 || 4"[m
+[31m-      }[m
+[31m-    },[m
+     "node_modules/winston-transport": {[m
+       "version": "4.9.0",[m
+       "resolved": "https://registry.npmjs.org/winston-transport/-/winston-transport-4.9.0.tgz",[m
+[36m@@ -8242,6 +8014,7 @@[m
+     },[m
+     "node_modules/wrappy": {[m
+       "version": "1.0.2",[m
+[32m+[m[32m      "dev": true,[m
+       "license": "ISC"[m
+     },[m
+     "node_modules/ws": {[m

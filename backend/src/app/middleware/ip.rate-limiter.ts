@@ -139,16 +139,4 @@ export const newsletterRateLimiter = createRateLimiter({
   actionLabel: "newsletter subscription",
 });
 
-/**
- * Refresh Token: 10 attempts per 15 minutes, 15-minute block
- * (prevents token rotation abuse)
- */
-export const refreshTokenRateLimiter = createRateLimiter({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
-  maxRequests: 10,
-  blockTimeMs: 15 * 60 * 1000, // 15 minutes
-  keyPrefix: "refresh_token",
-  actionLabel: "token refresh",
-});
-
 export default ipRateLimiter;

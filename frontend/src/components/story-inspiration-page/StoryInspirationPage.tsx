@@ -1,7 +1,5 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from 'react';
-import { useBlocker } from 'react-router-dom';
-
+/* eslint-disable */
+import React, { useState } from 'react';
 import { getBaseUrl } from '../../helpers/config';
 import StoryGeneratingAnimation from '../loading/story-generating-animation.component';
 
@@ -10,37 +8,6 @@ const StoryInspirationPage: React.FC = () => {
   const [ideas, setIdeas] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const isDirty = intro.trim().length > 0;
-
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [isDirty]);
-
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
-  );
-
-  useEffect(() => {
-    if (blocker.state === "blocked") {
-      const proceed = window.confirm(
-        "You have unsaved content in the intro field. Are you sure you want to leave?"
-      );
-      if (proceed) {
-        blocker.proceed();
-      } else {
-        blocker.reset();
-      }
-    }
-  }, [blocker]);
 
   const fetchIdeas = async () => {
     setLoading(true);

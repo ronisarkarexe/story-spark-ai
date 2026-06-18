@@ -22,7 +22,9 @@ export interface IUser {
       twitter: string;
       linkedin: string;
       instagram: string;
-      github: string;
+    github: string;
+    discord: string;
+      github: string;  
       discord: string;
     };
   };

@@ -12,7 +12,7 @@
 import { AuthService } from "../app/modules/auth/auth.service";
 import { User } from "../app/modules/user/user.model";
 import { RefreshSession } from "../app/modules/auth/refresh_session.model";
-import { JwtHelpers } from "../utils/jwt.helper";
+import { JwtHalers } from "../utils/jwt.helper";
 import config from "../config";
 import { Secret } from "jsonwebtoken";
 
@@ -33,7 +33,7 @@ jest.mock("../app/modules/auth/refresh_session.model", () => ({
 }));
 
 jest.mock("../utils/jwt.helper", () => ({
-  JwtHelpers: {
+  JwtHalers: {
     verifyToken: jest.fn(),
     createToken: jest.fn(),
   },
@@ -51,7 +51,7 @@ describe("AuthService.logout – token revocation", () => {
 
   it("increments tokenVersion on logout so the access token is immediately rejected", async () => {
     // Arrange: verifyToken returns a payload with _id and jti
-    (JwtHelpers.verifyToken as jest.Mock).mockReturnValue({
+    (JwtHalers.verifyToken as jest.Mock).mockReturnValue({
       _id: fakeUserId,
       email: "test@example.com",
       jti: fakeJti,
@@ -75,7 +75,7 @@ describe("AuthService.logout – token revocation", () => {
   });
 
   it("still clears the refresh session even if tokenVersion bump is the only new step", async () => {
-    (JwtHelpers.verifyToken as jest.Mock).mockReturnValue({
+    (JwtHalers.verifyToken as jest.Mock).mockReturnValue({
       _id: fakeUserId,
       jti: fakeJti,
       tokenVersion: 2,
@@ -90,13 +90,13 @@ describe("AuthService.logout – token revocation", () => {
   it("does nothing when no token is supplied", async () => {
     await AuthService.logout(undefined);
 
-    expect(JwtHelpers.verifyToken).not.toHaveBeenCalled();
+    expect(JwtHalers.verifyToken).not.toHaveBeenCalled();
     expect(RefreshSession.updateOne).not.toHaveBeenCalled();
     expect(User.updateOne).not.toHaveBeenCalled();
   });
 
   it("swallows errors silently when the token is invalid", async () => {
-    (JwtHelpers.verifyToken as jest.Mock).mockImplementation(() => {
+    (JwtHalers.verifyToken as jest.Mock).mockImplementation(() => {
       throw new Error("invalid signature");
     });
 

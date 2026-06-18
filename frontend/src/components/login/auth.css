@@ -71,7 +71,6 @@ body {
     #f97316
   );
   -webkit-background-clip: text;
-  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -192,8 +191,6 @@ body {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-    width: 100%;
-    max-width: 100%;
     height: var(--ds-input-height);
     font-size: 15px;
     line-height: calc(var(--ds-input-height) - 2px);

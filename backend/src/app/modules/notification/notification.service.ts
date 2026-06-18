@@ -51,8 +51,8 @@ const getUserNotifications = async (
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
-    },
+      totalPages: Math.ceil(total / limit)
+    }
   };
 };
 
@@ -78,19 +78,9 @@ const markNotificationAsRead = async (
 
 const markAllNotificationsAsRead = async (token: ITokenPayload) => {
   const userId = await resolveUserId(token);
-
-  // Single atomic updateMany — far cheaper than N individual updates
-  const result = await Notification.updateMany(
-    { userId, isRead: false },
-    { $set: { isRead: true } }
-  );
-
-  // Notify all connected tabs/sessions so the badge clears instantly everywhere
-  emitNotificationStateToUser(userId, "notification:all-read", {
-    modifiedCount: result.modifiedCount,
-  });
-
-  return { success: true, modifiedCount: result.modifiedCount };
+  await Notification.updateMany({ userId, isRead: false }, { isRead: true });
+  emitNotificationStateToUser(userId, "notification:all-read", {});
+  return { message: "All notifications marked as read!" };
 };
 
 const deleteAllNotifications = async (token: ITokenPayload) => {

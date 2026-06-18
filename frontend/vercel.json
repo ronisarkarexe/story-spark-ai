@@ -1,19 +1,6 @@
 {
-  "rewrites": [
-    {
-      "source": "/post/:id",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|facebookexternalhit).*"
-        }
-      ],
-      "destination": "https://your-backend-url.com/api/post/meta/:id"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ]
+  "installCommand": "cd .. && corepack enable && pnpm install",
+  "buildCommand": "pnpm --filter story-spark-ai-frontend run build",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
 }

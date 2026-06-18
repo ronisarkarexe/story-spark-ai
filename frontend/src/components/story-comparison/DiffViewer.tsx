@@ -104,14 +104,12 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
             <p className="text-base text-slate-900 dark:text-white leading-relaxed">
               {titleDiff.map((diff: Change, idx: number) => (
                 <span key={idx}>
-                  {!diff.added ? (
-                    diff.removed ? (
-                      <DiffHighlight text={diff.value} type="removed" />
-                    ) : (
-                      diff.value
-                    )
+                  {diff.added ? (
+                    <DiffHighlight text={diff.value} type="added" />
+                  ) : diff.removed ? (
+                    <DiffHighlight text={diff.value} type="removed" />
                   ) : (
-                    ""
+                    diff.value
                   )}
                 </span>
               ))}
@@ -123,14 +121,14 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
             <p className="text-base text-slate-900 dark:text-white leading-relaxed">
               {titleDiff.map((diff: Change, idx: number) => (
                 <span key={idx}>
-                  {!diff.removed ? (
-                    diff.added ? (
-                      <DiffHighlight text={diff.value} type="added" />
-                    ) : (
-                      diff.value
-                    )
-                  ) : (
+                  {diff.added ? (
+                    <span className="bg-green-200/50 dark:bg-green-900/40 text-green-900 dark:text-green-200 px-1 py-0.5 rounded">
+                      {diff.value}
+                    </span>
+                  ) : diff.removed ? (
                     ""
+                  ) : (
+                    diff.value
                   )}
                 </span>
               ))}
@@ -159,7 +157,7 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
                   <span key={idx}>
                     {!diff.added ? (
                       diff.removed ? (
-                        <DiffHighlight text={diff.value} type="removed" />
+                        ""
                       ) : (
                         <span>{diff.value}</span>
                       )

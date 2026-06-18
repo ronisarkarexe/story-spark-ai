@@ -32,11 +32,6 @@
   --color-scrollbar-thumb: rgba(100, 108, 114, 0.49);
   --color-scrollbar-track: rgba(106, 120, 132, 0.17);
   --radius-menu: 8px;
-
-  /* Skeleton shimmer */
-  --skeleton-base: #e2e8f0;
-  --skeleton-shine: #f1f5f9;
-  --skeleton-highlight: #cbd5e1;
 }
 
 .dark {
@@ -67,9 +62,4 @@
   --color-scrollbar-thumb: rgba(100, 108, 114, 0.49);
   --color-scrollbar-track: rgba(106, 120, 132, 0.17);
   --radius-menu: 8px;
-
-  /* Skeleton shimmer - dark mode */
-  --skeleton-base: #1e293b;
-  --skeleton-shine: #334155;
-  --skeleton-highlight: #0f172a;
 }

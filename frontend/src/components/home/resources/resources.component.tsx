@@ -34,13 +34,8 @@ const resources = [
   {
     icon: "fas fa-users",
     title: "Writing Community",
-    description:
-      "Connect with writers globally, share constructive feedback, and grow your skills together.",
-    highlights: [
-      "Collaborative feedback",
-      "Interactive discussions",
-      "Growth opportunities",
-    ],
+    description: "Connect with writers, exchange feedback, and grow together.",
+    highlights: ["Peer feedback", "Discussions", "Collaboration opportunities"],
     stats: "5,000+ community members",
     cta: "Join Community",
     link: "/community",

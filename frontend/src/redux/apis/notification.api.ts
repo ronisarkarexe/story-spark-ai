@@ -21,16 +21,6 @@ const notificationApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.notification],
     }),
-    markAllNotificationsRead: build.mutation<
-      { success: boolean; modifiedCount: number },
-      void
-    >({
-      query: () => ({
-        url: `/${NOTIFICATION_URL}/mark-all-read`,
-        method: "PATCH",
-      }),
-      invalidatesTags: [tagTypes.notification],
-    }),
   }),
 });
 
@@ -38,5 +28,4 @@ export const {
   useGetNotificationsQuery,
   useLazyGetNotificationsQuery,
   useMarkNotificationReadMutation,
-  useMarkAllNotificationsReadMutation,
 } = notificationApi;

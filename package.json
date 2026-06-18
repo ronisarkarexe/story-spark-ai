@@ -25,7 +25,6 @@
     "build": "npm run build -w story-spark-ai-backend && npm run build -w story-spark-ai-frontend",
     "build:backend": "npm run build -w story-spark-ai-backend",
     "build:frontend": "npm run build -w story-spark-ai-frontend",
-    "typecheck": "npm run build",
     "start:backend": "npm run start -w story-spark-ai-backend",
     "start:frontend": "npm run start -w story-spark-ai-frontend",
     "lint": "npm run lint -w story-spark-ai-frontend"

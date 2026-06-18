@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { setGuestUserIdCookie } from "../../../utils/cookie.util";
-import { randomUUID } from "node:crypto";
 import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
 import catchAsync from "../../../shared/catch_async";
@@ -25,11 +24,8 @@ const aiModelGenerate = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
-
   await runWithQuotaCleanup(guard, async () => {
-    const result = await AiModelService.aiModelGenerate(prompt, undefined, controller.signal);
+    const result = await AiModelService.aiModelGenerate(prompt);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -44,17 +40,14 @@ const aiFreeModelGenerate = catchAsync(async (req: Request, res: Response) => {
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
-    userId = randomUUID();
+    userId = Math.random().toString(36).substring(7);
     setGuestUserIdCookie(res, userId);
   }
-
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
 
   const guard = createGuestQuotaGuard(userId);
   await runWithQuotaCleanup(guard, async () => {
     await reserveGuestQuota(userId);
-    const result = await AiModelService.aiFreeModelGenerate(prompt, controller.signal);
+    const result = await AiModelService.aiFreeModelGenerate(prompt);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -75,11 +68,8 @@ const aiModelAlternateEndings = catchAsync(async (req: Request, res: Response) =
     );
   }
 
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
-
   await runWithQuotaCleanup(guard, async () => {
-    const result = await AiModelService.aiModelAlternateEndings(payload, undefined, controller.signal);
+    const result = await AiModelService.aiModelAlternateEndings(payload);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -95,17 +85,14 @@ const aiFreeModelAlternateEndings = catchAsync(
     let userId = req.cookies.userId as string | undefined;
 
     if (!userId) {
-      userId = randomUUID();
+      userId = Math.random().toString(36).substring(7);
       setGuestUserIdCookie(res, userId);
     }
-
-    const controller = new AbortController();
-    req.on("close", () => controller.abort());
 
     const guard = createGuestQuotaGuard(userId);
     await runWithQuotaCleanup(guard, async () => {
       await reserveGuestQuota(userId);
-      const result = await AiModelService.aiFreeModelAlternateEndings(payload, controller.signal);
+      const result = await AiModelService.aiFreeModelAlternateEndings(payload);
       sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
@@ -143,25 +130,16 @@ await runWithQuotaCleanup(guard, async () => {
       wordLength ?? 250,
       numStories ?? 2,
       (chunk: string) => {
-        if (!res.writableEnded) res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+        res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
       },
       controller.signal
     );
-    if (!res.writableEnded) {
-      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-      res.end();
-    }
-  } catch (error: unknown) {
-    if (controller.signal.aborted) {
-      // Client disconnected, do nothing else to avoid crashing
-      if (!res.writableEnded) res.end();
-      return;
-    }
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+    } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    if (!res.writableEnded) {
-      res.write(`data: ${JSON.stringify({ error: errorMsg })}\n\n`);
-      res.end();
-    }
+    res.write(`data: ${JSON.stringify({ error: errorMsg })}\n\n`);
+    res.end();
     throw error;
   }
 });
@@ -177,11 +155,8 @@ const aiModelRemix = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
-
   await runWithQuotaCleanup(guard, async () => {
-    const result = await AiModelService.aiModelRemix(payload, undefined, controller.signal);
+    const result = await AiModelService.aiModelRemix(payload);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -196,17 +171,14 @@ const aiFreeModelRemix = catchAsync(async (req: Request, res: Response) => {
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
-    userId = randomUUID();
+    userId = Math.random().toString(36).substring(7);
     setGuestUserIdCookie(res, userId);
   }
-
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
 
   const guard = createGuestQuotaGuard(userId);
   await runWithQuotaCleanup(guard, async () => {
     await reserveGuestQuota(userId);
-    const result = await AiModelService.aiFreeModelRemix(payload, controller.signal);
+    const result = await AiModelService.aiFreeModelRemix(payload);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -227,11 +199,8 @@ const aiModelTranslate = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
-
   await runWithQuotaCleanup(guard, async () => {
-    const result = await AiModelService.aiModelTranslate(payload, undefined, controller.signal);
+    const result = await AiModelService.aiModelTranslate(payload);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -246,17 +215,14 @@ const aiFreeModelTranslate = catchAsync(async (req: Request, res: Response) => {
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
-    userId = randomUUID();
+    userId = Math.random().toString(36).substring(7);
     setGuestUserIdCookie(res, userId);
   }
-
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
 
   const guard = createGuestQuotaGuard(userId);
   await runWithQuotaCleanup(guard, async () => {
     await reserveGuestQuota(userId);
-    const result = await AiModelService.aiFreeModelTranslate(payload, controller.signal);
+    const result = await AiModelService.aiFreeModelTranslate(payload);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -277,11 +243,8 @@ const aiModelChat = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
-
   await runWithQuotaCleanup(guard, async () => {
-    const result = await AiModelService.aiModelChat(payload, undefined, controller.signal);
+    const result = await AiModelService.aiModelChat(payload);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -296,17 +259,14 @@ const aiFreeModelChat = catchAsync(async (req: Request, res: Response) => {
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
-    userId = randomUUID();
+    userId = Math.random().toString(36).substring(7);
     setGuestUserIdCookie(res, userId);
   }
-
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
 
   const guard = createGuestQuotaGuard(userId);
   await runWithQuotaCleanup(guard, async () => {
     await reserveGuestQuota(userId);
-    const result = await AiModelService.aiFreeModelChat(payload, controller.signal);
+    const result = await AiModelService.aiFreeModelChat(payload);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -327,11 +287,8 @@ const aiStoryContinuation = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
-
   await runWithQuotaCleanup(guard, async () => {
-    const result = await AiModelService.aiModelStoryContinuation(payload, undefined, controller.signal);
+    const result = await AiModelService.aiModelStoryContinuation(payload);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -346,17 +303,14 @@ const aiFreeStoryContinuation = catchAsync(async (req: Request, res: Response) =
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
-    userId = randomUUID();
+    userId = Math.random().toString(36).substring(7);
     setGuestUserIdCookie(res, userId);
   }
-
-  const controller = new AbortController();
-  req.on("close", () => controller.abort());
 
   const guard = createGuestQuotaGuard(userId);
   await runWithQuotaCleanup(guard, async () => {
     await reserveGuestQuota(userId);
-    const result = await AiModelService.aiFreeStoryContinuation(payload, controller.signal);
+    const result = await AiModelService.aiFreeStoryContinuation(payload);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,

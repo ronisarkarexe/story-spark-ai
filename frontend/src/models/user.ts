@@ -18,43 +18,38 @@ export interface WritingGoals {
   weeklyWordCount: number;
 }
 
-export interface UserConnection {
-  _id: string;
-  username: string;
-  profilePicture: string;
-}
-
-export type UserRole = "user" | "writer" | "admin";
-
-export type UserStatus = "active" | "inactive" | "banned";
-
-export type SubscriptionType = "free" | "premium" | "pro";
-
 export interface User {
   _id: string;
   email: string;
   name: string;
-
-  role: UserRole;
-  status: UserStatus;
-  subscriptionType: SubscriptionType;
-
+  password: string;
+  role: string;
+  status: string;
+  subscriptionType: string;
   postsCount: number;
 
-  followers: UserConnection[];
-  following: UserConnection[];
+  followers: {
+    _id: string;
+    username: string;
+    profilePicture: string;
+  }[];
 
+  following: {
+    _id: string;
+    username: string;
+    profilePicture: string;
+  }[];
   requestsThisMonth: number;
   lastRequestDate: string | null;
-
   posts: string[];
-
-  hasAppliedForWriter: boolean;
+  isApplyForWriter: boolean;
 
   createdAt: string;
   updatedAt: string;
-
   profile: UserProfile;
 
-  writingGoals?: WritingGoals;
+  writingGoals?: {
+    dailyWordCount: number;
+    weeklyWordCount: number;
+  };
 }

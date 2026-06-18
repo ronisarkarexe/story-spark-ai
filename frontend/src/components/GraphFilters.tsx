@@ -33,7 +33,7 @@ const GraphFilters = ({
 
   return (
     <div className="flex flex-col gap-4 bg-zinc-900 border border-zinc-800 rounded-xl p-4 w-full md:w-80 shadow-md h-fit text-sm text-slate-300">
-      <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
+      <div className="flex justify-between items-center pb-2 border-b border-zinc-850">
         <h3 className="font-bold text-white text-base">Filters</h3>
         <button
           onClick={onClear}
@@ -51,7 +51,7 @@ const GraphFilters = ({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Type name..."
-            className="w-full h-9 bg-zinc-950 border border-zinc-800 rounded-lg px-3 pl-8 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition"
+            className="w-full h-9 bg-zinc-950 border border-zinc-850 rounded-lg px-3 pl-8 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition"
           />
           <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
         </div>
@@ -68,7 +68,7 @@ const GraphFilters = ({
                 className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded border text-[10px] font-semibold cursor-pointer transition select-none ${
                   isChecked
                     ? "bg-indigo-600/20 border-indigo-500/50 text-indigo-200"
-                    : "bg-zinc-950 border-zinc-800 hover:bg-zinc-800/30 text-slate-400"
+                    : "bg-zinc-950 border-zinc-850 hover:bg-zinc-800/30 text-slate-400"
                 }`}
               >
                 <input

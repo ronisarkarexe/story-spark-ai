@@ -92,17 +92,11 @@ export const TOPICS: ITopicData[] = [
 
 export const topicsData: ITopicData[] = TOPICS;
 
-export const getWordCount = (str: string | undefined): number => {
-  if (typeof str !== "string") {
+export const getWordCount = (str: string) => {
+  if (typeof str !== "string" || !str.trim()) {
     return 0;
   }
-
-  const normalizedText = str.replace(/[\r\n]+/g, " ").trim();
-  if (!normalizedText) {
-    return 0;
-  }
-
-  return normalizedText.split(/\s+/).length;
+  return str.trim().split(/\s+/).length;
 };
 
 export const prompts = [
@@ -156,5 +150,3 @@ export const prompts = [
     prompt: "A time traveler finds themselves stuck in the age of dinosaurs.",
   },
 ];
-
-export const TEMPLATE_STORY_UUID = "test-1";

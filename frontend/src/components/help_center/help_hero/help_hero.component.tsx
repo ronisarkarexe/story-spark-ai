@@ -56,6 +56,10 @@ const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultC
             How can we help you today?
           </motion.h1>
 
+          <p className="text-lg text-slate-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+            Find answers, troubleshoot issues, and get started with StorySparkAI.
+            Search our guides or browse topics below.
+          </p>
 
           <HelpSearchBar
             value={searchQuery}

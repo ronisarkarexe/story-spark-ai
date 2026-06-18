@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { useGetPersonalizedRecommendationsQuery } from "../../../redux/apis/recommendation.api";
 import { Post } from "../../../models/post";
-import ImageFallback from "../../ImageFallback";
 
 const PersonalizedRecommendationsComponent = () => {
   const { data: posts, isLoading } = useGetPersonalizedRecommendationsQuery(undefined);
@@ -43,7 +42,7 @@ const PersonalizedRecommendationsComponent = () => {
             className="group flex gap-3 hover:bg-slate-50 dark:hover:bg-slate-950/40 p-2 -mx-2 rounded-xl transition-colors w-full box-border min-w-0"
           >
             <div className="w-14 h-14 shrink-0 overflow-hidden rounded-xl border border-slate-200/60 dark:border-white/5 select-none bg-slate-100 dark:bg-slate-900">
-              <ImageFallback
+              <img
                 src={post.imageURL}
                 alt={post.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

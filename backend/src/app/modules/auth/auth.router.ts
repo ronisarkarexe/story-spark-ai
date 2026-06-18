@@ -8,7 +8,6 @@ import {
   loginRateLimiter,
   forgotPasswordRateLimiter,
   resetPasswordRateLimiter,
-  refreshTokenRateLimiter,
   ipRateLimiter,
 } from "../../middleware/ip.rate-limiter";
 
@@ -24,7 +23,8 @@ router.post(
 
 // Google Login API route
 router.post("/google-login", loginRateLimiter, AuthController.googleLogin);
-router.post("/send-otp", validateRequest(UserValidator.sendOtp), AuthController.sendOtp);// Register API route
+
+// Register API route
 router.post(
   "/register",
   validateRequest(UserValidator.register),
@@ -33,7 +33,7 @@ router.post(
 );
 
 // Refresh Token API route
-router.post("/refresh-token", refreshTokenRateLimiter, AuthController.refreshToken);
+router.post("/refresh-token", AuthController.refreshToken);
 
 // Logout API route
 router.post("/logout", AuthController.logout);

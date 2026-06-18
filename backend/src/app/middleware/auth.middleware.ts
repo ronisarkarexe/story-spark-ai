@@ -6,7 +6,6 @@ import ApiError from "../../errors/api_error";
 import { JwtHelpers } from "../../utils/jwt.helper";
 import { User } from "../modules/user/user.model";
 import { TokenBlacklist } from "../modules/auth/tokenBlacklist.model";
-import { USER_STATUS } from "../../enums/user_status";
 
 const auth =
   (...requiredRole: string[]) =>
@@ -52,13 +51,6 @@ const auth =
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
           "Token is invalid or expired"
-        );
-      }
-
-      if (user.status !== USER_STATUS.ACTIVE) {
-        throw new ApiError(
-          httpStatus.FORBIDDEN,
-          "Your account is not active"
         );
       }
 

@@ -24,37 +24,53 @@ const GithubcontributorsComponent: React.FC = () => {
   
     const GithubcontributorData = async () => {
       try {
-        const [githubRes, repoRes] = await Promise.all([
-          fetch(`https://api.github.com/repos/${owner}/${repo}/contributors`, {
+        const githubRes = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/contributors`,
+          {
             headers: {
               Accept: "application/vnd.github+json",
               "X-GitHub-Api-Version": "2022-11-28",
             },
             signal: controller.signal,
-          }),
-          fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-            headers: {
-              Accept: "application/vnd.github+json",
-              "X-GitHub-Api-Version": "2022-11-28",
-            },
-            signal: controller.signal,
-          }),
-        ]);
+          }
+        );
   
         const data = await githubRes.json();
-        const repoData = await repoRes.json();
+        setGitHubContributors(data);
+    
+      
+      }catch(error){
+        console.error("Failed to load GitHub contributors", error);
+      } catch (err: unknown) {
+        console.error("Failed to load GitHub contributors", err);
   
         if (!controller.signal.aborted) {
           setGitHubContributors(data);
+        }
+  
+        const repoRes = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}`,
+          {
+            headers: {
+              Accept: "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+            signal: controller.signal,
+          }
+        );
+  
+        const repoData = await repoRes.json();
+  
+        if (!controller.signal.aborted) {
           setRepoStars(repoData.stargazers_count);
         }
-      } catch (err) {
-        if ((err as Error).name !== "AbortError") {
-          console.error("Failed to load GitHub data", err);
+      } catch (e) {
+        if ((e as Error).name !== "AbortError") {
+          console.log(e);
         }
       }
     };
-
+  
     GithubcontributorData();
   
     return () => {

@@ -86,4 +86,28 @@ describe("Gamification Endpoints Controllers", () => {
       data: { achievements: mockAchievementsList },
     });
   });
+
+  it("updateWritingStreak should call update service and return updated streak status", async () => {
+    const fakeUser = { _id: "user_abc", email: "test@example.com" };
+    (User.findOne as jest.Mock).mockResolvedValueOnce(fakeUser);
+
+    const mockStreak = {
+      currentStreak: 3,
+      longestStreak: 5,
+      totalWritingDays: 13,
+      lastActiveDate: new Date(),
+    };
+    (WritingStreakService.getStreak as jest.Mock).mockResolvedValueOnce(mockStreak);
+
+    const mockNext = jest.fn();
+    await UserController.updateWritingStreak(mockReq as Request, mockRes as Response, mockNext);
+
+    expect(WritingStreakService.updateStreakAndUnlocks).toHaveBeenCalledWith("user_abc");
+    expect(sendResponse).toHaveBeenCalledWith(mockRes, {
+      statusCode: 200,
+      success: true,
+      message: "Writing streak updated successfully!",
+      data: mockStreak,
+    });
+  });
 });

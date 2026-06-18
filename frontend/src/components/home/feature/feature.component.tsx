@@ -8,8 +8,6 @@ import BookmarkButton from "../../BookmarkButton";
 import React, { useState } from "react";
 import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
-import ImageFallback from "../../ImageFallback";
-import { SkeletonGrid } from "../../cards/SkeletonCard";
 
 const FeatureComponent = () => {
   const { data, isLoading, isError } = useGetFeaturedListsQuery(undefined);
@@ -31,14 +29,7 @@ const FeatureComponent = () => {
   };
 
   if (isLoading) {
-    return (
-      <section className="w-full box-border mb-12">
-        <h2 className="mb-6 text-xl sm:text-2xl font-extrabold tracking-tight select-none text-slate-900 dark:text-slate-100">
-          Featured Posts
-        </h2>
-        <SkeletonGrid count={4} variant="home-featured" />
-      </section>
-    );
+    return <LoadingAnimation />;
   }
 
   if (isError) {
@@ -61,7 +52,7 @@ const FeatureComponent = () => {
       </h2>
 
       {posts.length > 0 ? (
-        <div className="flex gap-5 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-2 md:gap-8 md:overflow-visible md:pb-0 xl:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2">
           {posts.map((post: Post) => {
             const postUrl = `${window.location.origin}/post/${post._id}`;
 
@@ -69,11 +60,11 @@ const FeatureComponent = () => {
               <div
                 key={post._id}
                 onClick={() => navigate(`/post/${post._id}`)}
-                className="motion-card h-full min-w-[85vw] snap-start bg-blue-500/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-slate-700/40 cursor-pointer hover:bg-blue-500/20 hover:border-blue-400/30 flex flex-col group box-border w-full md:min-w-0"
+                className="motion-card h-full bg-blue-500/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-slate-700/40 cursor-pointer hover:bg-blue-500/20 hover:border-blue-400/30 flex flex-col group box-border w-full"
               >
                 {post.imageURL && (
                   <div className="relative overflow-hidden h-48 w-full">
-                    <ImageFallback
+                    <img
                       className="motion-image h-full w-full object-cover"
                       src={post.imageURL}
                       alt={post.title || "Featured Post"}
@@ -142,9 +133,7 @@ const FeatureComponent = () => {
 
                     <div className="flex items-center gap-4 text-slate-500 dark:text-gray-400">
                       <a
-                        href={`https://x.com/intent/tweet?url=${encodeURIComponent(
-                          postUrl
-                        )}&text=${encodeURIComponent(post.title || "")}`}
+                        href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(post.title || "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Share on X"

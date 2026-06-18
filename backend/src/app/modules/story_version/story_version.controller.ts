@@ -1,4 +1,3 @@
-import { Post } from "../post/post.model";
 import { Request, Response } from "express";
 import httpStatus from "http-status";
 import catchAsync from "../../../shared/catch_async";
@@ -131,10 +130,7 @@ const getBranchPath = catchAsync(async (req: Request, res: Response) => {
 );
 
 const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
-  const { prompt, storyId } = req.body as {
-  prompt?: string;
-  storyId?: string;
-};
+  const { prompt } = req.body as { prompt?: string };
 
   if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
     throw new ApiError(
@@ -143,18 +139,7 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-<<<<<<< feat-context-compression
- const post = storyId ? await Post.findById(storyId) : null;
-
-const enhancedPrompt = await StoryVersionService.enhancePrompt(
-  prompt.trim(),
-  post?.content
-);
-=======
-  const rawProvider = req.headers?.["x-model-provider"];
-  const provider = Array.isArray(rawProvider) ? rawProvider[0] : rawProvider;
-  const enhancedPrompt = await StoryVersionService.enhancePrompt(prompt.trim(), provider);
->>>>>>> main
+  const enhancedPrompt = await StoryVersionService.enhancePrompt(prompt.trim());
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
