@@ -1,13 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-
-const HELP_SECTIONS = [
-  { id: "help-categories", label: "Categories", icon: "fa-layer-group", color: "from-blue-500 to-cyan-500" },
-  { id: "faq-section", label: "FAQs", icon: "fa-circle-question", color: "from-indigo-500 to-purple-500" },
-  { id: "troubleshoot-section", label: "Troubleshooting", icon: "fa-screwdriver-wrench", color: "from-orange-500 to-red-500" },
-  { id: "setup-guide-section", label: "Setup Guide", icon: "fa-rocket", color: "from-emerald-500 to-teal-500" },
-  { id: "support-links-section", label: "Support", icon: "fa-headset", color: "from-pink-500 to-rose-500" },
-
+import { HELP_SECTIONS } from "../help_center.utils";
 
 const HelpSidebar = () => {
   const [activeSection, setActiveSection] = useState<string>(
@@ -41,12 +34,12 @@ const HelpSidebar = () => {
     const handleScroll = () => {
       const scrollBottom = window.innerHeight + window.scrollY;
       const documentHeight = document.documentElement.scrollHeight;
-      if (scrollBottom >= documentHeight - 120) {
+      if (scrollBottom >= documentHeight - 80) {
         setActiveSection("support-links-section");
       }
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll);
 
     return () => {
       observer.disconnect();
@@ -71,7 +64,7 @@ const HelpSidebar = () => {
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="relative rounded-[2rem] border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-xl px-12 py-6"
+            className="relative overflow-hidden rounded-[2rem] border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/70 backdrop-blur-2xl shadow-xl p-6"
           >
             <div className="absolute -top-16 -right-16 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -104,21 +97,6 @@ const HelpSidebar = () => {
                           : "border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/[0.03] hover:border-blue-200 dark:hover:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
                       }`}
                     >
-                      <div className="min-w-0 flex-1 flex items-center gap-4">
-                        <i className={`fa-solid ${section.icon} text-sm`} aria-hidden="true" />
-                        <p className={`font-bold text-xs sm:text-sm tracking-tight transition-colors duration-200 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white"}`}>
-                          {section.label}
-                        </p>
-                      </div>
-
-                      <div className="shrink-0">
-                        <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${isActive ? "bg-blue-500 scale-125 shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "bg-slate-300 dark:bg-slate-700"}`} />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
                       {isActive && (
                         <motion.div
                           layoutId="sidebar-active-pill"
@@ -126,7 +104,6 @@ const HelpSidebar = () => {
                           transition={{ type: "spring", stiffness: 260, damping: 24 }}
                         />
                       )}
-                      <i className={`fa-solid ${section.icon} text-sm relative z-10 ${isActive ? "text-blue-500" : "text-slate-400"}`} aria-hidden="true" />
                       <div className="relative z-10 flex-1 text-left">
                         <p className={`font-semibold text-sm transition-colors duration-300 ${isActive ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
                           {section.label}
