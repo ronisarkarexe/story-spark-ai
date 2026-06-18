@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import DOMPurify from "dompurify";
 
 
 interface ImageFallbackProps {
@@ -66,7 +67,7 @@ export default function ImageFallback({
         </div>
       )}
       <img
-        src={imageSrc}
+        src={DOMPurify.sanitize(imageSrc || "", { ALLOWED_TAGS: [] })}
         alt={alt}
         className={`${className} ${isLoading ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
         onLoad={handleLoad}
