@@ -1,4 +1,3 @@
-import { describe, expect, it, jest, beforeEach } from "@jest/globals";
 import { extractCharacterNetworkOffline } from "../app/modules/story_version/character_network.utils";
 import { Request, Response } from "express";
 import { StoryVersionController } from "../app/modules/story_version/story_version.controller";
