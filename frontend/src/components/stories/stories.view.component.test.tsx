@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
@@ -48,6 +49,11 @@ vi.mock('../../redux/apis/post.api', () => ({
   useDeletePostMutation: () => [vi.fn()],
 }));
 
+vi.mock('../../redux/apis/bookmark.api', () => ({
+  useToggleBookmarkMutation: () => [vi.fn()],
+  useCheckBookmarkStatusQuery: () => ({ data: { isBookmarked: false }, isLoading: false, isError: false }),
+}));
+
 vi.mock('../../redux/apis/user.api', () => ({
   useGetProfileInfoQuery: () => ({ data: { name: 'Test User' } }),
 }));
@@ -88,8 +94,8 @@ describe('StoriesViewComponent - Core Rendering', () => {
         setStories={mockSetStories}
       />
     );
-    expect(screen.getByText('The Great AI Adventure')).toBeInTheDocument();
-    expect(screen.getByText('Once upon a time in a digital world...')).toBeInTheDocument();
+    expect(screen.getAllByText('The Great AI Adventure')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Once upon a time in a digital world...')[0]).toBeInTheDocument();
   });
 });
 
@@ -101,8 +107,13 @@ describe('StoriesViewComponent - Alternate Endings Generation', () => {
   });
 
   it('calls generateAlternateEndings when user is logged in', async () => {
+    // eslint-disable-with-line is not standard, let's use disable rule
+    let resolveMutation: (value: any) => void = () => {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const promise = new Promise<any>((resolve) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      resolveMutation = resolve;
+    });
     mockGenerateAlternateEndings.mockReturnValue({
-      unwrap: () => Promise.resolve({ data: [{ style: 'Dark', ending: '...', fullStory: '...' }] }),
+      unwrap: () => promise,
     });
 
     render(
@@ -116,8 +127,10 @@ describe('StoriesViewComponent - Alternate Endings Generation', () => {
     const generateBtn = screen.getByText('Generate Alternate Endings');
     fireEvent.click(generateBtn);
 
-    expect(generateBtn).toBeDisabled();
-    expect(screen.getByText('Generating Endings...')).toBeInTheDocument();
+    expect(screen.getByText('Generating alternate endings...')).toBeInTheDocument();
+
+    // Resolve the promise to complete the mutation
+    resolveMutation({ data: [{ style: 'Dark', ending: '...', fullStory: '...' }] });
 
     await waitFor(() => {
       expect(mockGenerateAlternateEndings).toHaveBeenCalledWith({

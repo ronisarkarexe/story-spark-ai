@@ -609,9 +609,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
       const isoDate = new Date().toISOString().split("T")[0];
 
-      const cleanTitle = title.replace(/"/g, '\\"');
-      const cleanTag = tag.replace(/"/g, '\\"');
-      const cleanAuthor = authorName.replace(/"/g, '\\"');
+      const cleanTitle = title.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      const cleanTag = tag.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      const cleanAuthor = authorName.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 
       const markdownContent = `---
 title: "${cleanTitle}"
@@ -751,7 +751,11 @@ if (isLoading) {
   );
 }
   if (!selectedStory) {
-    return null;
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+        <p className="text-lg font-medium">No stories available.</p>
+      </div>
+    );
   }
 
   return (
@@ -1098,10 +1102,11 @@ if (isLoading) {
                   <div className="flex flex-col items-center justify-center py-8 bg-slate-900/20 border border-dashed border-slate-700/40 rounded-xl">
                     <button
                       type="button"
+                      disabled={isGeneratingEndings}
                       onClick={handleGenerateAlternateEndings}
-                      className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer"
+                      className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Generate Alternate Endings
+                      {isGeneratingEndings ? "Generating Endings..." : "Generate Alternate Endings"}
                     </button>
                     <p className="text-xs text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
                       Uses the story context to produce 5 unique ending variations (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.

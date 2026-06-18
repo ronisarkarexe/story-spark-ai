@@ -6,6 +6,7 @@ import {
   removeFromLocalStorage,
   setToLocalStorage,
 } from "../utils/local-storage";
+import { validateTokenPayload } from "../utils/auth-validator";
 
 const AUTH_CHANGE_EVENT = "story-spark-auth-change";
 
@@ -66,6 +67,9 @@ export const getValidDecodedToken = () => {
         removeFromLocalStorage(AUTH_KEY);
         return null;
       }
+
+      // Strictly validate the decoded payload claims and structure
+      validateTokenPayload(decodedData);
 
       if (
         typeof decodedData.exp === "number" &&
