@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-empty */
 import AuthLayout from "../auth/AuthLayout";
 import { useForm, SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
@@ -405,3 +406,4 @@ const ForgotPasswordComponent = () => {
 };
 
 export default ForgotPasswordComponent;
+

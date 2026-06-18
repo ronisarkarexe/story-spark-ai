@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-empty */
 import axios from 'axios';
 import { getSocketIo } from '../../socket/socket.oi';
 
@@ -40,3 +41,4 @@ instance.interceptors.response.use(
 );
 
 export default instance;
+

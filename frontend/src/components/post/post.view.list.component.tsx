@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-empty */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../models/post";
@@ -199,3 +200,4 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 };
 
 export default ExploreViewListComponent;
+

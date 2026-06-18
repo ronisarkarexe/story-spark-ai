@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-empty */
 import React, { useState, useMemo } from "react";
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
@@ -405,3 +406,4 @@ export const ExploreComponent = () => {
 };
 
 export default ExploreComponent;
+

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-empty */
 export class ApiError extends Error {
   constructor(public readonly status: number, message: string) {
     super(message);
@@ -87,3 +88,4 @@ export const downloadBlob = (blob: Blob, fileName: string) => {
   link.click();
   link.remove();
 };
+

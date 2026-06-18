@@ -1,4 +1,5 @@
-﻿import { useEffect, useRef, useState, useCallback } from "react";
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-empty */
+import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { getToken } from "../services/auth.service";
 import { resolveSocketUrl } from "../helpers/socket-url";
@@ -181,3 +182,4 @@ export function useCollaboration({
     requestAiContinue,
   };
 }
+

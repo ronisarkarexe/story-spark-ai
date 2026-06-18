@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable */
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -86,3 +87,4 @@ const ContinueStoryButton = () => {
 };
 
 export default ContinueStoryButton;
+

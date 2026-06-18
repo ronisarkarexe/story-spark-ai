@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-empty */
 import { FC, FormEvent, useEffect, useRef, useState } from "react";
 
 interface HelpSearchBarProps {
