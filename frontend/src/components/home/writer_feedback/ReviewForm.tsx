@@ -1,23 +1,6 @@
 import React, { useState } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
-const StarRating = ({ rating, setRating }: { rating: number; setRating: (n: number) => void }) => (
-  <div className="flex gap-1">
-    {[1, 2, 3, 4, 5].map((star) => (
-      <button
-        key={star}
-        type="button"
-        onClick={() => setRating(star)}
-        className={`text-2xl transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-md ${
-          star <= rating ? "text-yellow-400 drop-shadow-sm" : "text-slate-300 dark:text-slate-600"
-        }`}
-        aria-label={`Rate ${star} star`}
-      >
-        ★
-      </button>
-    ))}
-  </div>
-);
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
 
 const StarRating = ({

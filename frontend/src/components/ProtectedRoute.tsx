@@ -1,27 +1,13 @@
-import { ReactNode } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { isLoggedIn, getUserInfo } from '../services/auth.service';
+import { ReactNode } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { isLoggedIn, getUserInfo } from "../services/auth.service";
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];
   children?: ReactNode;
 }
 
-/**
- * ProtectedRoute Component
- * Guards a route by verifying the stored token is present, decodable,
- * and checks the user's role if allowedRoles is provided.
- */
 const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { isLoggedIn } from "../services/auth.service";
-
-interface ProtectedRouteProps {
-  children?: React.ReactNode;
-  allowedRoles?: string[];
-}
-
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation();
 
   if (!isLoggedIn()) {
@@ -30,6 +16,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (allowedRoles) {
     const user = getUserInfo();
+
     if (!user || !allowedRoles.includes(user.role)) {
       return <Navigate to="/login" replace />;
     }

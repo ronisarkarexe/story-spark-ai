@@ -21,16 +21,6 @@ const LatestPostsComponent = () => {
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
-  const posts = (data?.posts ?? []) as Post[];
-  const shouldShowLoadMore = posts.length >= 7;
-  const visiblePosts = showAllPosts || !shouldShowLoadMore ? posts : posts.slice(0, 6);
-
-  useEffect(() => {
-    setShowAllPosts(false);
-  }, [posts.length]);
-
-
-
 
   if (isLoading) return <LoadingAnimation />;
 
@@ -65,6 +55,10 @@ const LatestPostsComponent = () => {
     showAllPosts || !shouldShowLoadMore
       ? uniquePosts
       : uniquePosts.slice(0, INITIAL_VISIBLE_COUNT);
+  
+  useEffect(() => {
+  setShowAllPosts(false);
+}, [uniquePosts.length]);
 
   const toggleAccordion = (postId: string) => {
     setExpandedPostId((prevId) => (prevId === postId ? null : postId));

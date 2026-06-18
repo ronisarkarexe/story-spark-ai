@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
 import { Link } from "react-router-dom";
@@ -15,6 +15,14 @@ export const ExploreComponent = () => {
   const [page, setPage] = useState<number>(1);
   const [featuredPost, setFeaturedPost] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  
+ useEffect(() => {
+  setSearchTerm("");
+  setSelectedTags([]);
+  setPage(1);
+  setSortBy("createdAt");
+  setSortOrder("desc");
+}, []);
 
   const query: Record<string, string | number> = {
     page,
