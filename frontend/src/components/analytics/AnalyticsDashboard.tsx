@@ -41,7 +41,8 @@ export default function AnalyticsDashboard() {
   const [wordCloud, setWordCloud] = useState<IWordCloud[]>([]);
   const [hours, setHours] = useState<IHour[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_error, setError] = useState("");
 
   const token = getFromLocalStorage(AUTH_KEY) || "";
 

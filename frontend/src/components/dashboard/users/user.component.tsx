@@ -110,11 +110,11 @@ const UserComponent = () => {
                     </td>
                     <td className="p-4 py-4.5 pr-6">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                        user.isApplyForWriter 
+                        user.hasAppliedForWriter 
                           ? "bg-blue-50 text-blue-700 border border-blue-150 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20"
                           : "bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-450 dark:border-slate-750"
                       }`}>
-                        {user.isApplyForWriter ? (
+                        {user.hasAppliedForWriter ? (
                           <>
                             <i className="fas fa-check text-[10px]"></i> YES
                           </>

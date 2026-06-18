@@ -45,11 +45,7 @@ const PaymentComponent = () => {
   const planPrice = Number(searchParams.get("price") || "19.99");
 
   // State variables requested by user
-  const [name, setName] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cvv, setCvv] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
 
   // Razorpay payment handler
   const handlePayment = async () => {

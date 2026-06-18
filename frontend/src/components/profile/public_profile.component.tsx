@@ -356,7 +356,7 @@ const PublicProfileComponent = () => {
 
             <div className="flex-1 overflow-y-auto space-y-3">
               {(user.followers?.length ?? 0) > 0 ? (
-                (user.followers as any[]).map((follower) => (
+                ((user.followers as unknown) as { _id: string; name: string; profile?: { avatar?: string } }[]).map((follower) => (
                   <Link
                     key={follower._id}
                     to={`/profile/${follower._id}`}
@@ -396,7 +396,7 @@ const PublicProfileComponent = () => {
 
             <div className="flex-1 overflow-y-auto space-y-3">
               {(user.following?.length ?? 0) > 0 ? (
-                (user.following as any[]).map((followedUser) => (
+                ((user.following as unknown) as { _id: string; name: string; profile?: { avatar?: string } }[]).map((followedUser) => (
                   <Link
                     key={followedUser._id}
                     to={`/profile/${followedUser._id}`}

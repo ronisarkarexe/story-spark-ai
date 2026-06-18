@@ -1,4 +1,4 @@
-import { instance as axios } from "../helpers/axios/axiosInstance";
+import axios from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -32,7 +32,6 @@ ${previousContent}
     console.error("Story continuation request failed:", error);
     throw new Error("Failed to continue story.");
   }
-  return response.data.data.continuation;
 };
 
 /**
@@ -63,7 +62,7 @@ ${previousContent}
   });
   const data = response.data.data;
   if (Array.isArray(data)) {
-    return data.map((item: any) => item.continuation ?? "");
+    return data.map((item: { continuation?: string }) => item.continuation ?? "");
   }
   return [];
 };

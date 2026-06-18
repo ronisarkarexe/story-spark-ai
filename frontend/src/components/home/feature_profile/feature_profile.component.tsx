@@ -129,7 +129,7 @@ const FeatureProfileComponent = () => {
             </h2>
 
             {(data.followers?.length ?? 0) > 0 ? (
-              (data.followers as any[]).map((follower) => (
+              ((data.followers as unknown) as { _id: string; name: string; profile?: { avatar?: string } }[]).map((follower) => (
                 <Link
                   key={follower._id}
                   to={`/profile/${follower._id}`}
@@ -179,7 +179,7 @@ const FeatureProfileComponent = () => {
             </h2>
 
             {(data.following?.length ?? 0) > 0 ? (
-              (data.following as any[]).map((user) => (
+              ((data.following as unknown) as { _id: string; name: string; profile?: { avatar?: string } }[]).map((user) => (
                 <Link
                   key={user._id}
                   to={`/profile/${user._id}`}
