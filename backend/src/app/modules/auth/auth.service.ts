@@ -15,8 +15,6 @@ import { OTPModel } from "../verify_email/otp.model";
 import { RefreshSession } from "./refresh_session.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 import { GamificationService } from "../gamification/gamification.service";
-import { USER_STATUS } from "../../../enums/user_status";
-import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
 
 const googleClient = new OAuth2Client(config.google_client_id);
 
@@ -65,7 +63,7 @@ const issueRefreshToken = async (user: any): Promise<string> => {
 
 const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
   const { email: userEmail, password, rememberMe } = payload;
-  const isExistUser = await User.findOne({ email: userEmail });
+  const isExistUser = await User.findOne({ email: String(userEmail) });
   if (!isExistUser) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
@@ -104,9 +102,9 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
   }
 
   const otpRecord = await OTPModel.findOne({
-    email: userEmail,
+    email: String(userEmail),
     isVerified: true,
-    verificationToken,
+    verificationToken: String(verificationToken),
   });
 
   if (!otpRecord) {
@@ -126,7 +124,7 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
     );
   }
 
-  const isExistUser = await User.findOne({ email: userEmail });
+  const isExistUser = await User.findOne({ email: String(userEmail) });
   if (isExistUser) {
     throw new ApiError(httpStatus.CONFLICT, "User already exists!");
   }
@@ -135,7 +133,7 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
   const result = await User.create(userPayload);
 
   // Clean up OTP record after successful registration
-  await OTPModel.deleteOne({ email: userEmail });
+  await OTPModel.deleteOne({ email: String(userEmail) });
 
   const accessToken = issueAccessToken(result);
   const refreshToken = await issueRefreshToken(result);
@@ -355,7 +353,7 @@ const forgotPassword = async (email: string) => {
   // Same response for real and unknown emails to prevent account enumeration.
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: String(email) });
   if (user) {
     // Fire and forget so response timing does not vary with account existence.
     VerifyEmailService.VerifyEmail({
@@ -397,15 +395,15 @@ const resetPassword = async (payload: {
     throw new ApiError(httpStatus.BAD_REQUEST, passwordError);
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: String(email) });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
 
   const otpRecord = await OTPModel.findOne({
-    email,
+    email: String(email),
     isVerified: true,
-    verificationToken,
+    verificationToken: String(verificationToken),
   });
 
   if (!otpRecord) {
@@ -429,10 +427,10 @@ const resetPassword = async (payload: {
   user.password = password;
   user.tokenVersion = (user.tokenVersion ?? 0) + 1;
   await user.save();
-  await RefreshSession.updateMany({ userId: user._id }, { revoked: true });
+  await RefreshSession.updateMany({ userId: String(user._id) }, { revoked: true });
 
   // Clean up OTP record
-  await OTPModel.deleteOne({ email });
+  await OTPModel.deleteOne({ email: String(email) });
 
   // Generate JWT tokens for auto-login with the new tokenVersion.
   const accessToken = issueAccessToken(user);

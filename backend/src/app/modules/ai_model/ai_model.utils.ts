@@ -211,9 +211,6 @@ export async function generateWithGeminiStories(
 ): Promise<Story[]> {
   throwIfAborted(signal);
 
-  const genreInstruction = buildGenreInstruction(genre);
-  const toneInstruction = buildToneInstruction(tone);
-  const charactersInstruction = buildCharactersInstruction(characters);
 
   assertGeminiApiKeyConfigured();
 
