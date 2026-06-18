@@ -3,6 +3,14 @@ import { useGetProfileInfoQuery } from "../../../redux/apis/user.api";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
 import { Link, useNavigate } from "react-router-dom";
 
+interface PopulatedConnection {
+  _id: string;
+  name: string;
+  profile?: {
+    avatar?: string;
+  };
+}
+
 const FeatureProfileComponent = () => {
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
@@ -129,7 +137,7 @@ const FeatureProfileComponent = () => {
             </h2>
 
             {(data.followers?.length ?? 0) > 0 ? (
-              (data.followers as any[]).map((follower) => (
+              (data.followers as unknown as PopulatedConnection[]).map((follower) => (
                 <Link
                   key={follower._id}
                   to={`/profile/${follower._id}`}
@@ -179,7 +187,7 @@ const FeatureProfileComponent = () => {
             </h2>
 
             {(data.following?.length ?? 0) > 0 ? (
-              (data.following as any[]).map((user) => (
+              (data.following as unknown as PopulatedConnection[]).map((user) => (
                 <Link
                   key={user._id}
                   to={`/profile/${user._id}`}

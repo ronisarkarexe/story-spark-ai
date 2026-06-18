@@ -11,6 +11,14 @@ import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
 import toast, { Toaster } from "react-hot-toast";
 
+interface PopulatedConnection {
+  _id: string;
+  name: string;
+  profile?: {
+    avatar?: string;
+  };
+}
+
 const PublicProfileComponent = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -356,7 +364,7 @@ const PublicProfileComponent = () => {
 
             <div className="flex-1 overflow-y-auto space-y-3">
               {(user.followers?.length ?? 0) > 0 ? (
-                (user.followers as any[]).map((follower) => (
+                (user.followers as unknown as PopulatedConnection[]).map((follower) => (
                   <Link
                     key={follower._id}
                     to={`/profile/${follower._id}`}
@@ -396,7 +404,7 @@ const PublicProfileComponent = () => {
 
             <div className="flex-1 overflow-y-auto space-y-3">
               {(user.following?.length ?? 0) > 0 ? (
-                (user.following as any[]).map((followedUser) => (
+                (user.following as unknown as PopulatedConnection[]).map((followedUser) => (
                   <Link
                     key={followedUser._id}
                     to={`/profile/${followedUser._id}`}

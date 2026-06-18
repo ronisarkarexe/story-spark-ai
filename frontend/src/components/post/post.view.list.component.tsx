@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../models/post";
 import BookmarkButton from "../BookmarkButton";
@@ -17,11 +17,6 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   isLoading,
 }) => {
   const navigate = useNavigate();
-  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
-
-  const handleImageError = (storyId: string) => {
-    setImageErrors((prev) => ({ ...prev, [storyId]: true }));
-  };
 
   const formatDate = (value?: string) => {
     if (!value) return "";
@@ -49,7 +44,7 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
               className="cursor-pointer bg-gray-50 text-slate-900 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 overflow-hidden group flex flex-col h-full dark:bg-slate-900/60 dark:text-white dark:border-slate-800"
             >
               <div className="relative overflow-hidden bg-slate-200 dark:bg-slate-800">
-                {!imageErrors[story._id] && story.imageURL ? (
+                {story.imageURL ? (
                   <ImageFallback
                     src={story.imageURL}
                     alt={`Cover image for ${story.title}`}

@@ -76,7 +76,7 @@ export function clearObjectUrls(): void {
   for (const blobUrl of objectUrlMap.values()) {
     try {
       URL.revokeObjectURL(blobUrl);
-    } catch (e) {
+    } catch {
       // Ignore errors during revocation
     }
   }

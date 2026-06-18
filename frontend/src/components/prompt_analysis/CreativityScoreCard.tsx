@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { AlertCircle, Zap, TrendingUp } from "lucide-react";
+import { AlertCircle, Zap } from "lucide-react";
 
 interface CreativityScoreCardProps {
   score: number; // 0-100
@@ -17,11 +17,6 @@ const CreativityScoreCard: React.FC<CreativityScoreCardProps> = ({
   estimatedGenerationTime,
   isLoading = false,
 }) => {
-  const getScoreColor = () => {
-    if (score >= 75) return "from-emerald-500 to-green-400";
-    if (score >= 50) return "from-yellow-500 to-orange-400";
-    return "from-rose-500 to-red-400";
-  };
 
   const getScoreLabel = () => {
     if (score >= 75) return "Excellent";

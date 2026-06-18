@@ -113,6 +113,12 @@ export default function AnalyticsDashboard() {
     </div>
   );
 
+  if (error) return (
+    <div className="min-h-screen bg-[#0d0d14] flex flex-col items-center justify-center text-slate-200 px-4">
+      <p className="text-red-400 text-lg mb-4">{error}</p>
+    </div>
+  );
+
   const maxHour = hours.reduce((max, h) => h.count > max.count ? h : max, hours[0] || { hour: 0, count: 0 });
 
   // Derived Data
