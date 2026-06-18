@@ -15,6 +15,120 @@ import {
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
 import ImageFallback from "../ImageFallback";
+import StoryVisualizer from "../story-visualizer/StoryVisualizer";
+import ContinueStoryModal from "./ContinueStoryModal";
+
+import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
+import EmptyStoriesState from "./EmptyStoriesState";
+
+const StoryWorldMap = React.lazy(() => import("../story-map/StoryWorldMap"));
+const StoryRemix = React.lazy(() => import("../remix/StoryRemix"));
+
+
+// --- Custom Error Classes & Helper Types ---
+export class ApiError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.status === 429) {
+      return "The AI service is currently busy. Please wait a moment and try again.";
+    }
+    if ([502, 503, 504].includes(error.status)) {
+      return "The server took too long to respond. Please try again shortly.";
+    }
+    if (error.status >= 500) {
+      return "A server error occurred. Please try again later.";
+    }
+  }
+  if (error instanceof TypeError) {
+    return "Could not reach the server. Please check your connection and try again.";
+  }
+  return "An unexpected error occurred. Please try again.";
+}
+
+// Dummy themes helper
+const getGenreTheme = (tag: string) => {
+  return { gradient: "45deg, #1e1b4b, #311042", accent: "#a855f7", icon: "✨" };
+};
+const getInitials = (title: string) => title.slice(0, 2).toUpperCase();
+
+interface StoryCoverImageProps {
+  title?: string;
+  tag?: string;
+  size?: "thumb" | "full";
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
+  title = "",
+  tag = "default",
+  size = "full",
+  className = "",
+  style = {},
+}) => {
+  const theme = getGenreTheme(tag);
+  const initials = getInitials(title);
+
+  if (size === "thumb") {
+    return (
+      <div
+        className={className}
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: "50%",
+          background: `linear-gradient(${theme.gradient})`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "1.1rem",
+          fontWeight: 700,
+          color: "#fff",
+          letterSpacing: "0.05em",
+          textShadow: "0 1px 4px rgba(0,0,0,0.4)",
+          userSelect: "none",
+          ...style,
+        }}
+      >
+        {initials}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={className}
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: "192px",
+        position: "relative",
+        overflow: "hidden",
+        background: `linear-gradient(${theme.gradient})`,
+        borderRadius: "inherit",
+        ...style,
+      }}
+    >
+      <div style={{ position: "absolute", top: "-30%", right: "-15%", width: "60%", height: "120%", background: "rgba(255,255,255,0.08)", borderRadius: "50%", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "-20%", left: "-10%", width: "45%", height: "80%", background: "rgba(0,0,0,0.12)", borderRadius: "50%", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "12px", right: "16px", fontSize: "3.5rem", color: theme.accent, opacity: 0.35, lineHeight: 1, userSelect: "none", pointerEvents: "none", fontWeight: 300 }}>{theme.icon}</div>
+      <div style={{ position: "absolute", top: "14px", left: "14px", background: "rgba(0,0,0,0.28)", backdropFilter: "blur(6px)", color: "#fff", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "3px 10px", borderRadius: "999px", border: `1px solid ${theme.accent}55`, userSelect: "none" }}>{tag}</div>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontSize: "5rem", fontWeight: 900, color: "rgba(255,255,255,0.12)", letterSpacing: "-0.04em", lineHeight: 1, userSelect: "none", pointerEvents: "none" }}>{initials}</div>
+      </div>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)", padding: "32px 14px 12px" }}>
+        <p style={{ margin: 0, color: "#fff", fontSize: "0.9rem", fontWeight: 700, lineHeight: 1.3, textShadow: "0 1px 6px rgba(0,0,0,0.5)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{title}</p>
+      </div>
+    </div>
+  );
+};
+
 import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
 export interface IStories {
   uuid: string;
@@ -710,6 +824,74 @@ const handleExportMarkdown = () => {
 
   const isNarrationActive = narrationState !== "idle";
 
+  const formatReadingStats = (content: string): string => {
+    const readingTime = calculateReadingTime(content);
+    return `${readingTime} Min Read`;
+  };
+
+  if (isGlobalLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <StoryGeneratingAnimation />
+      </div>
+    );
+  }
+
+  if (!stories || !stories.length || !selectedStory) {
+    return (
+      <>
+        {/* Empty state */}
+        <EmptyStoriesState />
+      </>
+    );
+  }
+
+  return (
+    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 pb-16 relative overflow-hidden box-border">
+      <Toaster position="top-right" reverseOrder={false} />
+      
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
+
+      {/* Error Banner */}
+      {errorMessage && (
+        <div className="error-banner mb-6 p-4 bg-amber-500/20 border border-amber-500 rounded-xl text-amber-200 flex justify-between items-center animate-fadeIn relative z-20">
+          <div className="flex items-center gap-3">
+            <span>⚠️</span>
+            <p className="text-sm font-medium">{errorMessage}</p>
+          </div>
+          <button 
+            onClick={() => setErrorMessage(null)} 
+            className="text-xs uppercase font-bold tracking-wider hover:text-white px-2 py-1 cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start relative z-10 w-full box-border">
+        
+        {/* ── Left Column ── */}
+        <div className="col-span-1 lg:col-span-8 flex flex-col space-y-6 w-full box-border animate-fade-in-up">
+          
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 w-full box-border border-b border-slate-200/60 dark:border-white/5 pb-6">
+            <div className="text-left">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+                {selectedStory.title}
+              </h1>
+              <div className="flex flex-wrap gap-2 select-none">
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                  🎭 {selectedStory.tag}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-purple-500/5 text-purple-600 dark:text-purple-400 border border-purple-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                  🌐 {selectedStory.language || "English"}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800/5 text-slate-600 dark:text-slate-400 border border-slate-700/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                  📖 {formatReadingStats(selectedStory.content)}
+                </span>
+                {selectedStory.emotions && selectedStory.emotions.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                    😊 {selectedStory.emotions.join(", ")}
 
 if (isLoading) {
   return (

@@ -12,6 +12,9 @@ export const enhancePromptWithGemini = async (
 
   const metaPrompt = `You are a creative writing assistant.
 
+
+Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ").replace(/\r/g, "")}`;
+
 Use the following story context if available:
 
 ${compressedContext ?? "No previous context"}
@@ -21,7 +24,7 @@ Add a character name, setting details, and a central conflict.
 
 Return ONLY the enhanced prompt, nothing else.
 
-Prompt: ${prompt}`;
+Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, "\\\"")}`;
 
   const resultPromise = model.generateContent(metaPrompt);
 

@@ -70,7 +70,7 @@
 
 ## Local Development (Monorepo)
 
-**Prerequisites:** Node.js **18.18+**, npm **9+**, MongoDB URI for the API.
+**Prerequisites:** Node.js **18.18+**, pnpm **8+**, MongoDB URI for the API.
 
 1. **Clone the repository**
    ```bash
@@ -121,9 +121,9 @@
 7. **Production builds**
 
    ```bash
-   npm run build
-   npm run start:backend    # requires `npm run build:backend` first
-   npm run start:frontend   # serves built static app (preview)
+   pnpm run build
+   pnpm run start:backend    # requires `pnpm run build:backend` first
+   pnpm run start:frontend   # serves built static app (preview)
    ```
 
 ### Deploying on Vercel
@@ -465,9 +465,8 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 
 <a id="contributing"></a>
-## Troubleshooting 🛠️
 
-Running into issues during setup? Here are the most common errors and how to fix them.
+## Contributing 👨‍💻
 
 ---
 
@@ -526,10 +525,10 @@ Once the update completes, click **Try Again** in Docker Desktop. If the issue p
 ```bash
 pnpm install
 ```
-Then commit the updated `package-lock.json` before rebuilding your Docker image:
+Then commit the updated `pnpm-lock.yaml` before rebuilding your Docker image:
 ```bash
-git add package-lock.json
-git commit -m "chore: regenerate package-lock.json"
+git add pnpm-lock.yaml
+git commit -m "chore: regenerate pnpm-lock.yaml"
 ```
 
 ---
@@ -548,7 +547,7 @@ Contributions make the open source community such an amazing place to learn, ins
 Thanks to everyone who has helped build **Story Spark AI**. This grid updates automatically from [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
 
 <a href="https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&max=500&columns=12" alt="Contributors" />
+  <img src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&max=1000&columns=16" alt="Contributors" />
 </a>
 
 ## Maintainers
@@ -602,10 +601,17 @@ Thanks to everyone who has helped build **Story Spark AI**. This grid updates au
 Thank you for contributing to our open-source project! We appreciate your support 🚀 <br>
 Don't forget to leave a star ⭐
 
-### Proposed Feature: Trending Topics & UI Enhancements
-- Added responsive writing genres (Fantasy, Mystery, Romance) next to recommended writers.
-- Implemented a clean 'How It Works' section to polish the landing page layout.
 
+## 🌐 Home Page Feature Overview
+
+The Home Page serves as the central hub of Story-Spark-AI. Below is a breakdown of its core UI elements and features:
+
+- **Hero Banner & CTA Buttons:** The primary landing section designed to introduce users to the platform with direct call-to-action buttons.
+- **StorySparkAI v2.0 Live Announcement Badge:** Highlights the latest version features and platform updates.
+- **Feature Cards:** Highlights key functionalities including *Infinite Variations*, *AI Co-Writer*, and *Community Driven* features.
+- **Featured Posts Section:** Displays curated or top-performing user stories.
+- **Trending Topics / Hashtag Discovery:** Allows users to explore popular content categories and discover active discussions.
+- **Cookie Consent Modal:** Manages user privacy preferences regarding Essential, Functional, and Analytics cookies.
 ### Proposed Feature: Trending Topics & UI Enhancements
 - Added responsive writing genres (Fantasy, Mystery, Romance) next to recommended writers.
 - Implemented a clean 'How It Works' section to polish the landing page layout.

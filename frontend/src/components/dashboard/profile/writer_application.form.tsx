@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useBlocker } from "react-router-dom";
 import { useSubmitWriterApplicationMutation } from "../../../redux/apis/writer_application.api";
 import { User } from "../../../models/user";
 import toast from "react-hot-toast";
@@ -13,6 +14,37 @@ export const WriterApplicationForm = ({ user }: Props) => {
     portfolioLink: "",
     reason: "",
   });
+
+  const isDirty = formData.portfolioLink.trim().length > 0 || formData.reason.trim().length > 0;
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      const proceed = window.confirm(
+        "You have unsaved changes in your application. Are you sure you want to leave?"
+      );
+      if (proceed) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
 
   if (user.role === "writer" || user.role === "admin" || user.role === "super_admin") {
     return null;
