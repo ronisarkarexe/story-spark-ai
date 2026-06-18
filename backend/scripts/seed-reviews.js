@@ -17,7 +17,7 @@ try {
   process.exit(1);
 }
 
-const TOTAL = Number(process.argv[2] || process.env.SEED_COUNT ?? 10000);
+const TOTAL = Number( process.argv[2] ?? process.env.SEED_COUNT ?? 10000 );
 const BATCH = Number(process.env.SEED_BATCH ?? 1000);
 
 if (!Number.isInteger(TOTAL) || TOTAL <= 0) {
@@ -61,8 +61,8 @@ async function main() {
   const res = await coll.insertMany(docs, {
     ordered: false,
   });
-
-  inserted += res.insertedCount;
+  
+  inserted += batchSize;
 
   console.log(`✅ Inserted ${inserted}/${TOTAL}`);}
   catch (error) {
@@ -75,8 +75,7 @@ async function main() {
 }
   }
 
-  console.log("Seeding complete. Closing connection.");
-  await mongoose.disconnect();
+  console.log("Seeding complete.Closed!");
 }
 
 main()

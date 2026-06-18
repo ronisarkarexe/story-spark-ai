@@ -133,10 +133,10 @@ export const Profile = () => {
             </div>
           </div>
 
-          {/* Twitter */}
+          {/* X */}
           <div className="form-field">
             <div className="field-header">
-              <label className="field-label"><strong>Twitter</strong></label>
+              <label className="field-label"><strong>X</strong></label>
             </div>
             <div className="input-wrapper">
               <input
@@ -144,7 +144,7 @@ export const Profile = () => {
                 name="twitter"
                 value={formData.twitter}
                 onChange={handleChange}
-                placeholder="https://twitter.com/username"
+                placeholder="https://x.com/username"
                 className="custom-input"
               />
             </div>

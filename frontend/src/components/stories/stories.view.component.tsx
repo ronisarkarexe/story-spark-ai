@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
+import DOMPurify from "dompurify";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
@@ -45,6 +46,14 @@ type StorySentenceSegment = {
   text: string;
   startWordIndex: number;
   endWordIndex: number;
+};
+const sanitizeUrl = (url?: string): string => {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (/^(javascript|vbscript):/i.test(trimmed)) {
+    return "";
+  }
+  return DOMPurify.sanitize(trimmed);
 };
 
 const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
@@ -770,7 +779,7 @@ if (isLoading) {
                       onClick={() => handelStorySelection(story)}
                     >
                       <img
-                        src={story.imageURL}
+                        src={sanitizeUrl(story.imageURL)}
                         alt={story.title}
                         className="w-full h-full object-cover rounded-full"
                       />

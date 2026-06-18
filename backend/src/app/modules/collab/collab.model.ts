@@ -24,6 +24,7 @@ const CollabRoomSchema = new Schema<ICollabRoom>(
     participants: { type: [ParticipantSchema], default: [] },
     story: { type: [StoryChunkSchema], default: [] },
     expiresAt: { type: Date, required: true },
+    isAiGenerating: { type: Boolean, required: true, default: false },
   },
   {
     timestamps: true,

@@ -1,9 +1,9 @@
-import React, { useMemo, useRef } from "react";
-import html2canvas from "html2canvas";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import type { IStories } from "../stories/stories.view.component";
 import { getWordCount } from "../stories/stories.utils";
 import StoryCoverImage from "../stories/StoryCoverImage";
+import { isSessionBookmarked, addSessionBookmark, removeSessionBookmark } from "../../utils/session-bookmarks";
 
 export type StoryCardRarity = "Common" | "Rare" | "Epic" | "Legendary";
 
@@ -119,6 +119,18 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const rarity = getStoryCardRarity(story.content);
+  const [isBookmarked, setIsBookmarked] = useState(() => isSessionBookmarked(story.uuid));
+
+  useEffect(() => {
+    const handleBookmarkChange = () => {
+      setIsBookmarked(isSessionBookmarked(story.uuid));
+    };
+    window.addEventListener("session_bookmarks_changed", handleBookmarkChange);
+    return () => {
+      window.removeEventListener("session_bookmarks_changed", handleBookmarkChange);
+    };
+  }, [story.uuid]);
+
   const rarityStyle = rarityConfig[rarity];
   const wordCount = getWordCount(story.content);
   const cardId = getStoryCardId(story);
@@ -128,12 +140,28 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
     genreColorMap[genre.toLowerCase()] ||
     "bg-purple-500/20 text-purple-100 border-purple-300/40";
 
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyStory = async () => {
+    const text = cleanText(story.content);
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      toast.success("Story copied to clipboard!");
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {
+      toast.error("Could not copy story text.");
+    }
+  };
+
   const handleDownload = async () => {
     if (!cardRef.current) return;
 
     const toastId = toast.loading("Preparing trading card...");
 
     try {
+      const { default: html2canvas } = await import("html2canvas");
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
         scale: 2,
@@ -203,15 +231,18 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
 
       <div
         ref={cardRef}
-        className={`story-card-holo relative mx-auto aspect-[5/7] w-full max-w-[360px] overflow-hidden rounded-2xl border ${rarityStyle.border} bg-slate-950 p-3 text-white shadow-2xl ${rarityStyle.glow}`}
+        className={`story-card-holo group relative mx-auto aspect-[5/7] w-full max-w-[360px]
+        overflow-hidden rounded-2xl border ${rarityStyle.border}
+        bg-slate-950 p-3 text-white shadow-2xl ${rarityStyle.glow}
+        transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(0,0,0,0.45)]`}
       >
         <div
           className={`absolute inset-0 bg-gradient-to-br ${rarityStyle.accent} opacity-20`}
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.24),transparent_28%),radial-gradient(circle_at_80%_12%,rgba(255,255,255,0.18),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.06),transparent_42%)]" />
 
-        <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-950/80">
-          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+        <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-950/50 backdrop-blur-lg">
+            <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
             <div className="min-w-0">
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/50">
                 StorySpark Card
@@ -221,22 +252,41 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
               </h3>
             </div>
             <span
-              className={`shrink-0 rounded-full bg-gradient-to-r ${rarityStyle.accent} px-3 py-1 text-[10px] font-black uppercase tracking-wider text-slate-950`}
+              className={`shrink-0 rounded-full ${rarityStyle.accent} px-3 py-1 text-[10px] font-black uppercase tracking-wider text-slate-950 ring-1 ring-white/10 drop-shadow-md`}
             >
               {rarityStyle.label}
             </span>
           </div>
 
-          <div className="relative m-3 h-40 overflow-hidden rounded-xl border border-white/10 bg-slate-900">
+          <div className="relative m-3 h-40 overflow-hidden rounded-xl border border-white/10 bg-slate-900/60 backdrop-blur-sm">
             <StoryCoverImage
               title={story.title}
               tag={story.tag}
-              className="h-full w-full"
+              className="h-full w-full transition-transform duration-500 group-hover:scale-110"
               style={{ minHeight: "0", borderRadius: "0.75rem" }}
             />
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isBookmarked) {
+                  removeSessionBookmark(story.uuid);
+                  toast.success("Removed from bookmarks");
+                } else {
+                  addSessionBookmark(story);
+                  toast.success("Saved to session bookmarks!");
+                }
+              }}
+              className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/20 flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              title={isBookmarked ? "Remove bookmark" : "Save story"}
+            >
+              <i className={`${isBookmarked ? "fas text-amber-400" : "far text-white/70"} fa-bookmark`}></i>
+            </button>
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
-              <span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${genreClass}`}>
+              <span
+                className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${genreClass}`}
+              >
                 {genre}
               </span>
               <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold text-white">
@@ -245,8 +295,8 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-1 flex-col px-4 pb-4">
-            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+            <div className="flex flex-1 flex-col px-4 pb-4">
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-md p-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
                 Key Quote
               </p>
@@ -256,20 +306,22 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
             </div>
 
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] backdrop-blur-sm p-2">
                 <p className="text-lg font-black">{wordCount}</p>
                 <p className="text-[9px] uppercase tracking-wider text-white/45">
                   Words
                 </p>
               </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] backdrop-blur-sm p-2">
                 <p className="text-lg font-black">{rarityStyle.rank}</p>
                 <p className="text-[9px] uppercase tracking-wider text-white/45">
                   Rank
                 </p>
               </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
-                <p className="text-lg font-black">{story.tag.slice(0, 3).toUpperCase()}</p>
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] backdrop-blur-sm p-2">
+                <p className="text-lg font-black">
+                  {story.tag.slice(0, 3).toUpperCase()}
+                </p>
                 <p className="text-[9px] uppercase tracking-wider text-white/45">
                   Class
                 </p>
@@ -297,6 +349,15 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
           >
             <i className="fa-solid fa-download"></i>
             Download PNG
+          </button>
+          <button
+            type="button"
+            onClick={handleCopyStory}
+            aria-label="Copy story to clipboard"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-violet-500 active:scale-95"
+          >
+            <i className={`fa-solid ${isCopied ? "fa-check" : "fa-clipboard"}`}></i>
+            {isCopied ? "Copied!" : "Copy Story"}
           </button>
           <button
             type="button"

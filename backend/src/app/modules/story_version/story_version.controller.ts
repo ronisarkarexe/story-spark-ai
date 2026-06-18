@@ -1,3 +1,5 @@
+import { Post } from "../post/post.model";
+import mongoose from "mongoose";
 import { Request, Response } from "express";
 import httpStatus from "http-status";
 import catchAsync from "../../../shared/catch_async";
@@ -130,7 +132,10 @@ const getBranchPath = catchAsync(async (req: Request, res: Response) => {
 );
 
 const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
-  const { prompt } = req.body as { prompt?: string };
+  const { prompt, storyId } = req.body as {
+  prompt?: string;
+  storyId?: string;
+};
 
   if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
     throw new ApiError(
@@ -139,7 +144,19 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  const enhancedPrompt = await StoryVersionService.enhancePrompt(prompt.trim());
+  let post = null;
+  if (storyId) {
+    const cleanStoryId = String(storyId);
+    if (!mongoose.Types.ObjectId.isValid(cleanStoryId)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid storyId");
+    }
+    post = await Post.findOne({ _id: { $eq: cleanStoryId } });
+  }
+
+  const enhancedPrompt = await StoryVersionService.enhancePrompt(
+    prompt.trim(),
+    post?.content
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

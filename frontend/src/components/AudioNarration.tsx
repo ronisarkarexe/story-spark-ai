@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import useSpeechSynthesis from "../hooks/useSpeechSynthesis";
+import  { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
 
 interface AudioNarrationProps {
   text: string;
@@ -84,6 +84,8 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
         </svg>
         {title}
       </h3>
+
+
 
       {/* Error Message */}
       {error && (

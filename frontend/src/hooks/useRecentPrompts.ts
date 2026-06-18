@@ -10,7 +10,7 @@ export interface IRecentPrompt {
 }
 
 const STORAGE_KEY = "story_spark_recent_prompts";
-const MAX_PROMPTS = 50;
+const MAX_PROMPTS = 20;
 
 const normalizePromptEntry = (entry: IRecentPrompt): IRecentPrompt => ({
   id: entry.id || `${Date.now()}-${Math.random()}`,
@@ -21,8 +21,22 @@ const normalizePromptEntry = (entry: IRecentPrompt): IRecentPrompt => ({
   isFavorite: Boolean(entry.isFavorite),
 });
 
-const persistPrompts = (prompts: IRecentPrompt[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(prompts));
+const persistPrompts = (prompts: IRecentPrompt[]): void => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prompts));
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "QuotaExceededError") {
+      // Prune oldest non-favorite entries and retry once
+      const pruned = prompts
+        .filter((p) => p.isFavorite)
+        .concat(prompts.filter((p) => !p.isFavorite).slice(0, 5));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+      } catch {
+        // Storage critically full — skip persistence silently
+      }
+    }
+  }
 };
 
 export const useRecentPrompts = () => {

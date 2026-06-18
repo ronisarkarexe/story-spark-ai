@@ -6,6 +6,7 @@ import httpStatus from "http-status";
 import { Comment } from "./comment.model";
 import { Types } from "mongoose";
 import { Post } from "../post/post.model";
+import { ENUM_USER_ROLE } from "../../../enums/user";
 
 const createComment = async (
   payload: ICommentPayload,
@@ -100,7 +101,7 @@ const deleteComment = async (commentId: string, token: ITokenPayload) => {
   }
   // Only the comment author or an admin/super-admin can delete
   const isAuthor = comment.userId.toString() === user._id.toString();
-  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+  const isAdmin = role === ENUM_USER_ROLE.ADMIN || role === ENUM_USER_ROLE.SUPER_ADMIN;
   if (!isAuthor && !isAdmin) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
