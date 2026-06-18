@@ -2,6 +2,7 @@ import express from "express";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import auth from "../../middleware/auth.middleware";
 import { StoryVersionController } from "./story_version.controller";
+import { aiGenerationRateLimiter } from "../../middleware/ip.rate-limiter";
 
 const router = express.Router();
 
@@ -89,6 +90,7 @@ router.post(
 // Enhance a story prompt using AI
 router.post(
   "/enhance-prompt",
+  aiGenerationRateLimiter,
   auth(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,

@@ -146,10 +146,11 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
 
   let post = null;
   if (storyId) {
-    if (!mongoose.Types.ObjectId.isValid(storyId)) {
+    const cleanStoryId = String(storyId);
+    if (!mongoose.Types.ObjectId.isValid(cleanStoryId)) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Invalid storyId");
     }
-    post = await Post.findById(storyId);
+    post = await Post.findOne({ _id: { $eq: cleanStoryId } });
   }
 
   const enhancedPrompt = await StoryVersionService.enhancePrompt(

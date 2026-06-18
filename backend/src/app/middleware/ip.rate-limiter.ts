@@ -26,7 +26,7 @@ interface RateLimiterOptions {
 export const createRateLimiter = (options: RateLimiterOptions) => {
   const { windowMs, maxRequests, blockTimeMs, keyPrefix, actionLabel = "request", buildMessage } = options;
 
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async function rateLimitMiddleware(req: Request, res: Response, next: NextFunction) {
     try {
       const ip = req.ip;
       if (!ip) {
