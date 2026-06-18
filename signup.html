@@ -1,98 +1,65 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
+
 <head>
+
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<<<<<<< fix/noscript-fallback
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Create Account | Story Spark AI</title>
     <meta name="description" content="Sign in or create an account for Story Spark AI — turn your imagination into fully illustrated multi-variation AI stories."/>
+=======
+>>>>>>> main
 
-    <!-- Tailwind CSS (w/ Form & Container plugins) -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <meta
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        name="viewport"
+    />
 
-    <!-- Google Fonts & Flaticon Uicons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
-    <link href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css" rel="stylesheet"/>
+    <title>Signup | Story Spark AI</title>
 
-    <!-- Google Identity Services (GIS) library for Google Auth -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <meta
+        name="description"
+        content="Sign in or create an account for Story Spark AI."
+    />
 
-    <!-- Shared Auth Design System CSS -->
+    <!-- FONTS -->
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    />
+
+    <!-- ICONS -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/all/all.css"
+        rel="stylesheet"
+    />
+
+    <!-- GOOGLE AUTH -->
+
+    <script
+        src="https://accounts.google.com/gsi/client"
+        async
+        defer
+    ></script>
+
+    <!-- STYLES -->
+
     <link href="auth.css" rel="stylesheet"/>
 
-    <!-- Dynamic Tailwind config containing the app's style tokens -->
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-secondary-fixed": "#36003e",
-                        "tertiary-container": "#ec6a06",
-                        "surface-dim": "#101319",
-                        "outline-variant": "#494454",
-                        "on-primary-container": "#340080",
-                        "error": "#ffb4ab",
-                        "surface-bright": "#36393f",
-                        "surface": "#101319",
-                        "on-primary-fixed-variant": "#5516be",
-                        "tertiary-fixed-dim": "#ffb690",
-                        "on-tertiary": "#552100",
-                        "on-error-container": "#ffdad6",
-                        "secondary-container": "#ae05c6",
-                        "primary-container": "#a078ff",
-                        "surface-container-lowest": "#0b0e13",
-                        "outline": "#958ea0",
-                        "surface-container-high": "#272a30",
-                        "on-secondary-fixed-variant": "#7c008e",
-                        "primary": "#d0bcff",
-                        "on-primary": "#3c0091",
-                        "on-secondary-container": "#ffd8fd",
-                        "on-tertiary-fixed": "#341100",
-                        "on-error": "#690005",
-                        "primary-fixed": "#e9ddff",
-                        "surface-variant": "#32353b",
-                        "tertiary-fixed": "#ffdbca",
-                        "on-tertiary-fixed-variant": "#783200",
-                        "on-surface-variant": "#cbc3d7",
-                        "background": "#101319",
-                        "on-secondary": "#580065",
-                        "inverse-surface": "#e1e2ea",
-                        "inverse-on-surface": "#2d3036",
-                        "on-tertiary-container": "#4a1c00",
-                        "error-container": "#93000a",
-                        "inverse-primary": "#6d3bd7",
-                        "on-background": "#e1e2ea",
-                        "surface-tint": "#d0bcff",
-                        "surface-container-highest": "#32353b",
-                        "surface-container": "#1d2025",
-                        "on-primary-fixed": "#23005c",
-                        "secondary": "#fbabff",
-                        "tertiary": "#ffb690",
-                        "surface-container-low": "#191c21",
-                        "on-surface": "#e1e2ea",
-                        "primary-fixed-dim": "#d0bcff",
-                        "secondary-fixed-dim": "#fbabff",
-                        "secondary-fixed": "#ffd6fd"
-                    },
-                    "fontFamily": {
-                        "body-md": ["Inter"],
-                        "display-lg": ["Inter"],
-                        "label-caps": ["Inter"],
-                        "headline-md": ["Inter"]
-                    },
-                    "fontSize": {
-                        "body-md": ["15px", {"lineHeight": "1.6", "fontWeight": "400"}],
-                        "display-lg": ["36px", {"lineHeight": "1.15", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-                        "display-lg-mobile": ["26px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-                        "label-caps": ["11px", {"lineHeight": "1.0", "letterSpacing": "0.08em", "fontWeight": "600"}],
-                        "headline-md": ["18px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "700"}]
-                    }
-                }
-            }
-        }
-    </script>
 </head>
+<<<<<<< fix/noscript-fallback
 <body class="bg-background text-on-surface font-body-md min-h-screen selection:bg-primary/30">
+<noscript>
+  <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#101319;color:#e1e2ea;font-family:sans-serif;text-align:center;padding:2rem;">
+    <div>
+      <h1 style="font-size:1.5rem;margin-bottom:1rem;">JavaScript is required</h1>
+      <p>Story Spark AI requires JavaScript to run. Please enable JavaScript in your browser settings and reload the page.</p>
+    </div>
+  </div>
+</noscript>
 <div class="min-h-screen flex items-center justify-center p-4 md:p-0">
 <main class="auth-container flex flex-col md:flex-row overflow-hidden md:rounded-2xl">
 
@@ -185,85 +152,481 @@
                     <div class="ds-input-group">
                         <i class="fi fi-rr-envelope ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
                         <input class="auth-field w-full ds-input with-icon pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required aria-describedby="email-help email-error" aria-invalid="false"/>
-                    </div>
-                    <p class="ds-help" id="email-help">We’ll send account updates to this address.</p>
-                    <p class="ds-error" id="email-error" role="alert" aria-live="polite"></p>
-                </div>
-                <div class="ds-field">
-                    <div class="flex justify-between mb-2">
-                        <label class="block text-label-caps text-on-surface-variant" for="password-field">PASSWORD</label>
-                        <a class="text-[13px] text-primary hover:text-secondary transition-colors font-semibold invisible" href="#" id="forgot-password-link">Forgot Password?</a>
-                    </div>
-                    <div class="ds-input-group has-action">
-                        <i class="fi fi-rr-lock ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="auth-field w-full ds-input with-icon pl-11 pr-11" id="password-field" name="password" autocomplete="new-password" placeholder="At least 8 characters" type="password" required aria-describedby="password-help password-error password-strength" aria-invalid="false"/>
-                        <button class="ds-input-action flex items-center justify-center" onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility">
-                            <i class="fi fi-rr-eye-crossed text-[16px]" id="eye-icon"></i>
-                        </button>
-                    </div>
-                    <div class="ds-meter" aria-hidden="true"><div class="ds-meter-bar" id="password-meter-bar"></div></div>
-                    <p class="ds-help" id="password-help">Use 8+ characters with a mix of letters and numbers.</p>
-                    <p class="ds-help" id="password-strength"></p>
-                    <p class="ds-error" id="password-error" role="alert" aria-live="polite"></p>
-                    <p 
-                 id="signup-caps-lock-warning" 
-                 class="hidden text-yellow-400 text-sm mt-2"
-                 >
-                 Caps Lock is ON
-                </p>
-                </div>
-                <div class="ds-field">
-                    <label class="block text-label-caps text-on-surface-variant mb-2" for="confirm-password-field">CONFIRM PASSWORD</label>
-                    <div class="ds-input-group has-action">
-                        <i class="fi fi-rr-lock ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full ds-input with-icon pl-11 pr-11" id="confirm-password-field" name="confirmPassword" autocomplete="new-password" placeholder="Re-enter your password" type="password" required aria-describedby="confirm-password-help confirm-password-error confirm-password-feedback" aria-invalid="false"/>
-                        <button class="ds-input-action flex items-center justify-center" onclick="toggleConfirmPasswordVisibility()" type="button" aria-label="Toggle confirm password visibility">
-                            <i class="fi fi-rr-eye-crossed text-[16px]" id="confirm-eye-icon"></i>
-                        </button>
-                    </div>
-                    <p class="ds-help" id="confirm-password-help">Passwords must match to create your account.</p>
-                    <p class="ds-feedback password-match-feedback" id="confirm-password-feedback" role="status" aria-live="polite"></p>
-                    <p class="ds-error" id="confirm-password-error" role="alert" aria-live="polite"></p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <input class="w-4 h-4 rounded border-white/10 bg-surface-container-high text-primary focus:ring-primary ring-offset-surface" id="remember" type="checkbox"/>
-                    <label class="text-[13px] text-on-surface-variant" for="remember">Remember me for 30 days</label>
-                </div>
-                <button class="w-full ds-btn-submit" id="submit-btn" type="submit">
-                    <span id="submit-btn-text">Create Account</span>
-                    <span class="ds-spinner hidden" id="submit-btn-spinner" aria-hidden="true"></span>
-                </button>
-            </form>
+=======
 
-            <p class="text-center mt-4 text-[13px] text-on-surface-variant">
-                By continuing, you agree to our
-                <a class="underline hover:text-primary transition-colors cursor-pointer" onclick="openLegalModal('terms')">Terms of Service</a> and
-                <a class="underline hover:text-primary transition-colors cursor-pointer" onclick="openLegalModal('privacy')">Privacy Policy</a>.
-            </p>
-            <p class="text-center mt-4 text-[13px] text-on-surface-variant" id="nav-toggle">
-                Already have an account?
-                <a class="text-primary hover:text-secondary transition-colors font-semibold" href="login.html">Log In</a>
-            </p>
-        </div>
-    </section>
-</main>
-</div>
+<body>
 
-<!-- Legal Content Modal -->
-<div id="legal-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
-    <div class="glass-panel w-full max-w-lg p-6 md:p-8 rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(208,188,255,0.15)] relative scale-95 transition-all duration-300" id="legal-modal-content">
-        <button onclick="closeLegalModal()" class="absolute right-6 top-6 text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-8 h-8">
-            <i class="fi fi-rr-cross-small text-[18px]"></i>
-        </button>
-        <h3 class="text-xl font-semibold text-primary mb-4" id="legal-modal-title">Terms of Service</h3>
-        <div class="text-[14px] text-on-surface-variant space-y-4 max-h-[300px] overflow-y-auto pr-2" id="legal-modal-text"></div>
-        <div class="mt-6 flex justify-end">
-            <button onclick="closeLegalModal()" class="px-6 py-2 rounded-lg bg-primary text-on-primary font-semibold hover:bg-secondary hover:scale-[1.02] active:scale-95 transition-all">I Understand</button>
-        </div>
+    <!-- MAIN WRAPPER -->
+
+    <div class="auth-wrapper">
+
+        <!-- MAIN CONTAINER -->
+
+        <main class="auth-container">
+
+            <!-- LEFT PANEL -->
+
+            <section class="left-pane">
+
+                <canvas id="particle-canvas"></canvas>
+
+                <div class="hero-content">
+
+    <div class="hero-badge">
+
+        <span
+            class="fi fi-rr-sparkles"
+            style="margin-right:8px;"
+        ></span>
+
+        Story Spark AI
+
     </div>
+
+    <h1 class="hero-title">
+
+        One Spark.<br>
+
+        <span class="hero-gradient">
+            Infinite Worlds.
+        </span>
+
+    </h1>
+
+    <p class="hero-description">
+
+        Create immersive AI-generated stories with
+        visuals, branching paths, and limitless
+        imagination.
+
+    </p>
+
 </div>
 
-<!-- Script Action Link -->
-<script src="auth.js" defer></script>
+            </section>
+
+            <!-- RIGHT PANEL -->
+
+            <section class="right-pane">
+
+                <div class="auth-form-card">
+
+                    <!-- MOBILE LOGO -->
+
+                    <div class="flex justify-center md:hidden">
+
+                        <div
+                            style="
+                                font-size:18px;
+                                font-weight:800;
+                            "
+                            class="hero-gradient"
+                        >
+                            Story Spark AI
+                        </div>
+
+>>>>>>> main
+                    </div>
+
+                    <!-- HEADER -->
+
+                    <div class="auth-header">
+
+                        <h2
+                            class="auth-title"
+                            id="form-title"
+                        >
+                            Create account
+                        </h2>
+
+                        <p
+                            class="auth-subtitle"
+                            id="form-subtitle"
+                        >
+                            Start creating AI-powered stories today.
+                        </p>
+
+                    </div>
+
+                    <!-- TABS -->
+<div
+    style="
+        display:flex;
+        border-bottom:1px solid rgba(255,255,255,.08);
+    "
+>
+
+    <button
+        id="tab-signin"
+        onclick="window.location.href='login.html'"
+        style="
+            flex:1;
+            padding-bottom:16px;
+            background:none;
+            border:none;
+            border-bottom:2px solid transparent;
+            color:rgba(255,255,255,.5);
+            font-size:12px;
+            font-weight:700;
+            letter-spacing:2px;
+            cursor:pointer;
+        "
+    >
+        LOG IN
+    </button>
+
+    <button
+        id="tab-signup"
+        onclick="window.location.href='signup.html'"
+        style="
+            flex:1;
+            padding-bottom:16px;
+            background:none;
+            border:none;
+            border-bottom:2px solid #8b5cf6;
+            color:#8b5cf6;
+            font-size:12px;
+            font-weight:700;
+            letter-spacing:2px;
+            cursor:pointer;
+        "
+    >
+        SIGN UP
+    </button>
+
+</div>
+
+                    <!-- GOOGLE BUTTON -->
+
+                    <button
+                        onclick="handleGoogleSignIn()"
+                        type="button"
+                        class="ds-btn-google"
+                    >
+
+                        <div
+                            style="
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                gap:12px;
+                            "
+                        >
+
+                            <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                            >
+
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.07 5.07 0 01-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09a6.97 6.97 0 010-4.18V7.07H2.18A11 11 0 001 12c0 1.78.43 3.45 1.18 4.93l3.85-2.84z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+
+                            </svg>
+
+                            <span
+                                style="
+                                    font-size:14px;
+                                    font-weight:600;
+                                "
+                            >
+                                Continue with Google
+                            </span>
+
+                        </div>
+
+                    </button>
+
+                    <!-- DIVIDER -->
+
+                    <div class="auth-divider">
+
+                        <div class="auth-divider-line"></div>
+
+                        <span class="auth-divider-text">
+                            OR
+                        </span>
+
+                        <div class="auth-divider-line"></div>
+
+                    </div>
+
+                    <!-- FORM -->
+
+                    <form
+                        class="auth-form"
+                        id="auth-form"
+                        novalidate
+                    >
+
+                        <div class="auth-fields">
+
+                            <!-- NAME -->
+
+                            <div
+                                class="hidden"
+                                id="signup-fields"
+                            >
+
+                                <label
+                                    class="ds-label"
+                                    for="name-field"
+                                >
+                                    Full Name
+                                </label>
+
+                                <div class="ds-input-group">
+
+                                    <i
+                                        class="fi fi-rr-user ds-input-icon"
+                                    ></i>
+
+                                    <input
+                                        type="text"
+                                        id="name-field"
+                                        placeholder="Alex Spark"
+                                        autocomplete="name"
+                                    />
+
+                                </div>
+
+                            </div>
+
+                            <!-- EMAIL -->
+
+                            <div>
+
+                                <label
+                                    class="ds-label"
+                                    for="email-field"
+                                >
+                                    Email Address
+                                </label>
+
+                                <div class="ds-input-group">
+
+                                    <i
+                                        class="fi fi-rr-envelope ds-input-icon"
+                                    ></i>
+
+                                    <input
+                                        type="email"
+                                        id="email-field"
+                                        placeholder="name@storyspark.ai"
+                                        autocomplete="email"
+                                        required
+                                    />
+
+                                </div>
+
+                            </div>
+
+                            <!-- PASSWORD -->
+
+                            <div>
+
+                                <div
+                                    style="
+                                        display:flex;
+                                        justify-content:space-between;
+                                        align-items:center;
+                                        margin-bottom:10px;
+                                    "
+                                >
+
+                                    <label
+                                        class="ds-label"
+                                        for="password-field"
+                                        style="margin:0;"
+                                    >
+                                        Password
+                                    </label>
+
+                                    <a
+                                        id="forgot-password-link"
+                                        style="
+                                            font-size:12px;
+                                            color:#8b5cf6;
+                                            cursor:pointer;
+                                            font-weight:600;
+                                        "
+                                    >
+                                        Forgot?
+                                    </a>
+
+                                </div>
+
+                                <div class="ds-input-group">
+
+                                    <i
+                                        class="fi fi-rr-lock ds-input-icon"
+                                    ></i>
+
+                                    <input
+                                        id="password-field"
+                                        placeholder="••••••••"
+                                        type="password"
+                                        autocomplete="current-password"
+                                        required
+                                    />
+
+                                    <button
+                                        onclick="togglePasswordVisibility()"
+                                        type="button"
+                                        aria-label="Toggle password visibility"
+                                        style="
+                                            position:absolute;
+                                            right:18px;
+                                            top:50%;
+                                            transform:translateY(-50%);
+                                            background:none;
+                                            border:none;
+                                            color:rgba(255,255,255,.5);
+                                            cursor:pointer;
+                                        "
+                                    >
+
+                                        <i
+                                            class="fi fi-rr-eye-crossed"
+                                            id="eye-icon"
+                                        ></i>
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- TERMS -->
+
+                        <div class="auth-terms">
+
+                            <input
+                                id="terms-checkbox"
+                                type="checkbox"
+                            >
+
+                            <div class="auth-terms-text">
+
+                                I agree to the
+
+                                <a onclick="openLegalModal('terms')">
+                                    Terms
+                                </a>
+
+                                and
+
+                                <a onclick="openLegalModal('privacy')">
+                                    Privacy Policy
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                        <!-- BUTTON -->
+
+                        <div class="auth-actions">
+
+                            <button
+                                class="ds-btn-submit"
+                                id="submit-btn"
+                                type="submit"
+                            >
+
+                                <span
+                                    class="btn-spinner"
+                                    id="btn-spinner"
+                                ></span>
+
+                                <span
+                                    class="btn-label"
+                                    id="btn-label"
+                                >
+                                    Create Account
+                                </span>
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                    <!-- FOOTER -->
+
+                    <div
+                        class="auth-footer"
+                        id="nav-toggle"
+                    >
+
+                        Already have an account?
+
+                        <a href="login.html">
+                            Log in
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <!-- LEGAL MODAL -->
+
+    <div
+        id="legal-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300"
+    >
+
+        <div
+            id="legal-modal-content"
+            class="glass-panel"
+            style="
+                width:100%;
+                max-width:560px;
+                padding:32px;
+                border-radius:28px;
+                position:relative;
+            "
+        >
+
+            <button
+                onclick="closeLegalModal()"
+                aria-label="Close modal"
+                style="
+                    position:absolute;
+                    right:24px;
+                    top:24px;
+                    background:none;
+                    border:none;
+                    color:rgba(255,255,255,.6);
+                    cursor:pointer;
+                "
+            >
+
+                <i class="fi fi-rr-cross-small"></i>
+
+            </button>
+
+            
+
+        </div>
+
+    </div>
+
+    <!-- SCRIPT -->
+
+    <script src="auth.js" defer></script>
+
 </body>
+
 </html>

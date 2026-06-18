@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
-import { Image as ImageIcon, X } from "lucide-react";
 import { 
   Bug, 
   Send, 
@@ -58,6 +57,7 @@ const ReportBug = () => {
     reset,
     formState: { errors }
   } = useForm<ReportBugFormData>();
+  const { ref: screenshotRef, ...screenshotRegister } = register("screenshot");
 
   const onSubmit = async (data: ReportBugFormData) => {
     try {

@@ -37,7 +37,8 @@ describe("AiModelService - Chat", () => {
     mockedChat.mockResolvedValue("Hello there!");
 
     const result = await AiModelService.aiModelChat(
-      { message: "Hi", history: [] }
+      { message: "Hi", history: [] },
+      "test-user-id"
     );
 
     expect(result).toBe("Hello there!");
@@ -47,7 +48,7 @@ describe("AiModelService - Chat", () => {
   it("returns chat response for guest user", async () => {
     mockedChat.mockResolvedValue("Hi guest!");
 
-    const result = await AiModelService.aiFreeModelChat({ message: "Hi", history: [] });
+    const result = await AiModelService.aiModelChat({ message: "Hi", history: [] });
 
     expect(result).toBe("Hi guest!");
     expect(mockedChat).toHaveBeenCalledWith("Hi", []);
@@ -57,7 +58,7 @@ describe("AiModelService - Chat", () => {
     mockedRace.mockRejectedValue(new GenerationTimeoutError());
 
     await expect(
-      AiModelService.aiFreeModelChat({ message: "Hi", history: [] })
+      AiModelService.aiModelChat({ message: "Hi", history: [] })
     ).rejects.toMatchObject({ statusCode: httpStatus.GATEWAY_TIMEOUT });
   });
 });
