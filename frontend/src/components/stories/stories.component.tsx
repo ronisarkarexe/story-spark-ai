@@ -50,7 +50,11 @@ const StoriesComponent = () => {
         : await generateFreeModel(data).unwrap();
       if (res) {
         toast.success(res.message);
-        setStories(res.data as IStories[]);
+        const storiesWithPrompt = (res.data as IStories[]).map((story) => ({
+          ...story,
+          prompt: data.prompt,
+        }));
+        setStories(storiesWithPrompt);
         setSelectedPrompt("");
         setTextareaValue("");
         setValue("prompt", "");

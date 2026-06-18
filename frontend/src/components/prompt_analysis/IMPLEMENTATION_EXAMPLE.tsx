@@ -7,97 +7,101 @@
  * LOCATION: After line 575 in stories.component.tsx (after textareaValue state declaration)
  */
 
+import React, { useState, useEffect, useRef } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import toast from "react-hot-toast";
+import PromptAnalysisIntegration from "../prompt_analysis/PromptAnalysisIntegration";
+import { useGenerateModelMutation } from "../../redux/apis/ai.model.api";
+
 // ============================================================================
 // ADD THIS IMPORT at the top of stories.component.tsx
 // ============================================================================
 
-import PromptAnalysisIntegration from "../prompt_analysis/PromptAnalysisIntegration";
+// import PromptAnalysisIntegration from "../prompt_analysis/PromptAnalysisIntegration";
 
 // ============================================================================
 // ADD THIS STATE HANDLER in the StoriesComponent function body
 // ============================================================================
 
-const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
-  setTextareaValue(enhancedPrompt);
-  toast.success("Enhanced prompt applied! Ready to generate.");
-  // Optional: Auto-focus the generation button or auto-generate
-  // handleGenerate?.();
-};
+// const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
+//   setTextareaValue(enhancedPrompt);
+//   toast.success("Enhanced prompt applied! Ready to generate.");
+//   // Optional: Auto-focus the generation button or auto-generate
+//   // handleGenerate?.();
+// };
 
 // ============================================================================
 // LOCATE THIS SECTION in your render method (around line 700-800)
 // This is where the textarea is rendered
 // ============================================================================
 
-/*
-{isLoggedIn ? (
-  <>
-    {/* Prompt input section */}
-    <div className="mb-8">
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Genre selector... */}
-
-        {/* Language selector... */}
-
-        {/* Length selector... */}
-
-        {/* THE TEXTAREA - Find this section */}
-        <textarea
-          ref={inputRef}
-          value={textareaValue}
-          onChange={(e) => setTextareaValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={text.promptPlaceholder}
-          className="..."
-          // ... other props
-        />
-
-        {/* CHARACTER LIMIT COUNTER */}
-        {/* ... existing character limit display ... */}
-
-        {/* 
-          ====================================================================
-          AFTER: Add this new component right AFTER the textarea
-          and character counter, BEFORE the generation button
-          ====================================================================
-        */}
-
-        {/* NEW: Prompt Analysis Integration */}
-        {textareaValue.trim().length >= 10 && (
-          <PromptAnalysisIntegration
-            prompt={textareaValue}
-            language={selectedLanguage}
-            genre={selectedGenre}
-            tone={selectedTone}
-            onUseEnhanced={handleUseEnhancedPrompt}
-            defaultExpanded={false}
-          />
-        )}
-
-        {/* Generation button and other controls */}
-        <div className="mt-6 flex gap-4">
-          <button
-            type="submit"
-            disabled={isGenerating || disableButton}
-            className="generate-button-class"
-          >
-            {isGenerating ? text.generating : text.generate}
-          </button>
-        </div>
-      </form>
-    </div>
-  </>
-) : (
-  // ... non-logged-in UI
-)}
-*/
+// {isLoggedIn ? (
+//   <>
+//     {/* Prompt input section */}
+//     <div className="mb-8">
+//       <form onSubmit={handleSubmit(onSubmit)}>
+//         {/* Genre selector... */}
+// 
+//         {/* Language selector... */}
+// 
+//         {/* Length selector... */}
+// 
+//         {/* THE TEXTAREA - Find this section */}
+//         <textarea
+//           ref={inputRef}
+//           value={textareaValue}
+//           onChange={(e) => setTextareaValue(e.target.value)}
+//           onKeyDown={handleKeyDown}
+//           placeholder={text.promptPlaceholder}
+//           className="..."
+//           // ... other props
+//         />
+// 
+//         {/* CHARACTER LIMIT COUNTER */}
+//         {/* ... existing character limit display ... */}
+// 
+//         {/* 
+//           ====================================================================
+//           AFTER: Add this new component right AFTER the textarea
+//           and character counter, BEFORE the generation button
+//           ====================================================================
+//         */}
+// 
+//         {/* NEW: Prompt Analysis Integration */}
+//         {textareaValue.trim().length >= 10 && (
+//           <PromptAnalysisIntegration
+//             prompt={textareaValue}
+//             language={selectedLanguage}
+//             genre={selectedGenre}
+//             tone={selectedTone}
+//             onUseEnhanced={handleUseEnhancedPrompt}
+//             defaultExpanded={false}
+//           />
+//         )}
+// 
+//         {/* Generation button and other controls */}
+//         <div className="mt-6 flex gap-4">
+//           <button
+//             type="submit"
+//             disabled={isGenerating || disableButton}
+//             className="generate-button-class"
+//           >
+//             {isGenerating ? text.generating : text.generate}
+//           </button>
+//         </div>
+//       </form>
+//     </div>
+//   </>
+// ) : (
+//   // ... non-logged-in UI
+// )}
 
 // ============================================================================
 // OPTIONAL: Add this toast notification for better UX
 // ============================================================================
 
 // When user applies enhanced prompt, show success message
-import toast from "react-hot-toast";
+// import toast from "react-hot-toast";
 
 // The toast is already included in handleUseEnhancedPrompt above
 
@@ -126,11 +130,7 @@ The component automatically handles:
 // COMPLETE EXAMPLE: Stories Component Integration
 // ============================================================================
 
-import React, { useState, useEffect, useRef } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
-import toast from "react-hot-toast";
-import PromptAnalysisIntegration from "../prompt_analysis/PromptAnalysisIntegration";
-import { useGenerateModelMutation } from "../../redux/apis/ai.model.api";
+// (Imports consolidated at the top of the file)
 
 interface StoriesComponentProps {
   // ... existing props

@@ -16,7 +16,8 @@ import {
   Star,
   Volume2,
   Volume,
- 
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
@@ -75,9 +76,21 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
+    const scrollToTop = () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    };
+
+    const scrollToBottom = () => {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth",
+      });
+    };
 
 
-const speedSelectId = useId();
 
     const speedSelectId = useId();
     const voiceGenderSelectId = useId();
@@ -127,6 +140,8 @@ const speedSelectId = useId();
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
+    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
+
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         const target = event.target as HTMLElement;
