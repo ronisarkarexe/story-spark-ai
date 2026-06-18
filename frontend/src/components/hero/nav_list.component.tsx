@@ -28,13 +28,6 @@ const NavListComponent = () => {
     return pathname === path || (path === "/" && pathname === "/");
   };
 
-  const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `block rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
-      isActive
-        ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white"
-        : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10"
-    }`;
-  
   const navItems = [
     { to: "/", label: "Home" },
     { to: "/explore", label: "Explore" },
@@ -202,27 +195,6 @@ const NavListComponent = () => {
         </div>
       </div>
 
-      {menuOpen && (
-        <div className="lg:hidden border-t border-slate-200/70 dark:border-white/10 bg-white dark:bg-[#0B1120]/95 px-4 py-3">
-          <NavLink to="/" end className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Home
-          </NavLink>
-          <NavLink to="/explore" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Explore
-          </NavLink>
-          <NavLink to="/story-inspiration" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Stories
-          </NavLink>
-          <NavLink to="/community" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-            Community
-          </NavLink>
-          {loggedIn && (
-            <NavLink to="/dashboard" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
-              Dashboard
-            </NavLink>
-          )}
-        </div>
-      )}
         <div className="flex items-center gap-2 sm:gap-3">
           <motion.div
             initial={{ opacity: 0 }}
@@ -301,7 +273,6 @@ const NavListComponent = () => {
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </motion.button>
         </div>
-      </div>
 
       <AnimatePresence>
         {menuOpen && (

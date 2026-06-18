@@ -234,56 +234,6 @@ const otpPayload = {
     }
   };
 
-  const handleResendOtp = async () => {
-    if (cooldown > 0 || isBusy) return;
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const otpPayload = {
-        name: registerInfo.name,
-        email: registerInfo.email,
-      };
-      const res = await emailVerify({ ...otpPayload }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
-        setValue("otp", "");
-        setCooldown(60);
-      }
-    } catch (error) {
-      const message =
-        (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-        "Failed to resend OTP. Please try again.";
-      toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginSuccess = async (
-    credentialResponse: CredentialResponse
-  ) => {
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({
-        token: credentialResponse.credential,
-      }).unwrap();
-      if (res.data.accessToken) {
-        toast.success("User logged in successfully with Google!");
-        storeUserInfo({ accessToken: res.data.accessToken });
-        navigate("/");
-      }
-    } catch {
-      toast.error("Failed to login with Google. Please try again.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
   const handleGoogleLoginError = () => {
     toast.error("Google login failed. Please try again.");
   };
@@ -318,22 +268,18 @@ const otpPayload = {
         </div>
 
 
-        {/* UPDATED: Structured layout classes to lock down maximum inner boundary constraints */}
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-
-        <Link
-  to="/"
-  className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
->
-  <span>←</span>
-  <span>Back to Home</span>
-</Link>
-          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-200">
         {/* Card */}
         <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
 
-          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
+          <Link
+            to="/"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
+          >
+            <span>←</span>
+            <span>Back to Home</span>
+          </Link>
 
+          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
           {showOtpField && registerInfo && (
@@ -433,6 +379,8 @@ const otpPayload = {
                     {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
                       const met = passwordChecks[key];
                       return (
+                        <li key={key} className={`flex items-center gap-1.5 ${met ? "text-green-400" : "text-slate-400"}`}>
+                          <span>{met ? "✓" : "○"}</span>
                           <span>{label}</span>
                         </li>
                       );
