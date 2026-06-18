@@ -24,7 +24,7 @@ export interface UserConnection {
   profilePicture: string;
 }
 
-export type UserRole = "user" | "writer" | "admin";
+export type UserRole = "user" | "writer" | "admin" | "super_admin";
 
 export type UserStatus = "active" | "inactive" | "banned";
 

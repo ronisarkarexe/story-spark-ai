@@ -7,6 +7,11 @@ if (!BASE_URL) {
   );
 }
 
-export const API_BASE = (BASE_URL ?? "").replace(/\/$/, ""); 
+export const API_BASE = (BASE_URL ?? "").replace(/\/$/, "");
 
-export const API_V1 = `${API_BASE}/api/v1`;
+/** Backend API base URL (includes /api/v1 when set in VITE_BASE_URL). */
+export const getBaseUrl = (): string => API_BASE;
+
+export const API_V1 = API_BASE.includes("/api/v1")
+  ? API_BASE
+  : `${API_BASE}/api/v1`;

@@ -18,7 +18,7 @@ export const WriterApplicationForm = ({ user }: Props) => {
     return null;
   }
 
-  if (user.isApplyForWriter) {
+  if (user.hasAppliedForWriter) {
     return (
       <div className="w-full">
         <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-lg dark:border-slate-700/50 dark:bg-slate-800/40">
