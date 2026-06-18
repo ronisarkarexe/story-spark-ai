@@ -4,6 +4,8 @@ import { Post } from "../../models/post";
 import BookmarkButton from "../BookmarkButton";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
 import { formatReadingStats } from "../../utils/story-utils";
+import ImageFallback from "../ImageFallback";
+import { SkeletonGrid } from "../cards/SkeletonCard";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
@@ -16,6 +18,37 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 }) => {
   const navigate = useNavigate();
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const [readStories, setReadStories] = useState<Record<string, boolean>>(() => {
+    const readMap: Record<string, boolean> = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("story-read-")) {
+          const storyId = key.replace("story-read-", "");
+          readMap[storyId] = localStorage.getItem(key) === "true";
+        }
+      }
+    } catch (e) {
+      console.error("Error reading localStorage", e);
+    }
+    return readMap;
+  });
+
+  const handleToggleRead = (storyId: string) => {
+    setReadStories((prev) => {
+      const newValue = !prev[storyId];
+      try {
+        if (newValue) {
+          localStorage.setItem(`story-read-${storyId}`, "true");
+        } else {
+          localStorage.removeItem(`story-read-${storyId}`);
+        }
+      } catch (e) {
+        console.error("Error updating localStorage", e);
+      }
+      return { ...prev, [storyId]: newValue };
+    });
+  };
 
   const handleImageError = (storyId: string) => {
     setImageErrors((prev) => ({ ...prev, [storyId]: true }));
@@ -33,36 +66,7 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   };
 
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={i}
-            className="animate-pulse bg-[#f8fafc]/90 border border-slate-200/60 shadow-lg rounded-[2.5rem] overflow-hidden flex flex-col h-[520px] dark:bg-slate-900/40 dark:border-white/5 dark:shadow-2xl"
-          >
-            <div className="relative aspect-video bg-slate-200/80 dark:bg-slate-800/50">
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-100 to-transparent dark:from-[#03050C] opacity-60"></div>
-              <div className="absolute top-6 left-6 h-7 w-20 bg-slate-300/50 rounded-full border border-slate-300/30 dark:bg-blue-500/10 dark:border-blue-500/10" />
-            </div>
-            <div className="p-6 flex-1 flex flex-col">
-              <div className="h-6 bg-slate-300/60 rounded-lg w-3/4 mb-4 dark:bg-slate-800/60" />
-              <div className="space-y-3 mb-8 flex-1">
-                <div className="h-3.5 bg-slate-200/70 rounded-lg w-full dark:bg-slate-800/40" />
-                <div className="h-3.5 bg-slate-200/70 rounded-lg w-full dark:bg-slate-800/40" />
-                <div className="h-3.5 bg-slate-200/70 rounded-lg w-5/6 dark:bg-slate-800/40" />
-              </div>
-              <div className="border-t border-slate-200 dark:border-white/5 pt-6 mt-auto flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-slate-300/50 dark:bg-slate-800/60" />
-                <div className="space-y-1.5 flex-1">
-                  <div className="h-3 bg-slate-300/60 rounded-md w-1/3 dark:bg-slate-800/60" />
-                  <div className="h-2 bg-slate-200/50 rounded-md w-1/4 dark:bg-slate-800/30" />
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <SkeletonGrid count={8} variant="default" />;
   }
 
   return (
@@ -77,10 +81,9 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
             >
               <div className="relative overflow-hidden bg-slate-200 dark:bg-slate-800">
                 {!imageErrors[story._id] && story.imageURL ? (
-                  <img
+                  <ImageFallback
                     src={story.imageURL}
                     alt={`Cover image for ${story.title}`}
-                    onError={() => handleImageError(story._id)}
                     className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
                   />
                 ) : (
@@ -92,14 +95,32 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-transparent to-transparent opacity-100 pointer-events-none dark:from-slate-900/90 dark:via-transparent dark:to-transparent"></div>
 
-                <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
+                <div className="absolute top-4 right-4 z-10 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <label className="flex items-center gap-1.5 backdrop-blur-md bg-white/10 dark:bg-black/25 border border-white/20 hover:bg-white/25 px-2.5 py-1.5 rounded-full shadow-lg cursor-pointer select-none transition-all duration-300">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={!!readStories[story._id]}
+                      onChange={() => handleToggleRead(story._id)}
+                    />
+                    <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-all ${
+                      readStories[story._id]
+                        ? "bg-indigo-600 border-indigo-500 text-white"
+                        : "border-white/40 bg-transparent text-transparent"
+                    }`}>
+                      <i className="fas fa-check text-[8px]"></i>
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-white">
+                      Read
+                    </span>
+                  </label>
                   <BookmarkButton
                     storyId={story._id}
                     className="backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 hover:bg-white/30 p-2 !rounded-full shadow-lg hover:scale-110 transition-all duration-300"
                   />
                 </div>
 
-                <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap max-w-[80%]">
+                <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap max-w-[55%]">
                   <span className="inline-flex items-center px-2 py-0.5 bg-indigo-600 border border-indigo-500/50 text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-lg max-w-[120px] truncate">
                     {story.tag}
                   </span>

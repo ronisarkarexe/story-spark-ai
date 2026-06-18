@@ -12,7 +12,6 @@ import {
   ArrowUpRight,
   Zap,
 } from "lucide-react";
-
 import { instance as axios } from "../../helpers/axios/axiosInstance";
 import { getBaseUrl } from "../../helpers/config";
 import storybook from "../../assets/storybook.png";
@@ -85,15 +84,185 @@ const FORM_FIELDS = [
   },
 ];
 
+const STATS = [
+  { value: "24h", label: "Response time" },
+  { value: "100%", label: "Read rate" },
+  { value: "Open", label: "Source project" },
+] as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FloatingLabelInput
+// ─────────────────────────────────────────────────────────────────────────────
+interface FloatingLabelInputProps {
+  id: string;
+  name: FormField;
+  type: string;
+  label: string;
+  icon: React.ElementType;
+  autoComplete: string;
+  value: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  error?: boolean;
+}
+
+const FloatingLabelInput = ({
+  id,
+  name,
+  type,
+  label,
+  icon: Icon,
+  autoComplete,
+  value,
+  onChange,
+  error = false,
+}: FloatingLabelInputProps) => {
+  const [focused, setFocused] = useState(false);
+  const isFloated = focused || value.length > 0;
+
+  return (
+    <div className="contact-float-field group pt-1">
+      <div className="relative">
+        {/* Icon */}
+        <span
+          className={`contact-float-icon ${isFloated ? "contact-float-icon--active" : ""}`}
+          aria-hidden="true"
+        >
+          <Icon className="h-4 w-4" />
+        </span>
+        {/* Input */}
+        <input
+          id={id}
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          required
+          autoComplete={autoComplete}
+          placeholder=" "
+          aria-label={label}
+          aria-invalid={error}
+          className={[
+            "contact-float-input",
+            "py-3.5 pl-11 pr-4", // Added padding for better label/icon spacing
+            isFloated ? "contact-float-input--active" : "",
+            error ? "contact-float-input--error" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        />
+        {/* Floating label */}
+        <label
+          htmlFor={id}
+          className={`contact-float-label ${isFloated ? "contact-float-label--floated" : ""}`}
+        >
+          {label}
+        </label>
+        {/* Animated focus underline */}
+        <span className="contact-float-underline" aria-hidden="true" />
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FloatingLabelTextarea
+// ─────────────────────────────────────────────────────────────────────────────
+interface FloatingLabelTextareaProps {
+  value: string;
+  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  error?: boolean;
+}
+
+const FloatingLabelTextarea = ({
+  value,
+  onChange,
+  error = false,
+}: FloatingLabelTextareaProps) => {
+  const [focused, setFocused] = useState(false);
+  const isFloated = focused || value.length > 0;
+
+  return (
+    <div className="contact-float-field group pt-1">
+      <div className="relative">
+        {/* Icon */}
+        <span
+          className={`contact-float-icon contact-float-icon--textarea ${
+            isFloated ? "contact-float-icon--active" : ""
+          }`}
+          aria-hidden="true"
+        >
+          <Pencil className="h-4 w-4" />
+        </span>
+        {/* Textarea */}
+        <textarea
+          id="contact-message"
+          rows={6} // Slightly increased for better usability
+          name="message"
+          value={value}
+          onChange={onChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          required
+          placeholder=" "
+          aria-label="Message"
+          aria-invalid={error}
+          className={[
+            "contact-float-input contact-float-textarea",
+            "py-3.5 pl-11 pr-4 resize-y min-h-[140px]", // Better padding + minimum height
+            isFloated ? "contact-float-input--active" : "",
+            error ? "contact-float-input--error" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        />
+        {/* Floating label */}
+        <label
+          htmlFor="contact-message"
+          className={`contact-float-label contact-float-label--textarea ${
+            isFloated ? "contact-float-label--floated" : ""
+          }`}
+        >
+          Message
+        </label>
+        {/* Animated focus underline */}
+        <span className="contact-float-underline" aria-hidden="true" />
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main Contact component
+// ─────────────────────────────────────────────────────────────────────────────
 export default function Contact() {
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const isSubmittingRef = useRef(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Scroll reveal
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.08 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const changeHandler = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,,
   ): void => {
     const fieldName = e.target.name as FormField;
     setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }));
@@ -107,12 +276,20 @@ export default function Contact() {
       subject: formData.subject.trim(),
       message: formData.message.trim(),
     };
-    if (!t.fullname || !t.email || !t.subject || !t.message) {
-      setError("All fields are required.");
-      return false;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t.email)) {
-      setError("Please enter a valid email address.");
+    const newFieldErrors: Partial<Record<FormField, boolean>> = {};
+    if (!t.fullname) newFieldErrors.fullname = true;
+    if (!t.email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t.email))
+      newFieldErrors.email = true;
+    if (!t.subject) newFieldErrors.subject = true;
+    if (!t.message) newFieldErrors.message = true;
+
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      if (!t.fullname || !t.email || !t.subject || !t.message) {
+        setError("All fields are required.");
+      } else {
+        setError("Please enter a valid email address.");
+      }
       return false;
     }
     return true;
@@ -207,7 +384,9 @@ export default function Contact() {
                   key={label}
                   className="rounded-xl sm:rounded-2xl border border-slate-200/80 bg-white dark:border-white/5 dark:bg-[#111827]/40 p-3 text-center sm:p-4 shadow-sm"
                 >
-                  <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">{value}</p>
+                  <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                    {value}
+                  </p>
                   <p className="mt-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     {label}
                   </p>
@@ -215,8 +394,19 @@ export default function Contact() {
               ))}
             </div>
 
-            <ul className="mt-6 sm:mt-8 space-y-3 list-none p-0 m-0 w-full box-border" aria-label="Contact channels">
-              {CONTACT_CHANNELS.map(({ icon: Icon, label, value, href, color, iconColor, hoverBorder }) => (
+            <ul
+              className="mt-6 sm:mt-8 space-y-3 list-none p-0 m-0 w-full box-border"
+              aria-label="Contact channels"
+            >
+              {CONTACT_CHANNELS.map(({
+                  icon: Icon,
+                  label,
+                  value,
+                  href,
+                  color,
+                  iconColor,
+                  hoverBorder,
+                }) => (
                 <li key={label} className="w-full">
                   <a
                     href={href}
@@ -242,16 +432,37 @@ export default function Contact() {
                     />
                   </a>
                 </li>
-              ))}
+              ),)}
             </ul>
 
-            <div aria-hidden="true" className="relative mt-10 hidden items-end lg:flex select-none w-full box-border">
-              <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-3xl -z-10 opacity-40 pointer-events-none" />
-              <img
-                src={storybook}
-                alt=""
-                className="relative z-10 w-full max-w-[280px] xl:max-w-[320px] object-contain drop-shadow-xl"
-              />
+            {/* Enhanced illustration + contact info area to utilize space */}
+            <div className="mt-10 lg:mt-auto">
+              <div
+                aria-hidden="true"
+                className="contact-illustration relative hidden items-end lg:flex"
+              >
+                <div className="contact-illustration-glow" />
+                <img
+                  src={storybook}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="relative z-10 w-full max-w-[340px] object-contain xl:max-w-[380px]"
+                />
+              </div>
+
+              {/* Additional contact details to fill space and provide info */}
+              <div className="mt-8 hidden lg:block">
+                <p className="text-xs uppercase tracking-widest text-slate-500 mb-3">
+                  Direct Contact
+                </p>
+                <a
+                  href="mailto:ronichandrasarkar@gmail.com"
+                  className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
+                >
+                  <Mail className="h-4 w-4" /> ronichandrasarkar@gmail.com
+                </a>
+              </div>
             </div>
           </div>
 

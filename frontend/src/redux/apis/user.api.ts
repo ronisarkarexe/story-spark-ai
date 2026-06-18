@@ -68,6 +68,14 @@ const userApi = baseApi.injectEndpoints({
         response.data,
       providesTags: [tagTypes.user],
     }),
+    getUserById: build.query<User, string>({
+      query: (id) => ({
+        url: `/${USER_URL}/${id}`,
+        method: "GET",
+      }),
+      transformResponse: (response: { data: User; message: string }) => response.data,
+      providesTags: [tagTypes.user],
+    }),
   }),
 });
 
@@ -79,4 +87,5 @@ export const {
   useUpdateWritingGoalsMutation,
   useToggleFollowMutation,
   useGetFollowStatusQuery,
+  useGetUserByIdQuery,
 } = userApi;

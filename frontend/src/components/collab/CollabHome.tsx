@@ -15,6 +15,7 @@ export default function CollabHome() {
   const [isCreating, setIsCreating] = useState(false);
 
   const user = getUserInfo();
+  const socketConfigured = Boolean(import.meta.env.VITE_SOCKET_URL);
 
   const createRoom = () => {
     if (!isLoggedIn() || !user) {
@@ -94,6 +95,16 @@ export default function CollabHome() {
             Co-write stories with friends in real time. <br />
             AI joins in whenever you need inspiration!
           </p>
+          {!socketConfigured && (
+  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-4 py-3 text-yellow-700 dark:text-yellow-300 text-xs font-medium mb-6 text-left">
+    ⚠️ Real-time collaboration is currently disabled.
+    <br />
+    Configure <code>VITE_SOCKET_URL</code> in
+    <code> frontend/.env</code> and run the backend with
+    Socket.IO enabled to use Story Collab Mode.
+  </div>
+)}
+ 
 
           {error && (
             <div className="bg-red-500/5 border border-red-500/10 rounded-xl px-4 py-3 text-red-500 dark:text-red-400 text-xs font-semibold mb-6">
@@ -104,10 +115,14 @@ export default function CollabHome() {
           <div className="space-y-5 w-full box-border">
             <button
               onClick={createRoom}
-              disabled={isCreating}
+              disabled={isCreating || !socketConfigured}         
               className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none cursor-pointer"
             >
-              {isCreating ? "Creating Room..." : "✨ Create a New Story Room"}
+              {!socketConfigured
+  ? "Socket.IO Not Configured"
+  : isCreating
+  ? "Creating Room..."
+  : "✨ Create a New Story Room"}
             </button>
 
             <div className="relative my-6 select-none w-full box-border">
@@ -130,11 +145,11 @@ export default function CollabHome() {
                 className="flex-1 h-11 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-blue-500/40 transition-colors box-border"
               />
               <button
-                onClick={joinRoom}
-                className="h-11 px-5 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors active:scale-[0.98] cursor-pointer shadow-sm shrink-0"
-              >
-                Join 🚀
-              </button>
+  onClick={joinRoom}
+  className="disabled:opacity-50"
+>
+  Join 🚀
+</button>
             </div>
           </div>
 

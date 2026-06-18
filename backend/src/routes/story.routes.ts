@@ -6,6 +6,7 @@ import { ReviewValidator } from "../app/modules/review/review.validation";
 import validateRequest from "../app/middleware/validate.request";
 import auth from "../app/middleware/auth.middleware";
 import freeAiRateLimiter from "../app/middleware/free-ai.rate-limiter";
+import storyGenerationRateLimiter from "../app/middleware/story.rate-limiter";
 import { ENUM_USER_ROLE } from "../enums/user";
 import catchAsync from "../shared/catch_async";
 import sendResponse from "../shared/send_response";
@@ -18,12 +19,23 @@ const router = express.Router();
 /** STORY CONTINUATION - single */
 router.post(
   "/continue",
+  // For authenticated users: apply per-user tier-aware limit (fixes #3023).
+  // For unauthenticated guests: fall back to the IP-based free limit.
+  // Both middlewares are intentionally stacked so unauthenticated requests
+  // still get the IP cap while authenticated users get the user-keyed one.
   freeAiRateLimiter,
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  storyGenerationRateLimiter,
   piiScrubberMiddleware,
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {
     const { prompt, language } = req.body as { prompt: string; language?: string };
-    const result = await AiModelService.aiFreeStoryContinuation({ prompt, language });
+    const result = await AiModelService.aiModelStoryContinuation({ prompt, language });
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,

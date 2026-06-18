@@ -27,7 +27,7 @@ SCALER_PATH    = "saved/scaler.pkl"
 THRESHOLD_PATH = "saved/threshold.json"
 EVALUATION_REPORT_PATH = "saved/evaluation_report.json"
 TUNER_DIR      = "my_tuner"
-
+RANDOM_SEED = 42
 os.makedirs("saved", exist_ok=True)
 
 # ── Feature index reference ──────────────────────────────────────────────────
@@ -53,6 +53,8 @@ def count_blocked_words(text: str) -> int:
 # ── Simulate data ────────────────────────────────────────────────────────────
 
 def normal_sessions(n: int = 1000) -> np.ndarray:
+    if n < 1:
+        raise ValueError("n must be positive")
     """
     Healthy creative flow — engaged, patient, few retries.
     Feature order matches the index reference above.
@@ -76,6 +78,8 @@ def normal_sessions(n: int = 1000) -> np.ndarray:
     return np.array(sessions, dtype=np.float32)
 
 def stuck_sessions(n: int = 200) -> np.ndarray:
+    if n < 1:
+        raise ValueError("n must be positive")
     """
     Generate writer's block sessions with varying severity levels.
 
@@ -168,7 +172,6 @@ def scale(
     if fit:
         scaler = MinMaxScaler()
         scaled = scaler.fit_transform(flat)
-        joblib.dump(scaler, SCALER_PATH)
     else:
         scaled = scaler.transform(flat)
     return scaled.reshape(n, t, f), scaler
@@ -203,6 +206,7 @@ def build_model_tuner(hp):
 # ── Train ────────────────────────────────────────────────────────────────────
 
 def train():
+    np.random.seed(RANDOM_SEED)
     print("\n" + "=" * 50)
     print("  Writer's Block Detector — Training")
     print("=" * 50)
