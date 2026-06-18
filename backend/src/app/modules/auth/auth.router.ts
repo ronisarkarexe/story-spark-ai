@@ -8,6 +8,7 @@ import {
   loginRateLimiter,
   forgotPasswordRateLimiter,
   resetPasswordRateLimiter,
+  refreshTokenRateLimiter,
   ipRateLimiter,
 } from "../../middleware/ip.rate-limiter";
 
@@ -33,7 +34,7 @@ router.post(
 );
 
 // Refresh Token API route
-router.post("/refresh-token", AuthController.refreshToken);
+router.post("/refresh-token", refreshTokenRateLimiter, AuthController.refreshToken);
 
 // Logout API route
 router.post("/logout", AuthController.logout);

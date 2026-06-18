@@ -157,7 +157,7 @@ const DiffViewer: React.FC<DiffViewerProps> = ({ version1, version2, onBack }) =
                   <span key={idx}>
                     {!diff.added ? (
                       diff.removed ? (
-                        ""
+                        <DiffHighlight text={diff.value} type="removed" />
                       ) : (
                         <span>{diff.value}</span>
                       )

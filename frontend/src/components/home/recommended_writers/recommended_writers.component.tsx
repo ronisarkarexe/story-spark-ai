@@ -49,7 +49,7 @@ const RecommendedWritersComponent = () => {
   };
 
   return (
-    <>
+    <div className="w-full block">
       <section className="bg-blue-500/10 rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-gray-300 mb-4">
           Recommended Writers
@@ -76,6 +76,7 @@ const RecommendedWritersComponent = () => {
               </div>
 
               <button
+                type="button"
                 onClick={() => toggleFollow(index, writer.id)}
                 disabled={isLoading}
                 className="!rounded-button text-indigo-600 text-sm font-medium hover:text-indigo-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -119,6 +120,7 @@ const RecommendedWritersComponent = () => {
                 </Link>
 
                 <button
+                  type="button"
                   onClick={() => setShowLoginModal(false)}
                   className="w-full bg-transparent hover:bg-white/5 text-gray-400 hover:text-gray-300 font-medium py-3 px-4 rounded-xl transition-all mt-1"
                 >
@@ -129,7 +131,7 @@ const RecommendedWritersComponent = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

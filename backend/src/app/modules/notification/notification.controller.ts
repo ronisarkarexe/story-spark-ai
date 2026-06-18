@@ -13,15 +13,14 @@ const getUserNotifications = catchAsync(async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 20;
 
-  // Dono parameters ko token ke sath service layer me pass kar diya
   const result = await NotificationService.getUserNotifications(token, page, limit);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Notifications fetched successfully!",
-    meta: result.meta, // Humara bheja hua total, page, limit object yahan inject hoga
-    data: result.data, // Actual documents ki array
+    meta: result.meta,
+    data: result.data,
   });
 });
 

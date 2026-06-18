@@ -9,6 +9,7 @@ export interface Story {
   id: string;
   title: string;
   chapters: Chapter[];
+  userId?: string;
 }
 
 export interface StoryVersion {

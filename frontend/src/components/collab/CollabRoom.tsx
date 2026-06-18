@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { resolveSocketUrl } from "../../helpers/socket-url";
@@ -6,7 +6,7 @@ import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 
 interface Participant {
-  userId: string;
+  userId: string; 
   username: string;
   color: string;
   socketId: string;
@@ -48,8 +48,11 @@ export default function CollabRoom() {
   const [collabSocket, setCollabSocket] = useState<any>(null);
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTypingRef = useRef(false);
 
   const user = getUserInfo();
+  const TYPING_DEBOUNCE_MS = 2000;
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -133,6 +136,11 @@ export default function CollabRoom() {
       socketInstance.on("collab:error", handleError);
 
       return () => {
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = null;
+        }
+        isTypingRef.current = false;
         socketInstance.off("collab:room_updated", handleRoomUpdated);
         socketInstance.off("collab:story_updated", handleStoryUpdated);
         socketInstance.off("collab:user_typing", handleUserTyping);
@@ -148,28 +156,56 @@ export default function CollabRoom() {
     }
   }, [roomId, navigate]);
 
+  const emitStopTyping = () => {
+    if (!collabSocket || !roomId || !isTypingRef.current) return;
+    collabSocket.emit("collab:stop_typing", { roomId });
+    isTypingRef.current = false;
+  };
+
+  const scheduleStopTyping = () => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      emitStopTyping();
+      typingTimeoutRef.current = null;
+    }, TYPING_DEBOUNCE_MS);
+  };
+
   const handleAddText = () => {
     if (!newText.trim() || !user || !roomId || !collabSocket) return;
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    emitStopTyping();
 
     collabSocket.emit("collab:add_text", {
       roomId,
       text: newText.trim(),
     });
-    collabSocket.emit("collab:stop_typing", { roomId });
     setNewText("");
   };
 
-  let typingTimeout: any;
   const handleInputChange = (val: string) => {
     setNewText(val);
     if (!collabSocket || !roomId) return;
 
-    collabSocket.emit("collab:typing", { roomId });
+    if (!isTypingRef.current) {
+      collabSocket.emit("collab:typing", { roomId });
+      isTypingRef.current = true;
+    }
 
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
-      collabSocket.emit("collab:stop_typing", { roomId });
-    }, 2000);
+    scheduleStopTyping();
+  };
+
+  const handleInputBlur = () => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    emitStopTyping();
   };
 
   const handleAIContinue = () => {
@@ -256,18 +292,28 @@ export default function CollabRoom() {
                   </div>
                 )}
 
-                {Object.keys(typingUsers).length > 0 && (
-                  <p className="text-xs text-indigo-500 italic mt-2 animate-pulse">
-                    {Object.values(typingUsers).join(", ")} {Object.keys(typingUsers).length === 1 ? "is" : "are"} typing...
-                  </p>
-                )}
               </div>
+
+              {Object.keys(typingUsers).length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {Object.entries(typingUsers).map(([userId, username]) => (
+                    <span
+                      key={userId}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 rounded-full animate-pulse"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                      {username} is typing...
+                    </span>
+                  ))}
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={newText}
                   onChange={(e) => handleInputChange(e.target.value)}
+                  onBlur={handleInputBlur}
                   onKeyDown={(e) => e.key === "Enter" && handleAddText()}
                   placeholder="Add to the story..."
                   className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
@@ -305,7 +351,12 @@ export default function CollabRoom() {
                       className="w-3 h-3 rounded-full shrink-0"
                       style={{ backgroundColor: p.color }}
                     ></div>
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-350">{p.username}</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-350 flex-1">{p.username}</span>
+                    {typingUsers[p.userId] && (
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-indigo-500 dark:text-indigo-400">
+                        typing
+                      </span>
+                    )}
                   </div>
                 ))
               ) : (
