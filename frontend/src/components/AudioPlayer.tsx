@@ -407,7 +407,9 @@ const speedSelectId = useId();
                   </div>
                 </div>
               </div>
-
+               <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+  Changes to voice, pitch, volume, and playback speed are applied when narration is restarted.
+</p>
               <div className="space-y-2">
                 <label
                   htmlFor={languageSelectId}

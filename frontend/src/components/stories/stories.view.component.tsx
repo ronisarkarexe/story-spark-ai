@@ -32,8 +32,12 @@ import ImageFallback from "../ImageFallback";
 import StoryVisualizer from "../story-visualizer/StoryVisualizer";
 import ContinueStoryModal from "./ContinueStoryModal";
 
+import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
+import EmptyStoriesState from "./EmptyStoriesState";
+
 const StoryWorldMap = React.lazy(() => import("../story-map/StoryWorldMap"));
 const StoryRemix = React.lazy(() => import("../remix/StoryRemix"));
+
 
 // --- Custom Error Classes & Helper Types ---
 export class ApiError extends Error {
@@ -1164,11 +1168,10 @@ const handleExportMarkdown = () => {
 
   if (!stories || !stories.length || !selectedStory) {
     return (
-      <div className="w-full text-center text-slate-400 dark:text-slate-500 py-16">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-sm font-medium">
-          No stories generated yet. Start by entering a prompt ✨
-        </div>
-      </div>
+      <>
+        {/* Empty state */}
+        <EmptyStoriesState />
+      </>
     );
   }
 

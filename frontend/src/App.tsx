@@ -24,6 +24,7 @@ const SignUpComponent = lazy(() => import("./components/signup/signup.component"
 const ForgotPasswordComponent = lazy(() => import("./components/login/forgot_password.component"));
 const PricingComponent = lazy(() => import("./components/pricing/pricing.component"));
 const PostDetailsComponent = lazy(() => import("./components/post/post.details.component"));
+const PublicProfileComponent = lazy(() => import("./components/profile/public_profile.component"));
 const Contact = lazy(() => import("./components/contactus/contactus"));
 const AboutUsComponent = lazy(() => import("./components/footer/about-us.tsx"));
 const CareerComponent = lazy(() => import("./components/footer/career.tsx"));
@@ -90,6 +91,7 @@ const router = createBrowserRouter([
       { path: "forgot-password", element: <ForgotPasswordComponent /> },
       { path: "pricing", element: <PricingComponent /> },
       { path: "post/:id", element: <PostDetailsComponent /> },
+      { path: "profile/:id", element: <PublicProfileComponent /> },
       { path: "contact-us", element: <Contact /> },
       { path: "about-us", element: <AboutUsComponent /> },
       { path: "career", element: <CareerComponent /> },

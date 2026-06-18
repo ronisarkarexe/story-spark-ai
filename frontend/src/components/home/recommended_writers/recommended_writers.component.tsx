@@ -59,20 +59,22 @@ const RecommendedWritersComponent = () => {
           {recommendedWriters.map((writer, index) => (
             <div key={writer.id} className="flex items-center justify-between">
               <div className="flex items-center">
-                <img
-                  className="h-10 w-10 rounded-full"
-                  src={writer.image}
-                  alt={writer.name}
-                />
+                <Link to={`/profile/${writer.id}`} className="flex items-center hover:opacity-85 transition">
+                  <img
+                    className="h-10 w-10 rounded-full object-cover border dark:border-gray-800"
+                    src={writer.image}
+                    alt={writer.name}
+                  />
 
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-slate-700 dark:text-gray-400">
-                    {writer.name}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-gray-500">
-                    {writer.role}
-                  </p>
-                </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                      {writer.name}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-gray-500">
+                      {writer.role}
+                    </p>
+                  </div>
+                </Link>
               </div>
 
               <button

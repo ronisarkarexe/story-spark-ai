@@ -26,6 +26,7 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || ""}>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || "dummy-client-id"}>
       <Provider store={store}>
         <ThemeProvider>

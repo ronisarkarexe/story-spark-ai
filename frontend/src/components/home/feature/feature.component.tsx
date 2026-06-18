@@ -142,7 +142,9 @@ const FeatureComponent = () => {
 
                     <div className="flex items-center gap-4 text-slate-500 dark:text-gray-400">
                       <a
-                        href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(post.title || "")}`}
+                        href={`https://x.com/intent/tweet?url=${encodeURIComponent(
+                          postUrl
+                        )}&text=${encodeURIComponent(post.title || "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Share on X"

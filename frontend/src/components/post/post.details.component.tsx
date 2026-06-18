@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { StoryMetaTags } from "./StoryMetaTags";
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   useDeletePostMutation,
   useGetPostByIdQuery,
@@ -40,7 +40,6 @@ import {
 
 import { toast } from "react-hot-toast";
 
-import { FaXTwitter } from "react-icons/fa6";
 
 
 interface IStoryVersion {
@@ -122,7 +121,7 @@ const PostDetailsComponent = () => {
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
   const readerPreferences = useReaderPreferences();
   const { data: versions, isLoading: isLoadingVersions } = useGetVersionsByStoryIdQuery(id || "", {
-    skip: !id || !showTimeline,
+    skip: !id || (!showTimeline && !showComparison),
   });
   const [restoreVersion, { isLoading: isRestoring }] = useRestoreVersionMutation();
   useEffect(() => {
@@ -166,7 +165,7 @@ const PostDetailsComponent = () => {
       toast.error("You need to login to perform this action");
     }
   };
-
+  
   const handleSaveChanges = async () => {
     if (!id) return;
     if (!editedTitle.trim() || !editedContent.trim()) {
@@ -239,7 +238,7 @@ const PostDetailsComponent = () => {
   const handleTwitterShare = () => {
     const currentUrl = window.location.href;
     const currentTitle = post?.title || "Check out this story!";
-    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+    const url = `https://x.com/intent/tweet?url=${encodeURIComponent(
       currentUrl
     )}&text=${encodeURIComponent(currentTitle)}`;
     window.open(url, "_blank", "noopener,noreferrer");
@@ -324,14 +323,29 @@ const PostDetailsComponent = () => {
           <div className="p-8">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center space-x-4">
-                <SSProfile
-                  name={post?.author?.name || "Unknown User"}
-                  size="h-12 w-12"
-                />
+                {post?.author?._id ? (
+                  <Link to={`/profile/${post.author._id}`} className="flex items-center shrink-0 hover:opacity-85 transition">
+                    <SSProfile
+                      name={post?.author?.name || "Unknown User"}
+                      size="h-12 w-12"
+                    />
+                  </Link>
+                ) : (
+                  <SSProfile
+                    name={post?.author?.name || "Unknown User"}
+                    size="h-12 w-12"
+                  />
+                )}
 
                 <div>
                   <h3 className="font-medium text-slate-700 dark:text-gray-400">
-                    {post?.author?.name || "Unknown User"}
+                    {post?.author?._id ? (
+                      <Link to={`/profile/${post.author._id}`} className="hover:text-indigo-650 dark:hover:text-indigo-400 transition">
+                        {post?.author?.name || "Unknown User"}
+                      </Link>
+                    ) : (
+                      post?.author?.name || "Unknown User"
+                    )}
                   </h3>
 
                   <div className="flex items-center text-sm text-slate-500 dark:text-gray-500">
@@ -494,37 +508,15 @@ const PostDetailsComponent = () => {
                   />
                 )}
               </div>
-
-              <div className="flex items-center space-x-3 bg-slate-800/40 backdrop-blur-md px-4 py-2 rounded-full border border-slate-700/50 shadow-sm">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 mr-1 select-none">
-                Share:
-                </span>
-
-                <button
-                  id="share-twitter-btn"
-                  onClick={handleTwitterShare}
-                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
-                  aria-label="Share on X"
-                >
-                  <FaXTwitter className="text-sm" />
+              <div className="flex items-center space-x-4">
+                <button className="text-gray-600 hover:text-custom">
+                  <i className="fab fa-twitter"></i>
                 </button>
-
-                <button
-                  id="share-linkedin-btn"
-                  onClick={handleLinkedInShare}
-                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
-                  aria-label="Share on LinkedIn"
-                >
-                  <i className="fab fa-linkedin text-sm"></i>
+                <button className="text-gray-600 hover:text-custom">
+                  <i className="fab fa-linkedin"></i>
                 </button>
-
-                <button
-                  id="share-email-btn"
-                  onClick={handleEmailShare}
-                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
-                  aria-label="Share via Email"
-                >
-                  <i className="far fa-envelope text-sm"></i>
+                <button className="text-gray-600 hover:text-custom">
+                  <i className="far fa-envelope"></i>
                 </button>
               </div>
             </div>
@@ -711,6 +703,16 @@ const PostDetailsComponent = () => {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {showComparison && (
+        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-white dark:bg-[#0f172a]/95 backdrop-blur-xl border-l border-slate-200 dark:border-slate-700/60 shadow-2xl p-6 overflow-y-auto text-slate-900 dark:text-white animate-slide-in flex flex-col">
+          <ComparisonMode
+            versions={versions || []}
+            isLoadingVersions={isLoadingVersions}
+            onClose={() => setShowComparison(false)}
+          />
         </div>
       )}
 

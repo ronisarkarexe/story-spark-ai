@@ -1102,8 +1102,14 @@ html.dark .contact-channel-link:hover {
 /* Glassmorphism Dynamic Contact Card Form */
 .contact-form-shell {
   position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 1.5rem;
   transition: transform 250ms ease;
+  display: flex;
+  justify-content: center;
 }
 
 .contact-form-shell:hover {
