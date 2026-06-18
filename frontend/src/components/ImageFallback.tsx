@@ -9,9 +9,9 @@ interface ImageFallbackProps {
   aspectRatio?: string;
 }
 
-const FALLBACK =
-  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4MDAnIGhlaWdodD0nNDAwJyB2aWV3Qm94PScwIDAgODAwIDQwMCc+PHJlY3Qgd2lkdGg9JzgwMCcgaGVpZ2h0PSc0MDAnIGZpbGw9JyMzNzQxNTEnLz48dGV4dCB4PSc0MDAnIHk9JzIwMCcgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMjQnIGZpbGw9JyM5Q0EzQUYnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnPlN0b3J5IEltYWdlPC90ZXh0Pjwvc3ZnPg==";
-  
+import fallbackImg from "../assets/storybook.png";
+
+const FALLBACK = fallbackImg;
 
 export default function ImageFallback({
   src,
@@ -20,7 +20,7 @@ export default function ImageFallback({
   aspectRatio = "16/9",
 }: ImageFallbackProps) {
   // Sanitize src to prevent CodeQL DOM XSS alerts
-  const isSafeSrc = typeof src === "string" ? !src.trim().toLowerCase().startsWith("javascript:") : true;
+  const isSafeSrc = typeof src === "string" ? /^(?:https?|ftp|mailto|tel|data):/i.test(src.trim()) || src.startsWith("/") : true;
   const initialSrc = (isSafeSrc ? src : null) || FALLBACK;
 
   const [imageSrc, setImageSrc] = useState(initialSrc);
@@ -28,7 +28,7 @@ export default function ImageFallback({
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    const safeUpdateSrc = typeof src === "string" ? !src.trim().toLowerCase().startsWith("javascript:") : true;
+    const safeUpdateSrc = typeof src === "string" ? /^(?:https?|ftp|mailto|tel|data):/i.test(src.trim()) || src.startsWith("/") : true;
     setImageSrc((safeUpdateSrc ? src : null) || FALLBACK);
     setIsLoading(true);
     setHasError(false);
