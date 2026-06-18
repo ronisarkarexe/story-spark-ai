@@ -30,3 +30,4 @@ export const insightsRateLimiter = rateLimit({
     );
   },
 } as any);
+

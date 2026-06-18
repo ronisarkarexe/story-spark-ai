@@ -22,7 +22,6 @@ export default function ImageFallback({
   const [imageSrc, setImageSrc] = useState(src || FALLBACK);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     setImageSrc(src || FALLBACK);
@@ -62,7 +61,6 @@ export default function ImageFallback({
         </div>
       )}
       <img
-        ref={imgRef}
         src={imageSrc}
         alt={alt}
         className={`${className} ${isLoading ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
