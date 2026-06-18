@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useState } from "react";
+import { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import NavListComponent from "../hero/nav_list.component";
 import CookieConsentBanner from "../cookie-consent/cookie-consent.component";
@@ -13,14 +13,6 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
 
   const isAuthPage = pathname === "/login" || pathname === "/signup";
-  const hideHeader = isAuthPage;
-  const hideFooter = isAuthPage;
-
-  const [cookieBannerHeight, setCookieBannerHeight] = useState(0);
-
-  const handleCookieLayoutChange = useCallback((height: number) => {
-    setCookieBannerHeight(height);
-  }, []);
 
   return (
     <div

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../theme/theme.context";
 
@@ -37,12 +37,7 @@ const saveCookiePreferences = (preferences: CookiePreferences) => {
   updateAppCookieState(preferences);
 };
 
-type CookieConsentBannerProps = {
-  onLayoutChange?: (height: number) => void;
-};
-
-const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) => {
-  const bannerRef = useRef<HTMLDivElement>(null);
+const CookieConsentBanner: FC = () => {
   const [preferences, setPreferences] = useState<CookiePreferences | null>(null);
   const [showBanner, setShowBanner] = useState(false);
   const { isDark } = useTheme();
@@ -52,31 +47,6 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
     setPreferences(storedPreferences);
     setShowBanner(!storedPreferences.saved);
   }, []);
-
-  useEffect(() => {
-    if (!showBanner) {
-      onLayoutChange?.(0);
-      return;
-    }
-
-    const updateLayout = () => {
-      const banner = bannerRef.current;
-      if (!banner) return;
-      onLayoutChange?.(banner.getBoundingClientRect().height);
-    };
-
-    updateLayout();
-    const observer = new ResizeObserver(updateLayout);
-    if (bannerRef.current) {
-      observer.observe(bannerRef.current);
-    }
-    window.addEventListener("resize", updateLayout);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", updateLayout);
-    };
-  }, [onLayoutChange, showBanner]);
 
   if (!preferences || !showBanner) {
     return null;
@@ -228,4 +198,5 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
   </div>
   );
 };
+
 export default CookieConsentBanner;

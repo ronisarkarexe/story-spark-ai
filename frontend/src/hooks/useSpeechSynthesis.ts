@@ -54,6 +54,7 @@ export interface UseSpeechSynthesisResult {
   selectedLanguage: string;
   setSelectedLanguage: (lang: string) => void;
   languageOptions: LanguageOption[];
+  detectedLanguage: string;
 }
 
 const SPEED_MIN = 0.5;
@@ -465,22 +466,6 @@ export const useSpeechSynthesis = (
     setRateState(clampRate(nextRate));
   }, []);
 
-  const setPitch = useCallback((nextPitch: number) => {
-    setPitchState(nextPitch);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.pitch = nextPitch;
-    }
-  }, []);
-
-  const setVolume = useCallback((nextVolume: number) => {
-    setVolumeState(nextVolume);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.volume = nextVolume;
-    }
-  }, []);
-
   useEffect(() => {
     if (voices.length === 0) {
       return;
@@ -567,6 +552,7 @@ export const useSpeechSynthesis = (
     selectedLanguage,
     setSelectedLanguage,
     languageOptions,
+    detectedLanguage: selectedLanguage,
   };
 };
 

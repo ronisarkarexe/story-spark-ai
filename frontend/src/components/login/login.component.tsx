@@ -12,7 +12,8 @@ import AuthContext from "../auth.context";
 import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { WandSparkles } from "lucide-react";
+import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
+
 
 type Inputs = {
   email: string;
@@ -77,7 +78,11 @@ const LoginComponent = () => {
   };
 
   if (isLoggedIn) {
-    return <RedirectComponent defaultPath="/dashboard" />;
+    return (
+      <RedirectComponent
+        defaultPath="/dashboard"
+      />
+    );
   }
 
   return (
@@ -86,14 +91,14 @@ const LoginComponent = () => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5 }}
-        className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"
+        className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" 
       />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, delay: 0.2 }}
-        className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"
+        className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" 
       />
 
       <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 box-border">
@@ -101,7 +106,7 @@ const LoginComponent = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="hidden lg:flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
+          className="flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
         >
           <div className="flex justify-center items-center gap-6 border border-gray-300 dark:border-slate-700 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
             <WandSparkles className="text-violet-600 shrink-0" />
@@ -115,13 +120,11 @@ const LoginComponent = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 box-border"
+            className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-relaxed text-slate-600 dark:border-slate-700/50 dark:bg-slate-800/60 dark:text-slate-400"
           >
-            <div className="border border-gray-300 dark:border-slate-700 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400 text-sm">
-              Create, edit, and generate engaging multiple story variations from a
-              single prompt. Perfect for writers, creators, and enthusiasts
-              exploring the future of fiction.
-            </div>
+            Create, edit, and generate engaging multiple story variations from a
+            single prompt. Perfect for writers, creators, and enthusiasts
+            exploring the future of fiction.
           </motion.div>
         </motion.div>
 
@@ -219,6 +222,7 @@ const LoginComponent = () => {
           </div>
         </div>
       </div>
+
 
       <Toaster position="top-right" reverseOrder={false} />
     </div>

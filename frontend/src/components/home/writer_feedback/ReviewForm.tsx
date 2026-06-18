@@ -303,7 +303,7 @@ const ReviewForm = () => {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your full name"
                 aria-invalid={!!errors.name}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full max-w-lg rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
 
               {errors.name && (
@@ -332,7 +332,7 @@ const ReviewForm = () => {
                 onChange={(e) => setRole(e.target.value)}
                 placeholder="e.g. Fantasy Writer, Student, Blogger"
                 aria-invalid={!!errors.role}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full max-w-lg rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
 
               {errors.role && (
@@ -362,7 +362,7 @@ const ReviewForm = () => {
                 onChange={(e) => setFeedback(e.target.value)}
                 placeholder="Tell us about your experience with StorySparkAI..."
                 aria-invalid={!!errors.feedback}
-                className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full max-w-lg resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
 
               <div className="mt-1 flex items-center justify-between max-w-lg">
@@ -441,7 +441,6 @@ const ReviewForm = () => {
                 "Share Review ✨"
               )}
             </button>
-          </div>
         </div>
       </div>
     </div>
