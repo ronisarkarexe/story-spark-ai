@@ -20,7 +20,6 @@ function getGeminiClient(): GoogleGenerativeAI {
 }
 
 let anthropic: Anthropic | null = null;
-const genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export function getOpenAIClient(): OpenAI {
   if (!openai) {
