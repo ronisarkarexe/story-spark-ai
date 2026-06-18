@@ -37,7 +37,11 @@ const saveCookiePreferences = (preferences: CookiePreferences) => {
   updateAppCookieState(preferences);
 };
 
-const CookieConsentBanner: FC = () => {
+interface CookieConsentBannerProps {
+  onLayoutChange?: (height: number) => void;
+}
+
+const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) => {
   const [preferences, setPreferences] = useState<CookiePreferences | null>(null);
   const [showBanner, setShowBanner] = useState(false);
   const { isDark } = useTheme();
@@ -47,6 +51,10 @@ const CookieConsentBanner: FC = () => {
     setPreferences(storedPreferences);
     setShowBanner(!storedPreferences.saved);
   }, []);
+
+  useEffect(() => {
+    onLayoutChange?.(showBanner ? 320 : 0);
+  }, [showBanner, onLayoutChange]);
 
   if (!preferences || !showBanner) {
     return null;

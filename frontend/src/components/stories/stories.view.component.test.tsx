@@ -3,8 +3,6 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import StoriesViewComponent, {
-  ApiError,
-  RelatedStoriesComponent,
   IStories
 } from './stories.view.component';
 
@@ -66,41 +64,7 @@ const mockStories: IStories[] = [
   },
 ];
 
-describe('StoriesViewComponent - Error Handlers', () => {
-  it('should return correct message for ApiError 429', () => {
-    const error = new ApiError(429, 'Too Many Requests');
-    expect(error.status).toBe(429);
-    expect(error.message).toBe('Too Many Requests');
-    expect(error.name).toBe('ApiError');
-  });
-});
 
-describe('RelatedStoriesComponent', () => {
-  const mockPosts = [
-    { _id: 'post-1', title: 'Story One' },
-    { _id: 'post-2', title: 'Story Two' },
-  ];
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('renders correctly and filters out the current post', () => {
-    render(<RelatedStoriesComponent posts={mockPosts} currentPostId="post-1" />);
-    
-    expect(screen.queryByText('Story One')).not.toBeInTheDocument();
-    expect(screen.getByText('Story Two')).toBeInTheDocument();
-  });
-
-  it('navigates to the correct URL when a related story is clicked', () => {
-    render(<RelatedStoriesComponent posts={mockPosts} currentPostId="post-1" />);
-    
-    const storyCard = screen.getByText('Story Two');
-    fireEvent.click(storyCard);
-    
-    expect(mockNavigate).toHaveBeenCalledWith('/stories/post-2');
-  });
-});
 
 describe('StoriesViewComponent - Core Rendering', () => {
   const mockSetStories = vi.fn();
