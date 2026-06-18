@@ -664,8 +664,8 @@ useEffect(() => {
     setLoading(true);
     setIsHighLatency(false);
 
-    let timeoutId: NodeJS.Timeout | null = null;
-    let latencyTimeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let latencyTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
     try {
       // 60-second client-side request timeout safeguard
