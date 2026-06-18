@@ -75,10 +75,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
-
-
-const speedSelectId = useId();
-
     const speedSelectId = useId();
     const voiceGenderSelectId = useId();
     const languageSelectId = useId();
@@ -127,6 +123,8 @@ const speedSelectId = useId();
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
+    }, [showFavoritesOnly, displayedVoices, speech]);
+
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         const target = event.target as HTMLElement;
@@ -532,25 +530,6 @@ const speedSelectId = useId();
   Favorite
 </button>
 
-<button
-  type="button"
-  onClick={scrollToTop}
-  title="Scroll to top"
-  aria-label="Scroll to top"
-  className="inline-flex items-center justify-center rounded-xl border px-3 py-2.5"
->
-  <ChevronUp className="h-4 w-4" />
-</button>
-
-<button
-  type="button"
-  onClick={scrollToBottom}
-  title="Scroll to bottom"
-  aria-label="Scroll to bottom"
-  className="inline-flex items-center justify-center rounded-xl border px-3 py-2.5"
->
-  <ChevronDown className="h-4 w-4" />
-</button>
                 </div>
               </div>
             </div>

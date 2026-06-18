@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { parseStory, IStoryNode } from "../../utils/storyParser";
 
@@ -94,7 +94,6 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
       .call(
         d3.drag<SVGGElement, SimNode>()
           .on("start", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, n: SimNode) => {
-          .on("start", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, node: SimNode) => {
             if (!event.active) simulation.alphaTarget(0.3).restart();
             n.fx = n.x;
             n.fy = n.y;
@@ -104,11 +103,6 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
             n.fy = event.y;
           })
           .on("end", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, n: SimNode) => {
-          .on("drag", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, node: SimNode) => {
-            node.fx = event.x;
-            node.fy = event.y;
-          })
-          .on("end", (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, node: SimNode) => {
             if (!event.active) simulation.alphaTarget(0);
             n.fx = null;
             n.fy = null;

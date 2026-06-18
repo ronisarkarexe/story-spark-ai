@@ -9,7 +9,7 @@ import { ProfileSettingComponent } from "./profile.setting.component";
 import { ProfileSavedStoriesSection } from "./profile.saved_stories.component";
 import { WriterApplicationForm } from "./writer_application.form";
 import AuthContext from "../../auth.context";
-import { instance } from "../../../helpers/axios/axionInstance";
+import axiosInstance from "../../../helpers/axios/axiosInstance";
 
 const ProfileComponent = () => {
   const { data, isLoading } = useGetProfileInfoQuery();
@@ -47,7 +47,7 @@ const ProfileComponent = () => {
 
     setDeleting(true);
     try {
-      await instance.delete(`/user/${data._id}`);
+      await axiosInstance.delete(`/user/${data._id}`);
       toast.success("Account deleted successfully.");
       auth?.logout();
     } catch {
@@ -137,13 +137,6 @@ const ProfileComponent = () => {
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 pb-12">
       {data && (
         <>
-          <ProfileCompletionIndicator
-          name={data.name}
-          bio={data.bio}
-          avatar={data.avatar}
-          socialLinks={data.socialLinks}
-          />
-
           <ProfileSettingComponent
             user={data}
             onSave={onSave}

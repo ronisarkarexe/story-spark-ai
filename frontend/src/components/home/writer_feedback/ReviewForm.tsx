@@ -1,31 +1,6 @@
 import React, { useState } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
-const ratingLabels = [
-  "",
-  "Poor",
-  "Fair",
-  "Good",
-  "Great",
-  "Excellent",
-];
-const StarRating = ({ rating, setRating }: { rating: number; setRating: (n: number) => void }) => (
-  <div className="flex gap-1">
-    {[1, 2, 3, 4, 5].map((star) => (
-      <button
-        key={star}
-        type="button"
-        onClick={() => setRating(star)}
-        className={`text-2xl transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-md ${
-          star <= rating ? "text-yellow-400 drop-shadow-sm" : "text-slate-300 dark:text-slate-600"
-        }`}
-        aria-label={`Rate ${star} star`}
-      >
-        ★
-      </button>
-    ))}
-  </div>
-);
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
 
 const StarRating = ({
@@ -37,58 +12,32 @@ const StarRating = ({
 }) => {
   const [hovered, setHovered] = useState(0);
 
-  const renderStarIcon = (index: number) => {
-    // index is 1..5
-    if (rating >= index) return <i className="fa-solid fa-star" />;
-    if (rating >= index - 0.5) return <i className="fa-solid fa-star-half-stroke" />;
-    return <i className="fa-regular fa-star" />;
-  };
-
-  const handleClick = (value: number) => {
-    setRating(value);
-  };
-
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((star) => (
-          <div
+          <button
             key={star}
-            className="relative text-3xl text-gray-600 hover:scale-105 transition-all duration-150"
+            type="button"
+            aria-pressed={rating === star}
+            aria-label={`Rate ${star} star`}
+            onClick={() => setRating(star)}
+            onMouseEnter={() => setHovered(star)}
             onMouseLeave={() => setHovered(0)}
+            className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none ${
+              star <= (hovered || rating)
+                ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]"
+                : "text-gray-600"
+            }`}
           >
-            <div
-              className={`flex items-center justify-center w-8 h-8 ${
-                star <= Math.ceil(hovered || rating) ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]" : "text-gray-600"
-              }`}
-            >
-              {renderStarIcon(star)}
-            </div>
-
-            {/* left half (0.5) */}
-            <button
-              type="button"
-              aria-label={`Rate ${star - 0.5} stars`}
-              onMouseEnter={() => setHovered(star - 0.5)}
-              onClick={() => handleClick(star - 0.5)}
-              className="absolute left-0 top-0 h-full w-1/2 bg-transparent"
-            />
-
-            {/* right half (full star) */}
-            <button
-              type="button"
-              aria-label={`Rate ${star} star`}
-              onMouseEnter={() => setHovered(star)}
-              onClick={() => handleClick(star)}
-              className="absolute right-0 top-0 h-full w-1/2 bg-transparent"
-            />
-          </div>
+            ★
+          </button>
         ))}
       </div>
 
       {(hovered || rating) > 0 && (
         <p className="text-xs font-semibold tracking-wide text-yellow-400">
-          {ratingLabels[Math.round(hovered || rating) || 0]}
+          {ratingLabels[hovered || rating]}
         </p>
       )}
     </div>
@@ -112,7 +61,7 @@ const ReviewForm = () => {
     if (!role.trim()) newErrors.role = "Role is required";
     if (!feedback.trim()) newErrors.feedback = "Review is required";
     if (feedback.length > 500) newErrors.feedback = "Max 500 characters";
-    if (rating < 0.5) newErrors.rating = "Please select a rating";
+    if (rating === 0) newErrors.rating = "Please select a rating";
 
     return newErrors;
   };
@@ -150,7 +99,7 @@ const ReviewForm = () => {
   return (
     <div className="max-w-3xl mx-auto premium-glow rounded-2xl group transition-transform duration-500 hover:-translate-y-1 focus-within:-translate-y-1">
       <div className="glass-surface p-5 sm:p-6 rounded-2xl shadow-xl dark:shadow-indigo-500/10 transition-shadow duration-500 group-hover:shadow-indigo-500/20 group-focus-within:shadow-indigo-500/20 relative z-10 bg-white/70 dark:bg-slate-900/70">
-        
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5">
           <div>
             <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">
@@ -239,214 +188,9 @@ const ReviewForm = () => {
               {isLoading ? "Submitting..." : "Submit Review"}
             </button>
           </div>
-    <div className="mx-auto max-w-2xl">
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#0f172a]/90 to-[#111827]/90 p-6 sm:p-8 md:p-10 shadow-2xl shadow-blue-500/10 backdrop-blur-md">
-        {/* Background Glow */}
-        <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-blue-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-indigo-500/10 blur-3xl" />
-
-        <div className="relative z-10">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-400">
-              ✍️ Share Your Story
-            </div>
-
-            <h3 className="text-xl font-semibold text-white">
-              Write a Review
-            </h3>
-            <p className="text-gray-400 text-sm mt-1">
-              Tell us what you think about StorySparkAI.
-            </p>
-          </div>
-
-          {/* Success */}
-          {success && (
-            <div
-              aria-live="polite"
-              className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400 transition-all duration-300"
-            >
-              <span className="text-lg">🎉</span>
-              <span>
-                Thank you! Your review has been submitted for approval.
-              </span>
-            </div>
-          )}
-
-          {/* Error */}
-          {errors.submit && (
-            <div
-              aria-live="polite"
-              className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
-            >
-              <span className="text-lg">⚠️</span>
-              <span>{errors.submit}</span>
-            </div>
-          )}
-
-          <div className="space-y-6">
-            {/* Name */}
-            <div>
-              <label
-                htmlFor="name"
-                className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300"
-              >
-                <span className="text-blue-400">👤</span>
-                Name
-                <span className="text-red-400">*</span>
-              </label>
-
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your full name"
-                aria-invalid={!!errors.name}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              />
-
-              {errors.name && (
-                <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
-                  {errors.name}
-                </p>
-              )}
-            </div>
-
-            {/* Role */}
-            <div>
-              <label
-                htmlFor="role"
-                className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300"
-              >
-                <span className="text-blue-400">💼</span>
-                Role
-                <span className="text-red-400">*</span>
-              </label>
-
-              <input
-                id="role"
-                type="text"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder="e.g. Fantasy Writer, Student, Blogger"
-                aria-invalid={!!errors.role}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              />
-
-              {errors.role && (
-                <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
-                  {errors.role}
-                </p>
-              )}
-            </div>
-
-            {/* Feedback */}
-            <div>
-              <label
-                htmlFor="feedback"
-                className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300"
-              >
-                <span className="text-blue-400">💬</span>
-                Review
-                <span className="text-red-400">*</span>
-              </label>
-
-              <textarea
-                id="feedback"
-                rows={5}
-                maxLength={500}
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                placeholder="Tell us about your experience with StorySparkAI..."
-                aria-invalid={!!errors.feedback}
-                className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              />
-
-              <div className="mt-1 flex items-center justify-between max-w-lg">
-                {errors.feedback ? (
-                  <p className="flex items-center gap-1 text-xs text-red-400">
-                    <span>⚠</span>
-                    {errors.feedback}
-                  </p>
-                ) : (
-                  <span />
-                )}
-
-                <p
-                  className={`text-xs ${
-                    feedback.length > 450 ? "text-yellow-400" : "text-gray-500"
-                  }`}
-                >
-                  {feedback.length}/500
-                </p>
-              </div>
-            </div>
-
-            {/* Rating */}
-            <div>
-              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
-                <span className="text-blue-400">⭐</span>
-                Rating
-                <span className="text-red-400">*</span>
-              </label>
-
-              <StarRating rating={rating} setRating={setRating} />
-
-              <p className="mt-2 text-xs text-gray-500">
-                Select a rating based on your overall experience.
-              </p>
-
-              {errors.rating && (
-                <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
-                  {errors.rating}
-                </p>
-              )}
-            </div>
-
-            <div className="flex justify-end mt-6">
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isLoading}
-                className="w-auto rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/25 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-              >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="h-4 w-4 animate-spin"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    />
-                  </svg>
-                  Submitting...
-                </span>
-              ) : (
-                "Share Review ✨"
-              )}
-            </button>
-          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
   );
 };
 

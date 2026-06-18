@@ -1,8 +1,4 @@
-
-import React, { useMemo, useState } from "react";
-import DownloadButtons from '../../../../components/DownloadButtons';
-import React, { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+﻿import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDebounced } from "../../../hooks/global";
 import { Post } from "../../../models/post";
@@ -209,9 +205,8 @@ const PublishedStoriesComponent: React.FC = () => {
                     {getExcerpt(story)}
                   </p>
 
-                  <div className="mt-3 flex justify-end">
-  <DownloadButtons story={story} />
-</div>
+                  <div className="mt-5 grid grid-cols-3 gap-3 border-t border-slate-100 pt-4 text-center dark:border-white/[0.07]">
+                    <div>
                       <p className="text-sm font-bold text-slate-900 dark:text-white">
                         {story.viewsCount}
                       </p>

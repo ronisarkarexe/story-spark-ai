@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useBlocker } from 'react-router-dom';
 
 import { getBaseUrl } from '../../helpers/config';
