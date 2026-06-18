@@ -55,22 +55,32 @@ const ChatComponent: React.FC = () => {
       const botMessage: IChatMessage = { role: "model", parts: response };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error: unknown) {
-      console.error("Chat error:", error);
-      const message =
-        error &&
-        typeof error === "object" &&
-        "response" in error &&
-        error.response &&
-        typeof error.response === "object" &&
-        "data" in error.response &&
-        error.response.data &&
-        typeof error.response.data === "object" &&
-        "message" in error.response.data &&
-        typeof error.response.data.message === "string"
-          ? error.response.data.message
-          : "Failed to get AI response";
-      toast.error(message);
-    } finally {
+  console.error("Chat error:", error);
+
+  const errorMessage =
+    error &&
+    typeof error === "object" &&
+    "response" in error &&
+    error.response &&
+    typeof error.response === "object" &&
+    "data" in error.response &&
+    error.response.data &&
+    typeof error.response.data === "object" &&
+    "message" in error.response.data &&
+    typeof error.response.data.message === "string"
+      ? error.response.data.message
+      : "Failed to get AI response";
+
+  toast.error(errorMessage);
+
+  const botErrorMessage: IChatMessage = {
+    role: "model",
+    parts: `⚠️ ${errorMessage}`,
+  };
+
+  setMessages((prev) => [...prev, botErrorMessage]);
+}
+     finally {
       setIsLoading(false);
     }
   };

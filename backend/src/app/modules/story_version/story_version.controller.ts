@@ -1,5 +1,4 @@
 import { Post } from "../post/post.model";
-import mongoose from "mongoose";
 import { Request, Response } from "express";
 import httpStatus from "http-status";
 import catchAsync from "../../../shared/catch_async";
@@ -144,18 +143,14 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  let post = null;
-  if (storyId) {
-    const cleanStoryId = String(storyId);
-    if (!mongoose.Types.ObjectId.isValid(cleanStoryId)) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid storyId");
-    }
-    post = await Post.findOne({ _id: { $eq: cleanStoryId } });
-  }
-
+  const post = storyId ? await Post.findById(storyId) : null;
+  const rawProvider = req.headers?.["x-model-provider"];
+  const provider = Array.isArray(rawProvider) ? rawProvider[0] : rawProvider;
+  
   const enhancedPrompt = await StoryVersionService.enhancePrompt(
     prompt.trim(),
-    post?.content
+    post?.content || undefined,
+    provider as string | undefined
   );
 
   sendResponse(res, {
