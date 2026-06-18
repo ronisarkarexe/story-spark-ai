@@ -22,7 +22,7 @@ const globalErrorHandler: ErrorRequestHandler = (
     logger.error(`Global Error Handler: ${err instanceof Error ? err.message : "Unknown error"}`);
   }
 
-  let statusCode = 500;
+  let statusCode = err?.statusCode || 500;
   let message = "Something went wrong!";
   let errorMessages: IGenericErrorMessage[] = [];
 

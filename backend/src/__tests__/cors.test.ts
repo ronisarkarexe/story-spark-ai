@@ -29,7 +29,7 @@ describe('CORS Configuration', () => {
     const response = await request(app)
       .get('/api/v1');
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(404);
     expect(response.body.message).toBe('API Not Found');
   });
 });

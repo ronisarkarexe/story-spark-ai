@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "npx tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "test": "jest --runInBand"
   },
