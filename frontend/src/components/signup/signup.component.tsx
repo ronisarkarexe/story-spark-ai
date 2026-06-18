@@ -134,10 +134,7 @@ const otpPayload = {
           setExpiredAt(new Date(expiresAt).getTime());
           toast.success("OTP sent to your email");
           setRegisterInfo(user);
-          unregister("confirmPassword");
-          unregister("password");
-          unregister("name");
-          unregister("email");
+          
           setShowOtpField(true);
           setCooldown(60);
         }

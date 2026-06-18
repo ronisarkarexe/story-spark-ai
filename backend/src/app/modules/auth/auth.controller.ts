@@ -14,75 +14,73 @@ import { UserModel } from "../user/user.model"; // Import User model
 import { generateAccessToken, generateRefreshToken } from "../../utils/token.utils"; // Import token utilities
 import nodemailer from "nodemailer";
 
-export const AuthController = {
-  // ...existing code...
+const sendOtp = async (req, res) => {
+  const { email } = req.body;
 
-  async sendOtp(req, res) {
-    const { email } = req.body;
+  try {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    try {
-      // Generate a random 6-digit OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    await OtpModel.create({ email, otp });
 
-      // Save OTP to the database
-      await OtpModel.create({ email, otp });
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-      // Send OTP via email
-      const transporter = nodemailer.createTransport({
-        service: "Gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP code is ${otp}. It will expire in 5 minutes.`,
+    });
 
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Your OTP Code",
-        text: `Your OTP code is ${otp}. It will expire in 5 minutes.`,
-      });
-
-      res.status(200).json({ message: "OTP sent successfully" });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Failed to send OTP" });
-    }
-  },
+    res.status(200).json({ message: "OTP sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to send OTP" });
+  }
 };
-export const AuthController = {
-  async register(req, res) {
-    const { name, email, password, otp } = req.body;
 
-    try {
-      // Check if OTP is provided
-      if (!otp) {
-        return res.status(400).json({ message: "OTP is required" });
-      }
 
-      // Validate OTP
-      const validOtp = await OtpModel.findOne({ email, otp });
-      if (!validOtp) {
-        return res.status(400).json({ message: "Invalid or expired OTP" });
-      }
+const registerWithOtp = async (req, res) => {
+  const { name, email, password, otp } = req.body;
 
-      // Proceed with user registration
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = await UserModel.create({ name, email, password: hashedPassword });
-
-      // Remove OTP after successful validation
-      await OtpModel.deleteOne({ email, otp });
-
-      // Generate tokens and respond
-      const accessToken = generateAccessToken(newUser);
-      const refreshToken = generateRefreshToken(newUser);
-      res.cookie("refreshToken", refreshToken, { httpOnly: true });
-      res.status(201).json({ accessToken });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error" });
+  try {
+    if (!otp) {
+      return res.status(400).json({ message: "OTP is required" });
     }
-  },
+
+    const validOtp = await OtpModel.findOne({ email, otp });
+
+    if (!validOtp) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await UserModel.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    await OtpModel.deleteOne({ email, otp });
+
+    const accessToken = generateAccessToken(newUser);
+    const refreshToken = generateRefreshToken(newUser);
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+    });
+
+    res.status(201).json({ accessToken });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 const login = catchAsync(async (req: Request, res: Response) => {
   const body: AuthModel = req.body;
@@ -225,6 +223,8 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 export const AuthController = {
   login,
   register,
+  registerWithOtp,
+  sendOtp,
   refreshToken,
   logout,
   googleLogin,
