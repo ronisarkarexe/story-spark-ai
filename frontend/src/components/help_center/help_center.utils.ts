@@ -112,15 +112,15 @@ export const HELP_CATEGORIES: HelpCategory[] = [
   }
 ];
 
-<<<<<<< HEAD
-=======
+
+
 // CORRECTED MAPPING: Changed 'title' to 'label' so the sidebar reads it correctly
 export const HELP_SECTIONS = HELP_CATEGORIES.map(category => ({
   id: category.id,
   title: category.title,
   description: category.description,
 }));
->>>>>>> d8f93186 (Resoved Error)
+ 
 export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
   {
     id: "connection-lost",
@@ -132,7 +132,7 @@ export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
     keywords: ["network", "socket", "disconnect", "collab", "freeze"]
   }
 ];
-<<<<<<< HEAD
+
 
 export type FaqItem = FAQItem;
 export type SupportLink = Support_Links;
@@ -162,5 +162,4 @@ export const matchesSearch = (query: string, fields: string[]): boolean => {
   const lowerQuery = query.toLowerCase();
   return fields.some(field => field?.toLowerCase().includes(lowerQuery));
 };
-=======
->>>>>>> d8f93186 (Resoved Error)
+
