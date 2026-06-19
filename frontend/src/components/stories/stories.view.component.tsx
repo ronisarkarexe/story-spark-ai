@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import DOMPurify from "dompurify";
 import toast, { Toaster } from "react-hot-toast";
 import { useLocation } from "react-router-dom";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
+import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
 import StoryWorldMap from "../story-map/StoryWorldMap";
@@ -128,6 +128,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
 const [, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
+  const [deletePost] = useDeletePostMutation();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_readingProgress, setReadingProgress] = useState<number>(0);
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
   const lastSavedContentRef = useRef<string>("");
   const isSavingRef = useRef<boolean>(false);
