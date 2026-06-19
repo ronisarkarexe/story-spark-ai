@@ -1,3 +1,7 @@
 packages:
   - "frontend"
   - "backend"
+allowBuilds:
+  bcrypt: true
+  core-js: true
+  esbuild: true
