@@ -10,3 +10,14 @@ if (!BASE_URL) {
 export const API_BASE = (BASE_URL ?? "").replace(/\/$/, ""); 
 
 export const API_V1 = `${API_BASE}/api/v1`;
+
+export const getBaseUrl = (): string => {
+  if (BASE_URL) {
+    return BASE_URL;
+  }
+
+  const isProduction = import.meta.env.PROD;
+  return isProduction
+    ? "https://story-spark-ai.vercel.app"
+    : "http://localhost:5000";
+};
