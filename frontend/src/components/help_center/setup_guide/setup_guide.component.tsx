@@ -175,6 +175,7 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
           </div>
         </div>
       </motion.div>
+      </div>
     </motion.section>
   );
 };

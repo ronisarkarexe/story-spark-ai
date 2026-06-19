@@ -25,6 +25,7 @@ const CollabRoomSchema = new Schema<ICollabRoom>(
     story: { type: [StoryChunkSchema], default: [] },
     yjsState: { type: Schema.Types.Buffer, required: false },
     expiresAt: { type: Date, required: true },
+    isAiGenerating: { type: Boolean, required: true, default: false },
   },
   {
     timestamps: true,

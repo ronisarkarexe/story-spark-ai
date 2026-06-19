@@ -1,4 +1,4 @@
-import { enhancePromptWithGemini } from "./enhance_prompt.utils";
+import { enhancePromptWithGemini, enhancePromptWithOpenAI, enhancePromptWithAnthropic } from "./enhance_prompt.utils";
 import { raceGenerationWithTimeout, GenerationTimeoutError } from "../../../utils/generation_timeout";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
@@ -12,6 +12,7 @@ import {
   IGenericResponse,
 } from "../../../interfaces/pagination";
 import { analyzeCharacterNetwork, ICharacterNetworkResponse } from "./character_network.utils";
+import { compressContext, serializeLore } from "../../../utils/contextCompressor";
 
 interface IBranchTreeNode {
   id: string;
@@ -320,10 +321,46 @@ const restoreVersion = async (
 
 const ENHANCE_TIMEOUT_MS = 60000;
 
-const enhancePrompt = async (prompt: string): Promise<string> => {
+const buildCompressedContext = (storyContext: string): string => {
+  if (!storyContext.trim()) return "";
+  const rawNodes = storyContext
+    .split(/(?=\[Player chose:)/g)
+    .map((chunk, i) => ({ id: `seg-${i}`, text: chunk.trim() }));
+  const { lore, window: contextWindow } = compressContext(rawNodes);
+  return `${serializeLore(lore)}\n\n${contextWindow.map((n) => n.text).join("\n")}`;
+};
+
+const enhancePrompt = async (
+  prompt: string,
+  storyContentOrProvider?: string,
+  providerParam?: string
+): Promise<string> => {
+  let storyContent = "";
+  let provider = providerParam;
+
+  if (storyContentOrProvider) {
+    const lower = storyContentOrProvider.toLowerCase();
+    if (lower === "gemini" || lower === "openai" || lower === "anthropic" || lower === "claude") {
+      provider = storyContentOrProvider;
+    } else {
+      storyContent = storyContentOrProvider;
+    }
+  }
+
+  const compressedContext = storyContent ? buildCompressedContext(storyContent) : "";
+
   try {
     const enhanced = await raceGenerationWithTimeout(
-      (signal) => enhancePromptWithGemini(prompt, signal),
+      async (signal) => {
+        const p = provider?.toLowerCase();
+        if (p === "anthropic" || p === "claude") {
+          return enhancePromptWithAnthropic(prompt, signal);
+        } else if (p === "openai") {
+          return enhancePromptWithOpenAI(prompt, signal);
+        } else {
+          return enhancePromptWithGemini(prompt, signal, compressedContext || undefined);
+        }
+      },
       ENHANCE_TIMEOUT_MS
     );
 

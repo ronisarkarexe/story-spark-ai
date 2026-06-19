@@ -21,10 +21,10 @@ const AchievementBadge: React.FC<AchievementBadgeProps> = ({ achievement }) => {
   return (
     <div
       tabIndex={0}
-      className={`group relative flex flex-col justify-between rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+      className={`group relative flex flex-col justify-between rounded-2xl border p-5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
         isUnlocked
-          ? "border-yellow-100 bg-gradient-to-br from-yellow-50/20 via-white to-amber-50/10 shadow-md hover:shadow-lg dark:border-yellow-500/10 dark:from-yellow-500/5 dark:via-transparent dark:to-amber-500/5"
-          : "border-slate-200 bg-white/40 opacity-70 hover:opacity-90 dark:border-white/[0.06] dark:bg-white/[0.01]"
+          ? "completed-badge border-yellow-100 bg-gradient-to-br from-yellow-50/20 via-white to-amber-50/10 shadow-md dark:border-yellow-500/10 dark:from-yellow-500/5 dark:via-transparent dark:to-amber-500/5"
+          : "border-slate-200 bg-white/40 opacity-70 hover:opacity-90 hover:scale-[1.02] hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.01]"
       }`}
       role="article"
       aria-label={`${isUnlocked ? "Unlocked" : "Locked"} Achievement: ${title}`}

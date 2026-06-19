@@ -6,6 +6,7 @@ export interface ICollabRoom {
   yjsState?: Buffer;
   createdAt: Date;
   expiresAt: Date;
+  isAiGenerating: boolean;
 }
 
 export interface IParticipant {

@@ -97,7 +97,7 @@ const getSinglePost = catchAsync(async (req: Request, res: Response) => {
     // Guest or unauthenticated request
   }
 
-  const result = await PostService.getSinglePost(id, token);
+  const result = await PostService.getSinglePost(id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -110,7 +110,7 @@ const getPostsByTag = catchAsync(async (req: Request, res: Response) => {
   const tag = routeParam(req.params.tag);
   const excludeId = req.query.excludeId as string | undefined;
   const limit = req.query.limit ? Math.min(Number(req.query.limit), 50) : 10;
-  const result = await PostService.getPostsByTag(tag, excludeId, limit);
+  const result = await PostService.getPostsByTag(tag, excludeId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

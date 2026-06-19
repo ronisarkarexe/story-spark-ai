@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   useGetProfileInfoQuery,
   useUpdateProfileMutation,
@@ -8,11 +8,16 @@ import toast, { Toaster } from "react-hot-toast";
 import { ProfileSettingComponent } from "./profile.setting.component";
 import { ProfileSavedStoriesSection } from "./profile.saved_stories.component";
 import { WriterApplicationForm } from "./writer_application.form";
+import AuthContext from "../../auth.context";
+import { instance } from "../../../helpers/axios/axionInstance";
 
 const ProfileComponent = () => {
   const { data, isLoading } = useGetProfileInfoQuery();
   const [updateProfile] = useUpdateProfileMutation();
   const [loading, setLoading] = useState<boolean>(false);
+  const [deleting, setDeleting] = useState<boolean>(false);
+  const auth = useContext(AuthContext);
+
   const onSave = async (data: Partial<User>) => {
     setLoading(true);
     try {
@@ -24,6 +29,31 @@ const ProfileComponent = () => {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onDeleteAccount = async () => {
+    if (!data || deleting) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "This will permanently delete your account and all related data. Continue?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await instance.delete(`/user/${data._id}`);
+      toast.success("Account deleted successfully.");
+      auth?.logout();
+    } catch {
+      toast.error("Unable to delete account. Please try again.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -107,10 +137,19 @@ const ProfileComponent = () => {
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 pb-12">
       {data && (
         <>
+          <ProfileCompletionIndicator
+          name={data.name}
+          bio={data.bio}
+          avatar={data.avatar}
+          socialLinks={data.socialLinks}
+          />
+
           <ProfileSettingComponent
             user={data}
             onSave={onSave}
             loading={loading}
+            onDeleteAccount={onDeleteAccount}
+            deleting={deleting}
           />
           <ProfileSavedStoriesSection />
           <WriterApplicationForm user={data} />
@@ -120,5 +159,7 @@ const ProfileComponent = () => {
     </div>
   );
 };
+
+
 
 export default ProfileComponent;

@@ -2,41 +2,12 @@ import React from "react";
 import { useGetFeaturedListsQuery } from "../../redux/apis/post.api";
 import { Post } from "../../models/post";
 import ImageFallback from "../ImageFallback";
+import { SkeletonGrid } from "../cards/SkeletonCard";
 
 const ExploreFeatureComponent = () => {
   const { data, isLoading, isError } = useGetFeaturedListsQuery(undefined);
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {[...Array(2)].map((_, i) => (
-          <div
-            key={i}
-            className="animate-pulse relative overflow-hidden rounded-3xl border border-slate-200 bg-[#f8fafc]/90 h-[400px] flex flex-col justify-end p-8 dark:bg-slate-900/40 dark:border-slate-700/50"
-          >
-            {/* Cinematic Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-200/80 via-slate-100/30 to-transparent dark:from-slate-950 dark:via-slate-900/60 dark:to-transparent" />
-            
-            {/* Title Skeleton */}
-            <div className="h-9 bg-slate-300 dark:bg-slate-800 rounded-lg w-2/3 mb-3 relative z-10" />
-            
-            {/* Excerpt lines */}
-            <div className="space-y-2 mb-6 relative z-10">
-              <div className="h-4 bg-slate-200 dark:bg-slate-700/50 rounded-lg w-full" />
-              <div className="h-4 bg-slate-200 dark:bg-slate-700/50 rounded-lg w-5/6" />
-            </div>
-            
-            {/* Footer */}
-            <div className="flex items-center pt-4 border-t border-slate-200 dark:border-white/10 relative z-10 w-full">
-              <div className="h-7 w-20 bg-slate-300/50 border border-slate-300/30 dark:bg-blue-600/40 dark:border-blue-500/50 rounded-full" />
-              <div className="ml-auto flex gap-4">
-                <div className="h-4 w-10 bg-slate-300/50 dark:bg-slate-700 rounded-md" />
-                <div className="h-4 w-10 bg-slate-300/50 dark:bg-slate-700 rounded-md" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <SkeletonGrid count={2} variant="featured" />;
   }
   if (isError) {
   return (
@@ -56,7 +27,7 @@ const ExploreFeatureComponent = () => {
         data?.posts?.map((post: Post) => (
           <div key={post._id} className="relative group overflow-hidden rounded-3xl border border-gray-200 shadow-2xl cursor-pointer bg-white text-slate-900 dark:bg-transparent dark:border-slate-700/50 dark:text-white">
             <ImageFallback
-                  src="broken-url"
+                  src={post.imageURL}
                   alt={post.title || "Post Image"}
                   className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
