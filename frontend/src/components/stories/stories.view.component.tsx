@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import DOMPurify from "dompurify";
 import toast, { Toaster } from "react-hot-toast";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
+import { useLocation } from "react-router-dom";
+import { useCreatePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
 import StoryWorldMap from "../story-map/StoryWorldMap";
@@ -11,10 +10,6 @@ import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
-import { setStory } from "../../redux/slices/storySlice";
-import ContinueStoryButton from "../story/ContinueStoryButton";
-import { useApiError } from "../../hooks/useApiError";
-import ReadingProgressBar from "./ReadingProgressBar";
 import useAntiGravityScroll from "../../hooks/useAntiGravityScroll";
 import CharacterProfileCard from "./CharacterProfileCard";
 import {
@@ -111,33 +106,18 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   onPublishSuccess,
 }) => {
   const location = useLocation();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
   const storyScrollContainerRef = useRef<HTMLDivElement>(null);
-  const {
-    isPlaying: isAntiGravityPlaying,
-    setIsPlaying: setIsAntiGravityPlaying,
-    targetSpeed: antiGravitySpeed,
-    setTargetSpeed: setAntiGravitySpeed,
-  } = useAntiGravityScroll(storyScrollContainerRef);
+  useAntiGravityScroll(storyScrollContainerRef);
 
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
   const storyContentRef = useRef<HTMLDivElement>(null);
 
   // States
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // Export states
-  const [exportState, setExportState] = useState<"idle" | "processing" | "compiling" | "success" | "error">("idle");
-  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState<boolean>(false);
-  const dropdownMenuRef = useRef<HTMLDivElement>(null);
 
   // Standard functional states
 
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
-  const [readingProgress, setReadingProgress] = useState<number>(0);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
   const [newTopicTitle, setNewTopicTitle] = useState<string>("");
@@ -148,7 +128,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
 const [, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
-  const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
   const lastSavedContentRef = useRef<string>("");
   const isSavingRef = useRef<boolean>(false);
@@ -761,13 +740,6 @@ const handleExportMarkdown = () => {
     } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
   };
 
-    toast.success("PDF downloaded!");
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to export PDF.");
-  }
-};
-
 const handleGenerateCharacterProfile = async () => {
   if (!selectedStory) {
     toast.error("No story selected!");
@@ -930,32 +902,6 @@ if (isLoading) {
               <h3 className="text-xl font-bold text-slate-200 relative z-10">
                 Generated Story
               </h3>
-              <div className="flex items-center gap-2 relative z-10">
-                {selectedStory && (
-                  <>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors"
-                      onClick={handleCopyStory}
-                    >
-                      {isCopied ? "✓ Copied" : "📋 Copy"}
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-indigo-700 text-white font-semibold hover:bg-indigo-600 transition-colors"
-                      onClick={handleGenerateCharacterProfile}
-                    >
-                      {profileLoading ? "Generating..." : "👥 Characters"}
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors"
-                      onClick={handleExportPDF}
-                    >
-                      📄 Export PDF
-                    </button>
-                  </>
-                )}
               <div className="flex flex-wrap items-center gap-2 relative z-10">
                 <button
                   type="button"
@@ -967,6 +913,14 @@ if (isLoading) {
                 </button>
                 <button
                   type="button"
+                  className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleGenerateCharacterProfile}
+                  disabled={profileLoading || !selectedStory}
+                >
+                  {profileLoading ? "Generating..." : "👥 Characters"}
+                </button>
+                <button
+                  type="button"
                   className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleExportPDF}
                   disabled={!selectedStory}
@@ -975,7 +929,7 @@ if (isLoading) {
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleExportMarkdown}
                   disabled={!selectedStory}
                 >
@@ -987,7 +941,7 @@ if (isLoading) {
                   onClick={() => setShowWorldMap(true)}
                   disabled={!selectedStory}
                 >
-                  ≡ƒù║∩╕Å World Map
+                  🗺️ World Map
                 </button>
                 <button
                   type="button"
@@ -995,7 +949,7 @@ if (isLoading) {
                   onClick={() => setShowRemix(true)}
                   disabled={!selectedStory}
                 >
-                  ≡ƒöÇ Remix
+                  🔄 Remix
                 </button>
                 <button
                   type="button"

@@ -22,6 +22,7 @@ import {
   chatWithGemini,
 } from "./ai_model.utils";
 import { assertSuccessfulGeneration } from "./quota.lifecycle";
+import { timeoutLimit } from "../../../utils/timeout_limit";
 
 const AUTHENTICATED_GENERATION_TIMEOUT_MS = 60000;
 const FREE_GENERATION_TIMEOUT_MS = 60000;

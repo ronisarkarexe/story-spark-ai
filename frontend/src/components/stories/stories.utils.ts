@@ -53,9 +53,6 @@ export interface CharacterProfile {
   weaknesses: string[];
   relationships: string;
 }
-
-export const topicsData: ITopicData[] = [
-  { title: "#AIWriting", color: "bg-blue-100 text-blue-800", selected: true },
 export const TOPICS: ITopicData[] = [
   {
     title: "#StoryIdeas",
