@@ -13,15 +13,23 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const getInitialTheme = (): Theme => {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
   const storedTheme = localStorage.getItem("theme");
   if (storedTheme === "dark" || storedTheme === "light") {
     return storedTheme;
   }
 
-  return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 };
 
 const getInitialGlow = (): boolean => {
+  if (typeof window === "undefined") {
+    return true;
+  }
+
   const storedGlow = localStorage.getItem("cursorGlow");
   return storedGlow !== "false";
 };
@@ -33,6 +41,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle("dark", theme === "dark");
+    root.style.colorScheme = theme;
     localStorage.setItem("theme", theme);
   }, [theme]);
 

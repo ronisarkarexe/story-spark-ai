@@ -1,22 +1,12 @@
-import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  CreditCard,
-  ShieldCheck,
-} from "lucide-react";
-
-import { getBaseUrl } from "../../../helpers/config";
-import { getUserInfo } from "../../../services/auth.service";
+import React, { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
 import { loadRazorpayScript } from "../../../utils/loadRazorpay";
 
-type PaymentPlan = "basic" | "pro" | "premium";
-
-interface RazorpayPaymentResponse {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
+interface RazorpayResponse {
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
+  razorpay_signature?: string;
 }
 
 interface RazorpayFailureResponse {
@@ -25,351 +15,313 @@ interface RazorpayFailureResponse {
   };
 }
 
-interface RazorpayCheckout {
+interface RazorpayOrderResponse {
+  success: boolean;
+  order: {
+    id: string;
+    amount: number;
+    currency: string;
+  };
+}
+
+interface RazorpayInstance {
   open: () => void;
   on: (
-    event: "payment.failed",
-    callback: (response: RazorpayFailureResponse) => void,
+    event: string,
+    callback: (response: RazorpayFailureResponse) => void
   ) => void;
 }
 
-interface RazorpayOptions {
-  key: string | undefined;
-  amount: number;
-  currency: string;
-  name: string;
-  description: string;
-  order_id: string;
-  prefill: {
-    name: string;
-    email: string;
-  };
-  handler: (response: RazorpayPaymentResponse) => Promise<void>;
-  modal: {
-    ondismiss: () => void;
-  };
-  theme: {
-    color: string;
-  };
+interface RazorpayWindow extends Window {
+  Razorpay: new (options: object) => RazorpayInstance;
 }
-
-interface CreateOrderResponse {
-  success?: boolean;
-  orderId?: string;
-  amount?: number;
-  currency?: string;
-  message?: string;
-}
-
-interface VerifyPaymentResponse {
-  success?: boolean;
-  message?: string;
-}
-
-declare global {
-  interface Window {
-    Razorpay: new (options: RazorpayOptions) => RazorpayCheckout;
-  }
-}
-
-const API_BASE_URL = getBaseUrl();
-
-const PLAN_LABELS: Record<PaymentPlan, string> = {
-  basic: "Basic",
-  pro: "Pro",
-  premium: "Premium",
-};
-
-const PLAN_FALLBACK_PRICES: Record<PaymentPlan, string> = {
-  basic: "₹499",
-  pro: "₹999",
-  premium: "₹1,999",
-};
-
-const isPaymentPlan = (value: string | null): value is PaymentPlan =>
-  value === "basic" || value === "pro" || value === "premium";
 
 const PaymentComponent = () => {
+  const navigate = useNavigate();
+
+  // Read selected plan from pricing page
   const [searchParams] = useSearchParams();
+  const planName = searchParams.get("plan") || "Pro";
+  const planPrice = Number(searchParams.get("price") || "19.99");
+
+  // State variables for checkout card details
+  const [name, setName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const requestedPlan = searchParams.get("plan")?.toLowerCase() ?? null;
-  const plan: PaymentPlan = isPaymentPlan(requestedPlan)
-    ? requestedPlan
-    : "pro";
-  const planLabel = PLAN_LABELS[plan];
+  const formatCardNumber = (value: string) => {
+    return value
+      .replace(/\D/g, "")
+      .slice(0, 16)
+      .replace(/(.{4})/g, "$1 ")
+      .trim();
+  };
 
-  const requestedPrice = searchParams.get("price");
-  const displayAmount =
-    requestedPrice && /^\d+(?:\.\d{1,2})?$/.test(requestedPrice)
-      ? `$${requestedPrice}`
-      : PLAN_FALLBACK_PRICES[plan];
+  const formatExpiry = (value: string) => {
+    const clean = value.replace(/\D/g, "");
+    if (clean.length <= 2) return clean;
+    return `${clean.slice(0, 2)}/${clean.slice(2, 4)}`;
+  };
 
+  const isFormValid =
+    name.trim() !== "" &&
+    cardNumber.replace(/\s/g, "").length === 16 &&
+    expiry.length === 5 &&
+    cvv.length === 3;
+
+  // Razorpay payment handler
   const handlePayment = async () => {
-    setError(null);
-    setLoading(true);
+    // Load Razorpay SDK
+    const loaded = await loadRazorpayScript();
+
+    if (!loaded) {
+      alert("Failed to load Razorpay SDK.");
+      return;
+    }
 
     try {
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded || !window.Razorpay) {
-        throw new Error("Failed to load the payment gateway. Please try again.");
-      }
-
-      const orderResponse = await fetch(
-        `${API_BASE_URL}/api/v1/payment/create-order`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ plan }),
+      setLoading(true);
+      // Create order from backend
+      const res = await fetch("/api/v1/payment/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
-      const orderData = (await orderResponse.json()) as CreateOrderResponse;
+        body: JSON.stringify({
+          amount: Math.round(planPrice * 100), // Convert to paisa
+        }),
+      });
 
-      if (
-        !orderResponse.ok ||
-        !orderData.orderId ||
-        typeof orderData.amount !== "number" ||
-        !orderData.currency
-      ) {
-        throw new Error(orderData.message || "Could not initiate payment.");
+      const data: RazorpayOrderResponse = await res.json();
+
+      if (!data.success) {
+        alert("Failed to create order.");
+        setLoading(false);
+        return;
       }
 
-      const user = getUserInfo();
-      const options: RazorpayOptions = {
+      // Razorpay options
+      const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderData.amount,
-        currency: orderData.currency,
+        amount: data.order.amount,
+        currency: data.order.currency,
         name: "StorySparkAI",
-        description: `${planLabel} Plan`,
-        order_id: orderData.orderId,
-        prefill: {
-          name: user?.name ?? "",
-          email: user?.email ?? "",
-        },
-        handler: async (response) => {
+        description: `${planName} Subscription`,
+        order_id: data.order.id,
+
+        handler: async (response: RazorpayResponse) => {
           try {
-            const verifyResponse = await fetch(
-              `${API_BASE_URL}/api/v1/payment/verify`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify(response),
+            // Verify payment
+            const verifyRes = await fetch("/api/v1/payment/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
               },
-            );
-            const verifyData =
-              (await verifyResponse.json()) as VerifyPaymentResponse;
+              body: JSON.stringify(response),
+            });
 
-            if (!verifyResponse.ok || !verifyData.success) {
-              throw new Error(
-                verifyData.message ||
-                  "Payment verification failed. Please contact support.",
-              );
+            const verifyData: { success: boolean } =
+              await verifyRes.json();
+
+            if (verifyData.success) {
+              alert("Payment successful!");
+              navigate("/dashboard");
+            } else {
+              alert("Payment verification failed.");
             }
-
-            window.location.href = "/dashboard?upgraded=true";
-          } catch (verificationError) {
-            setError(
-              verificationError instanceof Error
-                ? verificationError.message
-                : "Payment verification failed. Please contact support.",
-            );
+          } catch (error) {
+            console.error(error);
+            alert("Verification failed.");
+          } finally {
             setLoading(false);
           }
         },
-        modal: {
-          ondismiss: () => setLoading(false),
+
+        prefill: {
+          name: "",
+          email: "",
+          contact: "",
         },
+
         theme: {
           color: "#06b6d4",
         },
       };
 
-      const checkout = new window.Razorpay(options);
-      checkout.on("payment.failed", (response) => {
-        setError(response.error?.description || "Payment failed. Please try again.");
-        setLoading(false);
-      });
-      checkout.open();
-    } catch (paymentError) {
-      setError(
-        paymentError instanceof Error
-          ? paymentError.message
-          : "An unexpected error occurred. Please try again.",
+      const paymentObject = new ((window as unknown) as RazorpayWindow).Razorpay(
+        options
       );
+
+      paymentObject.on(
+        "payment.failed",
+        (response: RazorpayFailureResponse) => {
+          console.error(response.error);
+          alert(response.error?.description || "Payment failed.");
+          setLoading(false);
+        }
+      );
+
+      paymentObject.open();
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong.");
       setLoading(false);
     }
   };
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-slate-50 px-4 py-10 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-96 w-96 rounded-full bg-cyan-600/10 blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-96 w-96 rounded-full bg-blue-600/10 blur-[120px]" />
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 px-4 py-10 relative overflow-hidden transition-colors duration-300 w-full box-border sm:px-6 lg:px-8">
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none select-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none select-none" />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center justify-center">
-        <div className="grid w-full items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-xl dark:border-white/10 dark:bg-[#111827]/40 sm:rounded-3xl sm:p-8">
-            <div className="mb-8 flex w-full items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-500/10 bg-cyan-500/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-400">
-                  Secure checkout
-                </span>
-                <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                  Complete Your Subscription
-                </h1>
-                <p className="mt-2 text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400 sm:text-sm">
-                  Finish your upgrade through Razorpay's secure checkout.
-                </p>
-              </div>
+      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-md items-center justify-center w-full box-border relative z-10">
+        <section className="bg-white dark:bg-[#111827]/40 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm hover:shadow-xl transition-all duration-300 w-full box-border">
+          <div className="mb-6 flex flex-col items-center text-center">
+            <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-500/10 dark:border-cyan-400/20 bg-cyan-500/5 dark:bg-cyan-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 select-none">
+              Secure checkout
+            </span>
 
-              <div className="hidden shrink-0 rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-500 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-300 sm:flex">
-                <CreditCard size={20} aria-hidden="true" />
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              Complete Your Subscription
+            </h1>
+
+            <p className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+              Upgrade to the {planName} plan for ₹{planPrice}/month.
+            </p>
+          </div>
+
+          <form
+            className="space-y-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handlePayment();
+            }}
+          >
+            {/* Cardholder Name */}
+            <div className="space-y-2 text-left">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                Cardholder Name
+              </label>
+              <input
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70 px-4 py-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                required
+              />
+            </div>
+
+            {/* Card Number */}
+            <div className="space-y-2 text-left">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                Card Number
+              </label>
+              <div className="relative">
+                <CreditCard
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  placeholder="1234 5678 9012 3456"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70 py-4 pl-11 pr-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                  required
+                />
               </div>
             </div>
 
-            <div className="mb-6 w-full rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-cyan-400/10 dark:bg-cyan-400/5 sm:rounded-2xl sm:p-5">
-              <div className="flex w-full items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Selected Plan
-                  </p>
-                  <h2 className="mt-1 truncate text-lg font-bold tracking-tight text-slate-900 dark:text-white sm:text-xl">
-                    {planLabel} Plan
-                  </h2>
-                </div>
+            {/* Expiry + CVV */}
+            <div className="grid gap-4 sm:grid-cols-2 text-left">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Expiry Date
+                </label>
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  value={expiry}
+                  onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70 px-4 py-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                  required
+                />
+              </div>
 
-                <div className="shrink-0 text-right">
-                  <p className="text-xl font-extrabold tracking-tight text-cyan-600 dark:text-cyan-400 sm:text-2xl">
-                    {displayAmount}
-                  </p>
-                  <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 sm:text-xs">
-                    per month
-                  </p>
-                </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  CVC
+                </label>
+                <input
+                  type="password"
+                  placeholder="123"
+                  value={cvv}
+                  onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70 px-4 py-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                  required
+                />
               </div>
             </div>
 
-            {error && (
-              <p
-                className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300"
-                role="alert"
-              >
-                {error}
-              </p>
-            )}
-
+            {/* Pay Button */}
             <button
-              type="button"
-              onClick={handlePayment}
-              disabled={loading}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+              type="submit"
+              disabled={loading || !isFormValid}
+              className="motion-cta inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <>
-                  <span
-                    className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
-                    aria-hidden="true"
-                  />
+                  <svg
+                    className="h-5 w-5 animate-spin text-white"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8z"
+                    />
+                  </svg>
                   Processing...
                 </>
               ) : (
                 <>
-                  <ShieldCheck size={18} aria-hidden="true" />
-                  Continue to Secure Payment
+                  <ShieldCheck size={18} />
+                  Pay Now — ₹{planPrice}/mo
                 </>
               )}
             </button>
 
-            <p className="mt-4 text-xs leading-5 text-slate-500 dark:text-slate-400">
-              Card details are collected and processed securely by Razorpay and
-              are never stored on our servers.
+            <p className="text-xs leading-5 text-slate-400 text-center">
+              Your payment information is protected by secure encryption processing and is never stored on our servers.
             </p>
+          </form>
 
-            <div className="mt-6 w-full border-t border-slate-100 pt-4 dark:border-white/5">
-              <Link
-                to="/pricing"
-                className="group inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 transition-colors hover:text-cyan-600 dark:text-slate-400 dark:hover:text-cyan-400 sm:text-sm"
-              >
-                <ArrowLeft
-                  size={14}
-                  className="transition-transform duration-200 group-hover:-translate-x-0.5"
-                  aria-hidden="true"
-                />
-                Back to Pricing
-              </Link>
-            </div>
-          </section>
-
-          <aside className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#111827]/20 sm:rounded-3xl sm:p-8">
-            <div className="mb-6 flex w-full items-center gap-3">
-              <div className="shrink-0 rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-slate-500 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-400">
-                <CheckCircle2 size={20} aria-hidden="true" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white sm:text-lg">
-                  What you get
-                </h2>
-                <p className="mt-0.5 text-xs font-medium text-slate-400 dark:text-slate-500">
-                  A quick summary before you confirm.
-                </p>
-              </div>
-            </div>
-
-            <div className="w-full space-y-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/40 sm:rounded-2xl sm:p-5">
-              <div className="flex w-full items-center justify-between gap-4">
-                <span className="truncate text-xs font-bold tracking-tight text-slate-700 dark:text-slate-300 sm:text-sm">
-                  {planLabel} subscription
-                </span>
-                <span className="shrink-0 text-base font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-lg">
-                  {displayAmount}/mo
-                </span>
-              </div>
-
-              <div className="h-px w-full bg-slate-200 dark:bg-slate-800" />
-
-              <ul className="m-0 list-none space-y-3 p-0 text-xs font-medium text-slate-600 dark:text-slate-300 sm:text-sm">
-                <li className="flex items-start gap-2.5 leading-relaxed">
-                  <CheckCircle2
-                    size={14}
-                    className="mt-0.5 shrink-0 text-cyan-500 dark:text-cyan-400"
-                    aria-hidden="true"
-                  />
-                  <span>Unlimited AI writing tools</span>
-                </li>
-                <li className="flex items-start gap-2.5 leading-relaxed">
-                  <CheckCircle2
-                    size={14}
-                    className="mt-0.5 shrink-0 text-cyan-500 dark:text-cyan-400"
-                    aria-hidden="true"
-                  />
-                  <span>Priority access to premium features</span>
-                </li>
-                <li className="flex items-start gap-2.5 leading-relaxed">
-                  <CheckCircle2
-                    size={14}
-                    className="mt-0.5 shrink-0 text-cyan-500 dark:text-cyan-400"
-                    aria-hidden="true"
-                  />
-                  <span>Cancel anytime from your account settings</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="mt-6 w-full rounded-xl border border-slate-100 bg-slate-50/30 p-4 dark:border-cyan-400/10 dark:bg-cyan-400/5 sm:rounded-2xl sm:p-5">
-              <p className="text-xs font-bold tracking-tight text-slate-900 dark:text-cyan-400 sm:text-sm">
-                Need help?
-              </p>
-              <p className="mt-1.5 text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
-                If your payment fails, try again or contact platform support.
-              </p>
-            </div>
-          </aside>
-        </div>
+          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/5 w-full box-border text-center">
+            <Link
+              to="/pricing"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors select-none group"
+            >
+              <ArrowLeft size={14} className="transition-transform duration-200 group-hover:-translate-x-0.5" />
+              Back to Pricing
+            </Link>
+          </div>
+        </section>
       </div>
-    </main>
+    </div>
   );
 };
 
 export default PaymentComponent;
+

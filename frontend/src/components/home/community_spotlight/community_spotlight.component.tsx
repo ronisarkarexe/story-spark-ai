@@ -133,7 +133,7 @@ const CommunitySpotlightComponent = () => {
     <section className="w-full box-border py-6 sm:py-10 text-slate-900 dark:text-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full box-border">
         {/* Section Header */}
-        <div className="mb-10 max-w-2xl text-left px-0.5">
+        <div className="mb-10 w-full max-w-2xl text-left">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/10 dark:border-white/10 bg-blue-500/5 text-blue-600 dark:text-blue-400 mb-4 select-none shadow-sm dark:shadow-none">
             <i className="fa-solid fa-star text-xs" aria-hidden="true"></i>
             <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Curated Showcase</span>
@@ -147,12 +147,12 @@ const CommunitySpotlightComponent = () => {
         </div>
 
         {/* Top Featured Creators Grid */}
-        <div className="mb-14">
+        <div className="mb-14 w-full">
           <h3 className="text-lg sm:text-xl font-bold mb-6 tracking-tight border-b border-slate-100 dark:border-white/5 pb-3">
             Top Storytellers
           </h3>
           {topWriters.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 box-border">
               {topWriters.map((writer, index) => {
                 const rank = index + 1;
                 const style = rankStyles[index];
@@ -163,7 +163,7 @@ const CommunitySpotlightComponent = () => {
                     type="button"
                     aria-label={`Read ${writer.topPost.title} by ${writer.author.name || "Unknown User"}`}
                     onClick={() => navigate(`/post/${writer.topPost._id}`)}
-                    className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-5 text-left shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700/60 dark:bg-slate-900/70 dark:hover:border-blue-400/50 dark:focus:ring-offset-slate-950 box-border w-full"
+                    className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white/80 p-5 text-left shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-slate-700/60 dark:bg-slate-900/70 dark:hover:border-blue-400/50 dark:focus:ring-offset-slate-950 box-border"
                   >
                     <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-violet-500 to-amber-400"></div>
 
@@ -190,7 +190,7 @@ const CommunitySpotlightComponent = () => {
                       <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-gray-500">
                         Top story
                       </p>
-                      <h4 className="line-clamp-2 text-base font-semibold leading-6 text-slate-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-300">
+                      <h4 className="line-clamp-2 break-words text-base font-semibold leading-6 text-slate-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-300 overflow-hidden text-ellipsis">
                         {writer.topPost.title}
                       </h4>
                     </div>
@@ -255,7 +255,7 @@ const CommunitySpotlightComponent = () => {
                           </p>
                         </div>
                       </div>
-                      <h4 className="mb-2 text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight line-clamp-1">
+                      <h4 className="mb-2 line-clamp-2 break-words text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight overflow-hidden text-ellipsis">
                         {post.title}
                       </h4>
                       <p className="line-clamp-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">

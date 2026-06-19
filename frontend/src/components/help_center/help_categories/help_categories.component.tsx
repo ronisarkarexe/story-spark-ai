@@ -1,11 +1,6 @@
 import { FC } from "react";
-import { motion } from "framer-motion";
-
-interface HelpCategory {
-  title: string;
-  description: string;
-  icon: string;
-}
+import { HelpCategory } from "../help_center.utils";
+import HelpCategoryCard from "../help_category_card/help_category_card.component";
 
 interface HelpCategoriesProps {
   categories: HelpCategory[];
@@ -33,7 +28,7 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
           <HelpCategoryCard key={category.id} category={category} />
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 };
 

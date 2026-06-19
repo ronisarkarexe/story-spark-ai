@@ -2,6 +2,7 @@ import { Post } from "../post.model";
 import { User } from "../../user/user.model";
 import { PostService } from "../post.service";
 import { Bookmark } from "../../bookmark/bookmark.model";
+import { escapeRegex } from "../../../../utils/regex.util";
 
 jest.mock("../post.model", () => ({
   Post: {
@@ -17,11 +18,18 @@ jest.mock("../post.model", () => ({
 jest.mock("../../user/user.model", () => ({
   User: {
     findOne: jest.fn(),
+    findByIdAndUpdate: jest.fn().mockResolvedValue({}),
   },
 }));
 
 jest.mock("../../bookmark/bookmark.model", () => ({
   Bookmark: {
+    deleteMany: jest.fn().mockResolvedValue({}),
+  },
+}));
+
+jest.mock("../../comment/comment.model", () => ({
+  Comment: {
     deleteMany: jest.fn().mockResolvedValue({}),
   },
 }));
@@ -132,5 +140,33 @@ describe("PostService", () => {
         isPublished: true,
       });
     });
+  });
+});
+
+
+describe("escapeRegex", () => {
+  it("escapes all regex metacharacters", () => {
+    expect(escapeRegex(".*+?^${}()|[]\\")).toBe("\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\");
+  });
+
+  it("leaves plain alphanumeric strings unchanged", () => {
+    expect(escapeRegex("hello world")).toBe("hello world");
+  });
+
+  it("escapes a hyphen", () => {
+    expect(escapeRegex("sci-fi")).toBe("sci\\-fi");
+  });
+
+  it("produces a string safe to use in a RegExp without throwing", () => {
+    const dangerous = ".*+?^${}()|[]\\";
+    expect(() => new RegExp(escapeRegex(dangerous))).not.toThrow();
+  });
+
+  it("escaped pattern matches literal text and not as a wildcard", () => {
+    const input = "a.b";
+    const escaped = escapeRegex(input);
+    const re = new RegExp(escaped);
+    expect(re.test("a.b")).toBe(true);
+    expect(re.test("axb")).toBe(false);
   });
 });

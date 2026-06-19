@@ -155,6 +155,7 @@ const getDashboardAnalysis = async (userId: string, role: string) => {
     userStats: {
       subscriptionStatus: user.subscriptionType.toUpperCase(),
       applicationStatus,
+      gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
     }
   };
 };
@@ -399,3 +400,4 @@ export const AnalysisService = {
   getDashboardAnalysis,
   analyzeStory,
 };
+
