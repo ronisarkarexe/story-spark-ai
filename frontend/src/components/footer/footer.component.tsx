@@ -214,13 +214,9 @@ const FooterComponent: React.FC = () => {
                     aria-label={item.label}
                     className="group flex items-center gap-2.5 text-[14px] text-slate-300/85 hover:text-blue-300 transition-all duration-200"
                   >
-                    {item.type === "fa" ? (
-                      <i
-                        className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
-                      />
-                    ) : (
-                      <item.Icon className="text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors" />
-                    )}
+                    <i
+                      className={`${item.icon === "fa-envelope" ? "fa-solid" : "fa-brands"} ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
+                    />
                     <span className="capitalize">
                       {item.icon === "fa-x-twitter"
                         ? "X"
@@ -267,7 +263,7 @@ const FooterComponent: React.FC = () => {
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="self-start h-8 px-3 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 text-[11px] font-medium text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60 cursor-pointer"
+                className="w-full h-9 px-3 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 text-[12px] font-semibold text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60 cursor-pointer"
               >
                 {status === "loading" ? "..." : "Subscribe"}
               </button>

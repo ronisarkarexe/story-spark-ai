@@ -5,7 +5,7 @@
  * to the existing story generation component.
  * 
  * LOCATION: After line 575 in stories.component.tsx (after textareaValue state declaration)
- */
+ * 
 
 // ============================================================================
 // ADD THIS IMPORT at the top of stories.component.tsx
@@ -29,19 +29,19 @@ const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
 // This is where the textarea is rendered
 // ============================================================================
 
-{/* BEFORE: This is the existing prompt textarea */}
+{/* BEFORE: This is the existing prompt textarea * /}
 {isLoggedIn ? (
   <>
-    {/* Prompt input section */}
+    {/* Prompt input section * /}
     <div className="mb-8">
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Genre selector... */}
+        {/* Genre selector... * /}
 
-        {/* Language selector... */}
+        {/* Language selector... * /}
 
-        {/* Length selector... */}
+        {/* Length selector... * /}
 
-        {/* THE TEXTAREA - Find this section */}
+        {/* THE TEXTAREA - Find this section * /}
         <textarea
           ref={inputRef}
           value={textareaValue}
@@ -52,17 +52,17 @@ const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
           // ... other props
         />
 
-        {/* CHARACTER LIMIT COUNTER */}
-        {/* ... existing character limit display ... */}
+        {/* CHARACTER LIMIT COUNTER * /}
+        {/* ... existing character limit display ... * /}
 
         {/* 
           ====================================================================
           AFTER: Add this new component right AFTER the textarea
           and character counter, BEFORE the generation button
           ====================================================================
-        */}
+        * /}
 
-        {/* NEW: Prompt Analysis Integration */}
+        {/* NEW: Prompt Analysis Integration * /}
         {textareaValue.trim().length >= 10 && (
           <PromptAnalysisIntegration
             prompt={textareaValue}
@@ -74,7 +74,7 @@ const handleUseEnhancedPrompt = (enhancedPrompt: string) => {
           />
         )}
 
-        {/* Generation button and other controls */}
+        {/* Generation button and other controls * /}
         <div className="mt-6 flex gap-4">
           <button
             type="submit"
@@ -104,7 +104,6 @@ import toast from "react-hot-toast";
 // STYLING CONSIDERATIONS
 // ============================================================================
 
-/*
 The PromptAnalysisIntegration component uses:
 - Tailwind CSS (already in project)
 - Framer Motion (already in project)
@@ -119,7 +118,7 @@ The component automatically handles:
 ✓ Error states
 ✓ Mobile responsiveness
 ✓ Animations and transitions
-*/
+
 
 // ============================================================================
 // COMPLETE EXAMPLE: Stories Component Integration
@@ -178,7 +177,6 @@ const StoriesComponent: React.FC<StoriesComponentProps> = (props) => {
       <h1 className="text-3xl font-bold mb-8">Create Your Story</h1>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Language Selection */}
         <select
           value={selectedLanguage}
           onChange={(e) => setSelectedLanguage(e.target.value)}
@@ -187,10 +185,8 @@ const StoriesComponent: React.FC<StoriesComponentProps> = (props) => {
           <option>English</option>
           <option>Spanish</option>
           <option>French</option>
-          {/* ... other languages */}
         </select>
 
-        {/* Genre Selection */}
         <select
           value={selectedGenre}
           onChange={(e) => setSelectedGenre(e.target.value)}
@@ -199,10 +195,8 @@ const StoriesComponent: React.FC<StoriesComponentProps> = (props) => {
           <option>Fantasy</option>
           <option>Sci-Fi</option>
           <option>Mystery</option>
-          {/* ... other genres */}
         </select>
 
-        {/* Prompt Textarea */}
         <textarea
           value={textareaValue}
           onChange={(e) => setTextareaValue(e.target.value)}
@@ -211,12 +205,10 @@ const StoriesComponent: React.FC<StoriesComponentProps> = (props) => {
           rows={5}
         />
 
-        {/* Character Counter */}
         <div className="mb-4 text-sm text-slate-400">
           {textareaValue.length} / 2000 characters
         </div>
 
-        {/* *** ADD THIS: Prompt Analysis Integration *** */}
         {textareaValue.trim().length >= 10 && (
           <PromptAnalysisIntegration
             prompt={textareaValue}
@@ -228,7 +220,6 @@ const StoriesComponent: React.FC<StoriesComponentProps> = (props) => {
           />
         )}
 
-        {/* Generate Button */}
         <button
           type="submit"
           disabled={isGenerating || textareaValue.trim().length === 0}
@@ -242,3 +233,4 @@ const StoriesComponent: React.FC<StoriesComponentProps> = (props) => {
 };
 
 export default StoriesComponent;
+*/

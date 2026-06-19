@@ -3,10 +3,10 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import StoriesViewComponent, {
-  ApiError,
-  RelatedStoriesComponent,
   IStories
 } from './stories.view.component';
+import { ApiError } from './stories.helpers';
+import RelatedStoriesComponent from './RelatedStories';
 
 // --- Cleanup after every single test ---
 afterEach(() => {
@@ -77,8 +77,8 @@ describe('StoriesViewComponent - Error Handlers', () => {
 
 describe('RelatedStoriesComponent', () => {
   const mockPosts = [
-    { _id: 'post-1', title: 'Story One' },
-    { _id: 'post-2', title: 'Story Two' },
+    { _id: 'post-1', uuid: 'uuid-1', title: 'Story One', content: 'Content one', tag: 'TagOne', imageURL: '', language: 'English' },
+    { _id: 'post-2', uuid: 'uuid-2', title: 'Story Two', content: 'Content two', tag: 'TagTwo', imageURL: '', language: 'English' },
   ];
 
   beforeEach(() => {

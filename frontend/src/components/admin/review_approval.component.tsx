@@ -13,6 +13,17 @@ const ReviewApprovalComponent = () => {
   const [approveReview, { isLoading: isApproving }] = useApproveReviewMutation();
   const [selectedReviews, setSelectedReviews] = useState<string[]>([]);
 
+  const handleApproveSelected = async () => {
+    if (selectedReviews.length === 0) return;
+    try {
+      await Promise.all(selectedReviews.map((id) => approveReview(id).unwrap()));
+      toast.success("Selected reviews approved successfully!");
+      setSelectedReviews([]);
+    } catch (error: unknown) {
+      toast.error("Failed to approve selected reviews. Please try again.");
+      console.error(error);
+    }
+  };
 
   const handleCheckbox = (id: string) => {
     setSelectedReviews((prev) =>

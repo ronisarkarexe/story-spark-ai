@@ -54,6 +54,7 @@ export interface UseSpeechSynthesisResult {
   selectedLanguage: string;
   setSelectedLanguage: (lang: string) => void;
   languageOptions: LanguageOption[];
+  detectedLanguage?: string;
 }
 
 const SPEED_MIN = 0.5;
@@ -63,7 +64,6 @@ const clampRate = (nextRate: number): number => {
   if (Number.isNaN(nextRate)) {
     return 1;
   }
-
   return Math.min(SPEED_MAX, Math.max(SPEED_MIN, nextRate));
 };
 
@@ -156,7 +156,6 @@ const getWordIndexAtCharIndex = (
 
 export const useSpeechSynthesis = (
   text = "",
-  text: string = "",
   voiceGender?: "female" | "male",
 ): UseSpeechSynthesisResult => {
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -164,6 +163,7 @@ export const useSpeechSynthesis = (
   const textRef = useRef(text);
   const wordRangesRef = useRef<WordRange[]>(buildWordRanges(text));
   const previousTextRef = useRef(text);
+  const browserVoicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   const [isSupported, setIsSupported] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -173,17 +173,52 @@ export const useSpeechSynthesis = (
   const [error, setError] = useState<string | null>(null);
 
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoiceIndex, setSelectedVoiceIndex] = useState(0);
-
   const [rateState, setRateState] = useState(1);
   const [pitchState, setPitchState] = useState(1);
   const [volumeState, setVolumeState] = useState(1);
-  const [rateState, setRateState] = useState(1);
-  const [pitchState, setPitchState] = useState(1);
-  const [volumeState, setVolumeState] = useState(1);
-  const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
+  
   const [selectedVoiceId, setSelectedVoiceId] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("en-US");
+
+  // Sync text and word ranges when `text` changes
+  useEffect(() => {
+    textRef.current = text;
+    wordRangesRef.current = buildWordRanges(text);
+  }, [text]);
+
+  // Load voices and initialize speech synthesis
+  useEffect(() => {
+    const supported = hasSpeechSupport();
+    setIsSupported(supported);
+
+    if (!supported) {
+      setIsReady(false);
+      setError("Speech synthesis is not supported in this browser.");
+      return;
+    }
+
+    const speechSynthesis = window.speechSynthesis;
+    synthRef.current = speechSynthesis;
+
+    const syncVoices = () => {
+      const loadedVoices = speechSynthesis.getVoices();
+      browserVoicesRef.current = loadedVoices;
+      setAvailableVoices(loadedVoices);
+      setIsReady(loadedVoices.length > 0);
+    };
+
+    syncVoices();
+
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = syncVoices;
+    }
+
+    return () => {
+      if (speechSynthesis) {
+        speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
 
   const voices = useMemo(
     () => toVoiceOptions(filterVoicesByGender(availableVoices, voiceGender)),
@@ -204,16 +239,6 @@ export const useSpeechSynthesis = (
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [voices]);
-
-  // Sync text and word ranges when `text` changes
-  const synthRef = useRef<SpeechSynthesis | null>(null);
-  const textRef = useRef(text);
-  const wordRangesRef = useRef<WordRange[]>(buildWordRanges(text));
-
-  useEffect(() => {
-    textRef.current = text;
-    wordRangesRef.current = buildWordRanges(text);
-  }, [text]);
 
   const resolveBrowserVoice = useCallback(
     (voiceId: string): SpeechSynthesisVoice | undefined => {
@@ -248,31 +273,6 @@ export const useSpeechSynthesis = (
     }
   }, [isPaused]);
 
-  const resolveBrowserVoice = useCallback(
-    (voiceId: string): SpeechSynthesisVoice | undefined => {
-      return availableVoices.find((voice) => getVoiceId(voice) === voiceId);
-    },
-    [availableVoices],
-  );
-    const speechSynthesis = window.speechSynthesis;
-    synthRef.current = speechSynthesis;
-    setIsSupported(true);
-
-    const syncVoices = () => {
-      const loadedVoices = speechSynthesis.getVoices();
-      browserVoicesRef.current = loadedVoices;
-      setBrowserVoices(loadedVoices);
-      setIsReady(loadedVoices.length > 0);
-    };
-
-    syncVoices();
-    speechSynthesis.onvoiceschanged = syncVoices;
-
-    return () => {
-      speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
-
   useEffect(() => {
     return () => {
       stop();
@@ -280,10 +280,12 @@ export const useSpeechSynthesis = (
   }, [stop]);
 
   useEffect(() => {
-    if (isSpeaking || isPaused) {
+    const textChanged = previousTextRef.current !== text;
+    previousTextRef.current = text;
+    if (textChanged) {
       stop();
     }
-  }, [text, stop, isPaused, isSpeaking]);
+  }, [text, stop]);
 
   const speakText = useCallback(
     (nextText?: string) => {
@@ -302,24 +304,7 @@ export const useSpeechSynthesis = (
       stop();
       setError(null);
 
-      wordRangesRef.current = buildWordRanges(textToSpeak);
-      setCurrentWordIndex(0);
-
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.rate = rateState;
-      utterance.pitch = pitchState;
-      utterance.volume = volumeState;
-      utterance.lang = selectedLanguage;
-
-      let voiceToUse: SpeechSynthesisVoice | undefined = resolveBrowserVoice(selectedVoiceId);
-      if (!voiceToUse) {
-        const genderFiltered = filterVoicesByGender(availableVoices, voiceGender);
-        voiceToUse = genderFiltered[selectedVoiceIndex] || availableVoices[selectedVoiceIndex];
-      }
-
-      if (voiceToUse) {
-        utterance.voice = voiceToUse;
-        utterance.lang = voiceToUse.lang;
       utteranceRef.current = utterance;
       utterance.rate = rateState;
       utterance.pitch = pitchState;
@@ -374,88 +359,10 @@ export const useSpeechSynthesis = (
         }
       };
 
-      const loadedVoices = speechSynthesis.getVoices();
-      browserVoicesRef.current = loadedVoices;
-      setBrowserVoices(loadedVoices);
-      setIsReady(loadedVoices.length > 0);
-
-      utteranceRef.current = utterance;
       synthRef.current.speak(utterance);
     },
-    [
-      availableVoices,
-      isSupported,
-      pitchState,
-      rateState,
-      resolveBrowserVoice,
-      selectedLanguage,
-      selectedVoiceId,
-      selectedVoiceIndex,
-      stop,
-      voiceGender,
-      volumeState,
-    ],
     [isSupported, rateState, pitchState, volumeState, resolveBrowserVoice, selectedVoiceId, stop],
   );
-
-  useEffect(() => {
-    if (!hasSpeechSupport()) {
-      setIsSupported(false);
-      setIsReady(false);
-      setError("Text-to-speech is not supported in this browser.");
-      return;
-  const setPitch = useCallback((nextPitch: number) => {
-    setPitchState(nextPitch);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.pitch = nextPitch;
-    }
-  }, []);
-
-  const setVolume = useCallback((nextVolume: number) => {
-    setVolumeState(nextVolume);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.volume = nextVolume;
-    }
-  }, []);
-
-  const pause = useCallback(() => {
-    if (synthRef.current && isSpeaking && !isPaused) {
-      synthRef.current.pause();
-    }
-
-    const speechSynthesis = window.speechSynthesis;
-    synthRef.current = speechSynthesis;
-    setIsSupported(true);
-
-    const syncVoices = () => {
-      const voicesList = speechSynthesis.getVoices();
-      setAvailableVoices(voicesList);
-      setIsReady(voicesList.length > 0);
-    };
-
-    syncVoices();
-    speechSynthesis.onvoiceschanged = syncVoices;
-
-    return () => {
-      speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      stop();
-    };
-  }, [stop]);
-
-  useEffect(() => {
-    const textChanged = previousTextRef.current !== text;
-    previousTextRef.current = text;
-    if (textChanged) {
-      stop();
-    }
-  }, [text, stop]);
 
   const setRate = useCallback((nextRate: number) => {
     setRateState(clampRate(nextRate));
@@ -467,7 +374,6 @@ export const useSpeechSynthesis = (
 
   const setPitch = useCallback((nextPitch: number) => {
     setPitchState(nextPitch);
-
     if (utteranceRef.current) {
       utteranceRef.current.pitch = nextPitch;
     }
@@ -475,7 +381,6 @@ export const useSpeechSynthesis = (
 
   const setVolume = useCallback((nextVolume: number) => {
     setVolumeState(nextVolume);
-
     if (utteranceRef.current) {
       utteranceRef.current.volume = nextVolume;
     }
@@ -505,6 +410,20 @@ export const useSpeechSynthesis = (
     }
   }, [languageOptions, selectedLanguage]);
 
+  const selectedVoiceIndex = useMemo(() => {
+    return availableVoices.findIndex((v) => getVoiceId(v) === selectedVoiceId);
+  }, [availableVoices, selectedVoiceId]);
+
+  const setSelectedVoice = useCallback(
+    (index: number) => {
+      const voice = availableVoices[index];
+      if (voice) {
+        setSelectedVoiceId(getVoiceId(voice));
+      }
+    },
+    [availableVoices],
+  );
+
   const progress = useMemo<SpeechProgress>(() => {
     const totalWords = wordRangesRef.current.length;
 
@@ -528,6 +447,11 @@ export const useSpeechSynthesis = (
     };
   }, [currentWordIndex]);
 
+  const detectedLanguage = useMemo(() => {
+    const selectedVoice = availableVoices.find((v) => getVoiceId(v) === selectedVoiceId);
+    return selectedVoice ? selectedVoice.lang : undefined;
+  }, [availableVoices, selectedVoiceId]);
+
   return {
     isPlaying: isSpeaking && !isPaused,
     isPaused,
@@ -550,15 +474,7 @@ export const useSpeechSynthesis = (
     isLoading: isSupported && !isReady,
     availableVoices,
     selectedVoiceIndex,
-    setSelectedVoice: setSelectedVoiceIndex,
-    availableVoices: browserVoices,
-    selectedVoiceIndex: voices.findIndex((v) => v.id === selectedVoiceId),
-    setSelectedVoice: (index: number) => {
-      const voice = voices[index];
-      if (voice) {
-        setSelectedVoiceId(voice.id);
-      }
-    },
+    setSelectedVoice,
     playbackRate: rateState,
     setPlaybackRate,
     voices,
@@ -567,6 +483,7 @@ export const useSpeechSynthesis = (
     selectedLanguage,
     setSelectedLanguage,
     languageOptions,
+    detectedLanguage,
   };
 };
 

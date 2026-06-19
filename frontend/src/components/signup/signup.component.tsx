@@ -231,55 +231,6 @@ const otpPayload = {
     }
   };
 
-  const handleResendOtp = async () => {
-    if (cooldown > 0 || isBusy) return;
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const otpPayload = {
-        name: registerInfo.name,
-        email: registerInfo.email,
-      };
-      const res = await emailVerify({ ...otpPayload }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
-        setValue("otp", "");
-        setCooldown(60);
-      }
-    } catch (error) {
-      const message =
-        (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-        "Failed to resend OTP. Please try again.";
-      toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginSuccess = async (
-    credentialResponse: CredentialResponse
-  ) => {
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({
-        token: credentialResponse.credential,
-      }).unwrap();
-      if (res.data.accessToken) {
-        toast.success("User logged in successfully with Google!");
-        storeUserInfo({ accessToken: res.data.accessToken });
-        navigate("/");
-      }
-    } catch {
-      toast.error("Failed to login with Google. Please try again.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
 
   const handleGoogleLoginError = () => {
     toast.error("Google login failed. Please try again.");
@@ -307,27 +258,20 @@ const otpPayload = {
       <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-0 min-w-0 box-border mx-auto">
 
         {/* Title */}
-        <div className="mb-6 text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
-            STORY SPARK AI
-          </h2>
+        <div className="mb-4 text-center">
+          <span className="text-xs font-bold tracking-[0.25em] uppercase text-blue-400/80">Story Spark AI</span>
         </div>
 
 
-        {/* UPDATED: Structured layout classes to lock down maximum inner boundary constraints */}
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-
-        <Link
-  to="/"
-  className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
->
-  <span>←</span>
-  <span>Back to Home</span>
-</Link>
-          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-200">
         {/* Card */}
         <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-
+          <Link
+            to="/"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
+          >
+            <span>←</span>
+            <span>Back to Home</span>
+          </Link>
           <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
 
             {showOtpField ? "Verify Your Email" : "Create Account"}
@@ -429,7 +373,12 @@ const otpPayload = {
                     {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
                       const met = passwordChecks[key];
                       return (
-                          <span>{label}</span>
+                        <li
+                          key={key}
+                          className={`${met ? "text-green-400" : "text-red-400"} truncate`}
+                        >
+                          <span aria-hidden="true">{met ? "✅" : "❌"}</span>{" "}
+                          {label}
                         </li>
                       );
                     })}

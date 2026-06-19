@@ -145,6 +145,7 @@ const BookmarksComponent = () => {
                   </div>
                 </div>
               )}
+            </div>
 
             {/* Tabs for Published vs Generated */}
             <div className="flex gap-4 mb-8 border-b border-slate-200/50 dark:border-slate-700/50 pb-3">

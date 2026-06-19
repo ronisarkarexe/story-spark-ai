@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { useDebounce } from "../hooks/useDebounce";
-import { searchApi, type SearchResults, type StoryResult, type UserResult } from "../services/searchApi";
+import { useDebounce } from "../../hooks/useDebounce";
+import { searchApi, type SearchResults, type StoryResult, type UserResult, type TagResult } from "../../services/searchApi";
 
 const GENRES = ["Fantasy", "Sci-Fi", "Mystery", "Romance", "Thriller", "Horror", "Adventure", "Drama"];
 
@@ -243,7 +243,7 @@ const SearchPage: React.FC = () => {
                     Tags ({results.tags.total})
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {results.tags.data.map((t) => (
+                    {results.tags.data.map((t: TagResult) => (
                       <button
                         key={t.tag}
                         type="button"
