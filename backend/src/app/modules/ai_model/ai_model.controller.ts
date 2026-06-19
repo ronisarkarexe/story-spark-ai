@@ -366,9 +366,25 @@ const aiFreeStoryContinuation = catchAsync(async (req: Request, res: Response) =
   });
 });
 
+const generateCharacterProfile = catchAsync(
+  async (req: Request, res: Response) => {
+    const { story } = req.body;
+
+    const result = await AiModelService.generateCharacterProfile(story);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Character profiles generated successfully!",
+      data: result,
+    });
+  }
+);
+
 export const AiModelController = {
   aiModelGenerate,
   aiFreeModelGenerate,
+  generateCharacterProfile,
   aiModelAlternateEndings,
   aiFreeModelAlternateEndings,
   aiModelGenerateStream,
