@@ -1,16 +1,18 @@
+import { useState, useContext } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { Link } from "react-router-dom";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
-import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   useLoginUserMutation,
   useGoogleLoginMutation,
 } from "../../redux/apis/auth.api";
-import { storeUserInfo, getUserInfo } from "../../services/auth.service";
-import { USER_ROLE } from "../../constants/role";
+import AuthContext from "../auth.context";
 import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { WandSparkles } from "lucide-react";
 
 type Inputs = {
   email: string;
@@ -27,28 +29,22 @@ const LoginComponent = () => {
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
 
-  const [isBusy, setIsBusy] = useState<boolean>(false);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const { login } = useContext(AuthContext) ?? { login: () => {} };
+  const [isBusy, setIsBusy] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setIsBusy(true);
-
     try {
-      const res = await loginUser({ ...data }).unwrap();
+      const res = await loginUser(data).unwrap();
 
       if (res.data.accessToken) {
         toast.success("User logged in successfully!");
-
-        storeUserInfo({
-          accessToken: res.data.accessToken,
-        });
-
+        login(res.data.accessToken);
         setIsLoggedIn(true);
       }
     } catch {
-      toast.error(
-        "Login failed. Please check your credentials."
-      );
+      toast.error("Login failed. Please check your credentials.");
     } finally {
       setIsBusy(false);
     }
@@ -65,48 +61,23 @@ const LoginComponent = () => {
       }).unwrap();
 
       if (res.data.accessToken) {
-        toast.success(
-          "User logged in successfully with Google!"
-        );
-
-        storeUserInfo({
-          accessToken: res.data.accessToken,
-        });
-
+        toast.success("User logged in successfully with Google!");
+        login(res.data.accessToken);
         setIsLoggedIn(true);
       }
     } catch {
-      toast.error(
-        "Failed to login with Google. Please try again."
-      );
+      toast.error("Failed to login with Google. Please try again.");
     } finally {
       setIsBusy(false);
     }
   };
 
   const handleGoogleLoginError = () => {
-    toast.error(
-      "Google login failed. Please try again."
-    );
+    toast.error("Google login failed. Please try again.");
   };
 
-  // Role-based redirect fix
   if (isLoggedIn) {
-    const userInfo = getUserInfo();
-
-    const isDashboardUser =
-      userInfo?.role === USER_ROLE.ADMIN ||
-      userInfo?.role === USER_ROLE.SUPER_ADMIN;
-
-    return (
-      <RedirectComponent
-        defaultPath={
-          isDashboardUser
-            ? "/dashboard"
-            : "/explore"
-        }
-      />
-    );
+    return <RedirectComponent defaultPath="/dashboard" />;
   }
 
   return (

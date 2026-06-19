@@ -66,7 +66,7 @@ const WriterApplicationComponent = () => {
               <div key={app._id} className="p-6 transition hover:bg-slate-100/50 dark:hover:bg-white/[0.02] flex flex-col md:flex-row gap-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <img 
+                    <img loading="lazy" 
                       src={app.user?.profile?.avatar || `https://ui-avatars.com/api/?name=${app.user?.name}&background=random`} 
                       alt={app.user?.name}
                       className="w-10 h-10 rounded-full object-cover"
@@ -147,7 +147,7 @@ const WriterApplicationComponent = () => {
                   <tr key={app._id} className="border-b border-slate-200 dark:border-white/[0.06] bg-transparent hover:bg-slate-100/50 dark:hover:bg-white/[0.02]">
                     <td className="px-6 py-4 font-medium text-slate-800 dark:text-white whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <img 
+                        <img loading="lazy" 
                           src={app.user?.profile?.avatar || `https://ui-avatars.com/api/?name=${app.user?.name}&background=random`} 
                           alt={app.user?.name}
                           className="w-8 h-8 rounded-full object-cover"

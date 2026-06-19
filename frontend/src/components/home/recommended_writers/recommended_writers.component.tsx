@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { isLoggedIn } from "../../../services/auth.service";
@@ -118,6 +118,7 @@ const RecommendedWritersComponent = () => {
                 </Link>
 
                 <button
+                  type="button"
                   onClick={() => setShowLoginModal(false)}
                   className="mt-1 w-full rounded-xl bg-transparent px-4 py-3 font-medium text-gray-400 transition-all hover:bg-white/5 hover:text-gray-300"
                   type="button"
@@ -129,7 +130,7 @@ const RecommendedWritersComponent = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

@@ -12,7 +12,7 @@ import { Notification } from "../notification/notification.model";
 import { StoryVersion } from "../story_version/story_version.model";
 import { Report } from "../report/report.model";
 
-const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram"] as const;
+const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram", "github", "discord"] as const;
 
 const getAllUsers = async (): Promise<IUser[]> => {
   const result = await User.find({}).select("-password");
@@ -20,7 +20,10 @@ const getAllUsers = async (): Promise<IUser[]> => {
 };
 
 const getUser = async (payload: string): Promise<IUser | null> => {
-  const result = await User.findOne({ _id: payload });
+  const result = await User.findOne({ _id: payload })
+    .select("-password")
+    .populate("followers", "name profile")
+    .populate("following", "name profile");
   return result;
 };
 
@@ -152,6 +155,9 @@ const approveWriterApplication = async (email: string) => {
     );
     return result;
   } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
     if (error instanceof Error) {
       throw new ApiError(httpStatus.BAD_REQUEST, error.message);
     } else {
@@ -167,22 +173,16 @@ const getAllWriterApplicationUsers = async (): Promise<IUser[]> => {
 
 const getProfileInfo = async (token: ITokenPayload) => {
   const { email } = token;
-  const user = await User.findOne({ email: email });
+  const user = await User.findOne({ email: email })
+    .populate("followers", "name profile")
+    .populate("following", "name profile");
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const publishedPostsCount = await Post.countDocuments({
-    author: user._id,
-    isPublished: true,
-    isDeleted: { $ne: true },
-  });
-
-  if (user.postsCount !== publishedPostsCount) {
-    user.postsCount = publishedPostsCount;
-    await user.save();
-  }
-
+  // postsCount is kept in sync via event-driven increments in createPost and
+  // decrements in deletePost. We do NOT repair it here to keep this GET
+  // endpoint side-effect-free and idempotent (fixes write-on-read anti-pattern).
   return user;
 };
 

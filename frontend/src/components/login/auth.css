@@ -71,6 +71,7 @@ body {
     #f97316
   );
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -191,6 +192,8 @@ body {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
+    width: 100%;
+    max-width: 100%;
     height: var(--ds-input-height);
     font-size: 15px;
     line-height: calc(var(--ds-input-height) - 2px);
@@ -214,7 +217,7 @@ input[type="password"] {
     line-height: var(--ds-input-height);
     box-sizing: border-box; 
     padding-left: 44px !important; 
-    padding-right: 44px !important;
+    padding-right: 16px !important;
     overflow: hidden;
 }
 .auth-field::placeholder {
@@ -336,6 +339,12 @@ input:focus {
 .auth-container {
     max-width: 1100px;
     margin: 0 auto;
+    width: 100%;
+}
+
+/* Constrain the authentication card so inputs don't overflow their container */
+.auth-form-card {
+    max-width: var(--ds-card-max-width);
     width: 100%;
 }
 
@@ -502,4 +511,29 @@ button:disabled {
         transition: none !important;
     }
     .ds-spinner { animation: none !important; }
+}
+
+/* ── Fix: Ensure auth fields and wrappers stay within card bounds ── */
+.auth-field,
+.input-icon-wrapper {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Guarantee every input inside the auth card is fully contained */
+.auth-form-card .ds-input-group,
+.auth-form-card .input-icon-wrapper,
+.auth-form-card input[type="text"],
+.auth-form-card input[type="email"],
+.auth-form-card input[type="password"] {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure submit and Google buttons fill the card width */
+.ds-btn-submit,
+.ds-btn-google {
+    width: 100%;
 }

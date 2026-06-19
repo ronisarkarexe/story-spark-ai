@@ -13,6 +13,7 @@ const commentApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.post, tagTypes.comment],
     }),
+
     getCommentsList: build.query({
       query: (postId: string) => ({
         url: `/${COMMENT_URL}/get-comments/postId=${postId}`,
@@ -24,6 +25,7 @@ const commentApi = baseApi.injectEndpoints({
       }) => response.data,
       providesTags: [tagTypes.post, tagTypes.comment],
     }),
+
     toggleCommentLike: build.mutation({
       query: (commentId: string) => ({
         url: `/${COMMENT_URL}/toggle-like/commentId=${commentId}`,
@@ -31,7 +33,20 @@ const commentApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.post, tagTypes.comment],
     }),
+
+    deleteComment: build.mutation({
+      query: (commentId: string) => ({
+        url: `/${COMMENT_URL}/delete/commentId=${commentId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [tagTypes.post, tagTypes.comment],
+    }),
   }),
 });
 
-export const { useCreateCommentMutation, useGetCommentsListQuery, useToggleCommentLikeMutation } = commentApi;
+export const {
+  useCreateCommentMutation,
+  useGetCommentsListQuery,
+  useToggleCommentLikeMutation,
+  useDeleteCommentMutation,
+} = commentApi;

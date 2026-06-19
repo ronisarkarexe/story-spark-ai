@@ -1,11 +1,9 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
-import LoadingAnimation from "../../loading/loading.component";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
-
+import CommunitySpotlightSkeleton from "../community_spotlight/CommunitySpotlightSkeleton";
 type SpotlightWriter = {
   author: Post["author"];
   storiesCount: number;
@@ -56,7 +54,7 @@ const formatMetric = (value: number) =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(value);
 
 const CommunitySpotlightComponent = () => {
-  const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
+  const { data, isLoading, isError } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
 
   const topWriters = useMemo(() => {
@@ -107,6 +105,14 @@ const CommunitySpotlightComponent = () => {
     return <LoadingAnimation />;
   }
 
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <CommunitySpotlightSkeleton key={index} />
+        ))}
+      </div>
+    </section>
+  );
+}
   if (isError) {
     return (
       <section className="story-section">
@@ -124,31 +130,39 @@ const CommunitySpotlightComponent = () => {
             </button>
           </div>
         </div>
-      </section>
+      </div>
     );
   }
 
+  const spotlightPosts = data?.posts ?? [];
+
   return (
-    <section className="px-5 py-10 text-slate-900 dark:text-slate-100">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">
-            Top 3 contributors
-          </p>
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-gray-100">
+    <section className="w-full box-border py-6 sm:py-10 text-slate-900 dark:text-slate-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full box-border">
+        {/* Section Header */}
+        <div className="mb-10 w-full max-w-2xl text-left">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/10 dark:border-white/10 bg-blue-500/5 text-blue-600 dark:text-blue-400 mb-4 select-none shadow-sm dark:shadow-none">
+            <i className="fa-solid fa-star text-xs" aria-hidden="true"></i>
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Curated Showcase</span>
+          </div>
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
             Community Spotlight
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-gray-400 sm:text-base">
-            Ranked by stories, views, likes, comments, and bookmarks from the
-            latest community activity.
+          <p className="mt-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+            Explore highly engaging interactive story modules written by collaborative system authors.
           </p>
         </div>
 
-        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300">
-          <i className="fas fa-wand-magic-sparkles text-xs"></i>
-          Reader powered
-        </div>
-      </div>
+        {/* Top Featured Creators Grid */}
+        <div className="mb-14 w-full">
+          <h3 className="text-lg sm:text-xl font-bold mb-6 tracking-tight border-b border-slate-100 dark:border-white/5 pb-3">
+            Top Storytellers
+          </h3>
+          {topWriters.length > 0 ? (
+            <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 box-border">
+              {topWriters.map((writer, index) => {
+                const rank = index + 1;
+                const style = rankStyles[index];
 
       {topWriters.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -186,6 +200,33 @@ const CommunitySpotlightComponent = () => {
                       <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-gray-500">
                         {style.label}
                       </p>
+                      <h4 className="line-clamp-2 break-words text-base font-semibold leading-6 text-slate-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-300 overflow-hidden text-ellipsis">
+                        {writer.topPost.title}
+                      </h4>
+                    </div>
+
+                    <div className="mt-auto grid grid-cols-2 gap-3 text-sm w-full box-border">
+                      <div className="rounded-xl bg-blue-50 px-3 py-3 dark:bg-blue-500/10">
+                        <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{formatMetric(writer.engagementScore)}</p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400">Score</p>
+                      </div>
+                      <div className="rounded-xl bg-violet-50 px-3 py-3 dark:bg-violet-500/10">
+                        <p className="text-lg font-bold text-violet-700 dark:text-violet-300">{formatMetric(writer.storiesCount)}</p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400">Stories</p>
+                      </div>
+                      <div className="rounded-xl bg-slate-100 px-3 py-3 dark:bg-slate-800">
+                        <p className="text-lg font-bold text-slate-800 dark:text-gray-200">{formatMetric(writer.likesCount)}</p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400">Likes</p>
+                      </div>
+                      <div className="rounded-xl bg-slate-100 px-3 py-3 dark:bg-slate-800">
+                        <p className="text-lg font-bold text-slate-800 dark:text-gray-200">{formatMetric(writer.viewsCount)}</p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400">Views</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition-colors group-hover:text-blue-700 dark:text-blue-300 dark:group-hover:text-blue-200">
+                      Read top story
+                      <i className="fas fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true"></i>
                     </div>
                   </div>
 
@@ -247,12 +288,73 @@ const CommunitySpotlightComponent = () => {
               </button>
             );
           })}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 bg-slate-100 px-5 py-5 text-slate-700 dark:border-slate-700/70 dark:bg-slate-900/40 dark:text-slate-300">
+              No top contributors available.
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="rounded-xl border border-slate-200 bg-slate-100 px-5 py-5 text-slate-700 dark:border-slate-700/70 dark:bg-slate-900/40 dark:text-slate-300">
-          No top contributors yet.
+
+        {/* Recent Spotlight Content Grid */}
+        <div>
+          <h3 className="text-lg sm:text-xl font-bold mb-6 tracking-tight border-b border-slate-100 dark:border-white/5 pb-3">
+            Trending Works
+          </h3>
+          {spotlightPosts.length > 0 ? (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 w-full box-border">
+              {spotlightPosts.slice(0, 6).map((post: Post) => {
+                const authorName = post.author?.name || "Unknown User";
+                return (
+                  <button
+                    key={post._id}
+                    onClick={() => navigate(`/post/${post._id}`)}
+                    className="w-full text-left bg-white dark:bg-[#111827]/40 border border-slate-200 dark:border-white/10 p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-xl transition-all duration-200 hover:scale-[1.01] hover:border-blue-500/20 dark:hover:border-blue-500/30 cursor-pointer outline-none select-none flex flex-col justify-between box-border group"
+                  >
+                    <div className="w-full box-border">
+                      <div className="mb-4 flex items-center gap-3 w-full box-border">
+                        <div className="shrink-0 border border-slate-200/80 dark:border-white/10 rounded-full overflow-hidden">
+                          <SSProfile name={authorName} size="h-8 w-8 text-xs" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 truncate tracking-tight">
+                            {authorName}
+                          </p>
+                        </div>
+                      </div>
+                      <h4 className="mb-2 line-clamp-2 break-words text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight overflow-hidden text-ellipsis">
+                        {post.title}
+                      </h4>
+                      <p className="line-clamp-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                        {post.content}
+                      </p>
+                    </div>
+                    <div className="mt-5 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center gap-1 text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider select-none">
+                      Read Story
+                      <i className="fa-solid fa-arrow-right text-[10px] transition-transform group-hover:translate-x-0.5" aria-hidden="true"></i>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl sm:rounded-3xl border border-dashed border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-10 sm:p-14 text-center box-border max-w-full">
+              <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto mb-5 border border-slate-200/60 dark:border-white/5 select-none">
+                <i className="fa-solid fa-layer-group text-slate-400 dark:text-slate-500 text-xl" aria-hidden="true"></i>
+              </div>
+              <h4 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-1.5 tracking-tight">
+                No Spotlight Stories available
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium max-w-sm mx-auto leading-normal">
+                Check back shortly as system engines process content records into the stream.
+              </p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </section>
   );
 };

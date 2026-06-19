@@ -6,7 +6,11 @@ import { formatDateShort } from "../../../utils/time-formate";
 import LoadingAnimation from "../../loading/loading.component";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
 import BookmarkButton from "../../BookmarkButton";
+import React, { useState } from "react";
+import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import ImageFallback from "../../ImageFallback";
+import { SkeletonGrid } from "../../cards/SkeletonCard";
 
 const FeatureComponent = () => {
   const { data, isLoading, isError, refetch } =
@@ -14,6 +18,30 @@ const FeatureComponent = () => {
   const navigate = useNavigate();
 
   if (isLoading) return <LoadingAnimation />;
+  const calculateReadingTime = (content: string): number => {
+    if (!content) return 1;
+    const words = content.trim().split(/\s+/).length;
+    return Math.max(1, Math.ceil(words / 200));
+  };
+
+  const handleCopyLink = (e: React.MouseEvent, postId: string, postUrl: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(postUrl).then(() => {
+      setCopiedId(postId);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <section className="w-full box-border mb-12">
+        <h2 className="mb-6 text-xl sm:text-2xl font-extrabold tracking-tight select-none text-slate-900 dark:text-slate-100">
+          Featured Posts
+        </h2>
+        <SkeletonGrid count={4} variant="home-featured" />
+      </section>
+    );
+  }
 
   if (isError) {
     return (

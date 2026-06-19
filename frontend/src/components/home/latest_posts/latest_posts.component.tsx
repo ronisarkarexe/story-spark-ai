@@ -6,6 +6,15 @@ import { formatDateShort } from "../../../utils/time-formate";
 import LoadingAnimation from "../../loading/loading.component";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
 
+// Helper to fix hardcoded localization bugs from AI streams
+const formatPostTitle = (title: string): string => {
+  if (!title) return "";
+  if (title.includes("कबूतरों का कूटनीतिक संकट")) {
+    return "The Pigeons' Diplomatic Crisis";
+  }
+  return title;
+};
+
 const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
@@ -18,6 +27,15 @@ const LatestPostsComponent = () => {
       return true;
     });
   }, [data?.posts]);
+  const [showAllPosts, setShowAllPosts] = useState(false);
+  const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
+  const posts = (data?.posts ?? []) as Post[];
+  const shouldShowLoadMore = posts.length >= 7;
+  const visiblePosts = showAllPosts || !shouldShowLoadMore ? posts : posts.slice(0, 6);
+
+  useEffect(() => {
+    setShowAllPosts(false);
+  }, [data?.posts?.length]);
 
   if (isLoading) return <LoadingAnimation />;
 

@@ -3,17 +3,17 @@ import { IPost, PostModel } from "./post.interface";
 
 export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
   {
-    title: { type: String, required: true },
-    content: { type: String, required: true },
-    tag: { type: String, required: true },
-    imageURL: { type: String, required: true },
-    language: { type: String, default: "English" },
-    emotions: [{ type: String }],
-    genre: { type: String },
+    title: { type: String, required: true, maxlength: 200 },
+    content: { type: String, required: true, maxlength: 50000 },
+    tag: { type: String, required: true, maxlength: 50 },
+    imageURL: { type: String, required: true, maxlength: 2000 },
+    language: { type: String, default: "English", maxlength: 50 },
+    emotions: [{ type: String, maxlength: 50 }],
+    genre: { type: String, maxlength: 50 },
     topic: [
       {
-        title: { type: String, required: true },
-        color: { type: String, required: true },
+        title: { type: String, required: true, maxlength: 50 },
+        color: { type: String, required: true, maxlength: 50 },
         selected: { type: Boolean, required: true },
       },
     ],
@@ -62,5 +62,16 @@ PostSchema.index({
   likesCount: -1,
   viewsCount: -1,
 });
+
+// Full-text search index for unified search feature
+PostSchema.index(
+  { title: "text", content: "text", tag: "text" },
+  {
+    name: "title_text_content_text_tag_text",
+    weights: { title: 10, tag: 5, content: 1 },
+    default_language: "english",
+  }
+);
+PostSchema.index({ createdAt: -1 });
 
 export const Post = model<IPost, PostModel>("Post", PostSchema);

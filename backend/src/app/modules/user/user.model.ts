@@ -1,6 +1,7 @@
+const bcrypt = require("bcryptjs");
 import { Schema, model } from "mongoose";
 import { IUser, UserModel } from "./user.interface";
-import bcrypt from "bcryptjs";
+
 import config from "../../../config";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
@@ -35,8 +36,8 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
         twitter: { type: String, default: "" },
         linkedin: { type: String, default: "" },
         instagram: { type: String, default: "" },
-        github:    { type: String, default: '' },
-        discord:   { type: String, default: '' },
+        github: { type: String, default: '' },
+        discord: { type: String, default: '' },
       },
     },
     subscriptionType: {
@@ -53,6 +54,9 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
     following: [{ type: Schema.Types.ObjectId, ref: "User" }],
     requestsThisMonth: { type: Number, default: 0 },
     lastRequestDate: { type: Date, default: null },
+    subscriptionExpiry: { type: Date, default: null },
+    lastPaymentId: { type: String, default: "" },
+    lastOrderId: { type: String, default: "" },
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     isApplyForWriter: { type: Boolean, default: false },
     tokenVersion: { type: Number, default: 0 },
@@ -62,6 +66,12 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
       streak: { type: Number, default: 0 },
       lastActiveDate: { type: Date, default: null },
       badges: [{ type: String }],
+    },
+    writingStreak: {
+      currentStreak: { type: Number, default: 0 },
+      longestStreak: { type: Number, default: 0 },
+      lastActiveDate: { type: Date, default: null },
+      totalWritingDays: { type: Number, default: 0 },
     },
     readingPreferences: {
       favoriteGenres: [
@@ -78,6 +88,10 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
       ],
     },
     readingHistory: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    writingGoals: {
+      dailyWordCount: { type: Number, default: 0 },
+      weeklyWordCount: { type: Number, default: 0 },
+    },
   },
   {
     timestamps: true,
@@ -89,7 +103,7 @@ UserSchema.pre("save", async function (next) {
   if (!user.isModified("password")) {
     return next();
   }
-  
+
   // Only hash password if it exists, is not empty, and has been modified (for password-based auth)
   // Skip for Google OAuth users who don't have passwords
   if (user.isModified("password") && user.password && user.password.trim() !== "") {
@@ -98,7 +112,7 @@ UserSchema.pre("save", async function (next) {
       Number(config.bcrypt_salt_rounds)
     );
   }
-  
+
   next();
 });
 

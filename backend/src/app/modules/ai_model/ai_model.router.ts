@@ -8,15 +8,17 @@ import freeAiRateLimiter from "../../middleware/free-ai.rate-limiter";
 import {
   aiGenerationRateLimiter,
 } from "../../middleware/ip.rate-limiter";
+import storyGenerationRateLimiter from "../../middleware/story.rate-limiter";
 const router = express.Router();
 
 // ========== GENERATE STORIES ==========
 
 // Generate Model - PROTECTED (authenticated users only)
+// auth() runs first so req.user is populated for the tier-aware limiter.
 router.post(
   "/generate-model",
-  aiGenerationRateLimiter,
   auth(),
+  storyGenerationRateLimiter,
   validateRequest(AIModelValidator.aiModel),
   checkRequestLimit(),
   AiModelController.aiModelGenerate
@@ -33,8 +35,10 @@ router.post(
 // Generate Model Stream - PROTECTED
 router.post(
   "/generate-model-stream",
+  aiGenerationRateLimiter,
   auth(),
   validateRequest(AIModelValidator.aiModel),
+  checkRequestLimit(),
   AiModelController.aiModelGenerateStream
 );
 
@@ -43,8 +47,8 @@ router.post(
 // Generate Alternate Endings - PROTECTED (authenticated users only)
 router.post(
   "/generate-alternate-endings",
-  aiGenerationRateLimiter,
   auth(),
+  storyGenerationRateLimiter,
   validateRequest(AIModelValidator.aiAlternateEndings),
   checkRequestLimit(),
   AiModelController.aiModelAlternateEndings
@@ -63,8 +67,8 @@ router.post(
 // Remix Story - PROTECTED
 router.post(
   "/remix",
-  aiGenerationRateLimiter,
   auth(),
+  storyGenerationRateLimiter,
   checkRequestLimit(),
   validateRequest(AIModelValidator.aiRemix),
   AiModelController.aiModelRemix
@@ -83,8 +87,8 @@ router.post(
 // Translate Story - PROTECTED
 router.post(
   "/translate",
-  aiGenerationRateLimiter,
   auth(),
+  storyGenerationRateLimiter,
   checkRequestLimit(),
   validateRequest(AIModelValidator.aiTranslate),
   AiModelController.aiModelTranslate
@@ -98,12 +102,34 @@ router.post(
   AiModelController.aiFreeModelTranslate
 );
 
+// ========== STORY CONTINUATION ==========
+
+// Continue Story - PROTECTED
+router.post(
+  "/continue-story",
+  auth(),
+  storyGenerationRateLimiter,
+  validateRequest(AIModelValidator.aiStoryContinuation),
+  checkRequestLimit(),
+  AiModelController.aiStoryContinuation
+);
+
+// Continue Story Free - PUBLIC
+router.post(
+  "/continue-story-free",
+  validateRequest(AIModelValidator.aiStoryContinuation),
+  freeAiRateLimiter,
+  AiModelController.aiFreeStoryContinuation
+);
+
 // ========== AI CHAT ==========
 
 // AI Chat - PROTECTED
+
 router.post(
   "/chat",
   auth(),
+  storyGenerationRateLimiter,
   validateRequest(AIModelValidator.aiChat),
   checkRequestLimit(),
   AiModelController.aiModelChat
