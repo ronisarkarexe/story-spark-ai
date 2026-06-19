@@ -142,19 +142,15 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
       "prompt is required and must be at least 3 characters."
     );
   }
-
-<<<<<<< feat-context-compression
- const post = storyId ? await Post.findById(storyId) : null;
-
-const enhancedPrompt = await StoryVersionService.enhancePrompt(
-  prompt.trim(),
-  post?.content
-);
-=======
   const rawProvider = req.headers?.["x-model-provider"];
   const provider = Array.isArray(rawProvider) ? rawProvider[0] : rawProvider;
-  const enhancedPrompt = await StoryVersionService.enhancePrompt(prompt.trim(), provider);
->>>>>>> main
+  const post = storyId ? await Post.findById(storyId) : null;
+
+  const enhancedPrompt = await StoryVersionService.enhancePrompt(
+    prompt.trim(),
+    provider,
+    post?.content
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

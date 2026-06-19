@@ -137,7 +137,7 @@ const getTopRatedStories = async (limit = 10) => {
         as: "story",
       },
     },
-    { $unwind: { path: "$story", preserveNullAndEmpty: false } },
+    { $unwind: { path: "$story", preserveNullAndEmptyArrays: false } },
     {
       $project: {
         _id: 0,

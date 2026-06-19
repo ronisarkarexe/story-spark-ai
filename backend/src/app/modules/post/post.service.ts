@@ -5,6 +5,7 @@ import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
 import { Post } from "./post.model";
 import { Bookmark } from "../bookmark/bookmark.model";
+import { Comment } from "../comment/comment.model";
 import { StoryVersionService } from "../story_version/story_version.service";
 import {
   IGenericResponse,

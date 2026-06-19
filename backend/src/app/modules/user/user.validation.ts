@@ -9,16 +9,18 @@ const passwordSchema = z
   .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character");
 
 
-  const register = z.object({
-    body: z.object({
-      email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
-      name: z
-        .string({ required_error: "Name is required" })
-        .min(2, "Name must be at least 2 characters long"),
-      password: passwordSchema,
-      otp: z.string({ required_error: "OTP is required" }).length(6, "OTP must be 6 digits"),
-    }),
-  });
+const register = z.object({
+  body: z.object({
+    email: z.string({ required_error: "Email is required" }).email("Invalid email address"),
+    name: z
+      .string({ required_error: "Name is required" })
+      .min(2, "Name must be at least 2 characters long"),
+    password: passwordSchema,
+    verificationToken: z
+      .string({ required_error: "Verification token is required" })
+      .min(1, "Verification token is required"),
+  }),
+});
 
 const login = z.object({
   body: z.object({
@@ -56,6 +58,8 @@ const updateUser = z.object({
               twitter: z.string().max(200).optional(),
               linkedin: z.string().max(200).optional(),
               instagram: z.string().max(200).optional(),
+              github: z.string().max(200).optional(),
+              discord: z.string().max(200).optional(),
             })
             .partial()
             .strict()

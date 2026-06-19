@@ -76,66 +76,7 @@ const router = createBrowserRouter([
       </>
     ),
     children: [
-<<<<<<< fix/dynamic-page-titles
-=======
-      { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
-      { path: "templates", element: <TemplatesComponent /> },
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
-      { path: "story-inspiration", element: <StoryInspirationWrapper /> },
-      { path: "login", element: <LoginComponent /> },
-      { path: "signup", element: <SignUpComponent /> },
-      { path: "forgot-password", element: <ForgotPasswordComponent /> },
-      { path: "pricing", element: <PricingComponent /> },
-      { path: "post/:id", element: <PostDetailsComponent /> },
-      { path: "profile/:id", element: <PublicProfileComponent /> },
-      { path: "contact-us", element: <Contact /> },
-      { path: "about-us", element: <AboutUsComponent /> },
-      { path: "career", element: <CareerComponent /> },
-      { path: "blog", element: <BlogComponent /> },
-      { path: "privacy-policy", element: <PrivacyPolicy /> },
-      { path: "cookie-policy", element: <CookiePolicy /> },
-      { path: "terms", element: <Terms /> },
-      { path: "help-center", element: <HelpCenterComponent /> },
-      { path: "guidelines", element: <GuidelinesComponent /> },
-      
-      { path: "contributors", element: <ContributorsComponent /> },
-      { path: "community", element: <CommunityComponent /> },
-      { path: "report-bug", element: <ReportBug /> },
-      // Public routes
-{ path: "explore", element: lazyPage(<ExploreComponent />) },
-{ path: "resources", element: <ResourcesListComponent /> },
-{ path: "resources/:resourceName", element: <ResourceDetailComponent /> },
 
-// Protected routes
-{
-  element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-  children: [
-    { path: "bookmarks", element: <BookmarksComponent /> },
-    { path: "stories", element: <StoriesComponent /> },
-    { path: "branching-story", element: <BranchingStory /> },
-    { path: "story-workspace", element: <StoryWorkspace /> },
-  ],
-},
-      { path: "*", element: <NotFoundComponent /> },
-    ],
-  },
-  {
-    path: "/auth/email-validation",
-    element: lazyPage(<EmailValidationComponent />),
-  },
-  {
-    element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-    children: [
-      { path: "/payment", element: lazyPage(<PaymentComponent />) },
-      { path: "/collab", element: lazyPage(<CollabHome />) },
-      { path: "/collab/:roomId", element: lazyPage(<CollabRoom />) },
-    ],
-  },
-  {
-    path: "/dashboard",
-    element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-    children: [
->>>>>>> main
       {
         path: "/",
         element: (

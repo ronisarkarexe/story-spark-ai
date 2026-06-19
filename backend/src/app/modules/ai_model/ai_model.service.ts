@@ -244,6 +244,29 @@ const aiFreeStoryContinuation = async (payload: { prompt: string; language?: str
   }
 };
 
+const aiFreeStoryContinuationMultiple = async (
+  payload: { prompt: string; language?: string; count?: number },
+  signal?: AbortSignal
+) => {
+  const { prompt, language = "English", count = 3 } = payload;
+  const safeCount = Math.min(Math.max(count, 1), 5);
+  const results: { continuation: string }[] = [];
+  try {
+    for (let i = 0; i < safeCount; i++) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await raceGenerationWithTimeout(
+        (s) => generateStoryContinuationWithGemini(prompt, language, s),
+        FREE_GENERATION_TIMEOUT_MS,
+        signal
+      );
+      results.push({ continuation: result?.continuation ?? "" });
+    }
+    return results;
+  } catch (error) {
+    mapGenerationError(error, "Story continuation failed.");
+  }
+};
+
 const aiModelChat = async (payload: IChatPayload, _token?: ITokenPayload, signal?: AbortSignal) => {
   const { message, history = [] } = payload;
 
@@ -295,6 +318,7 @@ export const AiModelService = {
   aiFreeModelTranslate,
   aiModelStoryContinuation,
   aiFreeStoryContinuation,
+  aiFreeStoryContinuationMultiple,
   aiModelChat,
   aiFreeModelChat,
 };
