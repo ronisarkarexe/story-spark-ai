@@ -2,10 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Post } from "../../../models/post";
 import { useGetLatestListsQuery } from "../../../redux/apis/post.api";
-<<<<<<< HEAD
 
-=======
->>>>>>> upstream/main
 import LoadingAnimation from "../../loading/loading.component";
 
 const INITIAL_VISIBLE_COUNT = 6;
@@ -24,14 +21,12 @@ const LatestPostsComponent = () => {
   const navigate = useNavigate();
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
-<<<<<<< HEAD
   
   useEffect(() => {
   setShowAllPosts(false);
 }, [data?.posts?.length]);
 
 
-=======
   const posts = (data?.posts ?? []) as Post[];
   const shouldShowLoadMore = posts.length >= 7;
   const visiblePosts = showAllPosts || !shouldShowLoadMore ? posts : posts.slice(0, 6);
@@ -39,7 +34,6 @@ const LatestPostsComponent = () => {
   useEffect(() => {
     setShowAllPosts(false);
   }, [data?.posts?.length]);
->>>>>>> upstream/main
 
   if (isLoading) return <LoadingAnimation />;
 

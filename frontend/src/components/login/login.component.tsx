@@ -4,14 +4,12 @@ import { Link } from "react-router-dom";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { motion } from "framer-motion";
-<<<<<<< HEAD
 import { useLoginUserMutation, useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import { storeUserInfo } from "../../services/auth.service";
 import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
-=======
 import {
   useLoginUserMutation,
   useGoogleLoginMutation,
@@ -21,7 +19,6 @@ import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { WandSparkles } from "lucide-react";
->>>>>>> upstream/main
 
 type Inputs = {
   email: string;
@@ -31,11 +28,9 @@ type Inputs = {
 const LoginComponent = () => {
   const [loginUser] = useLoginUserMutation();
   const [googleLogin] = useGoogleLoginMutation();
-<<<<<<< HEAD
   const { register, handleSubmit, formState: { errors } } = useForm<Inputs>({ mode: "onChange" });
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-=======
 
   const {
     register,
@@ -46,7 +41,6 @@ const LoginComponent = () => {
   const { login } = useContext(AuthContext) ?? { login: () => {} };
   const [isBusy, setIsBusy] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
->>>>>>> upstream/main
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setIsBusy(true);
@@ -65,22 +59,17 @@ const LoginComponent = () => {
     }
   };
 
-<<<<<<< HEAD
   const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-=======
   const handleGoogleLoginSuccess = async (
     credentialResponse: CredentialResponse
   ) => {
->>>>>>> upstream/main
     setIsBusy(true);
 
     try {
-<<<<<<< HEAD
       const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
       if (res.data.accessToken) {
         toast.success("User logged in successfully with Google!");
         storeUserInfo({ accessToken: res.data.accessToken });
-=======
       const res = await googleLogin({
         token: credentialResponse.credential,
       }).unwrap();
@@ -88,7 +77,6 @@ const LoginComponent = () => {
       if (res.data.accessToken) {
         toast.success("User logged in successfully with Google!");
         login(res.data.accessToken);
->>>>>>> upstream/main
         setIsLoggedIn(true);
       }
     } catch {
@@ -107,7 +95,6 @@ const LoginComponent = () => {
   }
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden p-4 sm:p-8 box-border">
       <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.5 }} className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.5, delay: 0.2 }} className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
@@ -127,7 +114,6 @@ const LoginComponent = () => {
             <UsersRound className="text-violet-600 shrink-0" />
             <div><h2 className="font-bold">Built for everyone</h2><p>Writers, Creators and dreamers</p></div>
           </div>
-=======
     <div className="min-h-screen w-full bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6 lg:px-8 box-border">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -170,11 +156,9 @@ const LoginComponent = () => {
               exploring the future of fiction.
             </div>
           </motion.div>
->>>>>>> upstream/main
         </motion.div>
 
         <div className="flex justify-center w-full box-border">
-<<<<<<< HEAD
           <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl box-border">
             <button onClick={() => (window.location.href = "/")} className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2 cursor-pointer">
               ← Back to Home
@@ -207,7 +191,6 @@ const LoginComponent = () => {
             <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
               Don't have an account?{" "}
               <Link to="/signup" className="font-semibold text-blue-400 hover:text-blue-300 transition-colors">Sign up for free</Link>
-=======
           <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
             <button
               onClick={() => (window.location.href = "/")}
@@ -297,15 +280,11 @@ const LoginComponent = () => {
               >
                 Sign up for free
               </Link>
->>>>>>> upstream/main
             </p>
           </div>
         </div>
       </div>
-<<<<<<< HEAD
-=======
 
->>>>>>> upstream/main
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

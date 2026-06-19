@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from "react";
-=======
 import React, { useState, useMemo } from "react";
->>>>>>> upstream/main
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
 import { Link, useSearchParams } from "react-router-dom";
@@ -19,16 +16,13 @@ export const ExploreComponent = () => {
   const [page, setPage] = useState<number>(1);
   const [featuredPost, setFeaturedPost] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-<<<<<<< HEAD
   const [searchParams] = useSearchParams();
 
 useEffect(() => {
   const q = searchParams.get("search");
   if (q) setSearchTerm(q);
 }, []);
-=======
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
->>>>>>> upstream/main
 
   const query: Record<string, string | number> = {
     page,

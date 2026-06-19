@@ -26,11 +26,8 @@ const TrendingTopicComponent = () => {
             href="#"
             className="flex items-center justify-center rounded-md border border-slate-200/60 dark:border-white/10 bg-slate-50/40 dark:bg-white/5 px-3 py-2 text-sm font-semibold hover:scale-105 hover:shadow-md transition-all"
           >
-<<<<<<< HEAD
             {topic.title}
-=======
             {topic}
->>>>>>> upstream/main
           </a>
         ))}
       </div>

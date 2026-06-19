@@ -48,10 +48,7 @@ const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultC
               <i className="fa-solid fa-circle-question" aria-hidden="true"></i>
             </span>
           </div>
-<<<<<<< HEAD
-=======
         </div>
->>>>>>> d8f93186 (Resoved Error)
 
           <motion.h1
             id="help-center-title"
@@ -60,8 +57,6 @@ const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultC
             How can we help you today?
           </div>
 
-<<<<<<< HEAD
-=======
           <p className="text-lg text-slate-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
             Find answers, troubleshoot issues, and get started with StorySparkAI.
             Search our guides or browse topics below.
@@ -74,7 +69,6 @@ const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultC
             />
           </section>
         </div>
->>>>>>> d8f93186 (Resoved Error)
 
           <HelpSearchBar
             value={searchQuery}

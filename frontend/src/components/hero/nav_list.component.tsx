@@ -698,8 +698,6 @@ const NavListComponent = () => {
   const isActive = (path: string) =>
     pathname === path || (path === "/" && pathname === "/");
 
-<<<<<<< HEAD
-=======
   const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
     `block rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
       isActive
@@ -707,7 +705,6 @@ const NavListComponent = () => {
         : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10"
     }`;
   
->>>>>>> upstream/main
   const navItems = [
     { to: "/", label: "Home" },
     { to: "/explore", label: "Explore" },
@@ -810,9 +807,7 @@ const NavListComponent = () => {
           )}
         </nav>
 
-<<<<<<< HEAD
         {/* Right side */}
-=======
         <div className="flex items-center gap-3">
           <ThemeToggle />
           {loggedIn ? (
@@ -859,7 +854,6 @@ const NavListComponent = () => {
           )}
         </div>
       )}
->>>>>>> upstream/main
         <div className="flex items-center gap-2 sm:gap-3">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="flex items-center gap-2">
             <button
@@ -919,12 +913,9 @@ const NavListComponent = () => {
         {menuOpen && (
           <motion.div initial="hidden" animate="visible" exit="exit" variants={mobileMenuVariants} className="overflow-hidden border-b border-slate-200/70 bg-white/80 shadow-xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/85 lg:hidden">
             <div className="mx-auto max-w-7xl px-4 pb-5 pt-2 sm:px-6">
-<<<<<<< HEAD
               <div className="space-y-2 rounded-2xl border border-slate-200/70 bg-white/55 p-2 dark:border-white/10 dark:bg-white/[0.04]">
-=======
               <div className="space-y-2 rounded-2xl border border-slate-200/70 bg-white/55 p-2 shadow-sm shadow-slate-900/5 dark:border-white/10 dark:bg-white/[0.04]">
                 </div>
->>>>>>> upstream/main
                 {navItems.map((item, index) => (
                   <motion.div key={item.to} custom={index} initial="hidden" animate="visible" variants={mobileItemVariants}>
                     <NavLink to={item.to} end={item.to === "/"} onClick={handleNavClick} className={mobileLinkClass}>
@@ -982,11 +973,8 @@ export default NavListComponent;
   );
 };
 
-<<<<<<< HEAD
 export default NavListComponent;
-=======
 export default NavListComponent;
 export default NavListComponent;
 export default NavList;
 export default NavListComponent;
->>>>>>> upstream/main

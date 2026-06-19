@@ -11,11 +11,8 @@ interface RootLayoutProps {
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
-<<<<<<< HEAD
   
-=======
 
->>>>>>> upstream/main
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   const hideHeader = isAuthPage;
   const hideFooter = isAuthPage;
@@ -45,13 +42,10 @@ main
     >
       {!hideHeader && <NavListComponent />}
       <CookieConsentBanner onLayoutChange={handleCookieLayoutChange} />
-<<<<<<< HEAD
       <div className="flex-grow min-h-0">{children}</div>
-=======
 
       <div className="flex-grow min-h-0">{children}</div>
 
->>>>>>> upstream/main
       {!hideFooter && <FooterComponent />}
 
       {!isAuthPage && <ChatComponent />}

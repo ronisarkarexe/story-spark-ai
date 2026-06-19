@@ -134,12 +134,9 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
         <div className="max-w-3xl space-y-3">
           <p className="text-xs uppercase tracking-[0.26em] text-slate-400">Cookie Preferences</p>
           <h2 className="text-xl font-semibold text-white sm:text-2xl">Manage your cookie settings</h2>
-<<<<<<< HEAD
           
-=======
           <p className="text-sm leading-6 text-slate-300 sm:text-base sm:leading-7"></p>
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:px-8 xl:flex-row xl:items-start xl:justify-between xl:gap-8">
->>>>>>> upstream/main
         <div className="max-w-3xl space-y-4">
           <div className="space-y-1.5">
             <p className={`text-xs font-bold uppercase tracking-[0.24em] ${mutedText}`}>Cookie Preferences</p>
@@ -228,13 +225,10 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
           </button>
         </div>
       </div>
-<<<<<<< HEAD
       </div>
-=======
     </div>
     </div>
   </div>
->>>>>>> upstream/main
   );
 };
 export default CookieConsentBanner;

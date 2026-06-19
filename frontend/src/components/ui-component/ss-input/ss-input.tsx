@@ -37,21 +37,18 @@ const SSInput = <T extends FieldValues>({
   const [showPassword, setShowPassword] = useState(false);
 
 
-<<<<<<< HEAD
 
 
 
 
   const inputType = type === "password" ? (showLocalPassword ? "text" : "password") : type;
 
-=======
   const isPasswordType = type === "password";
   const inputType = isPasswordType
     ? showLocalPassword
       ? "text"
       : "password"
     : type;
->>>>>>> upstream/main
 
   return (
     <div className="w-full min-w-0 max-w-full box-border">
@@ -113,18 +110,15 @@ const SSInput = <T extends FieldValues>({
           <button
             type="button"
             onClick={() => setShowLocalPassword(!showLocalPassword)}
-<<<<<<< HEAD
 
             className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
             aria-label={showLocalPassword ? "Hide password" : "Show password"}
 
 
 
-=======
             className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center text-slate-400 hover:text-slate-200 dark:text-slate-500 dark:hover:text-slate-300 z-10 focus:outline-none transition-colors cursor-pointer"
             aria-label={showLocalPassword ? "Hide password" : "Show password"}
             title={showLocalPassword ? "Hide password" : "Show password"}
->>>>>>> upstream/main
           >
             <i
               className={

@@ -1,11 +1,8 @@
 import { Link } from "react-router-dom";
-<<<<<<< HEAD
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { ReactNode } from "react";
 
-=======
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
->>>>>>> upstream/main
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -76,9 +73,7 @@ const features = [
   }
 ];
 
-<<<<<<< HEAD
 
-=======
 interface Feature {
   title: string;
   description: string;
@@ -87,7 +82,6 @@ interface Feature {
   path: string;
 };
 }
->>>>>>> upstream/main
 
 const FeatureCard = ({ feature }: { feature: Feature }) => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -356,14 +350,11 @@ const HeroSectionComponent = () => {
               />
             </span>
           </motion.h1>
-<<<<<<< HEAD
-=======
           </h1>
 <div className="flex justify-center lg:justify-end">
   <AnimatedBook />
 </div>
           <p className="max-w-2xl lg:mx-0 mx-auto text-lg sm:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 transition-colors duration-300">
->>>>>>> upstream/main
 
           <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
             Create, edit, and generate engaging multiple story variations from a single prompt.
@@ -417,12 +408,9 @@ const HeroSectionComponent = () => {
               </div>
             </div>
           </div>
-<<<<<<< HEAD
       
           </motion.div>
-=======
         </motion.div>
->>>>>>> upstream/main
 
 </div>
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
@@ -437,10 +425,7 @@ const HeroSectionComponent = () => {
             ))}
           </div>
         </div>
-<<<<<<< HEAD
         
-=======
->>>>>>> upstream/main
 
             <motion.div
         variants={itemVariants}
@@ -451,15 +436,12 @@ const HeroSectionComponent = () => {
             <FeatureCard feature={feature} key={index} />
           ))}
         </div>
-<<<<<<< HEAD
        </motion.div>
     </div>
   </motion.div>
   
-=======
       </motion.div>
     </motion.div>
->>>>>>> upstream/main
   );
 };
 

@@ -139,11 +139,8 @@ const router = createBrowserRouter([
       { path: "community", element: <CommunityComponent /> },
       { path: "explore", element: <ExploreComponent /> },
       { path: "report-bug", element: <ReportBug /> },
-<<<<<<< HEAD
 
-=======
       { path: "search", element: lazyPage(<SearchPageComponent />) },
->>>>>>> upstream/main
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [

@@ -12,9 +12,7 @@ import StartWritingComponent from "./start_writing/start_writing.component";
 import PersonalizedRecommendationsComponent from "./personalized_recommendations/personalized_recommendations.component";
 import { isLoggedIn } from "../../services/auth.service";
 import BackToTop from "../ScrollToTopButton";
-<<<<<<< HEAD
 import HomeSearchBar from "./search_bar/search_bar.component";
-=======
 import StoryInspirationHomeCard from "./story_inspiration_card/StoryInspirationHomeCard";
 import PictureCarouselComponent from "./picture_carousel/picture_carousel.component";
 
@@ -39,7 +37,6 @@ const itemVariants = {
   },
 };
 
->>>>>>> upstream/main
 const HomeComponent = () => {
   const isLogin = isLoggedIn();
 

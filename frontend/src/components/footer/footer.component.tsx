@@ -241,7 +241,6 @@ const FooterComponent: React.FC = () => {
               Writing tips, product updates, and stories straight to your inbox.
             </p>
 
-<<<<<<< HEAD
           <form
             onSubmit={handleSubscribe}
             noValidate
@@ -267,7 +266,6 @@ const FooterComponent: React.FC = () => {
               {status === "loading" ? "..." : "Subscribe"}
             </button>
            </form>
-=======
             <form
               onSubmit={handleSubscribe}
               noValidate
@@ -300,7 +298,6 @@ const FooterComponent: React.FC = () => {
               </button>
             </form>
 
->>>>>>> upstream/main
             <div aria-live="polite" role="status">
               {status === "success" && (
                 <p className="text-[12.5px] text-green-400 mt-1">{message}</p>
