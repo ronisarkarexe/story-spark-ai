@@ -58,10 +58,9 @@ const ScrollToTopButton = () => {
         pointerEvents: isVisible ? "auto" : "none",
         transform: isVisible ? "translateY(0)" : "translateY(12px)",
         transition: "opacity 0.3s ease, transform 0.3s ease",
-        zIndex: 40,
+        zIndex: 9980,
       }}
     >
-      ↑
     </button>
   );
 };

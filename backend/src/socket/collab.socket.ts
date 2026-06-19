@@ -56,6 +56,22 @@ export const setupCollabSocket = (io: Server) => {
   collabNamespace.on("connection", (socket: Socket) => {
     logger.debug("Collab socket connected");
 
+    socket.on("reauthenticate", (newToken: string) => {
+      try {
+        const verifiedUser = JwtHelpers.verifyToken(newToken, config.jwt.secret as Secret);
+        const newUserId =
+          verifiedUser._id || verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
+        if (!newUserId) {
+          throw new Error("Unauthorized");
+        }
+
+        socket.data.userId = newUserId.toString();
+        socket.data.username = verifiedUser.name || socket.data.username || "Unknown User";
+      } catch (error) {
+        socket.emit("auth_error", "Invalid token");
+      }
+    });
+
     // Create a new room
     socket.on("collab:create_room", async () => {
       try {

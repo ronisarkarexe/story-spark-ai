@@ -4,6 +4,12 @@ Thank you for your interest in contributing to StorySparkAI! This guide will hel
 
 ---
 
+## About StorySparkAI
+
+StorySparkAI is a full-stack AI-powered storytelling platform that helps users generate creative stories using artificial intelligence. This guide will help contributors set up the project, understand the workflow, and submit high-quality contributions.
+
+---
+
 ## Prerequisites
 
 Make sure you have the following installed before starting:
@@ -75,6 +81,10 @@ Open `frontend/.env` and fill in the values:
 VITE_API_URL=http://localhost:5000
 VITE_OPENAI_API_KEY=your_openai_api_key_here
 ```
+
+> ⚠️ **Security Note:**
+> Never expose private API keys in production frontend applications.
+> The values shown here are intended for local development only.
 
 ### Backend
 
@@ -179,11 +189,11 @@ Please read and follow our [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 ---
 
+## Frequently Asked Questions
 ## Need Help?
 
 
 If you get stuck, open a [Discussion](https://github.com/ronisarkarexe/story-spark-ai/discussions) or comment on the relevant issue. We're happy to help!
-=======
 ## **Frequently Asked Questions**
 
 1. **Do I need to get assigned before working on an issue?**
@@ -195,7 +205,14 @@ If you get stuck, open a [Discussion](https://github.com/ronisarkarexe/story-spa
 4. **How long does it take for a Pull Request to be reviewed?**
    - Review times vary depending on maintainer availability and project activity. Please be patient and avoid repeatedly asking for reviews.
 
-<br>
+---
 
-# **Thank you for contributing💗** 
+## Need Help?
 
+If you get stuck, open a [Discussion](https://github.com/ronisarkarexe/story-spark-ai/discussions) or comment on the relevant issue. We're happy to help!
+
+---
+
+## 💗 Thank You for Contributing
+
+We appreciate your time and effort in helping improve StorySparkAI. Every contribution helps make the project better.

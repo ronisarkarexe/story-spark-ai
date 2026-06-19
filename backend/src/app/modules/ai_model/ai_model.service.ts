@@ -17,6 +17,7 @@ import {
   generateWithGeminiStories,
   generateRemixWithGemini,
   generateStoryContinuationWithGemini,
+  generateStoryContinuationMultipleWithGemini,
   translateStoryWithGemini,
   chatWithGemini,
 } from "./ai_model.utils";
@@ -264,6 +265,16 @@ const aiFreeStoryContinuationMultiple = async (
     return results;
   } catch (error) {
     mapGenerationError(error, "Story continuation failed.");
+
+  try {
+    const result = await raceGenerationWithTimeout(
+      (s) => generateStoryContinuationMultipleWithGemini(prompt, count, language, s),
+      FREE_GENERATION_TIMEOUT_MS,
+      signal
+    );
+    return result;
+  } catch (error) {
+    mapGenerationError(error, "Story continuation generation failed.");
   }
 };
 

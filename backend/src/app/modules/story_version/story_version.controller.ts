@@ -150,6 +150,15 @@ const enhancePrompt = catchAsync(async (req: Request, res: Response) => {
     prompt.trim(),
     provider,
     post?.content
+
+  const post = storyId ? await Post.findById(storyId) : null;
+  const rawProvider = req.headers?.["x-model-provider"];
+  const provider = Array.isArray(rawProvider) ? rawProvider[0] : rawProvider;
+  
+  const enhancedPrompt = await StoryVersionService.enhancePrompt(
+    prompt.trim(),
+    post?.content || undefined,
+    provider as string | undefined
   );
 
   sendResponse(res, {

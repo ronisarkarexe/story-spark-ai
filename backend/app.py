@@ -26,7 +26,7 @@ import json
 import random
 import pandas as pd
 import numpy as np
-import plotly.express as px
+import pandas as pd
 import streamlit as st
 
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -154,6 +154,17 @@ FEATURE_KEYS = [
     "confidence_score", "blocked_word_count",
 ]
 
+FEATURE_LABELS = [
+    "Prompt Length",
+    "Time To Submit",
+    "Regeneration Count",
+    "Session Duration",
+    "Backspace Ratio",
+    "Pause Duration",
+    "Confidence Score",
+    "Blocked Word Count",
+]
+
 SUGGESTIONS = {
     "prompt_length":      [
         "Stuck on what to write? Start with a feeling your character has right now.",
@@ -231,6 +242,40 @@ def run_detection(session_raw: np.ndarray, model, scaler, threshold) -> dict:
     "feature_importance": feature_importance,
     "main_cause": top_feature
 }
+
+
+def build_explainability(session_raw: np.ndarray) -> dict:
+    feature_means = np.mean(session_raw, axis=0)
+    total = float(np.sum(np.abs(feature_means))) or 1.0
+
+    contributions = [
+        {
+            "feature": label,
+            "key": key,
+            "value": round(float(value), 3),
+            "contribution": round((abs(float(value)) / total) * 100, 2),
+        }
+        for label, key, value in zip(FEATURE_LABELS, FEATURE_KEYS, feature_means)
+    ]
+
+    ranked = sorted(contributions, key=lambda item: item["contribution"], reverse=True)
+
+    timeline = [
+        {
+            "step": index + 1,
+            "confidence_score": float(row[6]),
+            "pause_duration": float(row[5]),
+            "backspace_ratio": float(row[4]),
+        }
+        for index, row in enumerate(session_raw)
+    ]
+
+    return {
+        "primary_cause": ranked[0],
+        "top_features": ranked[:3],
+        "feature_importance": ranked,
+        "timeline": timeline,
+    }
 
 
 def quick_fill_normal() -> dict:
@@ -510,6 +555,93 @@ if st.session_state.result:
         st.write(
             f"🔹 **{row['Feature']}** : {row['Importance']:.6f}"
         )
+
+    explainability = build_explainability(st.session_state.session_raw)
+
+    st.markdown("## Explainable AI Dashboard")
+    st.caption("Understand which writing behavior signals contributed most to the prediction.")
+
+    primary = explainability["primary_cause"]
+    top_features = explainability["top_features"]
+    importance_df = pd.DataFrame(explainability["feature_importance"])
+    timeline_df = pd.DataFrame(explainability["timeline"])
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        st.metric(
+            "Primary Cause",
+            primary["feature"],
+            f"{primary['contribution']}% contribution",
+        )
+
+    with c2:
+        st.metric(
+            "Top Feature Contribution",
+            f"{primary['contribution']}%",
+            primary["feature"],
+        )
+
+    st.markdown("### Root Cause Ranking")
+    for index, item in enumerate(top_features, start=1):
+        st.markdown(
+            f"**{index}. {item['feature']}** — {item['contribution']}% contribution "
+            f"(avg value: `{item['value']}`)"
+        )
+
+    chart_col, pie_col = st.columns(2)
+
+    with chart_col:
+        st.markdown("### Feature Importance")
+        st.bar_chart(
+            importance_df.set_index("feature")["contribution"],
+            use_container_width=True,
+        )
+
+    with pie_col:
+        st.markdown("### Feature Contribution Pie Chart")
+        st.vega_lite_chart(
+            importance_df,
+            {
+                "mark": {"type": "arc", "innerRadius": 45},
+                "encoding": {
+                    "theta": {"field": "contribution", "type": "quantitative"},
+                    "color": {"field": "feature", "type": "nominal"},
+                    "tooltip": [
+                        {"field": "feature", "type": "nominal"},
+                        {"field": "contribution", "type": "quantitative", "title": "Contribution %"},
+                        {"field": "value", "type": "quantitative", "title": "Average Value"},
+                    ],
+                },
+            },
+            use_container_width=True,
+        )
+
+    st.markdown("### Feature Contribution Details")
+    st.dataframe(
+        importance_df[["feature", "contribution", "value"]],
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.markdown("### Session Timeline Analysis")
+    st.line_chart(
+        timeline_df.set_index("step")[["confidence_score", "pause_duration", "backspace_ratio"]],
+        use_container_width=True,
+    )
+
+    export_payload = {
+        **r,
+        "explainability": explainability,
+    }
+
+    st.download_button(
+        label="⬇️ Download Results as JSON",
+        data=json.dumps(export_payload, indent=2),
+        file_name="writer_block_detection_result.json",
+        mime="application/json",
+        use_container_width=True,
+    )
 
     st.markdown("#### Raw API response (what the frontend receives)")
     st.markdown(

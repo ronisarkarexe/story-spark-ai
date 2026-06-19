@@ -17,6 +17,7 @@ import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 import { WritingStreakService } from "../gamification/writing_streak.service";
 import { escapeRegex } from "../../../utils/regex.util";
+
 const MAX_SEARCH_TERM_LENGTH = 100;
 
 interface ICursorPayload {
@@ -134,7 +135,7 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       httpStatus.INTERNAL_SERVER_ERROR,
       "Failed to create post"
     );
-  }
+    }
 };
 
 const getPosts = async (

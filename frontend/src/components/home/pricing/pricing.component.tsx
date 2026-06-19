@@ -272,15 +272,10 @@ const PricingComponent: React.FC = () => {
                 }`}
               >
 import { useNavigate } from "react-router-dom";
+import React from "react";
+import PricingComponent from "../home/pricing/pricing.component";
 
-const plans = [
-  { title: "Free", price: "$0", duration: "/month", features: ["Basic AI assistance", "5 stories per month"], linkTo: "/signup", buttonLabel: "Get Started" },
-  { title: "Pro", price: "$19", duration: "/month", features: ["Unlimited stories", "Priority support"], linkTo: "/payment?plan=Pro&price=19", buttonLabel: "Start Pro Trial" },
-  { title: "Enterprise", price: "$49", duration: "/month", features: ["Team collaboration", "API access"], linkTo: "/contact-us", buttonLabel: "Contact Sales" },
-];
-
-const PricingComponent = () => {
-  const navigate = useNavigate();
+const PricingMainComponent = () => {
   return (
     <section className="story-section" id="pricing-section">
       <div className="story-page-shell">
@@ -356,7 +351,10 @@ const PricingComponent = () => {
         </div>
       </div>
     </section>
+    <div>
+      <PricingComponent />
+    </div>
   );
 };
 
-export default PricingComponent;
+export default PricingMainComponent;

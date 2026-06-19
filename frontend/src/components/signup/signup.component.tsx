@@ -134,10 +134,7 @@ const otpPayload = {
           setExpiredAt(new Date(expiresAt).getTime());
           toast.success("OTP sent to your email");
           setRegisterInfo(user);
-          unregister("confirmPassword");
-          unregister("password");
-          unregister("name");
-          unregister("email");
+          
           setShowOtpField(true);
           setCooldown(60);
         }
@@ -489,6 +486,7 @@ const otpPayload = {
                   validation={{
                     required: "Please enter OTP",
                     minLength: { value: 6, message: "OTP must be 6 digits" },
+                      setValueAs: (value: string) => value.replace(/\D/g, ""),
                     maxLength: { value: 6, message: "OTP must be 6 digits" },
                     pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
                   }}

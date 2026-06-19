@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
+const ratingLabels = [
+  "",
+  "Poor",
+  "Fair",
+  "Good",
+  "Great",
+  "Excellent",
+];
 const StarRating = ({ rating, setRating }: { rating: number; setRating: (n: number) => void }) => (
   <div className="flex gap-1">
     {[1, 2, 3, 4, 5].map((star) => (
@@ -29,32 +37,58 @@ const StarRating = ({
 }) => {
   const [hovered, setHovered] = useState(0);
 
+  const renderStarIcon = (index: number) => {
+    // index is 1..5
+    if (rating >= index) return <i className="fa-solid fa-star" />;
+    if (rating >= index - 0.5) return <i className="fa-solid fa-star-half-stroke" />;
+    return <i className="fa-regular fa-star" />;
+  };
+
+  const handleClick = (value: number) => {
+    setRating(value);
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((star) => (
-          <button
+          <div
             key={star}
-            type="button"
-            aria-pressed={rating === star}
-            aria-label={`Rate ${star} star`}
-            onClick={() => setRating(star)}
-            onMouseEnter={() => setHovered(star)}
+            className="relative text-3xl text-gray-600 hover:scale-105 transition-all duration-150"
             onMouseLeave={() => setHovered(0)}
-            className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none ${
-              star <= (hovered || rating)
-                ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]"
-                : "text-gray-600"
-            }`}
           >
-            ★
-          </button>
+            <div
+              className={`flex items-center justify-center w-8 h-8 ${
+                star <= Math.ceil(hovered || rating) ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]" : "text-gray-600"
+              }`}
+            >
+              {renderStarIcon(star)}
+            </div>
+
+            {/* left half (0.5) */}
+            <button
+              type="button"
+              aria-label={`Rate ${star - 0.5} stars`}
+              onMouseEnter={() => setHovered(star - 0.5)}
+              onClick={() => handleClick(star - 0.5)}
+              className="absolute left-0 top-0 h-full w-1/2 bg-transparent"
+            />
+
+            {/* right half (full star) */}
+            <button
+              type="button"
+              aria-label={`Rate ${star} star`}
+              onMouseEnter={() => setHovered(star)}
+              onClick={() => handleClick(star)}
+              className="absolute right-0 top-0 h-full w-1/2 bg-transparent"
+            />
+          </div>
         ))}
       </div>
 
       {(hovered || rating) > 0 && (
         <p className="text-xs font-semibold tracking-wide text-yellow-400">
-          {ratingLabels[hovered || rating]}
+          {ratingLabels[Math.round(hovered || rating) || 0]}
         </p>
       )}
     </div>
@@ -78,7 +112,7 @@ const ReviewForm = () => {
     if (!role.trim()) newErrors.role = "Role is required";
     if (!feedback.trim()) newErrors.feedback = "Review is required";
     if (feedback.length > 500) newErrors.feedback = "Max 500 characters";
-    if (rating === 0) newErrors.rating = "Please select a rating";
+    if (rating < 0.5) newErrors.rating = "Please select a rating";
 
     return newErrors;
   };
@@ -218,12 +252,11 @@ const ReviewForm = () => {
               ✍️ Share Your Story
             </div>
 
-            <h3 className="text-2xl font-bold text-white">
-            Submit Your Review
+            <h3 className="text-xl font-semibold text-white">
+              Write a Review
             </h3>
-
-            <p className="mt-1 text-sm text-gray-400">
-            Tell us about your experience with StorySparkAI.
+            <p className="text-gray-400 text-sm mt-1">
+              Tell us what you think about StorySparkAI.
             </p>
           </div>
 
@@ -353,7 +386,7 @@ const ReviewForm = () => {
             </div>
 
             {/* Rating */}
-            <div>
+            <div className="pb-8">
               <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                 <span className="text-blue-400">⭐</span>
                 Rating
@@ -374,7 +407,7 @@ const ReviewForm = () => {
               )}
             </div>
 
-            <div className="flex justify-end mt-6">
+            <div className="flex justify-center mt-8 pb-2 sm:pb-0">
               <button
                 type="button"
                 onClick={handleSubmit}
@@ -411,6 +444,10 @@ const ReviewForm = () => {
           </div>
         </div>
       </div>
+    </div>
+  
+</div>
+  );
     </div>
   );
 };

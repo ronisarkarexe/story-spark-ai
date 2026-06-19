@@ -9,10 +9,7 @@ import { ThemeProvider } from "./components/theme/theme.context";
 import "./index.css";
 
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim();
 
 if (!GOOGLE_CLIENT_ID) {
   console.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login will not function.");
