@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import DOMPurify from "dompurify";
-import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
@@ -10,7 +11,20 @@ import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
-import { useLocation } from "react-router-dom";
+import { setStory } from "../../redux/slices/storySlice";
+import ContinueStoryButton from "../story/ContinueStoryButton";
+import { useApiError } from "../../hooks/useApiError";
+import ReadingProgressBar from "./ReadingProgressBar";
+import useAntiGravityScroll from "../../hooks/useAntiGravityScroll";
+import CharacterProfileCard from "./CharacterProfileCard";
+import {
+  CharacterProfile,
+  getShortenedText,
+  ITopicData,
+  topicsData,
+  getWordCount,
+  SELECTED_TOPIC_CLASSES,
+} from "./stories.utils";
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
@@ -97,15 +111,40 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   onPublishSuccess,
 }) => {
   const location = useLocation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const storyScrollContainerRef = useRef<HTMLDivElement>(null);
+  const {
+    isPlaying: isAntiGravityPlaying,
+    setIsPlaying: setIsAntiGravityPlaying,
+    targetSpeed: antiGravitySpeed,
+    setTargetSpeed: setAntiGravitySpeed,
+  } = useAntiGravityScroll(storyScrollContainerRef);
+
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const storyContentRef = useRef<HTMLDivElement>(null);
+
+  // States
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Export states
+  const [exportState, setExportState] = useState<"idle" | "processing" | "compiling" | "success" | "error">("idle");
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState<boolean>(false);
+  const dropdownMenuRef = useRef<HTMLDivElement>(null);
+
+  // Standard functional states
 
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
+  const [readingProgress, setReadingProgress] = useState<number>(0);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
   const [newTopicTitle, setNewTopicTitle] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
+  const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
 const [, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
@@ -139,6 +178,56 @@ const [, setShowRemix] = useState<boolean>(false);
     }
   }, [selectedStory, originalStoryContent]);
 
+  useEffect(() => {
+    if (!selectedStory) return;
+
+    const saved = localStorage.getItem(
+      `story-progress-${selectedStory.uuid}`
+    );
+
+    setReadingProgress(saved ? Number(saved) : 0);
+  }, [selectedStory]);
+
+  useEffect(() => {
+    const element = storyContentRef.current;
+
+    if (!element || !selectedStory) return;
+
+    const handleScroll = () => {
+      const progress =
+        (element.scrollTop /
+          (element.scrollHeight - element.clientHeight)) *
+        100;
+
+      const value = Math.min(100, Math.max(0, progress));
+
+      setReadingProgress(value);
+
+      localStorage.setItem(
+        `story-progress-${selectedStory.uuid}`,
+        value.toString()
+      );
+    };
+
+    element.addEventListener("scroll", handleScroll);
+
+    return () => {
+      element.removeEventListener("scroll", handleScroll);
+    };
+  }, [selectedStory]);
+
+  useEffect(() => {
+    if (narrationState === "playing") {
+      const activeWordElement = document.querySelector('[data-active-word="true"]');
+      if (activeWordElement) {
+        activeWordElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest"
+        });
+      }
+    }
+  }, [narrationWordIndex, narrationState]);
   const handleGenerateAlternateEndings = async () => {
     if (!selectedStory) return;
     setIsGeneratingEndings(true);
@@ -672,6 +761,49 @@ const handleExportMarkdown = () => {
     } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
   };
 
+    toast.success("PDF downloaded!");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to export PDF.");
+  }
+};
+
+const handleGenerateCharacterProfile = async () => {
+  if (!selectedStory) {
+    toast.error("No story selected!");
+    return;
+  }
+
+  setProfileLoading(true);
+
+  try {
+    // Replace with your backend API endpoint
+    const response = await fetch(
+      "/api/generate-character-profile",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          story: selectedStory.content,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    setCharacterProfiles(data.data);
+
+    toast.success("Character profiles generated!");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to generate profiles.");
+  } finally {
+    setProfileLoading(false);
+  }
+};
+
   const handelPublishStory = async () => {
     if (!isLogin) {
       toast.error("Please login to publish the story.");
@@ -798,6 +930,32 @@ if (isLoading) {
               <h3 className="text-xl font-bold text-slate-200 relative z-10">
                 Generated Story
               </h3>
+              <div className="flex items-center gap-2 relative z-10">
+                {selectedStory && (
+                  <>
+                    <button
+                      type="button"
+                      className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors"
+                      onClick={handleCopyStory}
+                    >
+                      {isCopied ? "✓ Copied" : "📋 Copy"}
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg px-4 py-2 bg-indigo-700 text-white font-semibold hover:bg-indigo-600 transition-colors"
+                      onClick={handleGenerateCharacterProfile}
+                    >
+                      {profileLoading ? "Generating..." : "👥 Characters"}
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors"
+                      onClick={handleExportPDF}
+                    >
+                      📄 Export PDF
+                    </button>
+                  </>
+                )}
               <div className="flex flex-wrap items-center gap-2 relative z-10">
                 <button
                   type="button"
@@ -902,6 +1060,24 @@ if (isLoading) {
               />
             </div>
           </div>
+          <div className="mt-6">
+  {characterProfiles.length > 0 && (
+    <>
+      <h3 className="text-xl font-bold text-white mb-4">
+        Character Profiles
+      </h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {characterProfiles.map((profile, index) => (
+          <CharacterProfileCard
+            key={index}
+            profile={profile}
+          />
+        ))}
+      </div>
+    </>
+  )}
+</div>
           <div className="mt-7">
             <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
               <h3 className="text-lg font-bold text-slate-200 mb-4">
@@ -1106,6 +1282,9 @@ if (isLoading) {
             )}
           </div>
         </div>
+
+        
+
 
         <div className="col-span-1 lg:col-span-4">
           <GeneratedStoryTimeline

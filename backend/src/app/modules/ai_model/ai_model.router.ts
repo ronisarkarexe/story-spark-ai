@@ -32,6 +32,10 @@ router.post(
   AiModelController.aiFreeModelGenerate
 );
 
+// Generate Character Profile
+router.post(
+  "/generate-character-profile",
+  AiModelController.generateCharacterProfile
 // Generate Model Stream - PROTECTED
 router.post(
   "/generate-model-stream",
