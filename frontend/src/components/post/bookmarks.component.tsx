@@ -4,10 +4,14 @@ import ExploreViewListComponent from "./post.view.list.component";
 import { useGetMyBookmarksQuery } from "../../redux/apis/bookmark.api";
 import PaginationComponent from "../pagination/pagination.component";
 
+import { getSessionBookmarks } from "../../utils/session-bookmarks";
+import StoryTradingCard from "../cards/StoryTradingCard";
+import { IStories } from "../stories/stories.view.component";
+
 const BookmarksComponent = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [size, setSize] = useState<number>(10);
+  const size = 12;
   const [page, setPage] = useState<number>(1);
 
   const query: Record<string, string | number> = {
@@ -17,9 +21,10 @@ const BookmarksComponent = () => {
 
   const { data, isLoading } = useGetMyBookmarksQuery({ ...query });
 
-  const onPaginationChange = (pageNumber: number, pageSize: number) => {
-    setPage(pageNumber);
-    setSize(pageSize);
+  const loadMore = () => {
+    if (data?.meta && allPosts.length < data.meta.total) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   const allPosts = data?.posts || [];
@@ -64,30 +69,18 @@ const BookmarksComponent = () => {
         <div className="flex gap-8">
           {/* Main Grid Area */}
           <div className="flex-1 flex flex-col min-h-[70vh]">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white flex items-center">
-                <i className="fas fa-bookmark mr-3 text-purple-400"></i>
-                My Saved Bookmarks
-              </h2>
-              {allPosts.length > 0 && (
-                <div className="flex items-center space-x-4">
-                  <label className="text-sm text-gray-400">Show</label>
-                  <select
-                    className="!rounded-button border-gray-600 text-sm focus:border-custom focus:ring-custom bg-gray-800 text-gray-500"
-                    value={size}
-                    onChange={(e) => {
-                      setSize(Number(e.target.value));
-                      setPage(1);
-                    }}
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                  <span className="text-sm text-gray-400">entries</span>
-                </div>
-              )}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-10 gap-4">
+              <div>
+                <h2 className="text-4xl font-extrabold text-slate-900 flex items-center gap-4 tracking-tight dark:text-white">
+                  <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-500/30">
+                    <i className="fas fa-bookmark"></i>
+                  </div>
+                  My Collection
+                </h2>
+                <p className="text-slate-500 dark:text-slate-400 mt-2 ml-16 text-lg font-medium">
+                  Stories you've saved for later inspiration
+                </p>
+              </div>
             </div>
 
             {/* Content Rendering */}
@@ -126,8 +119,27 @@ const BookmarksComponent = () => {
                   current={page}
                   pageSize={size}
                   total={data.meta.total}
-                  onChange={onPaginationChange}
+                  onChange={setPage}
                 />
+              </div>
+            )}
+
+            {/* Load More Button */}
+            {allPosts.length > 0 && data?.meta && allPosts.length < data.meta.total && (
+              <div className="flex justify-center mt-12 mb-8">
+                <button
+                  onClick={loadMore}
+                  disabled={isLoading}
+                  className="cursor-pointer !rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 py-3 shadow-lg shadow-slate-200 transition-all duration-300 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:shadow-none"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <i className="fas fa-spinner fa-spin"></i> Loading...
+                    </span>
+                  ) : (
+                    "Load More"
+                  )}
+                </button>
               </div>
             )}
           </div>

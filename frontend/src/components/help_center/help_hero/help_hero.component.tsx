@@ -56,7 +56,6 @@ const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultC
             How can we help you today?
           </motion.h1>
 
-
           <HelpSearchBar
             value={searchQuery}
             onChange={onSearchChange ?? (() => {})}

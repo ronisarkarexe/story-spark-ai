@@ -92,6 +92,7 @@ const SignUpComponent = () => {
           setExpiredAt(new Date(expiresAt).getTime());
           toast.success("OTP sent to your email");
           setRegisterInfo(user);
+          
           setShowOtpField(true);
         }
       } catch (error) {

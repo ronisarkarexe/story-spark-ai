@@ -73,11 +73,13 @@ function initInlineValidation() {
         passwordField.addEventListener('blur', () => validatePassword(true));
         passwordField.addEventListener('input', () => {
             updatePasswordStrengthUI(passwordField.value || '');
+            updatePasswordChecklist(passwordField.value || '');
             if (passwordField.getAttribute('aria-invalid') === 'true') validatePassword(true);
             if (confirmPasswordField && confirmPasswordField.value) {
                 validateConfirmPassword(false);
             }
         });
+        
         updatePasswordStrengthUI(passwordField.value || '');
     }
 
@@ -159,6 +161,30 @@ function getPasswordScore(password) {
     return Math.min(score, 4);
 }
 
+
+function updatePasswordChecklist(password) {
+    const checks = {
+        "rule-length": password.length >= 8,
+        "rule-upper": /[A-Z]/.test(password),
+        "rule-lower": /[a-z]/.test(password),
+        "rule-number": /\d/.test(password),
+        "rule-special": /[^A-Za-z0-9]/.test(password),
+    };
+
+    Object.entries(checks).forEach(([id, passed]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.textContent =
+            (passed ? "✓ " : "✗ ") +
+            el.textContent.replace(/^✓ |^✗ /, "");
+
+        el.classList.toggle("text-green-400", passed);
+        el.classList.toggle("text-red-400", !passed);
+    });
+}
+
+
 function updatePasswordStrengthUI(password) {
     const bar = document.getElementById('password-meter-bar');
     const strength = document.getElementById('password-strength');
@@ -172,14 +198,16 @@ function updatePasswordStrengthUI(password) {
         if (!password) {
             strength.textContent = '';
         } else if (score <= 1) {
-            strength.textContent = 'Strength: weak';
-        } else if (score === 2) {
-            strength.textContent = 'Strength: fair';
-        } else if (score === 3) {
-            strength.textContent = 'Strength: good';
-        } else {
-            strength.textContent = 'Strength: strong';
-        }
+    strength.textContent = 'Strength: Weak';
+} else if (score === 2) {
+    strength.textContent = 'Strength: Fair';
+} else if (score === 3) {
+    strength.textContent = 'Strength: Good';
+} else if (score === 4 && password.length >= 12) {
+    strength.textContent = 'Strength: Very Strong';
+} else {
+    strength.textContent = 'Strength: Strong';
+}
     }
 }
 
@@ -189,10 +217,23 @@ function validatePassword(showInline) {
 
     const value = passwordField.value || '';
     let message = '';
-    if (!value) message = 'Please enter your password.';
-    else if (value.length < 8) message = 'Password must be at least 8 characters.';
-else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(value)) message = 'Password must contain uppercase, lowercase and a number.';
-    if (showInline) setFieldError('password-field', 'password-error', message);
+
+    if (!value)
+        message = 'Please enter your password.';
+    else if (value.length < 8)
+        message = 'Password must be at least 8 characters.';
+    else if (!/[A-Z]/.test(value))
+        message = 'Include at least one uppercase letter.';
+    else if (!/[a-z]/.test(value))
+        message = 'Include at least one lowercase letter.';
+    else if (!/\d/.test(value))
+        message = 'Include at least one number.';
+    else if (!/[^A-Za-z0-9]/.test(value))
+        message = 'Include at least one special character.';
+
+    if (showInline)
+        setFieldError('password-field', 'password-error', message);
+
     return !message;
 }
 

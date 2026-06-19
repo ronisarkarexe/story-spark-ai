@@ -376,16 +376,10 @@ body::after{
 }
 
 
-/* AUTH TABS */
+.auth-tab-active {
+    color: #d0bcff;
+    border-bottom: 2px solid #d0bcff;
 
-.auth-tabs{
-
-    display:flex;
-
-    border-bottom:
-        1px solid rgba(255,255,255,.08);
-
-    margin-bottom:28px;
 }
 
 .auth-tab{
@@ -654,18 +648,11 @@ input[type="password"] {
     animation:cardEnter .8s cubic-bezier(.2,.8,.2,1);
 }
 
-@keyframes cardEnter{
 
-    from{
-        opacity:0;
 
-        transform:
-            translateY(30px)
-            scale(.96);
-    }
-
-    to{
-        opacity:1;
+.ds-btn-submit:hover {
+    box-shadow: 0 0 42px rgba(249, 115, 22, 0.35), 0 10px 26px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
 
         transform:
             translateY(0)
@@ -737,6 +724,7 @@ input[type="password"] {
     gap:24px;
 }
 
+
  
 /* ── Centered Layout Panel Constraints ── */
 /* ── Field Helpers, Errors, Alerts ── */
@@ -754,35 +742,39 @@ input[type="password"] {
     color: #ffb4ab;
     display: none;
 
-    display:flex;
-    flex-direction:column;
 
-    gap:20px;
+
+/* ── Centered Layout Panel Constraints ── */
+.auth-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
 }
 
-/* ──────────────────────────────────────────────
-   LABELS
-────────────────────────────────────────────── */
-
-.ds-label{
-
-    display:block;
-
-    margin-bottom:8px;
-
-    font-size:13px;
-
-    font-weight:600;
-
-    color:rgba(255,255,255,.72);
+/* ── Auth Form Card: width-constrained inner panel ── */
+.auth-form-card {
+    width: 100%;
+    max-width: var(--ds-card-max-width);
+    box-sizing: border-box;
 }
 
-/* ──────────────────────────────────────────────
-   INPUT GROUP
-────────────────────────────────────────────── */
+/* ── Input Icon Wrapper: positioning context for icon + input ── */
+.input-icon-wrapper {
+    position: relative;
+    width: 100%;
+}
 
-.ds-input-group{
-    position:relative;
+
+/* ── Mobile Layout Media Queries ── */
+@media (max-width: 767px) {
+    .auth-container {
+        max-width: 100%;
+    }
+    .left-pane-mobile {
+        height: 260px;
+        min-height: 260px;
+    }
+
 }
 
 .ds-input-icon{

@@ -14,30 +14,16 @@ const auth =
       try {
         const authHeader = (req.headers.authorization || "") as string;
 
-      // Support both header-based and cookie-based tokens.
-      // Logout() blacklists whatever token string it receives (header or cookie),
-      // so auth middleware must check the same token string source.
-      const bearerToken = authHeader.startsWith("Bearer ")
-        ? authHeader.slice(7).trim()
-        : authHeader.trim();
+        // Support both header-based and cookie-based tokens.
+        // Logout() blacklists whatever token string it receives (header or cookie),
+        // so auth middleware must check the same token string source.
+        const bearerToken = authHeader.startsWith("Bearer ")
+          ? authHeader.slice(7).trim()
+          : authHeader.trim();
 
-      const cookieToken = (req as any).cookies?.accessToken || (req as any).cookies?.token;
+        const cookieToken = (req as any).cookies?.accessToken || (req as any).cookies?.token;
 
-      const token = bearerToken || cookieToken || "";
-
-
-      if (!token) {
-        throw new ApiError(
-          httpStatus.UNAUTHORIZED,
-          "You are not authorized to access"
-        if (!authHeader.startsWith("Bearer ")) {
-          throw new ApiError(
-            httpStatus.UNAUTHORIZED,
-            "You are not authorized to access"
-          );
-        }
-
-        const token = authHeader.slice(7).trim();
+        const token = bearerToken || cookieToken || "";
 
         if (!token) {
           throw new ApiError(
@@ -50,7 +36,7 @@ const auth =
           token,
           config.jwt.secret as Secret
         );
-.
+
         const isBlacklisted = await TokenBlacklist.findOne({ token });
 
         if (isBlacklisted) {

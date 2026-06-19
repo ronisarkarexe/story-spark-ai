@@ -63,4 +63,15 @@ PostSchema.index({
   viewsCount: -1,
 });
 
+// Full-text search index for unified search feature
+PostSchema.index(
+  { title: "text", content: "text", tag: "text" },
+  {
+    name: "title_text_content_text_tag_text",
+    weights: { title: 10, tag: 5, content: 1 },
+    default_language: "english",
+  }
+);
+PostSchema.index({ createdAt: -1 });
+
 export const Post = model<IPost, PostModel>("Post", PostSchema);

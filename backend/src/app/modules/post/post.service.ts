@@ -5,6 +5,7 @@ import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
 import { Post } from "./post.model";
 import { Bookmark } from "../bookmark/bookmark.model";
+import { Comment } from "../comment/comment.model";
 import { StoryVersionService } from "../story_version/story_version.service";
 import {
   IGenericResponse,
@@ -127,8 +128,6 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       if (updatedUser && updatedUser.postsCount === 1) {
         GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
       }
-     
-      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
     }
     return res;
   } catch (error) {

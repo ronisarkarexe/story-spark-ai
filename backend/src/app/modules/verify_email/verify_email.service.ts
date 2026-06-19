@@ -70,7 +70,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
               .split("")
               .map(
                 (digit, index, arr) => `
-                <span style="display: inline-block; width: 40px; height: 40px; font-size: 24px; font-weight: bold; color: #007bff; border: 2px solid #007bff; border-radius: 5px; line-height: 40px; ${
+                <span style="display: inline-block; width: 40px; height: 40px; font-size: 24px; font-weight: bold; color: #007bff; border: 2px solid #007bff; border-radius: 5px; line-height: 40px; text-align: center; ${
                   index !== arr.length - 1 ? "margin-right: 10px;" : ""
                 }">
                 ${digit}
@@ -178,11 +178,11 @@ const VerifyOtp = async (payload: IVerifyOtpBody) => {
   };
 };
 
-const clearOtpAttempts = (email: string) => {
-  console.log('Clearing OTP attempts for:', email);
-};
-
 export const VerifyEmailService = {
   VerifyEmail,
   VerifyOtp,
 };
+
+const clearOtpAttempts = (email: string) => {
+  console.log('Clearing OTP attempts for:', email);
+}

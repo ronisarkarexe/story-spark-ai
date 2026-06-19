@@ -60,7 +60,7 @@ export const unsubscribeByToken = async (req: Request, res: Response) => {
 
     const result = await newsletterService.unsubscribeByToken(safeToken as string);
 
-    res.status(httpStatus.OK).json({
+    res.status(200).json({
       success: true,
       message: "Successfully unsubscribed",
       data: result,

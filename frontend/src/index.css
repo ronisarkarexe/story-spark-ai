@@ -1260,9 +1260,11 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
     0 0 0 1px rgba(139, 92, 246, 0.3),
     0 12px 32px rgba(99, 102, 241, 0.28),
     0 0 50px rgba(139, 92, 246, 0.14);
-    filter: brightness(1.1);
 }
 
+.contact-submit-btn:not(:disabled):hover .contact-btn-gradient {
+  filter: brightness(1.1);
+}
 
 .contact-submit-btn:not(:disabled):active {
   transform: translate3d(0, 0, 0) scale(0.98);

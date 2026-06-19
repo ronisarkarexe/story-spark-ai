@@ -2,7 +2,7 @@ import express from "express";
 import { AuthController } from "./auth.controller";
 import validateRequest from "../../middleware/validate.request";
 import { UserValidator } from "../user/user.validation";
-import auth from "../middleware/auth.middleware";
+import auth from "../../middleware/auth.middleware";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import {
   loginRateLimiter,

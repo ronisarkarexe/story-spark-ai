@@ -808,3 +808,80 @@ export async function chatWithGemini(
     );
   }
 }
+
+export async function generateStoryContinuationMultipleWithGemini(
+  storyContext: string,
+  count: number = 3,
+  language: string = "English",
+  signal?: AbortSignal,
+): Promise<Array<{ continuation: string }>> {
+  throwIfAborted(signal);
+  assertGeminiApiKeyConfigured();
+
+  try {
+    const response = await executeWithRetryAndFallback(async (activeModel) => {
+      const chatSession = activeModel.startChat({
+        generationConfig: {
+          ...generationConfig,
+          maxOutputTokens: 4096,
+        },
+        safetySettings,
+        history: [],
+      });
+
+      return chatSession.sendMessage(
+        `You are an expert storyteller. The user has written the following story so far:
+
+"${storyContext}"
+
+Generate exactly ${count} different alternate continuations for this story. Each continuation should be 2-4 paragraphs that maintain the same tone, style, and narrative direction, but take the story in a slightly different direction or highlight a different choice/event. All continuations MUST be written entirely in ${language}.
+
+Return only valid JSON with this exact structure:
+[
+  {
+    "continuation": "first continuation text here"
+  },
+  {
+    "continuation": "second continuation text here"
+  }
+]`,
+        { signal },
+      );
+    }, signal);
+
+    throwIfAborted(signal);
+
+    const text = response.response.text();
+    const parsed = JSON.parse(sanitizeJsonText(text));
+
+    if (!Array.isArray(parsed)) {
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        "Invalid AI response: Expected a JSON array of continuations.",
+      );
+    }
+
+    const isValid = parsed.every(
+      (item: any) => item && typeof item === "object" && typeof item.continuation === "string"
+    );
+
+    if (!isValid) {
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        "Invalid AI response: Continuation items are malformed.",
+      );
+    }
+
+    return parsed;
+  } catch (error: unknown) {
+    if (error instanceof ApiError || error instanceof GenerationAbortedError) {
+      throw error;
+    }
+
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.BAD_GATEWAY,
+      `AI story continuation generation failed: ${errorMsg}`,
+    );
+  }
+}

@@ -155,6 +155,9 @@ const approveWriterApplication = async (email: string) => {
     );
     return result;
   } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
     if (error instanceof Error) {
       throw new ApiError(httpStatus.BAD_REQUEST, error.message);
     } else {

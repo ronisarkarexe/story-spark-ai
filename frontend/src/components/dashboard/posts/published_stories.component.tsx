@@ -35,7 +35,7 @@ const PublishedStoriesComponent: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [size, setSize] = useState(PAGE_SIZE);
+  const size = PAGE_SIZE;
 
   const debounceTerm = useDebounced({
     searchQuery: searchTerm,
@@ -64,9 +64,10 @@ const PublishedStoriesComponent: React.FC = () => {
     setPage(1);
   };
 
-  const onPaginationChange = (nextPage: number, pageSize: number) => {
-    setPage(nextPage);
-    setSize(pageSize);
+  const loadMore = () => {
+    if (data?.meta && stories.length < data.meta.total) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   return (
@@ -238,14 +239,21 @@ const PublishedStoriesComponent: React.FC = () => {
         </div>
       )}
 
-      {data?.meta && data.meta.total > size && (
-        <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-white/[0.07] dark:bg-[#0a1020]">
-          <PaginationComponent
-            current={page}
-            pageSize={size}
-            total={data.meta.total}
-            onChange={onPaginationChange}
-          />
+      {data?.meta && stories.length > 0 && stories.length < data.meta.total && (
+        <div className="flex justify-center mt-6 mb-4">
+          <button
+            onClick={loadMore}
+            disabled={isLoading}
+            className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i> Loading...
+              </>
+            ) : (
+              "Load More"
+            )}
+          </button>
         </div>
       )}
     </div>

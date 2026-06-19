@@ -11,6 +11,11 @@ import {
   AlertCircle,
   ArrowUpRight,
   Zap,
+  MapPin,
+  Clock,
+  Briefcase,
+  Globe,
+  MessageCircle,
 } from "lucide-react";
 
 import axios from "../../helpers/axios/axiosInstance";

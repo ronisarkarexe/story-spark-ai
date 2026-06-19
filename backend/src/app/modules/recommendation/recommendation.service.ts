@@ -3,8 +3,8 @@ import ApiError from "../../../errors/api_error";
 import { Post } from "../post/post.model";
 import { User } from "../user/user.model";
 import { ITokenPayload } from "../../../interfaces/token";
-import mongoose from "mongoose";
 import { IPost } from "../post/post.interface";
+
 const getPersonalizedRecommendations = async (token: ITokenPayload) => {
   const user = await User.findById(token._id)
     .select("readingPreferences readingHistory")
@@ -56,7 +56,7 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
         .select("_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt")
         .sort({ likesCount: -1, viewsCount: -1 })
         .limit(10)
-        .lean();
+        .lean() as any;
     }
   }
 
@@ -80,7 +80,7 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
       .select("_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt")
       .sort({ likesCount: -1, viewsCount: -1 })
       .limit(limit)
-      .lean();
+      .lean() as any;
       
     recommendations = [...recommendations, ...popularPosts];
   }

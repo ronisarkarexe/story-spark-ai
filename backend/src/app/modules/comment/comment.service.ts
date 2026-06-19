@@ -1,12 +1,14 @@
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { User } from "../user/user.model";
-import { IComment, ICommentDTO, ICommentPayload, ILeanComment } from "./comment.interface";
+import { IComment, ICommentPayload } from "./comment.interface";
 import httpStatus from "http-status";
 import { Comment } from "./comment.model";
-import { Types } from "mongoose";
+import { startSession, Types } from "mongoose";
 import { Post } from "../post/post.model";
 import { ENUM_USER_ROLE } from "../../../enums/user";
+import { assertContentSafe } from "../../../utils/contentModeration";
+
 const createComment = async (
   payload: ICommentPayload,
   token: ITokenPayload
@@ -31,23 +33,63 @@ const createComment = async (
     const msg = moderationError instanceof Error ? moderationError.message : "Comment blocked by content moderation.";
     throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, msg);
   }
-  // Use an atomic $inc update instead of the read-modify-write pattern.
-  // With concurrent requests, both would read the same commentsCount value
-  // and both would write count + 1, losing one increment per race.
-  // findByIdAndUpdate with $inc is a single atomic MongoDB operation.
-  await Post.findByIdAndUpdate(post._id, { $inc: { commentsCount: 1 } });
-  const commentData: Omit<IComment, "parentCommentId"> = {
-    postId: new Types.ObjectId(payload.postId),
-    userId: user._id,
-    comment: payload.comment,
-  };
+
+  // Validate parent comment if parentCommentId is provided
   if (payload.parentCommentId) {
-    (commentData as IComment).parentCommentId = new Types.ObjectId(
-      payload.parentCommentId
-    );
+    if (!Types.ObjectId.isValid(payload.parentCommentId)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid parentCommentId");
+    }
+    const parentComment = await Comment.findOne({
+      _id: payload.parentCommentId,
+      postId: payload.postId,
+    });
+    if (!parentComment) {
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        "Parent comment not found for this post!"
+      );
+    }
+    if (parentComment.parentCommentId) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Replies can only be added to top-level comments!"
+      );
+    }
   }
-  const res = await Comment.create(commentData);
-  return res;
+
+  const session = await startSession();
+  try {
+    session.startTransaction();
+
+    const updateResult = await Post.updateOne(
+      { _id: post._id, isDeleted: { $ne: true } },
+      { $inc: { commentsCount: 1 } },
+      { session }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+    }
+
+    const commentData: any = {
+      postId: new Types.ObjectId(payload.postId),
+      userId: user._id,
+      comment: payload.comment,
+    };
+    if (payload.parentCommentId) {
+      commentData.parentCommentId = new Types.ObjectId(payload.parentCommentId);
+    }
+
+    const res = await Comment.create([commentData], { session });
+
+    await session.commitTransaction();
+    await session.endSession();
+    return res[0];
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
 };
 
 const getCommentsByPostId = async (postId: string) => {
@@ -73,14 +115,6 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   }
   
   // Replace the read-modify-write likes toggle with atomic MongoDB operators.
-  // The original pattern read likes, checked membership with includes, mutated
-  // the array, and saved. Two concurrent toggles by the same user can both pass
-  // the includes check (both see the ID absent), both push, and both save,
-  // resulting in a duplicate like entry.
-  //
-  // $addToSet adds the user ID only if it is not already present (like).
-  // $pull removes all matching entries (unlike). Both are atomic.
-  // Checking the current state first determines which operation to perform.
   const isCurrentlyLiked = await Comment.exists({
     _id: comment._id,
     likes: user._id,

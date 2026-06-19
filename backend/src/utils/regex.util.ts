@@ -3,4 +3,4 @@
  * embedded in a MongoDB $regex query without unintended pattern matching.
  */
 export const escapeRegex = (text: string): string =>
-  text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+  text.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&");

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
@@ -135,6 +135,13 @@ useEffect(() => {
       setLoading(false);
     }
   };
+
+const handleGenerateClick = () => {
+  if (inputRef.current) {
+    const form = inputRef.current.closest("form");
+    if (form) form.requestSubmit();
+  }
+};
 
 const handleClearPrompt = () => {
   setTextareaValue("");
@@ -293,8 +300,7 @@ const handleClearPrompt = () => {
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            const form = e.currentTarget.closest("form");
-            if (form) form.requestSubmit();
+            handleGenerateClick();
           }
         }}      
         />
