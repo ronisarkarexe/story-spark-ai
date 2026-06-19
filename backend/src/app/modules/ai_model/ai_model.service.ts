@@ -322,10 +322,10 @@ Story:
 ${story}
 `;
 
-    const result = await Promise.race([
-      timeoutLimit(30000),
-      generateWithGeminiStories(characterPrompt, 300, 1),
-    ]);
+    const result = await raceGenerationWithTimeout(
+      (s) => generateWithGeminiStories(story, 300, 1, "English", s),
+      30000
+    );
 
     return result;
   } catch (error) {
