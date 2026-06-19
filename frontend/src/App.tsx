@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
 
 import { USER_ROLE } from "./constants/role";
 
@@ -14,32 +14,8 @@ import MagicCursorComponent from "./components/magic-cursor/magic_cursor.compone
 import ThemeSwitcher from "./components/theme-switcher/ThemeSwitcher";
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
-
 import NotFoundComponent from "./components/not-found.component";
-import PaymentComponent from "./components/home/pricing/payment.component";
-import PostDetailsComponent from "./components/post/post.details.component";
-import PostListsComponent from "./components/dashboard/posts/post_lists.component";
-import PricingComponent from "./components/pricing/pricing.component";
-import PrivacyPolicy from "./components/footer/Privacy.tsx";
-import ProfileComponent from "./components/dashboard/profile/profile.component";
-import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
-import ReportBug from "./components/report-bug/ReportBug";
-import ResourceDetailComponent from "./components/community/resource_detail.component";
-import ResourcesListComponent from "./components/community/resources_list.component";
-import ScrollToTop from "./components/ScrollToTop";
-import ScrollToTopButton from "./components/ScrollToTopButton";
-import SettingComponent from "./components/dashboard/settings/settings.component";
-import SignUpComponent from "./components/signup/signup.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
-import StoriesComponent from "./components/stories/stories.component";
 import Leaderboard from "./pages/Leaderboard";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import StoryWorkspace from "./components/story/StoryWorkspace";
-import TemplatesComponent from "./components/templates/templates.component";
-import Terms from "./components/footer/terms.tsx";
-import UserComponent from "./components/dashboard/users/user.component";
-import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
@@ -91,7 +67,7 @@ const PaymentComponent = lazy(() =>
     default: module.PaymentComponent,
   }))
 );
-const SearchPageComponent = lazy(() => import("./pages/SearchPage"));
+const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
@@ -114,9 +90,7 @@ const router = createBrowserRouter([
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
       { path: "templates", element: <TemplatesComponent /> },
       { path: "create", element: <Navigate to="/stories" replace /> },
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
-      { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES} element={<WritingAssistantComponent />} />, },
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
+      { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES} element={<WritingAssistantComponent />} /> },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
       { path: "login", element: <LoginComponent /> },
       { path: "signup", element: <SignUpComponent /> },
@@ -133,7 +107,6 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
-      
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "leaderboard", element: <Leaderboard /> },
       { path: "community", element: <CommunityComponent /> },
@@ -203,16 +176,12 @@ const router = createBrowserRouter([
           { path: "terms", element: <Terms /> },
           { path: "help-center", element: <HelpCenterComponent /> },
           { path: "guidelines", element: <GuidelinesComponent /> },
-          
           { path: "contributors", element: <ContributorsComponent /> },
           { path: "community", element: <CommunityComponent /> },
           { path: "report-bug", element: <ReportBug /> },
-          // Public routes
           { path: "explore", element: lazyPage(<ExploreComponent />) },
           { path: "resources", element: <ResourcesListComponent /> },
           { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
-
-          // Protected routes
           {
             element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
             children: [
@@ -279,5 +248,4 @@ function App() {
   return <RouterProvider router={router} />;
 }
 
-export default App;
 export default App;

@@ -1,12 +1,21 @@
+// import { StrictMode } from "react";
+// import { createRoot } from "react-dom/client";
+// import { Provider } from "react-redux";
+// import { GoogleOAuthProvider } from "@react-oauth/google";
+// import { HelmetProvider } from "react-helmet-async";
+// import App from "./App.tsx";
+// import { store } from "./redux/store.ts";
+// import { ThemeProvider } from "./components/theme/theme.context";
+// import "./index.css";
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import { store } from "./redux/store.ts";
 import { ThemeProvider } from "./components/theme/theme.context";
-import "./index.css";
+import "./index.css";y
 
 
 const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim();
@@ -21,9 +30,9 @@ if (!container) {
   throw new Error("Failed to find the root element. Ensure index.html has <div id='root'></div>");
 }
 
-createRoot(container).render(
+createRoot(container).render (
   <StrictMode>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || ""}>
+    
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || "dummy-client-id"}>
       <Provider store={store}>
         <ThemeProvider>
@@ -33,3 +42,4 @@ createRoot(container).render(
     </GoogleOAuthProvider>
   </StrictMode>
 );
+

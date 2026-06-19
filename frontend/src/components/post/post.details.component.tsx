@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { StoryMetaTags } from "./StoryMetaTags";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   useDeletePostMutation,
@@ -39,6 +39,7 @@ import {
 } from "../../redux/apis/storyVersion.api";
 
 import { toast } from "react-hot-toast";
+
 
 
 
@@ -87,8 +88,12 @@ const PostDetailsComponent = () => {
   });
 
   const [toggleFollow] = useToggleFollowMutation();
-  const [readingProgress, setReadingProgress] = useState(0);
-  const articleRef = useRef<HTMLDivElement>(null);
+  <div
+  ref={articleRef}
+  className={`prose mx-auto mb-12 whitespace-pre-wrap break-words text-slate-700 dark:text-gray-300 ${readerPreferences.readerClassName}`}
+>
+  <p>{post?.content}</p>
+</div>
 
   const isFollowing = followData?.isFollowing ?? false;
 
@@ -100,7 +105,7 @@ const PostDetailsComponent = () => {
     const windowHeight = window.innerHeight;
     const scrolled = Math.max(0, -top);
     const total = Math.max(1, height - windowHeight);
-    setReadingProgress(Math.min(100, (scrolled / total) * 100));
+    const [readingProgress, setReadingProgress] = useState(0);
   };
   window.addEventListener("scroll", updateProgress, { passive: true });
   return () => window.removeEventListener("scroll", updateProgress);
@@ -112,12 +117,57 @@ const PostDetailsComponent = () => {
   const [showTimeline, setShowTimeline] = useState(false);
   const [readProgress, setReadProgress] = useState(0);
   const [showTree, setShowTree] = useState(false);
-  const [selectedVersionForBranch, setSelectedVersionForBranch] = useState<string | null>(null);
+
   const [showComparison, setShowComparison] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
   const readerPreferences = useReaderPreferences();
+
+const readingInfo = useMemo(() => {
+  const content =
+    isEditing && editedContent
+      ? editedContent
+      : post?.content || "";
+
+  const words = content
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const wordCount = words.length;
+
+  const estimatedMinutes = Math.max(
+    1,
+    Math.ceil(wordCount / 200)
+  );
+
+  const averageWordLength =
+    wordCount > 0
+      ? words.reduce((sum, word) => sum + word.length, 0) / wordCount
+      : 0;
+
+  let difficulty = "Beginner";
+
+  if (wordCount > 1200 || averageWordLength > 6) {
+    difficulty = "Advanced";
+  } else if (wordCount > 600 || averageWordLength > 5) {
+    difficulty = "Intermediate";
+  }
+
+  return {
+    wordCount,
+    estimatedMinutes,
+    difficulty,
+  };
+}, [
+  post?.content,
+  editedContent,
+  isEditing,
+]);
+
+
+
   const { data: versions, isLoading: isLoadingVersions } = useGetVersionsByStoryIdQuery(id || "", {
     skip: !id || (!showTimeline && !showComparison),
   });
@@ -203,11 +253,12 @@ const PostDetailsComponent = () => {
     }
   };
 
-  const handleCreateBranch = async (versionId: string) => {const branchName = window.prompt("Enter a branch name");
+  const handleCreateBranch = async (versionId: string) => {
+    const branchName = window.prompt("Enter a branch name");
 
-  if (!branchName?.trim()) {
-    return;
-  }
+    if (!branchName?.trim()) {
+      return;
+    }
 
   try {
     await createBranchVersion({versionId, branchName,}).unwrap();
@@ -243,8 +294,45 @@ const PostDetailsComponent = () => {
     setShowShareMenu(false);
   };
 
-  const handleLinkedInShare = () => {
-    const currentUrl = window.location.href;
+
+const handleLinkedInShare = () => {
+  const currentUrl = window.location.href;
+
+  const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+    currentUrl
+  )}`;
+
+  window.open(url, "_blank", "noopener,noreferrer");
+  setShowShareMenu(false);
+};
+
+{showShareMenu && (
+  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
+
+    <button onClick={handleCopyLink}>
+      📋 Copy Link
+    </button>
+
+    <button onClick={handleTwitterShare}>
+      🐦 Share on X
+    </button>
+
+    <button onClick={handleLinkedInShare}>
+      💼 LinkedIn
+    </button>
+
+    <button onClick={handleWhatsAppShare}>
+      💬 WhatsApp
+    </button>
+
+    <button onClick={handleEmailShare}>
+      ✉️ Email
+    </button>
+
+  </div>
+)}
+
+  
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
       currentUrl
     )}`;
@@ -472,6 +560,29 @@ const PostDetailsComponent = () => {
                 <h1 className={`text-4xl font-bold text-slate-900 dark:text-gray-300 leading-tight ${post?.language ? "mb-2" : "mb-6"}`}>
                   {post?.title}
                 </h1>
+
+                <div className="flex flex-wrap gap-3 mb-6">
+  <span className="inline-flex items-center rounded-full bg-indigo-100 text-indigo-700 px-3 py-1 text-sm font-medium">
+    ⏱️ {readingInfo.estimatedMinutes} min read
+  </span>
+
+  <span
+    className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
+      readingInfo.difficulty === "Beginner"
+        ? "bg-green-100 text-green-700"
+        : readingInfo.difficulty === "Intermediate"
+        ? "bg-yellow-100 text-yellow-700"
+        : "bg-red-100 text-red-700"
+    }`}
+  >
+    📚 {readingInfo.difficulty}
+  </span>
+
+  <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-3 py-1 text-sm font-medium">
+    📝 {readingInfo.wordCount} words
+  </span>
+</div>
+
                 {post?.language && (
                   <div className="flex gap-2 mb-6">
                     <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
