@@ -81,146 +81,145 @@ const LoginComponent = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6 lg:px-8 box-border">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.5 }}
-        className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"
-      />
+    <div className="relative flex min-h-screen items-center justify-center overflow-x-hidden bg-white px-4 text-slate-900 box-border dark:bg-[#0B1120] dark:text-slate-100">
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.5, delay: 0.2 }}
-        className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"
-      />
+      {/* Background Glow */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 box-border">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="hidden lg:flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
-        >
-          <div className="flex justify-center items-center gap-6 border border-gray-300 dark:border-slate-700 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-            <WandSparkles className="text-violet-600 shrink-0" />
-            <div>
-              <h2 className="font-bold">Smart writing</h2>
-              <p className="text-sm">AI that understands your ideas</p>
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-6xl py-12">
+        <div className="mb-10">
+          <h2 className="text-center text-4xl font-extrabold tracking-tight drop-shadow-sm sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-400 dark:to-indigo-400">
+            STORY SPARK AI
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-12">
+          <div className="flex flex-col gap-5 lg:pt-6">
+            <h1 className="text-3xl font-bold leading-tight sm:text-4xl bg-gradient-to-r from-blue-600 to-purple-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-500">
+              Turns Ideas into
+              <br />
+              unforgettable stories
+            </h1>
+            <p className="text-slate-600 dark:text-slate-300">
+              AI powered storytelling that helps you create, connect, and inspire.
+            </p>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700 dark:border-slate-700/50 dark:bg-slate-800/60 dark:text-slate-300">
+                <WandSparkles className="mt-0.5 text-violet-600 dark:text-violet-400" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    Smart writing
+                  </p>
+                  <p className="text-sm">AI that understands your ideas</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700 dark:border-slate-700/50 dark:bg-slate-800/60 dark:text-slate-300">
+                <BookOpen className="mt-0.5 text-violet-600 dark:text-violet-400" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    Endless creativity
+                  </p>
+                  <p className="text-sm">Stories that captivate and inspire</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700 dark:border-slate-700/50 dark:bg-slate-800/60 dark:text-slate-300 sm:col-span-2">
+                <UsersRound className="mt-0.5 text-violet-600 dark:text-violet-400" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    Built for everyone
+                  </p>
+                  <p className="text-sm">Writers, creators, and dreamers</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 box-border"
-          >
-            <div className="border border-gray-300 dark:border-slate-700 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400 text-sm">
-              Create, edit, and generate engaging multiple story variations from a
-              single prompt. Perfect for writers, creators, and enthusiasts
-              exploring the future of fiction.
-            </div>
-          </motion.div>
-        </motion.div>
+          <div className="w-full min-w-0">
+            <div className="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-8 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/60 sm:p-10">
+              <button
+                onClick={() => window.location.href = "/"}
+                className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2"
+                type="button"
+              >
+                ← Back to Home
+              </button>
 
-        <div className="flex justify-center w-full box-border">
-          <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
-            <button
-              onClick={() => (window.location.href = "/")}
-              className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-            >
-              ← Back to Home
-            </button>
+              <h3 className="mb-6 text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-200">
+                Welcome Back
+              </h3>
 
-            <div className="mb-6 text-center">
-              <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
-                Welcome back
-              </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Sign in to your Story Spark AI account
-              </p>
-            </div>
+              <form className="space-y-5 w-full min-w-0 overflow-hidden" onSubmit={handleSubmit(onSubmit)}>
+                <SSInput
+                  label="Email address"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  required={true}
+                  icon="fi fi-rr-envelope"
+                  register={register}
+                  validation={{ required: "Email is required" }}
+                  error={errors.email}
+                />
 
-            <form
-              className="space-y-5 w-full min-w-0 box-border"
-              onSubmit={handleSubmit(onSubmit)}
-            >
-              <SSInput
-                label="Email address"
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                required
-                icon="fi fi-rr-envelope"
-                register={register}
-                validation={{ required: "Email is required" }}
-                error={errors.email}
-                autoComplete="email"
-              />
-
-              <div>
                 <SSInput
                   label="Password"
                   name="password"
                   type="password"
                   placeholder="Enter your password"
-                  required
+                  required={true}
                   icon="fi fi-rr-lock"
                   register={register}
                   validation={{ required: "Password is required" }}
                   error={errors.password}
-                  autoComplete="current-password"
                 />
 
-                <div className="flex justify-end pt-2">
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+                <div className="flex justify-end -mt-2">
+                  <a
+                    href="/forgot-password"
+                    className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
                   >
                     Forgot Password?
-                  </Link>
+                  </a>
+                </div>
+
+                <SSButton text="Sign In" type="submit" isLoading={isBusy} />
+              </form>
+
+              <div className="mt-6 relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200"></div>
+                </div>
+
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                    OR
+                  </span>
                 </div>
               </div>
 
-              <div className="pt-2">
-                <SSButton text="Sign In" type="submit" isLoading={isBusy} />
+              <div className="mt-6 flex justify-center list-none">
+                <GoogleLogin onSuccess={handleGoogleLoginSuccess} onError={handleGoogleLoginError} />
               </div>
-            </form>
 
-            <div className="relative my-8 w-full">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200 dark:border-slate-700" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-50 dark:bg-slate-800 px-4 text-slate-400 font-semibold tracking-wide">
-                  Or
-                </span>
-              </div>
-            </div>
-
-            <div className="flex justify-center w-full overflow-hidden">
-              <GoogleLogin
-                onSuccess={handleGoogleLoginSuccess}
-                onError={handleGoogleLoginError}
+              <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                Don&apos;t have an account? {" "}
+                <a href="/signup" className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200">
+                  Sign up for free
+                </a>
+              </p>
+              <Toaster
+                position="top-right"
+                reverseOrder={false}
               />
             </div>
-
-            <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
-              Don&apos;t have an account?{" "}
-              <Link
-                to="/signup"
-                className="font-bold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
-              >
-                Sign up for free
-              </Link>
-            </p>
           </div>
         </div>
       </div>
-
-      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };

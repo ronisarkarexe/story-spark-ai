@@ -67,8 +67,15 @@ const HomeComponent = () => {
           </div>
         </aside>
       </div>
-      <BackToTop />
-    </div>
+      <div className="flex flex-col gap-16 pb-16 sm:gap-20">
+        <CommunitySpotlightComponent />
+        <ResourceComponent />
+        <WriterFeedbackComponent />
+        <PricingComponent />
+        <StartWritingComponent />
+        <BackToTop />
+      </div>
+    </>
   );
 };
 

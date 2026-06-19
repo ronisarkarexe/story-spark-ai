@@ -825,9 +825,17 @@ html.dark .story-section-heading {
 }
 
 .story-section-copy {
-  color: #94a3b8;
+  color: #475569;
   font-size: clamp(1rem, 2vw, 1.125rem);
   line-height: 1.7;
+}
+
+html.dark .story-section-heading {
+  color: #f8fafc;
+}
+
+html.dark .story-section-copy {
+  color: #94a3b8;
 }
 
 .story-panel {
