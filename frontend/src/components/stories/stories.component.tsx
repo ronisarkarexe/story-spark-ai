@@ -28,7 +28,6 @@ type Inputs = {
 };
 
 const MAX_PROMPT_LENGTH = 2000;
-const WARN_THRESHOLD = 0.85;
 const lengths = ["short", "medium", "long"] as const;
 const WARN_THRESHOLD = 0.8;
 const DANGER_THRESHOLD = 0.95;
@@ -1846,12 +1845,18 @@ onKeyDown={(e) => {
                         ) : null}
                       </div>
 
-                      <span className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
-                        isOverLimit || isDangerLimit ? "text-red-500 dark:text-red-400" : isNearLimit ? "text-amber-500" : "text-slate-400"
-                      }`}>
-                        {textareaValue.length} / {MAX_PROMPT_LENGTH}
-
-                      </span>
+                      <span
+  aria-live="polite"
+  className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
+    isOverLimit || isDangerLimit
+      ? "text-red-500 dark:text-red-400"
+      : isNearLimit
+      ? "text-amber-500"
+      : "text-slate-400"
+  }`}
+>
+  {textareaValue.length} / {MAX_PROMPT_LENGTH}
+</span>
                     </div>
                   </div>
 
