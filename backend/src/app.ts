@@ -12,11 +12,8 @@ import cookieParser from "cookie-parser";
 import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
-<<<<<<< HEAD
 import { User } from "./app/modules/user/user.model";
 import characterRoutes from "./routes/character.routes";
-=======
->>>>>>> upstream/main
 
 const app: Application = express();
 app.set("trust proxy", 1);
