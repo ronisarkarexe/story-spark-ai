@@ -47,7 +47,7 @@ const searchStories = async (
 
   const [results, total] = await Promise.all([
     Post.find(matchStage, { score: { $meta: "textScore" } })
-      .sort(sortStage as Parameters<typeof Post.find>[1])
+      .sort(sortStage as any)
       .skip((page - 1) * limit)
       .limit(limit)
       .populate("author", "name profile.avatar")
