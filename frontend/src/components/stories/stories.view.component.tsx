@@ -393,14 +393,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]);
   const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-
-  const [loading, setLoading] = useState<boolean>(false);
-  const [isCopied, setIsCopied] = useState<boolean>(false);
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
-  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [, setShowRemix] = useState<boolean>(false);
-  const [showContinueModal, setShowContinueModal] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
