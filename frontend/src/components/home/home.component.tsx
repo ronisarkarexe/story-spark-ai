@@ -13,30 +13,6 @@ import PersonalizedRecommendationsComponent from "./personalized_recommendations
 import { isLoggedIn } from "../../services/auth.service";
 import BackToTop from "../ScrollToTopButton";
 import HomeSearchBar from "./search_bar/search_bar.component";
-import StoryInspirationHomeCard from "./story_inspiration_card/StoryInspirationHomeCard";
-import PictureCarouselComponent from "./picture_carousel/picture_carousel.component";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-    },
-  },
-};
-
 const HomeComponent = () => {
   const isLogin = isLoggedIn();
 
@@ -61,10 +37,8 @@ const HomeComponent = () => {
 
         <aside className="col-span-12 lg:col-span-4 min-w-0 w-full box-border">
           <div className="space-y-6 lg:sticky lg:top-24 w-full box-border">
-            <PictureCarouselComponent />
             {isLogin && <FeatureProfileComponent />}
             {isLogin && <PersonalizedRecommendationsComponent />}
-            <StoryInspirationHomeCard />
             <TrendingTopicComponent />
             <RecommendedWritersComponent />
           </div>

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -63,14 +63,7 @@ const features = [
   }
 ];
 
-type Feature = {
-interface Feature {
-  title: string;
-  description: string;
-  bgClass: string;
-  icon: ReactNode;
-};
-}
+
 
 const FeatureCard = ({ feature }: { feature: Feature }) => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -313,7 +306,7 @@ const HeroSectionComponent = () => {
                 ]}
               />
             </span>
-          </h1>
+          </motion.h1>
 
           <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
             Create, edit, and generate engaging multiple story variations from a single prompt.
@@ -338,7 +331,7 @@ const HeroSectionComponent = () => {
               </div>
             </div>
           </div>
-        </div>
+      
           </motion.div>
 
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
@@ -352,7 +345,7 @@ const HeroSectionComponent = () => {
             ))}
           </div>
         </div>
-        </div>
+        
 
       <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">
@@ -360,10 +353,10 @@ const HeroSectionComponent = () => {
             <FeatureCard feature={feature} key={index} />
           ))}
         </div>
-      </div>
+       </motion.div>
     </div>
-      </motion.div>
-    </motion.div>
+  </motion.div>
+  
   );
 };
 
