@@ -1,5 +1,5 @@
-import ReactFlow from "reactflow";
-import "reactflow/dist/style.css";
+// import ReactFlow from "reactflow";
+// import "reactflow/dist/style.css";
 
 const nodes = [
   {
@@ -35,7 +35,8 @@ const edges = [
 const StoryBranchGraph = () => {
   return (
     <div style={{ width: "100%", height: "500px" }}>
-      <ReactFlow nodes={nodes} edges={edges} />
+      {/* <ReactFlow nodes={nodes} edges={edges} /> */}
+      <div>ReactFlow component disabled due to missing module</div>
     </div>
   );
 };

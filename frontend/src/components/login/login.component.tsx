@@ -103,29 +103,56 @@ const LoginComponent = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="hidden lg:flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
         >
-          <div className="flex justify-center items-center gap-6 border border-gray-300 dark:border-slate-700 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-            <WandSparkles className="text-violet-600 shrink-0" />
-            <div>
-              <h2 className="font-bold">Smart writing</h2>
-              <p className="text-sm">AI that understands your ideas</p>
-            </div>
+          {/* Brand headline */}
+          <div className="mb-1">
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+              Your stories,{" "}
+              <span className="bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
+                reimagined with AI.
+              </span>
+            </h2>
+            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              Join thousands of writers creating amazing content with our AI-powered storytelling platform.
+            </p>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 box-border"
-          >
-            <div className="border border-gray-300 dark:border-slate-700 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400 text-sm">
-              Create, edit, and generate engaging multiple story variations from a
-              single prompt. Perfect for writers, creators, and enthusiasts
-              exploring the future of fiction.
+          {/* Feature cards */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-4 rounded-2xl border border-violet-200/60 dark:border-violet-800/40 bg-violet-50 dark:bg-violet-950/40 p-4">
+              <div className="mt-0.5 shrink-0 rounded-xl border border-white/80 bg-white dark:bg-slate-800/80 p-2 shadow-sm">
+                <WandSparkles className="w-5 h-5 text-violet-500" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Smart AI Writing</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">AI that understands your creative style and helps you break through blocks.</p>
+              </div>
             </div>
-          </motion.div>
+            <div className="flex items-start gap-4 rounded-2xl border border-blue-200/60 dark:border-blue-800/40 bg-blue-50 dark:bg-blue-950/40 p-4">
+              <div className="mt-0.5 shrink-0 rounded-xl border border-white/80 bg-white dark:bg-slate-800/80 p-2 shadow-sm">
+                <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Infinite Variations</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">Generate multiple unique story branches from a single prompt.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4 rounded-2xl border border-pink-200/60 dark:border-pink-800/40 bg-pink-50 dark:bg-pink-950/40 p-4">
+              <div className="mt-0.5 shrink-0 rounded-xl border border-white/80 bg-white dark:bg-slate-800/80 p-2 shadow-sm">
+                <svg className="w-5 h-5 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Community Driven</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">Publish, get feedback, and collaborate with a thriving creative ecosystem.</p>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
-        <div className="flex justify-center w-full box-border">
+                <div className="flex justify-center w-full box-border">
           <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
             <button
               onClick={() => (window.location.href = "/")}

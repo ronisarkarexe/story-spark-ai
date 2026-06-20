@@ -33,9 +33,16 @@ const toggleBookmark = async (storyId: string, token: ITokenPayload) => {
     await Post.findByIdAndUpdate(post._id, { $inc: { bookmarksCount: -1 } });
     return { message: "Bookmark removed", isBookmarked: false };
   } else {
-    await Bookmark.create({ userId: user._id, storyId: post._id });
-    await Post.findByIdAndUpdate(post._id, { $inc: { bookmarksCount: 1 } });
-    return { message: "Story bookmarked!", isBookmarked: true };
+    try {
+      await Bookmark.create({ userId: user._id, storyId: post._id });
+      await Post.findByIdAndUpdate(post._id, { $inc: { bookmarksCount: 1 } });
+      return { message: "Story bookmarked!", isBookmarked: true };
+    } catch (err: any) {
+      if (err?.code === 11000) {
+        return { message: "Story already bookmarked!", isBookmarked: true };
+      }
+      throw err;
+    }
   }
 };
 
@@ -178,3 +185,5 @@ export const BookmarkService = {
   checkBookmarkStatus,
   deleteBookmark,
 };
+
+

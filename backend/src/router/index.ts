@@ -11,7 +11,6 @@ import { ReviewRouter } from "../app/modules/review/review.router";
 import { ReactionRouter } from "../app/modules/reaction/reaction.router";
 import { ContactRoutes } from "../app/modules/contact/contact.route";
 import { StoriesRouter } from "../routes/stories";
-import storyRoutes from "../routes/story.routes";
 import { ReportRouter } from "../app/modules/report/report.router";
 import { NewsletterRouter } from "../app/modules/newsletter/newsletter.route";
 import paymentRouter from "../router/payment.route";
@@ -102,10 +101,6 @@ const modules = [
     router: StoriesRouter,
   },
   {
-    path: "/story-continuation",
-    router: storyRoutes,
-  },
-  {
     path: "/story-inspiration",
     router: StoryInspirationRouter,
   },
@@ -149,7 +144,6 @@ const modules = [
     path: "/story-consistency",
     router: StoryConsistencyRouter,
   },
-
   {
     path: "/search",
     router: SearchRouter,
