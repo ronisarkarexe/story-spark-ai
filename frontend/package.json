@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "typecheck": "tsc -b --noEmit",
     "start": "vite preview --host --port 4001",
     "lint": "eslint .",

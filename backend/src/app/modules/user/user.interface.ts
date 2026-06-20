@@ -11,6 +11,7 @@ export interface IUser {
   role: string;
   status: string;
   subscriptionType: SubscriptionType;
+  subscriptionExpiry?: Date | null;
   postsCount: number;
   followers: Types.ObjectId[];
   following: Types.ObjectId[];
@@ -24,8 +25,6 @@ export interface IUser {
       instagram: string;
     github: string;
     discord: string;
-      github: string;  
-      discord: string;
     };
   };
   requestsThisMonth: number;

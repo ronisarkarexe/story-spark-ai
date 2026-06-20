@@ -1,6 +1,6 @@
+import { API_BASE } from "../../helpers/config";
 /* eslint-disable */
 import React, { useState } from 'react';
-import { getBaseUrl } from '../../helpers/config';
 import StoryGeneratingAnimation from '../loading/story-generating-animation.component';
 
 const StoryInspirationPage: React.FC = () => {
@@ -14,7 +14,7 @@ const StoryInspirationPage: React.FC = () => {
     setError('');
     setIdeas([]);
     try {
-      const response = await fetch(`${getBaseUrl()}/story-inspiration`, {
+      const response = await fetch(`${API_BASE}/story-inspiration`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ intro }),

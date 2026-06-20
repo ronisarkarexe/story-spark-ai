@@ -162,9 +162,7 @@ export const setupCollabSocket = (io: Server) => {
 
     // Yjs document updates
 socket.on("collab:yjs-update", ({ roomId, update }) => {
-  const room = rooms.get(roomId);
-
-  if (!room) {
+  if (!socket.rooms.has(roomId)) {
     socket.emit("collab:error", {
       message: "Room not found",
     });
@@ -178,9 +176,7 @@ socket.on("collab:yjs-update", ({ roomId, update }) => {
 
 // Awareness / cursor updates
 socket.on("collab:awareness", ({ roomId, awareness }) => {
-  const room = rooms.get(roomId);
-
-  if (!room) {
+  if (!socket.rooms.has(roomId)) {
     socket.emit("collab:error", {
       message: "Room not found",
     });

@@ -1,7 +1,7 @@
+import { API_BASE } from "../../helpers/config";
 import axios from "axios";
-import { getBaseUrl } from "../helpers/config";
 
-const API_BASE = getBaseUrl();
+const API_BASE = API_BASE;
 
 export interface IConsistencyIssue {
   type: string;

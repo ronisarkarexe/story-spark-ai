@@ -8,7 +8,9 @@ import StoryWorldMap from "../story-map/StoryWorldMap";
 import BookmarkButton from "../BookmarkButton";
 import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
+// @ts-ignore - Temporary fix for AudioPlayer import
+import AudioPlayer from "../AudioPlayer";
+import type { AudioPlayerHandle, NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
 import {
   useGenerateAlternateEndingsMutation,
@@ -16,6 +18,7 @@ import {
 } from "../../redux/apis/ai.model.api";
 import ImageFallback from "../ImageFallback";
 import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
+import ReadingProgress from "../ReadingProgress";
 export interface IStories {
   uuid: string;
   title: string;
@@ -737,6 +740,7 @@ if (isLoading) {
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
+      <ReadingProgress />
       <style>
         {`
           @keyframes fadeInUp {
@@ -830,7 +834,10 @@ if (isLoading) {
                 <button
                   type="button"
                   className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowWorldMap(true)}
+                  onClick={() => {
+                    toast("World Map will be available soon!");
+                    // setShowWorldMap(true);
+                  }}
                   disabled={!selectedStory}
                 >
                   Γëí╞Æ├╣ΓòæΓê⌐Γòò├à World Map
@@ -1220,6 +1227,7 @@ if (isLoading) {
           </div>
         </div>
       </div>
+      {/* Temporarily disabled - needs parseStory fix
       {showWorldMap && selectedStory && (
         <StoryWorldMap
           story={selectedStory.content}
@@ -1227,6 +1235,7 @@ if (isLoading) {
           onClose={() => setShowWorldMap(false)}
         />
       )}
+      */}
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

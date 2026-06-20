@@ -44,8 +44,8 @@ router.post(
   piiScrubberMiddleware,
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {
-    const { prompt, language, count } = req.body as { prompt: string; language?: string; count?: number };
-    const result = await AiModelService.aiFreeStoryContinuationMultiple({ prompt, language, count });
+    const { prompt, language } = req.body as { prompt: string; language?: string; count?: number };
+    const result = await AiModelService.aiFreeStoryContinuation({ prompt, language });
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,

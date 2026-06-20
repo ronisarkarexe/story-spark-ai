@@ -122,6 +122,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
+    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId, speech.setSelectedVoiceId]);
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         const target = event.target as HTMLElement;
@@ -544,9 +545,8 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
         )}
       </section>
     );
-  },
+  }
 );
-
 AudioPlayer.displayName = "AudioPlayer";
 
 export default AudioPlayer;

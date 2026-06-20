@@ -1,12 +1,12 @@
 import React from "react";
-import PricingComponent from "../home/pricing/pricing.component";
+import PaymentComponent from "./payment.component";
 
-const PricingMainComponent = () => {
+const PricingComponent = () => {
   return (
     <div>
-      <PricingComponent />
+      <PaymentComponent />
     </div>
   );
 };
 
-export default PricingMainComponent;
+export default PricingComponent;

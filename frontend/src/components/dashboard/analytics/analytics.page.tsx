@@ -1,12 +1,12 @@
+import { API_BASE } from "../../helpers/config";
 import { useEffect, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, CartesianGrid,
 } from "recharts";
 import { getToken } from "../../../services/auth.service";
-import { getBaseUrl } from "../../../helpers/config";
 
-const API_BASE = getBaseUrl();
+const API_BASE = API_BASE;
 
 const COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#14b8a6"];
 

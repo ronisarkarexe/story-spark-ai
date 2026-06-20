@@ -34,7 +34,6 @@ const StarRating = ({
           </button>
         ))}
       </div>
-
       {(hovered || rating) > 0 && (
         <p className="text-xs font-semibold tracking-wide text-yellow-400">
           {ratingLabels[hovered || rating]}
@@ -56,33 +55,22 @@ const ReviewForm = () => {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-
     if (!name.trim()) newErrors.name = "Name is required";
     if (!role.trim()) newErrors.role = "Role is required";
     if (!feedback.trim()) newErrors.feedback = "Review is required";
     if (feedback.length > 500) newErrors.feedback = "Max 500 characters";
     if (rating === 0) newErrors.rating = "Please select a rating";
-
     return newErrors;
   };
 
   const handleSubmit = async () => {
     const newErrors = validate();
-
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
     try {
-      await createReview({
-        name,
-        role,
-        feedback,
-        rating,
-        imgSrc: "",
-      });
-
+      await createReview({ name, role, feedback, rating, imgSrc: "" });
       setSuccess(true);
       setName("");
       setRole("");
@@ -90,49 +78,39 @@ const ReviewForm = () => {
       setRating(0);
       setErrors({});
     } catch {
-      setErrors({
-        submit: "Failed to submit review. Please try again.",
-      });
+      setErrors({ submit: "Failed to submit review. Please try again." });
     }
   };
 
   return (
     <div className="mx-auto max-w-2xl">
       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#0f172a]/90 to-[#111827]/90 p-6 sm:p-8 md:p-10 shadow-2xl shadow-blue-500/10 backdrop-blur-md">
-        {/* Background Glow */}
         <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-blue-500/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-indigo-500/10 blur-3xl" />
 
         <div className="relative z-10">
-          {/* Header */}
           <div className="mb-8">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-400">
-              ✍️ Share Your Story
+              ✏️ Share Your Story
             </div>
-
             <h3 className="text-2xl font-bold text-white">
               Share Your Experience
             </h3>
-
             <p className="mt-1 text-sm text-gray-400">
               Your feedback helps us improve StorySparkAI for everyone.
             </p>
           </div>
 
-          {/* Success */}
           {success && (
             <div
               aria-live="polite"
               className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400 transition-all duration-300"
             >
               <span className="text-lg">🎉</span>
-              <span>
-                Thank you! Your review has been submitted for approval.
-              </span>
+              <span>Thank you! Your review has been submitted for approval.</span>
             </div>
           )}
 
-          {/* Error */}
           {errors.submit && (
             <div
               aria-live="polite"
@@ -154,7 +132,6 @@ const ReviewForm = () => {
                 Name
                 <span className="text-red-400">*</span>
               </label>
-
               <input
                 id="name"
                 type="text"
@@ -164,7 +141,6 @@ const ReviewForm = () => {
                 aria-invalid={!!errors.name}
                 className="w-full max-w-lg rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
-
               {errors.name && (
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
                   <span>⚠</span>
@@ -183,7 +159,6 @@ const ReviewForm = () => {
                 Role
                 <span className="text-red-400">*</span>
               </label>
-
               <input
                 id="role"
                 type="text"
@@ -193,7 +168,6 @@ const ReviewForm = () => {
                 aria-invalid={!!errors.role}
                 className="w-full max-w-lg rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
-
               {errors.role && (
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
                   <span>⚠</span>
@@ -212,7 +186,6 @@ const ReviewForm = () => {
                 Review
                 <span className="text-red-400">*</span>
               </label>
-
               <textarea
                 id="feedback"
                 rows={5}
@@ -223,7 +196,6 @@ const ReviewForm = () => {
                 aria-invalid={!!errors.feedback}
                 className="w-full max-w-lg resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
-
               <div className="mt-1 flex items-center justify-between max-w-lg">
                 {errors.feedback ? (
                   <p className="flex items-center gap-1 text-xs text-red-400">
@@ -233,12 +205,7 @@ const ReviewForm = () => {
                 ) : (
                   <span />
                 )}
-
-                <p
-                  className={`text-xs ${
-                    feedback.length > 450 ? "text-yellow-400" : "text-gray-500"
-                  }`}
-                >
+                <p className={`text-xs ${feedback.length > 450 ? "text-yellow-400" : "text-gray-500"}`}>
                   {feedback.length}/500
                 </p>
               </div>
@@ -251,13 +218,7 @@ const ReviewForm = () => {
                 Rating
                 <span className="text-red-400">*</span>
               </label>
-
               <StarRating rating={rating} setRating={setRating} />
-
-              <p className="mt-2 text-xs text-gray-500">
-                Select a rating based on your overall experience.
-              </p>
-
               {errors.rating && (
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
                   <span>⚠</span>
@@ -266,15 +227,15 @@ const ReviewForm = () => {
               )}
             </div>
 
-            <div className="flex justify-center mt-6">
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isLoading}
-                className="w-auto rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/25 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-              >
+            {/* Submit */}
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:bg-blue-500 hover:shadow-blue-500/40 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
               {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
+                <span className="flex items-center gap-2">
                   <svg
                     className="h-4 w-4 animate-spin"
                     viewBox="0 0 24 24"
@@ -300,12 +261,9 @@ const ReviewForm = () => {
                 "Share Review ✨"
               )}
             </button>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
-  );
     </div>
   );
 };

@@ -1,6 +1,6 @@
+import { API_BASE } from "../../helpers/config";
 import React, { useState } from "react";
 import axios from "axios";
-import { getBaseUrl } from "../../helpers/config";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -30,7 +30,7 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
     const toastId = toast.loading("AI Editor is reviewing your story...");
 
     try {
-      const baseUrl = getBaseUrl() || import.meta.env.VITE_BASE_URL || "";
+      const baseUrl = API_BASE || import.meta.env.VITE_BASE_URL || "";
       const response = await axios.post(`${baseUrl}/ai-editor/analyze`, {
         storyText,
       });

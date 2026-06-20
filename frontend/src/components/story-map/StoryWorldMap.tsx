@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { parseStory, IStoryNode } from "../../utils/storyParser";
 
@@ -136,24 +136,6 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
       .attr("font-size", "11px")
       .attr("font-weight", "600")
       .text((d: SimNode) => d.name);
-
-    simulation.on("tick", () => {
-      link
-        .attr("x1", (d: SimLink) => (typeof d.source === "string" ? 0 : d.source.x ?? 0))
-        .attr("y1", (d: SimLink) => (typeof d.source === "string" ? 0 : d.source.y ?? 0))
-        .attr("x2", (d: SimLink) => (typeof d.target === "string" ? 0 : d.target.x ?? 0))
-        .attr("y2", (d: SimLink) => (typeof d.target === "string" ? 0 : d.target.y ?? 0));
-      node.attr("transform", (d: SimNode) => `translate(${d.x || 0},${d.y || 0})`);
-      .attr("font-size", (node: SimNode) => node.type === "location" ? "18px" : "14px")
-      .text((node: SimNode) => node.type === "location" ? "Pin" : "User");
-
-    node.append("text")
-      .attr("text-anchor", "middle")
-      .attr("y", (node: SimNode) => node.type === "location" ? 40 : 32)
-      .attr("fill", (node: SimNode) => node.type === "location" ? "#a5b4fc" : "#f9a8d4")
-      .attr("font-size", "11px")
-      .attr("font-weight", "600")
-      .text((node: SimNode) => node.name);
 
     simulation.on("tick", () => {
       link

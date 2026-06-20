@@ -1,3 +1,4 @@
+import { API_BASE } from "../../helpers/config";
 import { useState, useRef } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import {
@@ -13,8 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 
-import { instance as axios } from "../../helpers/axios/axiosInstance";
-import { getBaseUrl } from "../../helpers/config";
+import axios from "../../helpers/axios/axiosInstance";
 import storybook from "../../assets/storybook.png";
 import { motion } from "framer-motion";
 
@@ -129,7 +129,7 @@ export default function Contact() {
       setSuccess(false);
       if (!validateForm()) return;
       setLoading(true);
-      const response = await axios.post(`${getBaseUrl()}/contact`, {
+      const response = await axios.post(`${API_BASE}/contact`, {
         fullname: formData.fullname.trim(),
         email: formData.email.trim(),
         subject: formData.subject.trim(),
