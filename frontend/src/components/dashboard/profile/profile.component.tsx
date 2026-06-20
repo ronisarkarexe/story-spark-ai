@@ -9,7 +9,7 @@ import { ProfileSettingComponent } from "./profile.setting.component";
 import { ProfileSavedStoriesSection } from "./profile.saved_stories.component";
 import { WriterApplicationForm } from "./writer_application.form";
 import AuthContext from "../../auth.context";
-import { instance } from "../../../helpers/axios/axionInstance";
+import { instance } from "../../../helpers/axios/axiosInstance";
 
 const ProfileComponent = () => {
   const { data, isLoading } = useGetProfileInfoQuery();
