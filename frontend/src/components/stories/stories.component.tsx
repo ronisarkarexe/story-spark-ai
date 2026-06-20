@@ -11,6 +11,12 @@ import logo from "../../assets/logoNew.png";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import { useDebounce } from "../../hooks/useDebounce";
 import ConfirmDialog from "./ConfirmDialog";
+import {
+  clearStoryDraft,
+  loadStoryDraft,
+  saveStoryDraft,
+  type StoryDraftData,
+} from "../../utils/story-draft";
 
 const soundtrackMap: Record<string, string> = {
   "🧙 Fantasy": "/audio/fantasy.mp3",
@@ -451,6 +457,8 @@ const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
 
     wordCursor += wordsInSentence;
   });
+
+  return segments;
 };
 
 interface ICharacter {
@@ -459,9 +467,6 @@ interface ICharacter {
   role: string;
   personality: string;
 }
-
-  return segments;
-};
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
@@ -489,36 +494,18 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
 
+  const savedDraft = loadStoryDraft();
+  const [showRestorePrompt, setShowRestorePrompt] = useState<boolean>(() => Boolean(savedDraft));
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string>(
-  draft?.genre
-    ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "ðŸ§™ Fantasy")
-    : "ðŸ§™ Fantasy",
-);
-  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
-  const [textareaValue, setTextareaValue] = useState<string>(() => {
-    return location.state?.prompt || draft?.prompt || "";
-  });
-  const [selectedGenre, setSelectedGenre] = useState<string>("");
+  const [selectedGenre, setSelectedGenre] = useState<string>("🧙 Fantasy");
   const [selectedLength, setSelectedLength] = useState<string>("medium");
-  const [textareaValue, setTextareaValue] = useState<string>("");
-
-  
-  const [selectedGenre, setSelectedGenre] = useState<string>(
-    draft?.genre
-      ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
-      : "🧙 Fantasy"
-  );
-  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
-  const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
+  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">("Dramatic");
+  const [textareaValue, setTextareaValue] = useState<string>(() => location.state?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(draft?.language || "English");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
-  const [draftStatus, setDraftStatus] = useState("");
-  const DRAFT_KEY = "storyspark_story_draft_v1";
+  const [draftStatus, setDraftStatus] = useState<string>(savedDraft ? "Draft available to restore" : "");
 
   // Custom characters cast setup states:
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
@@ -538,9 +525,16 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      audioRef.current.src = soundtrack;
+      audioRef.current.play().catch(() => {
+        /* ignore autoplay restrictions */
+      });
+    }
+  }, []);
+
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
-const [, setShowRemix] = useState<boolean>(false);
+  const [, setShowRemix] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
   const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
@@ -671,22 +665,64 @@ const [, setShowRemix] = useState<boolean>(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
 
-  // Autosave Draft
+  // Draft restore + autosave
   useEffect(() => {
+    if (!textareaValue.trim()) {
+      return;
+    }
+
     const timer = setTimeout(() => {
-      const draftData = {
+      const draftData: StoryDraftData = {
         prompt: textareaValue,
         genre: selectedGenre,
         length: selectedLength,
         language: selectedLanguage,
         tone: selectedTone,
+        savedAt: new Date().toISOString(),
       };
+
       try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+        saveStoryDraft(draftData);
+        setDraftStatus(`Draft saved ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
       } catch (err) {
         if (err instanceof DOMException && err.name === "QuotaExceededError") {
           toast.error("Couldn't autosave draft — storage limit reached.");
+          setDraftStatus("Unable to save draft.");
         }
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, selectedTone]);
+
+  const handleRestoreDraft = () => {
+    if (!savedDraft) {
+      return;
+    }
+
+    setSelectedGenre(
+      savedDraft.genre
+        ? (GENRES.find((g) => g.name === savedDraft.genre || g.value === savedDraft.genre)?.value ?? "🧙 Fantasy")
+        : "🧙 Fantasy"
+    );
+    setSelectedLength(savedDraft.length || "medium");
+    setSelectedTone(
+      savedDraft.tone && TONES.some((tone) => tone.label === savedDraft.tone)
+        ? (savedDraft.tone as ToneLabel)
+        : "Dramatic"
+    );
+    setSelectedLanguage(savedDraft.language || "English");
+    setTextareaValue(savedDraft.prompt || "");
+    setDraftStatus("Draft restored.");
+    setShowRestorePrompt(false);
+  };
+
+  const handleDiscardDraft = () => {
+    clearStoryDraft();
+    setShowRestorePrompt(false);
+    setDraftStatus("Draft discarded.");
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleTextToSpeech = () => {
     if (!selectedStory?.content) return;
@@ -762,12 +798,11 @@ const [, setShowRemix] = useState<boolean>(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 350);
   const debouncedPrompt = useDebounce(textareaValue, 500);
 
-  const debouncedSearchQuery = useDebounce(searchQuery, 350);
-  const debouncedPrompt = useDebounce(textareaValue, 500);
-
   useEffect(() => {
     setValue("prompt", debouncedPrompt);
   }, [debouncedPrompt, setValue]);
+
+  useEffect(() => {
     setNarrationWordIndex(0);
     setNarrationState("idle");
   }, [selectedStory?.uuid]);
@@ -852,6 +887,7 @@ const [, setShowRemix] = useState<boolean>(false);
   };
   const handleAddTopic = () => {
     const title = newTopicTitle.trim();
+  };
 
   const [generateModel] = useGenerateModelMutation();
   const [generateFreeModel] = useGenerateFreeModelMutation();
@@ -1069,7 +1105,7 @@ const [, setShowRemix] = useState<boolean>(false);
         setSelectedPrompt("");
         setValue("prompt", "");
         // Clear draft after successful generation
-        localStorage.removeItem(DRAFT_KEY);
+        clearStoryDraft();
         setDraftStatus("");
         reset();
         setCharacters([]);
