@@ -21,16 +21,59 @@ export const scrubPII = (text: string): string => {
   const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
   scrubbed = scrubbed.replace(phoneRegex, "[REDACTED_PHONE]");
 
-  // 3. NLP for Person Names using compromise
-  const doc = compromise(scrubbed);
-  const people = doc.people().out("array");
-  
-  // Sort by length descending to replace longer names first (prevent partial replacement issues)
-  people.sort((a: string, b: string) => b.length - a.length);
+  // 3. Regex for IP Addresses (IPv4 and IPv6)
+  const ipv4Regex = /\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/g;
+  const ipv6Regex = /\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b/g;
+  scrubbed = scrubbed.replace(ipv4Regex, "[REDACTED_IP]");
+  scrubbed = scrubbed.replace(ipv6Regex, "[REDACTED_IP]");
 
-  for (const person of people) {
+  // 4. Regex for SSN / National IDs (e.g. US SSN)
+  const ssnRegex = /\b\d{3}-\d{2}-\d{4}\b/g;
+  scrubbed = scrubbed.replace(ssnRegex, "[REDACTED_SSN]");
+
+  // 5. Regex for Credit Card Numbers (13 to 16 digits, with optional spaces/dashes)
+  const ccRegex = /\b(?:\d{4}[-\s]?){3}\d{4}\b|\b\d{13,16}\b/g;
+  scrubbed = scrubbed.replace(ccRegex, "[REDACTED_CREDIT_CARD]");
+
+  // 6. Regex for Secrets / Passwords / API Keys (case insensitive)
+  const secretsRegex = /\b(?:password|passwd|pwd|passcode|api_key|apikey|api-key|secret|token|client_secret|client-secret|private_key|private-key|auth_token)\s*[:=]\s*[^\s"']{6,}\b/gi;
+  scrubbed = scrubbed.replace(secretsRegex, "[REDACTED_SECRET]");
+
+  // 7. Regex for Street Addresses (case-insensitive, ReDoS-safe)
+  const addressRegex = /\b\d+\s+[A-Za-z0-9.,#-]+(?:\s+[A-Za-z0-9.,#-]+){0,4}\s+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Way|Court|Ct|Circle|Cir|Trail|Trl|Highway|Hwy)\b/gi;
+  scrubbed = scrubbed.replace(addressRegex, "[REDACTED_ADDRESS]");
+
+  // 8. Name Extraction (Compromise NLP + Introductory/Honorific Patterns)
+  const introRegex = /\b(?:my name is|i am|i'm|im|call me|this is|myself|meet|named|introduced as|referred to as|known as|alias|aka|sincerely|best regards|thanks|regards|from|mr|mrs|ms|dr|prof|professor|officer|president|king|queen|prince|princess)\b[,.]?\s+([a-zA-Z]{3,}(?:\s+[a-zA-Z]{3,}){0,2})\b/gi;
+  
+  const stopWords = new Set([
+    "a", "an", "the", "and", "but", "or", "for", "nor", "on", "at", "in", "to", "by", "of", "up", "out",
+    "about", "very", "too", "not", "no", "yes", "here", "there", "when", "how", "why", "who", "what",
+    "where", "which", "developer", "student", "teacher", "writer", "doctor", "nurse", "engineer",
+    "designer", "manager", "artist", "actor", "hero", "villain", "friend", "parent", "mother", "father",
+    "sister", "brother", "son", "daughter", "child", "kids", "cousin", "uncle", "aunt", "boss", "client",
+    "customer", "story", "book", "page", "write", "read", "some", "many", "few", "more"
+  ]);
+
+  let match;
+  const extractedNames: string[] = [];
+  while ((match = introRegex.exec(scrubbed)) !== null) {
+    const candidate = match[1];
+    const words = candidate.toLowerCase().split(/\s+/);
+    const hasStopWord = words.some(word => stopWords.has(word));
+    if (!hasStopWord) {
+      extractedNames.push(candidate);
+    }
+  }
+
+  const doc = compromise(scrubbed);
+  const compromisePeople = doc.people().out("array");
+
+  const allPeople = Array.from(new Set([...compromisePeople, ...extractedNames]));
+  allPeople.sort((a, b) => b.length - a.length);
+
+  for (const person of allPeople) {
     if (person.length > 2) {
-      // Create a global regex to replace the specific name exactly (case insensitive)
       const nameRegex = new RegExp(`\\b${escapeRegex(person)}\\b`, "gi");
       scrubbed = scrubbed.replace(nameRegex, "[REDACTED_NAME]");
     }
