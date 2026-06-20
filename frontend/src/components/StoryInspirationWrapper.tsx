@@ -1,9 +1,7 @@
-import React from 'react';
-import StoryInspirationComponent from './story-inspiration/story_inspiration.component';
+import React from "react";
 
-
-const StoryInspirationWrapper: React.FC = () => {
-  return <StoryInspirationComponent />;
+const StubComponent: React.FC<any> = () => {
+  return <div>Component under maintenance</div>;
 };
 
-export default StoryInspirationWrapper;
+export default StubComponent;

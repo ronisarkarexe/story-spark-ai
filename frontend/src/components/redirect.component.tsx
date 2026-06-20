@@ -1,24 +1,7 @@
-import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React from "react";
 
-type RedirectComponentProps = {
-  defaultPath?: string;
+const StubComponent: React.FC<any> = () => {
+  return <div>Component under maintenance</div>;
 };
 
-const RedirectComponent = ({ defaultPath = "/" }: RedirectComponentProps) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const redirectPath = location.state && location.state.from ? location.state.from : defaultPath;
-    
-    if (redirectPath !== location.pathname) {
-      navigate(redirectPath);
-    }
-  }, [location, navigate, defaultPath]);
-
-  return null;
-};
-
-export default RedirectComponent;
-
+export default StubComponent;

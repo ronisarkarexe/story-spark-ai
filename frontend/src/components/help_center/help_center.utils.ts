@@ -112,15 +112,6 @@ export const HELP_CATEGORIES: HelpCategory[] = [
   }
 ];
 
-<<<<<<< HEAD
-=======
-// CORRECTED MAPPING: Changed 'title' to 'label' so the sidebar reads it correctly
-export const HELP_SECTIONS = HELP_CATEGORIES.map(category => ({
-  id: category.id,
-  title: category.title,
-  description: category.description,
-}));
->>>>>>> d8f93186 (Resoved Error)
 export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
   {
     id: "connection-lost",
@@ -132,35 +123,3 @@ export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
     keywords: ["network", "socket", "disconnect", "collab", "freeze"]
   }
 ];
-<<<<<<< HEAD
-
-export type FaqItem = FAQItem;
-export type SupportLink = Support_Links;
-
-export interface HelpSection {
-  id: string;
-  label: string;
-}
-
-export const HELP_SECTIONS: HelpSection[] = [
-  { id: "help-categories", label: "Categories" },
-  { id: "troubleshoot-section", label: "Troubleshooting" },
-  { id: "faq-section", label: "FAQ" },
-  { id: "developer-setup", label: "Setup Guide" },
-  { id: "support-links-section", label: "Support" },
-];
-
-export const scrollToSection = (id: string) => {
-  const element = document.getElementById(id);
-  if (element) {
-    element.scrollIntoView({ behavior: "smooth" });
-  }
-};
-
-export const matchesSearch = (query: string, fields: string[]): boolean => {
-  if (!query) return true;
-  const lowerQuery = query.toLowerCase();
-  return fields.some(field => field?.toLowerCase().includes(lowerQuery));
-};
-=======
->>>>>>> d8f93186 (Resoved Error)

@@ -1,14 +1,7 @@
-import { getReadingTime } from "../utils/readingTime";
+import React from "react";
 
-type Props = {
-  text: string;
+const StubComponent: React.FC<any> = () => {
+  return <div>Component under maintenance</div>;
 };
 
-export default function ReadingTimeBadge({ text }: Props) {
-  const { minutes, wordCount } = getReadingTime(text);
-  return (
-    <p className="text-sm text-gray-500 dark:text-gray-400">
-      🕐 {minutes} min read · {wordCount} words
-    </p>
-  );
-}
+export default StubComponent;

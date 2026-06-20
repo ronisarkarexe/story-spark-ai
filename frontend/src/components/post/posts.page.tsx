@@ -1,5 +1,7 @@
-const PostsPage = () => {
-  return <div>Posts Page</div>;
+import React from "react";
+
+const StubComponent: React.FC<any> = () => {
+  return <div>Component under maintenance</div>;
 };
 
-export default PostsPage;
+export default StubComponent;

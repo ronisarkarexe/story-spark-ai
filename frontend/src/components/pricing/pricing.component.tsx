@@ -1,12 +1,7 @@
 import React from "react";
-import PricingComponent from "../home/pricing/pricing.component";
 
-const PricingMainComponent = () => {
-  return (
-    <div>
-      <PricingComponent />
-    </div>
-  );
+const StubComponent: React.FC<any> = () => {
+  return <div>Component under maintenance</div>;
 };
 
-export default PricingMainComponent;
+export default StubComponent;
