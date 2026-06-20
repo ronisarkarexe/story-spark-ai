@@ -128,8 +128,8 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
     ? "w-full rounded-xl border border-slate-200/10 dark:border-white/10 bg-slate-900 px-5 py-3 text-xs font-bold text-white transition-all duration-150 hover:bg-slate-800 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider"
     : "w-full rounded-xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-900 transition-all duration-150 hover:bg-slate-100 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider";
 
-    return (
-    <div ref={bannerRef} className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4 text-white sm:px-6 lg:px-8">
+  return (
+    <div ref={bannerRef} className={`${bannerClasses} px-4 pb-4 sm:px-6 lg:px-8`}>
       <div className="mx-auto flex max-h-[82vh] max-w-5xl flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-700 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl sm:p-5 xl:flex-row xl:items-start xl:justify-between xl:gap-6">
         <div className="max-w-3xl space-y-3">
           <p className="text-xs uppercase tracking-[0.26em] text-slate-400">Cookie Preferences</p>
