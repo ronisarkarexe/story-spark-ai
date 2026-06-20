@@ -173,7 +173,6 @@ export class StyleTransferEngine {
       wanna: 'want to',
       cant: 'cannot',
       dont: 'do not',
-      cant: 'cannot',
       shouldnt: 'should not',
       wasnt: 'was not',
       isnt: 'is not',
