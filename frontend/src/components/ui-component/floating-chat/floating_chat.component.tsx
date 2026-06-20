@@ -162,7 +162,7 @@ export const FloatingChatWidget: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] font-sans">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] font-sans max-w-[calc(100vw-2rem)]">
       {/* Chat Trigger Button */}
       {!isOpen && (
         <button
@@ -189,7 +189,7 @@ export const FloatingChatWidget: React.FC = () => {
 
       {/* Chat Window Panel */}
       {isOpen && (
-        <div className="flex flex-col h-[560px] w-[380px] rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl shadow-[0_12px_40px_rgba(2,6,23,0.3)] animate-in slide-in-from-bottom-5 duration-300 transform-gpu overflow-hidden">
+        <div className="flex flex-col h-[min(560px,80vh)] w-[calc(100vw-2rem)] sm:w-[380px] rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl shadow-[0_12px_40px_rgba(2,6,23,0.3)] animate-in slide-in-from-bottom-5 duration-300 transform-gpu overflow-hidden">
           
           {/* Chat Window Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 bg-gradient-to-r from-blue-600/5 to-purple-600/5">

@@ -62,14 +62,6 @@ const SSInput = <T extends FieldValues>({
         <input
           type={inputType}
           id={name}
-          className={`w-full pl-8 pr-10 py-1.5 text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border rounded-md sm:text-sm ${
-          error
-          ? "border-red-500 outline-red-500"
-          : "border-gray-300 outline-gray-300 focus:outline-indigo-600"
-          }`}          placeholder={placeholder}
-          autoComplete={autoComplete}
-          autoFocus={autoFocus}
-          {...register(name, validation)}
           className={`w-full min-w-0 max-w-full h-11 block box-border rounded-xl border bg-white dark:bg-slate-900/40 text-sm transition-all duration-200 focus:outline-none focus:ring-2 ${
             icon ? "pl-11" : "px-4"
           } ${isPasswordType ? "pr-11" : "pr-4"} ${
@@ -77,6 +69,10 @@ const SSInput = <T extends FieldValues>({
               ? "border-rose-500/80 focus:ring-rose-500/20 focus:border-rose-500 text-rose-200"
               : "border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
           }`}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          autoFocus={autoFocus}
+          {...register(name, validation)}
         />
 
         {isPasswordType && (

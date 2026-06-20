@@ -122,7 +122,7 @@ const FeatureProfileComponent = () => {
       {showFollowers && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
 
-          <div className="bg-white p-6 rounded-2xl w-[380px] shadow-2xl">
+          <div className="bg-white p-6 rounded-2xl w-[90%] max-w-[380px] shadow-2xl">
 
             <h2 className="text-xl font-bold mb-5 text-center">
               Followers
@@ -172,7 +172,7 @@ const FeatureProfileComponent = () => {
       {showFollowing && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
 
-          <div className="bg-white p-6 rounded-2xl w-[380px] shadow-2xl">
+          <div className="bg-white p-6 rounded-2xl w-[90%] max-w-[380px] shadow-2xl">
 
             <h2 className="text-xl font-bold mb-5 text-center">
               Following
@@ -222,7 +222,7 @@ const FeatureProfileComponent = () => {
       {showNoPostsModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
 
-          <div className="bg-white p-6 rounded-2xl w-[360px] text-center shadow-2xl">
+          <div className="bg-white p-6 rounded-2xl w-[90%] max-w-[360px] text-center shadow-2xl">
 
             <h2 className="text-xl font-bold mb-2">No Posts Yet</h2>
 

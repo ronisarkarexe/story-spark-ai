@@ -64,7 +64,7 @@ export default function Leaderboard() {
             Weekly Rankings
           </div>
 
-          <h1 className="mt-8 text-6xl font-black tracking-tight">
+          <h1 className="mt-8 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-none">
             Story
             <span className="block bg-gradient-to-r from-yellow-300 via-orange-300 to-red-400 bg-clip-text text-transparent">
               Leaderboard
