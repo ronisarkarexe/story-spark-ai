@@ -1,3 +1,5 @@
+import React, { useEffect, useState, useRef, useMemo, Suspense } from "react";
+import DOMPurify from "dompurify";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryMoodDashboard from "./StoryMoodDashboard";
 import StoryTitleSuggestions from "./StoryTitleSuggestions";
@@ -5,7 +7,6 @@ import { CharacterProfile } from "./stories.utils";
 import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
@@ -38,6 +39,8 @@ import {
 import ImageFallback from "../ImageFallback";
 import StoryVisualizer from "../story-visualizer/StoryVisualizer";
 import ContinueStoryModal from "./ContinueStoryModal";
+import useAntiGravityScroll from "../../hooks/useAntiGravityScroll";
+import { StoryboardScene, useGenerateStoryVisualsMutation } from "../../redux/apis/story.visualizer.api";
 
 import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
 import EmptyStoriesState from "./EmptyStoriesState";
@@ -171,6 +174,7 @@ interface IPost extends IStories {
 interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
+  isLoading?: boolean;
   setStories: (stories: IStories[]) => void;
   onPublishSuccess?: () => void;
 }
@@ -232,35 +236,6 @@ const downloadBlob = (blob: Blob, fileName: string) => {
   document.body.appendChild(link);
   link.click();
   link.remove();
-
-    wordCursor += wordsInSentence;
-  });
-
-export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
-  const navigate = useNavigate();
-  const filteredPosts = posts.filter((post) => post._id !== currentPostId);
-
-  return (
-    <div className="mt-8">
-      <h4 className="text-lg font-bold text-slate-200 mb-4">Related Content</h4>
-      {filteredPosts.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredPosts.map((post) => (
-            <div
-              key={post._id}
-              onClick={() => navigate(`/stories/${post._id}`)}
-              className="p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/60 transition-colors"
-            >
-              <p className="text-sm font-semibold text-white truncate">{post.title}</p>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-center text-slate-500 py-4 border border-dashed border-slate-700 rounded-xl">No related stories found.</p>
-      )}
-    </div>
-  );
-  return segments;
 };
 
 const detectStoryMood = (content: string) => {
@@ -370,9 +345,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [exportState, setExportState] = useState<"idle" | "processing" | "compiling" | "success" | "error">("idle");
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState<boolean>(false);
   const dropdownMenuRef = useRef<HTMLDivElement>(null);
-
-  // Standard functional states
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
 
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
@@ -536,20 +508,6 @@ useEffect(() => {
     toast.success(`${endingData.style} applied to story!`);
   };
 
-  const handleResetEnding = () => {
-    if (!selectedStory) return;
-    const originalContent = originalStoryContent[selectedStory.uuid];
-    if (!originalContent) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: originalContent,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success("Reverted to original story ending!");
-  };
 
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
@@ -1050,9 +1008,6 @@ useEffect(() => {
 
       const safeTitle = getSafeFileName(title, "pdf");
       doc.save(safeTitle);
-      // Save PDF with sanitized name
-      const safeTitle = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-      doc.save(`${safeTitle}.pdf`);
       toast.dismiss(toastId);
       toast.success("Premium PDF downloaded!");
     } catch (error) {
@@ -1062,6 +1017,7 @@ useEffect(() => {
     }
   };
 
+const handleExportMarkdown = () => {
   const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1151,9 +1107,6 @@ useEffect(() => {
       toast.dismiss(toastId);
       toast.error("Failed to export DOCX.");
     }
-      downloadBlob(blob, getSafeFileName(title, "md"));
-      toast.success("Markdown downloaded!");
-    } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
   };
 
     toast.success("PDF downloaded!");
@@ -1680,17 +1633,6 @@ const handleGenerateCharacterProfile = async () => {
               </div>
             )}
 
-            <div id="story-content" className="prose prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed tracking-wide relative z-10">
-              <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence = isNarrationActive && narrationWordIndex >= segment.startWordIndex && narrationWordIndex <= segment.endWordIndex;
-                    return (
-                      <span
-                        key={segment.id}
-                        className={isActiveSentence ? "rounded-md bg-indigo-500/20 px-0.5 py-0.5 text-indigo-800 dark:text-indigo-100 ring-1 ring-indigo-400/30 transition-all duration-200" : undefined}
-                      >
-                        {DOMPurify.sanitize(segment.text)}
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
               <p className="break-words whitespace-pre-wrap">
                 {sentenceSegments.length > 0 ? (
@@ -1741,7 +1683,6 @@ const handleGenerateCharacterProfile = async () => {
                     );
                   })
                 ) : (
-                  DOMPurify.sanitize(selectedStory.content)
                   (() => {
                     const rawParts = selectedStory.content.split(/(\s+)/);
                     let wordOffset = 0;
@@ -1919,6 +1860,80 @@ const handleGenerateCharacterProfile = async () => {
           </div>
         </div>
 
+        {/* ── Right Column: Preview & Controls Panel ── */}
+        <div className="col-span-1 lg:col-span-4 w-full box-border lg:sticky lg:top-6 flex flex-col space-y-6">
+          
+          <GeneratedStoryTimeline
+            content={selectedStory.content}
+            title={selectedStory.title}
+            narrationState={narrationState}
+            narrationWordIndex={narrationWordIndex}
+          />
+
+          <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6">
+            <h3 className="text-lg font-bold text-slate-200 mb-4">
+              Select Topics
+            </h3>
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <input
+                type="text"
+                value={newTopicTitle}
+                onChange={(event) => setNewTopicTitle(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    handleAddTopic();
+                  }
+                }}
+                placeholder="Add related topic"
+                className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              />
+              <button
+                type="button"
+                className="rounded-lg px-4 py-2 bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-500 transition-colors"
+                onClick={handleAddTopic}
+              >
+                Add Topic
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {selectedStory ? (
+                <>
+                  {topics.map((topic, index) => (
+                    <span
+                      key={index}
+                      className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
+                    >
+                      <button
+                        type="button"
+                        className="cursor-pointer"
+                        onClick={() => handleTopicClick(index)}
+                      >
+                        {topic.selected ? (
+                          <i className="fa-solid fa-check"></i>
+                        ) : (
+                          <i className="fa-solid fa-plus"></i>
+                        )}{" "}
+                        {topic.title}
+                      </button>
+                      <button
+                        type="button"
+                        className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40"
+                        onClick={() => handleRemoveTopic(index)}
+                        disabled={topics.length <= 2}
+                        aria-label={`Remove ${topic.title}`}
+                      >
+                        <i className="fa-solid fa-xmark"></i>
+                      </button>
+                    </span>
+                  ))}
+                </>
+              ) : (
+                <p className="text-gray-400">
+                  No topics available. Please generate a story first.
+                </p>
+              )}
+            </div>
 
 
         {/* ── Right Column: Preview Panel ── */}
@@ -1926,6 +1941,7 @@ const handleGenerateCharacterProfile = async () => {
           <div className="mb-4 text-left select-none px-0.5">
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Compilation Preview</h2>
           </div>
+
           <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden group w-full box-border text-left">
             <div className="flex flex-col w-full box-border">
               <div className="relative p-3 overflow-hidden text-white w-full box-border" style={{ height: "192px" }}>
@@ -2186,7 +2202,6 @@ const handleGenerateCharacterProfile = async () => {
               </div>
             )}
           </div>
-        </div>
 
         
 
@@ -2257,6 +2272,7 @@ const handleGenerateCharacterProfile = async () => {
           </div>
         </div>
       </div>
+
       {showWorldMap && selectedStory && (
         <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 text-white font-semibold">Loading Map...</div>}>
           <StoryWorldMap

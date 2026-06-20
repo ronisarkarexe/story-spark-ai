@@ -27,6 +27,9 @@ export const enhancePromptWithGemini = async (
     compressedContext ?? "No previous context"
   }\n\nRewrite the following story prompt to be more vivid, specific, and engaging.\nAdd a character name, setting details, and a central conflict.\n\nReturn ONLY the enhanced prompt, nothing else.`;
 
+
+Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ").replace(/\r/g, "")}
+
 Use the following story context if available:
 
 ${compressedContext ?? "No previous context"}

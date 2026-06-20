@@ -112,6 +112,7 @@ const router = createBrowserRouter([
       </>
     ),
     children: [
+
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
       { path: "templates", element: <TemplatesComponent /> },
       { path: "create", element: <Navigate to="/stories" replace /> },

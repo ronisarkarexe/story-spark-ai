@@ -8,11 +8,14 @@ import {
   useLoginUserMutation,
   useGoogleLoginMutation,
 } from "../../redux/apis/auth.api";
+import { storeUserInfo, getUserInfo } from "../../services/auth.service";
+import { USER_ROLE } from "../../constants/role";
 import AuthContext from "../auth.context";
 import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { WandSparkles } from "lucide-react";
+import { WandSparkles, BookOpen, UsersRound } from "lucide-react";
+
 
 type Inputs = {
   email: string;
@@ -53,6 +56,7 @@ const LoginComponent = () => {
   const handleGoogleLoginSuccess = async (
     credentialResponse: CredentialResponse
   ) => {
+
     setIsBusy(true);
 
     try {
@@ -62,6 +66,9 @@ const LoginComponent = () => {
 
       if (res.data.accessToken) {
         toast.success("User logged in successfully with Google!");
+        storeUserInfo({
+          accessToken: res.data.accessToken,
+        });
         login(res.data.accessToken);
         setIsLoggedIn(true);
       }
@@ -77,10 +84,24 @@ const LoginComponent = () => {
   };
 
   if (isLoggedIn) {
-    return <RedirectComponent defaultPath="/dashboard" />;
+    return (
+      <RedirectComponent
+        defaultPath="/dashboard"
+      />
+    );
   }
 
   return (
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden p-4 sm:p-8 box-border">
+      {/* Background Glow */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Main Grid Layout Container */}
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 box-border">
+        
+        {/* Left Column — Informational Cards */}
+        <motion.div 
     <div className="min-h-screen w-full bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6 lg:px-8 box-border">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -101,16 +122,41 @@ const LoginComponent = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="hidden lg:flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
+          className="flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
         >
-          <div className="flex justify-center items-center gap-6 border border-gray-300 dark:border-slate-700 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+          {/* Brand/title */}
+          <div className="mb-4">
+            <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+              Story Spark AI
+            </h1>
+            <p className="mt-2 text-slate-500 dark:text-slate-400">
+              Ignite your imagination with AI-driven storytelling.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
             <WandSparkles className="text-violet-600 shrink-0" />
             <div>
-              <h2 className="font-bold">Smart writing</h2>
-              <p className="text-sm">AI that understands your ideas</p>
+              <h2 className="font-bold text-slate-900 dark:text-slate-100">Smart writing</h2>
+              <p className="text-xs sm:text-sm text-slate-500">AI that understands your ideas</p>
             </div>
           </div>
 
+          <div className="flex items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+            <BookOpen className="text-violet-600 shrink-0" />
+            <div>
+              <h2 className="font-bold text-slate-900 dark:text-slate-100">Endless Creativity</h2>
+              <p className="text-xs sm:text-sm text-slate-500">Stories that captivate and inspire</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
+            <UsersRound className="text-violet-600 shrink-0" />
+            <div>
+              <h2 className="font-bold text-slate-900 dark:text-slate-100">Built for everyone</h2>
+              <p className="text-xs sm:text-sm text-slate-500">Writers, Creators and dreamers</p>
+            </div>
+          </div>
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -126,10 +172,13 @@ const LoginComponent = () => {
         </motion.div>
 
         <div className="flex justify-center w-full box-border">
+          <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 shadow-2xl box-border overflow-hidden relative auth-form-card">
+            {/* Back to Home */}
           <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
             <button
+              type="button"
               onClick={() => (window.location.href = "/")}
-              className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
+              className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer bg-transparent border-none outline-none"
             >
               ← Back to Home
             </button>
@@ -143,6 +192,7 @@ const LoginComponent = () => {
               </p>
             </div>
 
+            <form className="space-y-5 w-full min-w-0 box-border" onSubmit={handleSubmit(onSubmit)}>
             <form
               className="space-y-5 w-full min-w-0 box-border"
               onSubmit={handleSubmit(onSubmit)}
@@ -160,6 +210,38 @@ const LoginComponent = () => {
                 autoComplete="email"
               />
 
+              <SSInput
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required={true}
+                icon="fi fi-rr-lock"
+                register={register}
+                validation={{ required: "Password is required" }}
+                error={errors.password}
+                autoComplete="password"
+              />
+
+              <div className="flex justify-end -mt-2">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
+              <SSButton text="Sign In" type="submit" isLoading={isBusy} />
+            </form>
+
+            <div className="mt-6 relative w-full">
+              <div className="absolute inset-0 flex items-center w-full">
+                <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+              </div>
+              <div className="relative flex justify-center text-sm w-full">
+                <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                  OR
               <div>
                 <SSInput
                   label="Password"
@@ -200,6 +282,17 @@ const LoginComponent = () => {
               </div>
             </div>
 
+            <div className="mt-6 flex justify-center w-full box-border">
+              <div className="flex justify-center list-none w-full box-border">
+                <GoogleLogin
+                  onSuccess={handleGoogleLoginSuccess}
+                  onError={handleGoogleLoginError}
+                />
+              </div>
+            </div>
+
+            <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 font-medium">
+              Don't have an account?{" "}
             <div className="flex justify-center w-full overflow-hidden">
               <GoogleLogin
                 onSuccess={handleGoogleLoginSuccess}
@@ -211,7 +304,7 @@ const LoginComponent = () => {
               Don&apos;t have an account?{" "}
               <Link
                 to="/signup"
-                className="font-bold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+                className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
               >
                 Sign up for free
               </Link>

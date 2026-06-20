@@ -15,6 +15,7 @@ export const WriterApplicationForm = ({ user }: Props) => {
     reason: "",
   });
 
+  if (user.role === "writer" || user.role === "admin") {
   const isDirty = formData.portfolioLink.trim().length > 0 || formData.reason.trim().length > 0;
 
   useEffect(() => {

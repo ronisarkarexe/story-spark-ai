@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
+
+import { useState, useRef, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import {
   Mail,
@@ -20,6 +23,7 @@ import {
   Globe,
   MessageCircle,
 } from "lucide-react";
+import axios from "../../helpers/axios/axiosInstance";
 
 import { instance as axios } from "../../helpers/axios/axiosInstance";
 import { getBaseUrl } from "../../helpers/config";
@@ -351,6 +355,8 @@ export default function Contact() {
   const [isVisible, setIsVisible] = useState(false);
   const isSubmittingRef = useRef(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FormField, boolean>>>({});
 
   // Scroll reveal
   useEffect(() => {
@@ -370,6 +376,10 @@ export default function Contact() {
   }, []);
 
   const changeHandler = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ): void => {
+    const fieldName = e.target.name as FormField;
+    setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }));
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const field = e.target.name as FormField;

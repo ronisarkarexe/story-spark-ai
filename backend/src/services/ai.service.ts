@@ -21,6 +21,8 @@ export function getGeminiClient(): GoogleGenerativeAI {
   return genAI;
 }
 
+let anthropic: Anthropic | null = null;
+
 export function getOpenAIClient(): OpenAI {
   if (!openai) {
     const key = process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY;

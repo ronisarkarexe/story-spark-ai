@@ -1,3 +1,4 @@
+import { contextCompressor } from "../../../utils/contextCompressor";
 import { enhancePromptWithGemini, enhancePromptWithOpenAI, enhancePromptWithAnthropic } from "./enhance_prompt.utils";
 import { raceGenerationWithTimeout, GenerationTimeoutError } from "../../../utils/generation_timeout";
 import ApiError from "../../../errors/api_error";
@@ -234,6 +235,25 @@ const getVersionsByStoryId = async (
     );
   }
 
+
+const getVersionsByStoryId = async (
+  storyId: string,
+  userId: string,
+  pagination: IPaginationOptions
+): Promise<IGenericResponse<IStoryVersion[]>> => {
+  const { page, limit, skip } = paginationHelper(pagination);
+  const post = await Post.findById(storyId);
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Story not found!");
+  }
+
+  if (post.author.toString() !== userId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You do not have access to this story history!"
+    );
+  }
+
   const data = await StoryVersion.find({ storyId })
     .sort({ versionNumber: -1 })
     .skip(skip)
@@ -321,6 +341,18 @@ const restoreVersion = async (
 
 const ENHANCE_TIMEOUT_MS = 60000;
 
+const enhancePrompt = async (
+  prompt: string,
+  provider?: string,
+  storyContent?: string
+): Promise<string> => {
+  try {
+    const compressed = storyContent
+      ? contextCompressor(storyContent)
+      : null;
+
+    const enhanced = await raceGenerationWithTimeout(
+      (signal) => {
 const buildCompressedContext = (storyContext: string): string => {
   if (!storyContext.trim()) return "";
   const rawNodes = storyContext
@@ -358,6 +390,11 @@ const enhancePrompt = async (
         } else if (p === "openai") {
           return enhancePromptWithOpenAI(prompt, signal);
         } else {
+          return enhancePromptWithGemini(
+            prompt,
+            signal,
+            compressed?.compressedText
+          );
           return enhancePromptWithGemini(prompt, signal, compressedContext || undefined);
         }
       },

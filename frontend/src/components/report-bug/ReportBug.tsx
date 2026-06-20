@@ -28,6 +28,7 @@ interface ReportBugFormData {
   expected: string;
   actual: string;
   email?: string;
+  screenshot?: any;
 }
 
 const CATEGORIES = [

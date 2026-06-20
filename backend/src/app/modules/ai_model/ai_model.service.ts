@@ -251,6 +251,21 @@ const aiFreeStoryContinuationMultiple = async (
   signal?: AbortSignal
 ) => {
   const { prompt, language = "English", count = 3 } = payload;
+  const safeCount = Math.min(Math.max(count, 1), 5);
+  const results: { continuation: string }[] = [];
+  try {
+    for (let i = 0; i < safeCount; i++) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await raceGenerationWithTimeout(
+        (s) => generateStoryContinuationWithGemini(prompt, language, s),
+        FREE_GENERATION_TIMEOUT_MS,
+        signal
+      );
+      results.push({ continuation: result?.continuation ?? "" });
+    }
+    return results;
+  } catch (error) {
+    mapGenerationError(error, "Story continuation failed.");
 
   try {
     const result = await raceGenerationWithTimeout(

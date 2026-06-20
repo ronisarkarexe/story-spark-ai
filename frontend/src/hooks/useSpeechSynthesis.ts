@@ -333,6 +333,7 @@ export const useSpeechSynthesis = (
         setError("Unable to play narration. Please try again.");
       };
 
+      utteranceRef.current = utterance;
       synthRef.current.cancel();
       synthRef.current.speak(utterance);
       setCurrentWordIndex(0);
@@ -340,6 +341,12 @@ export const useSpeechSynthesis = (
     [isSupported, rateState, pitchState, volumeState, resolveBrowserVoice, selectedVoiceId, stop],
   );
 
+  useEffect(() => {
+    if (!hasSpeechSupport()) {
+      setIsSupported(false);
+      setIsReady(false);
+      setError("Text-to-speech is not supported in this browser.");
+      return;
   const pause = useCallback(() => {
     if (synthRef.current && isSpeaking && !isPaused) {
       synthRef.current.pause();
