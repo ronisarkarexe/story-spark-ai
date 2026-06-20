@@ -26,12 +26,9 @@ const itemVariants: any = {
     opacity: 1, 
     y: 0, 
     transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } as const 
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
-  },
-};
+ 
+}
+}
 
 const features = [
   // ... (rest of the features array remains the same)
@@ -77,7 +74,7 @@ interface Feature {
   icon: ReactNode;
   path: string;
 };
-}
+
 
 const FeatureCard = ({ feature }: { feature: Feature }) => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -134,6 +131,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
   }, { scope: cardRef });
 
   return (
+    <>
     <Link to={feature.path} className="h-full">
       <div style={{ perspective: "1000px" }} className="h-full">
         <div
@@ -149,6 +147,10 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
             <h3 className="text-xl font-bold text-white mb-3 group-hover:text-blue-100 transition-colors duration-300">{feature.title}</h3>
             <p className="text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300">{feature.description}</p>
           </div>
+          </div>
+          </div>
+      </Link>
+      
     <div style={{ perspective: "1000px" }} className="h-full w-full box-border">
       <div
         ref={cardRef}
@@ -164,7 +166,8 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
           <p className="text-xs sm:text-sm text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300 font-medium">{feature.description}</p>
         </div>
       </div>
-    </Link>
+      </div>
+    </>
   );
 };
 
@@ -315,7 +318,9 @@ const HeroSectionComponent = () => {
    
      <div className="relative overflow-hidden" onMouseMove={handleMouseMove}>
 <div className="text-center lg:text-left"></div>
-<div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">          <div
+<div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20"> 
+      </div></div> 
+           <div
    
    ref={badgeRef}
             className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 dark:bg-slate-800/60 border border-blue-400/30 dark:border-blue-500/30 backdrop-blur-md mb-8 shadow-sm cursor-pointer transition-all duration-300"
@@ -331,6 +336,11 @@ const HeroSectionComponent = () => {
             </span>
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">StorySparkAI v2.0 is live</span>
           </div>
+         
+          </motion.div>
+        
+          </div>
+      
 <div className="grid lg:grid-cols-2 gap-12 items-center">
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
 
@@ -347,10 +357,13 @@ const HeroSectionComponent = () => {
             </span>
           </motion.h1>
           </h1>
+          </div>
+          
 <div className="flex justify-center lg:justify-end">
   <AnimatedBook />
 </div>
-          <p className="max-w-2xl lg:mx-0 mx-auto text-lg sm:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 transition-colors duration-300">
+
+          <p className="max-w-2xl lg:mx-0 mx-auto text-lg sm:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 transition-colors duration-300"></p>
 
           <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
             Create, edit, and generate engaging multiple story variations from a single prompt.
@@ -363,11 +376,11 @@ const HeroSectionComponent = () => {
                 
                 <Link to="/stories">
                   <button className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-blue-500/25 dark:shadow-indigo-500/15 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
-                    <i className="fa fa-wand-magic-sparkles"></i>
+                    <i className="fa fa-wand-magic-sparkles"></i></button></Link>
           <div className="w-full box-border flex flex-col items-center justify-center">
             <div className="relative max-w-3xl w-full box-border">
               <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
-                <button
+                </div><button
   onClick={() => {
     setIsNavigating(true);
     setTimeout(() => { window.location.href = "/stories"; }, 400);
@@ -404,7 +417,9 @@ const HeroSectionComponent = () => {
               </div>
             </div>
           </div>
-        </motion.div>
+          </div>
+        
+        
 
 </div>
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
@@ -419,6 +434,7 @@ const HeroSectionComponent = () => {
             ))}
           </div>
         </div>
+        </div>
 
             <motion.div
         variants={itemVariants}
@@ -429,8 +445,10 @@ const HeroSectionComponent = () => {
             <FeatureCard feature={feature} key={index} />
           ))}
         </div>
+        </motion.div>
       </motion.div>
-    </motion.div>
+    
+    
   );
 };
 
