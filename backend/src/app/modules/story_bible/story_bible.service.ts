@@ -8,12 +8,12 @@ const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 export const getStoryBible = async (storyId: string) => {
-  return await StoryBible.findOne({ storyId });
+  return await StoryBible.findOne({ storyId: String(storyId) });
 };
 
 export const updateStoryBible = async (storyId: string, payload: Partial<IStoryBible>) => {
   return await StoryBible.findOneAndUpdate(
-    { storyId },
+    { storyId: String(storyId) },
     { $set: payload },
     { new: true, upsert: true }
   );
@@ -75,12 +75,12 @@ ${story.content}
   }
 
   // 4. Upsert the Story Bible in the DB
-  const existingBible = await StoryBible.findOne({ storyId });
+  const existingBible = await StoryBible.findOne({ storyId: String(storyId) });
   
   if (!existingBible) {
     // Create new
     return await StoryBible.create({
-      storyId,
+      storyId: String(storyId),
       ...extractedData
     });
   } else {

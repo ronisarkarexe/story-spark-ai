@@ -153,6 +153,7 @@ const modules = [
     path: "/story-consistency",
     router: StoryConsistencyRouter,
   },
+
   {
     path: "/search",
     router: SearchRouter,

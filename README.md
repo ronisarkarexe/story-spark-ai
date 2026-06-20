@@ -23,6 +23,16 @@
 
 ---
 
+- [Table of Contents](#table-of-contents)
+- [About 🚀](#about-)
+- [AI Story Generation Pipeline](docs/ai-story-generation.md)
+- [Features 💪](#features-)
+- [Local development (monorepo)](#local-development-monorepo)
+- [Environment variables](#environment-variables)
+- [Troubleshooting](#troubleshooting)
+- [Contributing 👨‍💻](#contributing-)
+- [Contributors 🤝](#contributors-)
+
 ## 📚 Table of Contents
 - [About 🚀](#about-🚀)
 - [Features 💪](#features-💪)

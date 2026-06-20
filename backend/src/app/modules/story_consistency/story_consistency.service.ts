@@ -35,7 +35,7 @@ export const analyzeConsistency = async (
   let storyBibleContext = "";
 
   if (storyId) {
-    const storyBible = await StoryBible.findOne({ storyId });
+    const storyBible = await StoryBible.findOne({ storyId: String(storyId) });
     if (storyBible) {
       storyBibleContext = `
 STORY BIBLE (Source of Truth):

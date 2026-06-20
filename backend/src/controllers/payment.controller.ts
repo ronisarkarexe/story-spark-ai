@@ -137,7 +137,7 @@ export const verifyPayment = async (
     }
 
     const selectedPlan = PLANS[plan];
-    const userId = (req as Request & { user?: { _id: string } }).user?._id;
+    const userId = req.user?._id;
 
     if (!userId) {
       res.status(401).json({ success: false, error: "Unauthorised. Please log in." });
@@ -183,7 +183,7 @@ export const getSubscriptionStatus = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = (req as Request & { user?: { _id: string } }).user?._id;
+    const userId = req.user?._id;
 
     if (!userId) {
       res.status(401).json({ success: false, error: "Unauthorised." });

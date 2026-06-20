@@ -115,9 +115,7 @@ const router = createBrowserRouter([
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
       { path: "templates", element: <TemplatesComponent /> },
       { path: "create", element: <Navigate to="/stories" replace /> },
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
       { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES} element={<WritingAssistantComponent />} />, },
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
       { path: "login", element: <LoginComponent /> },
       { path: "signup", element: <SignUpComponent /> },
@@ -282,5 +280,4 @@ function App() {
   return <RouterProvider router={router} />;
 }
 
-export default App;
 export default App;
