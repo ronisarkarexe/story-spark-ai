@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import config from "../../../config";
+import { StoryBible } from "../story_bible/story_bible.model";
 
 const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -28,10 +29,28 @@ export interface IConsistencyResult {
 }
 
 export const analyzeConsistency = async (
-  storyText: string
+  storyText: string,
+  storyId?: string
 ): Promise<IConsistencyResult> => {
-  const prompt = `You are an expert story editor. Analyze the following story for narrative consistency issues.
+  let storyBibleContext = "";
 
+  if (storyId) {
+    const storyBible = await StoryBible.findOne({ storyId });
+    if (storyBible) {
+      storyBibleContext = `
+STORY BIBLE (Source of Truth):
+Use the following Story Bible to verify consistency. Treat these facts as canon. If the story text contradicts any of this information, flag it as an issue.
+Characters: ${JSON.stringify(storyBible.characters, null, 2)}
+Locations: ${JSON.stringify(storyBible.locations, null, 2)}
+Objects: ${JSON.stringify(storyBible.objects, null, 2)}
+Relationships: ${JSON.stringify(storyBible.relationships, null, 2)}
+Timeline: ${JSON.stringify(storyBible.timelineEvents, null, 2)}
+`;
+    }
+  }
+
+  const prompt = `You are an expert story editor. Analyze the following story for narrative consistency issues.
+${storyBibleContext}
 Detect these specific problems:
 - Character personality contradictions (a character acts against their established traits)
 - Timeline inconsistencies (events happen in impossible order)

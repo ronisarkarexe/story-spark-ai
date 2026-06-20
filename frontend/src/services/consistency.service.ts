@@ -20,11 +20,12 @@ export interface IConsistencyResult {
 }
 
 export const analyzeStoryConsistency = async (
-  storyText: string
+  storyText: string,
+  storyId?: string
 ): Promise<IConsistencyResult> => {
   const response = await axios.post(
     `${API_BASE}/story-consistency/analyze`,
-    { storyText },
+    { storyText, storyId },
     { withCredentials: true }
   );
   return response.data.data;

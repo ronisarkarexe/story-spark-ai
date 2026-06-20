@@ -26,6 +26,7 @@ import { StoryVisualizerRouter } from "../app/modules/story_visualizer/story_vis
 import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_inspiration.router";
 import { EngagementRouter } from "../app/modules/engagement/engagement.router";
 import { ChatRouter } from "../app/modules/chat/chat.router";
+import { StoryBibleRoutes } from "../app/modules/story_bible/story_bible.router";
 
 import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
 
@@ -84,13 +85,21 @@ const modules = [
     path: "/bookmarks",
     router: BookmarkRouter,
   },
-
+  {
+    path: "/story-bible",
+    router: StoryBibleRoutes,
+  },
   {
     path: "/story-consistency",
     router: StoryConsistencyRouter,
+  },
+  {
+    path: "/story-continuation",
+    router: storyRoutes,
   },
 ];
 
 modules.forEach((route) => router.use(route.path, route.router));
 
 export const Routers = router;
+

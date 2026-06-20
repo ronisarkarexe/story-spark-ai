@@ -316,7 +316,7 @@ const aiFreeModelChat = catchAsync(async (req: Request, res: Response) => {
 });
 
 const aiStoryContinuation = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body as { prompt: string; language?: string };
+  const payload = req.body as { prompt: string; language?: string; storyId?: string; useStoryBible?: boolean };
   const guard = res.locals.quotaRefundGuard;
 
   if (!guard) {
@@ -341,7 +341,7 @@ const aiStoryContinuation = catchAsync(async (req: Request, res: Response) => {
 });
 
 const aiFreeStoryContinuation = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body as { prompt: string; language?: string };
+  const payload = req.body as { prompt: string; language?: string; storyId?: string; useStoryBible?: boolean };
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
