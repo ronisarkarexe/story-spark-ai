@@ -18,6 +18,19 @@ const createReport = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getPendingCommentReports = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await ReportService.getPendingCommentReports();
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Pending comment reports fetched successfully",
+      data: result,
+    });
+  }
+);
+
 const getAllReports = catchAsync(async (req: Request, res: Response) => {
   const result = await ReportService.getAllReports();
   sendResponse(res, {
@@ -27,4 +40,8 @@ const getAllReports = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-export const ReportController = { createReport, getAllReports };
+export const ReportController = {
+  createReport,
+  getAllReports,
+  getPendingCommentReports,
+};

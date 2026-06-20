@@ -23,6 +23,11 @@ const SSButton: FC<SSButtonProps> = ({
     <button
       type={type}
       onClick={onClick}
+      className={`motion-cta flex w-full justify-center rounded-md bg-indigo-600 px-1 py-1.5 text-sm font-semibold text-white shadow-xs shadow-indigo-500/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
+        isDisabled
+          ? "cursor-not-allowed opacity-50"
+          : "hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/25"
+      } disabled:opacity-60 ${className}`}
       disabled={isDisabled}
       aria-busy={isLoading}
       className={`w-full max-w-full min-w-0 box-border h-12 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${

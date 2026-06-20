@@ -1,7 +1,7 @@
-import { instance as axios } from "../helpers/axios/axiosInstance";
+import axios from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const API_BASE = "/v1";
 
 export const continueStory = async (
   chapters: Chapter[],
@@ -15,7 +15,7 @@ export const continueStory = async (
 
   try {
     const response = await axios.post(
-      `${BASE_URL}/story-continuation/continue`,
+      `${API_BASE}/ai_model/continue-story`,
       {
         prompt: `
 Continue this story naturally.
@@ -32,7 +32,8 @@ ${previousContent}
         storyId,
         useStoryBible,
         tone,
-      }
+      },
+      { withCredentials: true }
     );
 
     return response.data.data.continuation || response.data.text;
@@ -53,8 +54,10 @@ export const getContinuations = async (
   count: number = 3
 ): Promise<string[]> => {
   const previousContent = chapters.map((c) => c.content).join("\n\n");
-  const response = await axios.post(`${BASE_URL}/story-continuation/continuations`, {
-    prompt: `
+  const response = await axios.post(
+    `${API_BASE}/ai_model/continue-story`,
+    {
+      prompt: `
 Continue this story naturally.
 
 Rules:
@@ -66,8 +69,10 @@ Rules:
 Story:
 ${previousContent}
     `,
-    count,
-  });
+      count,
+    },
+    { withCredentials: true }
+  );
   const data = response.data.data;
   if (Array.isArray(data)) {
     return data.map((item: any) => item.continuation ?? "");

@@ -37,15 +37,22 @@ export const createOrder = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { plan } = req.body as { plan?: string };
-    
-    if (!plan || !PLANS[plan]) {
-      res.status(400).json({
-        success: false,
-        error: `Invalid plan. Valid options: ${Object.keys(PLANS).join(", ")}.`,
-      });
-      return;
-    }
+const userId = (req as any).user?._id;
+
+if (!userId) {
+   res.status(401).json({ success: false, message: "Unauthorized" });
+   return;
+}
+
+const { plan } = req.body as { plan?: string };
+
+if (!plan || !PLANS[plan]) {
+ res.status(400).json({
+  success: false,
+  error: `Invalid plan. Valid options: ${Object.keys(PLANS).join(", ")}.`,
+});
+return;
+}
 
     const selectedPlan = PLANS[plan];
 

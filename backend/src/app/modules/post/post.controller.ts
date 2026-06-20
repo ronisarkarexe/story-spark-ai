@@ -92,12 +92,12 @@ const getSinglePost = catchAsync(async (req: Request, res: Response) => {
   
   let token = null;
   try {
-    token = getToken(req);
+    token = await getToken(req);
   } catch (error) {
     // Guest or unauthenticated request
   }
 
-  const result = await PostService.getSinglePost(id);
+  const result = await PostService.getSinglePost(id, token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
