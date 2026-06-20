@@ -14,10 +14,11 @@ const aiModel = z.object({
     prompt: z
       .string({ required_error: "Prompt is required!" })
       .trim()
-      .min(1, "Prompt cannot be empty or whitespace only!")
+      .min(3, "Prompt must be at least 3 characters!")
+      .max(5000, "Prompt must not exceed 5000 characters.")
       .refine((val) => {
         // Remove [Genre: ...] if it exists to check the actual prompt content
-        const stripped = val.replace(/^\[Genre:.*?\]\s*/, '').trim();
+        const stripped = val.replace(/^\[Genre:[^\]]*\]\s*/, "").trim();
         return stripped.length > 0;
       }, { message: "Prompt must contain actual story content, not just a genre." }),
     language: z.string().optional(),
@@ -61,14 +62,22 @@ const aiAlternateEndings = z.object({
 
 const aiChat = z.object({
   body: z.object({
-    message: z.string({ required_error: "Message is required!" }),
-    history: z.array(z.object({
-      role: z.enum(["user", "model"]),
-      parts: z.string(),
-    })).optional(),
+    message: z
+      .string({ required_error: "Message is required!" })
+      .trim()
+      .min(1, "Message cannot be empty.")
+      .max(2000, "Message must not exceed 2000 characters."),
+    history: z
+      .array(
+        z.object({
+          role: z.enum(["user", "model"]),
+          parts: z.string().max(2000, "Each history message must not exceed 2000 characters."),
+        })
+      )
+      .max(20, "Chat history must not exceed 20 messages.")
+      .optional(),
   }),
 });
-
 const REMIX_TYPES = ["genre_shift", "tone_shift", "perspective_shift"] as const;
 
 const aiRemix = z.object({
@@ -98,3 +107,4 @@ export const AIModelValidator = {
   aiRemix,
   aiTranslate,
 };
+

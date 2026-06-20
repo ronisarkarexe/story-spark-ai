@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { randomUUID } from "node:crypto";
 import { setGuestUserIdCookie } from "../../../utils/cookie.util";
 import httpStatus from "http-status";
 import ApiError from "../../../errors/api_error";
@@ -21,7 +22,7 @@ const aiModelGenerate = catchAsync(async (req: Request, res: Response) => {
   if (!guard) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Quota guard missing — checkRequestLimit middleware required"
+      "Quota guard missing - checkRequestLimit middleware required"
     );
   }
 
@@ -41,8 +42,8 @@ const aiFreeModelGenerate = catchAsync(async (req: Request, res: Response) => {
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
-    userId = Math.random().toString(36).substring(7);
-    setGuestUserIdCookie(res, userId);  // ✅ Fixed: now includes sameSite
+    userId = randomUUID();
+    setGuestUserIdCookie(res, userId);
   }
 
   const guard = createGuestQuotaGuard(userId);
@@ -65,7 +66,7 @@ const aiModelAlternateEndings = catchAsync(async (req: Request, res: Response) =
   if (!guard) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Quota guard missing — checkRequestLimit middleware required"
+      "Quota guard missing - checkRequestLimit middleware required"
     );
   }
 
@@ -86,8 +87,8 @@ const aiFreeModelAlternateEndings = catchAsync(
     let userId = req.cookies.userId as string | undefined;
 
     if (!userId) {
-      userId = Math.random().toString(36).substring(7);
-      setGuestUserIdCookie(res, userId);  // ✅ Fixed: now includes sameSite
+      userId = randomUUID();
+      setGuestUserIdCookie(res, userId);
     }
 
     const guard = createGuestQuotaGuard(userId);
@@ -121,7 +122,7 @@ const aiFreeModelGenerateStream = async (req: Request, res: Response) => {
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
-    userId = Math.random().toString(36).substring(7);
+    userId = randomUUID();
     setGuestUserIdCookie(res, userId);
   }
 
@@ -194,7 +195,7 @@ const aiModelRemix = catchAsync(async (req: Request, res: Response) => {
   if (!guard) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Quota guard missing — checkRequestLimit middleware required"
+      "Quota guard missing - checkRequestLimit middleware required"
     );
   }
 
@@ -214,8 +215,8 @@ const aiFreeModelRemix = catchAsync(async (req: Request, res: Response) => {
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
-    userId = Math.random().toString(36).substring(7);
-    res.cookie("userId", userId, { maxAge: 30 * 24 * 60 * 60 * 1000 });
+    userId = randomUUID();
+    setGuestUserIdCookie(res, userId);
   }
 
   const guard = createGuestQuotaGuard(userId);
@@ -238,7 +239,7 @@ const aiModelTranslate = catchAsync(async (req: Request, res: Response) => {
   if (!guard) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Quota guard missing — checkRequestLimit middleware required"
+      "Quota guard missing - checkRequestLimit middleware required"
     );
   }
 
@@ -258,8 +259,8 @@ const aiFreeModelTranslate = catchAsync(async (req: Request, res: Response) => {
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
-    userId = Math.random().toString(36).substring(7);
-    res.cookie("userId", userId, { maxAge: 30 * 24 * 60 * 60 * 1000 });
+    userId = randomUUID();
+    setGuestUserIdCookie(res, userId);
   }
 
   const guard = createGuestQuotaGuard(userId);
@@ -282,7 +283,7 @@ const aiModelChat = catchAsync(async (req: Request, res: Response) => {
   if (!guard) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Quota guard missing — checkRequestLimit middleware required"
+      "Quota guard missing - checkRequestLimit middleware required"
     );
   }
 
@@ -302,8 +303,8 @@ const aiFreeModelChat = catchAsync(async (req: Request, res: Response) => {
   let userId = req.cookies.userId as string | undefined;
 
   if (!userId) {
-    userId = Math.random().toString(36).substring(7);
-    res.cookie("userId", userId, { maxAge: 30 * 24 * 60 * 60 * 1000 });
+    userId = randomUUID();
+    setGuestUserIdCookie(res, userId);
   }
 
   const guard = createGuestQuotaGuard(userId);
@@ -333,3 +334,4 @@ export const AiModelController = {
   aiModelChat,
   aiFreeModelChat,
 };
+
