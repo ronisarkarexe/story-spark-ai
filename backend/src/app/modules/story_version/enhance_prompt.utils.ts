@@ -103,7 +103,3 @@ export const enhancePromptWithAnthropic = async (
 
   return text;
 };
-
-
-
-main

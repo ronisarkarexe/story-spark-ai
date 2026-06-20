@@ -211,8 +211,11 @@ const PublishedStoriesComponent: React.FC = () => {
                   </p>
 
                   <div className="mt-3 flex justify-end">
-  <DownloadButtons story={story} />
-</div>
+                    <DownloadButtons story={story} />
+                  </div>
+
+                  <div className="mt-auto flex gap-4 pt-3">
+                    <div>
                       <p className="text-sm font-bold text-slate-900 dark:text-white">
                         {story.viewsCount}
                       </p>

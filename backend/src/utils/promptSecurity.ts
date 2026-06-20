@@ -8,6 +8,8 @@
  * - Improved output validation
  */
 
+import { assertContentSafe } from "./contentModeration";
+
 const FORBIDDEN_PATTERNS: RegExp[] = [
   // Direct instruction override attempts
   /ignore\s+(previous|all|prior|above|any)\s+(instructions?|prompts?|context|rules?|constraints?)/i,

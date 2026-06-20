@@ -64,19 +64,7 @@ const auth = (...requiredRole: string[]) =>
           httpStatus.UNAUTHORIZED,
           "Token has been revoked. Please log in again."
         );
-
       }
-
-
-        const isBlacklisted = await TokenBlacklist.findOne({ token });
-
-        if (isBlacklisted) {
-          throw new ApiError(
-            httpStatus.UNAUTHORIZED,
-            "Token has been revoked. Please log in again."
-          );
-        }
-main
 
       const user = await User.findById(verified._id);
       if (!user) {
