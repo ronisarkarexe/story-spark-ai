@@ -49,6 +49,17 @@ const commentApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.post, tagTypes.comment],
     }),
+
+    // Polymorphic report endpoint (backend `report` module).
+    // Payload: { targetId, targetType, reason, description? }
+    reportComment: build.mutation({
+      query: (data) => ({
+        url: `/report`,
+        method: "POST",
+        data: data,
+      }),
+      invalidatesTags: [tagTypes.comment],
+    }),
   }),
 });
 
@@ -58,4 +69,5 @@ export const {
   useToggleCommentLikeMutation,
   useDeleteCommentMutation,
   useToggleCommentHelpfulMutation,
+  useReportCommentMutation,
 } = commentApi;

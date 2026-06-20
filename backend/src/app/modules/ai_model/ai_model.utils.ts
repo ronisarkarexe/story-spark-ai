@@ -596,6 +596,90 @@ Return only valid JSON with this exact structure:
   }
 }
 
+export async function generateStoryContinuationMultipleWithGemini(
+  storyContext: string,
+  count: number = 3,
+  language: string = "English",
+  signal?: AbortSignal,
+): Promise<{ continuations: string[] }> {
+  throwIfAborted(signal);
+  assertGeminiApiKeyConfigured();
+
+  const safeCount = Math.max(
+    1,
+    Math.min(Number.isFinite(count) ? Math.floor(count) : 3, 5),
+  );
+
+  try {
+    const response = await executeWithRetryAndFallback(async (activeModel) => {
+      const chatSession = activeModel.startChat({
+        generationConfig: {
+          ...generationConfig,
+          maxOutputTokens: 4096,
+        },
+        safetySettings,
+        history: [],
+      });
+
+      return chatSession.sendMessage(
+        `You are an expert storyteller. The user has written the following story so far:
+
+"${storyContext}"
+
+Generate ${safeCount} DISTINCT possible continuations of this story. Each continuation should be 2-4 paragraphs, take the story in a meaningfully different direction from the others, and maintain the same tone and style. Every continuation MUST be written entirely in ${language}.
+
+Return only valid JSON with this exact structure:
+{
+  \"continuations\": [
+    \"first continuation text\",
+    \"second continuation text\"
+  ]
+}`,
+        { signal },
+      );
+    }, signal);
+
+    throwIfAborted(signal);
+
+    const text = response.response.text();
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(sanitizeJsonText(text));
+    } catch (parseError: unknown) {
+      const parseErrorMsg =
+        parseError instanceof Error ? parseError.message : String(parseError);
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        `Invalid AI response: failed to parse JSON (${parseErrorMsg})`,
+      );
+    }
+
+    if (
+      !Array.isArray(parsed.continuations) ||
+      parsed.continuations.length === 0 ||
+      !parsed.continuations.every((c: unknown) => typeof c === "string")
+    ) {
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        "Invalid AI response: Expected a continuations array of strings.",
+      );
+    }
+
+    return { continuations: parsed.continuations.slice(0, safeCount) };
+  } catch (error: unknown) {
+    if (error instanceof ApiError || error instanceof GenerationAbortedError) {
+      throw error;
+    }
+
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.BAD_GATEWAY,
+      `AI multiple story continuation failed: ${errorMsg}`,
+    );
+  }
+}
+
 export async function translateStoryWithGemini(
   title: string,
   content: string,
