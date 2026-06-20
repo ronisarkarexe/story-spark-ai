@@ -18,6 +18,13 @@ const CommentSchema: Schema<IComment> = new Schema<IComment, CommentModel>(
     default: [],
   },
 ],
+   helpful: [
+  {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    default: [],
+  },
+],
 
 isDeleted: {
   type: Boolean,
