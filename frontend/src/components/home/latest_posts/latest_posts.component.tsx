@@ -12,14 +12,6 @@ const LatestPostsComponent = () => {
   const navigate = useNavigate();
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
-<<<<<<< HEAD
-  
-  useEffect(() => {
-  setShowAllPosts(false);
-}, [data?.posts?.length]);
-
-=======
->>>>>>> upstream/main
 
   const posts = (data?.posts ?? []) as Post[];
 

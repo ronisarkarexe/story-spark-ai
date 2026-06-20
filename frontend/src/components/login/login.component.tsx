@@ -138,42 +138,6 @@ const LoginComponent = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="flex flex-col justify-center gap-6 w-full max-w-md mx-auto box-border"
         >
-<<<<<<< HEAD
-
-          <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-            <WandSparkles className="text-violet-600 shrink-0" />
-            <div>
-              <h2 className="font-bold">Smart writing</h2>
-              <p>AI that understands your ideas</p>
-            </div>
-          </div>
-
-          <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-            <BookOpen className="text-violet-600 shrink-0" />
-            <div>
-              <h2 className="font-bold">Endless Creativity</h2>
-              <p>Stories that captivate and inspire</p>
-            </div>
-          </div>
-
-          <div className="flex justify-center items-center gap-6 border border-gray-300 rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 dark:text-gray-400">
-            <UsersRound className="text-violet-600 shrink-0" />
-            <div>
-              <h2 className="font-bold">Built for everyone</h2>
-              <p>Writers, Creators and dreamers</p>
-            </div>
-          </div>
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full min-w-0 box-border"
-          >
-            <div className="border border-gray-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-gray-400 text-sm">
-              Create, edit, and generate engaging multiple story variations from a
-              single prompt. Perfect for writers, creators, and enthusiasts
-              exploring the future of fiction.
-=======
           {/* Brand headline */}
           <div className="mb-1">
             <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
@@ -197,7 +161,6 @@ const LoginComponent = () => {
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Smart AI Writing</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">AI that understands your creative style and helps you break through blocks.</p>
               </div>
->>>>>>> upstream/main
             </div>
             <div className="flex items-start gap-4 rounded-2xl border border-blue-200/60 dark:border-blue-800/40 bg-blue-50 dark:bg-blue-950/40 p-4">
               <div className="mt-0.5 shrink-0 rounded-xl border border-white/80 bg-white dark:bg-slate-800/80 p-2 shadow-sm">
@@ -224,10 +187,6 @@ const LoginComponent = () => {
           </div>
         </motion.div>
 
-<<<<<<< HEAD
-        {/* Right Column — Login Form */}
-        <div className="flex justify-center w-full box-border">
-=======
                 <div className="flex justify-center w-full box-border">
           <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
             <button
@@ -236,7 +195,6 @@ const LoginComponent = () => {
             >
               ← Back to Home
             </button>
->>>>>>> upstream/main
 
 
         {/* Right side — login form card */}

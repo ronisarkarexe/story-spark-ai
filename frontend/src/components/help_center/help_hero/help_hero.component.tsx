@@ -48,10 +48,6 @@ const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultC
               <i className="fa-solid fa-circle-question" aria-hidden="true"></i>
             </span>
           </div>
-<<<<<<< HEAD
-        </div>
-=======
->>>>>>> upstream/main
 
           <motion.h1
             id="help-center-title"
@@ -65,17 +61,6 @@ const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultC
             Search our guides or browse topics below.
           </p>
 
-<<<<<<< HEAD
-            <HelpSearchBar
-              value={searchQuery}
-              onChange={handleSearchChange}
-              resultCount={searchQuery ? resultCount : undefined}
-            />
-          </section>
-        </div>
-
-=======
->>>>>>> upstream/main
           <HelpSearchBar
             value={searchQuery}
             onChange={onSearchChange ?? (() => {})}

@@ -35,10 +35,6 @@ const SSInput = <T extends FieldValues>({
   autoFocus,
 }: SSInputProps<T>) => {
   const [showLocalPassword, setShowLocalPassword] = useState(false);
-<<<<<<< HEAD
-
-=======
->>>>>>> upstream/main
 
 
 
@@ -48,23 +44,6 @@ const SSInput = <T extends FieldValues>({
 
 
   return (
-<<<<<<< HEAD
-    <div className="w-full min-w-0 box-border">
-      <label htmlFor={name} className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-
-        {label}
-      </label>
-      <div className="relative w-full box-border">
-        {/* Left Icon */}
-        {icon && (
-
-          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-500 pointer-events-none">
-
-
-
-
-
-=======
     <div className="w-full min-w-0 max-w-full box-border">
       <label
         htmlFor={name}
@@ -76,23 +55,10 @@ const SSInput = <T extends FieldValues>({
         {icon && (
           //<span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
             <span className="absolute left-3 text-gray-500 flex items-center pointer-events-none">
->>>>>>> upstream/main
             <i className={icon}></i>
           </span>
         )}
 
-<<<<<<< HEAD
-
-
-
-
-        {/* The SINGLE Corrected Input Field with Bulletproof Padding and Inline Styles */}
-        <input
-          type={inputType}
-          id={name}
-
-          placeholder={placeholder}
-=======
         <input
           type={inputType}
           id={name}
@@ -101,7 +67,6 @@ const SSInput = <T extends FieldValues>({
           ? "border-red-500 outline-red-500"
           : "border-gray-300 outline-gray-300 focus:outline-indigo-600"
           }`}          placeholder={placeholder}
->>>>>>> upstream/main
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           {...register(name, validation)}
@@ -142,20 +107,12 @@ const SSInput = <T extends FieldValues>({
 
       {/* Error Message */}
       {error && (
-<<<<<<< HEAD
-
-
-
-        <p className="text-red-500 text-sm mt-2">{error.message}</p>
-
-=======
         <p
           className="text-xs font-semibold text-rose-400 mt-1.5 text-left w-full break-words"
           aria-live="polite"
         >
           {error.message}
         </p>
->>>>>>> upstream/main
       )}
 
 

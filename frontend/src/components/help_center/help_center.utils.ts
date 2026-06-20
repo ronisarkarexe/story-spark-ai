@@ -112,15 +112,6 @@ export const HELP_CATEGORIES: HelpCategory[] = [
   }
 ];
 
-<<<<<<< HEAD
-// CORRECTED MAPPING: Changed 'title' to 'label' so the sidebar reads it correctly
-export const HELP_SECTIONS = HELP_CATEGORIES.map(category => ({
-  id: category.id,
-  title: category.title,
-  description: category.description,
-}));
-=======
->>>>>>> upstream/main
 export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
   {
     id: "connection-lost",
@@ -161,7 +152,4 @@ export const matchesSearch = (query: string, fields: string[]): boolean => {
   const lowerQuery = query.toLowerCase();
   return fields.some(field => field?.toLowerCase().includes(lowerQuery));
 };
-<<<<<<< HEAD
-=======
 };
->>>>>>> upstream/main

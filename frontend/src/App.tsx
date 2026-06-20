@@ -25,8 +25,6 @@ import MagicCursorComponent from "./components/magic-cursor/magic_cursor.compone
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import NotFoundComponent from "./components/not-found.component";
-<<<<<<< HEAD
-=======
 import Leaderboard from "./pages/Leaderboard";
 import PaymentComponent from "./components/home/pricing/payment.component";
 import PostDetailsComponent from "./components/post/post.details.component";
@@ -50,7 +48,6 @@ type ProtectedRouteProps = {
   allowedRoles: string[];
   element?: React.ReactElement;
 };
->>>>>>> upstream/main
 
 // Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
@@ -91,17 +88,9 @@ const PublishedStoriesComponent = lazy(() => import("./components/dashboard/post
 const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analytics.page"));
 const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
-<<<<<<< HEAD
-const PaymentComponent = lazy(() =>
-  import("./components/home/pricing/payment.component").then((module) => ({
-    default: module.PaymentComponent,
-  }))
-);
-=======
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
 const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
->>>>>>> upstream/main
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
@@ -129,12 +118,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
       { path: "templates", element: <TemplatesComponent /> },
-<<<<<<< HEAD
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
-=======
       { path: "create", element: <Navigate to="/stories" replace /> },
       { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES}><WritingAssistantComponent /></ProtectedRoute>, },
->>>>>>> upstream/main
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
       { path: "login", element: <LoginComponent /> },
       { path: "signup", element: <SignUpComponent /> },
@@ -155,11 +140,7 @@ const router = createBrowserRouter([
       { path: "community", element: <CommunityComponent /> },
       { path: "explore", element: <ExploreComponent /> },
       { path: "report-bug", element: <ReportBug /> },
-<<<<<<< HEAD
-
-=======
       { path: "chat", element: <ChatPage /> },
->>>>>>> upstream/main
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
@@ -198,12 +179,6 @@ const router = createBrowserRouter([
           </Suspense>
         ),
         children: [
-<<<<<<< HEAD
-          { index: true, element: <DashboardComponent /> },
-          { path: "profile", element: <ProfileComponent /> },
-          { path: "settings", element: <SettingComponent /> },
-          { path: "published-stories", element: <PublishedStoriesComponent /> },
-=======
           { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
           { path: "templates", element: <TemplatesComponent /> },
           { path: "writing-assistant", element: <WritingAssistantComponent /> },
@@ -233,7 +208,6 @@ const router = createBrowserRouter([
           { path: "chat", element: lazyPage(<ChatPage />) },
 
           // Protected routes
->>>>>>> upstream/main
           {
             element: <ProtectedRoute allowedRoles={ELEVATED_ADMIN_ROLES} />,
             children: [
