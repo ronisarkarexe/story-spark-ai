@@ -214,13 +214,9 @@ const FooterComponent: React.FC = () => {
                     aria-label={item.label}
                     className="group flex items-center gap-2.5 text-[14px] text-slate-300/85 hover:text-blue-300 transition-all duration-200"
                   >
-                    {item.type === "fa" ? (
-                      <i
-                        className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
-                      />
-                    ) : (
-                      <item.Icon className="text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors" />
-                    )}
+                    <i
+                      className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
+                    />
                     <span className="capitalize">
                       {item.icon === "fa-x-twitter"
                         ? "X"

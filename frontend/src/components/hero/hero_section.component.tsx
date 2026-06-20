@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { ReactNode } from "react";
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/main
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -25,7 +28,11 @@ const itemVariants = {
   visible: { 
     opacity: 1, 
     y: 0, 
+<<<<<<< HEAD
     transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
+=======
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } as const 
+>>>>>>> upstream/main
   },
 };
 
@@ -63,7 +70,16 @@ const features = [
   }
 ];
 
+<<<<<<< HEAD
 
+=======
+interface Feature {
+  title: string;
+  description: string;
+  bgClass: string;
+  icon: ReactNode;
+}
+>>>>>>> upstream/main
 
 const FeatureCard = ({ feature }: { feature: Feature }) => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -345,7 +361,11 @@ const HeroSectionComponent = () => {
             ))}
           </div>
         </div>
+<<<<<<< HEAD
         
+=======
+      </div>
+>>>>>>> upstream/main
 
       <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">

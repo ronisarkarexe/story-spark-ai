@@ -53,7 +53,7 @@ export const Contributors: React.FC = () => {
           setRepoStats({
             stars: repoData.stargazers_count || 0,
             forks: repoData.forks_count || 0,
-            contributors: repoData.contributors_count || 0,
+            contributors: contributorsData.length,
           });
         }
 

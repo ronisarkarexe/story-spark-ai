@@ -38,7 +38,7 @@ const searchStories = async (
     if (dateTo) (matchStage.createdAt as Record<string, unknown>).$lte = new Date(dateTo);
   }
 
-  const sortStage: Record<string, unknown> =
+  const sortStage: any =
     sortBy === "date"
       ? { createdAt: -1 }
       : sortBy === "popularity"
@@ -47,7 +47,7 @@ const searchStories = async (
 
   const [results, total] = await Promise.all([
     Post.find(matchStage, { score: { $meta: "textScore" } })
-      .sort(sortStage as Parameters<typeof Post.find>[1])
+      .sort(sortStage)
       .skip((page - 1) * limit)
       .limit(limit)
       .populate("author", "name profile.avatar")

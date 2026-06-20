@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { useDebounce } from "../hooks/useDebounce";
-import { searchApi, type SearchResults, type StoryResult, type UserResult } from "../services/searchApi";
+import { useDebounce } from "../../hooks/useDebounce";
+import { searchApi, type SearchResults, type StoryResult, type UserResult } from "../../services/searchApi";
 
 const GENRES = ["Fantasy", "Sci-Fi", "Mystery", "Romance", "Thriller", "Horror", "Adventure", "Drama"];
 

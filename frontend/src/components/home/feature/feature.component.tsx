@@ -102,7 +102,7 @@ const FeatureComponent = () => {
                             </span>
 
                             <p className="text-xs text-purple-400 font-medium flex items-center gap-1">
-                              <i className="fa-regular fa-clock"></i> {calculateReadingTime(post.content)} min read
+                              <i className="fa-solid fa-clock"></i> {calculateReadingTime(post.content)} min read
                             </p>
                           </div>
                         </div>

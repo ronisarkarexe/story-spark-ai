@@ -35,7 +35,10 @@ const SSInput = <T extends FieldValues>({
   autoFocus,
 }: SSInputProps<T>) => {
   const [showLocalPassword, setShowLocalPassword] = useState(false);
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/main
 
 
 
@@ -45,6 +48,7 @@ const SSInput = <T extends FieldValues>({
 
 
   return (
+<<<<<<< HEAD
     <div className="w-full min-w-0 box-border">
       <label htmlFor={name} className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
 
@@ -60,10 +64,24 @@ const SSInput = <T extends FieldValues>({
 
 
 
+=======
+    <div className="w-full min-w-0 max-w-full box-border">
+      <label
+        htmlFor={name}
+        className="block text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider mb-2 text-left select-none"
+      >
+        {label} {required && <span className="text-rose-500">*</span>}
+      </label>
+      <div className="relative mt-2 flex items-center">
+        {icon && (
+          //<span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
+            <span className="absolute left-3 text-gray-500 flex items-center pointer-events-none">
+>>>>>>> upstream/main
             <i className={icon}></i>
           </span>
         )}
 
+<<<<<<< HEAD
 
 
 
@@ -74,6 +92,16 @@ const SSInput = <T extends FieldValues>({
           id={name}
 
           placeholder={placeholder}
+=======
+        <input
+          type={inputType}
+          id={name}
+          className={`w-full pl-8 pr-10 py-1.5 text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border rounded-md sm:text-sm ${
+          error
+          ? "border-red-500 outline-red-500"
+          : "border-gray-300 outline-gray-300 focus:outline-indigo-600"
+          }`}          placeholder={placeholder}
+>>>>>>> upstream/main
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           {...register(name, validation)}
@@ -114,11 +142,20 @@ const SSInput = <T extends FieldValues>({
 
       {/* Error Message */}
       {error && (
+<<<<<<< HEAD
 
 
 
         <p className="text-red-500 text-sm mt-2">{error.message}</p>
 
+=======
+        <p
+          className="text-xs font-semibold text-rose-400 mt-1.5 text-left w-full break-words"
+          aria-live="polite"
+        >
+          {error.message}
+        </p>
+>>>>>>> upstream/main
       )}
 
 

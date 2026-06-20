@@ -5,6 +5,10 @@ import CookieConsentBanner from "../cookie-consent/cookie-consent.component";
 import FooterComponent from "../footer/footer.component";
 import ChatComponent from "../chat/Chat";
 
+
+
+
+
 interface RootLayoutProps {
   children: ReactNode;
 }
@@ -22,7 +26,13 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
 
   return (
     <div
+<<<<<<< HEAD
       className="flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100"
+=======
+      className={`flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${
+        !isAuthPage ? "pb-20 lg:pb-0" : ""
+      }`}
+>>>>>>> upstream/main
       style={{ paddingBottom: isAuthPage ? 0 : cookieBannerHeight }}
     >
 
@@ -31,7 +41,11 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
       <CookieConsentBanner onLayoutChange={handleCookieLayoutChange} />
       <div className="flex-grow min-h-0">{children}</div>
       {!hideFooter && <FooterComponent />}
+<<<<<<< HEAD
       <ChatComponent />
+=======
+<ChatComponent />
+>>>>>>> upstream/main
     </div>
   );
 };

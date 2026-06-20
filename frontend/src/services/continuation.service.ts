@@ -1,7 +1,7 @@
-import { instance as axios } from "../helpers/axios/axiosInstance";
+import axios from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const API_BASE = "/v1";
 
 export const continueStory = async (chapters: Chapter[]) => {
   const previousContent = chapters
@@ -10,7 +10,7 @@ export const continueStory = async (chapters: Chapter[]) => {
 
   try {
     const response = await axios.post(
-      `${BASE_URL}/story-continuation/continue`,
+      `${API_BASE}/ai_model/continue-story`,
       {
         prompt: `
 Continue this story naturally.
@@ -24,15 +24,15 @@ Rules:
 Story:
 ${previousContent}
         `,
-      }
+      },
+      { withCredentials: true }
     );
 
-    return response.data.text;
+    return response.data.data.continuation;
   } catch (error) {
     console.error("Story continuation request failed:", error);
     throw new Error("Failed to continue story.");
   }
-  return response.data.data.continuation;
 };
 
 /**
@@ -46,8 +46,10 @@ export const getContinuations = async (
   count: number = 3
 ): Promise<string[]> => {
   const previousContent = chapters.map((c) => c.content).join("\n\n");
-  const response = await axios.post(`${BASE_URL}/story-continuation/continuations`, {
-    prompt: `
+  const response = await axios.post(
+    `${API_BASE}/ai_model/continue-story`,
+    {
+      prompt: `
 Continue this story naturally.
 
 Rules:
@@ -59,8 +61,10 @@ Rules:
 Story:
 ${previousContent}
     `,
-    count,
-  });
+      count,
+    },
+    { withCredentials: true }
+  );
   const data = response.data.data;
   if (Array.isArray(data)) {
     return data.map((item: any) => item.continuation ?? "");

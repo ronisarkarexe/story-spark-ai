@@ -1,6 +1,6 @@
 import express from "express";
 import { SearchController } from "./search.controller";
-import { searchRateLimiter } from "../../middlewares/rateLimit.middleware";
+import { searchRateLimiter } from "../../middleware/rateLimit.middleware";
 
 const router = express.Router();
 

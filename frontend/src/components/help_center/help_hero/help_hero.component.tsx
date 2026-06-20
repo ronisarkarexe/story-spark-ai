@@ -48,20 +48,24 @@ const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultC
               <i className="fa-solid fa-circle-question" aria-hidden="true"></i>
             </span>
           </div>
+<<<<<<< HEAD
         </div>
+=======
+>>>>>>> upstream/main
 
           <motion.h1
             id="help-center-title"
             className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:bg-clip-text dark:text-transparent dark:bg-gradient-to-r dark:from-gray-200 dark:via-blue-400 dark:to-indigo-400 mb-6 tracking-tight"
           >
             How can we help you today?
-          </div>
+          </motion.h1>
 
           <p className="text-lg text-slate-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
             Find answers, troubleshoot issues, and get started with StorySparkAI.
             Search our guides or browse topics below.
           </p>
 
+<<<<<<< HEAD
             <HelpSearchBar
               value={searchQuery}
               onChange={handleSearchChange}
@@ -70,6 +74,8 @@ const HelpHero: FC<HelpHeroProps> = ({ searchQuery = "", onSearchChange, resultC
           </section>
         </div>
 
+=======
+>>>>>>> upstream/main
           <HelpSearchBar
             value={searchQuery}
             onChange={onSearchChange ?? (() => {})}
