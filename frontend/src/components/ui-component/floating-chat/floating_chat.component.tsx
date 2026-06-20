@@ -1,4 +1,5 @@
-/* eslint-disable */
+
+
 import React, { useState, useEffect, useRef } from "react";
 import { useChatWithAiMutation } from "../../../redux/apis/chat.api";
 import { isLoggedIn } from "../../../services/auth.service";
@@ -209,7 +210,8 @@ export const FloatingChatWidget: React.FC = () => {
               <button
                 onClick={handleClearChat}
                 title="Clear conversation history"
-                aria-label="Clear conversation history"
+
+
                 className="text-slate-400 hover:text-rose-500 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
               >
                 <i className="fa-solid fa-trash-can text-xs"></i>
@@ -217,7 +219,7 @@ export const FloatingChatWidget: React.FC = () => {
               <button
                 onClick={toggleWidget}
                 title="Collapse Assistant"
-                aria-label="Collapse assistant"
+
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
               >
                 <i className="fa-solid fa-xmark text-sm"></i>
@@ -322,7 +324,9 @@ export const FloatingChatWidget: React.FC = () => {
                 onChange={(e) => setInputText(e.target.value.slice(0, 500))}
                 disabled={isLoading}
                 placeholder="Ask your creative co-pilot..."
-                className="flex-1 bg-white border border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-white rounded-xl py-2 px-3.5 text-xs focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-all placeholder:text-slate-400 shadow-inner"
+
+                className="flex-1 bg-white border border-slate-200 !text-gray-900 font-medium dark:bg-slate-900 dark:border-slate-800 dark:!text-gray-100 rounded-xl py-2 px-3.5 text-xs focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-all !placeholder-gray-600 dark:!placeholder-gray-400 shadow-inner"
+
               />
               <button
                 type="submit"

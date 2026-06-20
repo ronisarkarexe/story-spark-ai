@@ -1604,7 +1604,14 @@ input::-ms-clear {
 
 input::-webkit-contacts-auto-fill-button,
 input::-webkit-credentials-auto-fill-button {
-  visibility: hidden;
+  visibility: hidden !important;
   display: none !important;
-  pointer-events: none;
+  pointer-events: none !important;
 }
+
+::-webkit-credentials-auto-fill-button {
+  visibility: hidden !important;
+  display: none !important;
+  pointer-events: none !important;
+}
+

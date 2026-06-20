@@ -1,9 +1,16 @@
+import CharacterProfileCard from "./CharacterProfileCard";
+import StoryMoodDashboard from "./StoryMoodDashboard";
+import StoryTitleSuggestions from "./StoryTitleSuggestions";
+import { CharacterProfile } from "./stories.utils";
+import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
+import StoryAchievementDashboard from "./StoryAchievementDashboard";
+import StoryCollections from "./StoryCollections";
 import jsPDF from "jspdf";
 import {
   fetchImageAsBlob,
@@ -23,7 +30,7 @@ import { useDispatch } from "react-redux";
 import { setStory } from "../../redux/slices/storySlice";
 import ContinueStoryButton from "../story/ContinueStoryButton";
 import { useApiError } from "../../hooks/useApiError";
-import { useLocation } from "react-router-dom";
+import ReadingProgressBar from "./ReadingProgressBar";
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
@@ -354,6 +361,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   } = useAntiGravityScroll(storyScrollContainerRef);
 
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const storyContentRef = useRef<HTMLDivElement>(null);
 
   // States
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -368,6 +376,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
   // Start with a clean state that adapts dynamically
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
+  const [readingProgress, setReadingProgress] = useState<number>(0);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
   const [newTopicTitle, setNewTopicTitle] = useState<string>("");
@@ -387,6 +396,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
+  const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [, setShowRemix] = useState<boolean>(false);
   const [showContinueModal, setShowContinueModal] = useState<boolean>(false);
@@ -423,6 +434,44 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       }));
     }
   }, [selectedStory, originalStoryContent]);
+
+  useEffect(() => {
+  if (!selectedStory) return;
+
+  const saved = localStorage.getItem(
+    `story-progress-${selectedStory.uuid}`
+  );
+
+  setReadingProgress(saved ? Number(saved) : 0);
+}, [selectedStory]);
+
+useEffect(() => {
+  const element = storyContentRef.current;
+
+  if (!element || !selectedStory) return;
+
+  const handleScroll = () => {
+    const progress =
+      (element.scrollTop /
+        (element.scrollHeight - element.clientHeight)) *
+      100;
+
+    const value = Math.min(100, Math.max(0, progress));
+
+    setReadingProgress(value);
+
+    localStorage.setItem(
+      `story-progress-${selectedStory.uuid}`,
+      value.toString()
+    );
+  };
+
+  element.addEventListener("scroll", handleScroll);
+
+  return () => {
+    element.removeEventListener("scroll", handleScroll);
+  };
+}, [selectedStory]);
 
   useEffect(() => {
     if (narrationState === "playing") {
@@ -709,6 +758,27 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       setTimeout(() => setIsCopied(false), 2000);
     }
   };
+
+  const handleApplyTitle = (newTitle: string) => {
+  if (!selectedStory) return;
+
+  const updatedStory = {
+    ...selectedStory,
+    title: newTitle,
+  };
+
+  setSelectedStory(updatedStory);
+
+  setStories(
+    stories.map((story) =>
+      story.uuid === selectedStory.uuid
+        ? updatedStory
+        : story
+    )
+  );
+
+  toast.success("Story title updated!");
+};
 
   const handleExport = async (format: "pdf" | "epub") => {
     if (!selectedStory) return;
@@ -1086,6 +1156,49 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
   };
 
+    toast.success("PDF downloaded!");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to export PDF.");
+  }
+};
+
+const handleGenerateCharacterProfile = async () => {
+  if (!selectedStory) {
+    toast.error("No story selected!");
+    return;
+  }
+
+  setProfileLoading(true);
+
+  try {
+    // Replace with your backend API endpoint
+    const response = await fetch(
+      "/api/generate-character-profile",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          story: selectedStory.content,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    setCharacterProfiles(data.data);
+
+    toast.success("Character profiles generated!");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to generate profiles.");
+  } finally {
+    setProfileLoading(false);
+  }
+};
+
   const handelPublishStory = async () => {
     if (!isLogin) {
       toast.error("Please login to publish the story.");
@@ -1280,6 +1393,11 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start relative z-10 w-full box-border">
         
+        {/* Writing Achievement Dashboard */}
+<StoryAchievementDashboard
+  totalStories={stories.length}
+/>
+
         {/* ── Left Column ── */}
         <div className="col-span-1 lg:col-span-8 flex flex-col space-y-6 w-full box-border animate-fade-in-up">
           
@@ -1464,6 +1582,32 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
               <h3 className="text-xl font-bold text-slate-200 relative z-10">
                 Generated Story
               </h3>
+              <div className="flex items-center gap-2 relative z-10">
+                {selectedStory && (
+                  <>
+                    <button
+                      type="button"
+                      className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors"
+                      onClick={handleCopyStory}
+                    >
+                      {isCopied ? "✓ Copied" : "📋 Copy"}
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg px-4 py-2 bg-indigo-700 text-white font-semibold hover:bg-indigo-600 transition-colors"
+                      onClick={handleGenerateCharacterProfile}
+                    >
+                      {profileLoading ? "Generating..." : "👥 Characters"}
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors"
+                      onClick={handleExportPDF}
+                    >
+                      📄 Export PDF
+                    </button>
+                  </>
+                )}
               <div className="flex flex-wrap items-center gap-2 relative z-10">
                 <button
                   type="button"
@@ -1775,6 +1919,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           </div>
         </div>
 
+
+
         {/* ── Right Column: Preview Panel ── */}
         <div className="col-span-1 lg:col-span-4 w-full box-border lg:sticky lg:top-6">
           <div className="mb-4 text-left select-none px-0.5">
@@ -1820,6 +1966,24 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
               />
             </div>
           </div>
+          <div className="mt-6">
+  {characterProfiles.length > 0 && (
+    <>
+      <h3 className="text-xl font-bold text-white mb-4">
+        Character Profiles
+      </h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {characterProfiles.map((profile, index) => (
+          <CharacterProfileCard
+            key={index}
+            profile={profile}
+          />
+        ))}
+      </div>
+    </>
+  )}
+</div>
           <div className="mt-7">
             <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
               <h3 className="text-lg font-bold text-slate-200 mb-4">
@@ -2024,12 +2188,31 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           </div>
         </div>
 
+        
+
+
         <div className="col-span-1 lg:col-span-4">
           <GeneratedStoryTimeline
             content={selectedStory.content}
             title={selectedStory.title}
             narrationState={narrationState}
             narrationWordIndex={narrationWordIndex}
+            onNavigate={(wordIndex) => {
+              console.log("Navigate to story word:", wordIndex);
+
+              // You can add scrolling logic here
+              if (storyContentRef.current) {
+                storyContentRef.current.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+              }
+            }}
+          />
+
+          <StoryCollections
+            storyId={selectedStory.uuid}
+            storyTitle={selectedStory.title}
           />
 
           <div className="mb-5">

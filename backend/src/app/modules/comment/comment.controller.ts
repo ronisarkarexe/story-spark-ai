@@ -40,6 +40,18 @@ const toggleCommentLike = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const toggleCommentHelpful = catchAsync(async (req: Request, res: Response) => {
+  const commentId = routeParam(req.params.commentId);
+  const token = await getToken(req);
+  const result = await CommentService.toggleCommentHelpful(commentId, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Comment helpful status toggled successfully!",
+    data: result,
+  });
+});
+
 const deleteComment = catchAsync(async (req: Request, res: Response) => {
   const commentId = routeParam(req.params.commentId);
   const token = await getToken(req);
@@ -56,5 +68,6 @@ export const CommentController = {
   createComment,
   getCommentsByPostId,
   toggleCommentLike,
+  toggleCommentHelpful,
   deleteComment,
 };

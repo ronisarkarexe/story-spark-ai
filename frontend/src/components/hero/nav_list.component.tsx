@@ -712,6 +712,7 @@ const NavListComponent = () => {
     { to: "/", label: "Home" },
     { to: "/explore", label: "Explore" },
     { to: "/story-inspiration", label: "Stories" },
+    { to: "/chat", label: "AI Chat" },
     { to: "/community", label: "Community" },
   ];
 
