@@ -308,7 +308,7 @@ const UI_TEXT: Record<string, UiText> = {
     generateStory: "कथा तयार करा", publishStory: "कथा प्रकाशित करा", close: "बंद करा", freeLimitReached: "मोफत मर्यादा पूर्ण",
     freeLimitMessage: "तुम्ही सर्व ३ मोफत कथा निर्मिती वापरल्या आहेत. पुढे सुरू ठेवण्यासाठी लॉग इन करा.", continueBrowsing: "ब्राउझिंग सुरू ठेवा", recentPrompts: "अलीकडील प्रॉम्प्ट", usePrompt: "वापरा", delete: "हटवा", clearAll: "सर्व मोडून टाका", noRecentPrompts: "कोणतेही अलीकडील प्रॉम्प्ट नाहीत",
   },
-}
+};
 
 const LANGUAGE_STORAGE_KEY = "storySparkLanguage";
 

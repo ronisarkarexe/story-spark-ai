@@ -699,9 +699,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
       const isoDate = new Date().toISOString().split("T")[0];
 
-      const cleanTitle = title.replace(/"/g, '\\"');
-      const cleanTag = tag.replace(/"/g, '\\"');
-      const cleanAuthor = authorName.replace(/"/g, '\\"');
+      const cleanTitle = title.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      const cleanTag = tag.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      const cleanAuthor = authorName.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 
       const markdownContent = `---
 title: "${cleanTitle}"
@@ -1351,21 +1351,21 @@ ${content}
                 <div className="flex justify-between items-center mb-3 w-full">
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="inline-flex items-center rounded-full bg-purple-100 dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 py-1 px-3 text-xs font-semibold shadow-sm border border-purple-200 dark:border-transparent">
-                      {selectedStory?.tag?.toUpperCase() ?? "GENERAL"}
+                      {selectedStory.tag?.toUpperCase() ?? "GENERAL"}
                     </div>
                     <div className="inline-flex items-center rounded-full bg-indigo-100 dark:bg-indigo-600/30 text-indigo-700 dark:text-indigo-300 py-1 px-3 text-xs font-semibold shadow-sm border border-indigo-200 dark:border-transparent">
-                      🌐 {(selectedStory?.language || "English").toUpperCase()}
+                      🌐 {(selectedStory.language || "English").toUpperCase()}
                     </div>
                   </div>
                   <div>
-                    {selectedStory && <BookmarkButton storyId={selectedStory.uuid} />}
+                    <BookmarkButton storyId={selectedStory.uuid} />
                   </div>
                 </div>
                 <h6 className="mb-2 text-slate-800 dark:text-gray-200 text-lg font-bold leading-tight">
-                  {selectedStory?.title ?? ""}
+                  {selectedStory.title ?? ""}
                 </h6>
                 <p className="text-slate-500 dark:text-gray-400 font-medium break-words text-sm line-clamp-3">
-                  {selectedStory ? getShortenedText(selectedStory.content, 120) : ""}
+                  {getShortenedText(selectedStory.content, 120)}
                 </p>
               </div>
             </div>
