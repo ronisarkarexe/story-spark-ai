@@ -7,6 +7,10 @@ export interface ICollabRoom {
   expiresAt: Date;
   collabState?: Buffer;
   isAiGenerating: boolean;
+  whitelist: string[];
+  invitedUsers: string[];
+  guestsReadOnly: boolean;
+  password?: string;
 }
 
 export interface IParticipant {
@@ -14,6 +18,7 @@ export interface IParticipant {
   username: string;
   color: string;
   socketId: string;
+  isReadOnly: boolean;
 }
 
 export interface IStoryChunk {

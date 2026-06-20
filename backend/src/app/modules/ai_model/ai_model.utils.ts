@@ -10,6 +10,7 @@ import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
+import { sanitizeJsonText } from "../../../utils/sanitizeJson";
 import httpStatus from "http-status";
 import type {
   IStoryVisualizerPayload,
@@ -751,7 +752,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,

@@ -6,6 +6,7 @@ const ParticipantSchema = new Schema({
   username: { type: String, required: true },
   color: { type: String, required: true },
   socketId: { type: String, required: true },
+  isReadOnly: { type: Boolean, required: true, default: false },
 });
 
 const StoryChunkSchema = new Schema({
@@ -26,6 +27,10 @@ const CollabRoomSchema = new Schema<ICollabRoom>(
     expiresAt: { type: Date, required: true },
     collabState: { type: Buffer },
     isAiGenerating: { type: Boolean, required: true, default: false },
+    whitelist: { type: [String], default: [] },
+    invitedUsers: { type: [String], default: [] },
+    guestsReadOnly: { type: Boolean, required: true, default: false },
+    password: { type: String },
   },
   {
     timestamps: true,

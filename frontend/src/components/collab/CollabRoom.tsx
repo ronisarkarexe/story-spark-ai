@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { resolveSocketUrl } from "../../helpers/socket-url";
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
@@ -46,15 +46,13 @@ export default function CollabRoom() {
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newText, setNewText] = useState("");
-  const [collabSocket, setCollabSocket] = useState<any>(null);
+  const [collabSocket, setCollabSocket] = useState<Socket | null>(null);
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
 
   const user = getUserInfo();
-  const TYPING_DEBOUNCE_MS = 2000;
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -71,7 +69,7 @@ export default function CollabRoom() {
       return;
     }
 
-    let socketInstance: any;
+    let socketInstance: Socket;
 
     try {
       socketInstance = io(`${socketUrl}/collab`, {
@@ -158,57 +156,10 @@ export default function CollabRoom() {
     }
   }, [roomId, navigate]);
 
-  const emitStopTyping = () => {
-    if (!collabSocket || !roomId || !isTypingRef.current) return;
-    collabSocket.emit("collab:stop_typing", { roomId });
-    isTypingRef.current = false;
-  };
 
-  const scheduleStopTyping = () => {
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    typingTimeoutRef.current = setTimeout(() => {
-      emitStopTyping();
-      typingTimeoutRef.current = null;
-    }, TYPING_DEBOUNCE_MS);
-  };
 
-  const handleAddText = () => {
-    if (!newText.trim() || !user || !roomId || !collabSocket) return;
 
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-    }
-    emitStopTyping();
 
-    collabSocket.emit("collab:add_text", {
-      roomId,
-      text: newText.trim(),
-    });
-    setNewText("");
-  };
-
-  const handleInputChange = (val: string) => {
-    setNewText(val);
-    if (!collabSocket || !roomId) return;
-
-    if (!isTypingRef.current) {
-      collabSocket.emit("collab:typing", { roomId });
-      isTypingRef.current = true;
-    }
-
-    scheduleStopTyping();
-  };
-
-  const handleInputBlur = () => {
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-    }
-    emitStopTyping();
-  };
 
   const handleAIContinue = () => {
     if (!roomId || !collabSocket) return;
@@ -312,7 +263,7 @@ export default function CollabRoom() {
 
               <div className="flex gap-2 items-start">
                 <CollabEditor
-                  storyId={roomId}
+                  storyId={roomId || ''}
                   userId={user?.userId || ''}
                   username={user?.name || 'Anonymous'}
                   userColor="#FF6B6B"

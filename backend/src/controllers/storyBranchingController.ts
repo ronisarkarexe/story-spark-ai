@@ -4,14 +4,7 @@ import sendResponse from "../shared/send_response";
 import { storyQueue } from "../services/storyRequestQueue";
 import { compressContext, serializeLore } from "../utils/contextCompressor";
 
-const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) return trimmed;
-  return trimmed
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
-};
+import { sanitizeJsonText } from "../utils/sanitizeJson";
 
 const parseRawStoryText = (text: string) => ({
   storySegment: text || "The story continues into the unknown...",
@@ -92,22 +85,22 @@ Task:
         }
       }
 
-      if (!parsed.choices || parsed.choices.length === 0) {
-        parsed.choices = [
+      let choices = parsed.choices || [];
+      if (choices.length === 0) {
+        choices = [
           "Explore the surroundings",
           "Search for another way",
           "Wait and see what happens",
         ];
-      } else if (parsed.choices.length < 3) {
-        choices = [...parsed.choices];
+      } else if (choices.length < 3) {
+        choices = [...choices];
         while (choices.length < 3) {
           choices.push(`Option ${choices.length + 1}`);
         }
-      } else if (parsed.choices.length > 3) {
-        choices = parsed.choices.slice(0, 3);
-      } else {
-        choices = parsed.choices;
+      } else if (choices.length > 3) {
+        choices = choices.slice(0, 3);
       }
+      parsed.choices = choices;
 
       sendResponse(res, {
         success: true,

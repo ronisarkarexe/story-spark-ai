@@ -1,4 +1,4 @@
-import { Server, Socket } from 'socket.io';
+import { Server, Namespace, Socket } from 'socket.io';
 import * as Y from 'yjs';
 import { debounce } from 'lodash';
 import { CollabService } from './collab.service';
@@ -8,13 +8,13 @@ import { CollabService } from './collab.service';
  * and persists the document state to MongoDB.
  */
 export class YjsGateway {
-  private readonly io: Server;
+  private readonly io: Namespace;
   private readonly docs: Map<string, Y.Doc> = new Map();
   private readonly debouncedSaves: Map<string, () => void> = new Map();
   private readonly saveDelay = 2000; // ms
 
   constructor(io: Server) {
-    this.io = io.of('/yjs');
+    this.io = io.of('/yjs') as any;
     this.setup();
   }
 

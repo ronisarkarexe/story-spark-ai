@@ -73,7 +73,7 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // Create a new room
-    socket.on("collab:create_room", async () => {
+    socket.on("collab:create_room", async ({ password } = {}) => {
       try {
         const userId = socket.data.userId;
         const username = socket.data.username;
@@ -89,10 +89,15 @@ export const setupCollabSocket = (io: Server) => {
               username,
               color: COLORS[0],
               socketId: socket.id,
+              isReadOnly: false,
             },
           ],
           story: [],
           expiresAt,
+          whitelist: [userId],
+          invitedUsers: [],
+          guestsReadOnly: false,
+          password: password || undefined,
         });
 
         await newRoom.save();
@@ -105,7 +110,7 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // Join an existing room
-    socket.on("collab:join_room", async ({ roomId }) => {
+    socket.on("collab:join_room", async ({ roomId, password }) => {
       try {
         const userId = socket.data.userId;
         const username = socket.data.username;
@@ -114,6 +119,30 @@ export const setupCollabSocket = (io: Server) => {
         if (!room) {
           socket.emit("collab:error", { message: "Room not found" });
           return;
+        }
+
+        const isCreator = room.createdBy === userId;
+        const isWhitelisted = room.whitelist?.includes(userId);
+        const isInvited = room.invitedUsers?.includes(userId);
+
+        // Check password if set
+        if (room.password && !isCreator && !isWhitelisted && !isInvited) {
+          if (password !== room.password) {
+            socket.emit("collab:error", { message: "Access denied: incorrect password" });
+            return;
+          }
+        }
+
+        // Determine read-only status
+        let isReadOnly = false;
+        if (!isCreator && !isWhitelisted && !isInvited) {
+          if (room.guestsReadOnly) {
+            isReadOnly = true;
+          } else if (room.whitelist && room.whitelist.length > 0) {
+            // Whitelist is active, and user is not on it
+            socket.emit("collab:error", { message: "Access denied: you are not whitelisted" });
+            return;
+          }
         }
 
         const existingParticipantIndex = room.participants.findIndex(
@@ -127,9 +156,11 @@ export const setupCollabSocket = (io: Server) => {
             username,
             color,
             socketId: socket.id,
+            isReadOnly,
           });
         } else {
           room.participants[existingParticipantIndex].socketId = socket.id;
+          room.participants[existingParticipantIndex].isReadOnly = isReadOnly;
         }
 
         await room.save();
@@ -160,6 +191,13 @@ export const setupCollabSocket = (io: Server) => {
         if (!participant) {
           socket.emit("collab:error", {
             message: "You are not a participant of this room",
+          });
+          return;
+        }
+
+        if (participant.isReadOnly) {
+          socket.emit("collab:error", {
+            message: "Access denied: you are a read-only participant",
           });
           return;
         }
@@ -209,6 +247,11 @@ export const setupCollabSocket = (io: Server) => {
           return;
         }
 
+        if (participant.isReadOnly) {
+          socket.emit("collab:error", { message: "Access denied: you are a read-only participant" });
+          return;
+        }
+
         socket.to(roomId).emit("collab:yjs-update", { update });
       } catch (error) {
         logger.error("Error in Yjs update", error);
@@ -229,6 +272,11 @@ export const setupCollabSocket = (io: Server) => {
         const participant = room.participants.find((p) => p.userId === userId);
         if (!participant) {
           socket.emit("collab:error", { message: "You are not a participant of this room" });
+          return;
+        }
+
+        if (participant.isReadOnly) {
+          socket.emit("collab:error", { message: "Access denied: you are a read-only participant" });
           return;
         }
 
@@ -262,6 +310,13 @@ export const setupCollabSocket = (io: Server) => {
         if (!participant) {
           socket.emit("collab:error", {
             message: "You are not a participant of this room",
+          });
+          return;
+        }
+
+        if (participant.isReadOnly) {
+          socket.emit("collab:error", {
+            message: "Access denied: you are a read-only participant",
           });
           return;
         }
@@ -386,8 +441,8 @@ export const setupCollabSocket = (io: Server) => {
       socket.to(roomId).emit("collab:user_stop_typing", { userId });
     });
 
-    // Get room info
-    socket.on("collab:get_room", async ({ roomId }) => {
+    // Invite a user
+    socket.on("collab:invite_user", async ({ roomId, inviteeId }) => {
       try {
         const userId = socket.data.userId;
         const room = await CollabRoom.findOne({ roomId });
@@ -395,16 +450,151 @@ export const setupCollabSocket = (io: Server) => {
           socket.emit("collab:error", { message: "Room not found" });
           return;
         }
-        if (!room.participants.some((p) => p.userId === userId)) {
-          socket.emit("collab:error", {
-            message: "You are not a participant of this room",
-          });
+
+        if (room.createdBy !== userId) {
+          socket.emit("collab:error", { message: "Access denied: only room creator can invite users" });
           return;
         }
-        socket.emit("collab:room_info", { room });
+
+        if (!room.invitedUsers.includes(inviteeId)) {
+          room.invitedUsers.push(inviteeId);
+          await room.save();
+        }
+
+        collabNamespace.to(roomId).emit("collab:room_updated", { room });
+      } catch (error) {
+        logger.error("collab:invite_user error", error);
+        socket.emit("collab:error", { message: "Failed to invite user" });
+      }
+    });
+
+    // Set guests read-only policy
+    socket.on("collab:set_guests_readonly", async ({ roomId, guestsReadOnly }) => {
+      try {
+        const userId = socket.data.userId;
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found" });
+          return;
+        }
+
+        if (room.createdBy !== userId) {
+          socket.emit("collab:error", { message: "Access denied: only room creator can change policies" });
+          return;
+        }
+
+        room.guestsReadOnly = guestsReadOnly;
+
+        // Update existing participant read-only statuses
+        for (const p of room.participants) {
+          const isCreator = room.createdBy === p.userId;
+          const isWhitelisted = room.whitelist?.includes(p.userId);
+          const isInvited = room.invitedUsers?.includes(p.userId);
+
+          if (!isCreator && !isWhitelisted && !isInvited) {
+            p.isReadOnly = guestsReadOnly;
+          }
+        }
+
+        await room.save();
+        collabNamespace.to(roomId).emit("collab:room_updated", { room });
+      } catch (error) {
+        logger.error("collab:set_guests_readonly error", error);
+        socket.emit("collab:error", { message: "Failed to set guest policy" });
+      }
+    });
+
+    // Toggle read-only for a specific participant
+    socket.on("collab:toggle_participant_readonly", async ({ roomId, targetUserId, isReadOnly }) => {
+      try {
+        const userId = socket.data.userId;
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found" });
+          return;
+        }
+
+        if (room.createdBy !== userId) {
+          socket.emit("collab:error", { message: "Access denied: only room creator can modify participant rights" });
+          return;
+        }
+
+        const participant = room.participants.find((p) => p.userId === targetUserId);
+        if (participant) {
+          participant.isReadOnly = isReadOnly;
+          await room.save();
+        }
+
+        collabNamespace.to(roomId).emit("collab:room_updated", { room });
+      } catch (error) {
+        logger.error("collab:toggle_participant_readonly error", error);
+        socket.emit("collab:error", { message: "Failed to toggle participant rights" });
+      }
+    });
+
+    // Update whitelist
+    socket.on("collab:update_whitelist", async ({ roomId, whitelist }) => {
+      try {
+        const userId = socket.data.userId;
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found" });
+          return;
+        }
+
+        if (room.createdBy !== userId) {
+          socket.emit("collab:error", { message: "Access denied: only room creator can modify whitelist" });
+          return;
+        }
+
+        room.whitelist = whitelist;
+
+        // Update existing participant read-only statuses based on new whitelist
+        for (const p of room.participants) {
+          const isCreator = room.createdBy === p.userId;
+          const isWhitelisted = whitelist.includes(p.userId);
+          const isInvited = room.invitedUsers?.includes(p.userId);
+
+          if (!isCreator && !isWhitelisted && !isInvited) {
+            p.isReadOnly = room.guestsReadOnly;
+          } else {
+            p.isReadOnly = false;
+          }
+        }
+
+        await room.save();
+        collabNamespace.to(roomId).emit("collab:room_updated", { room });
+      } catch (error) {
+        logger.error("collab:update_whitelist error", error);
+        socket.emit("collab:error", { message: "Failed to update whitelist" });
+      }
+    });
+
+    // Get room info
+    socket.on("collab:get_room", async ({ roomId }, callback) => {
+      try {
+        const userId = socket.data.userId;
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          const errRes = { message: "Room not found" };
+          if (typeof callback === "function") callback(errRes);
+          socket.emit("collab:error", errRes);
+          return;
+        }
+        if (!room.participants.some((p) => p.userId === userId)) {
+          const errRes = { message: "You are not a participant of this room" };
+          if (typeof callback === "function") callback(errRes);
+          socket.emit("collab:error", errRes);
+          return;
+        }
+        const successRes = { room };
+        if (typeof callback === "function") callback(successRes);
+        socket.emit("collab:room_info", successRes);
       } catch (error) {
         logger.error("collab:get_room error", error);
-        socket.emit("collab:error", { message: "Failed to get room information" });
+        const errRes = { message: "Failed to get room information" };
+        if (typeof callback === "function") callback(errRes);
+        socket.emit("collab:error", errRes);
       }
     });
 
