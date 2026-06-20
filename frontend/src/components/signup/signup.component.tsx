@@ -38,7 +38,7 @@ type StrengthLevel = "weak" | "medium" | "strong";
 const PASSWORD_STRENGTH_CONFIG: Record<
   StrengthLevel,
   { label: string; barColor: string; barWidth: string; textColor: string }
-> = {
+ > = {
   weak: { label: "Weak", barColor: "bg-red-500", barWidth: "w-1/3", textColor: "text-red-400" },
   medium: { label: "Medium", barColor: "bg-yellow-400", barWidth: "w-2/3", textColor: "text-yellow-300" },
   strong: { label: "Strong", barColor: "bg-green-500", barWidth: "w-full", textColor: "text-green-400" },
@@ -69,7 +69,6 @@ const SignUpComponent = () => {
     register,
     handleSubmit,
     watch,
-    unregister,
     setValue,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
@@ -106,17 +105,18 @@ const SignUpComponent = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
-const user = {
-  name: data.name,
-  email: data.email,
-  password: data.password,
-  confirmPassword: data.confirmPassword,
-};
+      const user = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+      };
 
-const otpPayload = {
-  name: data.name,
-  email: data.email,
-};
+      const otpPayload = {
+        name: data.name,
+        email: data.email,
+      };
+
       if (password !== confirmPassword) {
         toast.error("Passwords do not match!");
         return;
@@ -231,56 +231,6 @@ const otpPayload = {
     }
   };
 
-  const handleResendOtp = async () => {
-    if (cooldown > 0 || isBusy) return;
-    if (!registerInfo) {
-      toast.error("Something went wrong. Please restart the process.");
-      return;
-    }
-    setIsBusy(true);
-    try {
-      const otpPayload = {
-        name: registerInfo.name,
-        email: registerInfo.email,
-      };
-      const res = await emailVerify({ ...otpPayload }).unwrap();
-      if (res?.data) {
-        const { expiresAt } = res.data;
-        setExpiredAt(new Date(expiresAt).getTime());
-        toast.success("OTP resent successfully!");
-        setValue("otp", "");
-        setCooldown(60);
-      }
-    } catch (error) {
-      const message =
-        (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-        "Failed to resend OTP. Please try again.";
-      toast.error(message);
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleGoogleLoginSuccess = async (
-    credentialResponse: CredentialResponse
-  ) => {
-    setIsBusy(true);
-    try {
-      const res = await googleLogin({
-        token: credentialResponse.credential,
-      }).unwrap();
-      if (res.data.accessToken) {
-        toast.success("User logged in successfully with Google!");
-        storeUserInfo({ accessToken: res.data.accessToken });
-        navigate("/");
-      }
-    } catch {
-      toast.error("Failed to login with Google. Please try again.");
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
   const handleGoogleLoginError = () => {
     toast.error("Google login failed. Please try again.");
   };
@@ -297,15 +247,14 @@ const otpPayload = {
       setValue("confirmPassword", registerInfo.password);
     }
   }, [showOtpField, registerInfo, setValue]);
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-900 dark:text-slate-100 box-border">
-
       {/* Background Glow */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-0 min-w-0 box-border mx-auto">
-
         {/* Title */}
         <div className="mb-6 text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
@@ -313,25 +262,20 @@ const otpPayload = {
           </h2>
         </div>
 
-
-        {/* UPDATED: Structured layout classes to lock down maximum inner boundary constraints */}
-        <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-
-        <Link
-  to="/"
-  className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
->
-  <span>←</span>
-  <span>Back to Home</span>
-</Link>
-          <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-200">
         {/* Card */}
         <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
+          <Link
+            to="/"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
+          >
+            <span>←</span>
+            <span>Back to Home</span>
+          </Link>
 
           <h3 className="text-center text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
-
             {showOtpField ? "Verify Your Email" : "Create Account"}
           </h3>
+
           {showOtpField && registerInfo && (
             <p className="mt-2 mb-4 text-center text-xs sm:text-sm text-slate-400 px-1">
               We sent a 6-digit code to{" "}
@@ -340,12 +284,13 @@ const otpPayload = {
               <button
                 type="button"
                 onClick={handleGoBack}
-                className="font-semibold text-blue-400 hover:text-blue-300 underline transition-colors cursor-pointer"
+                className="font-semibold text-blue-400 hover:text-blue-300 underline transition-colors cursor-pointer bg-transparent border-none p-0"
               >
                 Change email
               </button>
             </p>
           )}
+
           {!showOtpField && (
             <p className="mt-2 mb-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 px-1">
               Join StorySparkAI and begin your creative journey.
@@ -367,7 +312,6 @@ const otpPayload = {
 
           {!showOtpField ? (
             <form className="space-y-5 w-full min-w-0 block box-border" onSubmit={handleSubmit(onSubmit)}>
-
               <SSInput
                 label="Name"
                 name="name"
@@ -429,6 +373,8 @@ const otpPayload = {
                     {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
                       const met = passwordChecks[key];
                       return (
+                        <li key={key} className={`flex items-center gap-1.5 ${met ? "text-green-500" : "text-slate-400"}`}>
+                          <span>{met ? "✓" : "○"}</span>
                           <span>{label}</span>
                         </li>
                       );
@@ -474,7 +420,7 @@ const otpPayload = {
                   validation={{
                     required: "Please enter OTP",
                     minLength: { value: 6, message: "OTP must be 6 digits" },
-                      setValueAs: (value: string) => value.replace(/\D/g, ""),
+                    setValueAs: (value: string) => value.replace(/\D/g, ""),
                     maxLength: { value: 6, message: "OTP must be 6 digits" },
                     pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
                   }}
@@ -496,7 +442,7 @@ const otpPayload = {
                   type="button"
                   onClick={handleResendOtp}
                   disabled={cooldown > 0 || isBusy}
-                  className="text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 disabled:text-slate-600 transition-colors duration-150 disabled:cursor-not-allowed cursor-pointer"
+                  className="text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 disabled:text-slate-600 transition-colors duration-150 disabled:cursor-not-allowed cursor-pointer bg-transparent border-none p-0"
                 >
                   {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
                 </button>
@@ -504,7 +450,7 @@ const otpPayload = {
                   type="button"
                   onClick={handleGoBack}
                   disabled={isBusy}
-                  className="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-300 transition-colors duration-150 focus:outline-none cursor-pointer mt-1"
+                  className="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-300 transition-colors duration-150 focus:outline-none cursor-pointer mt-1 bg-transparent border-none p-0"
                 >
                   Change Email
                 </button>
@@ -519,7 +465,7 @@ const otpPayload = {
                   <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-slate-800 px-4 text-slate-400 font-medium rounded-md">
+                  <span className="bg-white dark:bg-slate-850 px-4 text-slate-400 font-medium rounded-md">
                     Or
                   </span>
                 </div>
@@ -549,4 +495,3 @@ const otpPayload = {
 };
 
 export default SignUpComponent;
-

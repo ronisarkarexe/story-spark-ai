@@ -1,8 +1,5 @@
 
 import React, { useMemo, useState } from "react";
-import DownloadButtons from '../../../../components/DownloadButtons';
-import React, { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { useDebounced } from "../../../hooks/global";
 import { Post } from "../../../models/post";
@@ -210,23 +207,24 @@ const PublishedStoriesComponent: React.FC = () => {
                     {getExcerpt(story)}
                   </p>
 
-                  <div className="mt-3 flex justify-end">
-  <DownloadButtons story={story} />
-</div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">
-                        {story.viewsCount}
-                      </p>
-                      <p className="text-[10px] uppercase tracking-wider text-slate-500">
-                        Views
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">
-                        {story.likesCount}
-                      </p>
-                      <p className="text-[10px] uppercase tracking-wider text-slate-500">
-                        Likes
-                      </p>
+                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-white/[0.05]">
+                    <div className="flex gap-4">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                          {story.viewsCount}
+                        </p>
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500">
+                          Views
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                          {story.likesCount}
+                        </p>
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500">
+                          Likes
+                        </p>
+                      </div>
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-900 dark:text-white">

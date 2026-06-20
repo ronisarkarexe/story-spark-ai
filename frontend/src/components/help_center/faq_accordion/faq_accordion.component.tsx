@@ -110,7 +110,7 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
           );
         })}
       </div>
-    </div>
+    </section>
   );
 };
 

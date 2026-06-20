@@ -1,9 +1,9 @@
-import { instance as axios } from "../helpers/axios/axiosInstance";
+import axios from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const continueStory = async (chapters: Chapter[]) => {
+export const continueStory = async (chapters: Chapter[], tone?: string) => {
   const previousContent = chapters
     .map((chapter) => chapter.content)
     .join("\n\n");
@@ -17,7 +17,7 @@ Continue this story naturally.
 
 Rules:
 - Maintain character consistency
-- Keep emotional tone
+- Keep emotional tone${tone && tone !== "Default" ? ` (specifically: ${tone})` : ""}
 - Avoid repetition
 - Continue the narrative smoothly
 
@@ -32,7 +32,6 @@ ${previousContent}
     console.error("Story continuation request failed:", error);
     throw new Error("Failed to continue story.");
   }
-  return response.data.data.continuation;
 };
 
 /**

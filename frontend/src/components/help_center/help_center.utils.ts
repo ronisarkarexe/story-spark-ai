@@ -112,28 +112,6 @@ export const HELP_CATEGORIES: HelpCategory[] = [
   }
 ];
 
-<<<<<<< HEAD
-=======
-// CORRECTED MAPPING: Changed 'title' to 'label' so the sidebar reads it correctly
-export const HELP_SECTIONS = HELP_CATEGORIES.map(category => ({
-  id: category.id,
-  title: category.title,
-  description: category.description,
-}));
->>>>>>> d8f93186 (Resoved Error)
-export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
-  {
-    id: "connection-lost",
-    title: "Real-time Sync Disconnected",
-    description: "Steps to resolve persistent socket dropouts or loading freezes in collab rooms.",
-    icon: "fa-solid fa-wifi",
-    symptoms: "Collab workspace shows connection error indicator or updates stall.",
-    solution: "Verify your local network availability, clear application session storage, or recreate the workspace instance.",
-    keywords: ["network", "socket", "disconnect", "collab", "freeze"]
-  }
-];
-<<<<<<< HEAD
-
 export type FaqItem = FAQItem;
 export type SupportLink = Support_Links;
 
@@ -150,6 +128,18 @@ export const HELP_SECTIONS: HelpSection[] = [
   { id: "support-links-section", label: "Support" },
 ];
 
+export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
+  {
+    id: "connection-lost",
+    title: "Real-time Sync Disconnected",
+    description: "Steps to resolve persistent socket dropouts or loading freezes in collab rooms.",
+    icon: "fa-solid fa-wifi",
+    symptoms: "Collab workspace shows connection error indicator or updates stall.",
+    solution: "Verify your local network availability, clear application session storage, or recreate the workspace instance.",
+    keywords: ["network", "socket", "disconnect", "collab", "freeze"]
+  }
+];
+
 export const scrollToSection = (id: string) => {
   const element = document.getElementById(id);
   if (element) {
@@ -162,5 +152,3 @@ export const matchesSearch = (query: string, fields: string[]): boolean => {
   const lowerQuery = query.toLowerCase();
   return fields.some(field => field?.toLowerCase().includes(lowerQuery));
 };
-=======
->>>>>>> d8f93186 (Resoved Error)

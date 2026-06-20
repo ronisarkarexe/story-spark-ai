@@ -122,27 +122,6 @@ const HelpSidebar = () => {
                 })}
               </div>
 
-                      {isActive && (
-                        <motion.div
-                          layoutId="sidebar-active-pill"
-                          className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20"
-                          transition={{ type: "spring", stiffness: 260, damping: 24 }}
-                        />
-                      )}
-                      <i className={`fa-solid ${section.icon} text-sm relative z-10 ${isActive ? "text-blue-500" : "text-slate-400"}`} aria-hidden="true" />
-                      <div className="relative z-10 flex-1 text-left">
-                        <p className={`font-semibold text-sm transition-colors duration-300 ${isActive ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
-                          {section.label}
-                        </p>
-                      </div>
-                      <div className="relative z-10">
-                        <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isActive ? "bg-blue-500 scale-125 shadow-[0_0_12px_rgba(59,130,246,0.7)]" : "bg-slate-300 dark:bg-slate-700"}`} />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
               <motion.div
                 whileHover={{ y: -2 }}
                 className="relative overflow-hidden mt-8 rounded-3xl border border-blue-200 dark:border-indigo-500/20 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-indigo-500/10 dark:via-blue-500/10 dark:to-slate-900/30 p-6"
@@ -165,9 +144,8 @@ const HelpSidebar = () => {
                 >
                   Support Links
                 </button>
-              </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
         </div>
       </nav>
 

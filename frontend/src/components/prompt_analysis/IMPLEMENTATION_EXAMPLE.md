@@ -7,6 +7,7 @@
  * LOCATION: After line 575 in stories.component.tsx (after textareaValue state declaration)
  */
 
+/*
 // ============================================================================
 // ADD THIS IMPORT at the top of stories.component.tsx
 // ============================================================================
@@ -119,6 +120,7 @@ The component automatically handles:
 ✓ Error states
 ✓ Mobile responsiveness
 ✓ Animations and transitions
+*/
 */
 
 // ============================================================================
