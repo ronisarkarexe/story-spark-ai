@@ -110,8 +110,8 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
       );
 
     node.append("circle")
-      .attr("r", (d: SimNode) => d.type === "location" ? 28 : 20)
-      .attr("fill", (d: SimNode) => d.type === "location"
+      .attr("r", (n: SimNode) => n.type === "location" ? 28 : 20)
+      .attr("fill", (n: SimNode) => n.type === "location"
         ? "rgba(99,102,241,0.2)"
         : "rgba(236,72,153,0.2)")
       .attr("stroke", (d: SimNode) => d.type === "location" ? "#6366f1" : "#ec4899")
@@ -120,16 +120,16 @@ export default function StoryWorldMap({ story, title, onClose }: Props) {
     node.append("text")
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "central")
-      .attr("font-size", (d: SimNode) => d.type === "location" ? "18px" : "14px")
-      .text((d: SimNode) => d.type === "location" ? "📍" : "👤");
+      .attr("font-size", (n: SimNode) => n.type === "location" ? "18px" : "14px")
+      .text((n: SimNode) => n.type === "location" ? "📍" : "👤");
 
     node.append("text")
       .attr("text-anchor", "middle")
-      .attr("y", (d: SimNode) => d.type === "location" ? 40 : 32)
-      .attr("fill", (d: SimNode) => d.type === "location" ? "#a5b4fc" : "#f9a8d4")
+      .attr("y", (n: SimNode) => n.type === "location" ? 40 : 32)
+      .attr("fill", (n: SimNode) => n.type === "location" ? "#a5b4fc" : "#f9a8d4")
       .attr("font-size", "11px")
       .attr("font-weight", "600")
-      .text((d: SimNode) => d.name);
+      .text((n: SimNode) => n.name);
 
     simulation.on("tick", () => {
       link

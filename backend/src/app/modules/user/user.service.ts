@@ -20,7 +20,10 @@ const getAllUsers = async (): Promise<IUser[]> => {
 };
 
 const getUser = async (payload: string): Promise<IUser | null> => {
-  const result = await User.findOne({ _id: payload });
+  const result = await User.findOne({ _id: payload })
+    .select("-password")
+    .populate("followers", "name profile")
+    .populate("following", "name profile");
   return result;
 };
 
@@ -152,6 +155,9 @@ const approveWriterApplication = async (email: string) => {
     );
     return result;
   } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
     if (error instanceof Error) {
       throw new ApiError(httpStatus.BAD_REQUEST, error.message);
     } else {
@@ -167,7 +173,9 @@ const getAllWriterApplicationUsers = async (): Promise<IUser[]> => {
 
 const getProfileInfo = async (token: ITokenPayload) => {
   const { email } = token;
-  const user = await User.findOne({ email: email });
+  const user = await User.findOne({ email: email })
+    .populate("followers", "name profile")
+    .populate("following", "name profile");
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }

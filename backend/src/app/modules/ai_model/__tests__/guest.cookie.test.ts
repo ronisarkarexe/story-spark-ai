@@ -18,12 +18,12 @@ jest.mock("../../../../utils/cookie.util", () => ({
 
 jest.mock("../ai_model.service", () => ({
   AiModelService: {
-    aiFreeModelGenerate: jest.fn().mockResolvedValue("result"),
-    aiFreeModelAlternateEndings: jest.fn().mockResolvedValue("result"),
-    aiFreeModelRemix: jest.fn().mockResolvedValue("result"),
-    aiFreeModelTranslate: jest.fn().mockResolvedValue("result"),
-    aiFreeModelChat: jest.fn().mockResolvedValue("result"),
-    aiFreeStoryContinuation: jest.fn().mockResolvedValue("result"),
+    aiModelGenerate: jest.fn().mockResolvedValue("result"),
+    aiModelAlternateEndings: jest.fn().mockResolvedValue("result"),
+    aiModelRemix: jest.fn().mockResolvedValue("result"),
+    aiModelTranslate: jest.fn().mockResolvedValue("result"),
+    aiModelChat: jest.fn().mockResolvedValue("result"),
+    aiModelStoryContinuation: jest.fn().mockResolvedValue("result"),
   },
 }));
 
