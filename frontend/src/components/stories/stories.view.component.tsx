@@ -1148,16 +1148,524 @@ const handleExportMarkdown = () => {
     toast.success("Reverted to original story ending!");
   };
 
-  const calculateReadingTime = (content: string): number => {
+  const calculateReadingTime = (content: string): { minutes: number; label: string } => {
     const words = getWordCount(content);
-    return Math.max(1, Math.ceil(words / 200));
+    const minutes = Math.ceil(words / 200);
+
+    // Acceptance criteria:
+    // - Very short stories: "Less than 1 min read"
+    // - Others: "⏱️ X min read"
+    if (!minutes || minutes < 1) {
+      return { minutes: 0, label: "Less than 1 min read" };
+    }
+
+    return { minutes, label: `⏱️ ${minutes} min read` };
   };
 
   const isNarrationActive = narrationState !== "idle";
 
+<<<<<<< HEAD
   const formatReadingStats = (content: string): string => {
     const readingTime = calculateReadingTime(content);
     return `${readingTime} Min Read`;
+=======
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <StoryGeneratingAnimation />
+      </div>
+    );
+  }
+
+  if (!stories || !stories.length) {
+    return (
+      <>
+        {/* Empty state */}
+        <EmptyStoriesState />
+      </>
+    );
+  }
+
+  if (!selectedStory) {
+    return null;
+  }
+
+  return (
+    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 pb-16 relative overflow-hidden box-border">
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start relative z-10 w-full box-border">
+        
+        {/* ── Left Column ── */}
+        <div className="col-span-1 lg:col-span-8 flex flex-col space-y-6 w-full box-border">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 w-full box-border border-b border-slate-200/60 dark:border-white/5 pb-6">
+            <div className="text-left">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
+                {selectedStory?.title}
+              </h1>
+
+              <div className="flex flex-wrap gap-2 select-none">
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                  🎭 {selectedStory.tag}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-purple-500/5 text-purple-600 dark:text-purple-400 border border-purple-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                  🌐 {selectedStory.language || "English"}
+                </span>
+
+                {selectedStory.emotions && selectedStory.emotions.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                    😊 {selectedStory.emotions.join(", ")}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Story selector thumbnails */}
+            <div className="flex justify-start sm:justify-end shrink-0 select-none">
+              <div className="flex -space-x-4">
+                {stories && stories.length > 0 && stories.map((story) => (
+                  <button
+                    key={story.uuid}
+                    className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 ${
+                      selectedStory?.uuid === story.uuid ? "border-blue-600 scale-110 z-10 shadow-md" : "border-white dark:border-slate-800"
+                    } hover:scale-110 hover:z-10 transition-all duration-150 focus:outline-none overflow-hidden cursor-pointer`}
+                    onClick={() => handelStorySelection(story)}
+                    title={story.title}
+                  >
+                    <StoryCoverImage
+                      title={story.title}
+                      tag={story.tag}
+                      size="thumb"
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Story content card */}
+          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm w-full box-border text-left">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-white/5 select-none">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Workspace Blueprint</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                  onClick={handleCopyStory}
+                  disabled={!selectedStory}
+                >
+                  {isCopied ? "✓ Copied" : "📋 Copy"}
+                </button>
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                  onClick={handleExportPDF}
+                  disabled={!selectedStory}
+                >
+                  📄 PDF
+                </button>
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                  onClick={handleExportMarkdown}
+                  disabled={!selectedStory}
+                >
+                  ⬇️ Markdown
+                </button>
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                  onClick={() => setShowWorldMap(true)}
+                  disabled={!selectedStory}
+                >
+                  🗺️ Map
+                </button>
+                {selectedStory && (
+                  <button
+                    type="button"
+                    className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                    onClick={handleGenerateStoryVisuals}
+                    disabled={isGeneratingVisuals}
+                  >
+                    {isGeneratingVisuals ? "Generating Visuals..." : "🎬 Visuals"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 border border-slate-200/60 dark:border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer"
+                  onClick={() => setShowRemix(true)}
+                  disabled={!selectedStory}
+                >
+                  🔀 Remix
+                </button>
+                <button
+                  type="button"
+                  id="publish-story-btn"
+                  className="rounded-xl px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                  onClick={handelPublishStory}
+                  disabled={loading || !selectedStory}
+                >
+                  {loading ? "Publishing..." : "Publish"}
+                </button>
+              </div>
+            </div>
+
+            {selectedStory.enhancedPrompt && (
+              <div className="mb-6 p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl">
+                <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-2 uppercase tracking-wider flex items-center gap-2 select-none">
+                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
+                </h4>
+                <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm italic break-words whitespace-pre-wrap m-0 leading-relaxed font-medium">
+                  {selectedStory.enhancedPrompt}
+                </p>
+              </div>
+            )}
+
+            <div id="story-content" className="w-full text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed tracking-wide font-medium">
+              <p className="break-words whitespace-pre-wrap m-0">
+                {sentenceSegments.length > 0 ? (
+                  sentenceSegments.map((segment: StorySentenceSegment) => {
+                    const isActiveSentence = isNarrationActive && narrationWordIndex >= segment.startWordIndex && narrationWordIndex <= segment.endWordIndex;
+                    
+                    const rawParts = segment.text.split(/(\s+)/);
+                    let wordOffset = 0;
+
+                    return (
+                      <span
+                        key={segment.id}
+                        className={isActiveSentence ? "transition-colors duration-300 text-slate-900 dark:text-slate-100 font-semibold" : undefined}
+                      >
+                        {rawParts.map((part, partIdx) => {
+                          if (part === "") return null;
+                          if (/^\s+$/.test(part)) {
+                            return part;
+                          }
+
+                          const absoluteWordIndex = segment.startWordIndex + wordOffset;
+                          wordOffset++;
+
+                          const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+
+                          if (isActiveWord) {
+                            return (
+                              <span
+                                key={partIdx}
+                                className="bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded px-0.5 transition-all duration-150"
+                              >
+                                {part}
+                              </span>
+                            );
+                          }
+
+                          return (
+                            <span key={partIdx}>
+                              {part}
+                            </span>
+                          );
+                        })}
+                      </span>
+                    );
+                  })
+                ) : (
+                  (() => {
+                    const rawParts = selectedStory.content.split(/(\s+)/);
+                    let wordOffset = 0;
+                    return rawParts.map((part, partIdx) => {
+                      if (part === "") return null;
+                      if (/^\s+$/.test(part)) {
+                        return part;
+                      }
+
+                      const absoluteWordIndex = wordOffset;
+                      wordOffset++;
+
+                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+
+                      if (isActiveWord) {
+                        return (
+                          <span
+                            key={partIdx}
+                            className="bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded px-0.5 transition-all duration-150"
+                          >
+                            {part}
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <span key={partIdx}>
+                          {part}
+                        </span>
+                      );
+                    });
+                  })()
+                )}
+              </p>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border">
+              <AudioPlayer
+                ref={audioPlayerRef}
+                text={selectedStory.content}
+                title={selectedStory.title}
+                onWordIndexChange={setNarrationWordIndex}
+                onPlaybackStateChange={setNarrationState}
+              />
+            </div>
+            <div className="mt-4 w-full box-border">
+              <ContinueStoryButton />
+            </div>
+          </div>
+
+          {/* Topics management section */}
+          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm w-full box-border text-left">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4 select-none">Categorization Indexes</h3>
+            <div className="flex flex-col sm:flex-row gap-3 mb-5 select-none w-full box-border">
+              <input
+                type="text"
+                value={newTopicTitle}
+                onChange={(event) => setNewTopicTitle(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    handleAddTopic();
+                  }
+                }}
+                placeholder="Add contextual keyword index tag..."
+                className="flex-1 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950/60 px-4 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500/40 focus:outline-none transition-colors"
+              />
+              <button
+                type="button"
+                className="rounded-xl px-4 py-2.5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors active:scale-[0.98] cursor-pointer"
+                onClick={handleAddTopic}
+              >
+                Add Tag
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2 w-full box-border">
+              {selectedStory ? (
+                topics.map((topic, index) => (
+                  <span
+                    key={index}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 ${topic.className} rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm border border-slate-100 dark:border-transparent select-none`}
+                  >
+                    <button
+                      type="button"
+                      className="cursor-pointer font-bold uppercase flex items-center gap-1.5"
+                      onClick={() => {
+                        handleTopicClick(index);
+                      }}
+                    >
+                      {topic.selected ? <i className="fa-solid fa-check" /> : <i className="fa-solid fa-plus" />}
+                      {topic.title}
+                    </button>
+                    <button
+                      type="button"
+                      className="cursor-pointer border-l border-current/20 pl-2 opacity-50 hover:opacity-100 disabled:cursor-not-allowed"
+                      onClick={() => handleRemoveTopic(index)}
+                      disabled={topics.length <= 2}
+                      aria-label={`Remove ${topic.title}`}
+                    >
+                      <i className="fa-solid fa-xmark" />
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <p className="text-xs font-medium text-slate-400 dark:text-slate-500 m-0">No keyword topics registered.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Alternate endings control hub */}
+          {selectedStory && (
+            <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm w-full box-border text-left relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 select-none w-full box-border">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Narrative Path Modifications</h3>
+                  <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1.5">Branch out into unique storytelling variations.</p>
+                </div>
+                {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
+                  <button
+                    type="button"
+                    onClick={handleResetEnding}
+                    className="w-full sm:w-auto rounded-xl px-3.5 py-2 bg-red-500/5 hover:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/10 text-xs font-bold uppercase tracking-wider transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <i className="fa-solid fa-rotate-left" /> Revert to Original
+                  </button>
+                )}
+              </div>
+
+              {isGeneratingEndings ? (
+                <div className="flex flex-col items-center justify-center py-12 select-none w-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-300 border-t-blue-600 dark:border-white/10 dark:border-t-white mb-4"></div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 animate-pulse">Running variant projection logic...</p>
+                </div>
+              ) : endingsCache[selectedStory.uuid]?.length > 0 ? (
+                <div className="w-full box-border">
+                  <div className="flex border-b border-slate-100 dark:border-white/5 mb-5 overflow-x-auto whitespace-nowrap scrollbar-none select-none w-full box-border">
+                    {["Happy Ending", "Dark Ending", "Plot Twist Ending", "Open Ending", "Cliffhanger Ending"].map((name) => {
+                      const endingData = (endingsCache[selectedStory.uuid] || []).find((e) => e.style === name);
+                      const isApplied = endingData && selectedStory.content === endingData.fullStory;
+                      return (
+                        <button
+                          key={name}
+                          type="button"
+                          onClick={() => setActiveEndingTab(name)}
+                          className={`px-4 py-2.5 font-bold text-xs uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                            activeEndingTab === name
+                              ? "border-blue-600 text-blue-600 dark:border-white dark:text-white bg-slate-50 dark:bg-white/5 rounded-t-xl"
+                              : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                          }`}
+                        >
+                          <span>{name}</span>
+                          {isApplied && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {(() => {
+                    const currentEndingData = (endingsCache[selectedStory.uuid] || []).find((e) => e.style === activeEndingTab);
+                    if (!currentEndingData) return null;
+                    const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
+                    return (
+                      <div className="bg-slate-50/50 dark:bg-slate-950/30 rounded-xl p-5 border border-slate-200/60 dark:border-white/5 w-full box-border">
+                        <div className="flex justify-between items-center mb-4 select-none w-full box-border">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{activeEndingTab} Excerpt</h4>
+                          <div>
+                            {isCurrentlyApplied ? (
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <i className="fa-solid fa-circle-check" /> Active Node
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleApplyEnding(currentEndingData)}
+                                className="rounded-xl px-3.5 py-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider hover:bg-slate-800 dark:hover:bg-slate-100 transition-all active:scale-[0.98] cursor-pointer shadow-sm"
+                              >
+                                Apply Branch
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-4 w-full box-border">
+                          <div className="bg-white dark:bg-[#111827]/40 p-4 rounded-xl border border-slate-200/80 dark:border-white/5 leading-relaxed text-slate-600 dark:text-slate-300 text-xs sm:text-sm italic shadow-inner whitespace-pre-wrap text-left font-medium">
+                            <p className="m-0">"{currentEndingData.ending}"</p>
+                          </div>
+                          <details className="group border border-slate-200/80 dark:border-white/5 rounded-xl overflow-hidden bg-white dark:bg-transparent">
+                            <summary className="list-none flex items-center justify-between p-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer select-none">
+                              <span>Preview Integrated Compounded Chronicle</span>
+                              <span className="transition-transform duration-150 group-open:rotate-180 text-[8px]">▼</span>
+                            </summary>
+                            <div className="p-4 border-t border-slate-200/60 dark:border-white/5 text-xs text-slate-400 dark:text-slate-500 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap text-left font-medium bg-slate-50/30 dark:bg-transparent">
+                              {currentEndingData.fullStory}
+                            </div>
+                          </details>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10 bg-slate-50/50 dark:bg-white/[0.01] border border-dashed border-slate-200 dark:border-white/5 rounded-xl select-none w-full box-border">
+                  <button
+                    type="button"
+                    onClick={handleGenerateAlternateEndings}
+                    className="rounded-xl px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold uppercase tracking-wider shadow-md shadow-blue-500/10 transition-all duration-150 hover:scale-105 active:scale-[0.98] flex items-center gap-2 cursor-pointer"
+                  >
+                    <i className="fa-solid fa-shuffle text-xs" /> Transform Endings
+                  </button>
+                  <p className="text-[11px] text-slate-400 font-medium leading-relaxed mt-3.5 text-center max-w-sm px-4">
+                    Analyzes the current plot architecture to frame 5 distinct structural variations including Happy, Dark, Plot Twist, Open, and Cliffhanger resolutions.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Right Column: Preview Panel ── */}
+        <div className="col-span-1 lg:col-span-4 w-full box-border lg:sticky lg:top-6">
+          <div className="mb-4 text-left select-none px-0.5">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Compilation Preview</h2>
+          </div>
+          <div className="bg-white dark:bg-[#111827]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden group w-full box-border text-left">
+            <div className="flex flex-col w-full box-border">
+              <div className="relative p-3 overflow-hidden text-white w-full box-border" style={{ height: "192px" }}>
+                <StoryCoverImage
+                  title={selectedStory.title}
+                  tag={selectedStory.tag}
+                  className="transition-transform duration-500 group-hover:scale-[1.02]"
+                  style={{ width: "100%", height: "100%", borderRadius: "1rem" }}
+                />
+              </div>
+
+              <div className="p-5 sm:p-6 w-full box-border">
+                <div className="flex justify-between items-center mb-4 w-full box-border select-none">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <div className="inline-flex items-center rounded-lg bg-purple-500/10 border border-purple-500/10 py-1 px-2.5 text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                      {selectedStory.tag}
+                    </div>
+                    <div className="inline-flex items-center rounded-lg bg-blue-500/10 border border-blue-500/10 py-1 px-2.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                      {selectedStory.language || "English"}
+                    </div>
+                    <div className="inline-flex items-center rounded-lg bg-slate-100 dark:bg-white/5 py-1 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 gap-1">
+                      {calculateReadingTime(selectedStory.content).label}
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    <BookmarkButton storyId={selectedStory.uuid} />
+                  </div>
+                </div>
+                <h3 className="mb-2 text-slate-900 dark:text-slate-200 text-lg sm:text-xl font-extrabold tracking-tight leading-snug">{selectedStory.title}</h3>
+                <p className="text-slate-500 dark:text-slate-400 font-medium break-words text-xs sm:text-sm leading-relaxed m-0">{getShortenedText(selectedStory.content)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showWorldMap && selectedStory && (
+        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 text-white font-semibold">Loading Map...</div>}>
+          <StoryWorldMap
+            story={selectedStory.content}
+            title={selectedStory.title}
+            onClose={() => setShowWorldMap(false)}
+          />
+        </Suspense>
+      )}
+
+      {showRemix && selectedStory && (
+        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 text-white font-semibold">Loading Remix...</div>}>
+          <StoryRemix
+            story={selectedStory}
+            isLogin={isLogin}
+            onRemixComplete={(remixedStory) => {
+              setStories([remixedStory, ...stories]);
+              setSelectedStory(remixedStory);
+              setShowRemix(false);
+            }}
+            onClose={() => setShowRemix(false)}
+          />
+        </Suspense>
+      )}
+
+      {showStoryVisualizer && storyboardScenes.length > 0 && (
+        <StoryVisualizer
+          title={selectedStory?.title}
+          scenes={storyboardScenes}
+          styleGuide={storyboardStyleGuide}
+          onClose={() => setShowStoryVisualizer(false)}
+        />
+      )}
+
+      <Toaster position="top-right" reverseOrder={false} />
+    const updatedStory = { ...selectedStory, content: originalContent };
+    setSelectedStory(updatedStory);
+    setStories(stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s)));
+    toast.success("Reverted to original story ending!");
+>>>>>>> c5ff8967 (Add Reading Time Estimate for Generated Stories)
   };
 
   if (isGlobalLoading) {
