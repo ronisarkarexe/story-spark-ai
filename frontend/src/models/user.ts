@@ -57,4 +57,9 @@ export interface User {
   profile: UserProfile;
 
   writingGoals?: WritingGoals;
+  
+  isApplyForWriter?: boolean;
+  bio?: string;
+  avatar?: string;
+  socialLinks?: SocialLinks;
 }
