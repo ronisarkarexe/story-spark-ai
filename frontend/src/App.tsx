@@ -91,7 +91,7 @@ const PaymentComponent = lazy(() =>
     default: module.PaymentComponent,
   }))
 );
-const SearchPageComponent = lazy(() => import("./pages/SearchPage"));
+const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
