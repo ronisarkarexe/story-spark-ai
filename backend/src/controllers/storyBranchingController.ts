@@ -4,6 +4,15 @@ import sendResponse from "../shared/send_response";
 import { storyQueue } from "../services/storyRequestQueue";
 import { compressContext, serializeLore } from "../utils/contextCompressor";
 
+const sanitizePromptInput = (input: any): string => {
+  if (typeof input !== "string") return "";
+  return input
+    .replace(/[{}`\\]/g, "")
+    .replace(/"/g, "'")
+    .replace(/(\r\n|\n|\r)/g, " ")
+    .trim();
+};
+
 const sanitizeJsonText = (rawText: string): string => {
   const trimmed = rawText.trim();
   if (!trimmed.startsWith("```")) return trimmed;
@@ -36,19 +45,23 @@ export const StoryBranchingController = {
     try {
       const { storyContext, selectedChoice, genre } = req.body;
 
-      const segmentIndex =
-        (storyContext.match(/\[Player chose:/g) || []).length + 1;
+      const safeGenre = sanitizePromptInput(genre);
+      const safeSelectedChoice = sanitizePromptInput(selectedChoice);
+      const safeStoryContext = sanitizePromptInput(storyContext);
 
-      const compressedContext = buildCompressedContext(storyContext || "");
+      const segmentIndex =
+        (safeStoryContext.match(/\[Player chose:/g) || []).length + 1;
+
+      const compressedContext = buildCompressedContext(safeStoryContext);
       const contextBlock = compressedContext.trim()
         ? compressedContext.trim()
         : "This is the start of the story.";
 
       const prompt = `
 You are an interactive fiction writer. Generate the next segment of a branching story.
-Genre: ${genre || "general"}
+Genre: ${safeGenre || "general"}
 Story so far: ${contextBlock}
-${selectedChoice ? `The player chose: "${selectedChoice}"` : "This is the introduction/first scene of the story."}
+${safeSelectedChoice ? `The player chose: "${safeSelectedChoice}"` : "This is the introduction/first scene of the story."}
 
 Task:
 1. Continue the story based on the player's choice or write the introduction scene if it is the start.
