@@ -720,7 +720,7 @@ ${content}
       const link = document.createElement("a");
       link.href = url;
 
-      const fileName = title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story";
+      const fileName = title.replace(/\\/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story";
       link.setAttribute("download", `${fileName}.md`);
       document.body.appendChild(link);
       link.click();
@@ -767,7 +767,8 @@ ${content}
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story"}.docx`);
+      const docxFileName = title.replace(/\\/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "story";
+      link.setAttribute("download", `${docxFileName}.docx`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
