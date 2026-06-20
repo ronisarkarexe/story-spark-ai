@@ -20,21 +20,24 @@ const StorySegment = ({ text, choiceMade, index }: StorySegmentProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: "easeOut" }}
-      className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-slate-950/30 backdrop-blur-md dark:bg-slate-900/80"
+      className="w-full text-left bg-white dark:bg-[#111827]/40 border border-slate-200 dark:border-white/10 p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-xl transition-shadow duration-300 backdrop-blur-xl box-border"
     >
-      <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 text-sm font-semibold text-white">
+      <div className="flex items-start gap-4 w-full box-border">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold text-white select-none shadow-sm shadow-blue-500/10">
           {index}
         </span>
-        <p className="whitespace-pre-line text-base leading-7 text-slate-100 sm:text-lg sm:leading-8">
-          {text}
-        </p>
+        <div className="min-w-0 flex-1">
+          <p className="whitespace-pre-line text-sm sm:text-base leading-relaxed text-slate-700 dark:text-slate-300 font-medium m-0">
+            {text}
+          </p>
+        </div>
       </div>
 
       {choiceMade ? (
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
-            Player chose: {choiceMade}
+        <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/5 flex flex-wrap gap-2 w-full box-border select-none">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/10 dark:border-white/10 bg-blue-500/5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+            <i className="fa-solid fa-circle-dot text-[9px]" />
+            <span>Player chose: {choiceMade}</span>
           </span>
         </div>
       ) : null}

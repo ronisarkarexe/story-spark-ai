@@ -121,4 +121,35 @@ describe("storyRateLimiter — store management", () => {
     storyRateLimiter(r2, s2, n2);
     expect((s2 as any).statusCode).toBe(429);
   });
+
+  it("prunes entries whose timestamps are all outside the window (memory-leak fix)", () => {
+    // Bug: store grew unbounded because entries with only stale timestamps
+    // were never deleted. Fix: pruneStaleEntries removes entries with zero
+    // active timestamps whenever a request triggers a prune pass.
+    const nowSpy = jest.spyOn(Date, "now");
+
+    // Anchor to real Date.now() so the module-level lastPruneAt (updated
+    // by previous tests) does not cause a future-pinned time to look
+    // "before" a stale prune watermark.
+    const t0 = Date.now();
+    nowSpy.mockReturnValue(t0);
+    const a = buildMocks("10.0.0.40");
+    storyRateLimiter(a.req, a.res, a.next);
+    expect(getRateLimitStatus("10.0.0.40").count).toBe(1);
+
+    // t = t0 + 120s: well past WINDOW_MS (60s) and PRUNE_INTERVAL_MS (60s).
+    // Any new request will now run the prune pass.
+    nowSpy.mockReturnValue(t0 + 120_000);
+    const b = buildMocks("10.0.0.41");
+    storyRateLimiter(b.req, b.res, b.next);
+
+    // 10.0.0.40's only timestamp is now 120s old → older than the 60s window.
+    // The entry should be deleted, not just stale. getRateLimitStatus
+    // distinguishes the two: deleted → resetInMs=0; stale-but-present → resetInMs=WINDOW_MS.
+    const status = getRateLimitStatus("10.0.0.40");
+    expect(status.count).toBe(0);
+    expect(status.resetInMs).toBe(0);
+
+    nowSpy.mockRestore();
+  });
 });

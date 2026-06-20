@@ -150,9 +150,37 @@ body {
 /* ---------- Typography ---------- */
 .ds-heading {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800; letter-spacing: -0.02em;
-  line-height: 1.15; color: var(--spark-text);
-  font-size: 40px; margin: 0;
+  font-weight: 800;
+  line-height: 0.95;
+  font-size: 72px;
+  margin: 0 0 var(--sp-6) 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  cursor: default;
+}
+/* Top Block Element — "Story" */
+.ds-heading span:first-child{
+  color: #0c2873;
+  letter-spacing: -0.04em;
+  display: block;
+}
+/* Bottom Block Gradient Element — "Inspiration Hub" */
+.ds-heading span:last-child{
+  display: block;
+  letter-spacing: -0.03em;
+  background: linear-gradient(to right, #6276f4 0%, #7670f5 30%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  /* Subtle illumination glow filter wrapper */
+  filter: drop-shadow(0 0 15px rgba(99, 91, 255, 0.2));
+
+  /* Entrance execution */
+  animation: hubSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .ds-subtext  { font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.5; color: var(--spark-text-muted); margin: 0; }
 .ds-tertiary { font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; color: var(--spark-text-muted); margin: 0; }
@@ -528,7 +556,11 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-
+/* Entrance Keyframes */
+@keyframes hubSlideUp {
+  0% {opacity: 0; transform: translateY(20px);}
+  100% {opacity: 1; transform: translateY(0);}
+}
 /* ==========================================================
    FOOTER
    ========================================================== */
@@ -560,11 +592,28 @@ body {
    RESPONSIVE TYPOGRAPHY
    ========================================================== */
 
+@media (max-width: 768px){
+  .ds-heading{
+    font-size: 48px;
+  }
+}
 @media (max-width: 1023px) {
-  .ds-heading { font-size: 28px; line-height: 1.2; }
+  .ds-heading:not(h1) { font-size: 28px; line-height: 1.2; }
 }
 
 @media (max-width: 480px) {
-  .ds-heading { font-size: 26px; }
   .ds-subtext { font-size: 14px; }
+}
+/* Custom Background for Writing Feel */
+.ChatFrame, .chat-container, body { 
+    background-image: url('images/backgroundimg.jpg') !important;
+    background-attachment: scroll; /* Makes the image move as you scroll */
+    background-repeat: repeat;    /* Tiles the texture seamlessly */
+    background-size: auto;        /* Keeps the texture's original detail */
+}
+
+/* Optional: Make the prompt area slightly transparent to see the texture */
+.prompt-area, .message-box {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    border-radius: 8px;
 }

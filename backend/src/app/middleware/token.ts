@@ -1,7 +1,7 @@
 import { Request } from "express";
 import ApiError from "../../errors/api_error";
 import httpStatus from "http-status";
-import { JwtHalers } from "../../utils/jwt.helper";
+import { JwtHelpers } from "../../utils/jwt.helper";
 import config from "../../config";
 import { Secret } from "jsonwebtoken";
 import { ITokenPayload } from "../../interfaces/token";
@@ -18,7 +18,7 @@ export const getToken = (req: Request): ITokenPayload => {
     );
   }
   try {
-    const verifiedUser = JwtHalers.verifyToken(
+    const verifiedUser = JwtHelpers.verifyToken(
       token,
       config.jwt.secret as Secret
     );

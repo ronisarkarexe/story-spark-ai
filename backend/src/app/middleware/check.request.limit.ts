@@ -1,11 +1,26 @@
 import { Request, Response, NextFunction } from "express";
 import httpStatus from "http-status";
 import ApiError from "../../errors/api_error";
-import { JwtHalers } from "../../utils/jwt.helper";
+import { JwtHelpers } from "../../utils/jwt.helper";
 import config from "../../config";
 import { Secret } from "jsonwebtoken";
 import { reserveUserQuota } from "../modules/ai_model/quota.service";
 import { createUserQuotaGuard } from "../modules/ai_model/quota.lifecycle";
+
+const resolveAuthToken = (req: Request): string | null => {
+  const authHeader = (req.headers.authorization || "") as string;
+  if (authHeader.startsWith("Bearer ")) {
+    return authHeader.slice(7).trim();
+  }
+
+  const bearerToken = authHeader.trim();
+  if (bearerToken) {
+    return bearerToken;
+  }
+
+  const cookieToken = (req as any).cookies?.accessToken || (req as any).cookies?.token;
+  return cookieToken ?? null;
+};
 
 // Note: Actual quota/limit enforcement is handled by reserveUserQuota
 // to allow for atomic MongoDB operations and rollback on failure.
@@ -14,26 +29,32 @@ import { createUserQuotaGuard } from "../modules/ai_model/quota.lifecycle";
 const checkRequestLimit =
   () => async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const authHeader = req.headers.authorization as string;
-      const token = authHeader?.startsWith("Bearer ")
-        ? authHeader.slice(7)
-        : authHeader;
-      if (!token) {
+      let userEmail: string | undefined = (req as any).user?.email;
+
+      if (!userEmail) {
+        const token = resolveAuthToken(req);
+        if (!token) {
+          throw new ApiError(
+            httpStatus.UNAUTHORIZED,
+            "You are not authorized to access"
+          );
+        }
+
+        const verifiedUser = JwtHelpers.verifyToken(
+          token,
+          config.jwt.secret as Secret
+        );
+        userEmail = (verifiedUser as any).email;
+      }
+
+      if (!userEmail) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
-          "You are not authorized to access"
+          "Unable to resolve authenticated user email"
         );
       }
-      const verifiedUser = JwtHalers.verifyToken(
-        token,
-        config.jwt.secret as Secret
-      );
-      const { email: userEmail } = verifiedUser;
 
-      // Atomically reserve the monthly quota for the user
       await reserveUserQuota(userEmail);
-
-      // Create and attach the quota refund guard to res.locals
       res.locals.quotaRefundGuard = createUserQuotaGuard(userEmail);
 
       next();

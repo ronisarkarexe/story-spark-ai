@@ -4,10 +4,11 @@ import { BUG_REPORT_URL } from "../base_api/base.endpoints";
 const bugReportApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     submitBugReport: build.mutation({
-      query: (data) => ({
+      query: (data: FormData) => ({ 
         url: `/${BUG_REPORT_URL}/submit`,
         method: "POST",
         data: data,
+        formData: true, 
       }),
     }),
   }),

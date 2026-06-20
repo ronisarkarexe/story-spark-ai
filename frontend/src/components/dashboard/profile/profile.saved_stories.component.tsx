@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useGetMyBookmarksQuery } from "../../../redux/apis/bookmark.api";
+import { getSessionBookmarks } from "../../../utils/session-bookmarks";
 
 export const ProfileSavedStoriesSection = () => {
   const { data, isLoading } = useGetMyBookmarksQuery({
@@ -7,7 +9,19 @@ export const ProfileSavedStoriesSection = () => {
     limit: 1,
   });
 
-  const bookmarkCount = data?.meta?.total ?? 0;
+  const [sessionCount, setSessionCount] = useState(() => getSessionBookmarks().length);
+
+  useEffect(() => {
+    const handleBookmarkChange = () => {
+      setSessionCount(getSessionBookmarks().length);
+    };
+    window.addEventListener("session_bookmarks_changed", handleBookmarkChange);
+    return () => {
+      window.removeEventListener("session_bookmarks_changed", handleBookmarkChange);
+    };
+  }, []);
+
+  const totalBookmarkCount = (data?.meta?.total ?? 0) + sessionCount;
 
   return (
     <div className="max-w-3xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
@@ -30,8 +44,8 @@ export const ProfileSavedStoriesSection = () => {
                   <span className="inline-block h-5 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
                 ) : (
                   <>
-                    {bookmarkCount}{" "}
-                    {bookmarkCount === 1 ? "saved story" : "saved stories"}
+                    {totalBookmarkCount}{" "}
+                    {totalBookmarkCount === 1 ? "saved story" : "saved stories"}
                   </>
                 )}
               </p>

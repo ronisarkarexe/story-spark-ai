@@ -1,5 +1,6 @@
 // FAQ Structure
 export interface FAQItem {
+  id: string;
   question: string;
   answer: string;
   keywords: string[]; // Strict type array prevents TS2488 Spread Iterator crash
@@ -45,11 +46,13 @@ export interface TroubleshootItem {
 // Data Sets
 export const FAQ_ITEMS: FAQItem[] = [
   {
+    id: "faq-generate-stories",
     question: "How does StorySparkAI generate stories?",
     answer: "StorySparkAI uses advanced language models to interpret your prompt, style preferences, and narrative depth parameters to build a cohesive text layout structure automatically.",
     keywords: ["generate", "story", "ai", "how"]
   },
   {
+    id: "faq-export-stories",
     question: "Can I export my stories?",
     answer: "Yes, you can save and export your generated works into Markdown formatting or plain text documents directly from your workspace dashboard panel.",
     keywords: ["export", "download", "markdown", "save"]
@@ -121,6 +124,22 @@ export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
   }
 ];
 
+export type FaqItem = FAQItem;
+export type SupportLink = Support_Links;
+
+export interface HelpSection {
+  id: string;
+  label: string;
+}
+
+export const HELP_SECTIONS: HelpSection[] = [
+  { id: "help-categories", label: "Categories" },
+  { id: "troubleshoot-section", label: "Troubleshooting" },
+  { id: "faq-section", label: "FAQ" },
+  { id: "developer-setup", label: "Setup Guide" },
+  { id: "support-links-section", label: "Support" },
+];
+
 export const scrollToSection = (id: string) => {
   const element = document.getElementById(id);
   if (element) {
@@ -132,4 +151,5 @@ export const matchesSearch = (query: string, fields: string[]): boolean => {
   if (!query) return true;
   const lowerQuery = query.toLowerCase();
   return fields.some(field => field?.toLowerCase().includes(lowerQuery));
+};
 };
