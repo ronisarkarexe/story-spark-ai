@@ -1,5 +1,3 @@
-import pLimit from 'p-limit';
-
 interface GenerationTask {
   id: string;
   prompt: string;
@@ -24,10 +22,10 @@ interface GeneratorConfig {
 type GeneratorFunction = (prompt: string, config: Record<string, any>) => Promise<string>;
 
 export class ParallelStoryGenerator {
-  private limit: any;
   private readonly config: GeneratorConfig;
   private generator: GeneratorFunction;
   private tasksInProgress: Map<string, Promise<GenerationResult>> = new Map();
+  private activeTaskCount: number = 0;
 
   constructor(generator: GeneratorFunction, config: Partial<GeneratorConfig> = {}) {
     this.generator = generator;
@@ -36,26 +34,18 @@ export class ParallelStoryGenerator {
       timeout: config.timeout || 30000,
       retries: config.retries || 2,
     };
-
-    this.limit = pLimit(this.config.concurrency);
   }
 
   private async generateWithTimeout(prompt: string, config: Record<string, any>): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        reject(new Error(`Story generation timeout after ${this.config.timeout}ms`));
-      }, this.config.timeout);
-
-      this.generator(prompt, config)
-        .then((result) => {
-          clearTimeout(timer);
-          resolve(result);
-        })
-        .catch((error) => {
-          clearTimeout(timer);
-          reject(error);
-        });
-    });
+    return Promise.race([
+      this.generator(prompt, config),
+      new Promise<string>((_, reject) =>
+        setTimeout(
+          () => reject(new Error(`Timeout after ${this.config.timeout}ms`)),
+          this.config.timeout
+        )
+      ),
+    ]);
   }
 
   private async generateWithRetries(prompt: string, config: Record<string, any>): Promise<string> {
@@ -72,7 +62,7 @@ export class ParallelStoryGenerator {
       }
     }
 
-    throw lastError || new Error('Story generation failed after retries');
+    throw lastError || new Error('Generation failed after retries');
   }
 
   async generateSingle(taskId: string, prompt: string, config: Record<string, any>): Promise<GenerationResult> {
@@ -96,7 +86,7 @@ export class ParallelStoryGenerator {
         content: '',
         processingTime,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -104,11 +94,48 @@ export class ParallelStoryGenerator {
   async generateParallel(tasks: GenerationTask[]): Promise<GenerationResult[]> {
     const sortedTasks = tasks.sort((a, b) => (b.priority || 0) - (a.priority || 0));
 
-    const promises = sortedTasks.map((task) =>
-      this.limit(() => this.generateSingle(task.id, task.prompt, task.config))
-    );
+    const queue: GenerationTask[] = [...sortedTasks];
+    const results: GenerationResult[] = [];
+    const activePromises: Promise<GenerationResult>[] = [];
 
-    return Promise.all(promises);
+    const processQueue = async (): Promise<void> => {
+      while (queue.length > 0 || activePromises.length > 0) {
+        while (this.activeTaskCount < this.config.concurrency && queue.length > 0) {
+          const task = queue.shift()!;
+          this.activeTaskCount++;
+
+          const promise = this.generateSingle(task.id, task.prompt, task.config)
+            .then((result) => {
+              this.activeTaskCount--;
+              results.push(result);
+              return result;
+            })
+            .catch((error) => {
+              this.activeTaskCount--;
+              results.push({
+                taskId: task.id,
+                content: '',
+                processingTime: 0,
+                success: false,
+                error: String(error),
+              });
+            });
+
+          activePromises.push(promise);
+        }
+
+        if (activePromises.length > 0) {
+          await Promise.race(activePromises);
+          const completedIdx = activePromises.findIndex((p) => p);
+          if (completedIdx >= 0) {
+            activePromises.splice(completedIdx, 1);
+          }
+        }
+      }
+    };
+
+    await processQueue();
+    return results;
   }
 
   async generateWithTracking(taskId: string, prompt: string, config: Record<string, any>): Promise<GenerationResult> {
@@ -126,7 +153,7 @@ export class ParallelStoryGenerator {
   }
 
   getActiveTaskCount(): number {
-    return this.tasksInProgress.size;
+    return this.activeTaskCount;
   }
 
   getConfig(): GeneratorConfig {
@@ -135,7 +162,7 @@ export class ParallelStoryGenerator {
 
   setConcurrency(concurrency: number): void {
     if (concurrency < 1) throw new Error('Concurrency must be at least 1');
-    this.limit = pLimit(concurrency);
+    this.config.concurrency = concurrency;
   }
 }
 

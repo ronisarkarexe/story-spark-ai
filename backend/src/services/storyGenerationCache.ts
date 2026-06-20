@@ -1,4 +1,3 @@
-import NodeCache from 'node-cache';
 import crypto from 'crypto';
 
 interface CacheEntry {
@@ -12,13 +11,11 @@ interface CacheEntry {
 
 interface CacheConfig {
   stdTTL: number;
-  checkperiod: number;
-  useClones: boolean;
   maxCacheSize: number;
 }
 
 export class StoryGenerationCache {
-  private cache: NodeCache;
+  private cache: Map<string, { entry: CacheEntry; expiresAt: number }> = new Map();
   private readonly config: CacheConfig;
   private cacheHits: number = 0;
   private cacheMisses: number = 0;
@@ -26,16 +23,10 @@ export class StoryGenerationCache {
   constructor(config: Partial<CacheConfig> = {}) {
     this.config = {
       stdTTL: config.stdTTL || 3600,
-      checkperiod: config.checkperiod || 600,
-      useClones: config.useClones !== false,
       maxCacheSize: config.maxCacheSize || 1000,
     };
 
-    this.cache = new NodeCache({
-      stdTTL: this.config.stdTTL,
-      checkperiod: this.config.checkperiod,
-      useClones: this.config.useClones,
-    });
+    setInterval(() => this.pruneExpired(), Math.max(1000, this.config.stdTTL * 100));
   }
 
   private generateCacheKey(prompt: string, config: Record<string, any>): string {
@@ -43,10 +34,19 @@ export class StoryGenerationCache {
     return crypto.createHash('sha256').update(data).digest('hex');
   }
 
+  private pruneExpired(): void {
+    const now = Date.now();
+    for (const [key, value] of this.cache.entries()) {
+      if (value.expiresAt < now) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
   set(prompt: string, content: string, config: Record<string, any>, processingTime: number): void {
-    if (this.cache.getStats().keys >= this.config.maxCacheSize) {
-      const oldestKey = this.cache.keys()[0];
-      if (oldestKey) this.cache.del(oldestKey);
+    if (this.cache.size >= this.config.maxCacheSize) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) this.cache.delete(firstKey);
     }
 
     const key = this.generateCacheKey(prompt, config);
@@ -59,34 +59,39 @@ export class StoryGenerationCache {
       },
     };
 
-    this.cache.set(key, entry);
+    this.cache.set(key, {
+      entry,
+      expiresAt: Date.now() + this.config.stdTTL * 1000,
+    });
   }
 
   get(prompt: string, config: Record<string, any>): CacheEntry | undefined {
     const key = this.generateCacheKey(prompt, config);
-    const entry = this.cache.get<CacheEntry>(key);
+    const cached = this.cache.get(key);
 
-    if (entry) {
+    if (cached && cached.expiresAt > Date.now()) {
       this.cacheHits++;
-      return entry;
+      return cached.entry;
     }
 
+    if (cached) this.cache.delete(key);
     this.cacheMisses++;
     return undefined;
   }
 
   has(prompt: string, config: Record<string, any>): boolean {
     const key = this.generateCacheKey(prompt, config);
-    return this.cache.has(key);
+    const cached = this.cache.get(key);
+    return cached ? cached.expiresAt > Date.now() : false;
   }
 
   invalidate(prompt: string, config: Record<string, any>): boolean {
     const key = this.generateCacheKey(prompt, config);
-    return this.cache.del(key) > 0;
+    return this.cache.delete(key);
   }
 
   clear(): void {
-    this.cache.flushAll();
+    this.cache.clear();
     this.cacheHits = 0;
     this.cacheMisses = 0;
   }
@@ -96,28 +101,19 @@ export class StoryGenerationCache {
     const hitRate = totalRequests > 0 ? (this.cacheHits / totalRequests) * 100 : 0;
 
     return {
-      keys: this.cache.getStats().keys,
+      keys: this.cache.size,
       hits: this.cacheHits,
       misses: this.cacheMisses,
       hitRate: hitRate.toFixed(2) + '%',
-      ksize: this.cache.getStats().ksize,
-      vsize: this.cache.getStats().vsize,
     };
   }
 
   getSize(): number {
-    return this.cache.getStats().keys;
-  }
-
-  warmUp(entries: Array<{ prompt: string; config: Record<string, any>; content: string; processingTime: number }>): void {
-    entries.forEach(({ prompt, config, content, processingTime }) => {
-      this.set(prompt, content, config, processingTime);
-    });
+    return this.cache.size;
   }
 }
 
 export const storyGenerationCache = new StoryGenerationCache({
   stdTTL: 3600,
-  checkperiod: 600,
   maxCacheSize: 1000,
 });
