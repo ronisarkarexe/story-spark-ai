@@ -150,10 +150,6 @@ const modules = [
   },
 
   {
-    path: "/stories",
-    router: storyRoutes,
-  },
-  {
     path: "/search",
     router: SearchRouter,
   },
