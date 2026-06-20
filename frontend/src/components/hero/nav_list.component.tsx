@@ -1,11 +1,17 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, Navigate, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
+import { useTheme } from "../theme/theme.context";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Menu, Sparkles, X } from "lucide-react";
 
 const NavListComponent = () => {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
+  const { pathname } = useLocation();
+  const { glowEnabled, toggleGlow } = useTheme();
 
   const handleLogout = () => {
     removeUserInfo();
@@ -246,8 +252,7 @@ const NavListComponent = () => {
             <i className="fa-solid fa-bars" />
           </button>
         </div>
-      </div>
-      {menuOpen && (
+     {menuOpen && (
         <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 lg:hidden dark:border-white/10">
           <NavLink to="/" end className={linkClass}>Home</NavLink>
           <NavLink to="/explore" className={linkClass}>Explore</NavLink>

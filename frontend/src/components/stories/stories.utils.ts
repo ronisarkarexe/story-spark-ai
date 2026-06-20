@@ -114,6 +114,17 @@ export const getWordCount = (str: string | undefined): number => {
   return normalizedText.split(/\s+/).length;
 };
 
+export const getUniqueStories = (stories: any[]) => {
+  if (!Array.isArray(stories)) return [];
+  const seen = new Set();
+  return stories.filter((story) => {
+    const id = story.uuid || story._id;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+};
+
 export const prompts = [
   {
     id: 1,
