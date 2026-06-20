@@ -99,6 +99,7 @@ Task:
           "Wait and see what happens",
         ];
       } else if (parsed.choices.length < 3) {
+        parsed.choices = [...parsed.choices];
         while (parsed.choices.length < 3) {
           parsed.choices.push(`Option ${parsed.choices.length + 1}`);
         }

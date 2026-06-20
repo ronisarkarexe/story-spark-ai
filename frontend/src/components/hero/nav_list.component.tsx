@@ -1,299 +1,246 @@
-﻿import React, { useEffect, useRef, useState } from "react";
-import { isLoggedIn, removeUserInfo, getUserInfo } from "../../services/auth.service";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { USER_ROLE } from "../../constants/role";
-import logo from "../../assets/logoNew.png";
-import NotificationComponent from "../notification/notification.component";
-import { useNotifications } from "../../hooks/useNotifications";
+﻿import { useState } from "react";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, X, Menu, Sparkles } from "lucide-react";
+import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
+import ThemeToggle from "../theme/theme_toggle.component";
 
-const NavListComponent: React.FC = () => {
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+const NavListComponent = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
+  const [glowEnabled, setGlowEnabled] = useState(false);
+  const toggleGlow = () => setGlowEnabled((v) => !v);
 
-  const getLinkClass = (isActive: boolean) =>
-    `flex items-center px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 border ${
-      isActive
-        ? "bg-custom/10 text-white border-custom/35 shadow-[0_0_15px_rgba(59,130,246,0.25)]"
-        : "text-gray-400 border-transparent hover:bg-white/5 hover:text-custom"
-    }`;
-
-  const getMobileLinkClass = (isActive: boolean) =>
-    `flex items-center px-4 py-2.5 rounded-xl text-base font-semibold transition-all duration-300 border ${
-      isActive
-        ? "bg-custom/15 text-white border-custom/40 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
-        : "text-gray-400 border-transparent hover:bg-white/5 hover:text-white"
-    }`;
-  const [isLogin, setIsLogin] = useState<boolean>(isLoggedIn());
-  const notificationMenuRef = useRef<HTMLDivElement | null>(null);
-  const {
-    notifications,
-    unreadCount,
-    isOpen,
-    toggle,
-    close,
-    markAsRead,
-    markAllAsRead,
-  } = useNotifications();
-
-  const user = getUserInfo();
-  const isAdmin = user?.role === USER_ROLE.ADMIN || user?.role === USER_ROLE.SUPER_ADMIN;
-
-  const handelLogout = () => {
+  const handleLogout = () => {
     removeUserInfo();
-    setIsLogin(false);
+    setLoggedIn(false);
+    navigate("/");
+    setMenuOpen(false);
   };
 
-  useEffect(() => {
-    setIsLogin(isLoggedIn());
-  }, []);
+  const handleNavClick = () => {
+    setMenuOpen(false);
+  };
 
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.closest("[data-notification-trigger='true']")) {
-        return;
-      }
-      if (
-        notificationMenuRef.current &&
-        !notificationMenuRef.current.contains(event.target as Node)
-      ) {
-        close();
-      }
-    };
+  const isActive = (path: string) => {
+    return pathname === path || (path === "/" && pathname === "/");
+  };
 
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [close]);
+  const navItems = [
+    { to: "/", label: "Home" },
+    { to: "/explore", label: "Explore" },
+    { to: "/story-inspiration", label: "Stories" },
+    { to: "/community", label: "Community" },
+  ];
+
+  const mobileMenuVariants = {
+    hidden: { opacity: 0, height: 0, y: -8 },
+    visible: { opacity: 1, height: "auto", y: 0, transition: { duration: 0.28 } },
+    exit: { opacity: 0, height: 0, y: -8, transition: { duration: 0.22 } },
+  };
+
+  const mobileItemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: { delay: i * 0.05 },
+    }),
+  };
+
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `rounded-md px-3 py-2 text-sm font-semibold transition ${isActive ? "text-white bg-slate-800/70" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-white/10"}`;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#0B1120]/80 backdrop-blur-md border-b border-white/10">
-      <div className="relative z-10 mx-auto max-w-8xl px-5 py-4">
-        <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-8">
-          <Link to="/">
-            <img src={logo} alt="logo" className="h-10 w-auto object-contain" />
-          </Link>
-          <div className="hidden md:flex items-center space-x-4">
-            <NavLink to="/" end className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  HOME
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/explore" className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  EXPLORE
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/story-inspiration" className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  INSPIRING STORIES
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/contact-us" className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  CONTACT US
-                </>
-              )}
-            </NavLink>
-            <NavLink to="/community" className={({ isActive }) => getLinkClass(isActive)}>
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  COMMUNITY
-                </>
-              )}
-            </NavLink>
-            {isLogin && (
-              <>
-                <NavLink to="/bookmarks" className={({ isActive }) => getLinkClass(isActive)}>
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                      )}
-                      SAVED STORIES
-                    </>
-                  )}
-                </NavLink>
-                {isAdmin && (
-                  <NavLink to="/dashboard" className={({ isActive }) => getLinkClass(isActive)}>
-                    {({ isActive }) => (
-                      <>
-                        {isActive && (
-                          <span className="w-1.5 h-1.5 bg-custom rounded-full mr-1.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                        )}
-                        DASHBOARD
-                      </>
-                    )}
-                  </NavLink>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/90 backdrop-blur-md dark:border-white/10 dark:bg-[#0B1120]/80">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <Link to="/" className="text-lg font-bold text-slate-800 dark:text-white">StorySparkAI</Link>
+        <nav className="hidden items-center gap-2 lg:flex">
+          <NavLink to="/" end className={linkClass}>Home</NavLink>
+          <NavLink to="/explore" className={linkClass}>Explore</NavLink>
+          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
+          <NavLink to="/chat" className={linkClass}>AI Chat</NavLink>
+          {loggedIn && <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>}
+        </nav>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex items-center gap-2"
+          >
             <button
-              type="button"
-              aria-label="Open Help Center"
-              onClick={() => navigate("/help-center")}
-              className="p-2 text-gray-400 hover:text-white transition"
+              onClick={toggleGlow}
+              className={`group relative grid h-10 w-10 place-items-center rounded-full border transition-all duration-300 ${
+                glowEnabled
+                  ? "border-indigo-200 bg-indigo-50 text-indigo-600 shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400"
+                  : "border-slate-200/80 bg-white/60 text-slate-400 hover:text-slate-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-500 dark:hover:text-slate-300"
+              }`}
+              title={glowEnabled ? "Glow: On" : "Glow: Off"}
+              aria-label={glowEnabled ? "Disable cursor glow" : "Enable cursor glow"}
+              aria-pressed={glowEnabled}
             >
-              <i className="fas fa-search"></i>
+              <Sparkles className="h-[18px] w-[18px]" strokeWidth={2.5} />
             </button>
-            <div className="relative inline-flex" ref={notificationMenuRef}>
-              <button
-                type="button"
-                aria-label="Notifications"
-                className="relative rounded-full p-2 text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
-                data-notification-trigger="true"
-                onClick={toggle}
-              >
-                <i className="fa-solid fa-bell"></i>
-                {unreadCount > 0 && (
-                  <span className="absolute right-0 top-0 grid min-h-[18px] min-w-[18px] -translate-y-1/2 translate-x-1/2 place-items-center rounded-full bg-rose-500 px-1 text-[11px] font-semibold text-white">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </button>
+            <div className="grid h-10 w-10 place-items-center rounded-full border border-slate-200/80 bg-white/60 shadow-sm shadow-slate-900/5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06]">
+              <ThemeToggle />
             </div>
-            {isLogin ? (
-              <button onClick={handelLogout} className="text-gray-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-white/5 hover:text-white transition">
-                LOGOUT
-              </button>
+          </motion.div>
+
+          <div className="hidden items-center gap-2 lg:flex">
+            {loggedIn ? (
+              <motion.button
+                onClick={handleLogout}
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.97 }}
+                className="h-10 rounded-full border border-slate-200/80 bg-white/60 px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white"
+              >
+                Logout
+              </motion.button>
             ) : (
               <>
-                <Link to="/login">
-                  <button className="text-gray-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-white/5 hover:text-white transition">
-                    LOGIN
-                  </button>
-                </Link>
-                <Link to="/signup">
-                  <button className="text-gray-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-white/5 hover:text-white transition">
-                    SIGN UP
-                  </button>
-                </Link>
+                <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}>
+                  <Link
+                    to="/login"
+                    onClick={handleNavClick}
+                    className="inline-flex h-10 items-center rounded-full border border-slate-200/80 bg-white/60 px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white"
+                  >
+                    Login
+                  </Link>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ y: -1, scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                >
+                  <Link
+                    to="/signup"
+                    onClick={handleNavClick}
+                    className="group inline-flex h-10 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300 hover:shadow-indigo-600/40"
+                  >
+                    <span>Get Started</span>
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                  </Link>
+                </motion.div>
               </>
             )}
           </div>
 
-          <button
+          <motion.button
+            whileTap={{ scale: 0.9 }}
             type="button"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            className="md:hidden text-gray-400 hover:text-gray-300 p-2"
-            onClick={() => setMenuOpen((prev) => !prev)}>
-            <i className={`fas ${menuOpen ? "fa-xmark" : "fa-bars"} text-xl`} />
-          </button>
+            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={menuOpen}
+            className="grid h-10 w-10 place-items-center rounded-full border border-slate-200/80 bg-white/60 text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white lg:hidden"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </motion.button>
         </div>
       </div>
 
-      <NotificationComponent
-        notifications={notifications}
-        showNotification={isOpen}
-        setShowNotification={close}
-        unreadCount={unreadCount}
-        onMarkAsRead={markAsRead}
-        onMarkAllAsRead={markAllAsRead}
-      />
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={mobileMenuVariants}
+            className="overflow-hidden border-b border-slate-200/70 bg-white/80 shadow-xl shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/85 lg:hidden"
+          >
+            <div className="mx-auto max-w-7xl px-4 pb-5 pt-2 sm:px-6">
+              <div className="space-y-2 rounded-2xl border border-slate-200/70 bg-white/55 p-2 shadow-sm shadow-slate-900/5 dark:border-white/10 dark:bg-white/[0.04]">
+                {navItems.map((item, index) => (
+                  <motion.div
+                    key={item.to}
+                    custom={index}
+                    initial="hidden"
+                    animate="visible"
+                    variants={mobileItemVariants}
+                  >
+                    <NavLink
+                      to={item.to}
+                      end={item.to === "/"}
+                      onClick={handleNavClick}
+                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
+                        isActive(item.to)
+                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
+                          : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {isActive(item.to) && <span className="h-2 w-2 rounded-full bg-white/90" />}
+                    </NavLink>
+                  </motion.div>
+                ))}
 
-      {menuOpen && (
-        <div className="md:hidden px-5 pb-4 flex flex-col gap-3 border-t border-white/10 mt-2">
-          <NavLink to="/" end className={({ isActive }) => getMobileLinkClass(isActive)}>
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
+                {loggedIn && (
+                  <motion.div
+                    custom={navItems.length}
+                    initial="hidden"
+                    animate="visible"
+                    variants={mobileItemVariants}
+                  >
+                    <NavLink
+                      to="/dashboard"
+                      onClick={handleNavClick}
+                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
+                        isActive("/dashboard")
+                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
+                          : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
+                      }`}
+                    >
+                      <span>Dashboard</span>
+                      {isActive("/dashboard") && <span className="h-2 w-2 rounded-full bg-white/90" />}
+                    </NavLink>
+                  </motion.div>
                 )}
-                HOME
-              </>
-            )}
-          </NavLink>
-          <NavLink to="/explore" className={({ isActive }) => getMobileLinkClass(isActive)}>
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                )}
-                EXPLORE
-              </>
-            )}
-          </NavLink>
-          <NavLink to="/community" className={({ isActive }) => getMobileLinkClass(isActive)}>
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                )}
-                COMMUNITY
-              </>
-            )}
-          </NavLink>
-          {isLogin && (
-            <>
-              <NavLink to="/bookmarks" className={({ isActive }) => getMobileLinkClass(isActive)}>
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                    )}
-                    SAVED STORIES
-                  </>
-                )}
-              </NavLink>
-              {isAdmin && (
-                <NavLink to="/dashboard" className={({ isActive }) => getMobileLinkClass(isActive)}>
-                  {({ isActive }) => (
+
+                <motion.div
+                  custom={navItems.length + 1}
+                  initial="hidden"
+                  animate="visible"
+                  variants={mobileItemVariants}
+                  className="grid gap-2 border-t border-slate-200/70 pt-2 dark:border-white/10"
+                >
+                  {loggedIn ? (
+                    <button
+                      onClick={handleLogout}
+                      className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
+                    >
+                      Logout
+                    </button>
+                  ) : (
                     <>
-                      {isActive && (
-                        <span className="w-2 h-2 bg-custom rounded-full mr-2.5 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                      )}
-                      DASHBOARD
+                      <Link
+                        to="/login"
+                        onClick={handleNavClick}
+                        className="flex items-center justify-center rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-300 dark:hover:bg-white/10"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        to="/signup"
+                        onClick={handleNavClick}
+                        className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300"
+                      >
+                        <span>Get Started</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
                     </>
                   )}
-                </NavLink>
-              )}
-            </>
-          )}
-          <button type="button" className="text-left text-gray-400 py-2" data-notification-trigger="true" onClick={toggle}>
-            NOTIFICATIONS {unreadCount > 0 && `(${unreadCount})`}
-          </button>
-          {
-            isLogin ? (
-              <button onClick={handelLogout} className="text-left text-gray-400 py-2">
-                LOGOUT
-              </button>
-            ) : (
-              <>
-                <Link to="/login" className="text-gray-400 block px-3 py-2 rounded-md hover:bg-white/5 hover:text-white">LOGIN</Link>
-                <Link to="/signup" className="text-gray-400 block px-3 py-2 rounded-md hover:bg-white/5 hover:text-white">SIGN UP</Link>
-              </>
-            )
-          }
-        </div>
-      )}
-      </div>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

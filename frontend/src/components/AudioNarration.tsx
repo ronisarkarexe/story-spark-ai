@@ -27,6 +27,7 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
     stop,
     setPlaybackRate,
     setSelectedVoice,
+    // detectedLanguage,
   } = useSpeechSynthesis(text);
   const detectedLanguage: string | undefined = undefined;
 
@@ -85,6 +86,13 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
         </svg>
         {title}
       </h3>
+
+      {/* Language Detection Info */}
+      {/* {detectedLanguage && (
+        <div className="mb-3 p-2 bg-blue-950/30 border border-blue-700/30 rounded text-blue-200 text-xs">
+          <span className="font-medium">Detected Language:</span> {detectedLanguage.toUpperCase()}
+        </div>
+      )} */}
 
       {/* Error Message */}
       {error && (

@@ -1,0 +1,17 @@
+process.env.JWT_SECRET = 'test-secret';
+process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
+process.env.JWT_EXPIRES_IN = '15m';
+process.env.JWT_REFRESH_EXPIRES_IN = '30d';
+process.env.VERIFY_EMAIL = 'test@example.com';
+process.env.VERIFY_PASSWORD = 'testpassword';
+process.env.DEFAULT_ADMIN_PASSWORD = 'admin';
+process.env.OPEN_AI_KEY = '';
+process.env.IMAGE_GENERATION_PROVIDER = '';
+process.env.IMAGE_GENERATION_API_KEY = '';
+process.env.UNSPLASH_KEY_API = '';
+process.env.UNSPLASH_KEY_API_SECRET = '';
+process.env.GEMINI_API_KEY = '';
+process.env.ANTHROPIC_API_KEY = '';
+process.env.GOOGLE_CLIENT_ID = '';
+process.env.GITHUB_TOKEN = '';
+process.env.GITHUB_REPO = '';

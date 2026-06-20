@@ -15,6 +15,25 @@ import type {
   IStoryVisualizerPayload,
   IStoryVisualizerResult,
 } from "../story_visualizer/story_visualizer.interface";
+import {
+  safeParseAIResponse,
+  parseAIResponseOrThrow,
+  GeminiStoriesWrapperSchema,
+  AlternateEndingsArraySchema,
+  RemixResponseSchema,
+  ContinuationResponseSchema,
+  TranslationResponseSchema,
+  StoryboardResponseSchema,
+} from "../ai";
+
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -121,18 +140,6 @@ const throwIfAborted = (signal?: AbortSignal): void => {
   if (signal?.aborted) {
     throw new GenerationAbortedError();
   }
-};
-
-const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) {
-    return trimmed;
-  }
-
-  return trimmed
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
 };
 
 const buildCharactersInstruction = (characters?: ICharacter[]): string => {
@@ -245,8 +252,12 @@ export async function generateWithGeminiStories(
     throwIfAborted(signal);
 
     const text = response.response.text();
-    const parsed = JSON.parse(sanitizeJsonText(text));
-    const stories: Story[] = Array.isArray(parsed) ? parsed : parsed?.stories;
+    const stories = safeParseAIResponse(
+      text,
+      GeminiStoriesWrapperSchema,
+      [] as Story[],
+      { label: "Gemini story generation" }
+    );
 
     if (!Array.isArray(stories) || stories.length === 0) {
       throw new ApiError(
@@ -533,7 +544,10 @@ Write the remixed story in ${language}. Return a JSON object with this exact str
       );
     }
 
-    return parsed;
+    return parseAIResponseOrThrow(rawText, RemixResponseSchema, {
+      label: "Gemini story remix",
+      errorMessage: "Invalid remix response from AI",
+    });
   } catch (error: unknown) {
     if (error instanceof ApiError) throw error;
     const errorMsg = error instanceof Error ? error.message : String(error);
@@ -601,7 +615,7 @@ Return only valid JSON with this exact structure:
       );
     }
 
-    return { continuation: parsed.continuation };
+    return parsed;
   } catch (error: unknown) {
     if (error instanceof ApiError || error instanceof GenerationAbortedError) {
       throw error;
@@ -658,7 +672,10 @@ Preserve the story's tone, style and meaning. Only translate — do not modify t
       );
     }
 
-    return parsed;
+    return parseAIResponseOrThrow(rawText, TranslationResponseSchema, {
+      label: "Gemini story translation",
+      errorMessage: "Invalid translation response from AI",
+    });
   } catch (error: unknown) {
     if (error instanceof ApiError) throw error;
     const errorMsg = error instanceof Error ? error.message : String(error);

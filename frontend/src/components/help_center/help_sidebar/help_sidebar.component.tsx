@@ -63,7 +63,7 @@ const HelpSidebar = () => {
 
   return (
     <>
-      {/* Desktop sticky sidebar */}
+      {/* Desktop Sticky Sidebar */}
       <nav className="hidden lg:block w-72 flex-shrink-0" aria-label="Help center sections">
         <div className="sticky top-24">
           <motion.div

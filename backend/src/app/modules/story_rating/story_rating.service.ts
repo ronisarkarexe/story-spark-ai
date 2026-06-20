@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { StoryRating } from "./story_rating.model";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
+import { Post } from "../post/post.model";
 
 /**
  * Upserts a rating for a story by a user
@@ -12,6 +13,18 @@ const rateStory = async (
   rating: number,
   review?: string
 ) => {
+  const post = await Post.findById(storyId);
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Story not found");
+  }
+
+  if (post.author?.toString() === userId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You cannot rate your own story"
+    );
+  }
+
   const filter = {
     userId: new Types.ObjectId(userId),
     storyId: new Types.ObjectId(storyId),
@@ -20,6 +33,14 @@ const rateStory = async (
   const options = { new: true, upsert: true, setDefaultsOnInsert: true };
 
   const result = await StoryRating.findOneAndUpdate(filter, update, options);
+
+  // Sync metrics to Post model
+  const stats = await getAverageRating(storyId);
+  await Post.findByIdAndUpdate(storyId, {
+    averageRating: stats.averageRating,
+    totalRatings: stats.totalRatings,
+  });
+
   return result;
 };
 
@@ -111,6 +132,13 @@ const deleteRating = async (userId: string, ratingId: string) => {
   }
 
   await StoryRating.findByIdAndDelete(ratingId);
+
+  // Sync metrics to Post model
+  const stats = await getAverageRating(rating.storyId.toString());
+  await Post.findByIdAndUpdate(rating.storyId, {
+    averageRating: stats.averageRating,
+    totalRatings: stats.totalRatings,
+  });
 
   return { message: "Rating deleted successfully" };
 };

@@ -5,6 +5,7 @@ import {
   GenerationTimeoutError,
   raceGenerationWithTimeout,
 } from "../../../utils/generation_timeout";
+import { timeoutLimit } from "../../../utils/timeout_limit";
 import {
   IAIModel,
   IAlternateEndingPayload,
@@ -303,9 +304,43 @@ const aiFreeModelChat = async (payload: IChatPayload, signal?: AbortSignal) => {
   }
 };
 
+const generateCharacterProfile = async (story: string) => {
+  try {
+    const characterPrompt = `
+Analyze the following story and extract all important characters.
+
+For each character provide:
+- name
+- role
+- personality
+- strengths
+- weaknesses
+- relationships
+
+Return the response only in JSON array format.
+
+Story:
+${story}
+`;
+
+    const result = await Promise.race([
+      timeoutLimit(30000),
+      generateWithGeminiStories(characterPrompt, 300, 1),
+    ]);
+
+    return result;
+  } catch (error) {
+    throw new ApiError(
+      httpStatus.GATEWAY_TIMEOUT,
+      "Failed to generate character profiles!"
+    );
+  }
+};
+
 export const AiModelService = {
   aiModelGenerate,
   aiFreeModelGenerate,
+  generateCharacterProfile,
   aiModelAlternateEndings,
   aiFreeModelAlternateEndings,
   aiModelRemix,

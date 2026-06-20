@@ -1,50 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
 
-const StarRating = ({
-  rating,
-  setRating,
-}: {
+type StarRatingProps = {
   rating: number;
   setRating: (n: number) => void;
-}) => {
+};
+
+const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
   const [hovered, setHovered] = useState(0);
 
+  const handleKey = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "ArrowLeft") setRating(Math.max(0, rating - 1));
+      if (e.key === "ArrowRight") setRating(Math.min(5, rating + 1));
+      const num = parseInt(e.key, 10);
+      if (!Number.isNaN(num) && num >= 1 && num <= 5) setRating(num);
+    },
+    [rating, setRating]
+  );
+
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
+    <div>
+      <div
+        role="radiogroup"
+        aria-label="Star rating"
+        tabIndex={0}
+        onKeyDown={handleKey}
+        className="flex gap-1 outline-none"
+      >
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
-            aria-pressed={rating === star}
-            aria-label={`Rate ${star} star`}
+            role="radio"
+            aria-checked={rating === star}
+            aria-label={ratingLabels[star]}
             onClick={() => setRating(star)}
             onMouseEnter={() => setHovered(star)}
             onMouseLeave={() => setHovered(0)}
-            className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none ${
-              star <= (hovered || rating)
-                ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]"
-                : "text-gray-600"
-            }`}
+            className="text-2xl transition-transform duration-150 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
           >
-            ★
+            {star <= (hovered || rating) ? "★" : "☆"}
           </button>
         ))}
       </div>
-
       {(hovered || rating) > 0 && (
-        <p className="text-xs font-semibold tracking-wide text-yellow-400">
-          {ratingLabels[hovered || rating]}
-        </p>
+        <p className="mt-1 text-xs text-gray-400">{ratingLabels[hovered || rating]}</p>
       )}
     </div>
   );
 };
 
-const ReviewForm = () => {
+const ReviewForm: React.FC = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -54,35 +63,26 @@ const ReviewForm = () => {
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
-  const validate = () => {
+  const validate = useCallback(() => {
     const newErrors: Record<string, string> = {};
-
-    if (!name.trim()) newErrors.name = "Name is required";
-    if (!role.trim()) newErrors.role = "Role is required";
-    if (!feedback.trim()) newErrors.feedback = "Review is required";
-    if (feedback.length > 500) newErrors.feedback = "Max 500 characters";
-    if (rating === 0) newErrors.rating = "Please select a rating";
-
+    if (!name.trim()) newErrors.name = "Name is required.";
+    if (!role.trim()) newErrors.role = "Role is required.";
+    if (!feedback.trim()) newErrors.feedback = "Review is required.";
+    if (feedback.length > 500) newErrors.feedback = "Maximum 500 characters.";
+    if (rating === 0) newErrors.rating = "Please select a rating.";
     return newErrors;
-  };
+  }, [name, role, feedback, rating]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     const newErrors = validate();
-
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      setSuccess(false);
       return;
     }
 
     try {
-      await createReview({
-        name,
-        role,
-        feedback,
-        rating,
-        imgSrc: "",
-      });
-
+      await createReview({ name, role, feedback, rating, imgSrc: "" });
       setSuccess(true);
       setName("");
       setRole("");
@@ -90,11 +90,10 @@ const ReviewForm = () => {
       setRating(0);
       setErrors({});
     } catch {
-      setErrors({
-        submit: "Failed to submit review. Please try again.",
-      });
+      setErrors({ submit: "Failed to submit review. Please try again." });
+      setSuccess(false);
     }
-  };
+  }, [createReview, name, role, feedback, rating, validate]);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -107,16 +106,16 @@ const ReviewForm = () => {
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-400">
               ✍️ Share Your Story
             </div>
-            <h3 className="text-xl font-semibold text-white">Write a Review</h3>
-            <p className="text-gray-400 text-sm mt-1">
-              Tell us what you think about StorySparkAI.
+            <h3 className="text-2xl font-bold text-white">Share Your Experience</h3>
+            <p className="mt-1 text-sm text-gray-400">
+              Your feedback helps us improve StorySparkAI for everyone.
             </p>
           </div>
 
           {success && (
             <div
               aria-live="polite"
-              className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400 transition-all duration-300"
+              className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400"
             >
               <span className="text-lg">🎉</span>
               <span>Thank you! Your review has been submitted for approval.</span>
@@ -137,8 +136,7 @@ const ReviewForm = () => {
             <div>
               <label htmlFor="name" className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                 <span className="text-blue-400">👤</span>
-                Name
-                <span className="text-red-400">*</span>
+                Name <span className="text-red-400">*</span>
               </label>
               <input
                 id="name"
@@ -147,12 +145,11 @@ const ReviewForm = () => {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your full name"
                 aria-invalid={!!errors.name}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full max-w-lg rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
               {errors.name && (
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
-                  {errors.name}
+                  <span>⚠</span> {errors.name}
                 </p>
               )}
             </div>
@@ -160,8 +157,7 @@ const ReviewForm = () => {
             <div>
               <label htmlFor="role" className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                 <span className="text-blue-400">💼</span>
-                Role
-                <span className="text-red-400">*</span>
+                Role <span className="text-red-400">*</span>
               </label>
               <input
                 id="role"
@@ -170,12 +166,11 @@ const ReviewForm = () => {
                 onChange={(e) => setRole(e.target.value)}
                 placeholder="e.g. Fantasy Writer, Student, Blogger"
                 aria-invalid={!!errors.role}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full max-w-lg rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
               {errors.role && (
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
-                  {errors.role}
+                  <span>⚠</span> {errors.role}
                 </p>
               )}
             </div>
@@ -183,8 +178,7 @@ const ReviewForm = () => {
             <div>
               <label htmlFor="feedback" className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                 <span className="text-blue-400">💬</span>
-                Review
-                <span className="text-red-400">*</span>
+                Review <span className="text-red-400">*</span>
               </label>
               <textarea
                 id="feedback"
@@ -194,13 +188,12 @@ const ReviewForm = () => {
                 onChange={(e) => setFeedback(e.target.value)}
                 placeholder="Tell us about your experience with StorySparkAI..."
                 aria-invalid={!!errors.feedback}
-                className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full max-w-lg resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
               <div className="mt-1 flex items-center justify-between max-w-lg">
                 {errors.feedback ? (
                   <p className="flex items-center gap-1 text-xs text-red-400">
-                    <span>⚠</span>
-                    {errors.feedback}
+                    <span>⚠</span> {errors.feedback}
                   </p>
                 ) : (
                   <span />
@@ -214,8 +207,7 @@ const ReviewForm = () => {
             <div className="pb-8">
               <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                 <span className="text-blue-400">⭐</span>
-                Rating
-                <span className="text-red-400">*</span>
+                Rating <span className="text-red-400">*</span>
               </label>
               <StarRating rating={rating} setRating={setRating} />
               <p className="mt-2 text-xs text-gray-500">
@@ -223,8 +215,7 @@ const ReviewForm = () => {
               </p>
               {errors.rating && (
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
-                  {errors.rating}
+                  <span>⚠</span> {errors.rating}
                 </p>
               )}
             </div>

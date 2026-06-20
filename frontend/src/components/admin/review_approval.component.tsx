@@ -23,24 +23,23 @@ const ReviewApprovalComponent = () => {
   };
 
 
-  const handleApproveSelected = async () => {
-    for (const id of selectedReviews) {
-      try {
-        await approveReview(id).unwrap();
-      } catch {
-        toast.error(`Failed to approve review ${id}.`);
-      }
-    }
-    setSelectedReviews([]);
-    toast.success("Selected reviews approved!");
-  };
-
   const handleApprove = async (id: string) => {
     try {
       await approveReview(id).unwrap();
       toast.success("Review approved successfully!");
     } catch (error: unknown) {
       toast.error("Failed to approve review. Please try again.");
+      console.error(error);
+    }
+  };
+
+  const handleApproveSelected = async () => {
+    try {
+      await Promise.all(selectedReviews.map((id) => approveReview(id).unwrap()));
+      toast.success(`${selectedReviews.length} reviews approved successfully!`);
+      setSelectedReviews([]);
+    } catch (error: unknown) {
+      toast.error("Failed to approve some reviews. Please try again.");
       console.error(error);
     }
   };
