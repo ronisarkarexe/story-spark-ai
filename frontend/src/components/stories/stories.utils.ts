@@ -45,6 +45,15 @@ export interface ITopicData {
   selected: boolean;
 }
 
+export interface CharacterProfile {
+  name: string;
+  role: string;
+  personality: string;
+  strengths: string[];
+  weaknesses: string[];
+  relationships: string;
+}
+
 export const TOPICS: ITopicData[] = [
   {
     title: "#StoryIdeas",
@@ -92,11 +101,17 @@ export const TOPICS: ITopicData[] = [
 
 export const topicsData: ITopicData[] = TOPICS;
 
-export const getWordCount = (str: string) => {
-  if (typeof str !== "string" || !str.trim()) {
+export const getWordCount = (str: string | undefined): number => {
+  if (typeof str !== "string") {
     return 0;
   }
-  return str.trim().split(/\s+/).length;
+
+  const normalizedText = str.replace(/[\r\n]+/g, " ").trim();
+  if (!normalizedText) {
+    return 0;
+  }
+
+  return normalizedText.split(/\s+/).length;
 };
 
 export const prompts = [
@@ -150,3 +165,86 @@ export const prompts = [
     prompt: "A time traveler finds themselves stuck in the age of dinosaurs.",
   },
 ];
+
+export const TEMPLATE_STORY_UUID = "test-1";
+const emotionKeywords = {
+  Happy: [
+    "happy",
+    "joy",
+    "smile",
+    "laugh",
+    "love",
+    "wonderful",
+    "celebrate",
+    "peace"
+  ],
+
+  Sad: [
+    "sad",
+    "cry",
+    "tears",
+    "pain",
+    "lonely",
+    "loss",
+    "broken"
+  ],
+
+  Suspense: [
+    "mystery",
+    "dark",
+    "fear",
+    "danger",
+    "secret",
+    "shadow"
+  ],
+
+  Excitement: [
+    "adventure",
+    "fight",
+    "victory",
+    "energy",
+    "thrill",
+    "power"
+  ],
+};
+
+export const analyzeStoryEmotion = (content: string) => {
+  const text = content.toLowerCase();
+
+  const scores = {
+    Happy: 0,
+    Sad: 0,
+    Suspense: 0,
+    Excitement: 0,
+  };
+
+  Object.entries(emotionKeywords).forEach(([emotion, words]) => {
+    words.forEach((word) => {
+      if (text.includes(word)) {
+        scores[emotion as keyof typeof scores]++;
+      }
+    });
+  });
+
+  const total = Object.values(scores).reduce(
+    (sum, value) => sum + value,
+    0
+  );
+
+  const percentages = Object.fromEntries(
+    Object.entries(scores).map(([emotion, value]) => [
+      emotion,
+      total > 0 ? Math.round((value / total) * 100) : 0,
+    ])
+  );
+
+  const dominantEmotion =
+    Object.entries(scores).sort(
+      (a, b) => b[1] - a[1]
+    )[0][0];
+
+  return {
+    scores: percentages,
+    dominantEmotion,
+  };
+};

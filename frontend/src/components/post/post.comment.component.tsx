@@ -5,6 +5,7 @@ import {
   useGetCommentsListQuery,
   useToggleCommentLikeMutation,
   useDeleteCommentMutation,
+  useToggleCommentHelpfulMutation,
 } from "../../redux/apis/comment";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
@@ -33,6 +34,7 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
   const { data: commentList } = useGetCommentsListQuery(postId);
   const [createComment] = useCreateCommentMutation();
   const [toggleCommentLike] = useToggleCommentLikeMutation();
+  const [toggleCommentHelpful] = useToggleCommentHelpfulMutation();
   const [deleteComment] = useDeleteCommentMutation();
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (!isLogin) {
@@ -119,6 +121,25 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
       toast.error(getErrorMessage(err));
     }
   };
+
+  const isCommentHelpful = (helpful: string[] | undefined) =>
+    (helpful as unknown[])?.some((u) =>
+      typeof u === "string"
+        ? u === currentUser?.userId
+        : (u as { email?: string })?.email === currentUser?.email
+    ) ?? false;
+
+  const handleHelpful = async (commentId: string) => {
+    if (!isLogin) {
+      toast.error("Please login to react to a comment.");
+      return;
+    }
+    try {
+      await toggleCommentHelpful(commentId).unwrap();
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
+    }
+  };
   const handleDeleteComment = async (commentId: string) => {
   const confirmed = window.confirm(
     "Are you sure you want to delete this comment?"
@@ -183,6 +204,13 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                     {comment.likes?.length || 0}
                   </button>
                   <button
+                    onClick={() => handleHelpful(comment._id)}
+                    className={`hover:text-amber-500 transition-colors flex items-center gap-1 ${isCommentHelpful(comment.helpful) ? "text-amber-500" : ""}`}
+                  >
+                    <i className={`${isCommentHelpful(comment.helpful) ? "fas" : "far"} fa-lightbulb mr-1`}></i>
+                    Helpful ({comment.helpful?.length || 0})
+                  </button>
+                  <button
                     onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
                     className="hover:text-blue-400 transition-colors"
                   >
@@ -238,6 +266,13 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                             >
                               <i className={`${isCommentLiked(reply.likes) ? "fas" : "far"} fa-heart mr-1`}></i>
                               {reply.likes?.length || 0}
+                            </button>
+                            <button
+                              onClick={() => handleHelpful(reply._id)}
+                              className={`hover:text-amber-500 transition-colors ${isCommentHelpful(reply.helpful) ? "text-amber-500" : ""}`}
+                            >
+                              <i className={`${isCommentHelpful(reply.helpful) ? "fas" : "far"} fa-lightbulb mr-1`}></i>
+                              Helpful ({reply.helpful?.length || 0})
                             </button>
                           </div>
                         </div>

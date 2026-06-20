@@ -6,16 +6,18 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 export const continueStory = async (
   chapters: Chapter[],
   storyId?: string,
-  useStoryBible?: boolean
+  useStoryBible?: boolean,
+  tone?: string
 ) => {
   const previousContent = chapters
     .map((chapter) => chapter.content)
     .join("\n\n");
 
-  const response = await axios.post(
-    `${BASE_URL}/story-continuation/continue`,
-    {
-      prompt: `
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/story-continuation/continue`,
+      {
+        prompt: `
 Continue this story naturally.
 
 Rules:
@@ -27,12 +29,17 @@ Rules:
 Story:
 ${previousContent}
       `,
-      storyId,
-      useStoryBible,
-    }
-  );
+        storyId,
+        useStoryBible,
+        tone,
+      }
+    );
 
-  return response.data.data.continuation;
+    return response.data.data.continuation || response.data.text;
+  } catch (error) {
+    console.error("Story continuation request failed:", error);
+    throw new Error("Failed to continue story.");
+  }
 };
 
 /**

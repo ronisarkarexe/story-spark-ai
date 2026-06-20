@@ -18,9 +18,6 @@ const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({
   {filteredPosts.length > 0 ? (
   filteredPosts.map((post: Post) => {
 
-    console.log("Story:", post.title);
-    console.log("Image URL:", post.imageURL);
-
     return (
           <div
             onClick={() => navigate(`/post/${post._id}`)}
