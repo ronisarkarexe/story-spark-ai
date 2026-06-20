@@ -71,7 +71,7 @@ async function generateWithOpenAI(systemPrompt: string, userPrompt: string): Pro
       response_format: { type: "json_object" }, // Enforce structured JSON output
       max_tokens: 1500,
     },
-    { timeout: 10000 }
+    { timeout: 60000 }
   );
 
   const text = response.choices[0]?.message?.content;
@@ -90,7 +90,7 @@ async function generateWithAnthropic(systemPrompt: string, userPrompt: string): 
       max_tokens: 1500,
       messages: [{ role: "user", content: userPrompt }],
     },
-    { timeout: 10000 }
+    { timeout: 60000 }
   );
 
   const textBlock = response.content.find((block) => block.type === "text");

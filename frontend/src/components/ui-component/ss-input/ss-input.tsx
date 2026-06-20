@@ -34,8 +34,7 @@ const SSInput = <T extends FieldValues>({
   autoComplete,
   autoFocus,
 }: SSInputProps<T>) => {
-  const [showPassword, setShowPassword] = useState(false);
-
+  const [showLocalPassword, setShowLocalPassword] = useState(false);
 
   const isPasswordType = type === "password";
   const inputType = isPasswordType
@@ -77,7 +76,6 @@ const SSInput = <T extends FieldValues>({
             <i className={icon}></i>
           </span>
         )}
-
 
         <input
           type={inputType}

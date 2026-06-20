@@ -1,4 +1,4 @@
-import Razorpay from 'razorpay';
+import Razorpay from "razorpay";
 
 let razorpayInstance: InstanceType<typeof Razorpay> | null = null;
 
@@ -10,7 +10,13 @@ export const getRazorpay = (): InstanceType<typeof Razorpay> => {
     });
   }
 
+
+  // At this point the instance must be initialized.
+  return razorpayInstance as InstanceType<typeof Razorpay>;
+
   return razorpayInstance;
+ main
 };
 
 export default getRazorpay;
+

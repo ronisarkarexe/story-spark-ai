@@ -20,11 +20,10 @@ const router = express.Router();
 /** STORY CONTINUATION - single */
 router.post(
   "/continue",
-  // For authenticated users: apply per-user tier-aware limit (fixes #3023).
-  // For unauthenticated guests: fall back to the IP-based free limit.
-  // Both middlewares are intentionally stacked so unauthenticated requests
-  // still get the IP cap while authenticated users get the user-keyed one.
-  freeAiRateLimiter,
+  // Authenticated users get the per-user storyGenerationRateLimiter.
+  // Unauthenticated requests are rejected by auth middleware first,
+  // so freeAiRateLimiter only applies to edge cases where auth passes
+  // without a user object (e.g., API-key-based access).
   auth(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
@@ -32,6 +31,7 @@ router.post(
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
   storyGenerationRateLimiter,
+  freeAiRateLimiter,
   piiScrubberMiddleware,
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {

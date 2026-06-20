@@ -1,4 +1,33 @@
 const bcrypt = require("bcryptjs");
+import httpStatus from "http-status";
+import jwt, { Secret } from "jsonwebtoken";
+import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
+import { AuthModel } from "./auth.interface";
+import { User } from "../user/user.model";
+import { JwtHelpers } from "../../../utils/jwt.helper";
+import logger from "../../../utils/logger.util";
+import config from "../../../config";
+import ApiError from "../../../errors/api_error";
+import { IUser } from "../user/user.interface";
+import { OTPModel } from "../verify_email/otp.model";
+import { RefreshSession } from "./refresh_session.model";
+import { VerifyEmailService } from "../verify_email/verify_email.service";
+import { GamificationService } from "../gamification/gamification.service";
+import { USER_STATUS } from "../../../enums/user_status";
+import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
+
+const googleClient = new OAuth2Client(config.google_client_id);
+
+const validateUserStatus = (status?: string) => {
+  if (status === "Blocked") {
+    throw new ApiError(httpStatus.FORBIDDEN, "Your account has been blocked.");
+  }
+  if (status === "Inactive") {
+    throw new ApiError(httpStatus.FORBIDDEN, "Your account is inactive.");
+  }
+};
+
 
 import httpStatus from "http-status";
 import jwt, { Secret } from "jsonwebtoken";
@@ -27,6 +56,28 @@ const validateUserStatus = (status?: string) => {
   if (status === "Inactive") {
     throw new ApiError(httpStatus.FORBIDDEN, "Your account is inactive.");
   }
+};
+
+const normalizeEmail = (email: unknown) => {
+  if (typeof email !== "string") {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid email address.");
+  }
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email address is required.");
+  }
+  return normalized;
+};
+
+const normalizeString = (value: unknown, fieldName: string) => {
+  if (typeof value !== "string") {
+    throw new ApiError(httpStatus.BAD_REQUEST, `${fieldName} must be a string.`);
+  }
+  const normalized = value.trim();
+  if (!normalized) {
+    throw new ApiError(httpStatus.BAD_REQUEST, `${fieldName} is required.`);
+  }
+  return normalized;
 };
 
 // Token claims; tokenVersion enables global session revocation.
@@ -66,6 +117,10 @@ const issueRefreshToken = async (user: any): Promise<string> => {
 const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
   const { email: userEmail, password, rememberMe } = payload;
   const isExistUser = await User.findOne({ email: userEmail });
+  const email = normalizeEmail(payload.email);
+  const password = normalizeString(payload.password, "Password");
+  const { rememberMe } = payload;
+  const isExistUser = await User.findOne({ email });
   if (!isExistUser) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
@@ -139,6 +194,12 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
 
   const accessToken = issueAccessToken(result);
   const refreshToken = await issueRefreshToken(result);
+  }
+
+  const accessToken = issueAccessToken(isExistUser, rememberMe ? "30d" : "15m");
+  const refreshToken = await issueRefreshToken(isExistUser);
+
+  GamificationService.updateDailyStreak(String(isExistUser._id)).catch(console.error);
 
   return {
     accessToken,
@@ -318,6 +379,232 @@ const googleLogin = async (payload: { token: string }) => {
   }
 };
 
+const register = async (payload: IUser & { verificationToken?: string; confirmPassword?: string }) => {
+  const email = normalizeEmail(payload.email);
+  const verificationToken = normalizeString(payload.verificationToken, "Verification token");
+  
+  if (!verificationToken) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Email verification required. Please verify your email with OTP before registering."
+    );
+  }
+
+  const otpRecord = await OTPModel.findOne({
+    email,
+    isVerified: true,
+    verificationToken,
+  });
+
+  if (!otpRecord) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Invalid or expired verification token. Please verify your email again."
+    );
+  }
+
+  if (
+    !otpRecord.verificationTokenExpires ||
+    new Date() > otpRecord.verificationTokenExpires
+  ) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Verification token has expired. Please verify your email again."
+    );
+  }
+
+  const isExistUser = await User.findOne({ email });
+  if (isExistUser) {
+    throw new ApiError(httpStatus.CONFLICT, "User already exists!");
+  }
+  
+  const { verificationToken: _, ...userPayload } = payload;
+  const result = await User.create({ ...userPayload, email });
+
+  // Clean up OTP record after successful registration
+  await OTPModel.deleteOne({ email });
+
+  const accessToken = issueAccessToken(result);
+  const refreshToken = await issueRefreshToken(result);
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
+const refreshToken = async (token: string) => {
+  if (!token) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "No refresh token provided");
+  }
+
+  let verifiedToken = null;
+  try {
+    verifiedToken = JwtHelpers.verifyToken(
+      token,
+      config.jwt.refresh_secret as Secret
+    );
+  } catch (error) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Invalid refresh token");
+  }
+
+  const userEmail = normalizeEmail((verifiedToken as any).email);
+  const jti = typeof (verifiedToken as any).jti === "string" ? (verifiedToken as any).jti : undefined;
+  const user = await User.findOne({ email: userEmail });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
+  if (user.tokenVersion !== (verifiedToken as any).tokenVersion) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Invalid or expired refresh token"
+    );
+  }
+
+  if (!jti) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid refresh token");
+  }
+
+  const session = await RefreshSession.findOne({ jti });
+  if (!session || session.revoked) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Invalid or expired refresh token"
+    );
+  }
+
+  // Reuse of an already-used token signals theft: revoke the family and bump tokenVersion.
+  if (session.used) {
+    await RefreshSession.updateMany({ userId: user._id }, { revoked: true });
+    await User.updateOne({ _id: user._id }, { $inc: { tokenVersion: 1 } });
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Refresh token reuse detected. Please sign in again."
+    );
+  }
+
+  // Atomically claim the token so only one concurrent request can rotate it.
+  const claimed = await RefreshSession.findOneAndUpdate(
+    { jti, used: false, revoked: false },
+    { used: true },
+    { new: true }
+  );
+  if (!claimed) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Invalid or expired refresh token"
+    );
+  }
+
+  const accessToken = issueAccessToken(user);
+  const newRefreshToken = await issueRefreshToken(user);
+  return {
+    accessToken,
+    refreshToken: newRefreshToken,
+  };
+};
+
+const logout = async (token?: string) => {
+  if (!token) return;
+  try {
+    const verified = JwtHelpers.verifyToken(
+      token,
+      config.jwt.refresh_secret as Secret
+    );
+    const jti = typeof (verified as any).jti === "string" ? (verified as any).jti : undefined;
+    const userId = typeof (verified as any)._id === "string" ? (verified as any)._id : undefined;
+
+    // Revoke the refresh token session.
+    if (jti) {
+      await RefreshSession.updateOne({ jti }, { revoked: true });
+    }
+
+    // Bump tokenVersion so every outstanding access token for this user is
+    // immediately rejected by auth.middleware.ts, even before its natural expiry.
+    if (userId) {
+      await User.updateOne({ _id: userId }, { $inc: { tokenVersion: 1 } });
+    }
+  } catch (error) {
+    // Ignore invalid tokens on logout; the cookie is cleared either way.
+  }
+};
+
+const googleLogin = async (payload: { token: string }) => {
+  try {
+    if (!config.google_client_id) {
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Google OAuth not configured"
+      );
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: payload.token,
+      audience: config.google_client_id,
+    });
+
+    const payload_data = ticket.getPayload();
+    if (!payload_data || !payload_data.email) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid Google token");
+    }
+
+    if (!payload_data.email_verified) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Google email is not verified");
+    }
+
+    const { email, name: googleName, picture } = payload_data;
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const newUser: Partial<IUser> = {
+        email: email as string,
+        name: (googleName || email || "Google User").slice(0, 100),
+        status: "Active",
+        subscriptionType: "free",
+        profile: {
+          avatar: (picture as string) || "",
+          bio: "",
+          social: {
+            facebook: "",
+            twitter: "",
+            linkedin: "",
+            instagram: "",
+            github: "",
+            discord: "",
+          },
+        },
+      };
+
+      user = await User.create(newUser);
+    }
+
+    validateUserStatus(user.status);
+
+    const accessToken = issueAccessToken(user);
+    const refreshTokenData = await issueRefreshToken(user);
+
+    GamificationService.updateDailyStreak(String(user._id)).catch(console.error);
+
+    return {
+      accessToken,
+      refreshToken: refreshTokenData,
+    };
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`Google login error: ${errorMessage}`);
+    
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      error.message || "Google login failed"
+    );
+  }
+};
+
 const changePassword = async (userPayload: any, payload: any) => {
   const { oldPassword, newPassword } = payload;
   const user = await User.findById(userPayload._id);
@@ -351,11 +638,13 @@ const forgotPassword = async (email: string) => {
   if (!email) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email is required!");
   }
+  const safeEmail = normalizeEmail(email);
 
   // Same response for real and unknown emails to prevent account enumeration.
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
   const user = await User.findOne({ email });
+  const user = await User.findOne({ email: safeEmail });
   if (user) {
     // Fire and forget so response timing does not vary with account existence.
     VerifyEmailService.VerifyEmail({
@@ -380,6 +669,11 @@ const resetPassword = async (payload: {
   if (!email || !password || !confirmPassword || !verificationToken) {
     throw new ApiError(httpStatus.BAD_REQUEST, "All fields are required!");
   }
+  const email = normalizeEmail(payload.email);
+  const password = normalizeString(payload.password, "Password");
+  const confirmPassword = normalizeString(payload.confirmPassword, "Confirm password");
+  const verificationToken = normalizeString(payload.verificationToken, "Verification token");
+
   if (password !== confirmPassword) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
   }
@@ -396,6 +690,35 @@ const resetPassword = async (payload: {
   if (passwordError) {
     throw new ApiError(httpStatus.BAD_REQUEST, passwordError);
   }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
+  const otpRecord = await OTPModel.findOne({
+    email,
+    isVerified: true,
+    verificationToken,
+  });
+
+  if (!otpRecord) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Invalid or expired verification token. Please verify your email again."
+    );
+  }
+
+  if (
+    !otpRecord.verificationTokenExpires ||
+    new Date() > otpRecord.verificationTokenExpires
+  ) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Verification token has expired. Please verify your email again."
+    );
+  }
+
 
   const user = await User.findOne({ email });
   if (!user) {

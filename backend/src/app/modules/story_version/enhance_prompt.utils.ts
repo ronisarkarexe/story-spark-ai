@@ -16,7 +16,16 @@ export const enhancePromptWithGemini = async (
 ): Promise<string> => {
   const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
 
-  const metaPrompt = `You are a creative writing assistant.
+  const safePrompt = prompt
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, "\\\"")
+    .replace(/\n/g, " ")
+    .replace(/\r/g, "");
+
+
+  const metaPrompt = `You are a creative writing assistant.\n\nPrompt: ${safePrompt}\n\nUse the following story context if available:\n\n${
+    compressedContext ?? "No previous context"
+  }\n\nRewrite the following story prompt to be more vivid, specific, and engaging.\nAdd a character name, setting details, and a central conflict.\n\nReturn ONLY the enhanced prompt, nothing else.`;
 
 
 Prompt: ${prompt.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ").replace(/\r/g, "")}
@@ -31,6 +40,7 @@ Add a character name, setting details, and a central conflict.
 Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
 
 Prompt: ${prompt}`;
+ main
 
   const resultPromise = model.generateContent(metaPrompt);
 
@@ -49,6 +59,9 @@ Prompt: ${prompt}`;
 
   const text = (result as Awaited<typeof resultPromise>).response.text().trim();
 
+
+
+ main
   return text;
 };
 
@@ -58,6 +71,9 @@ export const enhancePromptWithOpenAI = async (
 ): Promise<string> => {
   const client = getOpenAIClient();
 
+  const metaPrompt = `You are a creative writing assistant. Rewrite the following story prompt to be more vivid, specific, and engaging. Add a character name, setting details, and a central conflict. Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.\n\nPrompt: ${prompt}`;
+
+
   const metaPrompt = `You are a creative writing assistant.
 
 Rewrite the following story prompt to be more vivid, specific, and engaging.
@@ -66,6 +82,7 @@ Add a character name, setting details, and a central conflict.
 Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
 
 Prompt: ${prompt}`;
+ main
 
   const response = await client.chat.completions.create(
     {
@@ -91,6 +108,9 @@ export const enhancePromptWithAnthropic = async (
 ): Promise<string> => {
   const client = getAnthropicClient();
 
+  const metaPrompt = `You are a creative writing assistant. Rewrite the following story prompt to be more vivid, specific, and engaging. Add a character name, setting details, and a central conflict. Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.\n\nPrompt: ${prompt}`;
+
+
   const metaPrompt = `You are a creative writing assistant.
 
 Rewrite the following story prompt to be more vivid, specific, and engaging.
@@ -99,6 +119,7 @@ Add a character name, setting details, and a central conflict.
 Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
 
 Prompt: ${prompt}`;
+ main
 
   const response = await client.messages.create(
     {
@@ -118,3 +139,7 @@ Prompt: ${prompt}`;
 
   return text;
 };
+
+
+
+main

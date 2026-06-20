@@ -5,6 +5,7 @@ import {
   GenerationTimeoutError,
   raceGenerationWithTimeout,
 } from "../../../utils/generation_timeout";
+import { timeoutLimit } from "../../../utils/timeout_limit";
 import {
   IAIModel,
   IAlternateEndingPayload,

@@ -130,6 +130,39 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   return updatedComment;
 };
 
+const toggleCommentHelpful = async (commentId: string, token: ITokenPayload) => {
+  const { _id, email } = token;
+  const user = _id ? await User.findById(_id) : await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Comment not found!");
+  }
+  const post = await Post.findOne({
+    _id: comment.postId,
+    isDeleted: { $ne: true },
+  });
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+  }
+
+  const isCurrentlyHelpful = await Comment.exists({
+    _id: comment._id,
+    helpful: user._id,
+  });
+
+  const updatedComment = await Comment.findByIdAndUpdate(
+    comment._id,
+    isCurrentlyHelpful
+      ? { $pull: { helpful: user._id } }
+      : { $addToSet: { helpful: user._id } },
+    { new: true }
+  );
+  return updatedComment;
+};
+
 const deleteComment = async (commentId: string, token: ITokenPayload) => {
   const { _id, email, role } = token;
   const user = _id ? await User.findById(_id) : await User.findOne({ email });
@@ -157,9 +190,44 @@ const deleteComment = async (commentId: string, token: ITokenPayload) => {
   return { message: "Comment deleted successfully!" };
 };
 
+const hideComment = async (commentId: string) => {
+  const comment = await Comment.findByIdAndUpdate(
+    commentId,
+    {
+      isHidden: true,
+    },
+    { new: true }
+  );
+
+  if (!comment) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Comment not found!");
+  }
+
+  return comment;
+};
+
+const restoreComment = async (commentId: string) => {
+  const comment = await Comment.findByIdAndUpdate(
+    commentId,
+    {
+      isHidden: false,
+    },
+    { new: true }
+  );
+
+  if (!comment) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Comment not found!");
+  }
+
+  return comment;
+};
+
 export const CommentService = {
   createComment,
   getCommentsByPostId,
   toggleCommentLike,
+  toggleCommentHelpful,
   deleteComment,
+  hideComment,
+  restoreComment,
 };

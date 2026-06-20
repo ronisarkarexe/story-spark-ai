@@ -20,6 +20,12 @@ import { useRecentPrompts } from "../../hooks/useRecentPrompts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import { useDebounce } from "../../hooks/useDebounce";
 import ConfirmDialog from "./ConfirmDialog";
+import {
+  clearStoryDraft,
+  loadStoryDraft,
+  saveStoryDraft,
+  type StoryDraftData,
+} from "../../utils/story-draft";
 
 const soundtrackMap: Record<string, string> = {
   "🧙 Fantasy": "/audio/fantasy.mp3",
@@ -37,7 +43,6 @@ type Inputs = {
 };
 
 const MAX_PROMPT_LENGTH = 2000;
-const WARN_THRESHOLD = 0.85;
 const lengths = ["short", "medium", "long"] as const;
 const WARN_THRESHOLD = 0.8;
 const DANGER_THRESHOLD = 0.95;
@@ -421,6 +426,8 @@ const getUniqueStories = (storyList: IStories[]) => {
     seenStories.add(dedupKey);
     return true;
   });
+
+  return segments;
 };
 
 interface ICharacter {
@@ -433,6 +440,13 @@ interface ICharacter {
 const StoriesComponent = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const storiesPerPage = 10;
+const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
+  stories,
+  isLogin,
+  setStories,
+  isLoading,
+  onPublishSuccess,
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
@@ -461,6 +475,8 @@ const StoriesComponent = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
 
+  const savedDraft = loadStoryDraft();
+  const [showRestorePrompt, setShowRestorePrompt] = useState<boolean>(() => Boolean(savedDraft));
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>(
@@ -471,11 +487,14 @@ const StoriesComponent = () => {
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
   const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
   const [textareaValue, setTextareaValue] = useState<string>(location.state?.prompt || draft?.prompt || "");
+  const [selectedGenre, setSelectedGenre] = useState<string>("🧙 Fantasy");
+  const [selectedLength, setSelectedLength] = useState<string>("medium");
+  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">("Dramatic");
+  const [textareaValue, setTextareaValue] = useState<string>(() => location.state?.prompt || "");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(draft?.language || "English");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
-  const [draftStatus, setDraftStatus] = useState("");
-  const DRAFT_KEY = "storyspark_story_draft_v1";
+  const [draftStatus, setDraftStatus] = useState<string>(savedDraft ? "Draft available to restore" : "");
 
   // Custom characters cast setup states:
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
@@ -495,6 +514,44 @@ const StoriesComponent = () => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      audioRef.current.src = soundtrack;
+      audioRef.current.play().catch(() => {
+        /* ignore autoplay restrictions */
+      });
+    }
+  }, []);
+
+  const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
+  const [, setShowRemix] = useState<boolean>(false);
+  const [createPost] = useCreatePostMutation();
+  const [deletePost] = useDeletePostMutation();
+  const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
+  const lastSavedContentRef = useRef<string>("");
+  const isSavingRef = useRef<boolean>(false);
+  const hasSavedSessionRef = useRef<boolean>(false);
+  const savedPostIdRef = useRef<string | null>(null);
+  // Alternate ending state & hooks
+  const [endingsCache, setEndingsCache] = useState<{
+    [uuid: string]: { style: string; ending: string; fullStory: string }[];
+  }>({});
+  const [originalStoryContent, setOriginalStoryContent] = useState<{
+    [uuid: string]: string;
+  }>({});
+  const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
+  const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
+  const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
+  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+
+  const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
+  const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+
+  useEffect(() => {
+    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
+      setOriginalStoryContent((prev) => ({
+        ...prev,
+        [selectedStory.uuid]: selectedStory.content,
+      }));
     }
 
     const audio = new Audio(soundtrack);
@@ -567,22 +624,83 @@ const StoriesComponent = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  // Autosave Draft
+  // Draft restore + autosave
   useEffect(() => {
+    if (!textareaValue.trim()) {
+      return;
+    }
+
     const timer = setTimeout(() => {
-      const draftData = {
+      const draftData: StoryDraftData = {
         prompt: textareaValue,
         genre: selectedGenre,
         length: selectedLength,
         language: selectedLanguage,
         tone: selectedTone,
+        savedAt: new Date().toISOString(),
       };
+
       try {
         localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
+        saveStoryDraft(draftData);
+        setDraftStatus(`Draft saved ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
       } catch (err) {
         if (err instanceof DOMException && err.name === "QuotaExceededError") {
           toast.error("Couldn't autosave draft — storage limit reached.");
+          setDraftStatus("Unable to save draft.");
         }
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, selectedTone]);
+
+  const handleRestoreDraft = () => {
+    if (!savedDraft) {
+      return;
+    }
+
+    setSelectedGenre(
+      savedDraft.genre
+        ? (GENRES.find((g) => g.name === savedDraft.genre || g.value === savedDraft.genre)?.value ?? "🧙 Fantasy")
+        : "🧙 Fantasy"
+    );
+    setSelectedLength(savedDraft.length || "medium");
+    setSelectedTone(
+      savedDraft.tone && TONES.some((tone) => tone.label === savedDraft.tone)
+        ? (savedDraft.tone as ToneLabel)
+        : "Dramatic"
+    );
+    setSelectedLanguage(savedDraft.language || "English");
+    setTextareaValue(savedDraft.prompt || "");
+    setDraftStatus("Draft restored.");
+    setShowRestorePrompt(false);
+  };
+
+  const handleDiscardDraft = () => {
+    clearStoryDraft();
+    setShowRestorePrompt(false);
+    setDraftStatus("Draft discarded.");
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleTextToSpeech = () => {
+    if (!selectedStory?.content) return;
+
+    if (!("speechSynthesis" in window)) {
+      toast.error("Text-to-speech is not supported in this browser.");
+      return;
+    }
+
+    if (isPlayingAudio) {
+      if (isPausedAudio) {
+        window.speechSynthesis.resume();
+        setIsPausedAudio(false);
+        toast.success("Resumed reading story");
+      } else {
+        window.speechSynthesis.pause();
+        setIsPausedAudio(true);
+        toast.success("Paused reading story");
       }
     }, 1000);
     return () => clearTimeout(timer);
@@ -646,12 +764,14 @@ const StoriesComponent = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 350);
   const debouncedPrompt = useDebounce(textareaValue, 500);
 
-  const debouncedSearchQuery = useDebounce(searchQuery, 350);
-  const debouncedPrompt = useDebounce(textareaValue, 500);
-
   useEffect(() => {
     setValue("prompt", debouncedPrompt);
   }, [debouncedPrompt, setValue]);
+
+  useEffect(() => {
+    setNarrationWordIndex(0);
+    setNarrationState("idle");
+  }, [selectedStory?.uuid]);
 
   useEffect(() => {
     return () => {
@@ -685,6 +805,18 @@ const StoriesComponent = () => {
     setValue("prompt", "");
     reset();
   }, [setValue, reset]);
+  const handleTopicClick = (index: number) => {
+    setTopics((currentTopics) =>
+      currentTopics.map((topic, topicIndex) =>
+        topicIndex === index
+          ? { ...topic, selected: !topic.selected }
+          : topic
+      )
+    );
+  };
+  const handleAddTopic = () => {
+    const title = newTopicTitle.trim();
+  };
 
   const [generateModel] = useGenerateModelMutation();
   const [generateFreeModel] = useGenerateFreeModelMutation();
@@ -787,6 +919,8 @@ const StoriesComponent = () => {
         setValue("prompt", "");
         localStorage.removeItem("story_spark_draft");
         localStorage.removeItem(DRAFT_KEY);
+        // Clear draft after successful generation
+        clearStoryDraft();
         setDraftStatus("");
         reset();
         setCharacters([]);
@@ -1309,6 +1443,18 @@ onKeyDown={(e) => {
                         {textareaValue.length} / {MAX_PROMPT_LENGTH}
 
                       </span>
+                      <span
+  aria-live="polite"
+  className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
+    isOverLimit || isDangerLimit
+      ? "text-red-500 dark:text-red-400"
+      : isNearLimit
+      ? "text-amber-500"
+      : "text-slate-400"
+  }`}
+>
+  {textareaValue.length} / {MAX_PROMPT_LENGTH}
+</span>
                     </div>
                   </div>
 
