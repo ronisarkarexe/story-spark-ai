@@ -19,7 +19,15 @@ const createComment = catchAsync(async (req: Request, res: Response) => {
 
 const getCommentsByPostId = catchAsync(async (req: Request, res: Response) => {
   const postId = routeParam(req.params.postId);
-  const result = await CommentService.getCommentsByPostId(postId);
+
+  let token = null;
+  try {
+    token = await getToken(req);
+  } catch (error) {
+    // Guest or unauthenticated request
+  }
+
+  const result = await CommentService.getCommentsByPostId(postId, token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

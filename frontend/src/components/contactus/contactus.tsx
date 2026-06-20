@@ -14,9 +14,9 @@ import {
   MapPin,
   Clock,
   Briefcase,
-  Twitter,
-  Linkedin,
-  Github,
+  // Twitter,
+  // Linkedin,
+  // Github,
   Globe,
   MessageCircle,
 } from "lucide-react";
@@ -99,19 +99,19 @@ const INFO_CARDS = [
 
 const SOCIAL_LINKS = [
   {
-    icon: Github,
+    icon: GitBranch,
     label: "GitHub",
     href: "https://github.com/ronisarkarexe",
     color: "hover:bg-slate-700/50 hover:border-slate-500/40 hover:text-white",
   },
   {
-    icon: Linkedin,
+    icon: Globe,
     label: "LinkedIn",
     href: "https://linkedin.com/in/ronisarkarexe",
     color: "hover:bg-blue-600/20 hover:border-blue-500/40 hover:text-blue-400",
   },
   {
-    icon: Twitter,
+    icon: MessageCircle,
     label: "Twitter / X",
     href: "https://twitter.com/ronisarkarexe",
     color: "hover:bg-sky-500/20 hover:border-sky-500/40 hover:text-sky-400",

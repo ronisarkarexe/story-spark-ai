@@ -51,10 +51,10 @@ const SSInput = <T extends FieldValues>({
       >
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
-
-      <div className="relative w-full min-w-0 max-w-full box-border">
+      <div className="relative mt-2 flex items-center">
         {icon && (
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center text-slate-400 dark:text-slate-500 z-10 pointer-events-none">
+          //<span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
+            <span className="absolute left-3 text-gray-500 flex items-center pointer-events-none">
             <i className={icon}></i>
           </span>
         )}
@@ -62,7 +62,11 @@ const SSInput = <T extends FieldValues>({
         <input
           type={inputType}
           id={name}
-          placeholder={placeholder}
+          className={`w-full pl-8 pr-10 py-1.5 text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 border rounded-md sm:text-sm ${
+          error
+          ? "border-red-500 outline-red-500"
+          : "border-gray-300 outline-gray-300 focus:outline-indigo-600"
+          }`}          placeholder={placeholder}
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           {...register(name, validation)}

@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import AnimatedBook from "../hero/AnimatedBook";
-// Register the GSAP plugin
 import Typewriter from "./typewriter.component";
 
 gsap.registerPlugin(useGSAP);
@@ -20,7 +19,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants: any = {
+const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
@@ -29,9 +28,11 @@ const itemVariants: any = {
  
 }
 }
+  },
+};
 
 const features = [
-  // ... (rest of the features array remains the same)
+// ... (rest of the features array remains the same)
   {
     title: "Infinite Variations",
     description: "Generate multiple unique branches of your story from a single starting prompt. Explore every creative possibility.",
@@ -40,8 +41,7 @@ const features = [
       <svg className="w-7 h-7 text-sky-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
       </svg>
-    ),
-    path: "/create"
+    )
   },
   {
     title: "AI Co-Writer",
@@ -51,8 +51,7 @@ const features = [
       <svg className="w-7 h-7 text-purple-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
       </svg>
-    ),
-    path: "/writing-assistant"
+    )
   },
   {
     title: "Community Driven",
@@ -62,8 +61,7 @@ const features = [
       <svg className="w-7 h-7 text-pink-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
       </svg>
-    ),
-    path: "/community"
+    )
   }
 ];
 
@@ -75,6 +73,7 @@ interface Feature {
   path: string;
 };
 
+}
 
 const FeatureCard = ({ feature }: { feature: Feature }) => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -150,7 +149,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
           </div>
           </div>
       </Link>
-      
+
     <div style={{ perspective: "1000px" }} className="h-full w-full box-border">
       <div
         ref={cardRef}
@@ -168,6 +167,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
       </div>
       </div>
     </>
+    </div>
   );
 };
 
@@ -241,7 +241,6 @@ const HeroSectionComponent = () => {
   const nextStarId = useRef(1);
   const starTimers = useRef<number[]>([]);
   const badgeRef = useRef<HTMLDivElement>(null);
-  const [isNavigating, setIsNavigating] = useState(false);
 
   useGSAP(() => {
     const badge = badgeRef.current;
@@ -324,6 +323,7 @@ const HeroSectionComponent = () => {
    
    ref={badgeRef}
             className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 dark:bg-slate-800/60 border border-blue-400/30 dark:border-blue-500/30 backdrop-blur-md mb-8 shadow-sm cursor-pointer transition-all duration-300"
+
       <div className="relative overflow-hidden w-full box-border" onMouseMove={handleMouseMove}>
         <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border">
           <div
@@ -364,6 +364,7 @@ const HeroSectionComponent = () => {
 </div>
 
           <p className="max-w-2xl lg:mx-0 mx-auto text-lg sm:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 transition-colors duration-300"></p>
+
 
           <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
             Create, edit, and generate engaging multiple story variations from a single prompt.
@@ -407,13 +408,23 @@ const HeroSectionComponent = () => {
     </>
   )}
 </button>
+          
+          <div className="w-full box-border flex flex-col items-center justify-center">
+            <div className="relative max-w-3xl w-full box-border">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
+                <Link to="/stories" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
+                    <i className="fa fa-wand-magic-sparkles text-sm"></i>
+                    <span>Get Started</span>
+                  </button>
+                </Link>
+
                 <Link to="/collab" className="w-full sm:w-auto">
                   <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
                     <span>✍️</span>
                     <span>Collab Mode</span>
                   </button>
                 </Link>
-                
               </div>
             </div>
           </div>
@@ -421,8 +432,6 @@ const HeroSectionComponent = () => {
         
         
 
-</div>
-        <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
           <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
             {stars.map((star) => (
@@ -435,11 +444,9 @@ const HeroSectionComponent = () => {
           </div>
         </div>
         </div>
+      </div>
 
-            <motion.div
-        variants={itemVariants}
-        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border"
-      >
+      <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">
           {features.map((feature, index) => (
             <FeatureCard feature={feature} key={index} />
