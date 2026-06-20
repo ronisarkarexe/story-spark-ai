@@ -227,8 +227,10 @@ const LoginComponent = () => {
               </div>
             </div>
 
-            <div className="flex justify-center w-full overflow-hidden">
+            {/* Google Login */}
+            <div className="w-[250px] overflow-hidden rounded-lg mx-auto flex justify-center">
               <GoogleLogin
+                width="250"
                 onSuccess={handleGoogleLoginSuccess}
                 onError={handleGoogleLoginError}
               />
