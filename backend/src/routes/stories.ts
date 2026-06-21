@@ -4,7 +4,7 @@ import validateRequest from "../app/middleware/validate.request";
 import { StoryBranchingController } from "../controllers/storyBranchingController";
 import auth from "../app/middleware/auth.middleware";
 import { ENUM_USER_ROLE } from "../enums/user";
-import { storyRateLimiter } from "../middlewares/rateLimitMiddleware";
+import { apiRateLimiter } from "../app/middleware/rateLimit.middleware";
 
 const router = express.Router();
 
@@ -26,6 +26,7 @@ const branchingStorySchema = z.object({
 
 router.post(
   "/branching",
+  apiRateLimiter,
   auth(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
@@ -38,7 +39,7 @@ router.post(
 
 router.get(
   "/:rootStoryId/tree",
-  storyRateLimiter,
+  apiRateLimiter,
   auth(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,

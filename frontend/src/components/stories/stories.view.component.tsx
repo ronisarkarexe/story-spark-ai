@@ -9,7 +9,6 @@ import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
-import DOMPurify from "dompurify";
 
 export interface IStories {
   uuid: string;
@@ -231,17 +230,7 @@ const handleGenerateCharacterProfile = async () => {
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
-      <style>
-        {`
-          @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-fade-in-up {
-            animation: fadeInUp 0.6s ease-out forwards;
-          }
-        `}
-      </style>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in-up">
         <div className="col-span-1 lg:col-span-8 flex flex-col">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
@@ -330,10 +319,7 @@ const handleGenerateCharacterProfile = async () => {
             </div>
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
               {selectedStory ? (
-                <div 
-                  className="break-words" 
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedStory.content) }} 
-                />
+                <p className="break-words">{selectedStory.content}</p>
               ) : (
                 <p>No story available. Please generate a story first.</p>
               )}
