@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../theme/theme.context";
 
@@ -38,95 +38,106 @@ const saveCookiePreferences = (preferences: CookiePreferences) => {
 };
 
 type CookieConsentBannerProps = {
+  // Kept for backward compatibility with RootLayout, which previously reserved
+  // bottom padding for the old fixed banner. The modal no longer pushes layout,
+  // so this is always called with 0.
   onLayoutChange?: (height: number) => void;
 };
 
+type ToggleSwitchProps = {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: string;
+  isDark: boolean;
+};
+
+const ToggleSwitch: FC<ToggleSwitchProps> = ({ checked, onChange, label, isDark }) => {
+  const trackClasses = checked
+    ? "bg-gradient-to-r from-blue-600 to-indigo-600"
+    : isDark
+      ? "bg-slate-700"
+      : "bg-slate-300";
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 cursor-pointer ${trackClasses}`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+};
+
 const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) => {
-  const bannerRef = useRef<HTMLDivElement>(null);
   const [preferences, setPreferences] = useState<CookiePreferences | null>(null);
-  const [showBanner, setShowBanner] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const { isDark } = useTheme();
 
   useEffect(() => {
     const storedPreferences = loadCookiePreferences();
     setPreferences(storedPreferences);
-    setShowBanner(!storedPreferences.saved);
-  }, []);
+    setShowModal(!storedPreferences.saved);
+    onLayoutChange?.(0);
+  }, [onLayoutChange]);
 
   useEffect(() => {
-    if (!showBanner) {
-      onLayoutChange?.(0);
-      return;
-    }
-
-    const updateLayout = () => {
-      const banner = bannerRef.current;
-      if (!banner) return;
-      onLayoutChange?.(banner.getBoundingClientRect().height);
-    };
-
-    updateLayout();
-    const observer = new ResizeObserver(updateLayout);
-    if (bannerRef.current) {
-      observer.observe(bannerRef.current);
-    }
-    window.addEventListener("resize", updateLayout);
-
+    if (!showModal) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", updateLayout);
+      document.body.style.overflow = previousOverflow;
     };
-  }, [onLayoutChange, showBanner]);
+  }, [showModal]);
 
-  if (!preferences || !showBanner) {
+  if (!preferences || !showModal) {
     return null;
   }
 
-  const handleSave = () => {
-    const updated = { ...preferences, saved: true };
+  const commit = (updated: CookiePreferences) => {
     setPreferences(updated);
-    setShowBanner(false);
+    setShowModal(false);
     saveCookiePreferences(updated);
   };
 
-  const handleAcceptAll = () => {
-    const updated = { saved: true, functional: true, analytics: true };
-    setPreferences(updated);
-    setShowBanner(false);
-    saveCookiePreferences(updated);
-  };
+  const handleAcceptAll = () => commit({ saved: true, functional: true, analytics: true });
+  const handleEssentialOnly = () => commit({ saved: true, functional: false, analytics: false });
+  const handleSavePreferences = () => commit({ ...preferences, saved: true });
 
-  const handleRejectNonEssential = () => {
-    const updated = { saved: true, functional: false, analytics: false };
-    setPreferences(updated);
-    setShowBanner(false);
-    saveCookiePreferences(updated);
-  };
+  const overlayClasses = "fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4";
 
-  const bannerClasses = isDark
-    ? "fixed inset-x-0 bottom-0 z-50 bg-slate-950/95 border-t border-slate-200/10 dark:border-white/10 py-6 shadow-2xl backdrop-blur-xl text-white transition-colors duration-300 max-h-[85vh] overflow-y-auto sidebar"
-    : "fixed inset-x-0 bottom-0 z-50 bg-white/95 border-t border-slate-200 py-6 shadow-2xl backdrop-blur-xl text-slate-900 transition-colors duration-300 max-h-[85vh] overflow-y-auto sidebar";
-
-  const panelClasses = isDark
-    ? "rounded-2xl border border-slate-200/10 dark:border-white/5 bg-slate-900/40 p-4 sm:p-5"
-    : "rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5";
-
-  const cardClasses = isDark
-    ? "rounded-xl border border-slate-200/10 dark:border-white/5 bg-slate-950/60 p-4 flex flex-col justify-between gap-4"
-    : "rounded-xl border border-slate-200 bg-white p-4 flex flex-col justify-between gap-4";
+  const modalClasses = isDark
+    ? "w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-2xl sm:p-8"
+    : "w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl sm:p-8";
 
   const primaryText = isDark ? "text-white" : "text-slate-900";
   const secondaryText = isDark ? "text-slate-300" : "text-slate-600";
   const mutedText = isDark ? "text-slate-400" : "text-slate-500";
-  const subtleLabel = isDark
-    ? "font-semibold uppercase tracking-wider text-[10px] bg-slate-800 px-2 py-0.5 rounded-md text-slate-400 group-hover:text-white transition-colors"
-    : "font-semibold uppercase tracking-wider text-[10px] bg-slate-100 px-2 py-0.5 rounded-md text-slate-500 group-hover:text-slate-900 transition-colors";
-  const checkboxClasses = isDark
-    ? "h-4 w-4 rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-blue-500/30 transition-colors cursor-pointer"
-    : "h-4 w-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500/30 transition-colors cursor-pointer";
-  const actionButtonClasses = isDark
-    ? "w-full rounded-xl border border-slate-200/10 dark:border-white/10 bg-slate-900 px-5 py-3 text-xs font-bold text-white transition-all duration-150 hover:bg-slate-800 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider"
-    : "w-full rounded-xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-900 transition-all duration-150 hover:bg-slate-100 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider";
+  const rowBorder = isDark ? "border-white/10" : "border-slate-200";
+
+  const categories: Array<{
+    key: "functional" | "analytics";
+    title: string;
+    description: string;
+  }> = [
+    {
+      key: "functional",
+      title: "Functional cookies",
+      description: "Remember your preferences for smoother navigation.",
+    },
+    {
+      key: "analytics",
+      title: "Analytics cookies",
+      description: "Help us understand usage and improve StorySpark AI.",
+    },
+  ];
 
   return (
     <div ref={bannerRef} className={bannerClasses}>
@@ -202,6 +213,12 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
                   </div>
                 </div>
               </div>
+              <ToggleSwitch
+                checked={preferences[category.key]}
+                onChange={(checked) => setPreferences({ ...preferences, [category.key]: checked })}
+                label={`Toggle ${category.title.toLowerCase()}`}
+                isDark={isDark}
+              />
             </div>
           </div>
 
@@ -231,5 +248,6 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
     </div>
   );
 };
+
 export default CookieConsentBanner;
 

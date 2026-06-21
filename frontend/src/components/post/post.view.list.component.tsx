@@ -6,16 +6,20 @@ import SSProfile from "../ui-component/ss-profile/ss-profile";
 import { formatReadingStats } from "../../utils/story-utils";
 import ImageFallback from "../ImageFallback";
 import { SkeletonGrid } from "../cards/SkeletonCard";
+import StarRatingDisplay from "../story-rating/StarRatingDisplay";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
   isLoading: boolean;
+  searchQuery?: string;
 }
 
 const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   posts,
   isLoading,
+  searchQuery,
 }) => {
+
   const navigate = useNavigate();
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
@@ -116,6 +120,12 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                     </div>
                   </div>
 
+                  {story.averageRating > 0 && (
+                    <div className="mb-3 flex items-center justify-between">
+                      <StarRatingDisplay rating={story.averageRating} totalRatings={story.totalRatings} size="sm" />
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                     <div className="flex gap-4">
                       <span className="flex items-center gap-1.5 hover:text-red-500 transition-colors">
@@ -138,10 +148,14 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
              <div className="w-24 h-24 mb-6 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
                <i className="fas fa-book-open text-4xl text-slate-300 dark:text-slate-600"></i>
              </div>
-             <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">No posts available</h3>
-             <p className="text-slate-500 dark:text-slate-400 max-w-sm">
-               Check back later for new stories, or try adjusting your search filters.
-             </p>
+             <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+  {searchQuery ? `No stories found for "${searchQuery}"` : "No posts available"}
+</h3>
+<p className="text-slate-500 dark:text-slate-400 max-w-sm">
+  {searchQuery
+    ? "Try searching with different keywords."
+    : "Check back later for new stories, or try adjusting your search filters."}
+</p>
           </div>
         )}
       </div>

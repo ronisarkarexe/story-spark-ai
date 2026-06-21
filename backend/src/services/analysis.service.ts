@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
-import User from '../models/User';
-import Post from '../models/Post';
-import WriterApplication from '../models/WriterApplication';
+import { User } from '../app/modules/user/user.model';
+import { Post } from '../app/modules/post/post.model';
+import { WriterApplication } from '../app/modules/writer_application/writer_application.model';
+
 
 /**
  * Get dashboard analysis data for writers and admins

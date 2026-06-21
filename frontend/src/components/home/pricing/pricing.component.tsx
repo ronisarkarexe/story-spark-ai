@@ -1,4 +1,5 @@
 import React from "react";
+import PricingComponent from "./pricing.component";
 
 // This component is a lightweight wrapper for the real Pricing component.
 // It currently self-imports, which breaks bundling.

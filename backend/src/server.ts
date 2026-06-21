@@ -60,11 +60,10 @@ async function main() {
   });
 
   try {
-    await connectDB().catch((error) => {
-      logger.error("Error connecting to the database on startup:", error);
-    });
+    await connectDB();
   } catch (startupError) {
     logger.error("Critical error during application startup:", startupError);
+    process.exit(1);
   }
 
   const httpServer = http.createServer(app);

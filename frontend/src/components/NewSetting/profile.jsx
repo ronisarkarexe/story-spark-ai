@@ -11,7 +11,9 @@ export const Profile = () => {
     facebook: "",
     twitter: "",
     linkedin: "",
-    instagram: ""
+    instagram: "",
+    github: "",
+    discord: ""
   });
 
   const handleChange = (e) => {
@@ -179,6 +181,40 @@ export const Profile = () => {
                 value={formData.instagram}
                 onChange={handleChange}
                 placeholder="https://instagram.com/username"
+                className="custom-input"
+              />
+            </div>
+          </div>
+
+          {/* GitHub */}
+          <div className="form-field">
+            <div className="field-header">
+              <label className="field-label"><strong>GitHub</strong></label>
+            </div>
+            <div className="input-wrapper">
+              <input
+                type="text"
+                name="github"
+                value={formData.github}
+                onChange={handleChange}
+                placeholder="https://github.com/username"
+                className="custom-input"
+              />
+            </div>
+          </div>
+
+          {/* Discord */}
+          <div className="form-field">
+            <div className="field-header">
+              <label className="field-label"><strong>Discord</strong></label>
+            </div>
+            <div className="input-wrapper">
+              <input
+                type="text"
+                name="discord"
+                value={formData.discord}
+                onChange={handleChange}
+                placeholder="https://discord.com/users/username"
                 className="custom-input"
               />
             </div>

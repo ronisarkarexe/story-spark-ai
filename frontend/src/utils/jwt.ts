@@ -39,18 +39,12 @@ export const decodedToken = (token: string): CustomJwtPayload => {
     throw new Error("Token payload is not a valid object.");
   }
 
-  // Backend tokens use MongoDB `_id`; normalize to `userId` for client auth state.
-  if (
-    (typeof decoded.userId !== "string" || decoded.userId.trim() === "") &&
-    typeof decoded._id === "string" &&
-    decoded._id.trim() !== ""
-  ) {
-    decoded.userId = decoded._id;
-  }
 
-  // 1. Validate required userId claim
-  if (typeof decoded.userId !== "string" || decoded.userId.trim() === "") {
-    throw new Error("Token is missing a valid 'userId' claim.");
+  // 1. Validate required userId or _id claim
+  const idToUse = decoded.userId || decoded._id;
+  if (typeof idToUse !== "string" || idToUse.trim() === "") {
+    throw new Error("Token is missing a valid 'userId' or '_id' claim.");
+
   }
 
   // 2. Validate required email claim
