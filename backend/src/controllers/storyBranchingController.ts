@@ -92,12 +92,14 @@ Task:
         }
       }
 
+      let choices: string[] = [];
       if (!parsed.choices || parsed.choices.length === 0) {
         parsed.choices = [
           "Explore the surroundings",
           "Search for another way",
           "Wait and see what happens",
         ];
+        choices = parsed.choices;
       } else if (parsed.choices.length < 3) {
         choices = [...parsed.choices];
         while (choices.length < 3) {
@@ -108,6 +110,7 @@ Task:
       } else {
         choices = parsed.choices;
       }
+      parsed.choices = choices;
 
       sendResponse(res, {
         success: true,
