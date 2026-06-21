@@ -1,3 +1,4 @@
+
 import { Request, Response, NextFunction } from "express";
 import httpStatus from "http-status";
 import ApiError from "../../errors/api_error";
@@ -8,17 +9,21 @@ import { reserveUserQuota } from "../modules/ai_model/quota.service";
 import { createUserQuotaGuard } from "../modules/ai_model/quota.lifecycle";
 
 const resolveAuthToken = (req: Request): string | null => {
-  const authHeader = (req.headers.authorization || "") as string;
+  const authHeader = String(req.headers.authorization || "").trim();
+
   if (authHeader.startsWith("Bearer ")) {
-    return authHeader.slice(7).trim();
+    const token = authHeader.slice(7).trim();
+    return token || null;
   }
 
-  const bearerToken = authHeader.trim();
-  if (bearerToken) {
-    return bearerToken;
+  if (authHeader) {
+    return authHeader;
   }
 
-  const cookieToken = (req as any).cookies?.accessToken || (req as any).cookies?.token;
+  const cookieToken =
+    (req as any).cookies?.accessToken ||
+    (req as any).cookies?.token;
+
   return cookieToken ?? null;
 };
 
@@ -33,6 +38,7 @@ const checkRequestLimit =
 
       if (!userEmail) {
         const token = resolveAuthToken(req);
+
         if (!token) {
           throw new ApiError(
             httpStatus.UNAUTHORIZED,
@@ -44,7 +50,8 @@ const checkRequestLimit =
           token,
           config.jwt.secret as Secret
         );
-        userEmail = (verifiedUser as any).email;
+
+        userEmail = (verifiedUser as any)?.email;
       }
 
       if (!userEmail) {
@@ -55,12 +62,15 @@ const checkRequestLimit =
       }
 
       await reserveUserQuota(userEmail);
-      res.locals.quotaRefundGuard = createUserQuotaGuard(userEmail);
 
-      next();
+      res.locals.quotaRefundGuard =
+        createUserQuotaGuard(userEmail);
+
+      return next();
     } catch (err) {
-      next(err);
+      return next(err);
     }
   };
 
 export default checkRequestLimit;
+
