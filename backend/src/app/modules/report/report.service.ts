@@ -14,22 +14,35 @@ const createReport = async (payload: IReport) => {
     // Explicitly cast user-controlled targetId to Types.ObjectId to prevent query injection
     const cleanTargetId = new Types.ObjectId(payload.targetId.toString());
 
+    // Clean user-controlled targetType via strict literal whitelisting to break CodeQL taint propagation
+    const cleanTargetType =
+      payload.targetType === ReportTargetType.POST
+        ? ReportTargetType.POST
+        : payload.targetType === ReportTargetType.COMMENT
+        ? ReportTargetType.COMMENT
+        : null;
+
+    if (!cleanTargetType) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid target type");
+    }
+
     const result = await Report.create({
       ...payload,
       targetId: cleanTargetId,
+      targetType: cleanTargetType,
     });
 
     // Count pending reports for this target
     const pendingCount = await Report.countDocuments({
       targetId: cleanTargetId,
-      targetType: payload.targetType,
+      targetType: cleanTargetType,
       status: ReportStatus.PENDING,
     });
 
     if (pendingCount >= 5) {
-      if (payload.targetType === ReportTargetType.POST) {
+      if (cleanTargetType === ReportTargetType.POST) {
         await Post.findByIdAndUpdate(cleanTargetId, { isModerated: true });
-      } else if (payload.targetType === ReportTargetType.COMMENT) {
+      } else if (cleanTargetType === ReportTargetType.COMMENT) {
         await Comment.findByIdAndUpdate(cleanTargetId, { isHidden: true });
       }
     }
@@ -147,14 +160,26 @@ const resolveReport = async (
   // Explicitly cast to Types.ObjectId
   const cleanTargetId = new Types.ObjectId(report.targetId.toString());
 
+  // Whitelist cleanTargetType from DB record to ensure taint check compliance
+  const cleanTargetType =
+    report.targetType === ReportTargetType.POST
+      ? ReportTargetType.POST
+      : report.targetType === ReportTargetType.COMMENT
+      ? ReportTargetType.COMMENT
+      : null;
+
+  if (!cleanTargetType) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid target type");
+  }
+
   // Find authorId of target content
   let authorId: string | null = null;
-  if (report.targetType === ReportTargetType.POST) {
+  if (cleanTargetType === ReportTargetType.POST) {
     const post = await Post.findById(cleanTargetId);
     if (post) {
       authorId = post.author ? post.author.toString() : null;
     }
-  } else if (report.targetType === ReportTargetType.COMMENT) {
+  } else if (cleanTargetType === ReportTargetType.COMMENT) {
     const comment = await Comment.findById(cleanTargetId);
     if (comment) {
       authorId = comment.userId ? comment.userId.toString() : null;
@@ -166,25 +191,25 @@ const resolveReport = async (
 
   if (effectiveAction === "DISMISS") {
     // If dismissed, unhide/restore content (remove moderation flags)
-    if (report.targetType === ReportTargetType.POST) {
+    if (cleanTargetType === ReportTargetType.POST) {
       await Post.findByIdAndUpdate(cleanTargetId, { isModerated: false });
-    } else if (report.targetType === ReportTargetType.COMMENT) {
+    } else if (cleanTargetType === ReportTargetType.COMMENT) {
       await Comment.findByIdAndUpdate(cleanTargetId, { isHidden: false });
     }
   } else if (effectiveAction === "HIDE") {
-    if (report.targetType === ReportTargetType.POST) {
+    if (cleanTargetType === ReportTargetType.POST) {
       await Post.findByIdAndUpdate(cleanTargetId, { isModerated: true });
-    } else if (report.targetType === ReportTargetType.COMMENT) {
+    } else if (cleanTargetType === ReportTargetType.COMMENT) {
       await Comment.findByIdAndUpdate(cleanTargetId, { isHidden: true });
     }
   } else if (effectiveAction === "DELETE") {
-    if (report.targetType === ReportTargetType.POST) {
+    if (cleanTargetType === ReportTargetType.POST) {
       await Post.findByIdAndUpdate(cleanTargetId, {
         isDeleted: true,
         deletedAt: new Date(),
         isModerated: true,
       });
-    } else if (report.targetType === ReportTargetType.COMMENT) {
+    } else if (cleanTargetType === ReportTargetType.COMMENT) {
       await Comment.findByIdAndUpdate(cleanTargetId, {
         isDeleted: true,
         deletedAt: new Date(),
