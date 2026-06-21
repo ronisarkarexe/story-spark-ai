@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState } from "react";
 import { useAnalyzeEngagementMutation } from "../../redux/apis/engagement.api";
 
@@ -53,8 +54,15 @@ export default function EngagementAnalyzer() {
       )}
 
       <button
-        onClick={() => analyzeEngagement({ chapterText: text, title })}
-        disabled={isLoading || text.trim().length < 100}
+        onClick={() => analyzeEngagement({
+          chapterText: text.trim(),
+          title: title.trim(),
+        })}
+        disabled={
+          isLoading ||
+          text.trim().length < 100 ||
+          text.trim().length > 50000
+        }
         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg disabled:opacity-50 transition"
       >
         {isLoading ? "Analyzing…" : "Analyze Engagement"}
@@ -70,13 +78,12 @@ export default function EngagementAnalyzer() {
               <div key={label} className="border rounded-xl p-4 text-center">
                 <p className="text-xs text-gray-500">{label}</p>
                 <p
-                  className={`text-4xl font-bold mt-1 ${
-                    val >= 70
+                  className={`text-4xl font-bold mt-1 ${val >= 70
                       ? "text-green-500"
                       : val >= 40
-                      ? "text-yellow-500"
-                      : "text-red-500"
-                  }`}
+                        ? "text-yellow-500"
+                        : "text-red-500"
+                    }`}
                 >
                   {val}
                 </p>

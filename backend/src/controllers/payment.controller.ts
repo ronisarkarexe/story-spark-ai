@@ -1,121 +1,225 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import { Order } from "../app/modules/payment/order.model";
 import { User } from "../app/modules/user/user.model";
 
-// Server-side plan -> price map (paise)
-// Amount is NEVER trusted from the client. The client sends a plan name;
-// the server derives the canonical price.
-const PLAN_PRICE_MAP: Record<string, { amount: number; currency: string }> = {
-  basic: { amount: 49900, currency: "INR" },
-  pro: { amount: 99900, currency: "INR" },
-  premium: { amount: 199900, currency: "INR" },
+let razorpayInstance: any = null;
+const getRazorpay = () => {
+  if (!razorpayInstance) {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      console.warn("Razorpay credentials missing. Payment features will fail.");
+      return null;
+    }
+    razorpayInstance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+  return razorpayInstance;
 };
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+const PLANS: Record<string, { amountPaise: number; durationDays: number; label: string }> = {
+  monthly: {
+    amountPaise: 49900,   
+    durationDays: 30,
+    label: "Monthly Premium",
+  },
+  yearly: {
+    amountPaise: 499900,  
+    durationDays: 365,
+    label: "Yearly Premium",
+  },
+};
 
-// POST /api/v1/payment/create-order
-export const createOrder = async (req: Request, res: Response) => {
+export const createOrder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const userId = (req as any).user?.id;
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+const userId = (req as any).user?._id;
+
+if (!userId) {
+   res.status(401).json({ success: false, message: "Unauthorized" });
+   return;
+}
+
+const { plan } = req.body as { plan?: string };
+
+if (!plan || !PLANS[plan]) {
+ res.status(400).json({
+  success: false,
+  error: `Invalid plan. Valid options: ${Object.keys(PLANS).join(", ")}.`,
+});
+return;
+}
+
+    const selectedPlan = PLANS[plan];
+
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      res.status(500).json({ success: false, error: "Payment gateway not configured" });
+      return;
     }
 
-    const { plan } = req.body;
-
-    // Validate plan - reject anything not in the server-side map
-    if (!plan || !PLAN_PRICE_MAP[plan]) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid plan. Valid options: ${Object.keys(PLAN_PRICE_MAP).join(", ")}`,
-      });
-    }
-
-    const { amount, currency } = PLAN_PRICE_MAP[plan];
-
-    // Create the Razorpay order
-    const razorpayOrder = await razorpay.orders.create({
-      amount,
-      currency,
-      receipt: `receipt_${userId}_${Date.now()}`,
+    const order = await razorpay.orders.create({
+      amount: selectedPlan.amountPaise,  
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+      notes: {
+        plan,
+        label: selectedPlan.label,
+      },
     });
 
-    // Persist an order record so verifyPayment can resolve the tier
-    // without trusting anything from the client
-    await Order.create({
-      userId,
-      razorpayOrderId: razorpayOrder.id,
-      plan,
-      amount,
-      currency,
-      status: "created",
-    });
-
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
-      orderId: razorpayOrder.id,
-      amount,
-      currency,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      plan,
     });
   } catch (error) {
-    console.error("createOrder error:", error);
-    return res.status(500).json({ success: false, message: "Failed to create order" });
+    next(error);
   }
 };
 
-// POST /api/v1/payment/verify
-export const verifyPayment = async (req: Request, res: Response) => {
+export const verifyPayment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = req.body as {
+      razorpay_order_id: string;
+      razorpay_payment_id: string;
+      razorpay_signature: string;
+    };
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ success: false, message: "Missing payment fields" });
+      res.status(400).json({
+        success: false,
+        error: "Missing required payment fields: order ID, payment ID, or signature.",
+      });
+      return;
     }
-
-    // 1. Verify the HMAC signature
+    
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ success: false, message: "Invalid payment signature" });
-    }
-
-    // 2. Atomically claim the order: created -> paid
-    //    Using findOneAndUpdate with a status guard makes a replayed verify a no-op,
-    //    preventing a subscription from being granted twice.
-    const order = await Order.findOneAndUpdate(
-      { razorpayOrderId: razorpay_order_id, status: "created" },
-      { status: "paid", razorpayPaymentId: razorpay_payment_id },
-      { new: true }
+    const isSignatureValid = crypto.timingSafeEqual(
+      Buffer.from(expectedSignature, "hex"),
+      Buffer.from(razorpay_signature, "hex")
     );
 
-    if (!order) {
-      // Either the order doesn't exist or was already claimed
-      return res.status(409).json({
+    if (!isSignatureValid) {
+      res.status(400).json({
         success: false,
-        message: "Order not found or already processed",
+        error: "Payment signature verification failed. This request may be tampered.",
       });
+      return;
+    }
+    
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      res.status(500).json({ success: false, error: "Payment gateway not configured" });
+      return;
     }
 
-    // 3. Upgrade the user's subscriptionType using the tier stored in the order
-    await User.findByIdAndUpdate(order.userId, {
-      subscriptionType: order.plan,
-    });
+    const order = await razorpay.orders.fetch(razorpay_order_id);
+    const plan = (order.notes as Record<string, string>)?.plan;
 
-    return res.status(200).json({
+    if (!plan || !PLANS[plan]) {
+      res.status(400).json({
+        success: false,
+        error: "Could not determine the subscription plan from the order.",
+      });
+      return;
+    }
+
+    const selectedPlan = PLANS[plan];
+    const userId = req.user?._id;
+
+    if (!userId) {
+      res.status(401).json({ success: false, error: "Unauthorised. Please log in." });
+      return;
+    }
+
+    const subscriptionExpiry = new Date(
+      Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
+    );
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        subscriptionType: "premium",
+        subscriptionExpiry,
+        lastPaymentId: razorpay_payment_id,
+        lastOrderId: razorpay_order_id,
+      },
+      { new: true, select: "email subscriptionType subscriptionExpiry" }
+    );
+
+    if (!updatedUser) {
+      res.status(404).json({ success: false, error: "User not found." });
+      return;
+    }
+
+    res.status(200).json({
       success: true,
-      message: "Payment verified and subscription upgraded",
-      plan: order.plan,
+      message: `Subscription upgraded to ${selectedPlan.label} successfully.`,
+      subscription: {
+        type: updatedUser.subscriptionType,
+        expiry: updatedUser.subscriptionExpiry,
+      },
     });
   } catch (error) {
-    console.error("verifyPayment error:", error);
-    return res.status(500).json({ success: false, message: "Payment verification failed" });
+    next(error);
+  }
+};
+
+export const getSubscriptionStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user?._id;
+
+    if (!userId) {
+      res.status(401).json({ success: false, error: "Unauthorised." });
+      return;
+    }
+
+    const user = await User.findById(userId).select(
+      "subscriptionType subscriptionExpiry"
+    );
+
+    if (!user) {
+      res.status(404).json({ success: false, error: "User not found." });
+      return;
+    }
+
+    const isActive =
+      user.subscriptionType === "premium" &&
+      user.subscriptionExpiry != null &&
+      new Date(user.subscriptionExpiry) > new Date();
+
+    res.status(200).json({
+      success: true,
+      subscription: {
+        type: user.subscriptionType ?? "free",
+        expiry: user.subscriptionExpiry ?? null,
+        isActive,
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 };

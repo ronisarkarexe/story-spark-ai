@@ -53,6 +53,20 @@
   box-sizing: border-box;
 }
 
+/* ==========================================================================
+   Login & Signup Form Overflow Fix
+   Prevents inputs from exceeding their card container boundaries.
+   The @tailwindcss/forms plugin can inject min-width / width values that
+   override Tailwind utilities; these rules ensure containment.
+   ========================================================================== */
+input,
+select,
+textarea,
+button {
+  min-width: 0;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -761,6 +775,206 @@ html.dark .contact-section {
     linear-gradient(180deg, #020617 0%, #0b1120 100%);
 }
 
+body {
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(37, 99, 235, 0.14), transparent 28rem),
+    linear-gradient(180deg, #0b1120 0%, #111827 48%, #0f172a 100%);
+  min-width: 320px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(96, 165, 250, 0.9);
+  outline-offset: 3px;
+}
+
+.story-page-shell {
+  width: min(100% - 2rem, 1280px);
+  margin-inline: auto;
+}
+
+.story-section {
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+}
+
+.story-section-heading {
+  color: #0f172a;
+  font-size: clamp(1.875rem, 4vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.08;
+}
+html.dark .story-section-heading {
+  color: #f8fafc;
+}
+
+.story-section-copy {
+  color: #94a3b8;
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  line-height: 1.7;
+}
+
+.story-panel {
+  border: 1px solid rgb(226 232 240);
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+html.dark .story-panel  {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.58)),
+    rgba(30, 41, 59, 0.42);
+  box-shadow: 0 20px 55px rgba(2, 6, 23, 0.24);
+}
+
+.story-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  background: rgba(59, 130, 246, 0.1);
+  color: #93c5fd;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.story-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(96, 165, 250, 0.38);
+  background: rgba(59, 130, 246, 0.18);
+  color: #dbeafe;
+  background-color: #ffffff;
+  color: #0f172a;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+/* Firefox scrollbar support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #646c727e #6a78842c;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #646c727e;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #646c72eb;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #6a78842c;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.sidebar:hover::-webkit-scrollbar-thumb {
+  visibility: visible;
+  background: #4c51556e;
+  border-radius: 100px;
+  opacity: 1;
+}
+
+html.dark body {
+  background-color: #0B1120;
+  color: #f8fafc;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .motion-card,
+  .motion-card:hover,
+  .motion-card-subtle,
+  .motion-card-subtle:hover,
+  .motion-cta,
+  .motion-cta:hover,
+  .motion-cta:active,
+  .group:hover .motion-image,
+  .magic-cursor-dot,
+  .magic-cursor-glow,
+  .magic-cursor-sparkle {
+    transform: none;
+  }
+  .magic-cursor-sparkle,
+  .magic-cursor-dot,
+  .magic-cursor-glow {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   CONTACT PAGE — Premium Redesign
+═══════════════════════════════════════════════ */
+
+/* ── Section shell ── */
+.contact-section {
+  min-height: 100vh;
+  color: #0f172a;
+  background:
+    radial-gradient(ellipse 90% 55% at 15% 5%, rgba(59, 130, 246, 0.08), transparent 36%),
+    radial-gradient(ellipse 70% 50% at 85% 95%, rgba(168, 85, 247, 0.08), transparent 34%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+  transition:
+    background-color 300ms ease,
+    background 300ms ease,
+    color 300ms ease;
+}
+
+html.dark .contact-section {
+  color: #f8fafc;
+  background:
+    radial-gradient(ellipse 90% 55% at 15% 5%, rgba(59, 130, 246, 0.10), transparent 32%),
+    radial-gradient(ellipse 70% 50% at 85% 95%, rgba(168, 85, 247, 0.12), transparent 32%),
+    linear-gradient(180deg, #020617 0%, #0b1120 100%);
+}
+
+/* ── Layered ambient background ── */
 .contact-bg-mesh {
   position: absolute;
   inset: 0;
@@ -902,8 +1116,14 @@ html.dark .contact-channel-link:hover {
 /* Glassmorphism Dynamic Contact Card Form */
 .contact-form-shell {
   position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 1.5rem;
   transition: transform 250ms ease;
+  display: flex;
+  justify-content: center;
 }
 
 .contact-form-shell:hover {
@@ -1194,6 +1414,7 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
 }
 
 .contact-float-input {
+  box-sizing: border-box;
   width: 100%;
   height: 52px;
   padding: 20px 16px 6px 42px;
@@ -1353,5 +1574,44 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
+}
+/* Fix: Prevent Flash of Unstyled Text (FOUT) on Dynamic Generated Text Canvas */
+@layer utilities {
+  .story-canvas-content, 
+  [class*="story-text"], 
+  [class*="generated-content"] {
+    font-display: swap;
+    animation: fontHydrationLock 0.3s ease-in-out forwards;
+  }
+
+
+  @keyframes fontHydrationLock {
+    from {
+      opacity: 0.85;
+      filter: blur(0.5px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0px);
+    }
+  }
+}
+/* Hide browser-native password reveal button (Edge/IE/Chrome/Safari) */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-credentials-auto-fill-button {
+  visibility: hidden !important;
+  display: none !important;
+  pointer-events: none !important;
+}
+
+::-webkit-credentials-auto-fill-button {
+  visibility: hidden !important;
+  display: none !important;
+  pointer-events: none !important;
 }
 

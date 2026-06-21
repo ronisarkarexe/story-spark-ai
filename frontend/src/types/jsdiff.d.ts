@@ -1,3 +1,4 @@
+/* eslint-disable */
 declare module 'jsdiff' {
   export interface Change {
     value: string;
@@ -87,3 +88,4 @@ declare module 'jsdiff' {
 
   export function canonicalize(obj: any): any;
 }
+

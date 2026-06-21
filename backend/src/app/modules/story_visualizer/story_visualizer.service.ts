@@ -49,12 +49,14 @@ const buildStoryboardImagePrompt = (
 
 const attachSceneImages = async (
   scenes: IStoryboardScene[],
-  styleGuide: string
+  styleGuide: string,
+  signal?: AbortSignal
 ): Promise<IStoryboardScene[]> => {
   const promises = scenes.map(async (scene) => {
     try {
       const imageUrl = await generateStoryboardImage(
-        buildStoryboardImagePrompt(styleGuide, scene.imagePrompt)
+        buildStoryboardImagePrompt(styleGuide, scene.imagePrompt),
+        signal
       );
 
       return {
@@ -74,23 +76,29 @@ const attachSceneImages = async (
 };
 
 const generateStoryboard = async (
-  payload: IStoryVisualizerPayload
+  payload: IStoryVisualizerPayload,
+  signal?: AbortSignal
 ): Promise<IStoryVisualizerResult> => {
   const language = payload.language ?? "English";
 
   try {
     const storyboard = await raceGenerationWithTimeout(
-      () =>
-        generateStoryboardWithGemini({
-          ...payload,
-          language,
-        }),
-      STORY_VISUALIZER_TIMEOUT_MS
+      (sig) =>
+        generateStoryboardWithGemini(
+          {
+            ...payload,
+            language,
+          },
+          sig
+        ),
+      STORY_VISUALIZER_TIMEOUT_MS,
+      signal
     );
 
     const scenes = await attachSceneImages(
       storyboard.scenes,
-      storyboard.styleGuide
+      storyboard.styleGuide,
+      signal
     );
 
     return {

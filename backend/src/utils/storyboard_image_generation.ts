@@ -22,7 +22,10 @@ const getApiKey = (): string => {
   ).trim();
 };
 
-const generateWithOpenAI = async (prompt: string): Promise<string | null> => {
+const generateWithOpenAI = async (
+  prompt: string,
+  signal?: AbortSignal
+): Promise<string | null> => {
   const apiKey = getApiKey();
   if (!apiKey) {
     return null;
@@ -34,41 +37,64 @@ const generateWithOpenAI = async (prompt: string): Promise<string | null> => {
     IMAGE_REQUEST_TIMEOUT_MS
   );
 
-  const response = await fetch(OPENAI_IMAGE_GENERATION_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "dall-e-3",
-      prompt,
-      size: "1024x1024",
-      quality: "low",
-      n: 1,
-    }),
-    signal: controller.signal,
-  }).finally(() => clearTimeout(timeoutId));
+  let abortHandler: (() => void) | null = null;
+  if (signal) {
+    if (signal.aborted) {
+      clearTimeout(timeoutId);
+      controller.abort();
+      return null;
+    }
+    abortHandler = () => {
+      controller.abort();
+    };
+    signal.addEventListener("abort", abortHandler);
+  }
 
-  if (!response.ok) {
+  try {
+    const response = await fetch(OPENAI_IMAGE_GENERATION_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt,
+        size: "1024x1024",
+        quality: "low",
+        n: 1,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = (await response.json()) as OpenAIImageResponse;
+    const image = data.data?.[0];
+    if (image?.url) {
+      return image.url;
+    }
+
+    if (image?.b64_json) {
+      return `data:image/png;base64,${image.b64_json}`;
+    }
+
     return null;
+  } catch (error) {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+    if (signal && abortHandler) {
+      signal.removeEventListener("abort", abortHandler);
+    }
   }
-
-  const data = (await response.json()) as OpenAIImageResponse;
-  const image = data.data?.[0];
-  if (image?.url) {
-    return image.url;
-  }
-
-  if (image?.b64_json) {
-    return `data:image/png;base64,${image.b64_json}`;
-  }
-
-  return null;
 };
 
 export const generateStoryboardImage = async (
-  prompt: string
+  prompt: string,
+  signal?: AbortSignal
 ): Promise<string | null> => {
   const provider = getProvider();
 
@@ -77,8 +103,9 @@ export const generateStoryboardImage = async (
   }
 
   if (provider === "openai") {
-    return generateWithOpenAI(prompt);
+    return generateWithOpenAI(prompt, signal);
   }
 
   return null;
 };
+

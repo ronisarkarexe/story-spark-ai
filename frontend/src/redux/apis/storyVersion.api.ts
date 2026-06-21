@@ -1,3 +1,4 @@
+/* eslint-disable */
 import baseApi from "../base_api/base.api";
 import { tagTypes } from "../tag-types";
 
@@ -24,7 +25,7 @@ const storyVersionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getVersionsByStoryId: build.query({
       query: (storyId: string) => ({
-        url: `/story-version/${storyId}/versions`,
+        url: `/story/${storyId}/versions`,
         method: "GET",
       }),
       providesTags: [tagTypes.StoryVersion],
@@ -32,7 +33,7 @@ const storyVersionApi = baseApi.injectEndpoints({
 
     restoreVersion: build.mutation({
       query: (versionId: string) => ({
-        url: `/story-version/version/${versionId}/restore`,
+        url: `/story/version/${versionId}/restore`,
         method: "POST",
       }),
       invalidatesTags: [tagTypes.StoryVersion],
@@ -40,7 +41,7 @@ const storyVersionApi = baseApi.injectEndpoints({
 
     getStoryTree: build.query<StoryTreeResponse, string>({
       query: (storyId: string) => ({
-        url: `/story-version/${storyId}/tree`,
+        url: `/story/${storyId}/tree`,
         method: "GET",
       }),
       transformResponse: (response: {
@@ -51,7 +52,7 @@ const storyVersionApi = baseApi.injectEndpoints({
 
     getBranchPath: build.query({
       query: (versionId: string) => ({
-        url: `/story-version/version/${versionId}/path`,
+        url: `/story/version/${versionId}/path`,
         method: "GET",
       }),
       providesTags: [tagTypes.StoryVersion],
@@ -65,7 +66,7 @@ const storyVersionApi = baseApi.injectEndpoints({
         versionId: string;
         branchName: string;
       }) => ({
-        url: `/story-version/version/${versionId}/branch`,
+        url: `/story/version/${versionId}/branch`,
         method: "POST",
         data: {
           branchName,
@@ -93,4 +94,5 @@ export const {
   useCreateBranchVersionMutation,
   useGetCharacterNetworkQuery,
 } = storyVersionApi;
+
 

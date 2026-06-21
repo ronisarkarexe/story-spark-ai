@@ -17,10 +17,6 @@ declare module 'express-rate-limit' {
   export default rateLimit;
 }
 
-declare module 'bcryptjs' {
-  const bcrypt: any;
-  export default bcrypt;
-}
 
 declare module 'ioredis' {
   const Redis: any;

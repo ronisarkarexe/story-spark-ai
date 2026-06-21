@@ -112,20 +112,30 @@ export const refundUserQuota = async (email: string): Promise<void> => {
  * Atomically reserves one guest free-generation slot (persisted in MongoDB).
  */
 export const reserveGuestQuota = async (guestId: string): Promise<void> => {
-  const reserved = await GuestUsage.findOneAndUpdate(
-    { guestId, requestCount: { $lt: FREE_GUEST_LIMIT } },
-    {
-      $inc: { requestCount: 1 },
-      $set: { lastRequestAt: new Date() },
-    },
-    { new: true, upsert: true, setDefaultsOnInsert: true }
-  );
-
-  if (!reserved) {
-    throw new ApiError(
-      httpStatus.FORBIDDEN,
-      "You have reached the maximum limit of 3 story generations."
+  try {
+    const reserved = await GuestUsage.findOneAndUpdate(
+      { guestId, requestCount: { $lt: FREE_GUEST_LIMIT } },
+      {
+        $inc: { requestCount: 1 },
+        $set: { lastRequestAt: new Date() },
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
     );
+
+    if (!reserved) {
+      throw new ApiError(
+        httpStatus.FORBIDDEN,
+        "You have reached the maximum limit of 3 story generations."
+      );
+    }
+  } catch (error: any) {
+    if (error.code === 11000 || (error.name === "MongoServerError" && error.code === 11000)) {
+      throw new ApiError(
+        httpStatus.FORBIDDEN,
+        "You have reached the maximum limit of 3 story generations."
+      );
+    }
+    throw error;
   }
 };
 

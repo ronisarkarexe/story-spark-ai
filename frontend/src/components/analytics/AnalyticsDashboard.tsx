@@ -4,7 +4,9 @@ import {
   PieChart, Pie, Cell, CartesianGrid, LineChart, Line
 } from "recharts";
 import { Link } from "react-router-dom";
+import { AUTH_KEY } from "../../constants/storage-key";
 import { getBaseUrl } from "../../helpers/config";
+import { getFromLocalStorage } from "../../utils/local-storage";
 
 const API_BASE = getBaseUrl();
 
@@ -39,8 +41,9 @@ export default function AnalyticsDashboard() {
   const [wordCloud, setWordCloud] = useState<IWordCloud[]>([]);
   const [hours, setHours] = useState<IHour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const token = localStorage.getItem("token") || "";
+  const token = getFromLocalStorage(AUTH_KEY) || "";
 
   const fetchData = async (
     endpoint: string,
@@ -49,20 +52,27 @@ export default function AnalyticsDashboard() {
     const res = await fetch(
       `${API_BASE}/analytics/${endpoint}`,
       {
-        headers: { Authorization: token },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         signal,
       }
     );
-  
-    const data = await res.json();
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.message || "Unable to load analytics data");
+    }
     return data.data;
   };
 
   useEffect(() => {
     const controller = new AbortController();
-  
+
     const load = async () => {
       try {
+        setError("");
+        if (!token) {
+          throw new Error("Please log in again to view analytics.");
+        }
         const [ov, hm, gn, wc, hr] = await Promise.all([
           fetchData("overview", controller.signal),
           fetchData("heatmap", controller.signal),
@@ -70,7 +80,7 @@ export default function AnalyticsDashboard() {
           fetchData("wordcloud", controller.signal),
           fetchData("productive-hours", controller.signal),
         ]);
-  
+
         if (!controller.signal.aborted) {
           setOverview(ov);
           setHeatmap(hm);
@@ -81,6 +91,7 @@ export default function AnalyticsDashboard() {
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
           console.error(e);
+          setError(e instanceof Error ? e.message : "Unable to load analytics data");
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -88,9 +99,9 @@ export default function AnalyticsDashboard() {
         }
       }
     };
-  
+
     load();
-  
+
     return () => {
       controller.abort();
     };
@@ -102,7 +113,7 @@ export default function AnalyticsDashboard() {
     </div>
   );
 
-  const maxHour = hours.reduce((max, h) => h.count > max.count ? h : max, hours[0]);
+  const maxHour = hours.reduce((max, h) => h.count > max.count ? h : max, hours[0] || { hour: 0, count: 0 });
 
   // Derived Data
   const storyLengthData = overview?.storyLengths ? [

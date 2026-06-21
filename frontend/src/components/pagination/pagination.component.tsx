@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface PaginationProps {
   current: number;
@@ -17,9 +17,30 @@ const PaginationComponent: React.FC<PaginationProps> = ({
   const startItem = (current - 1) * pageSize + 1;
   const endItem = Math.min(current * pageSize, total);
 
+  const [jumpValue, setJumpValue] = useState("");
+  const [jumpError, setJumpError] = useState<string | null>(null);
+
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       onChange(page, pageSize);
+    }
+  };
+
+  const handleJumpSubmit = () => {
+    const page = Number(jumpValue);
+    if (!Number.isInteger(page) || page < 1 || page > totalPages) {
+      setJumpError(`Enter a page between 1 and ${totalPages}`);
+      return;
+    }
+    setJumpError(null);
+    handlePageChange(page);
+    setJumpValue("");
+  };
+
+  const handleJumpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleJumpSubmit();
     }
   };
 
@@ -94,6 +115,43 @@ const PaginationComponent: React.FC<PaginationProps> = ({
             </option>
           ))}
         </select>
+
+        {totalPages > 5 && (
+          <div className="flex items-center gap-1 ml-2">
+            <label htmlFor="jump-to-page" className="sr-only">
+              Go to page
+            </label>
+            <input
+              id="jump-to-page"
+              type="number"
+              min={1}
+              max={totalPages}
+              value={jumpValue}
+              onChange={(e) => {
+                setJumpValue(e.target.value);
+                if (jumpError) setJumpError(null);
+              }}
+              onKeyDown={handleJumpKeyDown}
+              placeholder={`1-${totalPages}`}
+              aria-label={`Go to page (1 to ${totalPages})`}
+              aria-invalid={jumpError ? "true" : "false"}
+              className="w-20 bg-slate-800 border border-slate-700 text-slate-300 text-sm rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <button
+              type="button"
+              onClick={handleJumpSubmit}
+              aria-label="Go to entered page"
+              className="inline-flex items-center justify-center px-3 h-8 rounded-md border border-slate-700 bg-slate-800 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+            >
+              Go
+            </button>
+            {jumpError && (
+              <span role="alert" className="text-xs text-red-400 ml-1">
+                {jumpError}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-1">

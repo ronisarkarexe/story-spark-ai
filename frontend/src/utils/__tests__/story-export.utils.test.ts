@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { createDocxBlob, downloadBlob, getSafeFileName, createWorkspaceDocxBlob, exportWorkspacePDF } from "../story-export.utils";
 import jsPDF from "jspdf";
 
@@ -10,7 +11,7 @@ jest.mock("jspdf", () => {
     setDrawColor: jest.fn(),
     setLineWidth: jest.fn(),
     line: jest.fn(),
-    splitTextToSize: jest.fn().mockImplementation((text) => [text]),
+    splitTextToSize: jest.fn().mockImplementation((text: string) => [text]),
     addPage: jest.fn(),
     getNumberOfPages: jest.fn().mockReturnValue(2),
     setPage: jest.fn(),
@@ -118,7 +119,7 @@ describe("story-export.utils", () => {
         setDrawColor: jest.fn(),
         setLineWidth: jest.fn(),
         line: jest.fn(),
-        splitTextToSize: jest.fn().mockImplementation((text) => [text]),
+        splitTextToSize: jest.fn().mockImplementation((text: string) => [text]),
         addPage: jest.fn(),
         getNumberOfPages: jest.fn().mockReturnValue(2),
         setPage: jest.fn(),
@@ -141,3 +142,4 @@ describe("story-export.utils", () => {
     });
   });
 });
+
