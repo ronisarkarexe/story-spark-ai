@@ -34,10 +34,7 @@ const ContinueStoryButton = () => {
     try {
       setLoading(true);
 
-      const nextChapter = await continueStory(
-        currentStory.chapters,
-        selectedTone
-      );
+      const nextChapter = await continueStory(currentStory.chapters);
 
       dispatch(addChapter(nextChapter));
       toast.success("New chapter generated successfully!");

@@ -113,10 +113,12 @@ export const verifyPayment = async (
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    const isSignatureValid = crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, "hex"),
-      Buffer.from(razorpay_signature, "hex")
-    );
+    const expectedBuffer = Buffer.from(expectedSignature, "hex");
+    const providedBuffer = Buffer.from(razorpay_signature, "hex");
+
+    const isSignatureValid =
+      expectedBuffer.length === providedBuffer.length &&
+      crypto.timingSafeEqual(expectedBuffer, providedBuffer);
 
     if (!isSignatureValid) {
       res.status(400).json({
