@@ -1,8 +1,20 @@
 import React, { lazy, Suspense } from "react";
-import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
 
 import { USER_ROLE } from "./constants/role";
 
+import React from "react";
+import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
+import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
+import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import CollabHome from "./components/collab/CollabHome";
+import CollabRoom from "./components/collab/CollabRoom";
+import HeroSectionComponent from "./components/hero/hero_section.component";
+import HomeComponent from "./components/home/home.component";
+import LoginComponent from "./components/login/login.component";
+import SignUpComponent from "./components/signup/signup.component";
+import DashboardComponent from "./components/dashboard/dashboard.component";
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import LoadingAnimation from "./components/loading/loading.component";
@@ -16,6 +28,7 @@ import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 
 import NotFoundComponent from "./components/not-found.component";
+import Leaderboard from "./pages/Leaderboard";
 import PaymentComponent from "./components/home/pricing/payment.component";
 import PostDetailsComponent from "./components/post/post.details.component";
 import PostListsComponent from "./components/dashboard/posts/post_lists.component";
@@ -32,14 +45,7 @@ import SettingComponent from "./components/dashboard/settings/settings.component
 import SignUpComponent from "./components/signup/signup.component";
 import SimpleProtectedRoute from "./components/ProtectedRoute";
 import StoriesComponent from "./components/stories/stories.component";
-import Leaderboard from "./pages/Leaderboard";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import StoryWorkspace from "./components/story/StoryWorkspace";
-import TemplatesComponent from "./components/templates/templates.component";
-import Terms from "./components/footer/terms.tsx";
-import UserComponent from "./components/dashboard/users/user.component";
-import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import ChatPage from "./components/chat/ChatPage";
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
@@ -86,12 +92,9 @@ const PublishedStoriesComponent = lazy(() => import("./components/dashboard/post
 const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analytics.page"));
 const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
-const PaymentComponent = lazy(() =>
-  import("./components/home/pricing/payment.component").then((module) => ({
-    default: module.PaymentComponent,
-  }))
-);
-const SearchPageComponent = lazy(() => import("./pages/SearchPage"));
+const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
+const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
+const ChatPage = lazy(() => import("./components/chat/ChatPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
@@ -114,9 +117,7 @@ const router = createBrowserRouter([
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
       { path: "templates", element: <TemplatesComponent /> },
       { path: "create", element: <Navigate to="/stories" replace /> },
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
-      { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES} element={<WritingAssistantComponent />} />, },
-      { path: "writing-assistant", element: <WritingAssistantComponent /> },
+      { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES}><WritingAssistantComponent /></ProtectedRoute>, },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
       { path: "login", element: <LoginComponent /> },
       { path: "signup", element: <SignUpComponent /> },
@@ -138,7 +139,7 @@ const router = createBrowserRouter([
       { path: "leaderboard", element: <Leaderboard /> },
       { path: "community", element: <CommunityComponent /> },
       { path: "report-bug", element: <ReportBug /> },
-      { path: "search", element: lazyPage(<SearchPageComponent />) },
+      { path: "chat", element: <ChatPage /> },
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
@@ -211,6 +212,7 @@ const router = createBrowserRouter([
           { path: "explore", element: lazyPage(<ExploreComponent />) },
           { path: "resources", element: <ResourcesListComponent /> },
           { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
+          { path: "chat", element: lazyPage(<ChatPage />) },
 
           // Protected routes
           {
@@ -279,5 +281,4 @@ function App() {
   return <RouterProvider router={router} />;
 }
 
-export default App;
 export default App;

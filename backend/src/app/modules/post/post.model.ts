@@ -22,6 +22,8 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
     commentsCount: { type: Number, default: 0 },
     bookmarksCount: { type: Number, default: 0 },
     viewsCount: { type: Number, default: 0 },
+    averageRating: { type: Number, default: 0 },
+    totalRatings: { type: Number, default: 0 },
     isPublished: { type: Boolean, default: true },
     isFeaturedPost: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },

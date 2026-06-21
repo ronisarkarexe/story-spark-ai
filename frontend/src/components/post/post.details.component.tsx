@@ -11,6 +11,8 @@ import {
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
 import { ComparisonMode } from "../story-comparison";
+import StarRatingDisplay from "../story-rating/StarRatingDisplay";
+import StoryRatingInput from "../story-rating/StoryRatingInput";
 
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
@@ -469,19 +471,23 @@ const PostDetailsComponent = () => {
               </div>
             ) : (
               <>
-                <h1 className={`text-4xl font-bold text-slate-900 dark:text-gray-300 leading-tight ${post?.language ? "mb-2" : "mb-6"}`}>
+                <h1 className={`text-4xl font-bold text-slate-900 dark:text-gray-300 leading-tight ${post?.language ? "mb-2" : "mb-4"}`}>
                   {post?.title}
                 </h1>
-                {post?.language && (
-                  <div className="flex gap-2 mb-6">
-                    <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
-                      🌐 {post.language}
-                    </span>
-                    <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
-                      📖 {formatReadingStats(post.content)}
-                    </span>
-                  </div>
-                )}
+                
+                <div className="flex items-center gap-4 mb-6 flex-wrap">
+                  <StarRatingDisplay rating={post?.averageRating || 0} totalRatings={post?.totalRatings || 0} size="md" />
+                  {post?.language && (
+                    <div className="flex gap-2">
+                      <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
+                        🌐 {post.language}
+                      </span>
+                      <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
+                        📖 {formatReadingStats(post.content)}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
                 <div className="mb-12">
                   <ImageFallback
@@ -572,6 +578,10 @@ const PostDetailsComponent = () => {
   )}
 </div>
             </div>
+
+            {id && currentUser && !isOwner && (
+              <StoryRatingInput storyId={id} />
+            )}
 
             {id && (
               <div className="mb-12">

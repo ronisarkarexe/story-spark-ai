@@ -18,6 +18,13 @@ const CommentSchema: Schema<IComment> = new Schema<IComment, CommentModel>(
     default: [],
   },
 ],
+   helpful: [
+  {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    default: [],
+  },
+],
 
 isDeleted: {
   type: Boolean,
@@ -28,6 +35,11 @@ deletedAt: {
   type: Date,
   default: null,
 },
+isHidden: {
+  type: Boolean,
+  default: false,
+},
+
   },
   { timestamps: true }
 );
