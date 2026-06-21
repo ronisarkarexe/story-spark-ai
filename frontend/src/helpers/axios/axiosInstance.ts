@@ -30,11 +30,36 @@ instance.interceptors.response.use(
 
         originalRequest.headers.Authorization = newToken;
         return instance(originalRequest);
-      } catch {
+      } catch (refreshError) {
         localStorage.removeItem('accessToken');
         window.location.href = '/login';
+        return Promise.reject(refreshError);
       }
     }
+
+    if (error.code === "ERR_NETWORK" || !error.response) {
+      const errorObject = {
+        statusCode: 503,
+        message: "Network Error - Unable to connect to the server",
+        errorMessages: [
+          {
+            path: "",
+            message: "Unable to connect to the server. Please check your internet connection or try again later.",
+          },
+        ],
+      };
+      return Promise.reject(errorObject);
+    }
+
+    if (error.response) {
+      const errorObject = {
+        statusCode: error.response.data?.statusCode || 500,
+        message: error.response.data?.message || "Something went wrong!",
+        errorMessages: error.response.data?.errorMessages || [],
+      };
+      return Promise.reject(errorObject);
+    }
+
     return Promise.reject(error);
   }
 );

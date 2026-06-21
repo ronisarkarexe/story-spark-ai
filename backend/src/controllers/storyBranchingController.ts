@@ -99,14 +99,13 @@ Task:
           "Wait and see what happens",
         ];
       } else if (parsed.choices.length < 3) {
-        choices = [...parsed.choices];
-        while (choices.length < 3) {
-          choices.push(`Option ${choices.length + 1}`);
+        const paddedChoices = [...parsed.choices];
+        while (paddedChoices.length < 3) {
+          paddedChoices.push(`Option ${paddedChoices.length + 1}`);
         }
+        parsed.choices = paddedChoices;
       } else if (parsed.choices.length > 3) {
-        choices = parsed.choices.slice(0, 3);
-      } else {
-        choices = parsed.choices;
+        parsed.choices = parsed.choices.slice(0, 3);
       }
 
       sendResponse(res, {
