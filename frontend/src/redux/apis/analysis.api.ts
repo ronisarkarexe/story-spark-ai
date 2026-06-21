@@ -37,8 +37,34 @@ const analysisApi = baseApi.injectEndpoints({
         data: { suggestions: ISuggestion[] };
       }) => response.data,
     }),
+    biasDetection: build.mutation<IBiasDetectionResponse, { content: string }>({
+      query: (data) => ({
+        url: `/${ANALYSIS_URL}/bias-detection`,
+        method: "POST",
+        data,
+      }),
+      transformResponse: (response: {
+        success: boolean;
+        message: string;
+        data: IBiasDetectionResponse;
+      }) => response.data,
+    }),
   }),
 });
 
-export const { useGetDashboardAnalysisQuery, useAnalyzeStoryMutation } = analysisApi;
+export interface IGenderBias {
+  characterName: string;
+  gender: "Male" | "Female" | "Non-binary" | "Other" | "Unknown";
+  stereotypicalRole: string;
+  reasoning: string;
+  suggestedAlternative: string;
+}
+
+export interface IBiasDetectionResponse {
+  detectedBiases: IGenderBias[];
+  overallAnalysis: string;
+  biasSeverity: "Low" | "Medium" | "High";
+}
+
+export const { useGetDashboardAnalysisQuery, useAnalyzeStoryMutation, useBiasDetectionMutation } = analysisApi;
 

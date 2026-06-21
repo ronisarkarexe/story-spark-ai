@@ -159,3 +159,21 @@ export const EngagementAnalysisResponseSchema = z.object({
 });
 
 export type EngagementAnalysisResponse = z.infer<typeof EngagementAnalysisResponseSchema>;
+
+// ─── Gender Bias Analysis ───────────────────────────────────────────────────
+
+export const GenderBiasSuggestionSchema = z.object({
+  characterName: z.string().min(1),
+  gender: z.enum(["Male", "Female", "Non-binary", "Other", "Unknown"]),
+  stereotypicalRole: z.string().min(1),
+  reasoning: z.string().min(1),
+  suggestedAlternative: z.string().min(1),
+});
+
+export const BiasDetectionResponseSchema = z.object({
+  detectedBiases: z.array(GenderBiasSuggestionSchema),
+  overallAnalysis: z.string().min(1),
+  biasSeverity: z.enum(["Low", "Medium", "High"]),
+});
+
+export type BiasDetectionResponse = z.infer<typeof BiasDetectionResponseSchema>;
