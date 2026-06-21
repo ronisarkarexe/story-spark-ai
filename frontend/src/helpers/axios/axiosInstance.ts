@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getSocketIo } from '../../socket/socket.oi';
 
 const instance = axios.create({
   baseURL: '/api',
@@ -14,6 +15,19 @@ instance.interceptors.response.use(
         const { data } = await axios.post('/api/auth/refresh-token');
         const newToken = data.data.accessToken;
         localStorage.setItem('accessToken', newToken);
+
+        const socket = getSocketIo();
+        if (socket) {
+          (socket as any).auth = { token: newToken };
+          socket.emit('reauthenticate', newToken);
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('story-spark-token-refreshed', {
+            detail: { token: newToken },
+          })
+        );
+
         originalRequest.headers.Authorization = newToken;
         return instance(originalRequest);
       } catch {
@@ -26,3 +40,4 @@ instance.interceptors.response.use(
 );
 
 export default instance;
+export { instance };

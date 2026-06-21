@@ -1,12 +1,22 @@
 import { Request, Response, NextFunction } from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import User from "../models/user.model";
+import { User } from "../app/modules/user/user.model";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+let razorpayInstance: any = null;
+const getRazorpay = () => {
+  if (!razorpayInstance) {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      console.warn("Razorpay credentials missing. Payment features will fail.");
+      return null;
+    }
+    razorpayInstance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+  return razorpayInstance;
+};
 
 const PLANS: Record<string, { amountPaise: number; durationDays: number; label: string }> = {
   monthly: {
@@ -27,17 +37,30 @@ export const createOrder = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { plan } = req.body as { plan?: string };
-    
-    if (!plan || !PLANS[plan]) {
-      res.status(400).json({
-        success: false,
-        error: `Invalid plan. Valid options: ${Object.keys(PLANS).join(", ")}.`,
-      });
-      return;
-    }
+const userId = (req as any).user?._id;
+
+if (!userId) {
+   res.status(401).json({ success: false, message: "Unauthorized" });
+   return;
+}
+
+const { plan } = req.body as { plan?: string };
+
+if (!plan || !PLANS[plan]) {
+ res.status(400).json({
+  success: false,
+  error: `Invalid plan. Valid options: ${Object.keys(PLANS).join(", ")}.`,
+});
+return;
+}
 
     const selectedPlan = PLANS[plan];
+
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      res.status(500).json({ success: false, error: "Payment gateway not configured" });
+      return;
+    }
 
     const order = await razorpay.orders.create({
       amount: selectedPlan.amountPaise,  
@@ -103,6 +126,12 @@ export const verifyPayment = async (
       return;
     }
     
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      res.status(500).json({ success: false, error: "Payment gateway not configured" });
+      return;
+    }
+
     const order = await razorpay.orders.fetch(razorpay_order_id);
     const plan = (order.notes as Record<string, string>)?.plan;
 
@@ -115,7 +144,7 @@ export const verifyPayment = async (
     }
 
     const selectedPlan = PLANS[plan];
-    const userId = (req as Request & { user?: { _id: string } }).user?._id;
+    const userId = req.user?._id;
 
     if (!userId) {
       res.status(401).json({ success: false, error: "Unauthorised. Please log in." });
@@ -161,7 +190,7 @@ export const getSubscriptionStatus = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = (req as Request & { user?: { _id: string } }).user?._id;
+    const userId = req.user?._id;
 
     if (!userId) {
       res.status(401).json({ success: false, error: "Unauthorised." });

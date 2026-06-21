@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { useGetPostListsQuery } from "../../../redux/apis/post.api";
+import { useGetPostListsQuery,useDeletePostMutation  } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
 import { Topic } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
+import ImageFallback from "../../ImageFallback";
 
 const PostListsComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -23,6 +24,18 @@ const PostListsComponent: React.FC = () => {
   }
 
   const { data, isLoading } = useGetPostListsQuery({ ...query });
+  const [deletePost] = useDeletePostMutation();
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDeleteId) return;
+    try {
+      await deletePost(confirmDeleteId).unwrap();
+      setConfirmDeleteId(null);
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+    }
+  };
 
   const onPaginationChange = (page: number, pageSize: number) => {
     setPage(page);
@@ -169,7 +182,7 @@ const PostListsComponent: React.FC = () => {
                     <div className="flex items-center">
                       {post.imageURL && (
                         <div className="flex-shrink-0 h-11 w-11 mr-4 relative">
-                          <img
+                          <ImageFallback
                             className="h-11 w-11 rounded-lg object-cover shadow-md ring-1 ring-white/10"
                             src={post.imageURL}
                             alt={post.title}
@@ -240,8 +253,10 @@ const PostListsComponent: React.FC = () => {
                       <button className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 px-3 py-1.5 rounded-md transition-all">
                         Edit
                       </button>
-                      <button className="text-rose-400 hover:text-rose-300 hover:bg-rose-400/10 px-3 py-1.5 rounded-md transition-all">
-                        Delete
+                      <button
+                          onClick={() => setConfirmDeleteId(post._id)}
+                          className="text-rose-400 hover:text-rose-300 hover:bg-rose-400/10 px-3 py-1.5 rounded-md transition-all">
+                          Delete
                       </button>
                     </div>
                   </td>
@@ -262,6 +277,30 @@ const PostListsComponent: React.FC = () => {
               onChange={onPaginationChange}
             />
           </div>
+          {confirmDeleteId && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+              <div className="bg-[#1a1d2d] border border-gray-700 rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
+                <h3 className="text-lg font-bold text-white mb-2">Delete Story?</h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  Are you sure you want to delete this story? This action cannot be undone.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setConfirmDeleteId(null)}
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-700 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteConfirm}
+                    className="px-4 py-2 rounded-lg text-sm font-medium bg-rose-600 hover:bg-rose-500 text-white transition-all"
+                  >
+                    Yes, Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -5,30 +5,26 @@ import express, {
   Response,
 } from "express";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
 import cors from "cors";
 import httpStatus from "http-status";
 import cookieParser from "cookie-parser";
 import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
+import leaderboardRoute from "./routes/leaderboard.route";
+import globalRateLimiter from "./app/middleware/global.rate-limiter";
 
 const app: Application = express();
 app.set("trust proxy", 1);
 app.use(helmet());
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: "Too many requests, please try again later.",
-});
-
-app.use(limiter);
-
-const defaultCorsOrigins =
+const defaultCorsOrigins =  
   process.env.NODE_ENV === "development"
     ? ["http://localhost:4001", "http://localhost:4002"]
-    : [];
+    : [
+        "https://storysparkai.vercel.app",
+        "https://www.storysparkai.vercel.app",
+      ];
 
 const corsOrigins =
   config.cors_origins && config.cors_origins.length > 0
@@ -38,11 +34,14 @@ const corsOrigins =
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin && process.env.NODE_ENV === 'production') {
-        return callback(new Error('Origin header required in production'));
+      if (!origin) {
+        if (process.env.NODE_ENV === "production") {
+          return callback(new Error("Origin header required"));
+        }
+        return callback(null, true);
       }
 
-      if (!origin || corsOrigins.includes(origin)) {
+      if (corsOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy"));
@@ -50,9 +49,13 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Cookie"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
+
+// Rate limiter — placed after CORS so OPTIONS preflight requests are
+// never counted against the limit before CORS has a chance to respond.
+app.use(globalRateLimiter);
 
 // ─── 1. FIXED: ENFORCED HARDENED PAYLOAD LIMITS TO PREVENT DoS ───
 app.use(express.json({ limit: "2mb" }));
@@ -69,6 +72,7 @@ app.use((req, res, next) => {
 
 // Primary API Router Matrix Engagement
 app.use("/api/v1", Routers);
+app.use("/api/v1/leaderboard", leaderboardRoute);
 
 // ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
 app.use((req: Request, res: Response, next: NextFunction) => {

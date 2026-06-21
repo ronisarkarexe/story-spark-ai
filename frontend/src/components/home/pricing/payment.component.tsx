@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
 import { loadRazorpayScript } from "../../../utils/loadRazorpay";
 
 interface RazorpayResponse {
@@ -44,12 +44,32 @@ const PaymentComponent = () => {
   const planName = searchParams.get("plan") || "Pro";
   const planPrice = Number(searchParams.get("price") || "19.99");
 
-  // State variables requested by user
+  // State variables for checkout card details
   const [name, setName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
+
+  const formatCardNumber = (value: string) => {
+    return value
+      .replace(/\D/g, "")
+      .slice(0, 16)
+      .replace(/(.{4})/g, "$1 ")
+      .trim();
+  };
+
+  const formatExpiry = (value: string) => {
+    const clean = value.replace(/\D/g, "");
+    if (clean.length <= 2) return clean;
+    return `${clean.slice(0, 2)}/${clean.slice(2, 4)}`;
+  };
+
+  const isFormValid =
+    name.trim() !== "" &&
+    cardNumber.replace(/\s/g, "").length === 16 &&
+    expiry.length === 5 &&
+    cvv.length === 3;
 
   // Razorpay payment handler
   const handlePayment = async () => {
@@ -179,10 +199,77 @@ const PaymentComponent = () => {
               handlePayment();
             }}
           >
+            {/* Cardholder Name */}
+            <div className="space-y-2 text-left">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                Cardholder Name
+              </label>
+              <input
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70 px-4 py-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                required
+              />
+            </div>
+
+            {/* Card Number */}
+            <div className="space-y-2 text-left">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                Card Number
+              </label>
+              <div className="relative">
+                <CreditCard
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  placeholder="1234 5678 9012 3456"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70 py-4 pl-11 pr-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Expiry + CVV */}
+            <div className="grid gap-4 sm:grid-cols-2 text-left">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Expiry Date
+                </label>
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  value={expiry}
+                  onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70 px-4 py-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  CVC
+                </label>
+                <input
+                  type="password"
+                  placeholder="123"
+                  value={cvv}
+                  onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/70 px-4 py-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20"
+                  required
+                />
+              </div>
+            </div>
+
             {/* Pay Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isFormValid}
               className="motion-cta inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             >
               {loading ? (

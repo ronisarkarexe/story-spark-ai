@@ -1,6 +1,7 @@
 /* eslint-disable */
+import { StoryMetaTags } from "./StoryMetaTags";
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   useDeletePostMutation,
   useGetPostByIdQuery,
@@ -10,6 +11,8 @@ import {
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
 import { ComparisonMode } from "../story-comparison";
+import StarRatingDisplay from "../story-rating/StarRatingDisplay";
+import StoryRatingInput from "../story-rating/StoryRatingInput";
 
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
@@ -39,7 +42,6 @@ import {
 
 import { toast } from "react-hot-toast";
 
-import { FaXTwitter } from "react-icons/fa6";
 
 
 interface IStoryVersion {
@@ -71,14 +73,6 @@ const PostDetailsComponent = () => {
     {
       skip: !tag,
     }
-  );
-  
-
-  console.log("Current Post:", post);
-  console.log("Tag:", tag);
-  console.log(
-  "Related Posts Full Data:",
-  JSON.stringify(relatedPost, null, 2)
 );
   
   const [toggleReaction] = useToggleReactionMutation();
@@ -114,7 +108,6 @@ const PostDetailsComponent = () => {
   return () => window.removeEventListener("scroll", updateProgress);
   }, []);
 
-  // New Version Timeline and Editor States
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [editedContent, setEditedContent] = useState("");
@@ -123,11 +116,12 @@ const PostDetailsComponent = () => {
   const [showTree, setShowTree] = useState(false);
   const [selectedVersionForBranch, setSelectedVersionForBranch] = useState<string | null>(null);
   const [showComparison, setShowComparison] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
   const readerPreferences = useReaderPreferences();
   const { data: versions, isLoading: isLoadingVersions } = useGetVersionsByStoryIdQuery(id || "", {
-    skip: !id || !showTimeline,
+    skip: !id || (!showTimeline && !showComparison),
   });
   const [restoreVersion, { isLoading: isRestoring }] = useRestoreVersionMutation();
   useEffect(() => {
@@ -171,7 +165,7 @@ const PostDetailsComponent = () => {
       toast.error("You need to login to perform this action");
     }
   };
-
+  
   const handleSaveChanges = async () => {
     if (!id) return;
     if (!editedTitle.trim() || !editedContent.trim()) {
@@ -244,10 +238,11 @@ const PostDetailsComponent = () => {
   const handleTwitterShare = () => {
     const currentUrl = window.location.href;
     const currentTitle = post?.title || "Check out this story!";
-    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+    const url = `https://x.com/intent/tweet?url=${encodeURIComponent(
       currentUrl
     )}&text=${encodeURIComponent(currentTitle)}`;
     window.open(url, "_blank", "noopener,noreferrer");
+    setShowShareMenu(false);
   };
 
   const handleLinkedInShare = () => {
@@ -256,6 +251,7 @@ const PostDetailsComponent = () => {
       currentUrl
     )}`;
     window.open(url, "_blank", "noopener,noreferrer");
+    setShowShareMenu(false);
   };
 
   const handleEmailShare = () => {
@@ -267,7 +263,30 @@ const PostDetailsComponent = () => {
       subject
     )}&body=${encodeURIComponent(body)}`;
     window.location.href = url;
+    setShowShareMenu(false);
   };
+
+  const handleCopyLink = async () => {
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+    toast.success("Link copied to clipboard!");
+    setShowShareMenu(false);
+  } catch {
+    toast.error("Failed to copy link.");
+  }
+};
+
+  const handleWhatsAppShare = () => {
+  const currentUrl = window.location.href;
+  const currentTitle = post?.title || "Check out this story!";
+
+  const url = `https://wa.me/?text=${encodeURIComponent(
+    `${currentTitle} ${currentUrl}`
+  )}`;
+
+  window.open(url, "_blank", "noopener,noreferrer");
+  setShowShareMenu(false);
+};
 
   const handleDelete = async () => {
     if (
@@ -287,12 +306,22 @@ const PostDetailsComponent = () => {
       toast.error("Unable to remove this story. Please try again.");
     }
   };
+
   if (isLoading) {
     return <LoadingAnimation />;
   }
 
   return (
     <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white relative">
+
+      {/* OG Meta Tags for social sharing */}
+      <StoryMetaTags
+        title={post?.title}
+        content={post?.content}
+        imageURL={post?.imageURL}
+        postId={id}
+      />
+
       {/* Reading Progress Bar */}
       <div
         className="fixed top-0 left-0 z-50 h-1 bg-indigo-500 transition-all duration-100"
@@ -319,14 +348,29 @@ const PostDetailsComponent = () => {
           <div className="p-8">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center space-x-4">
-                <SSProfile
-                  name={post?.author?.name || "Unknown User"}
-                  size="h-12 w-12"
-                />
+                {post?.author?._id ? (
+                  <Link to={`/profile/${post.author._id}`} className="flex items-center shrink-0 hover:opacity-85 transition">
+                    <SSProfile
+                      name={post?.author?.name || "Unknown User"}
+                      size="h-12 w-12"
+                    />
+                  </Link>
+                ) : (
+                  <SSProfile
+                    name={post?.author?.name || "Unknown User"}
+                    size="h-12 w-12"
+                  />
+                )}
 
                 <div>
                   <h3 className="font-medium text-slate-700 dark:text-gray-400">
-                    {post?.author?.name || "Unknown User"}
+                    {post?.author?._id ? (
+                      <Link to={`/profile/${post.author._id}`} className="hover:text-indigo-650 dark:hover:text-indigo-400 transition">
+                        {post?.author?.name || "Unknown User"}
+                      </Link>
+                    ) : (
+                      post?.author?.name || "Unknown User"
+                    )}
                   </h3>
 
                   <div className="flex items-center text-sm text-slate-500 dark:text-gray-500">
@@ -427,19 +471,23 @@ const PostDetailsComponent = () => {
               </div>
             ) : (
               <>
-                <h1 className={`text-4xl font-bold text-slate-900 dark:text-gray-300 leading-tight ${post?.language ? "mb-2" : "mb-6"}`}>
+                <h1 className={`text-4xl font-bold text-slate-900 dark:text-gray-300 leading-tight ${post?.language ? "mb-2" : "mb-4"}`}>
                   {post?.title}
                 </h1>
-                {post?.language && (
-                  <div className="flex gap-2 mb-6">
-                    <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
-                      🌐 {post.language}
-                    </span>
-                    <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
-                      📖 {formatReadingStats(post.content)}
-                    </span>
-                  </div>
-                )}
+                
+                <div className="flex items-center gap-4 mb-6 flex-wrap">
+                  <StarRatingDisplay rating={post?.averageRating || 0} totalRatings={post?.totalRatings || 0} size="md" />
+                  {post?.language && (
+                    <div className="flex gap-2">
+                      <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
+                        🌐 {post.language}
+                      </span>
+                      <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
+                        📖 {formatReadingStats(post.content)}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
                 <div className="mb-12">
                   <ImageFallback
@@ -489,40 +537,51 @@ const PostDetailsComponent = () => {
                   />
                 )}
               </div>
+              <div className="relative">
+  <button
+    onClick={() => setShowShareMenu(!showShareMenu)}
+    className="px-3 py-2 rounded bg-slate-700 text-white hover:bg-slate-600 transition"
+  >
+    🔗 Share
+  </button>
 
-              <div className="flex items-center space-x-3 bg-slate-800/40 backdrop-blur-md px-4 py-2 rounded-full border border-slate-700/50 shadow-sm">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 mr-1 select-none">
-                Share:
-                </span>
+  {showShareMenu && (
+    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
+      <button
+        onClick={handleCopyLink}
+        className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700"
+      >
+        📋 Copy Link
+      </button>
 
-                <button
-                  id="share-twitter-btn"
-                  onClick={handleTwitterShare}
-                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
-                  aria-label="Share on X"
-                >
-                  <FaXTwitter className="text-sm" />
-                </button>
+      <button
+        onClick={handleTwitterShare}
+        className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700"
+      >
+        🐦 Share on X
+      </button>
 
-                <button
-                  id="share-linkedin-btn"
-                  onClick={handleLinkedInShare}
-                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
-                  aria-label="Share on LinkedIn"
-                >
-                  <i className="fab fa-linkedin text-sm"></i>
-                </button>
+      <button
+        onClick={handleWhatsAppShare}
+        className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700"
+      >
+        💬 WhatsApp
+      </button>
 
-                <button
-                  id="share-email-btn"
-                  onClick={handleEmailShare}
-                  className="w-9 h-9 rounded-full bg-slate-700 border border-slate-600 hover:bg-slate-600 hover:border-blue-400 text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer shadow-sm"
-                  aria-label="Share via Email"
-                >
-                  <i className="far fa-envelope text-sm"></i>
-                </button>
-              </div>
+      <button
+        onClick={handleEmailShare}
+        className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700"
+      >
+        ✉️ Email
+      </button>
+    </div>
+  )}
+</div>
             </div>
+
+            {id && currentUser && !isOwner && (
+              <StoryRatingInput storyId={id} />
+            )}
 
             {id && (
               <div className="mb-12">
@@ -531,20 +590,25 @@ const PostDetailsComponent = () => {
             )}
 
             <div>
-              <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
-                Related Stories
-              </h3>
+  <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
+    Related Stories
+  </h3>
 
-              <RelatedStoriesComponent
-                posts={relatedPost || []}
-                currentPostId={post?._id || ""}
-              />
-            </div>
+  {relatedPost && relatedPost.length > 0 ? (
+    <RelatedStoriesComponent
+      posts={relatedPost}
+      currentPostId={post?._id || ""}
+    />
+  ) : (
+    <div className="text-center py-8 text-slate-500 dark:text-gray-400">
+      <p>No related stories found.</p>
+    </div>
+  )}
+</div>
           </div>
         </div>
       </div>
 
-      {/* Dynamic Slide-in Sliding Timeline Drawer Panel */}
       {showTimeline && (
         <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#0f172a]/95 backdrop-blur-xl border-l border-slate-700/60 shadow-2xl p-6 overflow-y-auto text-white animate-slide-in flex flex-col">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-800">
@@ -595,7 +659,6 @@ const PostDetailsComponent = () => {
 
                   return (
                     <div key={v._id} className="relative group">
-                      {/* Chronological marker dot */}
                       <div className="absolute left-[-21px] top-1.5 w-3.5 h-3.5 rounded-full bg-indigo-500 border-4 border-[#0f172a] group-hover:scale-125 transition-transform duration-200"></div>
                       <div className="bg-slate-900/55 border border-slate-800/80 rounded-xl p-4 hover:border-slate-700/80 transition-all duration-200">
                         <div className="flex justify-between items-start mb-2 gap-2">
@@ -617,9 +680,7 @@ const PostDetailsComponent = () => {
                             </button>
 
                             <button
-                              onClick={() =>
-                                handleCreateBranch(v._id)
-                              }
+                              onClick={() => handleCreateBranch(v._id)}
                               className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] rounded transition-all"
                             >
                               Branch
@@ -656,6 +717,17 @@ const PostDetailsComponent = () => {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Comparison Drawer */}
+      {showComparison && (
+        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-white dark:bg-[#0f172a]/95 backdrop-blur-xl border-l border-slate-200 dark:border-slate-700/60 shadow-2xl p-6 overflow-y-auto animate-slide-in flex flex-col">
+          <ComparisonMode
+            versions={versions || []}
+            isLoadingVersions={isLoadingVersions}
+            onClose={() => setShowComparison(false)}
+          />
         </div>
       )}
 
@@ -696,9 +768,7 @@ const PostDetailsComponent = () => {
 
                     {node.branchName && (
                       <div className="text-purple-400 text-sm">
-                        Branch:
-                        {" "}
-                        {node.branchName}
+                        Branch: {node.branchName}
                       </div>
                     )}
                   </div>
@@ -709,10 +779,19 @@ const PostDetailsComponent = () => {
         </div>
       )}
 
+      {showComparison && (
+        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-white dark:bg-[#0f172a]/95 backdrop-blur-xl border-l border-slate-200 dark:border-slate-700/60 shadow-2xl p-6 overflow-y-auto text-slate-900 dark:text-white animate-slide-in flex flex-col">
+          <ComparisonMode
+            versions={versions || []}
+            isLoadingVersions={isLoadingVersions}
+            onClose={() => setShowComparison(false)}
+          />
+        </div>
+      )}
+
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
     </div>
   );
 };
 
 export default PostDetailsComponent;
-
