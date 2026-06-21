@@ -6,7 +6,6 @@ import {
   useToggleCommentLikeMutation,
   useDeleteCommentMutation,
   useReportCommentMutation,
-  useToggleCommentHelpfulMutation,
 } from "../../redux/apis/comment";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";

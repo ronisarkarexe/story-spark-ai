@@ -116,7 +116,8 @@ const getLanguageLabel = (lang: string): string => {
     return lang;
   }
 };
-const buildWordRanges = (inputText: string): WordRange[] => {
+
+,const buildWordRanges = (inputText: string): WordRange[] => {
   if (!inputText.trim()) {
     return [];
   }
