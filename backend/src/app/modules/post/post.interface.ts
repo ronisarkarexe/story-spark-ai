@@ -32,6 +32,7 @@ export interface IPost extends IPostPayload {
   isDeleted?: boolean;
   deletedAt?: Date;
   deletedBy?: Types.ObjectId;
+  isModerated?: boolean;
   publishedAt?: Date;
   updatedBy?: Types.ObjectId;
   attachments?: string[];

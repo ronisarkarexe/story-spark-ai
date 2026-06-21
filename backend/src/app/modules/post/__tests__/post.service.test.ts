@@ -58,6 +58,7 @@ describe("PostService", () => {
       expect(mockedPost.find).toHaveBeenCalledWith({
         isDeleted: { $ne: true },
         isPublished: true,
+        isModerated: { $ne: true },
       });
     });
   });
@@ -138,6 +139,7 @@ describe("PostService", () => {
         isFeaturedPost: true,
         isDeleted: { $ne: true },
         isPublished: true,
+        isModerated: { $ne: true },
       });
     });
   });

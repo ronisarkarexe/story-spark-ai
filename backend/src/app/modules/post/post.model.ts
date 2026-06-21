@@ -27,6 +27,7 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
     isPublished: { type: Boolean, default: true },
     isFeaturedPost: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
+    isModerated: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null },
     deletedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     publishedAt: { type: Date, default: Date.now },

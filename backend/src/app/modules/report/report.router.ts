@@ -34,4 +34,11 @@ router.get(
   ReportController.getPendingCommentReports
 );
 
+router.patch(
+  "/:id/resolve",
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  validateRequest(ReportValidation.resolveReport),
+  ReportController.resolveReport
+);
+
 export const ReportRouter = router;

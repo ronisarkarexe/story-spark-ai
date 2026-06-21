@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ReportReason, ReportTargetType } from "../../../enums/report.enum";
+import { ReportReason, ReportStatus, ReportTargetType } from "../../../enums/report.enum";
 
 const createReport = z.object({
   body: z.object({
@@ -15,4 +15,14 @@ const createReport = z.object({
   }),
 });
 
-export const ReportValidation = { createReport };
+const resolveReport = z.object({
+  body: z.object({
+    status: z.nativeEnum(ReportStatus),
+    action: z.enum(["HIDE", "DELETE", "BAN", "DISMISS"]).optional(),
+  }),
+});
+
+export const ReportValidation = {
+  createReport,
+  resolveReport,
+};

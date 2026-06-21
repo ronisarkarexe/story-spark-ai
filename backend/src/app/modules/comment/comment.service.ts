@@ -106,7 +106,13 @@ const getCommentsByPostId = async (postId: string, token?: ITokenPayload | null)
   }
   verifyPostAccess(post, user);
 
-  return await Comment.find({ postId }).populate("userId", "name profile.avatar").sort({ createdAt: -1 });
+  return await Comment.find({
+    postId,
+    isDeleted: { $ne: true },
+    isHidden: { $ne: true },
+  })
+    .populate("userId", "name profile.avatar")
+    .sort({ createdAt: -1 });
 };
 
 const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
