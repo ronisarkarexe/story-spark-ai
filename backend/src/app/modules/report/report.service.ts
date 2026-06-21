@@ -7,23 +7,30 @@ import { USER_STATUS } from "../../../enums/user_status";
 import ApiError from "../../../errors/api_error";
 import { ReportStatus, ReportTargetType } from "../../../enums/report.enum";
 import httpStatus from "http-status";
+import { Types } from "mongoose";
 
 const createReport = async (payload: IReport) => {
   try {
-    const result = await Report.create(payload);
+    // Explicitly cast user-controlled targetId to Types.ObjectId to prevent query injection
+    const cleanTargetId = new Types.ObjectId(payload.targetId.toString());
+
+    const result = await Report.create({
+      ...payload,
+      targetId: cleanTargetId,
+    });
 
     // Count pending reports for this target
     const pendingCount = await Report.countDocuments({
-      targetId: payload.targetId,
+      targetId: cleanTargetId,
       targetType: payload.targetType,
       status: ReportStatus.PENDING,
     });
 
     if (pendingCount >= 5) {
       if (payload.targetType === ReportTargetType.POST) {
-        await Post.findByIdAndUpdate(payload.targetId, { isModerated: true });
+        await Post.findByIdAndUpdate(cleanTargetId, { isModerated: true });
       } else if (payload.targetType === ReportTargetType.COMMENT) {
-        await Comment.findByIdAndUpdate(payload.targetId, { isHidden: true });
+        await Comment.findByIdAndUpdate(cleanTargetId, { isHidden: true });
       }
     }
 
@@ -89,8 +96,9 @@ const getPendingCommentReports = async () => {
 };
 
 const reviewReport = async (reportId: string) => {
+  const cleanReportId = new Types.ObjectId(reportId.toString());
   const report = await Report.findByIdAndUpdate(
-    reportId,
+    cleanReportId,
     {
       status: ReportStatus.REVIEWED,
     },
@@ -105,8 +113,9 @@ const reviewReport = async (reportId: string) => {
 };
 
 const dismissReport = async (reportId: string) => {
+  const cleanReportId = new Types.ObjectId(reportId.toString());
   const report = await Report.findByIdAndUpdate(
-    reportId,
+    cleanReportId,
     {
       status: ReportStatus.DISMISSED,
     },
@@ -125,7 +134,8 @@ const resolveReport = async (
   status: ReportStatus,
   action?: "HIDE" | "DELETE" | "BAN" | "DISMISS"
 ) => {
-  const report = await Report.findById(reportId);
+  const cleanReportId = new Types.ObjectId(reportId.toString());
+  const report = await Report.findById(cleanReportId);
   if (!report) {
     throw new ApiError(httpStatus.NOT_FOUND, "Report not found");
   }
@@ -134,15 +144,18 @@ const resolveReport = async (
   report.status = status;
   await report.save();
 
+  // Explicitly cast to Types.ObjectId
+  const cleanTargetId = new Types.ObjectId(report.targetId.toString());
+
   // Find authorId of target content
   let authorId: string | null = null;
   if (report.targetType === ReportTargetType.POST) {
-    const post = await Post.findById(report.targetId);
+    const post = await Post.findById(cleanTargetId);
     if (post) {
       authorId = post.author ? post.author.toString() : null;
     }
   } else if (report.targetType === ReportTargetType.COMMENT) {
-    const comment = await Comment.findById(report.targetId);
+    const comment = await Comment.findById(cleanTargetId);
     if (comment) {
       authorId = comment.userId ? comment.userId.toString() : null;
     }
@@ -154,25 +167,25 @@ const resolveReport = async (
   if (effectiveAction === "DISMISS") {
     // If dismissed, unhide/restore content (remove moderation flags)
     if (report.targetType === ReportTargetType.POST) {
-      await Post.findByIdAndUpdate(report.targetId, { isModerated: false });
+      await Post.findByIdAndUpdate(cleanTargetId, { isModerated: false });
     } else if (report.targetType === ReportTargetType.COMMENT) {
-      await Comment.findByIdAndUpdate(report.targetId, { isHidden: false });
+      await Comment.findByIdAndUpdate(cleanTargetId, { isHidden: false });
     }
   } else if (effectiveAction === "HIDE") {
     if (report.targetType === ReportTargetType.POST) {
-      await Post.findByIdAndUpdate(report.targetId, { isModerated: true });
+      await Post.findByIdAndUpdate(cleanTargetId, { isModerated: true });
     } else if (report.targetType === ReportTargetType.COMMENT) {
-      await Comment.findByIdAndUpdate(report.targetId, { isHidden: true });
+      await Comment.findByIdAndUpdate(cleanTargetId, { isHidden: true });
     }
   } else if (effectiveAction === "DELETE") {
     if (report.targetType === ReportTargetType.POST) {
-      await Post.findByIdAndUpdate(report.targetId, {
+      await Post.findByIdAndUpdate(cleanTargetId, {
         isDeleted: true,
         deletedAt: new Date(),
         isModerated: true,
       });
     } else if (report.targetType === ReportTargetType.COMMENT) {
-      await Comment.findByIdAndUpdate(report.targetId, {
+      await Comment.findByIdAndUpdate(cleanTargetId, {
         isDeleted: true,
         deletedAt: new Date(),
         isHidden: true,
@@ -180,24 +193,26 @@ const resolveReport = async (
     }
   } else if (effectiveAction === "BAN") {
     if (authorId) {
-      await User.findByIdAndUpdate(authorId, { status: USER_STATUS.BLOCKED });
+      const cleanAuthorId = new Types.ObjectId(authorId);
+      await User.findByIdAndUpdate(cleanAuthorId, { status: USER_STATUS.BLOCKED });
     }
   }
 
   // Repeat Violator Check: count total moderated content if action hidden or deleted content
   if (authorId && (effectiveAction === "HIDE" || effectiveAction === "DELETE")) {
+    const cleanAuthorId = new Types.ObjectId(authorId);
     const moderatedPostsCount = await Post.countDocuments({
-      author: authorId,
+      author: cleanAuthorId,
       isModerated: true,
     });
     const moderatedCommentsCount = await Comment.countDocuments({
-      userId: authorId,
+      userId: cleanAuthorId,
       isHidden: true,
     });
     const totalViolations = moderatedPostsCount + moderatedCommentsCount;
 
     if (totalViolations >= 3) {
-      await User.findByIdAndUpdate(authorId, { status: USER_STATUS.BLOCKED });
+      await User.findByIdAndUpdate(cleanAuthorId, { status: USER_STATUS.BLOCKED });
     }
   }
 

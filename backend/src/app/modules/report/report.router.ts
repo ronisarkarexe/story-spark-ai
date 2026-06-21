@@ -4,8 +4,12 @@ import { ReportValidation } from "./report.validation";
 import auth from "../../middleware/auth.middleware";
 import validateRequest from "../../middleware/validate.request";
 import { ENUM_USER_ROLE } from "../../../enums/user";
+import { apiRateLimiter } from "../../middleware/rateLimit.middleware";
 
 const router = express.Router();
+
+// Apply general API rate limiting to all report and resolution endpoints
+router.use(apiRateLimiter);
 
 router.post(
   "/",
