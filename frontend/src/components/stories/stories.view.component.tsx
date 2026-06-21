@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from "react";
 import CharacterProfileCard from "./CharacterProfileCard";
+import StoryGenreTransformation from "./StoryGenreTransformation";
+import StoryMoodDashboard from "./StoryMoodDashboard";
+import StoryTitleSuggestions from "./StoryTitleSuggestions";
+import StoryVersionHistory from "./StoryVersionHistory";
 import { CharacterProfile } from "./stories.utils";
-import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
+import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
+import StoryTranslator from "../translate/StoryTranslator";
 
 export interface IStories {
   uuid: string;
@@ -38,7 +45,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
+  const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
+  const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
 
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
@@ -73,6 +82,27 @@ useEffect(() => {
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
   };
+
+  const handleRestoreVersion = (restoredContent: string) => {
+  if (!selectedStory) return;
+
+  const updatedStory = {
+    ...selectedStory,
+    content: restoredContent,
+  };
+
+  setSelectedStory(updatedStory);
+
+  setStories(
+    stories.map((story) =>
+      story.uuid === selectedStory.uuid
+        ? updatedStory
+        : story
+    )
+  );
+
+  toast.success("Story version restored successfully!");
+};
 
   const handleTopicClick = (index: number) => {
     const updatedTopics = [...topics];
@@ -280,6 +310,13 @@ const handleGenerateCharacterProfile = async () => {
                     >
                       📄 Export PDF
                     </button>
+                    <button
+                      type="button"
+                      className="rounded-lg px-4 py-2 bg-emerald-700 text-white font-semibold cursor-pointer hover:bg-emerald-600 transition-colors"
+                      onClick={() => setShowTranslator(true)}
+                    >
+                      🌍 Translate
+                    </button>
                   </>
                 )}
                 <button
@@ -297,6 +334,129 @@ const handleGenerateCharacterProfile = async () => {
               </div>
             </div>
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
+              <p className="break-words whitespace-pre-wrap">
+                {sentenceSegments.length > 0 ? (
+                  sentenceSegments.map((segment: StorySentenceSegment) => {
+                    const isActiveSentence =
+                      isNarrationActive &&
+                      narrationWordIndex >= segment.startWordIndex &&
+                      narrationWordIndex <= segment.endWordIndex;
+
+                    const rawParts = segment.text.split(/(\s+)/);
+                    let wordOffset = 0;
+
+                    return (
+                      <span
+                        key={segment.id}
+                        className={isActiveSentence ? "text-slate-100 font-medium transition-colors duration-300" : undefined}
+                      >
+                        {rawParts.map((part, partIdx) => {
+                          if (part === "") return null;
+                          if (/^\s+$/.test(part)) {
+                            return part;
+                          }
+
+                          const absoluteWordIndex = segment.startWordIndex + wordOffset;
+                          wordOffset++;
+
+                          const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+
+                          if (isActiveWord) {
+                            return (
+                              <span
+                                key={partIdx}
+                                className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
+                                data-active-word="true"
+                              >
+                                {part}
+                              </span>
+                            );
+                          }
+
+                          return (
+                            <span key={partIdx}>
+                              {part}
+                            </span>
+                          );
+                        })}
+                      </span>
+                    );
+                  })
+                ) : (
+                  DOMPurify.sanitize(selectedStory.content)
+                  (() => {
+                    const rawParts = selectedStory.content.split(/(\s+)/);
+                    let wordOffset = 0;
+                    return rawParts.map((part, partIdx) => {
+                      if (part === "") return null;
+                      if (/^\s+$/.test(part)) {
+                        return part;
+                      }
+
+                      const absoluteWordIndex = wordOffset;
+                      wordOffset++;
+
+                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+
+                      if (isActiveWord) {
+                        return (
+                          <span
+                            key={partIdx}
+                            className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
+                            data-active-word="true"
+                          >
+                            {part}
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <span key={partIdx}>
+                          {part}
+                        </span>
+                      );
+                    });
+                  })()
+                )}
+              </p>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
+              <AudioPlayer 
+                ref={audioPlayerRef} 
+                text={selectedStory.content} 
+                title={selectedStory.title} 
+                onWordIndexChange={setNarrationWordIndex} 
+                onPlaybackStateChange={setNarrationState} 
+              />
+            </div>
+            <StoryVersionHistory
+              story={selectedStory}
+              onRestore={handleRestoreVersion}
+            />
+          </div>
+
+          {/* Alternate Endings Section */}
+          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl sm:rounded-3xl shadow-xl p-6 mt-2 relative overflow-hidden">
+            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                  Alternate Endings
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Explore alternate narrative styles for your story context.
+                </p>
+              </div>
+              {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
+                <button
+                  type="button"
+                  onClick={handleResetEnding}
+                  className="rounded-lg px-4 py-2 bg-red-100 dark:bg-red-950/40 hover:bg-red-200 dark:hover:bg-red-900/60 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                >
+                  <i className="fa-solid fa-rotate-left"></i> Reset to Original
+                </button>
               {selectedStory ? (
                 <p className="break-words">{selectedStory.content}</p>
               ) : (
@@ -394,7 +554,24 @@ const handleGenerateCharacterProfile = async () => {
           </div>
         </div>
       </div>
+      {showGenreTransformation && selectedStory && (
+        <StoryGenreTransformation
+          story={{
+            title: selectedStory.title,
+            content: selectedStory.content,
+          }}
+          onClose={() => setShowGenreTransformation(false)}
+        />
+      )}
       <Toaster position="top-right" reverseOrder={false} />
+
+      {showTranslator && selectedStory && (
+        <StoryTranslator
+          story={selectedStory}
+          isLogin={isLogin}
+          onClose={() => setShowTranslator(false)}
+        />
+      )}
     </div>
   );
 };

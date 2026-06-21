@@ -64,12 +64,12 @@ const BookmarksComponent = () => {
         <div className="pt-4 pb-8 flex flex-col md:flex-row gap-6 items-center justify-between">
           <div className="w-full md:w-auto">
             <Link to="/">
-              <div className="group flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-full transition-all duration-300 shadow-sm border border-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-300 dark:border-slate-700">
+              <button className="group flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-full transition-all duration-300 shadow-sm border border-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-300 dark:border-slate-700">
                 <div className="bg-slate-50 dark:bg-slate-900 rounded-full w-8 h-8 flex items-center justify-center shadow-inner group-hover:-translate-x-1 transition-transform">
                   <i className="fa-solid fa-arrow-left text-sm"></i>
                 </div>
                 Return Home
-              </div>
+              </button>
             </Link>
           </div>
           <div className="w-full md:w-1/2 lg:w-1/3">
