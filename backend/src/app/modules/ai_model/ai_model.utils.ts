@@ -24,6 +24,8 @@ import {
   ContinuationResponseSchema,
   TranslationResponseSchema,
   StoryboardResponseSchema,
+  BiasDetectionResponseSchema,
+  BiasDetectionResponse,
 } from "../ai";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
@@ -131,6 +133,15 @@ const throwIfAborted = (signal?: AbortSignal): void => {
   if (signal?.aborted) {
     throw new GenerationAbortedError();
   }
+};
+
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
 };
 
 const buildCharactersInstruction = (characters?: ICharacter[]): string => {
@@ -751,7 +762,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,
@@ -891,6 +901,76 @@ Return only valid JSON with this exact structure:
     throw new ApiError(
       httpStatus.BAD_GATEWAY,
       `AI story continuation generation failed: ${errorMsg}`,
+    );
+  }
+}
+
+export async function detectGenderBiasWithGemini(
+  content: string,
+  signal?: AbortSignal
+): Promise<BiasDetectionResponse> {
+  throwIfAborted(signal);
+  assertGeminiApiKeyConfigured();
+
+  const systemInstruction = `You are an expert children's literature critic, safety evaluator, and bias detection agent.
+Your task is to analyze the provided story text for gender stereotypes, gender role assignments, and subtle gender biases.
+
+Specifically, evaluate:
+1. Gender role assignments: Are male characters portrayed as the active explorers/discoverers, leaders, or problem-solvers while female characters are passive, limited to recording notes, helper tasks, or domestic roles (or vice-versa)?
+2. Exchange of activities: Is there a lack of gender exchange in activities (e.g., characters of only one gender perform active, physical, or academic activities, while others do not)?
+3. Gender representation in clothing & colors: Are gender representations reinforced through stereotypical clothing descriptions (e.g., girls in delicate dresses, boys in sturdy boots) or color associations (e.g., pink vs blue)?
+
+Analyze the story and structure your analysis. Flag any stereotypical role assignments and suggest more balanced, inclusive alternatives.
+You MUST return the output strictly as a valid JSON object. Do not include markdown formatting blocks (e.g., \`\`\`json). Just return the raw JSON.`;
+
+  const userPrompt = `Story Content:
+"${content}"
+
+Based on the rules, analyze this story and return a JSON object matching the schema below:
+{
+  "detectedBiases": [
+    {
+      "characterName": "Character Name",
+      "gender": "Male | Female | Non-binary | Other | Unknown",
+      "stereotypicalRole": "Brief description of the stereotypical role/behavior/clothing/color association flagged",
+      "reasoning": "Explain why this assignment/representation is stereotypical or biased",
+      "suggestedAlternative": "Provide a concrete, balanced, and creative alternative suggestion to improve the story's inclusivity (e.g., 'Have Ana take the lead in climbing the rock wall while Max records the observations, or describe them sharing both roles.')"
+    }
+  ],
+  "overallAnalysis": "A brief summary of the gender representations, balance, and inclusivity found in the story.",
+  "biasSeverity": "Low | Medium | High"
+}
+
+If no gender stereotypes or biases are detected, return the detectedBiases array as empty, biasSeverity as "Low", and overallAnalysis as a positive confirmation of balanced gender representations.`;
+
+  try {
+    const response = await executeWithRetryAndFallback(async (activeModel) => {
+      const chatSession = activeModel.startChat({
+        generationConfig: {
+          ...generationConfig,
+          maxOutputTokens: 4096,
+        },
+        safetySettings,
+        history: [],
+      });
+      return chatSession.sendMessage(`${systemInstruction}\n\n${userPrompt}`, { signal });
+    }, signal);
+
+    throwIfAborted(signal);
+    const text = response.response.text();
+    
+    return parseAIResponseOrThrow(text, BiasDetectionResponseSchema, {
+      label: "Gemini story bias detection",
+      errorMessage: "Invalid bias detection response from AI",
+    });
+  } catch (error: unknown) {
+    if (error instanceof ApiError || error instanceof GenerationAbortedError) {
+      throw error;
+    }
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.BAD_GATEWAY,
+      `AI gender bias detection failed: ${errorMsg}`
     );
   }
 }

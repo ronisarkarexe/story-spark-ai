@@ -5,6 +5,7 @@ import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
+import { useBiasDetectionMutation, IBiasDetectionResponse } from "../../redux/apis/analysis.api";
 
 export interface IStories {
   uuid: string;
@@ -38,7 +39,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
+  const [biasAnalysis, setBiasAnalysis] = useState<IBiasDetectionResponse | null>(null);
   const [createPost] = useCreatePostMutation();
+  const [biasDetection, { isLoading: biasLoading }] = useBiasDetectionMutation();
 
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
@@ -48,6 +51,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     if (stories && stories.length > 0) {
       setSelectedStory(stories[0]);
     }
+    setBiasAnalysis(null);
   }, [stories]);
 
 useEffect(() => {
@@ -72,6 +76,7 @@ useEffect(() => {
 
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
+    setBiasAnalysis(null);
   };
 
   const handleTopicClick = (index: number) => {
@@ -114,6 +119,22 @@ const handleExportPDF = () => {
   } catch (error) {
     console.error(error);
     toast.error("Failed to export PDF.");
+  }
+};
+
+const handleBiasCheck = async () => {
+  if (!selectedStory) {
+    toast.error("No story selected!");
+    return;
+  }
+
+  try {
+    const result = await biasDetection({ content: selectedStory.content }).unwrap();
+    setBiasAnalysis(result);
+    toast.success("Gender bias analysis completed!");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to run gender bias analysis.");
   }
 };
 
@@ -275,6 +296,23 @@ const handleGenerateCharacterProfile = async () => {
                     </button>
                     <button
                       type="button"
+                      className="rounded-lg px-4 py-2 bg-pink-700 text-white font-semibold hover:bg-pink-600 transition-colors flex items-center gap-1.5"
+                      onClick={handleBiasCheck}
+                      disabled={biasLoading}
+                    >
+                      {biasLoading ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin" />
+                          Checking...
+                        </>
+                      ) : (
+                        <>
+                          ⚖️ Bias Check
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
                       className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors"
                       onClick={handleExportPDF}
                     >
@@ -322,6 +360,62 @@ const handleGenerateCharacterProfile = async () => {
     </>
   )}
 </div>
+
+{/* Bias Analysis Panel */}
+{biasAnalysis && (
+  <div className="mt-6 p-6 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl transition-all duration-300">
+    <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-700/50">
+      <h3 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+        ⚖️ Gender Bias Analysis
+      </h3>
+      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+        biasAnalysis.biasSeverity === 'High' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+        biasAnalysis.biasSeverity === 'Medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+        'bg-green-500/20 text-green-400 border border-green-500/30'
+      }`}>
+        Severity: {biasAnalysis.biasSeverity}
+      </span>
+    </div>
+    
+    <p className="text-slate-300 mb-6 text-sm leading-relaxed">
+      {biasAnalysis.overallAnalysis}
+    </p>
+    
+    {biasAnalysis.detectedBiases.length > 0 ? (
+      <div className="space-y-4">
+        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Flagged Stereotypes & Alternatives</h4>
+        {biasAnalysis.detectedBiases.map((bias, idx) => (
+          <div key={idx} className="p-4 bg-slate-900/60 border border-slate-700/40 rounded-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-bold text-purple-300">
+                👤 {bias.characterName} ({bias.gender})
+              </span>
+              <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                Flagged: {bias.stereotypicalRole}
+              </span>
+            </div>
+            
+            <div className="text-xs text-slate-400 leading-relaxed">
+              <span className="font-semibold text-slate-300">Reasoning:</span> {bias.reasoning}
+            </div>
+            
+            <div className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg text-xs text-slate-300 space-y-1">
+              <div className="font-bold text-emerald-400 flex items-center gap-1">
+                💡 Suggested Alternative:
+              </div>
+              <p className="italic leading-relaxed">{bias.suggestedAlternative}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-xl flex items-center gap-3 text-sm text-green-400">
+        <i className="fa-solid fa-circle-check text-lg"></i>
+        <span>No gender stereotypes or biases were detected! The story portrays balanced representations.</span>
+      </div>
+    )}
+  </div>
+)}
           <div className="mt-7">
             <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
               <h3 className="text-lg font-bold text-slate-200 mb-4">

@@ -6,6 +6,7 @@ import { User } from "../user/user.model";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { WriterApplication } from "../writer_application/writer_application.model";
+import { detectGenderBiasWithGemini } from "../ai_model/ai_model.utils";
 
 const getDashboardAnalysis = async (userId: string, role: string) => {
   // If Admin or Super Admin, return global dashboard analysis
@@ -396,8 +397,13 @@ const analyzeStory = async (content: string) => {
   return { suggestions };
 };
 
+const detectGenderBias = async (content: string) => {
+  return await detectGenderBiasWithGemini(content);
+};
+
 export const AnalysisService = {
   getDashboardAnalysis,
   analyzeStory,
+  detectGenderBias,
 };
 
