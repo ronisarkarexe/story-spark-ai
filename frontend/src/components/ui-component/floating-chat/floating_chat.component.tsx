@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useChatWithAiMutation } from "../../../redux/apis/chat.api";
 import { isLoggedIn } from "../../../services/auth.service";
-import toast from "react-hot-toast";
+
 
 interface IMessage {
   role: "user" | "model" | "system";
@@ -89,17 +89,21 @@ export const FloatingChatWidget: React.FC = () => {
           { role: "model", content: response.data.content },
         ]);
       }
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as {
+        data?: Array<{ message?: string }> | { message?: string } | null;
+        message?: string;
+      };
       // Capture rate limit or API errors
       let errMsg = "Oops! Something went wrong. Please try again.";
-      if (err?.data) {
-        if (Array.isArray(err.data) && err.data.length > 0) {
-          errMsg = err.data[0].message || errMsg;
-        } else if (typeof err.data === "object" && err.data.message) {
-          errMsg = err.data.message;
+      if (error?.data) {
+        if (Array.isArray(error.data) && error.data.length > 0) {
+          errMsg = error.data[0].message || errMsg;
+        } else if (typeof error.data === "object" && error.data !== null && "message" in error.data) {
+          errMsg = (error.data as { message?: string }).message || errMsg;
         }
-      } else if (err?.message) {
-        errMsg = err.message;
+      } else if (error?.message) {
+        errMsg = error.message;
       }
       setMessages((prev) => [
         ...prev,
