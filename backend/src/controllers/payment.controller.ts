@@ -107,16 +107,45 @@ export const verifyPayment = async (
       });
       return;
     }
-    
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest("hex");
 
-    const isSignatureValid = crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, "hex"),
-      Buffer.from(razorpay_signature, "hex")
-    );
+    // Guard: reject signatures that are not valid hex strings of the
+    // expected SHA-256 HMAC length (64 hex chars / 32 bytes).
+    // Without this, Buffer.from(…, "hex") or crypto.timingSafeEqual
+    // can throw a RangeError that crashes the process (#3750).
+    if (
+      typeof razorpay_signature !== "string" ||
+      !/^[a-f0-9]{64}$/i.test(razorpay_signature)
+    ) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid payment signature format",
+      });
+      return;
+    }
+
+    let isSignatureValid: boolean;
+    try {
+      const expectedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .digest("hex");
+
+      isSignatureValid = crypto.timingSafeEqual(
+        Buffer.from(expectedSignature, "hex"),
+        Buffer.from(razorpay_signature, "hex")
+      );
+    } catch (err) {
+      // Catch residual RangeError from malformed input that slips
+      // past the regex guard (e.g. non-string order/payment IDs).
+      if (err instanceof RangeError || err instanceof TypeError) {
+        res.status(400).json({
+          success: false,
+          message: "Invalid payment signature format",
+        });
+        return;
+      }
+      throw err; // Re-throw unexpected errors to the outer catch / next()
+    }
 
     if (!isSignatureValid) {
       res.status(400).json({
