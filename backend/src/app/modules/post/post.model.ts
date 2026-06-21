@@ -35,11 +35,21 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     reactions: [{ type: Schema.Types.ObjectId, ref: "Reaction" }],
     bookmarks: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    parentStoryId: { type: Schema.Types.ObjectId, ref: "Post", default: null },
+    rootStoryId: { type: Schema.Types.ObjectId, ref: "Post" },
+    branchDepth: { type: Number, default: 0 },
   },
   {
     timestamps: true,
   }
 );
+
+PostSchema.pre("save", function (next) {
+  if (!this.rootStoryId) {
+    this.rootStoryId = this._id;
+  }
+  next();
+});
 
 PostSchema.index({ author: 1, publishedAt: -1 });
 PostSchema.index({ author: 1, createdAt: -1 });

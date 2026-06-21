@@ -4,11 +4,21 @@ import { useDebounced } from "../../../hooks/global";
 import { Topic } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
 import ImageFallback from "../../ImageFallback";
+import StoryTreePanel from "../../story-tree/StoryTreePanel";
 
 const PostListsComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [size, setSize] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
+  const [viewMode, setViewModeState] = useState<"list" | "tree">(
+    (localStorage.getItem("storyTreeViewMode") as "list" | "tree") || "list"
+  );
+  const [selectedRootStoryId, setSelectedRootStoryId] = useState<string | null>(null);
+
+  const setViewMode = (mode: "list" | "tree") => {
+    setViewModeState(mode);
+    localStorage.setItem("storyTreeViewMode", mode);
+  };
   const query: Record<string, string | number> = {
     page,
     limit: size,
@@ -88,7 +98,50 @@ const PostListsComponent: React.FC = () => {
   return (
     <div className="bg-[#1a1d2d]/80 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-800/60 overflow-hidden">
       <div className="w-full flex justify-between items-center p-5 border-b border-gray-800/60 bg-[#1a1d2d]/50">
-        <h2 className="text-xl font-bold text-gray-100 tracking-tight">Posts</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-bold text-gray-100 tracking-tight">Posts</h2>
+          <div className="flex bg-[#141624] rounded-lg p-0.5 border border-gray-800">
+            <button
+              onClick={() => setViewMode("list")}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer ${
+                viewMode === "list"
+                  ? "bg-blue-600 text-white shadow"
+                  : "text-gray-400 hover:text-gray-250"
+              }`}
+            >
+              List View
+            </button>
+            <button
+              onClick={() => {
+                if (!selectedRootStoryId && data?.posts && data.posts.length > 0) {
+                  setSelectedRootStoryId(data.posts[0].rootStoryId || data.posts[0]._id);
+                }
+                setViewMode("tree");
+              }}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer ${
+                viewMode === "tree"
+                  ? "bg-blue-600 text-white shadow"
+                  : "text-gray-400 hover:text-gray-250"
+              }`}
+            >
+              Tree View
+            </button>
+          </div>
+          {viewMode === "tree" && data?.posts && data.posts.length > 0 && (
+            <select
+              value={selectedRootStoryId || ""}
+              onChange={(e) => setSelectedRootStoryId(e.target.value)}
+              className="bg-[#141624] text-gray-250 text-xs border border-gray-800 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-500/50"
+            >
+              <option value="" disabled>Select story tree</option>
+              {data.posts.map(p => (
+                <option key={p._id} value={p.rootStoryId || p._id}>
+                  {p.title}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
         <div className="ml-3">
           <div className="w-full max-w-sm min-w-[250px] relative group">
             <div className="relative">
@@ -122,7 +175,18 @@ const PostListsComponent: React.FC = () => {
         </div>
       </div>
 
-      {isLoading ? (
+      {viewMode === "tree" ? (
+        <div className="p-6">
+          {selectedRootStoryId ? (
+            <StoryTreePanel rootStoryId={selectedRootStoryId} />
+          ) : (
+            <div className="text-center py-12 text-slate-500">
+              <i className="fas fa-project-diagram text-4xl mb-3"></i>
+              <p>No story selected to view lineage.</p>
+            </div>
+          )}
+        </div>
+      ) : isLoading ? (
         <div className="p-12 flex justify-center items-center">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
         </div>
@@ -252,6 +316,15 @@ const PostListsComponent: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <button className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 px-3 py-1.5 rounded-md transition-all">
                         Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedRootStoryId(post.rootStoryId || post._id);
+                          setViewMode("tree");
+                        }}
+                        className="text-indigo-400 hover:text-indigo-300 hover:bg-indigo-400/10 px-3 py-1.5 rounded-md transition-all"
+                      >
+                        View Tree
                       </button>
                       <button
                           onClick={() => setConfirmDeleteId(post._id)}

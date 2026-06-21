@@ -67,7 +67,7 @@ ${previousContent}
   );
   const data = response.data.data;
   if (Array.isArray(data)) {
-    return data.map((item: any) => item.continuation ?? "");
+    return data.map((item: { continuation?: string }) => item.continuation ?? "");
   }
   return [];
 };

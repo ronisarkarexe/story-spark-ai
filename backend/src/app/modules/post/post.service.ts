@@ -102,6 +102,19 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
   try {
+    let parentStoryId = null;
+    let rootStoryId = undefined;
+    let branchDepth = 0;
+
+    if (payload.parentStoryId) {
+      const parent = await Post.findById(payload.parentStoryId);
+      if (parent) {
+        parentStoryId = parent._id;
+        rootStoryId = parent.rootStoryId || parent._id;
+        branchDepth = (parent.branchDepth ?? 0) + 1;
+      }
+    }
+
     const postPayload = {
       title: payload.title,
       content: payload.content,
@@ -115,6 +128,9 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       publishedAt: new Date(),
       author: user._id,
       updatedBy: user._id,
+      parentStoryId,
+      rootStoryId,
+      branchDepth,
     };
     const res = await Post.create(postPayload);
 
@@ -568,6 +584,9 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     author: user._id,
     updatedBy: user._id,
     tag: originalPost.tag,
+    parentStoryId: originalPost._id,
+    rootStoryId: originalPost.rootStoryId || originalPost._id,
+    branchDepth: (originalPost.branchDepth ?? 0) + 1,
   });
 
   if (res) {
@@ -609,6 +628,9 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
     author: user._id,
     updatedBy: user._id,
     tag: originalPost.tag,
+    parentStoryId: originalPost._id,
+    rootStoryId: originalPost.rootStoryId || originalPost._id,
+    branchDepth: (originalPost.branchDepth ?? 0) + 1,
   });
 
   if (res) {

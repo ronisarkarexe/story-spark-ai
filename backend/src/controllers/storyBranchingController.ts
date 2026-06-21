@@ -3,6 +3,11 @@ import { generateStory } from "../services/ai.service";
 import sendResponse from "../shared/send_response";
 import { storyQueue } from "../services/storyRequestQueue";
 import { compressContext, serializeLore } from "../utils/contextCompressor";
+import { Post } from "../app/modules/post/post.model";
+import { Types } from "mongoose";
+import { verifyPostAccess } from "../app/modules/post/post.utils";
+import httpStatus from "http-status";
+import ApiError from "../errors/api_error";
 
 const sanitizeJsonText = (rawText: string): string => {
   const trimmed = rawText.trim();
@@ -92,8 +97,9 @@ Task:
         }
       }
 
+      let choices: string[] = [];
       if (!parsed.choices || parsed.choices.length === 0) {
-        parsed.choices = [
+        choices = [
           "Explore the surroundings",
           "Search for another way",
           "Wait and see what happens",
@@ -113,7 +119,7 @@ Task:
         success: true,
         statusCode: 200,
         message: "Story generated successfully",
-        data: { storySegment: parsed.storySegment, choices: parsed.choices, segmentIndex },
+        data: { storySegment: parsed.storySegment, choices, segmentIndex },
       });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
@@ -122,6 +128,51 @@ Task:
         success: false,
         statusCode: 503,
         message: "Story generation is temporarily unavailable. Please try again later.",
+        data: null,
+      });
+    }
+  },
+
+  getStoryTree: async (req: Request, res: Response) => {
+    try {
+      const { rootStoryId } = req.params;
+      if (!Types.ObjectId.isValid(rootStoryId)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid rootStoryId provided");
+      }
+
+      const rootStory = await Post.findById(rootStoryId);
+      if (!rootStory) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Root story not found");
+      }
+
+      verifyPostAccess(rootStory, req.user);
+
+      const stories = await Post.find({
+        rootStoryId: new Types.ObjectId(rootStoryId),
+        isDeleted: { $ne: true }
+      }).populate("author", "name email");
+
+      const nodes = stories.map(story => ({
+        id: story._id.toString(),
+        title: story.title,
+        parentStoryId: story.parentStoryId ? story.parentStoryId.toString() : null,
+        branchDepth: story.branchDepth ?? 0,
+        createdAt: story.createdAt,
+      }));
+
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Story tree retrieved successfully",
+        data: { nodes },
+      });
+    } catch (error: any) {
+      const statusCode = (error && typeof error === "object" && "statusCode" in error) ? error.statusCode : httpStatus.INTERNAL_SERVER_ERROR;
+      const message = (error && typeof error === "object" && "message" in error) ? error.message : "Internal server error";
+      sendResponse(res, {
+        statusCode,
+        success: false,
+        message,
         data: null,
       });
     }

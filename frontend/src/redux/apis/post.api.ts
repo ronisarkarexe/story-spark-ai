@@ -243,6 +243,15 @@ const postApi = baseApi.injectEndpoints({
       transformResponse: (response: { data: string[] }) => response.data,
       providesTags: [tagTypes.post],
     }),
+
+    getStoryTree: build.query<{ nodes: Record<string, unknown>[] }, string>({
+      query: (rootStoryId: string) => ({
+        url: `/stories/${rootStoryId}/tree`,
+        method: "GET",
+      }),
+      transformResponse: (response: { data: { nodes: Record<string, unknown>[] } }) => response.data,
+      providesTags: [tagTypes.post],
+    }),
   }),
 });
 
@@ -254,7 +263,9 @@ export const {
   useGetLatestListsQuery,
   useGetFeaturedListsQuery,
   useGetPostByIdQuery,
+  useLazyGetPostByIdQuery,
   useGetPostByTagQuery,
   useDeletePostMutation,
   useGetGenresQuery,
+  useGetStoryTreeQuery,
 } = postApi;

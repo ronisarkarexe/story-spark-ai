@@ -23,6 +23,7 @@ const GENRE_COLORS: Record<string, { spine: string; glow: string; text: string }
   default:   { spine: "#1e1b4b", glow: "#6366f1", text: "#c7d2fe" },
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function getGenreColor(tag: string) {
   return GENRE_COLORS[tag] || GENRE_COLORS.default;
 }

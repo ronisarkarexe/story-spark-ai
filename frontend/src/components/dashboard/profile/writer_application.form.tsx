@@ -50,7 +50,7 @@ export const WriterApplicationForm = ({ user }: Props) => {
     return null;
   }
 
-  if ((user as any).isApplyForWriter) {
+  if ((user as User & { isApplyForWriter?: boolean }).isApplyForWriter) {
     return (
       <div className="w-full">
         <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-lg dark:border-slate-700/50 dark:bg-slate-800/40">
@@ -77,9 +77,8 @@ export const WriterApplicationForm = ({ user }: Props) => {
     try {
       await submitApplication(formData).unwrap();
       toast.success("Application submitted successfully!");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to submit application");
+    } catch (err: unknown) {
+      toast.error((err as { data?: { message?: string } })?.data?.message || "Failed to submit application");
     }
   };
 

@@ -51,7 +51,7 @@ vi.mock('../../redux/apis/user.api', () => ({
 }));
 
 // --- Test Data ---
-const mockStories: any[] = [
+const mockStories: Record<string, unknown>[] = [
   {
     uuid: '123-abc',
     title: 'The Great AI Adventure',
@@ -108,19 +108,19 @@ describe('StoriesViewComponent - Core Rendering', () => {
         setStories={mockSetStories}
       />
     );
-    expect(screen.getByText('No stories available.')).toBeInTheDocument();
+    expect(screen.getByText('Your AI-generated story will appear here')).toBeInTheDocument();
   });
 
   it('renders the first story correctly when stories are provided', () => {
     render(
       <StoriesViewComponent
-        stories={mockStories}
+        stories={mockStories as any}
         isLogin={true}
         setStories={mockSetStories}
       />
     );
-    expect(screen.getByText('The Great AI Adventure')).toBeInTheDocument();
-    expect(screen.getByText('Once upon a time in a digital world...')).toBeInTheDocument();
+    expect(screen.getAllByText('The Great AI Adventure')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Once upon a time in a digital world...')[0]).toBeInTheDocument();
   });
 });
 
@@ -138,7 +138,7 @@ describe('StoriesViewComponent - Alternate Endings Generation', () => {
 
     render(
       <StoriesViewComponent
-        stories={mockStories}
+        stories={mockStories as any}
         isLogin={true}
         setStories={mockSetStories}
       />
@@ -167,7 +167,7 @@ describe('StoriesViewComponent - Alternate Endings Generation', () => {
 
     render(
       <StoriesViewComponent
-        stories={mockStories}
+        stories={mockStories as any}
         isLogin={false}
         setStories={mockSetStories}
       />

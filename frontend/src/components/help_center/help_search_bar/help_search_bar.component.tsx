@@ -27,7 +27,7 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setRecentSearches(JSON.parse(raw));
-    } catch (e) {
+    } catch {
       // ignore
     }
   }, []);
@@ -35,7 +35,7 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
   const persist = (items: string[]) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch (e) {
+    } catch {
       // ignore
     }
   };
@@ -53,7 +53,7 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
     setRecentSearches([]);
     try {
       localStorage.removeItem(STORAGE_KEY);
-    } catch (e) {
+    } catch {
       // ignore
     }
     inputRef.current?.focus();

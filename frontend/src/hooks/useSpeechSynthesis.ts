@@ -117,7 +117,7 @@ const getLanguageLabel = (lang: string): string => {
   }
 };
 
-,const buildWordRanges = (inputText: string): WordRange[] => {
+const buildWordRanges = (inputText: string): WordRange[] => {
   if (!inputText.trim()) {
     return [];
   }
@@ -161,8 +161,7 @@ export const useSpeechSynthesis = (
   voiceGender?: "female" | "male",
 ): UseSpeechSynthesisResult => {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const sessionRef = useRef(0);
-  const previousTextRef = useRef(text);
+
   const browserVoicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   const [isSupported, setIsSupported] = useState(false);

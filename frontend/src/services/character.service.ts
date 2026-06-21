@@ -1,4 +1,4 @@
-export const saveCharacter = async (characterData: any) => {
+export const saveCharacter = async (characterData: unknown) => {
   // Logic to save character to backend
   console.log("Saving character:", characterData);
 };

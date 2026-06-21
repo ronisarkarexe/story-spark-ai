@@ -61,6 +61,29 @@ async function main() {
 
   try {
     await connectDB();
+    
+    // Automatically migrate existing posts to support lineage tracking fields
+    try {
+      const PostModel = mongoose.model("Post");
+      const postsToMigrate = await PostModel.find({
+        $or: [
+          { rootStoryId: { $exists: false } },
+          { rootStoryId: null }
+        ]
+      });
+      if (postsToMigrate.length > 0) {
+        logger.info(`[Lineage Migration] Migrating ${postsToMigrate.length} posts for lineage tracking...`);
+        for (const post of postsToMigrate) {
+          post.parentStoryId = post.parentStoryId || null;
+          post.rootStoryId = post.rootStoryId || post._id;
+          post.branchDepth = post.branchDepth ?? 0;
+          await post.save();
+        }
+        logger.info(`[Lineage Migration] Migration complete.`);
+      }
+    } catch (migError) {
+      logger.error("[Lineage Migration] Error during lineage migration:", migError);
+    }
   } catch (startupError) {
     logger.error("Critical error during application startup:", startupError);
     process.exit(1);

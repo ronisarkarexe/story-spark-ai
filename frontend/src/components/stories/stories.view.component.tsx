@@ -5,6 +5,10 @@ import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
+import {
+  useGenerateAlternateEndingsMutation,
+  useGenerateFreeAlternateEndingsMutation,
+} from "../../redux/apis/ai.model.api";
 
 export interface IStories {
   uuid: string;
@@ -22,6 +26,8 @@ interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
+  onPublishSuccess?: () => void;
+  isLoading?: boolean;
 }
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
@@ -39,6 +45,31 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
+  const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
+  const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+  const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
+
+  const handleGenerateAlternateEndings = async () => {
+    if (!selectedStory) return;
+    setIsGeneratingEndings(true);
+    try {
+      const payload = {
+        title: selectedStory.title,
+        content: selectedStory.content,
+        tag: selectedStory.tag,
+        language: "English",
+      };
+      if (isLogin) {
+        await generateAlternateEndings(payload).unwrap();
+      } else {
+        await generateFreeAlternateEndings(payload).unwrap();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsGeneratingEndings(false);
+    }
+  };
 
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
@@ -68,7 +99,7 @@ useEffect(() => {
   };
 
   autoSaveStory();
-}, [selectedStory, isLogin, selectTopics]);
+}, [selectedStory, isLogin, selectTopics, createPost]);
 
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
@@ -303,6 +334,18 @@ const handleGenerateCharacterProfile = async () => {
                 <p>No story available. Please generate a story first.</p>
               )}
             </div>
+            {selectedStory && (
+              <div className="mt-4 pt-4 border-t border-slate-700/50">
+                <button
+                  type="button"
+                  onClick={handleGenerateAlternateEndings}
+                  disabled={isGeneratingEndings}
+                  className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isGeneratingEndings ? "Generating Endings..." : "Generate Alternate Endings"}
+                </button>
+              </div>
+            )}
           </div>
           <div className="mt-6">
   {characterProfiles.length > 0 && (

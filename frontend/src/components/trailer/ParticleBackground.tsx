@@ -77,7 +77,7 @@ export default function ParticleBackground({ genre }: Props) {
 
     animate();
     return () => cancelAnimationFrame(animId);
-  }, [genre]);
+  }, [genre, theme.particleCount, theme.particles]);
 
   return (
     <>

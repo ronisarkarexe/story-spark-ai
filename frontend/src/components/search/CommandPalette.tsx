@@ -35,6 +35,7 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [recent, setRecent] = useState<string[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 

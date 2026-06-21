@@ -103,10 +103,6 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
     saveCookiePreferences(updated);
   };
 
-  const bannerClasses = isDark
-    ? "fixed inset-x-0 bottom-0 z-50 bg-slate-950/95 border-t border-slate-200/10 dark:border-white/10 py-6 shadow-2xl backdrop-blur-xl text-white transition-colors duration-300 max-h-[85vh] overflow-y-auto sidebar"
-    : "fixed inset-x-0 bottom-0 z-50 bg-white/95 border-t border-slate-200 py-6 shadow-2xl backdrop-blur-xl text-slate-900 transition-colors duration-300 max-h-[85vh] overflow-y-auto sidebar";
-
   const panelClasses = isDark
     ? "rounded-2xl border border-slate-200/10 dark:border-white/5 bg-slate-900/40 p-4 sm:p-5"
     : "rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5";

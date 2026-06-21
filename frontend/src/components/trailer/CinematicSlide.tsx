@@ -36,7 +36,7 @@ export default function CinematicSlide({
       if (i >= words.length) clearInterval(interval);
     }, 150);
     return () => clearInterval(interval);
-  }, [isActive, scene]);
+  }, [isActive, scene, words.length]);
 
   return (
     <div

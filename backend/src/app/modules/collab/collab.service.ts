@@ -12,7 +12,13 @@ export class CollabService {
     const room = await CollabRoom.findOne({ roomId }, { collabState: 1 }).lean();
     if (!room || !room.collabState) return undefined;
     // collabState is stored as a Buffer; convert to base64
-    return (room.collabState as Buffer).toString('base64');
+    const state = room.collabState as any;
+    const buffer = Buffer.isBuffer(state)
+      ? state
+      : state.buffer
+        ? Buffer.from(state.buffer)
+        : Buffer.from(state);
+    return buffer.toString('base64');
   }
 
   /**

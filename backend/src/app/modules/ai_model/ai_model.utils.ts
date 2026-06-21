@@ -127,6 +127,13 @@ const buildToneInstruction = (tone?: string): string => {
   return `Tone & Style Directive: ${instruction}\n\n`;
 };
 
+const sanitizeJsonText = (rawText: string): string => {
+  return rawText
+    .replace(/```json\s?/g, "")
+    .replace(/```\s?/g, "")
+    .trim();
+};
+
 const throwIfAborted = (signal?: AbortSignal): void => {
   if (signal?.aborted) {
     throw new GenerationAbortedError();
@@ -751,7 +758,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,

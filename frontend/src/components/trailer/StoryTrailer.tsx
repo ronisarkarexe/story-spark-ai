@@ -10,7 +10,7 @@ interface Props {
   onClose: () => void;
 }
 
-export default function StoryTrailer({ title, content, tag, isLogin, onClose }: Props) {
+export default function StoryTrailer({ title, content, tag, onClose }: Props) {
   const [scenes, setScenes] = useState<string[]>([]);
   const [currentScene, setCurrentScene] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -73,7 +73,7 @@ Example format: ["The darkness consumed everything around him", "She ran but cou
     };
 
     extractScenes();
-  }, [content]);
+  }, [content, generateModel]);
 
   // Auto-advance slides
   useEffect(() => {

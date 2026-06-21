@@ -72,7 +72,7 @@ export const ExploreComponent = () => {
     ),
   ).slice(0, 8);
 
-  const availableGenres = genres ?? [];
+  const availableGenres = useMemo(() => genres ?? [], [genres]);
 
   const filteredSuggestions = useMemo(() => {
     if (!searchTerm.trim()) return [];

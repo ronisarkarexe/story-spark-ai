@@ -28,7 +28,7 @@ const StoryRatingInput: React.FC<StoryRatingInputProps> = ({ storyId }) => {
     try {
       await rateStory({ storyId, rating, review }).unwrap();
       toast.success("Thank you! Your rating has been submitted.");
-    } catch (error) {
+    } catch {
       toast.error("Failed to submit rating. Please try again.");
     }
   };
