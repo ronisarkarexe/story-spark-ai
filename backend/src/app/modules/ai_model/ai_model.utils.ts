@@ -39,6 +39,15 @@ const fallbackModel = genAI.getGenerativeModel({
   model: "gemini-2.5-flash-8b",
 });
 
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
+
 const generationConfig = {
   temperature: 1,
   topP: 0.95,
@@ -751,7 +760,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,

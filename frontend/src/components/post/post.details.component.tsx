@@ -21,6 +21,8 @@ import BookmarkButton from "../BookmarkButton";
 import AudioPlayer from "../AudioPlayer";
 import ReaderPreferencesPanel from "../reader-preferences/ReaderPreferences";
 import { useReaderPreferences } from "../reader-preferences/useReaderPreferences";
+import { ReadingPreferencesProvider, useReadingPreferences } from "../../context/ReadingPreferencesContext";
+import ReadingMode from "../reading/ReadingMode";
 
 import { formatDateShort } from "../../utils/time-formate";
 import { formatReadingStats } from "../../utils/story-utils";
@@ -59,9 +61,10 @@ interface IStoryVersion {
   updatedAt: string;
 }
 
-const PostDetailsComponent = () => {
+const PostDetailsContent = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { setIsReadingMode } = useReadingPreferences();
 
   const { data: post, isLoading } = useGetPostByIdQuery(id || "");
 
@@ -553,6 +556,12 @@ const PostDetailsComponent = () => {
   >
     🌍 Translate
   </button>
+  <button
+    onClick={() => setIsReadingMode(true)}
+    className="px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-500 text-white transition ml-2 cursor-pointer"
+  >
+    📖 Reading Mode
+  </button>
 
   {showShareMenu && (
     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
@@ -813,7 +822,24 @@ const PostDetailsComponent = () => {
           onClose={() => setShowTranslator(false)}
         />
       )}
+
+      {post && (
+        <ReadingMode
+          storyId={post._id}
+          title={post.title}
+          content={post.content}
+          imageURL={post.imageURL}
+        />
+      )}
     </div>
+  );
+};
+
+const PostDetailsComponent = () => {
+  return (
+    <ReadingPreferencesProvider>
+      <PostDetailsContent />
+    </ReadingPreferencesProvider>
   );
 };
 

@@ -126,12 +126,13 @@ export const consumeRateLimit = async (
     logger.error(`Rate limit store error for ${key}: ${message}`);
     return { allowed: false, retryAfterSec: STORE_ERROR_RETRY_AFTER_SEC };
   }
-};
-
-import Redis from "ioredis";
+};import Redis from "ioredis";
 
 // We use ioredis to securely track token quotas
 const redisClient = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : new Redis();
+redisClient.on("error", (err: any) => {
+  // Silence connection errors to avoid flooding console in local development when Redis is not running
+});
 
 export const consumeTokenQuota = async (
   userIdOrIp: string,
