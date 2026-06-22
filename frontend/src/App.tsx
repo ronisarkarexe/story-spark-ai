@@ -3,54 +3,24 @@ import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-rou
 
 import { USER_ROLE } from "./constants/role";
 
-import React from "react";
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
-import HeroSectionComponent from "./components/hero/hero_section.component";
-import HomeComponent from "./components/home/home.component";
-import LoginComponent from "./components/login/login.component";
-import SignUpComponent from "./components/signup/signup.component";
-import DashboardComponent from "./components/dashboard/dashboard.component";
-import RootLayout from "./components/layout/root_layout.component";
-import DashboardLayout from "./components/dashboard/dashboard_layout.component";
-import LoadingAnimation from "./components/loading/loading.component";
-import ProtectedRoute from "./components/ProtectedRoute";
-import ScrollToTopButton from "./components/ScrollToTopButton";
 import ScrollToTop from "./components/ScrollToTop";
 import PageTitleUpdater from "./components/PageTitleUpdater";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import ThemeSwitcher from "./components/theme-switcher/ThemeSwitcher";
+import RootLayout from "./components/layout/root_layout.component";
+import LoadingAnimation from "./components/loading/loading.component";
+import ProtectedRoute from "./components/ProtectedRoute";
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
-
 import NotFoundComponent from "./components/not-found.component";
 import Leaderboard from "./pages/Leaderboard";
-import PaymentComponent from "./components/home/pricing/payment.component";
-import PostDetailsComponent from "./components/post/post.details.component";
-import PostListsComponent from "./components/dashboard/posts/post_lists.component";
-import PricingComponent from "./components/pricing/pricing.component";
-import PrivacyPolicy from "./components/footer/Privacy.tsx";
-import ProfileComponent from "./components/dashboard/profile/profile.component";
-import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
-import ReportBug from "./components/report-bug/ReportBug";
-import ResourceDetailComponent from "./components/community/resource_detail.component";
-import ResourcesListComponent from "./components/community/resources_list.component";
-import ScrollToTop from "./components/ScrollToTop";
-import ScrollToTopButton from "./components/ScrollToTopButton";
-import SettingComponent from "./components/dashboard/settings/settings.component";
-import SignUpComponent from "./components/signup/signup.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
-import StoriesComponent from "./components/stories/stories.component";
-import ChatPage from "./components/chat/ChatPage";
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
   element?: React.ReactElement;
 };
+
 
 // Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
@@ -84,6 +54,7 @@ const StoryWorkspace = lazy(() => import("./components/story/StoryWorkspace"));
 const CollabHome = lazy(() => import("./components/collab/CollabHome"));
 const CollabRoom = lazy(() => import("./components/collab/CollabRoom"));
 const DashboardComponent = lazy(() => import("./components/dashboard/dashboard.component"));
+const DashboardLayout = lazy(() => import("./components/dashboard/dashboard_layout.component"));
 const ProfileComponent = lazy(() => import("./components/dashboard/profile/profile.component"));
 const WriterApplicationComponent = lazy(() => import("./components/dashboard/writers/writer_application.component"));
 const UserComponent = lazy(() => import("./components/dashboard/users/user.component"));

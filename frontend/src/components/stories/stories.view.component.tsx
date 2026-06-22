@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo, Suspense } from "react";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
 import StoryVersionHistory from "./StoryVersionHistory";
@@ -25,7 +25,7 @@ import {
   useGenerateFreeAlternateEndingsMutation,
 } from "../../redux/apis/ai.model.api";
 
-import StoryVisualizer from "../story-visualizer/StoryVisualizer";
+// import StoryVisualizer from "../story-visualizer/StoryVisualizer";
 import ContinueStoryModal from "./ContinueStoryModal";
 // import { useGenerateStoryVisualsMutation } from "../../redux/apis/story.visualizer.api";
 
@@ -141,8 +141,6 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
   );
 };
 
-import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
-import ContinueStoryModal from "./ContinueStoryModal";
 import StoryTranslator from "../translate/StoryTranslator";
 
 export interface IStories {
@@ -158,6 +156,7 @@ export interface IStories {
     explanation: string;
     suggestedCorrection: string;
   }[];
+  enhancedPrompt?: string;
 }
 
 interface IPost extends IStories {
@@ -231,16 +230,24 @@ const downloadBlob = (blob: Blob, fileName: string) => {
 };
 */
 
+export interface IRelatedStoriesComponentProps {
+  posts: {
+    _id: string;
+    title: string;
+  }[];
+  currentPostId: string;
+}
+
 export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
   const navigate = useNavigate();
-  const filteredPosts = posts.filter((post) => post._id !== currentPostId);
+  const filteredPosts = posts.filter((post: { _id: string; title: string }) => post._id !== currentPostId);
 
   return (
     <div className="mt-8">
       <h4 className="text-lg font-bold text-slate-200 mb-4">Related Content</h4>
       {filteredPosts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredPosts.map((post) => (
+          {filteredPosts.map((post: { _id: string; title: string }) => (
             <div
               key={post._id}
               onClick={() => navigate(`/stories/${post._id}`)}
@@ -255,7 +262,6 @@ export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = 
       )}
     </div>
   );
-  return segments;
 };
 
 
@@ -301,13 +307,13 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
   const [showTranslator, setShowTranslator] = useState<boolean>(false);
-  const [showStoryVisualizer, setShowStoryVisualizer] = useState<boolean>(false);
+  // const [showStoryVisualizer, setShowStoryVisualizer] = useState<boolean>(false);
   const [showTrailer, setShowTrailer] = useState<boolean>(false);
   const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
   
   // StoryVisualizer states
-  const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>(""); // eslint-disable-line @typescript-eslint/no-unused-vars
+  // const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
+  // const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>(""); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState<boolean>(false);
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
@@ -426,68 +432,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     toast.success("Reverted to original story ending!");
   };
 
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleTextToSpeech = () => {
-    if (!selectedStory?.content) return;
-
-    if (!("speechSynthesis" in window)) {
-      toast.error("Text-to-speech is not supported in this browser.");
-      return;
-    }
-
-    if (isPlayingAudio) {
-      if (isPausedAudio) {
-        window.speechSynthesis.resume();
-        setIsPausedAudio(false);
-        toast.success("Resumed reading story");
-      } else {
-        window.speechSynthesis.pause();
-        setIsPausedAudio(true);
-        toast.success("Paused reading story");
-      }
-    } else {
-      window.speechSynthesis.cancel();
-      const cleanContent = selectedStory.content.replace(/<[^>]*>/g, "");
-      const utterance = new SpeechSynthesisUtterance(cleanContent);
-
-      utterance.onend = () => {
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      utterance.onerror = (e) => {
-        console.error("SpeechSynthesis error:", e);
-        setIsPlayingAudio(false);
-        setIsPausedAudio(false);
-      };
-
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find(
-        (v) => v.lang.startsWith("en-") && v.name.includes("Google")
-      ) || voices.find((v) => v.lang.startsWith("en-"));
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
-      setIsPlayingAudio(true);
-      setIsPausedAudio(false);
-      toast.success("Playing story audio");
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleStopAudio = () => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-    setIsPlayingAudio(false);
-    setIsPausedAudio(false);
-    toast.success("Stopped audio playback");
-  };
 
   useEffect(() => {
     return () => {
@@ -540,7 +485,7 @@ useEffect(() => {
   };
 
   autoSaveStory();
-}, [selectedStory, isLogin, selectTopics]);
+}, [selectedStory, isLogin, selectTopics, createPost]);
 
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
@@ -755,7 +700,7 @@ const handleGenerateCharacterProfile = async () => {
     );
   }
 
-  if (!stories || !stories.length || !selectedStory) {
+  if (!selectedStory) {
     return (
       <>
         {/* Empty state */}
@@ -1290,14 +1235,14 @@ const handleGenerateCharacterProfile = async () => {
         </Suspense>
       )}
 
-      {showStoryVisualizer && storyboardScenes.length > 0 && (
+      {/* showStoryVisualizer && storyboardScenes.length > 0 && (
         <StoryVisualizer
           title={selectedStory?.title ?? ""}
           scenes={storyboardScenes}
           styleGuide={storyboardStyleGuide}
           onClose={() => setShowStoryVisualizer(false)}
         />
-      )}
+      ) */}
 
       {showTrailer && selectedStory && (
         <StoryTrailer

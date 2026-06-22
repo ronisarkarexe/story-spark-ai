@@ -174,41 +174,7 @@ export default function CollabRoom() {
     }, TYPING_DEBOUNCE_MS);
   };
 
-  const handleAddText = () => {
-    if (!newText.trim() || !user || !roomId || !collabSocket) return;
 
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-    }
-    emitStopTyping();
-
-    collabSocket.emit("collab:add_text", {
-      roomId,
-      text: newText.trim(),
-    });
-    setNewText("");
-  };
-
-  const handleInputChange = (val: string) => {
-    setNewText(val);
-    if (!collabSocket || !roomId) return;
-
-    if (!isTypingRef.current) {
-      collabSocket.emit("collab:typing", { roomId });
-      isTypingRef.current = true;
-    }
-
-    scheduleStopTyping();
-  };
-
-  const handleInputBlur = () => {
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-    }
-    emitStopTyping();
-  };
 
   const handleAIContinue = () => {
     if (!roomId || !collabSocket) return;
@@ -312,7 +278,7 @@ export default function CollabRoom() {
 
               <div className="flex gap-2 items-start">
                 <CollabEditor
-                  storyId={roomId}
+                  storyId={roomId ?? ""}
                   userId={user?.userId || ''}
                   username={user?.name || 'Anonymous'}
                   userColor="#FF6B6B"
