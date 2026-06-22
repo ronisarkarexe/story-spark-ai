@@ -1,0 +1,150 @@
+import React, { useState } from 'react';
+
+// ==========================================
+// 1. STORY SKELETON COMPONENT
+// ==========================================
+/**
+ * StorySkeleton Component
+ * Fulfills all GSSoC requirements:
+ * - Uses Tailwind's `animate-pulse` for the glowing effect.
+ * - Mimics a generated story layout with titles and paragraphs of varying lengths.
+ * - Fully compatible with both Light and Dark mode variations.
+ */
+const StorySkeleton: React.FC = () => {
+  return (
+    <div 
+      className="w-full max-w-3xl mx-auto p-6 space-y-6 bg-white dark:bg-zinc-900 rounded-xl border border-slate-100 dark:border-zinc-800 shadow-sm transition-colors duration-200"
+      aria-label="Loading story..."
+    >
+      {/* Title & Subtitle Placeholders */}
+      <div className="space-y-3">
+        <div className="h-7 w-3/4 bg-slate-200 dark:bg-zinc-700 rounded-md animate-pulse" />
+        <div className="h-4 w-1/4 bg-slate-200 dark:bg-zinc-700 rounded-md animate-pulse" />
+      </div>
+
+      <hr className="border-slate-100 dark:border-zinc-800" />
+
+      {/* Paragraph 1 Placeholder */}
+      <div className="space-y-2.5">
+        <div className="h-4 w-full bg-slate-200 dark:bg-zinc-700 rounded-md animate-pulse" />
+        <div className="h-4 w-11/12 bg-slate-200 dark:bg-zinc-700 rounded-md animate-pulse" />
+        <div className="h-4 w-full bg-slate-200 dark:bg-zinc-700 rounded-md animate-pulse" />
+        <div className="h-4 w-4/5 bg-slate-200 dark:bg-zinc-700 rounded-md animate-pulse" />
+      </div>
+
+      {/* Paragraph 2 Placeholder */}
+      <div className="space-y-2.5 pt-2">
+        <div className="h-4 w-full bg-slate-200 dark:bg-zinc-700 rounded-md animate-pulse" />
+        <div className="h-4 w-full bg-slate-200 dark:bg-zinc-700 rounded-md animate-pulse" />
+        <div className="h-4 w-5/6 bg-slate-200 dark:bg-zinc-700 rounded-md animate-pulse" />
+        <div className="h-4 w-2/3 bg-slate-200 dark:bg-zinc-700 rounded-md animate-pulse" />
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 2. MAIN APPLICATION COMPONENT
+// ==========================================
+interface StoryData {
+  title: string;
+  author: string;
+  content: string;
+}
+
+export default function StoryGenerator() {
+  const [prompt, setPrompt] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [story, setStory] = useState<StoryData | null>(null);
+
+  // Mock function representing the Gemini/OpenAI prompt submission fetch request
+  const handleGenerateStory = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!prompt.trim()) return;
+
+    // Trigger loading state -> renders the StorySkeleton UI
+    setIsLoading(true);
+    setStory(null);
+
+    try {
+      // Mimic a 3-second network delay from the AI Model endpoint
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      
+      setStory({
+        title: "The Neon Codex",
+        author: "AI Assistant",
+        content: "The rain slicked the streets of Neo-Kyoto in sheets of reflected neon. Kaelen adjusted his collar, looking down at the drive resting in his palm. Within it lay the entire consciousness of the city's archive. He had exactly three minutes before the corporate grid traced his biometric signature. Taking a deep breath, he plugged the drive into the terminal, watching the progress bar tick forward..."
+      });
+    } catch (error) {
+      console.error("Error generating story:", error);
+    } finally {
+      // Turn off loading state once complete
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 p-4 md:p-8 transition-colors duration-200">
+      <div className="max-w-3xl mx-auto space-y-8">
+        
+        {/* Header Block */}
+        <header className="text-center space-y-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">
+            AI Story Playground
+          </h1>
+          <p className="text-slate-500 dark:text-zinc-400 text-sm">
+            Submit a prompt below to see the skeleton generation loader in action.
+          </p>
+        </header>
+
+        {/* User Input Form */}
+        <form onSubmit={handleGenerateStory} className="space-y-4">
+          <div>
+            <label htmlFor="prompt" className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-zinc-300">
+              What kind of story do you want to create?
+            </label>
+            <textarea
+              id="prompt"
+              rows={3}
+              value={prompt}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
+              placeholder="e.g., A cyberpunk detective chasing a digital ghost in Neo-Kyoto..."
+              className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition duration-150 text-sm shadow-sm placeholder:text-slate-400 dark:placeholder:text-zinc-500"
+              disabled={isLoading}
+            />
+          </div>
+          
+          <button
+            type="submit"
+            disabled={isLoading || !prompt.trim()}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            {isLoading ? 'Generating Story Lines...' : 'Generate Story'}
+          </button>
+        </form>
+
+        {/* Dynamic Output Zone */}
+        <main className="pt-4">
+          
+          {/* REQUIREMENT CHECKED: Conditional Skeleton Loader rendering when isLoading is true */}
+          {isLoading && <StorySkeleton />}
+
+          {/* Render actual story output once fetched safely */}
+          {story && !isLoading && (
+            <article className="w-full max-w-3xl mx-auto p-6 bg-white dark:bg-zinc-900 rounded-xl border border-slate-100 dark:border-zinc-800 shadow-sm transition-all duration-200">
+              <div className="mb-4">
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">{story.title}</h2>
+                <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400">By {story.author}</span>
+              </div>
+              <hr className="border-slate-100 dark:border-zinc-800 mb-4" />
+              <p className="text-slate-700 dark:text-zinc-300 leading-relaxed text-sm whitespace-pre-line">
+                {story.content}
+              </p>
+            </article>
+          )}
+
+        </main>
+      </div>
+    </div>
+  );
+}

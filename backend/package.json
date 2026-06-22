@@ -38,9 +38,13 @@
     "openai": "^4.104.0",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.3",
+    "y-websocket": "^2.0.1",
+    "yjs": "^13.6.10",
     "tiktoken": "^1.0.22",
+    "tsx": "^4.22.4",
     "uuid": "^11.1.0",
     "winston": "^3.19.0",
+    "@jest/globals": "^29.7.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
@@ -62,7 +66,7 @@
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "tsx": "^4.22.4",
+    "@jest/globals": "^29.7.0",
     "typescript": "^5.7.2"
   }
 }

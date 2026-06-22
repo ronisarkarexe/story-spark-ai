@@ -1,3 +1,4 @@
+import type { Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 
 /**
@@ -13,6 +14,26 @@ export const searchRateLimiter = rateLimit({
     success: false,
     message: "Too many search requests. Please wait a moment and try again.",
   },
+  keyGenerator: (req: any) => {
+    // Prefer real IP behind proxy (trust proxy is set in app.ts)
+    return (
+      (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+      req.ip ||
+      "unknown"
+    );
+  },
+} as any);
+
+/**
+ * General API rate limiter compliant with CodeQL js/missing-rate-limiting.
+ * Protects route handlers performing auth or DB access from raw spam.
+ */
+export const apiRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Too many requests from this IP. Please try again after 15 minutes.",
   keyGenerator: (req: any) => {
     // Prefer real IP behind proxy (trust proxy is set in app.ts)
     return (

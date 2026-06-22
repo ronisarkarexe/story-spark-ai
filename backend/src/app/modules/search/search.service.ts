@@ -38,7 +38,7 @@ const searchStories = async (
     if (dateTo) (matchStage.createdAt as Record<string, unknown>).$lte = new Date(dateTo);
   }
 
-  const sortStage: Record<string, unknown> =
+  const sortStage: any =
     sortBy === "date"
       ? { createdAt: -1 }
       : sortBy === "popularity"

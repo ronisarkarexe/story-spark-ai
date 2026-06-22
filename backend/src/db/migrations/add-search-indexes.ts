@@ -18,6 +18,10 @@ async function up() {
     throw new Error("Database connection not established");
   }
 
+  if (!db) {
+    throw new Error("Database connection failed");
+  }
+
   // ── Post text index ──────────────────────────────────────────────────────
   const postCollection = db.collection("posts");
 
