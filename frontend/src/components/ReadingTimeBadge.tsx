@@ -5,10 +5,17 @@ type Props = {
 };
 
 export default function ReadingTimeBadge({ text }: Props) {
-  const { minutes, wordCount } = getReadingTime(text);
+  const { minutes, wordCount, lessThanOneMinute } = getReadingTime(text);
+
   return (
     <p className="text-sm text-gray-500 dark:text-gray-400">
-      🕐 {minutes} min read · {wordCount} words
+      {lessThanOneMinute ? (
+        "Less than 1 min read"
+      ) : (
+        `⏱️ ${minutes} min read`
+      )}
+      {wordCount > 0 ? ` · ${wordCount} words` : null}
     </p>
   );
 }
+
