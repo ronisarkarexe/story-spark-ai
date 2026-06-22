@@ -34,3 +34,6 @@ StoryVersionSchema.index({storyId: 1, parentVersionId: 1,});
 StoryVersionSchema.index({storyId: 1, branchDepth: 1,});
 
 export const StoryVersion = model<IStoryVersion, StoryVersionModel>("StoryVersion", StoryVersionSchema);
+
+
+

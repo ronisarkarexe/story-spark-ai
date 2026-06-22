@@ -53,3 +53,7 @@ const otpSchema = new Schema<IOTP>(
 otpSchema.index({ email: 1, expiresAt: 1 });
 
 export const OTPModel = mongoose.model<IOTP>("OTP", otpSchema);
+
+
+
+

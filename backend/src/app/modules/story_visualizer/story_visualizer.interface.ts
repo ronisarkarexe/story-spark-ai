@@ -17,3 +17,7 @@ export interface IStoryVisualizerResult {
   scenes: IStoryboardScene[];
   styleGuide: string;
 }
+
+
+
+

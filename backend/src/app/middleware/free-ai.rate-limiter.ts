@@ -24,3 +24,7 @@ export const freeAiRateLimiter = (req: Request, res: Response, next: NextFunctio
 };
 
 export default freeAiRateLimiter;
+
+
+
+

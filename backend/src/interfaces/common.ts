@@ -5,3 +5,7 @@ export interface IGenericErrorResponse {
   message: string;
   errorMessages: IGenericErrorMessage[];
 }
+
+
+
+

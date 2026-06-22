@@ -2,12 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { User } from "../app/modules/user/user.model";
+import logger from '../utils/logger.util';
 
 let razorpayInstance: any = null;
 const getRazorpay = () => {
   if (!razorpayInstance) {
     if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-      console.warn("Razorpay credentials missing. Payment features will fail.");
+      logger.warn("Razorpay credentials missing. Payment features will fail.");
       return null;
     }
     razorpayInstance = new Razorpay({
@@ -225,3 +226,7 @@ export const getSubscriptionStatus = async (
     next(error);
   }
 };
+
+
+
+

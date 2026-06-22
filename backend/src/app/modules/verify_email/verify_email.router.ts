@@ -9,3 +9,6 @@ router.post("/verify-email", apiRateLimiter, VerifyEmailController.VerifyEmail);
 router.post("/verify-otp", apiRateLimiter, otpRateLimiter, VerifyEmailController.VerifyOtp);
 
 export const VerifyEmailRouter = router;
+
+
+

@@ -8,3 +8,6 @@ const router = express.Router();
 router.get("/", searchRateLimiter, SearchController.search);
 
 export const SearchRouter = router;
+
+
+

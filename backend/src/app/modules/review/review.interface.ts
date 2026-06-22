@@ -20,3 +20,7 @@ export interface IReviewPayload {
   imgSrc?: string;
   rating?: number;
 }
+
+
+
+

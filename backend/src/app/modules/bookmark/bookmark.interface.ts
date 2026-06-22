@@ -5,3 +5,7 @@ export interface IBookmark {
   storyId: Types.ObjectId;
   createdAt?: Date;
 }
+
+
+
+

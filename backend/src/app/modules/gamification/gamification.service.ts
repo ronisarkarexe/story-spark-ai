@@ -1,4 +1,5 @@
 import { User } from "../user/user.model";
+import logger from '../../../utils/logger.util';
 
 const DAILY_LOGIN_XP = 10;
 
@@ -88,7 +89,7 @@ const updateDailyStreak = async (userId: string) => {
       );
     }
   } catch (error) {
-    console.error("Error updating daily streak:", error);
+    logger.error("Error updating daily streak:", error);
   }
 };
 
@@ -115,7 +116,7 @@ const addXp = async (userId: string, amount: number, reason: string) => {
       ]
     );
   } catch (error) {
-    console.error(`Error adding XP for ${reason}:`, error);
+    logger.error(`Error adding XP for ${reason}:`, error);
   }
 };
 
@@ -125,7 +126,7 @@ const awardBadge = async (userId: string, badgeName: string) => {
       $addToSet: { "gamification.badges": badgeName },
     });
   } catch (error) {
-    console.error("Error awarding badge:", error);
+    logger.error("Error awarding badge:", error);
   }
 };
 
@@ -134,3 +135,7 @@ export const GamificationService = {
   addXp,
   awardBadge,
 };
+
+
+
+

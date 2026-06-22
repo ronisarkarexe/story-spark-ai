@@ -5,6 +5,7 @@ import { ITokenPayload } from "../../../interfaces/token";
 import redis from "../../utils/redis.client";
 import { IReviewPayload } from "./review.interface";
 import { Review } from "./review.model";
+import logger from '../../../utils/logger.util';
 
 const PUBLISHED_REVIEWS_KEY = "reviews:published:v1";
 const REVIEWS_CACHE_TTL = Number(process.env.REVIEWS_CACHE_TTL) || 300; // seconds
@@ -20,7 +21,7 @@ const createReview = async (payload: IReviewPayload, token: ITokenPayload) => {
     try {
       await redis.del(PUBLISHED_REVIEWS_KEY);
     } catch (err) {
-      console.warn("Redis DEL failed (createReview):", err);
+      logger.warn("Redis DEL failed (createReview):", err);
     }
   }
 
@@ -36,7 +37,7 @@ const getPublishedReviews = async () => {
         return JSON.parse(cached);
       }
     } catch (err) {
-      console.warn("Redis GET failed (getPublishedReviews):", err);
+      logger.warn("Redis GET failed (getPublishedReviews):", err);
     }
   }
 
@@ -50,7 +51,7 @@ const getPublishedReviews = async () => {
     try {
       await redis.set(PUBLISHED_REVIEWS_KEY, JSON.stringify(result), "EX", REVIEWS_CACHE_TTL);
     } catch (err) {
-      console.warn("Redis SET failed (getPublishedReviews):", err);
+      logger.warn("Redis SET failed (getPublishedReviews):", err);
     }
   }
 
@@ -84,7 +85,7 @@ const approveReview = async (id: string) => {
   try {
     await redis.del(PUBLISHED_REVIEWS_KEY);
   } catch (err) {
-    console.warn("Redis DEL failed (approveReview):", err);
+    logger.warn("Redis DEL failed (approveReview):", err);
   }
 
   return result;
@@ -96,3 +97,7 @@ export const ReviewService = {
   getPendingReviews,
   approveReview,
 };
+
+
+
+

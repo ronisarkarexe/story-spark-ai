@@ -54,3 +54,6 @@ const CharacterSchema = new Schema<ICharacter>(
 );
 
 export const Character = mongoose.model<ICharacter>('Character', CharacterSchema);
+
+
+

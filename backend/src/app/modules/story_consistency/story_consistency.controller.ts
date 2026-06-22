@@ -27,3 +27,6 @@ const trackFacts = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const StoryConsistencyController = { analyze, trackFacts };
+
+
+

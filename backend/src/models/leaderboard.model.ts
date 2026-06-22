@@ -8,3 +8,6 @@ export interface WeeklyLeaderboard {
   totalStories: number;
   leaderboard: LeaderboardUser[];
 }
+
+
+

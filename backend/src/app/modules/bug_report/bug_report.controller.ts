@@ -24,3 +24,6 @@ const submitBugReport = catchAsync(async (req: Request, res: Response) => {
 export const BugReportController = {
   submitBugReport,
 };
+
+
+

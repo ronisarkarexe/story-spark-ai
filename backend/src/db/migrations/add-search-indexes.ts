@@ -10,6 +10,7 @@
 
 import mongoose from "mongoose";
 import config from "../../config";
+import logger from '../../utils/logger.util';
 
 async function up() {
   await mongoose.connect(config.database_url as string);
@@ -36,9 +37,9 @@ async function up() {
         default_language: "english",
       }
     );
-    console.log("✅ Post text index created");
+    logger.info("✅ Post text index created");
   } else {
-    console.log("ℹ️  Post text index already exists — skipping");
+    logger.info("ℹ️  Post text index already exists — skipping");
   }
 
   // ── Post createdAt index (date-sorted queries) ───────────────────────────
@@ -46,7 +47,7 @@ async function up() {
     { createdAt: -1 },
     { name: "post_createdAt_desc", background: true }
   );
-  console.log("✅ Post createdAt index ensured");
+  logger.info("✅ Post createdAt index ensured");
 
   // ── User.name index (author lookup) ──────────────────────────────────────
   const userCollection = db.collection("users");
@@ -54,13 +55,16 @@ async function up() {
     { name: 1 },
     { name: "user_name_asc", background: true }
   );
-  console.log("✅ User.name index ensured");
+  logger.info("✅ User.name index ensured");
 
   await mongoose.disconnect();
-  console.log("Migration complete.");
+  logger.info("Migration complete.");
 }
 
 up().catch((err) => {
-  console.error("Migration failed:", err);
+  logger.error("Migration failed:", err);
   process.exit(1);
 });
+
+
+

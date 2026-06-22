@@ -13,3 +13,7 @@ const detectSchema = z.object({
 export const PlotHoleValidator = {
   detectSchema,
 };
+
+
+
+

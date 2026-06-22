@@ -50,3 +50,6 @@ export interface IPostSearchFields {
   sortFilter?: "mostPopular";
   genres?: string | string[];
 }
+
+
+

@@ -7,3 +7,7 @@ export interface IVerifyOtpBody {
   email: string;
   otp: string;
 }
+
+
+
+

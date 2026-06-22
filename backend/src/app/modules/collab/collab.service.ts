@@ -22,3 +22,7 @@ export class CollabService {
     await CollabRoom.updateOne({ roomId }, { collabState: Buffer.from(base64, 'base64') });
   }
 }
+
+
+
+

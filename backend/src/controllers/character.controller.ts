@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Character } from '../models/Character.model';
+import logger from '../utils/logger.util';
 
 export const createCharacter = async (req: Request, res: Response) => {
   try {
@@ -24,7 +25,7 @@ export const createCharacter = async (req: Request, res: Response) => {
     await character.save();
     res.status(201).json({ success: true, data: character });
   } catch (error) {
-    console.error('Create character error:', error);
+    logger.error('Create character error:', error);
     res.status(500).json({ success: false, message: 'Failed to create character' });
   }
 };
@@ -39,7 +40,7 @@ export const getCharacters = async (req: Request, res: Response) => {
     const characters = await Character.find({ userId }).sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: characters });
   } catch (error) {
-    console.error('Get characters error:', error);
+    logger.error('Get characters error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch characters' });
   }
 };
@@ -60,7 +61,7 @@ export const getCharacterById = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, data: character });
   } catch (error) {
-    console.error('Get character error:', error);
+    logger.error('Get character error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch character' });
   }
 };
@@ -87,7 +88,7 @@ export const updateCharacter = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, data: character });
   } catch (error) {
-    console.error('Update character error:', error);
+    logger.error('Update character error:', error);
     res.status(500).json({ success: false, message: 'Failed to update character' });
   }
 };
@@ -108,7 +109,10 @@ export const deleteCharacter = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, message: 'Character deleted successfully' });
   } catch (error) {
-    console.error('Delete character error:', error);
+    logger.error('Delete character error:', error);
     res.status(500).json({ success: false, message: 'Failed to delete character' });
   }
 };
+
+
+

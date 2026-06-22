@@ -109,7 +109,7 @@ const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
   const accessToken = issueAccessToken(isExistUser, rememberMe ? "30d" : "15m");
   const refreshToken = await issueRefreshToken(isExistUser);
 
-  GamificationService.updateDailyStreak(String(isExistUser._id)).catch(console.error);
+  GamificationService.updateDailyStreak(String(isExistUser._id)).catch((err) => logger.error(err));
 
   return {
     accessToken,
@@ -322,7 +322,7 @@ const googleLogin = async (payload: { token: string }) => {
     const accessToken = issueAccessToken(user);
     const refreshTokenData = await issueRefreshToken(user);
 
-    GamificationService.updateDailyStreak(String(user._id)).catch(console.error);
+    GamificationService.updateDailyStreak(String(user._id)).catch((err) => logger.error(err));
 
     return {
       accessToken,
@@ -478,3 +478,8 @@ export const AuthService = {
   forgotPassword,
   resetPassword,
 };
+
+
+
+
+

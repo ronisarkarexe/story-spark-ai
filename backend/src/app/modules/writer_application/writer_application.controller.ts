@@ -61,3 +61,7 @@ export const WriterApplicationController = {
   getAllApplications,
   updateApplicationStatus,
 };
+
+
+
+

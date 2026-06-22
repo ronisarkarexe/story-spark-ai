@@ -74,3 +74,6 @@ const NewsletterSubscriber =
   mongoose.model<INewsletterSubscriber>("NewsletterSubscriber", NewsletterSubscriberSchema);
 
 export { NewsletterSubscriber };
+
+
+

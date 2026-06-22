@@ -6,3 +6,6 @@ const router = Router();
 router.get("/weekly", weeklyLeaderboardController);
 
 export default router;
+
+
+

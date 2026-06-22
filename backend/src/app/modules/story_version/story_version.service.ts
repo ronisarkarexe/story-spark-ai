@@ -13,6 +13,7 @@ import {
 } from "../../../interfaces/pagination";
 import { analyzeCharacterNetwork, ICharacterNetworkResponse } from "./character_network.utils";
 import { compressContext, serializeLore } from "../../../utils/contextCompressor";
+import logger from '../../../utils/logger.util';
 
 interface IBranchTreeNode {
   id: string;
@@ -74,7 +75,7 @@ const createVersionSnapshot = async (
     }
     return null;
   } catch (error) {
-    console.error("Story version snapshot creation failed:", error);
+    logger.error("Story version snapshot creation failed:", error);
     return null;
   }
 };
@@ -417,3 +418,6 @@ export const StoryVersionService = {
   enhancePrompt,
   getCharacterNetwork,
 };
+
+
+

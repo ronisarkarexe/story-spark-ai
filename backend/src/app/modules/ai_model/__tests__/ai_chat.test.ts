@@ -62,3 +62,7 @@ describe("AiModelService - Chat", () => {
     ).rejects.toMatchObject({ statusCode: httpStatus.GATEWAY_TIMEOUT });
   });
 });
+
+
+
+

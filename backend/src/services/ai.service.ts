@@ -5,6 +5,7 @@ import { buildStoryPrompt, PromptOptions } from "../utils/promptBuilder";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Anthropic from "@anthropic-ai/sdk";
+import logger from '../utils/logger.util';
 
 let openai: OpenAI | null = null;
 let genAI: GoogleGenerativeAI | null = null;
@@ -163,10 +164,10 @@ export async function generateStory(
     try {
       let story = await generateWithAnthropic(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
-      console.log("[AI] Story generated successfully via Anthropic");
+      logger.info("[AI] Story generated successfully via Anthropic");
       return { story, provider: "anthropic", fallbackUsed: false };
     } catch (anthropicError) {
-      console.warn(
+      logger.warn(
         "[AI] Anthropic failed:",
         anthropicError instanceof Error ? anthropicError.message : anthropicError
       );
@@ -177,19 +178,19 @@ export async function generateStory(
         );
       }
       didFallbackToGemini = true;
-      console.log("[AI] Falling back to Gemini...");
+      logger.info("[AI] Falling back to Gemini...");
     }
   } else if (chosenProvider === "openai" || !chosenProvider) {
     // ── Try OpenAI first ──────────────────────────────────────────────────────
     try {
       let story = await generateWithOpenAI(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
-      console.log("[AI] Story generated successfully via OpenAI");
+      logger.info("[AI] Story generated successfully via OpenAI");
 
       return { story, provider: "openai", fallbackUsed: false };
 
     } catch (openAIError) {
-      console.warn(
+      logger.warn(
         "[AI] OpenAI failed:",
         openAIError instanceof Error ? openAIError.message : openAIError
       );
@@ -202,7 +203,7 @@ export async function generateStory(
       }
 
       didFallbackToGemini = true;
-      console.log("[AI] Falling back to Gemini.");
+      logger.info("[AI] Falling back to Gemini.");
     }
   } else if (chosenProvider === "gemini") {
     // Skip OpenAI/Anthropic blocks
@@ -215,12 +216,12 @@ export async function generateStory(
   try {
     let story = await generateWithGemini(systemPrompt, userPrompt);
     story = validateOutput(story); // Security layer: validate output
-    console.log(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
+    logger.info(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
 
     return { story, provider: "gemini", fallbackUsed: didFallbackToGemini };
 
   } catch (geminiError) {
-    console.error(
+    logger.error(
       "[AI] Gemini also failed.",
       geminiError instanceof Error ? geminiError.message : geminiError
     );
@@ -231,3 +232,7 @@ export async function generateStory(
     );
   }
 }
+
+
+
+

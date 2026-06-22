@@ -17,3 +17,7 @@ const submitContactForm = catchAsync(async (req: Request, res: Response) => {
 export const ContactController = {
   submitContactForm,
 };
+
+
+
+

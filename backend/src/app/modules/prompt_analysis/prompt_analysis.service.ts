@@ -5,6 +5,7 @@ import {
   IPromptAnalysisRequest,
   IPromptAnalysisResponse,
 } from "./prompt_analysis.interface";
+import logger from '../../../utils/logger.util';
 
 const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -352,7 +353,7 @@ Provide concrete suggestions to make it more creative, specific, and story-gener
           : [],
       };
     } catch (error) {
-      console.error("Gemini enhancement failed:", error);
+      logger.error("Gemini enhancement failed:", error);
       return this.getFallbackEnhancements(originalPrompt);
     }
   }
@@ -401,3 +402,7 @@ Provide concrete suggestions to make it more creative, specific, and story-gener
     };
   }
 }
+
+
+
+

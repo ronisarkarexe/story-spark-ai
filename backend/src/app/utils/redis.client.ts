@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import logger from '../../../utils/logger.util';
 
 const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379", {
   retryStrategy(times: number) {
@@ -21,7 +22,10 @@ redis.on("error", (err: Error) => {
     // Redis is not running. Caching will be skipped until the connection recovers.
     return;
   }
-  console.error("Redis Error:", err);
+  logger.error("Redis Error:", err);
 });
 
 export default redis;
+
+
+

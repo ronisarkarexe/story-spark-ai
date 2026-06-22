@@ -11,7 +11,6 @@ const startTokenCheck = (socket: Socket) => {
   tokenCheckInterval = setInterval(() => {
     const currentToken = getToken();
     if (currentToken && socket.auth && (socket.auth as any).token !== currentToken) {
-      console.log("[Story Spark] Socket.IO token refresh detected. Re-authenticating...");
       socket.auth = { token: currentToken };
       if (socket.connected) {
         socket.disconnect().connect();
@@ -40,7 +39,6 @@ export const connectSocket = (): Socket | null => {
 
   if (socketIoInstance && socketIoInstance.connected) {
     if (socketIoInstance.auth && (socketIoInstance.auth as any).token !== token) {
-      console.log("[Story Spark] Updating active socket connection with refreshed token.");
       socketIoInstance.auth = { token };
       socketIoInstance.disconnect().connect();
     }
@@ -63,7 +61,6 @@ export const connectSocket = (): Socket | null => {
   });
 
   socketIoInstance.on("connect", () => {
-    console.log("[Story Spark] Socket.IO connected");
     startTokenCheck(socketIoInstance!);
   });
 
@@ -75,7 +72,6 @@ export const connectSocket = (): Socket | null => {
   });
 
   socketIoInstance.on("disconnect", () => {
-    console.log("[Story Spark] Socket.IO disconnected");
   });
 
   socketIoInstance.on("connect_error", (error: any) => {

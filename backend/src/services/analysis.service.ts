@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { User } from '../app/modules/user/user.model';
 import { Post } from '../app/modules/post/post.model';
 import { WriterApplication } from '../app/modules/writer_application/writer_application.model';
+import logger from '../utils/logger.util';
 
 
 /**
@@ -102,7 +103,7 @@ export const getDashboardAnalysis = async (userId: string, userRole: string) => 
     };
     
   } catch (error: any) {
-    console.error('Error in getDashboardAnalysis:', error);
+    logger.error('Error in getDashboardAnalysis:', error);
     return {
       success: false,
       error: error.message || 'Failed to fetch dashboard analysis'
@@ -114,3 +115,6 @@ export const getDashboardAnalysis = async (userId: string, userRole: string) => 
 export default {
   getDashboardAnalysis
 };
+
+
+

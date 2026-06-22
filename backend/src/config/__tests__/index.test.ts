@@ -45,3 +45,7 @@ describe("backend config startup validation", () => {
     expect(config.jwt.refresh_secret).toBe("refresh-secret");
   });
 });
+
+
+
+
