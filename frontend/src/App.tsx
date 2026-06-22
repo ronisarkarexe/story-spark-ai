@@ -16,10 +16,7 @@ import HomeComponent from "./components/home/home.component";
 import NotFoundComponent from "./components/not-found.component";
 import Leaderboard from "./pages/Leaderboard";
 
-type ProtectedRouteProps = {
-  allowedRoles: string[];
-  element?: React.ReactElement;
-};
+
 
 
 // Lazy-loaded page components
@@ -33,15 +30,15 @@ const PricingComponent = lazy(() => import("./components/pricing/pricing.compone
 const PostDetailsComponent = lazy(() => import("./components/post/post.details.component"));
 const PublicProfileComponent = lazy(() => import("./components/profile/public_profile.component"));
 const Contact = lazy(() => import("./components/contactus/contactus"));
-const AboutUsComponent = lazy(() => import("./components/footer/about-us.tsx"));
-const CareerComponent = lazy(() => import("./components/footer/career.tsx"));
-const BlogComponent = lazy(() => import("./components/footer/blog.tsx"));
-const PrivacyPolicy = lazy(() => import("./components/footer/Privacy.tsx"));
-const CookiePolicy = lazy(() => import("./components/footer/cookie-policy.tsx"));
-const Terms = lazy(() => import("./components/footer/terms.tsx"));
+const AboutUsComponent = lazy(() => import("./components/footer/about-us"));
+const CareerComponent = lazy(() => import("./components/footer/career"));
+const BlogComponent = lazy(() => import("./components/footer/blog"));
+const PrivacyPolicy = lazy(() => import("./components/footer/Privacy"));
+const CookiePolicy = lazy(() => import("./components/footer/cookie-policy"));
+const Terms = lazy(() => import("./components/footer/terms"));
 const HelpCenterComponent = lazy(() => import("./components/help_center/help_center.component"));
-const GuidelinesComponent = lazy(() => import("./components/footer/guidelines.tsx"));
-const ContributorsComponent = lazy(() => import("./components/footer/contributors.tsx"));
+const GuidelinesComponent = lazy(() => import("./components/footer/guidelines"));
+const ContributorsComponent = lazy(() => import("./components/footer/contributors"));
 const ReportBug = lazy(() => import("./components/report-bug/ReportBug"));
 const ExploreComponent = lazy(() => import("./components/post/post.component"));
 const BookmarksComponent = lazy(() => import("./components/post/bookmarks.component"));
@@ -64,7 +61,7 @@ const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analyt
 const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
-const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
+// const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];

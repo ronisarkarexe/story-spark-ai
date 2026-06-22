@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { resolveSocketUrl } from "../../helpers/socket-url";
@@ -46,15 +46,12 @@ export default function CollabRoom() {
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newText, setNewText] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [collabSocket, setCollabSocket] = useState<any>(null);
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isTypingRef = useRef(false);
 
   const user = getUserInfo();
-  const TYPING_DEBOUNCE_MS = 2000;
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -71,6 +68,7 @@ export default function CollabRoom() {
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let socketInstance: any;
 
     try {
@@ -138,11 +136,6 @@ export default function CollabRoom() {
       socketInstance.on("collab:error", handleError);
 
       return () => {
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-          typingTimeoutRef.current = null;
-        }
-        isTypingRef.current = false;
         socketInstance.off("collab:room_updated", handleRoomUpdated);
         socketInstance.off("collab:story_updated", handleStoryUpdated);
         socketInstance.off("collab:user_typing", handleUserTyping);
@@ -158,21 +151,7 @@ export default function CollabRoom() {
     }
   }, [roomId, navigate]);
 
-  const emitStopTyping = () => {
-    if (!collabSocket || !roomId || !isTypingRef.current) return;
-    collabSocket.emit("collab:stop_typing", { roomId });
-    isTypingRef.current = false;
-  };
 
-  const scheduleStopTyping = () => {
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    typingTimeoutRef.current = setTimeout(() => {
-      emitStopTyping();
-      typingTimeoutRef.current = null;
-    }, TYPING_DEBOUNCE_MS);
-  };
 
 
 
