@@ -8,3 +8,7 @@ const router = express.Router();
 router.post("/analyze",freeAiRateLimiter , AiEditorController.analyzeStory);
 
 export const AIEditorRouter = router;
+
+
+
+

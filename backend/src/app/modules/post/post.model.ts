@@ -77,3 +77,6 @@ PostSchema.index(
 PostSchema.index({ createdAt: -1 });
 
 export const Post = model<IPost, PostModel>("Post", PostSchema);
+
+
+

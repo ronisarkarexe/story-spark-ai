@@ -18,3 +18,7 @@ const detect = catchAsync(async (req: Request, res: Response) => {
 export const PlotHoleController = {
   detect,
 };
+
+
+
+

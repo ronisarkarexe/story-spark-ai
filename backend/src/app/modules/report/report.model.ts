@@ -18,3 +18,6 @@ const reportSchema = new Schema<IReport>(
 reportSchema.index({ reportedBy: 1, targetId: 1, targetType: 1 }, { unique: true });
 
 export const Report = mongoose.model<IReport>("Report", reportSchema);
+
+
+

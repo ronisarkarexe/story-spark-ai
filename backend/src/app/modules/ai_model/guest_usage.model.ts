@@ -16,3 +16,7 @@ const GuestUsageSchema = new Schema<IGuestUsage>(
 );
 
 export const GuestUsage = model<IGuestUsage>("GuestUsage", GuestUsageSchema);
+
+
+
+

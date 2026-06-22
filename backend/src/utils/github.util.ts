@@ -1,5 +1,6 @@
 import https from "https";
 import config from "../config";
+import logger from './logger.util';
 
 interface IGithubIssuePayload {
   title: string;
@@ -17,7 +18,7 @@ export const createGithubIssue = async (payload: IGithubIssuePayload): Promise<v
   const repo = config.github.repo;
 
   if (!token) {
-    console.warn("[GitHub Integration] GITHUB_TOKEN is not set. Skipping GitHub issue creation.");
+    logger.warn("[GitHub Integration] GITHUB_TOKEN is not set. Skipping GitHub issue creation.");
     return;
   }
 
@@ -74,13 +75,13 @@ ${payload.email || "Not provided"}
         if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
           try {
             const parsed = JSON.parse(data);
-            console.log(`[GitHub Integration] Successfully created issue: ${parsed.html_url}`);
+            logger.info(`[GitHub Integration] Successfully created issue: ${parsed.html_url}`);
           } catch {
-            console.log("[GitHub Integration] Successfully created issue, failed to parse response.");
+            logger.info("[GitHub Integration] Successfully created issue, failed to parse response.");
           }
           resolve();
         } else {
-          console.error(
+          logger.error(
             `[GitHub Integration] Failed to create issue. Status: ${res.statusCode}. Response: ${data}`
           );
           resolve(); // Resolve anyway to not block the main database submission
@@ -89,7 +90,7 @@ ${payload.email || "Not provided"}
     });
 
     req.on("error", (error) => {
-      console.error("[GitHub Integration] Error calling GitHub API:", error);
+      logger.error("[GitHub Integration] Error calling GitHub API:", error);
       resolve(); // Resolve anyway to not block database submission
     });
 
@@ -97,3 +98,7 @@ ${payload.email || "Not provided"}
     req.end();
   });
 };
+
+
+
+

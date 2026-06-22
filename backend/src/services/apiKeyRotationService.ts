@@ -69,3 +69,7 @@ export function availableKeyCount(): number {
 export function resetRotationIndex(): void {
   _index = 0;
 }
+
+
+
+

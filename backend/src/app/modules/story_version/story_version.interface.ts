@@ -17,3 +17,6 @@ export interface IStoryVersion {
 }
 
 export type StoryVersionModel = Model<IStoryVersion, object>;
+
+
+

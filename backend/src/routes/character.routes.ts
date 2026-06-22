@@ -18,3 +18,6 @@ characterRouter.put('/:id', auth(ENUM_USER_ROLE.USER), updateCharacter);
 characterRouter.delete('/:id', auth(ENUM_USER_ROLE.USER), deleteCharacter);
 
 export default characterRouter;
+
+
+

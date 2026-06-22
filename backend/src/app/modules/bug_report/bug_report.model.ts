@@ -22,3 +22,7 @@ const bugReportSchema = new Schema<IBugReport>(
 );
 
 export const BugReport = mongoose.model<IBugReport>("BugReport", bugReportSchema);
+
+
+
+

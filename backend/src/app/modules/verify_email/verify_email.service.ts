@@ -7,6 +7,7 @@ import config from "../../../config";
 import httpStatus from "http-status";
 import { OTPModel } from "./otp.model";
 import crypto from "crypto";
+import logger from '../../../utils/logger.util';
 
 
 const transporter = nodemailer.createTransport({
@@ -38,7 +39,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
     });
 
     if (!config.verify_email || !config.verify_password) {
-      console.log(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
+      logger.info(`[DEVELOPMENT OTP] generated for ${email}: ${otp}`);
       return {
         expiresAt,
       };
@@ -103,7 +104,7 @@ const VerifyEmail = async (payload: IEmailBody) => {
     if (error instanceof ApiError) {
       throw error;
     }
-    console.error("Mail Error:", error);
+    logger.error("Mail Error:", error);
     throw new ApiError(500, "Failed to send email");
   }
 };
@@ -184,5 +185,9 @@ export const VerifyEmailService = {
 };
 
 const clearOtpAttempts = (email: string) => {
-  console.log('Clearing OTP attempts for:', email);
+  logger.info('Clearing OTP attempts for:', email);
 }
+
+
+
+

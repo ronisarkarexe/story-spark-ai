@@ -104,3 +104,6 @@ router.get("/meta/:id", PostMetaController.serveOgShell);
 router.get("/:id", PostController.getSinglePost);
 
 export const PostRouter = router;
+
+
+

@@ -44,7 +44,7 @@ describe("addXp integration test (data loss verification)", () => {
 
     const updatedUser = await User.findById(user._id);
 
-    console.log(
+    logger.info(
       "TEST 1 - SIBLINGS INTACT:",
       JSON.stringify(updatedUser?.gamification, null, 2)
     );
@@ -70,7 +70,7 @@ describe("addXp integration test (data loss verification)", () => {
 
     const updatedUser = await User.findById(user._id);
 
-    console.log(
+    logger.info(
       "TEST 2 - MISSING GAMIFICATION INITIALIZED:",
       JSON.stringify(updatedUser?.gamification, null, 2)
     );
@@ -95,7 +95,7 @@ describe("addXp integration test (data loss verification)", () => {
 
     const updatedUser = await User.findById(user._id);
 
-    console.log(
+    logger.info(
       "TEST 3 - MISSING XP, SIBLINGS INTACT:",
       JSON.stringify(updatedUser?.gamification, null, 2)
     );
@@ -121,7 +121,7 @@ describe("addXp integration test (data loss verification)", () => {
 
     const updatedUser = await User.findById(user._id);
 
-    console.log(
+    logger.info(
       "TEST 4 - LEVEL UP SCENARIO:",
       JSON.stringify(updatedUser?.gamification, null, 2)
     );
@@ -131,3 +131,6 @@ describe("addXp integration test (data loss verification)", () => {
     expect(updatedUser?.gamification?.level).toBe(3);
   });
 });
+
+
+

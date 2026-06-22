@@ -6,3 +6,6 @@ const router = Router();
 router.get("/", getWeeklyLeaderboard);
 
 export const LeaderboardRoutes = router;
+
+
+

@@ -38,3 +38,7 @@ export const WriterApplication = model<IWriterApplication>(
   "WriterApplication",
   WriterApplicationSchema
 );
+
+
+
+

@@ -64,3 +64,7 @@ export const WriterApplicationService = {
   getAllApplications,
   updateApplicationStatus,
 };
+
+
+
+

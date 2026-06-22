@@ -10,3 +10,7 @@ export interface IStoryRating {
 }
 
 export type StoryRatingModel = Model<IStoryRating, Record<string, unknown>>;
+
+
+
+

@@ -8,6 +8,7 @@ import catchAsync from "../../../shared/catch_async";
 import { setRefreshTokenCookie, clearRefreshTokenCookie } from "../../../utils/cookie.util";
 import { TokenBlacklist } from "./tokenBlacklist.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
+import logger from '../../../utils/logger.util';
 
 const login = catchAsync(async (req: Request, res: Response) => {
   const body: AuthModel = req.body;
@@ -72,7 +73,7 @@ const logout = catchAsync(async (req: Request, res: Response) => {
         token: activeToken,
       });
     } catch (err) {
-      console.error("Error blacklisting token on logout:", err);
+      logger.error("Error blacklisting token on logout:", err);
     }
   }
 
@@ -169,3 +170,7 @@ export const AuthController = {
   resetPassword,
   sendOtp,
 };
+
+
+
+

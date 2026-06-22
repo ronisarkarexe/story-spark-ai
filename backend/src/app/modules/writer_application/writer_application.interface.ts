@@ -12,3 +12,7 @@ export interface IWriterApplication {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+
+
+

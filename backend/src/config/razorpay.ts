@@ -16,3 +16,7 @@ export const getRazorpay = (): InstanceType<typeof Razorpay> => {
 
 export default getRazorpay;
 
+
+
+
+

@@ -6,3 +6,7 @@ export const GENRE_PROMPTS: Record<string, string> = {
   mystery: "Write in the style of a mystery thriller. Plant subtle clues, build suspense, and deliver a reveal.",
   childrens: "Write in the style of a children's picture book. Use simple language, a warm tone, and a clear moral.",
 };
+
+
+
+

@@ -6,3 +6,7 @@ export interface IChatMessage {
 export interface IChatPayload {
   messages: IChatMessage[];
 }
+
+
+
+

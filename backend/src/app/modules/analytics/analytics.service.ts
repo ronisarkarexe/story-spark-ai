@@ -2,6 +2,7 @@ import { Post } from "../post/post.model";
 import { Types } from "mongoose";
 import { ITokenPayload } from "../../../interfaces/token";
 import { performance } from "perf_hooks";
+import logger from '../../../utils/logger.util';
 
 const STOP_WORDS = new Set([
   "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
@@ -36,7 +37,7 @@ const runMeasuredAnalytics = async <T>(
     const heapAfter = process.memoryUsage().heapUsed;
     const heapDeltaKb = (heapAfter - heapBefore) / 1024;
 
-    console.info(
+    logger.info(
       `[analytics:benchmark] ${label} duration=${durationMs.toFixed(
         2
       )}ms heapDelta=${heapDeltaKb.toFixed(2)}KB`
@@ -365,3 +366,7 @@ export const AnalyticsService = {
   getEmotionDistribution,
   getMoodTimeline,
 };
+
+
+
+

@@ -157,3 +157,7 @@ export const refundGuestQuota = async (guestId: string): Promise<void> => {
 export const isSuccessfulGeneration = (
   result: unknown
 ): result is unknown[] => Array.isArray(result) && result.length > 0;
+
+
+
+

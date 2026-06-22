@@ -32,3 +32,7 @@ const generateStoryboard = catchAsync(async (req: Request, res: Response) => {
 export const StoryVisualizerController = {
   generateStoryboard,
 };
+
+
+
+

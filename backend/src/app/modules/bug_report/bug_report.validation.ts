@@ -17,3 +17,7 @@ const createBugReport = z.object({
 export const BugReportValidation = {
   createBugReport,
 };
+
+
+
+

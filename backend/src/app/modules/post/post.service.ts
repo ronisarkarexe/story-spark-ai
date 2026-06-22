@@ -18,6 +18,7 @@ import { GamificationService } from "../gamification/gamification.service";
 import { WritingStreakService } from "../gamification/writing_streak.service";
 import { escapeRegex } from "../../../utils/regex.util";
 import { verifyPostAccess } from "./post.utils";
+import logger from '../../../utils/logger.util';
 
 const MAX_SEARCH_TERM_LENGTH = 100;
 
@@ -124,10 +125,10 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
         { $inc: { postsCount: 1 } },
         { new: true }
       );
-      GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
-      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
+      GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch((err) => logger.error(err));
+      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch((err) => logger.error(err));
       if (updatedUser && updatedUser.postsCount === 1) {
-        GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
+        GamificationService.awardBadge(String(user._id), "First Story").catch((err) => logger.error(err));
       }
     }
     return res;
@@ -575,7 +576,7 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
       user._id,
       { $inc: { postsCount: 1 } }
     );
-    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
+    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch((err) => logger.error(err));
   }
 
   return res;
@@ -616,7 +617,7 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
       user._id,
       { $inc: { postsCount: 1 } }
     );
-    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
+    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch((err) => logger.error(err));
   }
 
   return res;
@@ -644,4 +645,9 @@ export const PostService = {
   translateStory,
   getGenres,
 };
+
+
+
+
+
 

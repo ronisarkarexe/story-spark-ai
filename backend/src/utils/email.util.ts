@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import config from "../config";
+import logger from './logger.util';
 
 export const escapeHtml = (unsafe: string): string => {
   return unsafe
@@ -16,7 +17,7 @@ export const sendVerificationEmail = async (
   unsubscribeUrl?: string
 ) => {
   if (!config.verify_email || !config.verify_password) {
-    console.warn("Email configuration missing. Verification email not sent.");
+    logger.warn("Email configuration missing. Verification email not sent.");
     return;
   }
 
@@ -58,7 +59,7 @@ export const sendVerificationEmail = async (
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error("Error sending verification email:", error);
+    logger.error("Error sending verification email:", error);
     // Don't throw an error here, so we don't break the subscription flow if email fails.
     // The user record will still be created and they can request another verification if needed.
   }
@@ -72,7 +73,7 @@ export const sendContactEmail = async (data: {
   message: string;
 }) => {
   if (!config.verify_email || !config.verify_password) {
-    console.warn("Email configuration missing. Contact email not sent.");
+    logger.warn("Email configuration missing. Contact email not sent.");
     return;
   }
 
@@ -122,7 +123,11 @@ export const sendContactEmail = async (data: {
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error("Error sending contact email:", error);
+    logger.error("Error sending contact email:", error);
     throw new Error("Failed to send email. Please try again later.");
   }
 };
+
+
+
+

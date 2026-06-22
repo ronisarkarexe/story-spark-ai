@@ -84,3 +84,6 @@ const search = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const SearchController = { search };
+
+
+

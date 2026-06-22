@@ -28,3 +28,7 @@ const analyzeStory = catchAsync(async (req: Request, res: Response) => {
 export const AiEditorController = {
   analyzeStory,
 };
+
+
+
+

@@ -6,3 +6,7 @@ router.post("/subscribe", newsletterRateLimiter, subscribe);
 router.get("/verify/:token", verify);
 router.get("/unsubscribe/:token", unsubscribeByToken);
 export const NewsletterRouter = router;
+
+
+
+

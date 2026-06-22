@@ -12,3 +12,7 @@ export interface IBugReport {
   updatedAt?: Date;
   screenshotUrl?: string;
 }
+
+
+
+

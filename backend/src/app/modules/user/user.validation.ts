@@ -100,3 +100,7 @@ export const UserValidator = {
   changePassword,
   sendOtp
 };
+
+
+
+

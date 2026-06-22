@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { getWeeklyLeaderboard } from "../services/leaderboard.service";
+import logger from '../utils/logger.util';
 
 export const weeklyLeaderboardController = async (
   _req: Request,
@@ -13,7 +14,7 @@ export const weeklyLeaderboardController = async (
       data,
     });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
 
     return res.status(500).json({
       success: false,
@@ -21,3 +22,6 @@ export const weeklyLeaderboardController = async (
     });
   }
 };
+
+
+

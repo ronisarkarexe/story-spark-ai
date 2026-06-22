@@ -34,3 +34,7 @@ export const ACHIEVEMENT_DEFINITIONS: IAchievementDefinition[] = [
   { id: "productivity_30", title: "30 Active Days", description: "Write on 30 different days", icon: "📆", category: "productivity", target: 30 },
   { id: "productivity_100", title: "100 Active Days", description: "Write on 100 different days", icon: "🗓️", category: "productivity", target: 100 },
 ];
+
+
+
+

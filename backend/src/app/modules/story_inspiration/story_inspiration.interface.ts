@@ -5,3 +5,7 @@ export interface IStoryInspirationRequest {
 export interface IStoryInspirationResponse {
   ideas: string[];
 }
+
+
+
+

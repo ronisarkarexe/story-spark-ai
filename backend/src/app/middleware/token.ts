@@ -35,3 +35,7 @@ export const getToken = (req: Request): ITokenPayload => {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
   }
 };
+
+
+
+

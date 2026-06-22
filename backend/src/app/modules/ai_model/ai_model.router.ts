@@ -53,3 +53,7 @@ router.post("/chat", apiRateLimiter, auth(), storyGenerationRateLimiter, validat
 router.post("/chat-free", apiRateLimiter, validateRequest(AIModelValidator.aiChat), freeAiRateLimiter, AiModelController.aiFreeModelChat);
 
 export const AIModelRouter = router;
+
+
+
+

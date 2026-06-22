@@ -36,3 +36,7 @@ const CollabRoomSchema = new Schema<ICollabRoom>(
 CollabRoomSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const CollabRoom = model<ICollabRoom>("CollabRoom", CollabRoomSchema);
+
+
+
+

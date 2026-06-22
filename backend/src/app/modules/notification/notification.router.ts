@@ -23,3 +23,7 @@ router.patch("/:id/read", allRoles, NotificationController.markNotificationAsRea
 router.delete("/", allRoles, NotificationController.deleteAllNotifications);
 
 export const NotificationRouter = router;
+
+
+
+

@@ -19,3 +19,7 @@ const chatWithAi = catchAsync(async (req: Request, res: Response) => {
 export const ChatController = {
   chatWithAi,
 };
+
+
+
+

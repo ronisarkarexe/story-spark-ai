@@ -16,3 +16,7 @@ export const verifyPostAccess = (post: any, user?: any) => {
     throw new ApiError(httpStatus.FORBIDDEN, "Access to this draft is forbidden.");
   }
 };
+
+
+
+
