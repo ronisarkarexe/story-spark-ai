@@ -59,6 +59,15 @@ const safetySettings = [
   },
 ];
 
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
+
 const assertGeminiApiKeyConfigured = (): void => {
   if (!geminiApiKey) {
     throw new ApiError(
@@ -758,7 +767,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,

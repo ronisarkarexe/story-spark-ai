@@ -6,6 +6,7 @@ import { QuillBinding } from 'y-quill';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { io, Socket } from 'socket.io-client';
 import { resolveSocketUrl } from '../../helpers/socket-url';
+import { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate } from 'y-protocols/awareness';
 
 interface CollabEditorProps {
   storyId: string;
@@ -18,7 +19,8 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
   const quillRef = useRef<HTMLDivElement>(null);
   const ydocRef = useRef<Y.Doc | null>(null);
   const socketRef = useRef<Socket | null>(null);
-  const awarenessRef = useRef<any>(null);
+  const awarenessRef = useRef<Awareness | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const quillCursorsRef = useRef<any>(null);
 
   useEffect(() => {
@@ -48,23 +50,17 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     });
     const cursors = quill.getModule('cursors');
     // Store cursors manager reference
-    (quillCursorsRef as any).current = cursors;
+    quillCursorsRef.current = cursors;
 
     // Bind Yjs text to Quill
     const binding = new QuillBinding(ytext, quill);
 
     // Setup awareness for presence
-    const Awareness = require('y-protocols/awareness').Awareness;
     const awareness = new Awareness(ydoc);
     awarenessRef.current = awareness;
-    awareness.setLocalStateField('user', {
-      name: username,
-      color: userColor,
-      userId,
-    });
 
     // Handle local cursor changes and broadcast via awareness
-    const handleSelectionChange = (range: any) => {
+    const handleSelectionChange = (range: { index: number; length: number } | null) => {
       if (!range) {
         awareness.setLocalStateField('cursor', null);
         return;
@@ -79,17 +75,18 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     // Render remote cursors from awareness updates
     const renderRemoteCursors = () => {
       const states = awareness.getStates();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       states.forEach((state: any, clientId: number) => {
         if (clientId === awareness.clientID) return;
         const user = state.user;
         const cursor = state.cursor;
         if (user && cursor) {
           const cursorId = clientId.toString();
-          const existing = (quillCursorsRef as any).current?.cursors?.[cursorId];
+          const existing = quillCursorsRef.current?.cursors?.[cursorId];
           if (!existing) {
-            (quillCursorsRef as any).current?.createCursor(cursorId, user.name, user.color);
+            quillCursorsRef.current?.createCursor(cursorId, user.name, user.color);
           }
-          (quillCursorsRef as any).current?.moveCursor(cursorId, cursor);
+          quillCursorsRef.current?.moveCursor(cursorId, cursor);
         }
       });
     };
@@ -106,12 +103,20 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
 
     // Receive initial sync from server
     socket.on('sync', (update: Uint8Array) => {
-      Y.applyUpdate(ydoc, update);
+      try {
+        Y.applyUpdate(ydoc, update);
+      } catch (err) {
+        console.error('YJS SYNC ERROR:', err);
+      }
     });
 
     // Receive remote updates
     socket.on('update', (update: Uint8Array) => {
-      Y.applyUpdate(ydoc, update);
+      try {
+        Y.applyUpdate(ydoc, update);
+      } catch (err) {
+        console.error('YJS UPDATE ERROR:', err);
+      }
     });
 
     // Broadcast local updates
@@ -124,16 +129,23 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     const sendAwareness = (awarenessUpdate: Uint8Array) => {
       socket.emit('awareness', awarenessUpdate);
     };
-    awareness.on('update', ({ added, updated, removed }: any) => {
-      const awUpdate = awareness.encodeUpdate(added.concat(updated).concat(removed));
+    awareness.on('update', ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }) => {
+      const awUpdate = encodeAwarenessUpdate(awareness, added.concat(updated).concat(removed));
       sendAwareness(awUpdate);
     });
     socket.on('awareness', (aw: Uint8Array) => {
-      awareness.applyUpdate(aw);
+      applyAwarenessUpdate(awareness, aw, 'non-local');
+    });
+
+    awareness.setLocalStateField('user', {
+      name: username,
+      color: userColor,
+      userId,
     });
 
     return () => {
       ydoc.off('update', sendUpdate);
+      binding.destroy();
       socket.disconnect();
     };
   }, [storyId, userId, username, userColor]);

@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
-import { CharacterProfile } from "./stories.utils";
-import React, { useEffect, useState, useRef, useMemo } from "react";
-import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
+import { CharacterProfile, getShortenedText, ITopicData, topicsData, getWordCount } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
+import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
 /*
 import {
@@ -20,8 +17,6 @@ import {
 */
 import StoryTrailer from "../trailer/StoryTrailer";
 import BookmarkButton from "../BookmarkButton";
-import logo from "../../assets/logoNew.png";
-import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useNavigate } from "react-router-dom";
 import { useApiError } from "../../hooks/useApiError";
@@ -263,83 +258,7 @@ export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = 
   return segments;
 };
 
-const detectStoryMood = (content: string) => {
-  const lowercase = content.toLowerCase();
-  
-  const moodKeywords = {
-    Happy: {
-      emoji: "😊",
-      words: ["happy", "joy", "smile", "laugh", "glad", "cheerful", "delighted", "celebrat", "sunshine", "peace", "content", "love", "wonderful", "positive"],
-      colorClass: "text-amber-300",
-      bgClass: "bg-amber-900/60",
-      borderClass: "border-amber-700/50"
-    },
-    Suspense: {
-      emoji: "😨",
-      words: ["shadow", "mysteri", "mystery", "whisper", "dark", "silence", "sudden", "fear", "dread", "tense", "tension", "escape", "warning", "danger", "trap", "alert", "nervous", "heartbeat", "chill"],
-      colorClass: "text-orange-300",
-      bgClass: "bg-orange-900/60",
-      borderClass: "border-orange-700/50"
-    },
-    Sad: {
-      emoji: "💔",
-      words: ["sad", "tears", "tear", "cry", "weep", "grief", "grieve", "loss", "lost", "lonely", "pain", "sorrow", "mourn", "broken", "empty", "tragic", "regret"],
-      colorClass: "text-cyan-300",
-      bgClass: "bg-cyan-900/60",
-      borderClass: "border-cyan-700/50"
-    },
-    Action: {
-      emoji: "🔥",
-      words: ["run", "fight", "battle", "sword", "strike", "clash", "weapon", "burst", "speed", "explod", "explosion", "chase", "leap", "attack", "defense", "power"],
-      colorClass: "text-rose-300",
-      bgClass: "bg-rose-900/60",
-      borderClass: "border-rose-700/50"
-    },
-    Fantasy: {
-      emoji: "✨",
-      words: ["magic", "spell", "wizard", "witch", "elf", "dwarf", "fairy", "dragon", "portal", "crystal", "kingdom", "cast", "wand", "sparkle", "enchant", "dream", "myth", "legend"],
-      colorClass: "text-purple-300",
-      bgClass: "bg-purple-900/60",
-      borderClass: "border-purple-700/50"
-    }
-  };
 
-  const scores: Record<string, number> = {
-    Happy: 0,
-    Suspense: 0,
-    Sad: 0,
-    Action: 0,
-    Fantasy: 0
-  };
-
-  for (const [mood, data] of Object.entries(moodKeywords)) {
-    data.words.forEach(word => {
-      const regex = new RegExp(`\\b${word}`, 'g');
-      const matches = lowercase.match(regex);
-      if (matches) {
-        scores[mood] += matches.length;
-      }
-    });
-  }
-
-  let maxMood = "Fantasy"; // default fallback mood
-  let maxScore = 0;
-
-  for (const [mood, score] of Object.entries(scores)) {
-    if (score > maxScore) {
-      maxScore = score;
-      maxMood = mood;
-    }
-  }
-
-  return {
-    label: maxMood,
-    emoji: moodKeywords[maxMood as keyof typeof moodKeywords].emoji,
-    colorClass: moodKeywords[maxMood as keyof typeof moodKeywords].colorClass,
-    bgClass: moodKeywords[maxMood as keyof typeof moodKeywords].bgClass,
-    borderClass: moodKeywords[maxMood as keyof typeof moodKeywords].borderClass
-  };
-};
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
@@ -370,32 +289,32 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   // const [isExportDropdownOpen, setIsExportDropdownOpen] = useState<boolean>(false);
   // const dropdownMenuRef = useRef<HTMLDivElement>(null);
 
-  // Start with a clean state that adapts dynamically
-  const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
+  const [selectedStory, setSelectedStory] = useState<IStories | null>(
+    stories && stories[0]
+  );
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
-  const [newTopicTitle, setNewTopicTitle] = useState<string>("");
   const [isCopied, setIsCopied] = useState<boolean>(false);
   
   // Modals
   const [showContinueModal, setShowContinueModal] = useState<boolean>(false);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
-  // const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [showStoryVisualizer, setShowStoryVisualizer] = useState<boolean>(false);
   const [showTrailer, setShowTrailer] = useState<boolean>(false);
+  const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
   
   // StoryVisualizer states
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>("");
+  const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>(""); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState<boolean>(false);
+  const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
+  const [profileLoading, setProfileLoading] = useState<boolean>(false);
+
   const [createPost] = useCreatePostMutation();
-  const [deletePost] = useDeletePostMutation();
-  const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
+  useGetProfileInfoQuery(undefined, { skip: !isLogin });
   const lastSavedContentRef = useRef<string>("");
-  const isSavingRef = useRef<boolean>(false);
   const hasSavedSessionRef = useRef<boolean>(false);
   const savedPostIdRef = useRef<string | null>(null);
   // Alternate ending state & hooks
@@ -577,18 +496,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       }
     };
   }, []);
-  const [selectedStory, setSelectedStory] = useState<IStories | null>(
-    stories && stories[0]
-  );
-  const [topics, setTopics] = useState<ITopicData[]>(topicsData);
-  const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
-  const [profileLoading, setProfileLoading] = useState<boolean>(false);
-  const [showTranslator, setShowTranslator] = useState<boolean>(false);
-  const [createPost] = useCreatePostMutation();
-  const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
 
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
@@ -640,23 +547,28 @@ useEffect(() => {
   };
 
   const handleRestoreVersion = (restoredContent: string) => {
-  if (!selectedStory) return;
+    if (!selectedStory) return;
 
-  const updatedStory = {
-    ...selectedStory,
-    content: restoredContent,
-  };
+    const updatedStory = {
+      ...selectedStory,
+      content: restoredContent,
+    };
 
-  const handleRemoveTopic = (index: number) => {
-    if (topics.length <= 2) {
-      toast.error("At least 2 topics are required.");
-      return;
-    }
+    setSelectedStory(updatedStory);
 
-    setTopics((currentTopics) =>
-      currentTopics.filter((_, topicIndex) => topicIndex !== index)
+    setStories(
+      stories.map((story) =>
+        story.uuid === selectedStory.uuid
+          ? updatedStory
+          : story
+      )
     );
+
+    toast.success("Story version restored successfully!");
   };
+
+
+
   const handleCopyStory = async () => {
     if (selectedStory?.content) {
       await navigator.clipboard.writeText(selectedStory.content);
@@ -666,40 +578,11 @@ useEffect(() => {
     }
   };
 
-  /*
-  const handleExport = async (format: "pdf" | "epub") => {
-    if (!selectedStory) return;
-    
-    setIsExportDropdownOpen(false);
-    setExportState("processing");
-    const toastId = toast.loading(`Preparing story for ${format.toUpperCase()} export...`);
-  setSelectedStory(updatedStory);
-
-  setStories(
-    stories.map((story) =>
-      story.uuid === selectedStory.uuid
-        ? updatedStory
-        : story
-    )
-  );
-
-  toast.success("Story version restored successfully!");
-};
-
   const handleTopicClick = (index: number) => {
     const updatedTopics = [...topics];
     updatedTopics[index].selected = !updatedTopics[index].selected;
     setTopics(updatedTopics);
   };
-  */
-const handleCopyStory = async () => {
-  if (selectedStory?.content) {
-    await navigator.clipboard.writeText(selectedStory.content);
-    setIsCopied(true);
-    toast.success("Story copied!");
-    setTimeout(() => setIsCopied(false), 2000);
-       }
-    };
 
 const handleExportPDF = () => {
   if (!selectedStory) {
@@ -753,16 +636,18 @@ const handleGenerateCharacterProfile = async () => {
       }
     );
 
-      const safeTitle = getSafeFileName(title, "pdf");
-      doc.save(safeTitle);
-      toast.dismiss(toastId);
-      toast.success("Premium PDF downloaded!");
-    } catch (error) {
-      console.error(error);
-      toast.dismiss(toastId);
-      toast.error("Failed to export PDF.");
-    }
-  };
+    const data = await response.json();
+
+    setCharacterProfiles(data.data);
+
+    toast.success("Character profiles generated!");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to generate profiles.");
+  } finally {
+    setProfileLoading(false);
+  }
+};
 
   /*
   const downloadBlob = (blob: Blob, filename: string) => {
@@ -775,90 +660,9 @@ const handleGenerateCharacterProfile = async () => {
   };
   */
 
-  const getSafeFileName = (title: string, ext: string) => {
-    const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    return `${cleanTitle || "story"}.${ext}`;
-  };
 
-  const handleExportMarkdown = () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) { toast.error("Story content is empty. Cannot export."); return; }
-    try {
-      const title = selectedStory.title || "Story";
-      const content = selectedStory.content || "";
-      const tag = selectedStory.tag || "General";
-      const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
-      const isoDate = new Date().toISOString().split("T")[0];
-      const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
-      const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
 
-      const fileName = getSafeFileName(title, "md");
-      link.setAttribute("download", fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
 
-      toast.success("Markdown downloaded!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to export Markdown.");
-    }
-  };
-
-  /*
-  const handleExportDOCX = async () => {
-    if (!selectedStory) {
-      toast.error("No story available to export.");
-      return;
-    }
-    const toastId = toast.loading("Preparing your DOCX file...");
-    try {
-      const { Document, Packer, Paragraph, TextRun } = await import("docx");
-      const title = selectedStory.title || "Story";
-      const content = selectedStory.content || "";
-      const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
-      const isoDate = new Date().toISOString().split("T")[0];
-
-      const doc = new Document({
-        sections: [{
-          properties: {},
-          children: [
-            new Paragraph({ children: [new TextRun({ text: title, bold: true, size: 32 })] }),
-            new Paragraph({ children: [new TextRun({ text: `Author: ${authorName}`, size: 24 })] }),
-            new Paragraph({ children: [new TextRun({ text: `Date: ${isoDate}`, size: 24 })] }),
-            new Paragraph({ text: "" }),
-            ...content.split(/\n+/).filter(para => para.trim() !== "").map(para => new Paragraph({
-              children: [new TextRun({ text: para.trim(), size: 24 })],
-              spacing: { after: 200 }
-            }))
-          ],
-        }],
-      });
-    const data = await response.json();
-
-    setCharacterProfiles(data.data);
-
-      toast.dismiss(toastId);
-      toast.success("DOCX downloaded!");
-    } catch (error) {
-      console.error(error);
-      toast.dismiss(toastId);
-      toast.error("Failed to export DOCX.");
-    }
-  };
-  */
-    toast.success("Character profiles generated!");
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to generate profiles.");
-  } finally {
-    setProfileLoading(false);
-  }
-};
 
   const handelPublishStory = async () => {
     if (!isLogin) {
@@ -935,10 +739,6 @@ const handleGenerateCharacterProfile = async () => {
   };
   */
 
-  if (isGlobalLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <StoryGeneratingAnimation />
   if (!stories || stories.length === 0) {
     return (
       <div className="mt-16 px-4 sm:px-6 lg:px-8 pb-16 flex justify-center">
@@ -1251,10 +1051,6 @@ const handleGenerateCharacterProfile = async () => {
                 >
                   <i className="fa-solid fa-rotate-left"></i> Reset to Original
                 </button>
-              {selectedStory ? (
-                <p className="break-words">{selectedStory.content}</p>
-              ) : (
-                <p>No story available. Please generate a story first.</p>
               )}
             </div>
 
@@ -1417,8 +1213,6 @@ const handleGenerateCharacterProfile = async () => {
               </div>
             </div>
           </div>
-
-          </div>
           <div className="mt-6">
   {characterProfiles.length > 0 && (
     <>
@@ -1517,48 +1311,25 @@ const handleGenerateCharacterProfile = async () => {
 
       {showContinueModal && selectedStory && (
         <ContinueStoryModal
-          </div>
-        </div>
+          story={selectedStory}
+          onClose={() => setShowContinueModal(false)}
+          onApply={(continuedContent) => {
+            setSelectedStory({
+              ...selectedStory,
+              content: continuedContent,
+            });
+            setStories(
+              stories.map((s) =>
+                s.uuid === selectedStory.uuid
+                  ? { ...s, content: continuedContent }
+                  : s
+              )
+            );
+          }}
+        />
+      )}
 
         
-
-
-        <div className="col-span-1 lg:col-span-4">
-          <div className="mb-5">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-              Preview
-            </h1>
-          </div>
-          <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
-            {selectedStory ? (
-              <div className="relative flex flex-col rounded-lg">
-                <div className="relative m-3 overflow-hidden text-white rounded-xl">
-                  <img
-                    src={selectedStory.imageURL}
-                    alt="card-image"
-                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="px-3 py-1">
-                  <div className="mb-2 inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                   {selectedStory.tag.toUpperCase()}
-                  </div>
-                  <h6 className="mb-1 text-gray-300 text-xl font-semibold">
-                    {selectedStory.title}
-                  </h6>
-                  <p className="text-gray-400 font-light breakwords text-sm sm:text-base">
-                    {getShortenedText(selectedStory.content)}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="p-6 text-center text-gray-400">
-                No story available. Please generate a story first.
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
       {showGenreTransformation && selectedStory && (
         <StoryGenreTransformation
           story={{

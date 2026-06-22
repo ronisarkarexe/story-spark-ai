@@ -4,7 +4,6 @@ import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import StoriesViewComponent, { IStories } from './stories.view.component';
-import StoriesViewComponent from './stories.view.component';
 
 // --- Cleanup after every single test ---
 afterEach(() => {
@@ -62,7 +61,7 @@ vi.mock('../../redux/apis/ai.model.api', () => ({
 }));
 
 vi.mock('../../redux/apis/post.api', () => ({
-  useCreatePostMutation: () => [vi.fn()],
+  useCreatePostMutation: () => [vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue(null) })],
   useDeletePostMutation: () => [vi.fn()],
 }));
 
@@ -81,7 +80,7 @@ vi.mock('../../redux/apis/user.api', () => ({
 }));
 
 // --- Test Data ---
-const mockStories: any[] = [
+const mockStories: IStories[] = [
   {
     uuid: '123-abc',
     title: 'The Great AI Adventure',
@@ -138,7 +137,7 @@ describe('StoriesViewComponent - Core Rendering', () => {
         setStories={mockSetStories}
       />
     );
-    expect(screen.getByText(/your first story will appear here/i)).toBeInTheDocument();
+    expect(screen.getByText(/your AI-generated story will appear here/i)).toBeInTheDocument();
   });
 
   it('renders the first story correctly when stories are provided', () => {
