@@ -27,7 +27,7 @@ const EmptyStoriesState: React.FC = () => {
 
             <div className="mt-7 flex flex-col sm:flex-row gap-3 items-center justify-center">
               <Link
-                to="/stories"
+                to="/story-workspace"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-white font-bold shadow-md shadow-blue-500/10 hover:from-blue-500 hover:to-indigo-500 transition-all duration-200 active:scale-[0.99]"
               >
                 <span aria-hidden>🪄</span>
