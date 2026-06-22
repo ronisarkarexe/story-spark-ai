@@ -1,13 +1,5 @@
-import React, { useEffect, useState } from "react";
-import CharacterProfileCard from "./CharacterProfileCard";
-import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
-import StoryVersionHistory from "./StoryVersionHistory";
-import { CharacterProfile } from "./stories.utils";
-import React, { useEffect, useState, useRef, useMemo } from "react";
-import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
+import React, { useEffect, useState, useRef, useMemo, Suspense } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import jsPDF from "jspdf";
 import DOMPurify from "dompurify";
@@ -20,7 +12,7 @@ import BookmarkButton from "../BookmarkButton";
 import ImageFallback from "../ImageFallback";
 import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
 import EmptyStoriesState from "./EmptyStoriesState";
-import { getWordCount, getShortenedText } from "./stories.utils";
+import { getWordCount, getShortenedText, ITopicData, topicsData, CharacterProfile } from "./stories.utils";
 import logo from "../../assets/logoNew.png";
 
 // Lazy Loaded Components
@@ -28,7 +20,6 @@ const StoryWorldMap = React.lazy(() => import("../story-map/StoryWorldMap"));
 const StoryRemix = React.lazy(() => import("../remix/StoryRemix"));
 const StoryVisualizer = React.lazy(() => import("../story-visualizer/StoryVisualizer"));
 const StoryTrailer = React.lazy(() => import("../trailer/StoryTrailer"));
-import StoryTranslator from "../translate/StoryTranslator";
 
 export interface IStories {
   uuid: string;
@@ -74,7 +65,15 @@ const StoriesViewComponent: React.FC<{ stories: IStories[]; isLogin: boolean; is
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [showRemix, setShowRemix] = useState<boolean>(false);
   const [showTrailer, setShowTrailer] = useState<boolean>(false);
-
+  const [topics, setTopics] = useState<ITopicData[]>(topicsData);
+  const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
+  const [profileLoading, setProfileLoading] = useState<boolean>(false);
+  const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [createPost] = useCreatePostMutation();
+  const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
 
@@ -162,50 +161,6 @@ const StoriesViewComponent: React.FC<{ stories: IStories[]; isLogin: boolean; is
                 <span className="px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-bold uppercase rounded-xl">🌐 {selectedStory.language || "English"}</span>
               </div>
             </div>
-          </div>
-
-          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-            {/* Ambient AI Glow inside the story card */}
-            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-slate-200 relative z-10">
-                Generated Story
-              </h3>
-              <div className="flex items-center gap-2 relative z-10">
-                {selectedStory && (
-                  <>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors"
-                      onClick={handleCopyStory}
-                    >
-                      {isCopied ? "✓ Copied" : "📋 Copy"}
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-indigo-700 text-white font-semibold hover:bg-indigo-600 transition-colors"
-                      onClick={handleGenerateCharacterProfile}
-                    >
-                      {profileLoading ? "Generating..." : "👥 Characters"}
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors"
-                      onClick={handleExportPDF}
-                    >
-                      📄 Export PDF
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-emerald-700 text-white font-semibold cursor-pointer hover:bg-emerald-600 transition-colors"
-                      onClick={() => setShowTranslator(true)}
-                    >
-                      🌍 Translate
-                    </button>
-                  </>
-                )}
 
             {/* Thumbnail Switcher */}
             <div className="flex -space-x-4">
@@ -231,129 +186,6 @@ const StoriesViewComponent: React.FC<{ stories: IStories[]; isLogin: boolean; is
 
             {/* Story Content */}
             <div className="prose prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed tracking-wide text-lg whitespace-pre-wrap">
-              <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence =
-                      isNarrationActive &&
-                      narrationWordIndex >= segment.startWordIndex &&
-                      narrationWordIndex <= segment.endWordIndex;
-
-                    const rawParts = segment.text.split(/(\s+)/);
-                    let wordOffset = 0;
-
-                    return (
-                      <span
-                        key={segment.id}
-                        className={isActiveSentence ? "text-slate-100 font-medium transition-colors duration-300" : undefined}
-                      >
-                        {rawParts.map((part, partIdx) => {
-                          if (part === "") return null;
-                          if (/^\s+$/.test(part)) {
-                            return part;
-                          }
-
-                          const absoluteWordIndex = segment.startWordIndex + wordOffset;
-                          wordOffset++;
-
-                          const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                          if (isActiveWord) {
-                            return (
-                              <span
-                                key={partIdx}
-                                className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
-                                data-active-word="true"
-                              >
-                                {part}
-                              </span>
-                            );
-                          }
-
-                          return (
-                            <span key={partIdx}>
-                              {part}
-                            </span>
-                          );
-                        })}
-                      </span>
-                    );
-                  })
-                ) : (
-                  DOMPurify.sanitize(selectedStory.content)
-                  (() => {
-                    const rawParts = selectedStory.content.split(/(\s+)/);
-                    let wordOffset = 0;
-                    return rawParts.map((part, partIdx) => {
-                      if (part === "") return null;
-                      if (/^\s+$/.test(part)) {
-                        return part;
-                      }
-
-                      const absoluteWordIndex = wordOffset;
-                      wordOffset++;
-
-                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                      if (isActiveWord) {
-                        return (
-                          <span
-                            key={partIdx}
-                            className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
-                            data-active-word="true"
-                          >
-                            {part}
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <span key={partIdx}>
-                          {part}
-                        </span>
-                      );
-                    });
-                  })()
-                )}
-              </p>
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
-              <AudioPlayer 
-                ref={audioPlayerRef} 
-                text={selectedStory.content} 
-                title={selectedStory.title} 
-                onWordIndexChange={setNarrationWordIndex} 
-                onPlaybackStateChange={setNarrationState} 
-              />
-            </div>
-            <StoryVersionHistory
-              story={selectedStory}
-              onRestore={handleRestoreVersion}
-            />
-          </div>
-
-          {/* Alternate Endings Section */}
-          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl sm:rounded-3xl shadow-xl p-6 mt-2 relative overflow-hidden">
-            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
-                  Alternate Endings
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Explore alternate narrative styles for your story context.
-                </p>
-              </div>
-              {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
-                <button
-                  type="button"
-                  onClick={handleResetEnding}
-                  className="rounded-lg px-4 py-2 bg-red-100 dark:bg-red-950/40 hover:bg-red-200 dark:hover:bg-red-900/60 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
-                >
-                  <i className="fa-solid fa-rotate-left"></i> Reset to Original
-                </button>
               {sentenceSegments.length > 0 ? (
                 sentenceSegments.map((segment) => {
                   const isActive = isNarrationActive && narrationWordIndex >= segment.startWordIndex && narrationWordIndex <= segment.endWordIndex;
@@ -422,15 +254,6 @@ const StoriesViewComponent: React.FC<{ stories: IStories[]; isLogin: boolean; is
           <GeneratedStoryTimeline content={selectedStory.content} title={selectedStory.title} narrationState={narrationState} narrationWordIndex={narrationWordIndex} />
         </div>
       </div>
-      {showGenreTransformation && selectedStory && (
-        <StoryGenreTransformation
-          story={{
-            title: selectedStory.title,
-            content: selectedStory.content,
-          }}
-          onClose={() => setShowGenreTransformation(false)}
-        />
-      )}
 
       {/* Modals */}
       {showWorldMap && (
@@ -449,14 +272,6 @@ const StoriesViewComponent: React.FC<{ stories: IStories[]; isLogin: boolean; is
         <Suspense fallback={<div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">Loading...</div>}>
           <StoryTrailer title={selectedStory.title} content={selectedStory.content} tag={selectedStory.tag} isLogin={isLogin} onClose={() => setShowTrailer(false)} />
         </Suspense>
-      )}
-
-      {showTranslator && selectedStory && (
-        <StoryTranslator
-          story={selectedStory}
-          isLogin={isLogin}
-          onClose={() => setShowTranslator(false)}
-        />
       )}
     </div>
   );

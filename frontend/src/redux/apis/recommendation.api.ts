@@ -7,9 +7,9 @@ const recommendationApi = baseApi.injectEndpoints({
         url: "/recommendations/personalized",
         method: "GET",
       }),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       transformResponse: (response: any) => response.data,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       providesTags: ["Recommendation"] as any,
     }),
   }),

@@ -77,7 +77,7 @@ export const WriterApplicationForm = ({ user }: Props) => {
     try {
       await submitApplication(formData).unwrap();
       toast.success("Application submitted successfully!");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to submit application");
     }

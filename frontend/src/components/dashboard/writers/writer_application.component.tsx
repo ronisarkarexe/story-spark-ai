@@ -21,7 +21,7 @@ const WriterApplicationComponent = () => {
       await updateStatus({ id, status }).unwrap();
       toast.success(`Application ${status} successfully.`);
       refetch();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to update application status");
     } finally {
@@ -29,9 +29,9 @@ const WriterApplicationComponent = () => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const pendingApps = data?.data?.filter((app: any) => app.status === "pending") || [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const processedApps = data?.data?.filter((app: any) => app.status !== "pending") || [];
 
   return (
@@ -61,7 +61,7 @@ const WriterApplicationComponent = () => {
           </div>
         ) : (
           <div className="divide-y divide-slate-200 dark:divide-white/[0.06]">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            { }
             {pendingApps.map((app: any) => (
               <div key={app._id} className="p-6 transition hover:bg-slate-100/50 dark:hover:bg-white/[0.02] flex flex-col md:flex-row gap-6">
                 <div className="flex-1">
@@ -142,7 +142,7 @@ const WriterApplicationComponent = () => {
                 </tr>
               </thead>
               <tbody>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                { }
                 {processedApps.map((app: any) => (
                   <tr key={app._id} className="border-b border-slate-200 dark:border-white/[0.06] bg-transparent hover:bg-slate-100/50 dark:hover:bg-white/[0.02]">
                     <td className="px-6 py-4 font-medium text-slate-800 dark:text-white whitespace-nowrap">
