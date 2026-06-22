@@ -15,8 +15,6 @@ import { OTPModel } from "../verify_email/otp.model";
 import { RefreshSession } from "./refresh_session.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 import { GamificationService } from "../gamification/gamification.service";
-import { USER_STATUS } from "../../../enums/user_status";
-import { SUBSCRIPTION_TYPE } from "../../../enums/subscription_type";
 
 const googleClient = new OAuth2Client(config.google_client_id);
 
@@ -50,7 +48,6 @@ const normalizeString = (value: unknown, fieldName: string) => {
   }
   return normalized;
 };
-
 // Token claims; tokenVersion enables global session revocation.
 const buildClaims = (user: any) => ({
   _id: user._id,
@@ -186,8 +183,10 @@ const refreshToken = async (token: string) => {
     throw new ApiError(httpStatus.FORBIDDEN, "Invalid refresh token");
   }
 
-  const userEmail = normalizeEmail((verifiedToken as any).email);
-  const jti = typeof (verifiedToken as any).jti === "string" ? (verifiedToken as any).jti : undefined;
+  const { email: userEmail, jti } = verifiedToken as any;
+  if (typeof userEmail !== "string" || typeof jti !== "string") {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token payload");
+  }
   const user = await User.findOne({ email: userEmail });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
@@ -403,7 +402,6 @@ const resetPassword = async (payload: {
   const password = normalizeString(payload.password, "Password");
   const confirmPassword = normalizeString(payload.confirmPassword, "Confirm password");
   const verificationToken = normalizeString(payload.verificationToken, "Verification token");
-
   if (password !== confirmPassword) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
   }

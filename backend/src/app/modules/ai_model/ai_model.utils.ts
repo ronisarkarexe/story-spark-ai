@@ -24,7 +24,14 @@ import {
   ContinuationResponseSchema,
   TranslationResponseSchema,
   StoryboardResponseSchema,
-} from "../ai";
+} from "../ai";const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -751,7 +758,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,

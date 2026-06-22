@@ -10,10 +10,17 @@ export const searchRateLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: "Too many search requests. Please wait a moment and try again.",
-  keyGenerator: (req: any, _res: any): string => {
-    const forwarded = (req.headers["x-forwarded-for"] as string) ?? "";
-    return forwarded.split(",")[0]?.trim() || req.ip || "unknown";
+  message: {
+    success: false,
+    message: "Too many search requests. Please wait a moment and try again.",
+  },
+  keyGenerator: (req: any) => {
+    // Prefer real IP behind proxy (trust proxy is set in app.ts)
+    return (
+      (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+      req.ip ||
+      "unknown"
+    );
   },
 } as any);
 
@@ -27,8 +34,12 @@ export const apiRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many requests from this IP. Please try again after 15 minutes.",
-  keyGenerator: (req: any, _res: any): string => {
-    const forwarded = (req.headers["x-forwarded-for"] as string) ?? "";
-    return forwarded.split(",")[0]?.trim() || req.ip || "unknown";
+  keyGenerator: (req: any) => {
+    // Prefer real IP behind proxy (trust proxy is set in app.ts)
+    return (
+      (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+      req.ip ||
+      "unknown"
+    );
   },
 } as any);
