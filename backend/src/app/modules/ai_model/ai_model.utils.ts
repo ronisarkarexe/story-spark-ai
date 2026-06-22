@@ -25,6 +25,7 @@ import {
   TranslationResponseSchema,
   StoryboardResponseSchema,
 } from "../ai";
+import { GenerativeModel } from "@google/generative-ai";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -79,60 +80,6 @@ interface Story {
   enhancedPrompt?: string;
 }
 
-// NEW: Map each tone label to a precise writing instruction injected into the AI prompt.
-// Keeping these as concrete directives (not vague adjectives) gives Gemini clear stylistic targets.
-const TONE_INSTRUCTIONS: Record<string, string> = {
-  Dark: "Write in a dark, gritty, and emotionally heavy tone. Explore themes of shadow, loss, moral ambiguity, and consequence. Avoid happy resolutions — let tension linger.",
-  Humorous:
-    "Write in a light-hearted, witty, and comedic tone. Include clever wordplay, funny observations, and absurd situations. Keep the mood playful throughout.",
-  Romantic:
-    "Write in a warm, tender, and emotionally rich tone. Focus on connection, longing, vulnerability, and heartfelt moments between characters.",
-  Epic: "Write in a grand, dramatic, and heroic tone. Use vivid, sweeping imagery, high stakes, and bold character actions. Every sentence should feel consequential.",
-  Mysterious:
-    "Write in a suspenseful, atmospheric, and unsettling tone. Leave things deliberately unsaid. Build intrigue through detail and implication rather than exposition.",
-  "Children's":
-    "Write in a simple, wholesome, imaginative, and age-appropriate tone. Use short sentences, gentle humour, and a sense of wonder. Suitable for readers aged 5–10.",
-};
-
-/**
- * Returns the tone instruction string for injection into the prompt,
- * or an empty string if no tone (or an unrecognised tone) is supplied.
- */
-const GENRE_MODIFIER_INSTRUCTIONS: Record<string, string> = {
-  fantasy:
-    "Write in the style of epic fantasy fiction. Include vivid world-building, magic, and heroic themes.",
-  horror:
-    "Write in the style of psychological horror. Build dread slowly, use dark imagery, and leave an unsettling feeling.",
-  romance:
-    "Write in the style of contemporary romance. Focus on emotional tension, character chemistry, and satisfying resolution.",
-  scifi:
-    "Write in the style of science fiction. Ground the story in plausible technology or speculative concepts.",
-  mystery:
-    "Write in the style of a mystery thriller. Plant subtle clues, build suspense, and deliver a reveal.",
-  childrens:
-    "Write in the style of a children's picture book. Use simple language, a warm tone, and a clear moral.",
-};
-
-const buildGenreInstruction = (genre?: string): string => {
-  if (!genre) return "";
-  const instruction = GENRE_MODIFIER_INSTRUCTIONS[genre];
-  if (!instruction) return "";
-  return `Genre & Style Directive: ${instruction}\n\n`;
-};
-
-const buildToneInstruction = (tone?: string): string => {
-  if (!tone) return "";
-  const instruction = TONE_INSTRUCTIONS[tone];
-  if (!instruction) return "";
-  return `Tone & Style Directive: ${instruction}\n\n`;
-};
-
-const throwIfAborted = (signal?: AbortSignal): void => {
-  if (signal?.aborted) {
-    throw new GenerationAbortedError();
-  }
-};
-
 const sanitizeJsonText = (rawText: string): string => {
   const trimmed = rawText.trim();
   if (!trimmed.startsWith("```")) {
@@ -145,17 +92,16 @@ const sanitizeJsonText = (rawText: string): string => {
     .trim();
 };
 
-// ─── GENRE SUPPORT ──────────────────────────────────────────────────────────
-
+// ─── GENRE SUPPORT ────────────────────────────────────────────────────────
 // Genre-specific writing guidance injected into the Gemini prompt so each
-// genre produces distinctly themed output (acceptance criterion 3).
+// genre produces distinctly themed output.
 export const GENRE_STYLE_GUIDES: Record<string, string> = {
   Horror:
     "Write with a dark, suspenseful tone. Build dread gradually through unsettling imagery, an ominous atmosphere, and mounting tension, leading to a frightening or unnerving climax.",
   Romance:
-    "Center the narrative on emotional connection and the development of a romantic relationship between characters. Use warm, intimate, emotionally expressive language and focus on feelings, chemistry, and personal growth.",
+    "Center the narrative on emotional connection and the development of a romantic relationship between characters. Use warm, intimate, emotionally expressive language and focus on feelings, chemistry, and emotional resolution.",
   "Sci-Fi":
-    "Set the story in a futuristic, technology-driven, or speculative world. Incorporate scientific concepts, advanced technology, or space/future settings, and explore their impact on the characters.",
+    "Set the story in a futuristic, technology-driven, or speculative world. Incorporate scientific concepts, advanced technology, or space/future settings, and explore their impact on the characters and plot.",
   Fantasy:
     "Build a richly imagined world featuring magic, mythical creatures, or fantastical elements. Emphasize wonder, adventure, and high stakes within this magical setting.",
   Mystery:
@@ -213,7 +159,11 @@ const buildCharactersInstruction = (characters?: ICharacter[]): string => {
 
 // ─── RETRY / FALLBACK ───────────────────────────────────────────────────────
 
-import { GenerativeModel } from "@google/generative-ai";
+const throwIfAborted = (signal?: AbortSignal): void => {
+  if (signal?.aborted) {
+    throw new GenerationAbortedError();
+  }
+};
 
 const executeWithRetryAndFallback = async <T>(
   operation: (activeModel: GenerativeModel) => Promise<T>,
@@ -283,8 +233,6 @@ export async function generateWithGeminiStories(
   assertGeminiApiKeyConfigured();
 
   try {
-    const genreInstruction = buildGenreInstruction(genre);
-    const toneInstruction = buildToneInstruction(tone);
     const charactersInstruction = buildCharactersInstruction(characters);
 
     const response = await executeWithRetryAndFallback(async (activeModel) => {
@@ -301,12 +249,13 @@ export async function generateWithGeminiStories(
         : "";
 
       return chatSession.sendMessage(
-        `${buildGenreInstruction(genre)}${buildToneInstruction(tone)}${buildCharactersInstruction(characters)}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+        `You are an expert storyteller and emotion analyst. The user provided the following base prompt to help direct the output:
+        "${prompt}"
         First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
         Then, generate ${numStories} different short stories based on this ENHANCED prompt.
         The stories MUST be written entirely in the ${language} language.${genreInstructionLine}
-        For each story, also analyze and detect the primary emotional tones (e.g., ["Joy", "Suspense", "Motivation"]) and the specific genre.
-        Each story should be in JSON format with fields: "title", "content", "tag" (the main topic), "emotions" (an array of strings), "genre" (a string), and "enhancedPrompt" (the improved prompt).
+        ${charactersInstruction}For each story, also analyze and detect the primary emotional tones (e.g., ["Joy", "Suspense", "Motivation"]) and the specific genre.
+        Each story should be in JSON format with fields: "title", "content", "tag" (the main topic), "emotions" (an array of strings), "genre" (a string), and "enhancedPrompt" (the improved prompt you created).
         Ensure each story is approximately ${wordLength} words long.
         Return only valid JSON array output.`,
         { signal },
@@ -433,7 +382,7 @@ export async function generateAlternateEndingsWithGemini(
         For each alternate ending, provide:
         - "style": The style name exactly as listed above.
         - "ending": A short paragraph or two describing the alternate ending scene itself.
-        - "fullStory": The complete rewritten story with this new ending seamlessly integrated. The new ending should replace the original ending of the story, preserving the original story's context.
+        - "fullStory": The complete rewritten story with this new ending seamlessly integrated. The new ending should replace the original ending of the story, preserving the original story's context and characters.
         
         Return the output as a JSON array of objects with the fields: "style", "ending", and "fullStory".`,
         { signal },
@@ -490,7 +439,7 @@ export async function generateAlternateEndingsWithGemini(
   }
 }
 
-// ─── STREAMING ──────────────────────────────────────────────────────────────
+// ─── STREAMING ────────────────────────────────────────────────────────────
 
 export async function generateWithGeminiStoriesStream(
   prompt: string,
@@ -555,7 +504,7 @@ export async function generateWithGeminiStoriesStream(
   }
 }
 
-// ─── REMIX ──────────────────────────────────────────────────────────────────
+// ─── REMIX ──────────────────────────────────────────────────────────────
 
 export async function generateRemixWithGemini(
   title: string,
@@ -702,7 +651,7 @@ Return only valid JSON with this exact structure:
   }
 }
 
-// ─── TRANSLATE ──────────────────────────────────────────────────────────────
+// ─── TRANSLATE ────────────────────────────────────────────────────────────
 
 export async function translateStoryWithGemini(
   title: string,
@@ -761,7 +710,7 @@ Preserve the story's tone, style and meaning. Only translate — do not modify t
   }
 }
 
-// ─── STORYBOARD ─────────────────────────────────────────────────────────────
+// ─── STORYBOARD ────────────────────────────────────────────────────────────
 
 export async function generateStoryboardWithGemini(
   payload: IStoryVisualizerPayload,
@@ -837,7 +786,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,
@@ -871,7 +819,7 @@ Rules:
   }
 }
 
-// ─── CHAT ───────────────────────────────────────────────────────────────────
+// ─── CHAT ─────────────────────────────────────────────────────────────────
 
 export async function chatWithGemini(
   message: string,
@@ -931,7 +879,7 @@ export async function generateStoryContinuationMultipleWithGemini(
 
 "${storyContext}"
 
-Generate exactly ${count} different alternate continuations for this story. Each continuation should be 2-4 paragraphs that maintain the same tone, style, and narrative direction, but take the story in a slightly different direction or highlight a different choice/event. All continuations MUST be written entirely in ${language}.
+Generate exactly ${count} different alternate continuations for this story. Each continuation should be 2-4 paragraphs that maintain the same tone, style, and narrative direction, but take the story in a different direction. The continuations MUST be written entirely in ${language}.
 
 Return only valid JSON with this exact structure:
 [
