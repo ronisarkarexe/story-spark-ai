@@ -19,6 +19,7 @@ interface ComparisonModeProps {
   versions: IStoryVersion[];
   isLoadingVersions: boolean;
   onClose: () => void;
+  onRestore?: (versionId: string) => void;
 }
 
 const ComparisonMode: React.FC<ComparisonModeProps> = ({
@@ -28,11 +29,15 @@ const ComparisonMode: React.FC<ComparisonModeProps> = ({
 }) => {
   const [selectedVersion1, setSelectedVersion1] = useState<IStoryVersion | null>(null);
   const [selectedVersion2, setSelectedVersion2] = useState<IStoryVersion | null>(null);
+  const [selectedVersion3, setSelectedVersion3] = useState<IStoryVersion | null>(null);
   const [isComparing, setIsComparing] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
 
   const handleCompare = () => {
     if (!selectedVersion1 || !selectedVersion2 || selectedVersion1._id === selectedVersion2._id) {
+      return;
+    }
+    if (selectedVersion3 && (selectedVersion3._id === selectedVersion1._id || selectedVersion3._id === selectedVersion2._id)) {
       return;
     }
 
@@ -47,6 +52,7 @@ const ComparisonMode: React.FC<ComparisonModeProps> = ({
     setShowComparison(false);
     setSelectedVersion1(null);
     setSelectedVersion2(null);
+    setSelectedVersion3(null);
   };
 
   if (isLoadingVersions) {
@@ -77,7 +83,7 @@ const ComparisonMode: React.FC<ComparisonModeProps> = ({
         <div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">📊 Story Variation Comparison</h2>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Compare two versions to see what changed
+            Compare 2 to 3 versions to see what changed
           </p>
         </div>
         <button
@@ -94,8 +100,10 @@ const ComparisonMode: React.FC<ComparisonModeProps> = ({
           versions={versions}
           selectedVersion1={selectedVersion1}
           selectedVersion2={selectedVersion2}
+          selectedVersion3={selectedVersion3}
           onSelectVersion1={setSelectedVersion1}
           onSelectVersion2={setSelectedVersion2}
+          onSelectVersion3={setSelectedVersion3}
           onCompare={handleCompare}
           isLoading={isComparing}
         />
@@ -103,7 +111,9 @@ const ComparisonMode: React.FC<ComparisonModeProps> = ({
         <DiffViewer
           version1={selectedVersion1}
           version2={selectedVersion2}
+          version3={selectedVersion3}
           onBack={handleBackToSelection}
+          onRestore={onRestore}
         />
       ) : null}
     </div>

@@ -736,6 +736,10 @@ const PostDetailsComponent = () => {
             versions={versions || []}
             isLoadingVersions={isLoadingVersions}
             onClose={() => setShowComparison(false)}
+            onRestore={(versionId) => {
+              handleRestore(versionId);
+              setShowComparison(false);
+            }}
           />
         </div>
       )}
@@ -788,15 +792,6 @@ const PostDetailsComponent = () => {
         </div>
       )}
 
-      {showComparison && (
-        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-white dark:bg-[#0f172a]/95 backdrop-blur-xl border-l border-slate-200 dark:border-slate-700/60 shadow-2xl p-6 overflow-y-auto text-slate-900 dark:text-white animate-slide-in flex flex-col">
-          <ComparisonMode
-            versions={versions || []}
-            isLoadingVersions={isLoadingVersions}
-            onClose={() => setShowComparison(false)}
-          />
-        </div>
-      )}
 
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 

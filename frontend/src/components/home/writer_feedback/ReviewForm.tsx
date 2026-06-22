@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];

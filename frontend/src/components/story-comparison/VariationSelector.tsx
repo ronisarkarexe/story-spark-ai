@@ -17,8 +17,10 @@ interface VariationSelectorProps {
   versions: IStoryVersion[];
   selectedVersion1: IStoryVersion | null;
   selectedVersion2: IStoryVersion | null;
+  selectedVersion3?: IStoryVersion | null;
   onSelectVersion1: (version: IStoryVersion) => void;
   onSelectVersion2: (version: IStoryVersion) => void;
+  onSelectVersion3?: (version: IStoryVersion | null) => void;
   onCompare: () => void;
   isLoading?: boolean;
 }
@@ -27,12 +29,14 @@ const VariationSelector: React.FC<VariationSelectorProps> = ({
   versions,
   selectedVersion1,
   selectedVersion2,
+  selectedVersion3,
   onSelectVersion1,
   onSelectVersion2,
+  onSelectVersion3,
   onCompare,
   isLoading = false,
 }) => {
-  const isReadyToCompare = selectedVersion1 && selectedVersion2 && selectedVersion1._id !== selectedVersion2._id;
+  const isReadyToCompare = selectedVersion1 && selectedVersion2 && selectedVersion1._id !== selectedVersion2._id && (!selectedVersion3 || (selectedVersion3._id !== selectedVersion1._id && selectedVersion3._id !== selectedVersion2._id));
 
   const getVersionLabel = (version: IStoryVersion) => {
     return `v${version.versionNumber} - ${version.generationType} (${new Date(version.createdAt).toLocaleDateString()})`;
@@ -55,7 +59,7 @@ const VariationSelector: React.FC<VariationSelectorProps> = ({
 
   return (
     <div className="space-y-6 mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Version 1 Selector */}
         <div>
           <label className="block text-sm font-semibold text-slate-900 dark:text-gray-300 mb-3">
@@ -139,6 +143,54 @@ const VariationSelector: React.FC<VariationSelectorProps> = ({
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 📅 {new Date(selectedVersion2.createdAt).toLocaleString()}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Version 3 Selector (Optional) */}
+        <div>
+          <label className="block text-sm font-semibold text-slate-900 dark:text-gray-300 mb-3">
+            📝 Select Third Version (Optional)
+          </label>
+          <select
+            value={selectedVersion3?._id || ""}
+            onChange={(e) => {
+              if (!e.target.value) {
+                if (onSelectVersion3) onSelectVersion3(null);
+                return;
+              }
+              const version = versions.find((v) => v._id === e.target.value);
+              if (version && onSelectVersion3) onSelectVersion3(version);
+            }}
+            className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400"
+          >
+            <option value="">None...</option>
+            {versions.map((version) => (
+              <option key={version._id} value={version._id}>
+                {getVersionLabel(version)}
+              </option>
+            ))}
+          </select>
+          {selectedVersion3 && (
+            <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                  VERSION #{selectedVersion3.versionNumber}
+                </span>
+                <span
+                  className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border ${getGenerationTypeColor(
+                    selectedVersion3.generationType
+                  )}`}
+                >
+                  {selectedVersion3.generationType}
+                </span>
+              </div>
+              <p className="text-sm text-slate-700 dark:text-slate-300 font-medium mb-1">
+                {selectedVersion3.title}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                📅 {new Date(selectedVersion3.createdAt).toLocaleString()}
               </p>
             </div>
           )}
