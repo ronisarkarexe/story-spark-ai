@@ -3,6 +3,7 @@ import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { IUser } from "./user.interface";
 import { User } from "./user.model";
+import { Follow } from "../follow/follow.model";
 import { Post } from "../post/post.model";
 import httpStatus from "http-status";
 import { Comment } from "../comment/comment.model";
@@ -110,8 +111,8 @@ const deleteUser = async (id: string): Promise<void> => {
   await Post.deleteMany({ author: id });
 
   // ─── FIX: REMOVE DANGLING REFERENCES ───
-  await User.updateMany({ followers: id }, { $pull: { followers: id } });
-  await User.updateMany({ following: id }, { $pull: { following: id } });
+  await Follow.deleteMany({ follower: id });
+  await Follow.deleteMany({ following: id });
 
   const result = await User.deleteOne({ _id: id });
 
@@ -201,36 +202,36 @@ const toggleFollow = async (token: ITokenPayload, authorId: string) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Author not found!");
   }
 
-  const isFollowing = currentUser.following.includes(author._id);
+  const existingFollow = await Follow.findOne({
+  follower: currentUser._id,
+  following: author._id,
+});
 
-  if (isFollowing) {
-    await User.findByIdAndUpdate(currentUser._id, {
-      $pull: { following: author._id },
-    });
-    await User.findByIdAndUpdate(author._id, {
-      $pull: { followers: currentUser._id },
-    });
-    return { isFollowing: false };
-  } else {
-    await User.findByIdAndUpdate(currentUser._id, {
-      $addToSet: { following: author._id },
-    });
-    await User.findByIdAndUpdate(author._id, {
-      $addToSet: { followers: currentUser._id },
-    });
-    return { isFollowing: true };
-  }
+const isFollowing = !!existingFollow;
+
+if (isFollowing) {
+  await Follow.findByIdAndDelete(existingFollow!._id);
+  return { isFollowing: false };
+} else {
+  await Follow.create({
+    follower: currentUser._id,
+    following: author._id,
+});
+
+  return { isFollowing: true };
+}
 };
-
 const getFollowStatus = async (token: ITokenPayload, authorId: string) => {
   const currentUser = await User.findOne({ email: token.email });
   if (!currentUser) {
     return { isFollowing: false };
   }
-  const isFollowing = currentUser.following.some(
-    (id) => id.toString() === authorId
-  );
-  return { isFollowing };
+  const follow = await Follow.findOne({
+  follower: currentUser._id,
+  following: authorId,
+});
+
+return { isFollowing: !!follow };
 };
 
 export const UserService = {
