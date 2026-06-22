@@ -16,7 +16,7 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { PromptAnalysisCard } from "./PromptAnalysisCard";
+import PromptAnalysisCard from "./PromptAnalysisCard";
 
 interface PromptAnalysisIntegrationProps {
   /** Current prompt value */

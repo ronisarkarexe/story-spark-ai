@@ -8,14 +8,14 @@ import ReviewForm from "./ReviewForm";
 import { motion } from "framer-motion";
 
 const sampleReviews: Review[] = [
-  { _id: "sample-1", name: "Sarah J.", role: "Fiction Writer", feedback: "StorySparkAI completely cured my writer's block. The character suggestions are incredibly deep and nuanced.", imgSrc: "https://i.pravatar.cc/150?u=sarah" },
-  { _id: "sample-2", name: "Marcus T.", role: "Screenwriter", feedback: "I use this tool daily to structure my screenplays. The pacing recommendations are spot on.", imgSrc: "https://i.pravatar.cc/150?u=marcus" },
-  { _id: "sample-3", name: "Elena R.", role: "Indie Author", feedback: "Publishing my first novel wouldn't have been possible without the world-building assistance.", imgSrc: "https://i.pravatar.cc/150?u=elena" },
-  { _id: "sample-4", name: "David K.", role: "Blogger", feedback: "Helps me generate fresh ideas for my weekly posts. It's like having a co-writer available 24/7.", imgSrc: "https://i.pravatar.cc/150?u=david" },
-  { _id: "sample-5", name: "Aisha M.", role: "Student Writer", feedback: "Great for expanding my vocabulary and learning how to vary my sentence structures.", imgSrc: "https://i.pravatar.cc/150?u=aisha" },
-  { _id: "sample-6", name: "James L.", role: "Content Creator", feedback: "The absolute best tool for drafting quick video scripts and narratives.", imgSrc: "https://i.pravatar.cc/150?u=james" },
-  { _id: "sample-7", name: "Chloe F.", role: "Poet", feedback: "Surprisingly adept at maintaining rhythm and suggesting evocative imagery.", imgSrc: "https://i.pravatar.cc/150?u=chloe" },
-  { _id: "sample-8", name: "Robert W.", role: "Storyteller", feedback: "I use it to build D&D campaigns. The lore generation is simply unmatched.", imgSrc: "https://i.pravatar.cc/150?u=robert" },
+  { _id: "sample-1", name: "Sarah J.", role: "Fiction Writer", feedback: "StorySparkAI completely cured my writer's block. The character suggestions are incredibly deep and nuanced.", imgSrc: "https://i.pravatar.cc/150?u=sarah", rating: 5, status: "approved" },
+  { _id: "sample-2", name: "Marcus T.", role: "Screenwriter", feedback: "I use this tool daily to structure my screenplays. The pacing recommendations are spot on.", imgSrc: "https://i.pravatar.cc/150?u=marcus", rating: 5, status: "approved" },
+  { _id: "sample-3", name: "Elena R.", role: "Indie Author", feedback: "Publishing my first novel wouldn't have been possible without the world-building assistance.", imgSrc: "https://i.pravatar.cc/150?u=elena", rating: 5, status: "approved" },
+  { _id: "sample-4", name: "David K.", role: "Blogger", feedback: "Helps me generate fresh ideas for my weekly posts. It's like having a co-writer available 24/7.", imgSrc: "https://i.pravatar.cc/150?u=david", rating: 5, status: "approved" },
+  { _id: "sample-5", name: "Aisha M.", role: "Student Writer", feedback: "Great for expanding my vocabulary and learning how to vary my sentence structures.", imgSrc: "https://i.pravatar.cc/150?u=aisha", rating: 5, status: "approved" },
+  { _id: "sample-6", name: "James L.", role: "Content Creator", feedback: "The absolute best tool for drafting quick video scripts and narratives.", imgSrc: "https://i.pravatar.cc/150?u=james", rating: 5, status: "approved" },
+  { _id: "sample-7", name: "Chloe F.", role: "Poet", feedback: "Surprisingly adept at maintaining rhythm and suggesting evocative imagery.", imgSrc: "https://i.pravatar.cc/150?u=chloe", rating: 5, status: "approved" },
+  { _id: "sample-8", name: "Robert W.", role: "Storyteller", feedback: "I use it to build D&D campaigns. The lore generation is simply unmatched.", imgSrc: "https://i.pravatar.cc/150?u=robert", rating: 5, status: "approved" },
 ];
 
 const ReviewCard = ({ writer }: { writer: Review }) => (

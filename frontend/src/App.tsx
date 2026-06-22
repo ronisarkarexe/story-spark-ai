@@ -3,6 +3,18 @@ import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-rou
 
 import { USER_ROLE } from "./constants/role";
 
+import React from "react";
+import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
+import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
+import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+import CollabHome from "./components/collab/CollabHome";
+import CollabRoom from "./components/collab/CollabRoom";
+import HeroSectionComponent from "./components/hero/hero_section.component";
+import HomeComponent from "./components/home/home.component";
+import LoginComponent from "./components/login/login.component";
+import SignUpComponent from "./components/signup/signup.component";
+import DashboardComponent from "./components/dashboard/dashboard.component";
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import LoadingAnimation from "./components/loading/loading.component";
@@ -111,7 +123,7 @@ const router = createBrowserRouter([
       { path: "leaderboard", element: <Leaderboard /> },
       { path: "community", element: <CommunityComponent /> },
       { path: "report-bug", element: <ReportBug /> },
-      { path: "search", element: lazyPage(<SearchPageComponent />) },
+      { path: "chat", element: <ChatPage /> },
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [

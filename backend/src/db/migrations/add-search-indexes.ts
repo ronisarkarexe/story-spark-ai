@@ -15,6 +15,10 @@ async function up() {
   await mongoose.connect(config.database_url as string);
   const db = mongoose.connection.db;
 
+  if (!db) {
+    throw new Error("Database connection failed");
+  }
+
   // ── Post text index ──────────────────────────────────────────────────────
   const postCollection = db.collection("posts");
 

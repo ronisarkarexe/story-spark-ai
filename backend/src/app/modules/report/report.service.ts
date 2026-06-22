@@ -1,6 +1,7 @@
 import { IReport } from "./report.interface";
 import { Report } from "./report.model";
 import ApiError from "../../../errors/api_error";
+import { ReportStatus, ReportTargetType } from "../../../enums/report.enum";
 import httpStatus from "http-status";
 
 const createReport = async (payload: IReport) => {
@@ -22,5 +23,51 @@ const getAllReports = async () => {
   const result = await Report.find().populate("reportedBy", "name email");
   return result;
 };
+const getPendingCommentReports = async () => {
+  return await Report.find({
+    targetType: ReportTargetType.COMMENT,
+    status: ReportStatus.PENDING,
+  }).populate("reportedBy", "name email");
+};
 
-export const ReportService = { createReport, getAllReports };
+const reviewReport = async (reportId: string) => {
+  const report = await Report.findByIdAndUpdate(
+    reportId,
+    {
+      status: ReportStatus.REVIEWED,
+    },
+    { new: true }
+  );
+
+  if (!report) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Report not found");
+  }
+
+  return report;
+};
+
+const dismissReport = async (reportId: string) => {
+  const report = await Report.findByIdAndUpdate(
+    reportId,
+    {
+      status: ReportStatus.DISMISSED,
+    },
+    { new: true }
+  );
+
+  if (!report) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Report not found");
+  }
+
+  return report;
+};
+
+
+
+export const ReportService = {
+  createReport,
+  getAllReports,
+  getPendingCommentReports,
+  reviewReport,
+  dismissReport,
+};

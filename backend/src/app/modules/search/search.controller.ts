@@ -25,13 +25,52 @@ const search = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
+  const parsedPage = page ? Number(page) : 1;
+  const parsedLimit = limit ? Number(limit) : 10;
+
+  if (!Number.isInteger(parsedPage) || parsedPage < 1) {
+    return sendResponse(res, {
+      statusCode: httpStatus.BAD_REQUEST,
+      success: false,
+      message: "page must be a positive integer",
+      data: null,
+    });
+  }
+
+  if (!Number.isInteger(parsedLimit) || parsedLimit < 1) {
+    return sendResponse(res, {
+      statusCode: httpStatus.BAD_REQUEST,
+      success: false,
+      message: "limit must be a positive integer",
+      data: null,
+    });
+  }
+
+  if (dateFrom && isNaN(new Date(dateFrom).getTime())) {
+    return sendResponse(res, {
+      statusCode: httpStatus.BAD_REQUEST,
+      success: false,
+      message: "dateFrom is not a valid date",
+      data: null,
+    });
+  }
+
+  if (dateTo && isNaN(new Date(dateTo).getTime())) {
+    return sendResponse(res, {
+      statusCode: httpStatus.BAD_REQUEST,
+      success: false,
+      message: "dateTo is not a valid date",
+      data: null,
+    });
+  }
+
   const result = await SearchService.search({
     q,
     type: type as "story" | "user" | "tag" | "all",
     genre,
     sortBy: sortBy as "relevance" | "date" | "popularity",
-    page: page ? parseInt(page, 10) : 1,
-    limit: limit ? Math.min(parseInt(limit, 10), 50) : 10,
+    page: parsedPage,
+    limit: Math.min(parsedLimit, 50),
     dateFrom,
     dateTo,
   });

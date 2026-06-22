@@ -54,8 +54,6 @@ export interface CharacterProfile {
   relationships: string;
 }
 
-export const topicsData: ITopicData[] = [
-  { title: "#AIWriting", color: "bg-blue-100 text-blue-800", selected: true },
 export const TOPICS: ITopicData[] = [
   {
     title: "#StoryIdeas",
@@ -169,3 +167,84 @@ export const prompts = [
 ];
 
 export const TEMPLATE_STORY_UUID = "test-1";
+const emotionKeywords = {
+  Happy: [
+    "happy",
+    "joy",
+    "smile",
+    "laugh",
+    "love",
+    "wonderful",
+    "celebrate",
+    "peace"
+  ],
+
+  Sad: [
+    "sad",
+    "cry",
+    "tears",
+    "pain",
+    "lonely",
+    "loss",
+    "broken"
+  ],
+
+  Suspense: [
+    "mystery",
+    "dark",
+    "fear",
+    "danger",
+    "secret",
+    "shadow"
+  ],
+
+  Excitement: [
+    "adventure",
+    "fight",
+    "victory",
+    "energy",
+    "thrill",
+    "power"
+  ],
+};
+
+export const analyzeStoryEmotion = (content: string) => {
+  const text = content.toLowerCase();
+
+  const scores = {
+    Happy: 0,
+    Sad: 0,
+    Suspense: 0,
+    Excitement: 0,
+  };
+
+  Object.entries(emotionKeywords).forEach(([emotion, words]) => {
+    words.forEach((word) => {
+      if (text.includes(word)) {
+        scores[emotion as keyof typeof scores]++;
+      }
+    });
+  });
+
+  const total = Object.values(scores).reduce(
+    (sum, value) => sum + value,
+    0
+  );
+
+  const percentages = Object.fromEntries(
+    Object.entries(scores).map(([emotion, value]) => [
+      emotion,
+      total > 0 ? Math.round((value / total) * 100) : 0,
+    ])
+  );
+
+  const dominantEmotion =
+    Object.entries(scores).sort(
+      (a, b) => b[1] - a[1]
+    )[0][0];
+
+  return {
+    scores: percentages,
+    dominantEmotion,
+  };
+};

@@ -16,18 +16,16 @@ export const enhancePromptWithGemini = async (
 ): Promise<string> => {
   const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
 
-  const metaPrompt = `You are a creative writing assistant.
+  const safePrompt = prompt
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, "\\\"")
+    .replace(/\n/g, " ")
+    .replace(/\r/g, "");
 
-Use the following story context if available:
 
-${compressedContext ?? "No previous context"}
-
-Rewrite the following story prompt to be more vivid, specific, and engaging.
-Add a character name, setting details, and a central conflict.
-
-Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
-
-Prompt: ${prompt}`;
+  const metaPrompt = `You are a creative writing assistant.\n\nPrompt: ${safePrompt}\n\nUse the following story context if available:\n\n${
+    compressedContext ?? "No previous context"
+  }\n\nRewrite the following story prompt to be more vivid, specific, and engaging.\nAdd a character name, setting details, and a central conflict.\n\nReturn ONLY the enhanced prompt, nothing else.`;
 
   const resultPromise = model.generateContent(metaPrompt);
 
