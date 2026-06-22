@@ -12,15 +12,30 @@ const LatestPostsComponent = () => {
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
-  const posts = (data?.posts ?? []) as Post[];
+  if (isLoading) return <LoadingAnimation />;
 
-  useEffect(() => {
-    setShowAllPosts(false);
-  }, [posts.length]);
+  if (isError) {
+    return (
+      <section className="mb-12 text-slate-100">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-200 mb-6">
+          Latest Posts
+        </h2>
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-center text-red-200">
+          <p className="mb-3 font-semibold">Failed to load latest posts.</p>
+          <button
+            onClick={() => refetch()}
+            className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   // Remove duplicate posts based on _id
   const uniquePosts = Array.from(
-    new Map((data?.posts ?? []).map((post) => [post._id, post])).values(),
+    new Map((data?.posts ?? []).map((post: Post) => [post._id, post])).values(),
   );
 
   const shouldShowLoadMore = uniquePosts.length > INITIAL_VISIBLE_COUNT;
@@ -28,6 +43,10 @@ const LatestPostsComponent = () => {
     showAllPosts || !shouldShowLoadMore
       ? uniquePosts
       : uniquePosts.slice(0, INITIAL_VISIBLE_COUNT);
+  
+  useEffect(() => {
+  setShowAllPosts(false);
+}, [uniquePosts.length]);
 
   const toggleAccordion = (postId: string) => {
     setExpandedPostId((prevId) => (prevId === postId ? null : postId));

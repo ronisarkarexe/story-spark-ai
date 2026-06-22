@@ -122,9 +122,18 @@ const WriterFeedbackComponent = () => {
         >
           <ReviewForm />
         </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <ReviewForm />
+        </motion.div>
       </div>
     </section>
   );
 };
 
 export default WriterFeedbackComponent;
+
