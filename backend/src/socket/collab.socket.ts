@@ -194,10 +194,26 @@ export const setupCollabSocket = (io: Server) => {
     });
 
     // Yjs document updates
-socket.on("collab:yjs-update", ({ roomId, update }) => {
-  if (!socket.rooms.has(roomId)) {
-    socket.emit("collab:error", {
-      message: "Room not found",
+    socket.on("collab:yjs-update", async ({ roomId, update }) => {
+      try {
+        const userId = socket.data.userId;
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found" });
+          return;
+        }
+
+        const participant = room.participants.find((p) => p.userId === userId);
+        if (!participant) {
+          socket.emit("collab:error", { message: "You are not a participant of this room" });
+          return;
+        }
+
+        socket.to(roomId).emit("collab:yjs-update", { update });
+      } catch (error) {
+        logger.error("Error in Yjs update", error);
+        socket.emit("collab:error", { message: "Failed to broadcast update" });
+      }
     });
 
     // Awareness / cursor updates
@@ -210,11 +226,17 @@ socket.on("collab:yjs-update", ({ roomId, update }) => {
           return;
         }
 
-// Awareness / cursor updates
-socket.on("collab:awareness", ({ roomId, awareness }) => {
-  if (!socket.rooms.has(roomId)) {
-    socket.emit("collab:error", {
-      message: "Room not found",
+        const participant = room.participants.find((p) => p.userId === userId);
+        if (!participant) {
+          socket.emit("collab:error", { message: "You are not a participant of this room" });
+          return;
+        }
+
+        socket.to(roomId).emit("collab:awareness", { awareness });
+      } catch (error) {
+        logger.error("Error in Yjs awareness", error);
+        socket.emit("collab:error", { message: "Failed to broadcast awareness" });
+      }
     });
 
     // AI continues the story
@@ -289,7 +311,7 @@ socket.on("collab:awareness", ({ roomId, awareness }) => {
               .join("\n");
 
             const prompt = storyContext
-              ? `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${storyContext}\n\nContinuation:`
+              ? `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\n${storyContext}`
               : "Start a collaborative story naturally and creatively in 2-3 sentences. Return ONLY the story text, do not add any quotes, titles, JSON, formatting, or labels.";
 
             const result = await AiModelService.aiModelStoryContinuation({
