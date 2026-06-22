@@ -99,6 +99,14 @@ Task:
           "Search for another way",
           "Wait and see what happens",
         ];
+      } else if (parsed.choices.length < 3) {
+        const paddedChoices = [...parsed.choices];
+        while (paddedChoices.length < 3) {
+          paddedChoices.push(`Option ${paddedChoices.length + 1}`);
+        }
+        parsed.choices = paddedChoices;
+      } else if (parsed.choices.length > 3) {
+        parsed.choices = parsed.choices.slice(0, 3);
       } else if (finalChoices.length < 3) {
         finalChoices = [...finalChoices];
         while (finalChoices.length < 3) {

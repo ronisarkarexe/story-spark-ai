@@ -1,7 +1,6 @@
 import axios from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
-
-const API_BASE = "/v1";
+import { getBaseUrl } from "../helpers/config";
 
 export const continueStory = async (chapters: Chapter[]) => {
   const previousContent = chapters
@@ -10,7 +9,7 @@ export const continueStory = async (chapters: Chapter[]) => {
 
   try {
     const response = await axios.post(
-      `${API_BASE}/ai_model/continue-story`,
+      `${getBaseUrl()}/ai_model/continue-story`,
       {
         prompt: `
 Continue this story naturally.
@@ -47,7 +46,7 @@ export const getContinuations = async (
 ): Promise<string[]> => {
   const previousContent = chapters.map((c) => c.content).join("\n\n");
   const response = await axios.post(
-    `${API_BASE}/ai_model/continue-story`,
+    `${getBaseUrl()}/ai_model/continue-story`,
     {
       prompt: `
 Continue this story naturally.

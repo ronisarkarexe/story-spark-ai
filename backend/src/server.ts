@@ -67,10 +67,12 @@ async function main() {
   }
 
   const httpServer = http.createServer(app);
-  const defaultCorsOrigins = 
-    process.env.NODE_ENV === "development"
-      ? ["http://localhost:4001", "http://localhost:4002"]
-      : [];
+  const defaultCorsOrigins = [
+    "http://localhost:4001",
+    "http://localhost:4002",
+    "https://storysparkai-five.vercel.app",
+    "https://storysparkai.vercel.app",
+  ];
 
   const socketCorsOrigins =
     config.cors_origins && config.cors_origins.length > 0

@@ -30,6 +30,8 @@ const SSButton: FC<SSButtonProps> = ({
           ? "cursor-not-allowed opacity-60"
           : "hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/30 active:scale-[0.98]"
       } ${className}`}
+      disabled={isDisabled}
+      aria-busy={isLoading}
     >
       {isLoading ? (
         <div className="flex items-center justify-center gap-2">

@@ -29,6 +29,8 @@ interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
+  onPublishSuccess?: () => void;
+  isLoading?: boolean;
 }
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({

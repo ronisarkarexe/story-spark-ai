@@ -16,19 +16,31 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
     isSupported,
     isSpeaking,
     isPaused,
-    isLoading,
+    isReady,
     error,
-    playbackRate,
-    availableVoices,
-    selectedVoiceIndex,
+    rate: playbackRate,
+    voices: availableVoices,
+    selectedVoiceId,
     play,
     pause,
     resume,
     stop,
-    setPlaybackRate,
-    setSelectedVoice,
-    // detectedLanguage,
+    setRate: setPlaybackRate,
+    setSelectedVoiceId,
   } = useSpeechSynthesis(text);
+
+  const isLoading = !isReady;
+
+  const selectedVoiceIndex = useMemo(() => {
+    return availableVoices.findIndex((v) => v.id === selectedVoiceId);
+  }, [availableVoices, selectedVoiceId]);
+
+  const setSelectedVoice = (index: number) => {
+    const voice = availableVoices[index];
+    if (voice) {
+      setSelectedVoiceId(voice.id);
+    }
+  };
 
   // Stop speech when component unmounts or text changes
   useEffect(() => {
@@ -109,7 +121,7 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
         {/* Play/Pause/Resume/Stop Buttons */}
         <div className="flex gap-2 flex-wrap">
           <button
-            onClick={() => play(text)}
+            onClick={() => play()}
             disabled={!canPlay}
             title="Play narration (Alt+P)"
             aria-label="Play story narration"
@@ -198,7 +210,7 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
               >
                 {availableVoices.map((voice, index) => (
                   <option key={index} value={index}>
-                    {voice.name} ({voice.lang})
+                    {voice.label} ({voice.lang})
                   </option>
                 ))}
               </select>
