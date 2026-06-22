@@ -295,6 +295,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.2.7(react@19.2.7)
+      react-helmet-async:
+        specifier: ^2.0.5
+        version: 2.0.5(react@19.2.7)
       react-hook-form:
         specifier: ^7.54.2
         version: 7.80.0(react@19.2.7)
@@ -7627,6 +7630,17 @@ packages:
     resolution: {integrity: sha512-7KxauUdBmSdWnmpaGFg+ppNjKF8uNLry8LyzjauQDOVONfFLNKrKvQOxZ/VuTIcS/gge/YNahf5RIIQWTSarlg==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
 
+  ws@6.2.4:
+    resolution: {integrity: sha512-PNIUUyLI5YpkJZj60YBzX1o0ByQ4ovvfmq9N/Kig/PAYbVlGyz4R6G0SEWrD0O9acc0sT2+IdMBVLFv8FSi0Nw==}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: ^5.0.2
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   ws@8.21.0:
     resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
     engines: {node: '>=10.0.0'}
@@ -13901,7 +13915,7 @@ snapshots:
 
   napi-macros@2.0.0:
     optional: true
-  
+
   natural-compare@1.4.0: {}
 
   negotiator@0.6.3: {}
@@ -14391,10 +14405,10 @@ snapshots:
 
   react-fast-compare@3.2.2: {}
 
-  react-helmet-async@2.0.5(react@19.2.6):
+  react-helmet-async@2.0.5(react@19.2.7):
     dependencies:
       invariant: 2.2.4
-      react: 19.2.6
+      react: 19.2.7
       react-fast-compare: 3.2.2
       shallowequal: 1.1.0
 
