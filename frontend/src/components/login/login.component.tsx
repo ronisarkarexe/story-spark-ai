@@ -189,10 +189,6 @@ const LoginComponent = () => {
 
             <div className="absolute inset-0 bg-black/60"></div>
 
-            <form
-              className="space-y-5 w-full relative z-10"
-              onSubmit={handleSubmit(onSubmit)}
-            ></form>
 
             <form className="space-y-5 w-full" onSubmit={handleSubmit(onSubmit)}>
               <SSInput
@@ -266,14 +262,9 @@ const LoginComponent = () => {
 
               <Link
                 to="/signup"
-
-            <a
-                href="/signup"
-
                 className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
               >
                 Sign up for free
-
               </Link>
 
 
