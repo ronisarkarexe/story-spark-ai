@@ -49,7 +49,55 @@ export interface UseSpeechSynthesisResult {
   selectedLanguage: string;
   setSelectedLanguage: (lang: string) => void;
   languageOptions: LanguageOption[];
+  detectedLanguage: string | null;
 }
+
+const LANGUAGE_PATTERNS: Record<string, RegExp> = {
+  "hi": /[\u0900-\u097F]+/, // Hindi (Devanagari script)
+  "ta": /[\u0B80-\u0BFF]+/, // Tamil
+  "te": /[\u0C00-\u0C7F]+/, // Telugu
+  "kn": /[\u0C80-\u0CFF]+/, // Kannada
+  "ml": /[\u0D00-\u0D7F]+/, // Malayalam
+  "gu": /[\u0A80-\u0AFF]+/, // Gujarati
+  "bn": /[\u0980-\u09FF]+/, // Bengali
+  "pa": /[\u0A00-\u0A7F]+/, // Punjabi
+  "ur": /[\u0600-\u06FF]+/, // Urdu
+  "ar": /[\u0600-\u06FF]+/, // Arabic
+  "zh": /[\u4E00-\u9FFF\u3040-\u309F]+/, // Chinese and Japanese
+  "ja": /[\u3040-\u309F\u30A0-\u30FF]+/, // Japanese
+  "ko": /[\uAC00-\uD7AF]+/, // Korean
+  "ru": /[а-яА-ЯёЁ]+/, // Russian/Cyrillic
+  "el": /[\u0370-\u03FF]+/, // Greek
+  "he": /[\u0590-\u05FF]+/, // Hebrew
+  "th": /[\u0E00-\u0E7F]+/, // Thai
+};
+
+const detectLanguage = (text: string): string | null => {
+  if (!text || text.trim().length === 0) {
+    return null;
+  }
+
+  for (const [langCode, pattern] of Object.entries(LANGUAGE_PATTERNS)) {
+    if (pattern.test(text)) {
+      return langCode;
+    }
+  }
+
+  return "en";
+};
+
+const findVoiceForLanguage = (
+  voices: SpeechSynthesisVoice[],
+  langCode: string,
+): SpeechSynthesisVoice | null => {
+  if (voices.length === 0) return null;
+
+  let voice = voices.find(v => v.lang.startsWith(langCode));
+  if (voice) return voice;
+
+  voice = voices.find(v => v.lang.split("-")[0] === langCode);
+  return voice || null;
+};
 
 const SPEED_MIN = 0.5;
 const SPEED_MAX = 2;
@@ -89,11 +137,9 @@ const filterVoicesByGender = (
   const pattern = gender === "female" ? femalePattern : malePattern;
   const filtered = browserVoices.filter((voice) => pattern.test(voice.name));
 
- if (filtered.length < 3) {
-  return browserVoices;
-}
-return filtered;
+  return filtered.length > 0 ? filtered : browserVoices;
 };
+
 const toVoiceOptions = (browserVoices: SpeechSynthesisVoice[]): SpeechVoiceOption[] =>
   browserVoices.map((voice) => ({
     id: getVoiceId(voice),
@@ -112,7 +158,7 @@ const getLanguageLabel = (lang: string): string => {
   }
 };
 
-,const buildWordRanges = (inputText: string): WordRange[] => {
+const buildWordRanges = (inputText: string): WordRange[] => {
   if (!inputText.trim()) {
     return [];
   }
@@ -163,10 +209,70 @@ export const useSpeechSynthesis = (
   const [isSupported, setIsSupported] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [rateState, setRateState] = useState(1);
+  const [pitchState, setPitchState] = useState(1);
+  const [volumeState, setVolumeState] = useState(1);
+  const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceId, setSelectedVoiceId] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("en-US");
+  const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
 
-  const speak = (text: string) => {
-    if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.cancel();
+  const voices = useMemo(
+    () => toVoiceOptions(filterVoicesByGender(browserVoices, voiceGender)),
+    [browserVoices, voiceGender],
+  );
+
+  const languageOptions = useMemo<LanguageOption[]>(() => {
+    const counts = new Map<string, number>();
+    for (const voice of voices) {
+      counts.set(voice.lang, (counts.get(voice.lang) ?? 0) + 1);
+    }
+
+    return Array.from(counts.entries())
+      .map(([lang, voiceCount]) => ({
+        lang,
+        label: getLanguageLabel(lang),
+        voiceCount,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [voices]);
+
+  const synthRef = useRef<SpeechSynthesis | null>(null);
+  const textRef = useRef(text);
+  const wordRangesRef = useRef<WordRange[]>(buildWordRanges(text));
+
+  useEffect(() => {
+    textRef.current = text;
+    wordRangesRef.current = buildWordRanges(text);
+
+    // Auto-detect language from text
+    const detected = detectLanguage(text);
+    setDetectedLanguage(detected);
+
+    // If language was detected, update selected language and voice if no voice is selected yet
+    if (detected) {
+      const matchingVoice = findVoiceForLanguage(browserVoicesRef.current, detected);
+      if (matchingVoice) {
+        setSelectedLanguage(matchingVoice.lang);
+        setSelectedVoiceId(getVoiceId(matchingVoice));
+      }
+    }
+  }, [text]);
+
+  const resolveBrowserVoice = useCallback(
+    (voiceId: string): SpeechSynthesisVoice | undefined => {
+      const genderFiltered = filterVoicesByGender(browserVoicesRef.current, voiceGender);
+      return genderFiltered.find((voice) => getVoiceId(voice) === voiceId);
+    },
+    [voiceGender],
+  );
+
+  const stop = useCallback(() => {
+    if (synthRef.current) {
+      synthRef.current.cancel();
     }
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.onend = () => setIsSpeaking(false);
@@ -198,6 +304,15 @@ export const useSpeechSynthesis = (
       browserVoicesRef.current = loadedVoices;
       setBrowserVoices(loadedVoices);
       setIsReady(loadedVoices.length > 0);
+
+      // If no voice is selected yet, try to select a voice for detected language
+      if (loadedVoices.length > 0 && !selectedVoiceId && detectedLanguage) {
+        const matchingVoice = findVoiceForLanguage(loadedVoices, detectedLanguage);
+        if (matchingVoice) {
+          setSelectedVoiceId(getVoiceId(matchingVoice));
+          setSelectedLanguage(matchingVoice.lang);
+        }
+      }
     };
 
     syncVoices();
@@ -206,7 +321,7 @@ export const useSpeechSynthesis = (
     return () => {
       speechSynthesis.onvoiceschanged = null;
     };
-  }, []);
+  }, [selectedVoiceId, detectedLanguage]);
 
   useEffect(() => {
     return () => {
@@ -416,6 +531,7 @@ export const useSpeechSynthesis = (
     selectedLanguage,
     setSelectedLanguage,
     languageOptions,
+    detectedLanguage,
   };
 };
 

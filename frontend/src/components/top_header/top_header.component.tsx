@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NavLink, Link, useLocation } from "react-router-dom";
+import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Bell, Search, User } from "lucide-react";
 import logo from "../../assets/logo.png";
@@ -15,8 +15,10 @@ const navLinks = [
 const TopHeaderComponent = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState<ReturnType<typeof getUserInfo> & { avatar?: string } | null>(null);
+  const [, setShowNotification] = useState<boolean>(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,6 +84,7 @@ const TopHeaderComponent = () => {
               })}
             </nav>
           </div>
+
           {/* Right side actions */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
@@ -101,6 +104,7 @@ const TopHeaderComponent = () => {
                     type="button"
                     className="p-2 rounded-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 relative"
                     aria-label="Notifications"
+                    onClick={() => setShowNotification(true)}
                   >
                     <Bell size={20} />
                   </button>

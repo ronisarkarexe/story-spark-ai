@@ -99,7 +99,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Account & Billing",
     description: "Manage your profile settings, subscriptions, and security options.",
     icon: "fa-solid fa-user-gear",
-    sectionId: "account-billing-section", 
+    sectionId: "account-billing-section",
     keywords: ["profile", "password", "billing", "subscription", "plan"]
   },
   {
@@ -109,18 +109,6 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     icon: "fa-solid fa-pen-fancy",
     sectionId: "writing-tools-section",
     keywords: ["editor", "generation", "prompt", "history", "chapters"]
-  }
-];
-
-export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
-  {
-    id: "connection-lost",
-    title: "Real-time Sync Disconnected",
-    description: "Steps to resolve persistent socket dropouts or loading freezes in collab rooms.",
-    icon: "fa-solid fa-wifi",
-    symptoms: "Collab workspace shows connection error indicator or updates stall.",
-    solution: "Verify your local network availability, clear application session storage, or recreate the workspace instance.",
-    keywords: ["network", "socket", "disconnect", "collab", "freeze"]
   }
 ];
 
@@ -140,6 +128,18 @@ export const HELP_SECTIONS: HelpSection[] = [
   { id: "support-links-section", label: "Support" },
 ];
 
+export const TROUBLESHOOT_ITEMS: TroubleshootItem[] = [
+  {
+    id: "connection-lost",
+    title: "Real-time Sync Disconnected",
+    description: "Steps to resolve persistent socket dropouts or loading freezes in collab rooms.",
+    icon: "fa-solid fa-wifi",
+    symptoms: "Collab workspace shows connection error indicator or updates stall.",
+    solution: "Verify your local network availability, clear application session storage, or recreate the workspace instance.",
+    keywords: ["network", "socket", "disconnect", "collab", "freeze"]
+  }
+];
+
 export const scrollToSection = (id: string) => {
   const element = document.getElementById(id);
   if (element) {
@@ -151,5 +151,4 @@ export const matchesSearch = (query: string, fields: string[]): boolean => {
   if (!query) return true;
   const lowerQuery = query.toLowerCase();
   return fields.some(field => field?.toLowerCase().includes(lowerQuery));
-};
 };

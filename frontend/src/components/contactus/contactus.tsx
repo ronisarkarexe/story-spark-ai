@@ -14,14 +14,12 @@ import {
   MapPin,
   Clock,
   Briefcase,
-  // Twitter,
-  // Linkedin,
-  // Github,
   Globe,
   MessageCircle,
 } from "lucide-react";
+import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa6";
 
-import { instance as axios } from "../../helpers/axios/axiosInstance";
+import axios from "../../helpers/axios/axiosInstance";
 import { getBaseUrl } from "../../helpers/config";
 import storybook from "../../assets/storybook.png";
 
@@ -99,19 +97,19 @@ const INFO_CARDS = [
 
 const SOCIAL_LINKS = [
   {
-    icon: GitBranch,
+    icon: FaGithub,
     label: "GitHub",
     href: "https://github.com/ronisarkarexe",
     color: "hover:bg-slate-700/50 hover:border-slate-500/40 hover:text-white",
   },
   {
-    icon: Globe,
+    icon: FaLinkedin,
     label: "LinkedIn",
     href: "https://linkedin.com/in/ronisarkarexe",
     color: "hover:bg-blue-600/20 hover:border-blue-500/40 hover:text-blue-400",
   },
   {
-    icon: MessageCircle,
+    icon: FaTwitter,
     label: "Twitter / X",
     href: "https://twitter.com/ronisarkarexe",
     color: "hover:bg-sky-500/20 hover:border-sky-500/40 hover:text-sky-400",

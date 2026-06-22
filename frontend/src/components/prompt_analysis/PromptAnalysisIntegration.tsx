@@ -92,7 +92,7 @@ const PromptAnalysisIntegration: React.FC<PromptAnalysisIntegrationProps> = ({
               language={language}
               genre={genre}
               tone={tone}
-              onUseEnhanced={(enhancedPrompt) => {
+              onUseEnhanced={(enhancedPrompt: string) => {
                 onUseEnhanced?.(enhancedPrompt);
               }}
             />

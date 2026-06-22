@@ -10,7 +10,7 @@ import { ProfileSavedStoriesSection } from "./profile.saved_stories.component";
 import { WriterApplicationForm } from "./writer_application.form";
 import AuthContext from "../../auth.context";
 import { ProfileCompletionIndicator } from "./ProfileCompletionIndicator";
-import { instance } from "../../../helpers/axios/axiosInstance";
+import instance from "../../../helpers/axios/axiosInstance";
 
 const ProfileComponent = () => {
   const { data, isLoading } = useGetProfileInfoQuery();
@@ -142,7 +142,10 @@ const ProfileComponent = () => {
             name={data.name}
             bio={data.profile?.bio}
             avatar={data.profile?.avatar}
-            socialLinks={data.profile?.social}
+            socialLinks={{
+              twitter: data.profile?.social?.twitter,
+              github: data.profile?.social?.github,
+            }}
           />
 
           <ProfileSettingComponent

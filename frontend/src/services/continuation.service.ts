@@ -3,7 +3,7 @@ import { Chapter } from "../types/story.types";
 
 const API_BASE = "/v1";
 
-export const continueStory = async (chapters: Chapter[]) => {
+export const continueStory = async (chapters: Chapter[], tone?: string) => {
   const previousContent = chapters
     .map((chapter) => chapter.content)
     .join("\n\n");
@@ -17,7 +17,7 @@ Continue this story naturally.
 
 Rules:
 - Maintain character consistency
-- Keep emotional tone
+- Keep emotional tone${tone && tone !== "Default" ? ` (specifically: ${tone})` : ""}
 - Avoid repetition
 - Continue the narrative smoothly
 
