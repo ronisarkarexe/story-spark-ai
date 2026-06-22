@@ -12,7 +12,7 @@ import { isLoggedIn } from "../services/auth.service";
  */
 const SocketContext = createContext<Socket | null>(null);
 
-export const useSocket = (): Socket | null => useContext(SocketContext);
+const useSocket = (): Socket | null => useContext(SocketContext);
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
