@@ -9,17 +9,39 @@ import {
 
 interface BookmarkButtonProps {
   storyId: string;
+  story?: any; // The full story object to save offline
   className?: string;
 }
 
+const OFFLINE_BOOKMARKS_KEY = "story_spark_offline_bookmarks";
+
+export const getOfflineBookmarks = () => {
+  try {
+    const data = localStorage.getItem(OFFLINE_BOOKMARKS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
+
 const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   storyId,
+  story,
   className = "",
 }) => {
   const navigate = useNavigate();
   const currentUser = getUserInfo();
   const [toggleBookmark] = useToggleBookmarkMutation();
   const [isLoading, setIsLoading] = useState(false);
+  const [localBookmarked, setLocalBookmarked] = useState(false);
+
+  // Check initial offline status
+  React.useEffect(() => {
+    const offlineBookmarks = getOfflineBookmarks();
+    if (offlineBookmarks.some((b: any) => b._id === storyId)) {
+      setLocalBookmarked(true);
+    }
+  }, [storyId]);
 
   // Bookmark state comes from the per-user status endpoint (single source of truth).
   const {
@@ -29,7 +51,11 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   } = useCheckBookmarkStatusQuery(storyId, {
     skip: !currentUser?.userId || !storyId,
   });
-  const isCurrentlyBookmarked = Boolean(statusData?.isBookmarked);
+  
+  // Use DB status if available, fallback to localStorage status if DB errors out
+  const isCurrentlyBookmarked = isStatusError 
+    ? localBookmarked 
+    : Boolean(statusData?.isBookmarked) || localBookmarked;
 
   const handleBookmark = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -41,17 +67,32 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({
     }
 
     setIsLoading(true);
+    
     try {
       const response = await toggleBookmark(storyId).unwrap();
       if (response.success) {
         toast.success(response.message);
       }
     } catch (error: unknown) {
-      console.error("Failed to toggle bookmark", error);
-      const message =
-        (error as { data?: { message?: string } })?.data?.message ||
-        "Something went wrong. Please try again.";
-      toast.error(message);
+      // Fallback to localStorage
+      if (story) {
+        const offlineBookmarks = getOfflineBookmarks();
+        const existingIndex = offlineBookmarks.findIndex((b: any) => b._id === storyId);
+        
+        if (existingIndex >= 0) {
+          offlineBookmarks.splice(existingIndex, 1);
+          setLocalBookmarked(false);
+          toast.success("Bookmark removed (Offline Mode)");
+        } else {
+          offlineBookmarks.push(story);
+          setLocalBookmarked(true);
+          toast.success("Story bookmarked (Offline Mode)");
+        }
+        localStorage.setItem(OFFLINE_BOOKMARKS_KEY, JSON.stringify(offlineBookmarks));
+        window.dispatchEvent(new Event("offline_bookmarks_changed"));
+      } else {
+        toast.error("Failed to bookmark story and offline data missing");
+      }
     } finally {
       setIsLoading(false);
     }

@@ -536,6 +536,7 @@ const PostDetailsComponent = () => {
                 {post && (
                   <BookmarkButton
                     storyId={post._id}
+                    story={post}
                     className="!border-none !px-0 bg-transparent hover:bg-transparent"
                   />
                 )}

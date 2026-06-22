@@ -8,7 +8,7 @@ const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379", {
   maxRetriesPerRequest: 3,
   enableReadyCheck: true,
   reconnectOnError(err: Error) {
-    return err?.message?.includes("ECONNREFUSED") ?? false;
+    return false;
   },
 });
 
@@ -21,7 +21,7 @@ redis.on("error", (err: Error) => {
     // Redis is not running. Caching will be skipped until the connection recovers.
     return;
   }
-  console.error("Redis Error:", err);
+  // Optional: Only log non-ECONNREFUSED errors
 });
 
 export default redis;

@@ -32,12 +32,5 @@ createRoot(container).render(
         </Provider>
       </GoogleOAuthProvider>
     {/* </HelmetProvider> */}
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || "dummy-client-id"}>
-      <Provider store={store}>
-        <ThemeProvider>
-          <App />
-        </ThemeProvider>
-      </Provider>
-    </GoogleOAuthProvider>
   </StrictMode>
 );
