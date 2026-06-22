@@ -36,7 +36,7 @@ const LatestPostsComponent = () => {
   return (
 
     <section className="w-full min-w-0 max-w-full">
-      <h2 className="mb-6 text-2xl font-bold !text-slate-900 dark:!text-gray-200">Latest Posts</h2>
+      <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-white">Latest Posts</h2>
 
       <div className="max-w-full space-y-3">
         {visiblePosts.length > 0 ? (

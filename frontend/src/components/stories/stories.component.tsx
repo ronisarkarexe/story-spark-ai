@@ -774,17 +774,37 @@ useEffect(() => {
     hasStory: stories.length > 0,
   });
 
-  return (
-    <div className="min-h-screen bg-white text-slate-900 animate-gradient-slow transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
-        <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
-          <div className="pt-2 w-full md:w-auto flex justify-start">
-            <Link to="/">
-              <div className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
-                <i className="fa-solid fa-left-long"></i> {text.back}
+  if (isLoading) {
+    return (
+      <div className="bg-gradient-to-br animate-gradient-slow min-h-screen relative overflow-x-hidden">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
+            <div className="pt-2 w-full md:w-auto flex justify-start">
+              <Link to="/">
+                <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
+                  <i className="fa-solid fa-left-long"></i> BACK
+                </div>
+              </Link>
+            </div>
+
+            {!login && (
+              <div className="pt-2 text-center">
+                <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed">
+                  <span>
+                    Free access for 3 requests — <Link to="/login"><span className="text-indigo-400 underline font-semibold">Login</span></Link> for more!
+                  </span>
+                </div>
               </div>
-            </Link>
+            )}
+
+            <div className="flex items-center justify-center py-20">
+              <StoryGeneratingAnimation />
+            </div>
           </div>
+        </div>
+      </div>
+    );
+  }
 
           {!login && (
             <div className="pt-2 text-center">
