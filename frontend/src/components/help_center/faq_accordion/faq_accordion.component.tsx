@@ -1,9 +1,9 @@
 import { FC, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaqItem } from "../help_center.utils";
+import { FAQItem } from "../help_center.utils";
 
 interface FAQAccordionProps {
-  items: FaqItem[];
+  items: FAQItem[];
 }
 
 const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
@@ -29,32 +29,31 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
 
   return (
     <section id="faq-section" className="scroll-mt-28 transition-colors duration-300">
-      <div className="mb-10">
+      <div className="mb-10 text-center sm:text-left">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-400 mb-4">
           <i className="fa-solid fa-circle-question" aria-hidden="true"></i>
           <span className="text-sm font-semibold">FREQUENTLY ASKED QUESTIONS</span>
         </div>
         <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-          Common Questions
+          Frequently Asked Questions
         </h2>
-        <p className="text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
-          Find quick answers to the most common StorySparkAI questions,
-          workflows, and troubleshooting topics.
+        <p className="text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed mx-auto sm:mx-0">
+          Find quick answers to the most common StorySparkAI questions, workflows, and troubleshooting topics.
         </p>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-5 max-w-3xl mx-auto">
         {items.map((faq, index) => {
           const isOpen = openIndex === index;
 
           return (
-            <motion.div
+            <motion.article
               key={faq.id}
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              className="group overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] backdrop-blur-xl shadow-md hover:shadow-xl transition-all duration-300"
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.3) }}
+              className="group overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111827]/40 backdrop-blur-xl shadow-sm hover:shadow-md transition-all duration-300 w-full box-border"
             >
               {/* Top Glow Line */}
               <div
@@ -69,22 +68,23 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
                   type="button"
                   onClick={() => toggleAccordion(index)}
                   aria-expanded={isOpen}
-                  className="w-full flex items-center justify-between px-6 py-5 text-left transition-all duration-300 hover:bg-slate-50 dark:hover:bg-white/[0.03] cursor-pointer"
+                  className="w-full flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5 text-left transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/[0.02] cursor-pointer outline-none select-none"
                 >
-                  <span className="text-slate-900 dark:text-slate-100 font-bold pr-4">
+                  <span className="text-sm sm:text-base text-slate-900 dark:text-slate-200 font-bold pr-4 tracking-tight leading-snug">
                     {faq.question}
                   </span>
                   <span
-                    className={`flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 transition-transform duration-300 ${
-                      isOpen ? "rotate-180" : ""
+                    className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300 ${
+                      isOpen ? "rotate-180 bg-blue-500/10 text-blue-600 dark:text-blue-400" : ""
                     }`}
+                    aria-hidden="true"
                   >
                     <i className="fa-solid fa-chevron-down text-xs"></i>
                   </span>
                 </button>
               </h3>
 
-              {/* Animated Answer Panel */}
+              {/* Animated Accordion Content Panel */}
               <AnimatePresence initial={false}>
                 {isOpen && (
                   <motion.div
@@ -103,7 +103,7 @@ const FAQAccordion: FC<FAQAccordionProps> = ({ items }) => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
+            </motion.article>
           );
         })}
       </div>

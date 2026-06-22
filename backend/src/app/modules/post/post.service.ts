@@ -5,7 +5,6 @@ import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
 import { Post } from "./post.model";
 import { Bookmark } from "../bookmark/bookmark.model";
-import { Comment } from "../comment/comment.model";
 import { StoryVersionService } from "../story_version/story_version.service";
 import {
   IGenericResponse,
@@ -15,11 +14,10 @@ import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
 import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
-import { WritingStreakService } from "../gamification/writing_streak.service";
-import { escapeRegex } from "../../../utils/regex.util";
-import { verifyPostAccess } from "./post.utils";
-
 const MAX_SEARCH_TERM_LENGTH = 100;
+const escapeRegex = (text: string): string => {
+  return text.replace(/[-[\]{}()*+?.,\^$|#\s]/g, "\$&");
+};
 
 interface ICursorPayload {
   value: string;
@@ -102,41 +100,29 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
   try {
-    const postPayload = {
-      title: payload.title,
-      content: payload.content,
-      tag: payload.tag,
-      imageURL: payload.imageURL,
-      topic: payload.topic,
-      language: payload.language,
-      emotions: payload.emotions,
-      genre: payload.genre,
-      isPublished: true,
-      publishedAt: new Date(),
+    const isPublished = payload.isPublished ?? true;
+    const res = await Post.create({
+      ...payload,
+      isPublished,
+      publishedAt: isPublished ? new Date() : null,
       author: user._id,
       updatedBy: user._id,
-    };
-    const res = await Post.create(postPayload);
-
-    if (res && res.isPublished) {
-      const updatedUser = await User.findByIdAndUpdate(
-        user._id,
-        { $inc: { postsCount: 1 } },
-        { new: true }
-      );
-      GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
-      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
-      if (updatedUser && updatedUser.postsCount === 1) {
-        GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
+    });
+      if (res && res.isPublished) {
+        user.postsCount += 1;
+        await user.save();
+        GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
+        if (user.postsCount === 1) {
+          GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
+        }
       }
-    }
     return res;
   } catch (error) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
       "Failed to create post"
     );
-    }
+  }
 };
 
 const getPosts = async (
@@ -187,7 +173,10 @@ const getPosts = async (
     andCondition.push({
       $or: genreList.map((genre) => ({
         tag: {
-          $regex: new RegExp(`^${escapeRegex(genre)}$`, "i"),
+          $regex: new RegExp(
+            `^${genre.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+            "i",
+          ),
         },
       })),
     });
@@ -368,7 +357,7 @@ const doFeaturedPosts = async (postId: string) => {
   }
 };
 
-const getSinglePost = async (id: string, token?: ITokenPayload | null) => {
+const getSinglePost = async (id: string) => {
   const postById = await Post.findOne({ _id: id, isDeleted: { $ne: true } })
     .populate("author", "name email createdAt")
     .populate({
@@ -379,17 +368,10 @@ const getSinglePost = async (id: string, token?: ITokenPayload | null) => {
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
-
-  let user = null;
-  if (token && token.email) {
-    user = await User.findOne({ email: token.email });
-  }
-  verifyPostAccess(postById, user);
-
   return postById;
 };
 
-const getPostsByTag = async (tag: string, excludeId?: string, limit: number = 2) => {
+const getPostsByTag = async (tag: string, excludeId?: string) => {
   if (!tag) {
     return [];
   }
@@ -399,7 +381,7 @@ const getPostsByTag = async (tag: string, excludeId?: string, limit: number = 2)
     query._id = { $ne: excludeId };
   }
   const result = await Post.find(query)
-    .limit(limit)
+    .limit(2)
     .populate("author", "name email createdAt")
     .populate({
       path: "reactions",
@@ -418,13 +400,11 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
-  if (!post) {
+  const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
+  if (!postExists) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
-
-  verifyPostAccess(post, user);
-
+  // Check bookmark status atomically
   const isBookmarked = await Post.exists({
     _id: postId,
     bookmarks: user._id,
@@ -440,17 +420,17 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
       message: "Bookmark removed",
       bookmarked: false,
     };
+  } else {
+    await Post.updateOne(
+      { _id: postId },
+      { $addToSet: { bookmarks: user._id } }
+    );
+
+    return {
+      message: "Bookmark added",
+      bookmarked: true,
+    };
   }
-
-  await Post.updateOne(
-    { _id: postId },
-    { $addToSet: { bookmarks: user._id } }
-  );
-
-  return {
-    message: "Bookmark added",
-    bookmarked: true,
-  };
 };
 
 const updatePost = async (
@@ -525,29 +505,17 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
   post.deletedBy = user._id;
   await post.save();
 
-  if (post.isPublished) {
-    await User.findByIdAndUpdate(
-      post.author,
-      { $inc: { postsCount: -1 } }
-    );
+  if (post.isPublished && user.postsCount > 0) {
+    user.postsCount -= 1;
+    await user.save();
   }
 
   await Bookmark.deleteMany({ storyId: postId });
-  // Delete all comments associated with the post to prevent orphaned
-  // comment documents accumulating in the database after post deletion.
-  await Comment.deleteMany({ postId });
 
   return post;
 };
 
 const remixStory = async (postId: string, prompt: string, token: ITokenPayload) => {
-  if (!prompt || typeof prompt !== "string") {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Prompt is required and must be a string");
-  }
-  const safePrompt = prompt.slice(0, 500).replace(/[\n\r\t"]/g, " ").trim();
-  if (!safePrompt) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Prompt cannot be empty or whitespace");
-  }
   const user = await User.findOne({ email: token.email });
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
@@ -558,9 +526,7 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
-  verifyPostAccess(originalPost, user);
-
-  const remixedContent = `[AI Remixed Version based on prompt: "${safePrompt}"]\n\n${originalPost.content}`;
+  const remixedContent = `[AI Remixed Version based on prompt: "${prompt}"]\n\n${originalPost.content}`;
 
   const res = await Post.create({
     title: `Remix of ${originalPost.title}`,
@@ -571,24 +537,14 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
   });
 
   if (res) {
-    await User.findByIdAndUpdate(
-      user._id,
-      { $inc: { postsCount: 1 } }
-    );
-    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
+    user.postsCount += 1;
+    await user.save();
   }
 
   return res;
 };
 
 const translateStory = async (postId: string, language: string, token: ITokenPayload) => {
-  if (!language || typeof language !== "string") {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Language is required and must be a string");
-  }
-  const safeLanguage = language.slice(0, 50).replace(/[\n\r\t"]/g, " ").trim();
-  if (!safeLanguage) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Language cannot be empty or whitespace");
-  }
   const user = await User.findOne({ email: token.email });
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
@@ -599,9 +555,7 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
-  verifyPostAccess(originalPost, user);
-
-  const translatedContent = `[Translated to ${safeLanguage}]\n\n${originalPost.content}`;
+  const translatedContent = `[Translated to ${language}]\n\n${originalPost.content}`;
 
   const res = await Post.create({
     title: `${originalPost.title} (${language})`,
@@ -612,11 +566,8 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
   });
 
   if (res) {
-    await User.findByIdAndUpdate(
-      user._id,
-      { $inc: { postsCount: 1 } }
-    );
-    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
+    user.postsCount += 1;
+    await user.save();
   }
 
   return res;
@@ -626,7 +577,6 @@ const getGenres = async (): Promise<string[]> => {
   const genres = await Post.distinct("tag", { isDeleted: { $ne: true }, tag: { $nin: [null, ""] } });
   return genres.sort();
 };
-
 
 export const PostService = {
   createPost,
@@ -644,4 +594,3 @@ export const PostService = {
   translateStory,
   getGenres,
 };
-
