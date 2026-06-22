@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { getWordCount, calculateReadingTime, formatReadingStats } from "../story-utils";
 
 describe("story-utils", () => {

@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
+import { validateScientificContent, ScientificWarning } from "./scientific_validator";
 import type {
   IStoryVisualizerPayload,
   IStoryVisualizerResult,
@@ -67,6 +68,7 @@ interface Story {
   emotions?: string[];
   genre?: string;
   enhancedPrompt?: string;
+  scientificWarnings?: ScientificWarning[];
 }
 
 // NEW: Map each tone label to a precise writing instruction injected into the AI prompt.
@@ -303,13 +305,18 @@ export async function generateWithGeminiStories(
 
     const imageUrls = await Promise.all(imagePromises);
 
-    return stories.map((story, index) => ({
-      ...story,
-      language,
-      imageURL: imageUrls[index],
-      coverImage: coverImages[index],
-      uuid: uuidv4(),
-    }));
+    const storiesWithWarnings = await Promise.all(
+      stories.map(async (story, index) => ({
+        ...story,
+        language,
+        imageURL: imageUrls[index],
+        coverImage: coverImages[index],
+        uuid: uuidv4(),
+        scientificWarnings: await validateScientificContent(story.content || ""),
+      }))
+    );
+
+    return storiesWithWarnings;
   } catch (error: unknown) {
     if (error instanceof ApiError || error instanceof GenerationAbortedError) {
       throw error;
