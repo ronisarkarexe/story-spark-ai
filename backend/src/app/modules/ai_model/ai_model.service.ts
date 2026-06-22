@@ -5,6 +5,7 @@ import {
   GenerationTimeoutError,
   raceGenerationWithTimeout,
 } from "../../../utils/generation_timeout";
+import { timeoutLimit } from "../../../utils/timeout_limit";
 import {
   IAIModel,
   IAlternateEndingPayload,
@@ -17,6 +18,7 @@ import {
   generateWithGeminiStories,
   generateRemixWithGemini,
   generateStoryContinuationWithGemini,
+  generateStoryContinuationMultipleWithGemini,
   translateStoryWithGemini,
   chatWithGemini,
 } from "./ai_model.utils";
@@ -244,6 +246,24 @@ const aiFreeStoryContinuation = async (payload: { prompt: string; language?: str
   }
 };
 
+const aiFreeStoryContinuationMultiple = async (
+  payload: { prompt: string; language?: string; count?: number },
+  signal?: AbortSignal
+) => {
+  const { prompt, language = "English", count = 3 } = payload;
+
+  try {
+    const result = await raceGenerationWithTimeout(
+      (s) => generateStoryContinuationMultipleWithGemini(prompt, count, language, s),
+      FREE_GENERATION_TIMEOUT_MS,
+      signal
+    );
+    return result;
+  } catch (error) {
+    mapGenerationError(error, "Story continuation generation failed.");
+  }
+};
+
 const aiModelChat = async (payload: IChatPayload, _token?: ITokenPayload, signal?: AbortSignal) => {
   const { message, history = [] } = payload;
 
@@ -306,6 +326,7 @@ const aiFreeStoryContinuationMultiple = async (
 export const AiModelService = {
   aiModelGenerate,
   aiFreeModelGenerate,
+  generateCharacterProfile,
   aiModelAlternateEndings,
   aiFreeModelAlternateEndings,
   aiModelRemix,

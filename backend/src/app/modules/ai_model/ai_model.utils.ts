@@ -15,6 +15,16 @@ import type {
   IStoryVisualizerPayload,
   IStoryVisualizerResult,
 } from "../story_visualizer/story_visualizer.interface";
+import {
+  safeParseAIResponse,
+  parseAIResponseOrThrow,
+  GeminiStoriesWrapperSchema,
+  AlternateEndingsArraySchema,
+  RemixResponseSchema,
+  ContinuationResponseSchema,
+  TranslationResponseSchema,
+  StoryboardResponseSchema,
+} from "../ai";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -273,6 +283,10 @@ export async function generateWithGeminiStories(
   assertGeminiApiKeyConfigured();
 
   try {
+    const genreInstruction = buildGenreInstruction(genre);
+    const toneInstruction = buildToneInstruction(tone);
+    const charactersInstruction = buildCharactersInstruction(characters);
+
     const response = await executeWithRetryAndFallback(async (activeModel) => {
       const chatSession = activeModel.startChat({
         generationConfig,
@@ -302,8 +316,12 @@ export async function generateWithGeminiStories(
     throwIfAborted(signal);
 
     const text = response.response.text();
-    const parsed = JSON.parse(sanitizeJsonText(text));
-    const stories: Story[] = Array.isArray(parsed) ? parsed : parsed?.stories;
+    const stories = safeParseAIResponse(
+      text,
+      GeminiStoriesWrapperSchema,
+      [] as Story[],
+      { label: "Gemini story generation" }
+    );
 
     if (!Array.isArray(stories) || stories.length === 0) {
       throw new ApiError(
@@ -597,7 +615,10 @@ Write the remixed story in ${language}. Return a JSON object with this exact str
       );
     }
 
-    return parsed;
+    return parseAIResponseOrThrow(rawText, RemixResponseSchema, {
+      label: "Gemini story remix",
+      errorMessage: "Invalid remix response from AI",
+    });
   } catch (error: unknown) {
     if (error instanceof ApiError) throw error;
     const errorMsg = error instanceof Error ? error.message : String(error);
@@ -667,7 +688,7 @@ Return only valid JSON with this exact structure:
       );
     }
 
-    return { continuation: parsed.continuation };
+    return parsed;
   } catch (error: unknown) {
     if (error instanceof ApiError || error instanceof GenerationAbortedError) {
       throw error;
@@ -726,7 +747,10 @@ Preserve the story's tone, style and meaning. Only translate — do not modify t
       );
     }
 
-    return parsed;
+    return parseAIResponseOrThrow(rawText, TranslationResponseSchema, {
+      label: "Gemini story translation",
+      errorMessage: "Invalid translation response from AI",
+    });
   } catch (error: unknown) {
     if (error instanceof ApiError) throw error;
     const errorMsg = error instanceof Error ? error.message : String(error);
@@ -813,6 +837,7 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
+    );
 
       return {
         sceneNumber: index + 1,
@@ -877,6 +902,83 @@ export async function chatWithGemini(
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
       `AI chat failed: ${errorMsg}`,
+    );
+  }
+}
+
+export async function generateStoryContinuationMultipleWithGemini(
+  storyContext: string,
+  count: number = 3,
+  language: string = "English",
+  signal?: AbortSignal,
+): Promise<Array<{ continuation: string }>> {
+  throwIfAborted(signal);
+  assertGeminiApiKeyConfigured();
+
+  try {
+    const response = await executeWithRetryAndFallback(async (activeModel) => {
+      const chatSession = activeModel.startChat({
+        generationConfig: {
+          ...generationConfig,
+          maxOutputTokens: 4096,
+        },
+        safetySettings,
+        history: [],
+      });
+
+      return chatSession.sendMessage(
+        `You are an expert storyteller. The user has written the following story so far:
+
+"${storyContext}"
+
+Generate exactly ${count} different alternate continuations for this story. Each continuation should be 2-4 paragraphs that maintain the same tone, style, and narrative direction, but take the story in a slightly different direction or highlight a different choice/event. All continuations MUST be written entirely in ${language}.
+
+Return only valid JSON with this exact structure:
+[
+  {
+    "continuation": "first continuation text here"
+  },
+  {
+    "continuation": "second continuation text here"
+  }
+]`,
+        { signal },
+      );
+    }, signal);
+
+    throwIfAborted(signal);
+
+    const text = response.response.text();
+    const parsed = JSON.parse(sanitizeJsonText(text));
+
+    if (!Array.isArray(parsed)) {
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        "Invalid AI response: Expected a JSON array of continuations.",
+      );
+    }
+
+    const isValid = parsed.every(
+      (item: any) => item && typeof item === "object" && typeof item.continuation === "string"
+    );
+
+    if (!isValid) {
+      throw new ApiError(
+        httpStatus.BAD_GATEWAY,
+        "Invalid AI response: Continuation items are malformed.",
+      );
+    }
+
+    return parsed;
+  } catch (error: unknown) {
+    if (error instanceof ApiError || error instanceof GenerationAbortedError) {
+      throw error;
+    }
+
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.BAD_GATEWAY,
+      `AI story continuation generation failed: ${errorMsg}`,
     );
   }
 }

@@ -20,19 +20,10 @@ const gamificationApi = baseApi.injectEndpoints({
       transformResponse: (response: { data: { achievements: Achievement[] } }) => response.data,
       providesTags: [tagTypes.user, tagTypes.post],
     }),
-    updateWritingStreak: build.mutation<WritingStreak, undefined>({
-      query: () => ({
-        url: "/users/me/streak/update",
-        method: "POST",
-      }),
-      transformResponse: (response: { data: WritingStreak }) => response.data,
-      invalidatesTags: [tagTypes.user, tagTypes.post],
-    }),
   }),
 });
 
 export const {
   useGetWritingStreakQuery,
   useGetAchievementsQuery,
-  useUpdateWritingStreakMutation,
 } = gamificationApi;

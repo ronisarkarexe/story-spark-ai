@@ -3,10 +3,13 @@ import ApiError from "../../../errors/api_error";
 import { Post } from "../post/post.model";
 import { User } from "../user/user.model";
 import { ITokenPayload } from "../../../interfaces/token";
-import mongoose from "mongoose";
 import { IPost } from "../post/post.interface";
+
 const getPersonalizedRecommendations = async (token: ITokenPayload) => {
-  const user = await User.findById(token._id);
+  const user = await User.findById(token._id)
+    .select("readingPreferences readingHistory")
+    .lean();
+    
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
@@ -25,12 +28,15 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
 
   // If user has preferences, try to match them
   if (readingPreferences) {
-    const favoriteGenres = readingPreferences.favoriteGenres
+    // Create copies before sorting to avoid mutating the original arrays
+    const favoriteGenres = (readingPreferences.favoriteGenres || [])
+      .slice()
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
       .map(g => g.name);
       
-    const favoriteEmotions = readingPreferences.favoriteEmotions
+    const favoriteEmotions = (readingPreferences.favoriteEmotions || [])
+      .slice()
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
       .map(e => e.name);
@@ -47,8 +53,10 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
       const prefQuery = { ...query, $or: orConditions };
       recommendations = await Post.find(prefQuery)
         .populate("author", "name profile.avatar")
+        .select("_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt")
         .sort({ likesCount: -1, viewsCount: -1 })
-        .limit(10);
+        .limit(10)
+        .lean() as any;
     }
   }
 
@@ -69,8 +77,10 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
 
     const popularPosts = await Post.find(fallbackQuery)
       .populate("author", "name profile.avatar")
+      .select("_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt")
       .sort({ likesCount: -1, viewsCount: -1 })
-      .limit(limit);
+      .limit(limit)
+      .lean() as any;
       
     recommendations = [...recommendations, ...popularPosts];
   }

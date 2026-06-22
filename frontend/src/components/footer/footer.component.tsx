@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaXTwitter } from "react-icons/fa6";
+import type { IconType } from "react-icons";
 import logo from "../../assets/logoNew.png";
 
 const DEFAULT_GITHUB_ISSUES_URL =
@@ -81,7 +82,7 @@ const FooterComponent: React.FC = () => {
 
   const socialLinks = [
     { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
-    { icon: "fa-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
+    { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X" },
     { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
     { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
   ];
@@ -205,7 +206,7 @@ const FooterComponent: React.FC = () => {
             </h3>
             <ul className="flex flex-col gap-[12.5px]">
               {socialLinks.map((item) => (
-                <li key={item.icon}>
+                <li key={item.label}>
                   <a
                     href={item.url}
                     target="_blank"
@@ -213,16 +214,12 @@ const FooterComponent: React.FC = () => {
                     aria-label={item.label}
                     className="group flex items-center gap-2.5 text-[14px] text-slate-300/85 hover:text-blue-300 transition-all duration-200"
                   >
-                    {item.icon === "fa-x-twitter" ? (
-                      <FaXTwitter className="text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors" />
-                    ) : (
-                      <i
-                        className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
-                      />
-                    )}
+                    <i
+                      className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
+                    />
                     <span className="capitalize">
                       {item.icon === "fa-x-twitter"
-                        ? "X (Twitter)"
+                        ? "X"
                         : item.icon.replace("fa-", "")}
                     </span>
                   </a>

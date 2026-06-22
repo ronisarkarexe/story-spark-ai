@@ -1,9 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-type WordRange = {
-  start: number;
-  end: number;
-};
+import { useState } from 'react';
 
 export interface SpeechProgress {
   currentWordIndex: number;
@@ -159,6 +154,11 @@ export const useSpeechSynthesis = (text: string): UseSpeechSynthesisResult => {
       setError("Speech synthesis is not supported in this browser.");
       return;
     }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.onend = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  };
 
     const trimmedText = text.trim();
     if (!trimmedText) {

@@ -37,26 +37,23 @@ const CookieConsentBanner: FC = () => {
   useEffect(() => {
     const storedPreferences = loadCookiePreferences();
     setPreferences(storedPreferences);
-    setShowBanner(!storedPreferences.saved);
-  }, []);
+    setShowModal(!storedPreferences.saved);
+    onLayoutChange?.(0);
+  }, [onLayoutChange]);
 
   if (!preferences || !showBanner) {
     return null;
   }
 
-  const handleSave = () => {
-    const updated = { ...preferences, saved: true };
+  const commit = (updated: CookiePreferences) => {
     setPreferences(updated);
-    setShowBanner(false);
+    setShowModal(false);
     saveCookiePreferences(updated);
   };
 
-  const handleAcceptAll = () => {
-    const updated = { saved: true, functional: true, analytics: true };
-    setPreferences(updated);
-    setShowBanner(false);
-    saveCookiePreferences(updated);
-  };
+  const handleAcceptAll = () => commit({ saved: true, functional: true, analytics: true });
+  const handleEssentialOnly = () => commit({ saved: true, functional: false, analytics: false });
+  const handleSavePreferences = () => commit({ ...preferences, saved: true });
 
   const handleRejectNonEssential = () => {
     const updated = { saved: true, functional: false, analytics: false };
@@ -120,11 +117,19 @@ const CookieConsentBanner: FC = () => {
                   </label>
                 </div>
               </div>
+              <ToggleSwitch
+                checked={preferences[category.key]}
+                onChange={(checked) => setPreferences({ ...preferences, [category.key]: checked })}
+                label={`Toggle ${category.title.toLowerCase()}`}
+                isDark={isDark}
+              />
             </div>
-          </div>
+          ))}
+          <div className={`border-t ${rowBorder}`} />
         </div>
         <div className="flex flex-col gap-3 xl:w-[320px]">
           <button
+            type="button"
             onClick={handleAcceptAll}
             className="rounded-3xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-400 hover:to-indigo-400"
           >
@@ -134,13 +139,13 @@ const CookieConsentBanner: FC = () => {
             onClick={handleSave}
             className="rounded-3xl border border-slate-700 bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:border-slate-500"
           >
-            Save preferences
+            Essential cookies only
           </button>
           <button
             onClick={handleRejectNonEssential}
             className="rounded-3xl border border-slate-700 bg-slate-950 px-6 py-3 text-sm font-semibold text-slate-300 transition hover:border-slate-500"
           >
-            Reject non-essential
+            Save preferences
           </button>
         </div>
       </div>

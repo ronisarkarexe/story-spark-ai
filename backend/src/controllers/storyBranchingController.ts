@@ -92,19 +92,22 @@ Task:
         }
       }
 
-      if (!parsed.choices || parsed.choices.length === 0) {
-        parsed.choices = [
+      let finalChoices = parsed.choices;
+      if (!finalChoices || finalChoices.length === 0) {
+        finalChoices = [
           "Explore the surroundings",
           "Search for another way",
           "Wait and see what happens",
         ];
-      } else if (parsed.choices.length < 3) {
-        while (parsed.choices.length < 3) {
-          parsed.choices.push(`Option ${parsed.choices.length + 1}`);
+      } else if (finalChoices.length < 3) {
+        finalChoices = [...finalChoices];
+        while (finalChoices.length < 3) {
+          finalChoices.push(`Option ${finalChoices.length + 1}`);
         }
-      } else if (parsed.choices.length > 3) {
-        parsed.choices = parsed.choices.slice(0, 3);
+      } else if (finalChoices.length > 3) {
+        finalChoices = finalChoices.slice(0, 3);
       }
+      parsed.choices = finalChoices;
 
       sendResponse(res, {
         success: true,

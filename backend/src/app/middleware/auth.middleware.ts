@@ -8,15 +8,38 @@ import { User } from "../modules/user/user.model";
 import { TokenBlacklist } from "../modules/auth/tokenBlacklist.model";
 import { USER_STATUS } from "../../enums/user_status";
 
-const auth =
-  (...requiredRole: string[]) =>
+type JwtVerifiedUser = {
+  _id: string;
+  tokenVersion?: number;
+  role?: string;
+};
+
+
+const extractBearerToken = (authHeader: string): string => {
+  if (!authHeader) return "";
+  if (!authHeader.startsWith("Bearer ")) return "";
+
+  return authHeader.slice("Bearer ".length).trim();
+};
+
+const extractTokenFromRequest = (req: Request): string => {
+  const authHeader = Array.isArray(req.headers.authorization)
+    ? req.headers.authorization[0]
+    : req.headers.authorization;
+
+  const bearerToken = extractBearerToken(authHeader ?? "");
+
+  // Support both header-based and cookie-based tokens.
+  const cookieToken =
+    (req as any).cookies?.accessToken || (req as any).cookies?.token;
+
+  return bearerToken || cookieToken || "";
+};
+
+const auth = (...requiredRole: string[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const authHeader = (req.headers.authorization || "") as string;
-
-      const token = authHeader.startsWith("Bearer ")
-        ? authHeader.slice(7).trim()
-        : authHeader.trim();
+      const token = extractTokenFromRequest(req);
 
       if (!token) {
         throw new ApiError(
@@ -25,36 +48,42 @@ const auth =
         );
       }
 
-      // Query the TokenBlacklist collection using the incoming token
-      const isBlacklisted = await TokenBlacklist.findOne({ token });
-      if (isBlacklisted) {
-        return res.status(401).json({
-          message: "Token has been revoked. Please log in again.",
-        });
-      }
-
-      // verify token
-      const verifiedUser = JwtHelpers.verifyToken(
+      const verified = JwtHelpers.verifyToken(
         token,
         config.jwt.secret as Secret
-      );
+      ) as unknown as JwtVerifiedUser;
 
-      const user = await User.findById((verifiedUser as any)._id);
+      if (!verified?._id) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+      }
 
-      if (!user) {
+      // Ensure this exact token string is not blacklisted.
+      const blacklisted = await TokenBlacklist.findOne({ token }).lean();
+      if (blacklisted) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
-          "User not found"
+          "Token has been revoked. Please log in again."
         );
       }
 
-      if (user.tokenVersion !== (verifiedUser as any).tokenVersion) {
+      const user = await User.findById(verified._id);
+      if (!user) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+      }
+
+      // Token invalidation check (e.g., on refresh/logout via tokenVersion).
+      // If the JWT includes tokenVersion, enforce it strictly.
+      if (
+        typeof verified.tokenVersion === "number" &&
+        user.tokenVersion !== verified.tokenVersion
+      ) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
           "Token is invalid or expired"
         );
       }
 
+      // Status check
       if (user.status !== USER_STATUS.ACTIVE) {
         throw new ApiError(
           httpStatus.FORBIDDEN,
@@ -62,22 +91,21 @@ const auth =
         );
       }
 
-      if (
-        requiredRole.length &&
-        !requiredRole.includes((verifiedUser as any).role)
-      ) {
-        throw new ApiError(
-          httpStatus.FORBIDDEN,
-          "Forbidden"
-        );
+      // Role check (if roles are required)
+      if (requiredRole.length) {
+        const tokenRole = verified.role;
+        if (!tokenRole || !requiredRole.includes(tokenRole)) {
+          throw new ApiError(httpStatus.FORBIDDEN, "Forbidden");
+        }
       }
 
-      (req as any).user = verifiedUser;
-
-      next();
+      (req as any).user = user;
+      return next();
     } catch (err) {
-      next(err);
+      return next(err);
     }
   };
 
 export default auth;
+
+

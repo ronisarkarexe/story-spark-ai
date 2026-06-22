@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import AnimatedBook from "../hero/AnimatedBook";
-// Register the GSAP plugin
 import Typewriter from "./typewriter.component";
 
 gsap.registerPlugin(useGSAP);
@@ -20,21 +19,17 @@ const containerVariants = {
   },
 };
 
-const itemVariants: any = {
+const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
     y: 0, 
     transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } as const 
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
   },
 };
 
 const features = [
-  // ... (rest of the features array remains the same)
+// ... (rest of the features array remains the same)
   {
     title: "Infinite Variations",
     description: "Generate multiple unique branches of your story from a single starting prompt. Explore every creative possibility.",
@@ -218,7 +213,6 @@ const HeroSectionComponent = () => {
   const nextStarId = useRef(1);
   const starTimers = useRef<number[]>([]);
   const badgeRef = useRef<HTMLDivElement>(null);
-  const [isNavigating, setIsNavigating] = useState(false);
 
   useGSAP(() => {
     const badge = badgeRef.current;
@@ -292,13 +286,6 @@ const HeroSectionComponent = () => {
 
       <HeroParticles />
 
-   
-     <div className="relative overflow-hidden" onMouseMove={handleMouseMove}>
-<div className="text-center lg:text-left"></div>
-<div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">          <div
-   
-   ref={badgeRef}
-            className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 dark:bg-slate-800/60 border border-blue-400/30 dark:border-blue-500/30 backdrop-blur-md mb-8 shadow-sm cursor-pointer transition-all duration-300"
       <div className="relative overflow-hidden w-full box-border" onMouseMove={handleMouseMove}>
         <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border">
           <div
@@ -311,8 +298,6 @@ const HeroSectionComponent = () => {
             </span>
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">StorySparkAI v2.0 is live</span>
           </div>
-<div className="grid lg:grid-cols-2 gap-12 items-center">
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
 
           <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none tracking-tight">
             Ignite Your Imagination With <br className="hidden sm:block" />
@@ -326,68 +311,32 @@ const HeroSectionComponent = () => {
               />
             </span>
           </motion.h1>
-          </h1>
-<div className="flex justify-center lg:justify-end">
-  <AnimatedBook />
-</div>
-          <p className="max-w-2xl lg:mx-0 mx-auto text-lg sm:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 transition-colors duration-300">
 
           <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
             Create, edit, and generate engaging multiple story variations from a single prompt.
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
           </p>
-
-          <div className="flex-grow flex flex-col items-center justify-center">
-            <div className="relative max-w-3xl w-full before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-purple-500/20 before:via-indigo-500/20 before:to-blue-500/20 before:blur-xl before:animate-pulse">
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                
-                <Link to="/stories">
-                  <button className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-blue-500/25 dark:shadow-indigo-500/15 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
-                    <i className="fa fa-wand-magic-sparkles"></i>
+          
           <div className="w-full box-border flex flex-col items-center justify-center">
             <div className="relative max-w-3xl w-full box-border">
               <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
-                <button
-  onClick={() => {
-    setIsNavigating(true);
-    setTimeout(() => { window.location.href = "/stories"; }, 400);
-  }}
-  disabled={isNavigating}
-  className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 transition-all duration-150 flex items-center justify-center gap-2.5 uppercase tracking-wider ${
-    isNavigating
-      ? "opacity-75 cursor-not-allowed"
-      : "hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-  }`}
->
-  {isNavigating ? (
-    <>
-      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
-      </svg>
-      <span>Loading...</span>
-    </>
-  ) : (
-    <>
-      <i className="fa fa-wand-magic-sparkles text-sm"></i>
-      <span>Get Started</span>
-    </>
-  )}
-</button>
+                <Link to="/stories" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
+                    <i className="fa fa-wand-magic-sparkles text-sm"></i>
+                    <span>Get Started</span>
+                  </button>
+                </Link>
                 <Link to="/collab" className="w-full sm:w-auto">
                   <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
                     <span>✍️</span>
                     <span>Collab Mode</span>
                   </button>
                 </Link>
-                
               </div>
             </div>
           </div>
         </motion.div>
 
-</div>
-        <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
           <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
             {stars.map((star) => (
@@ -399,11 +348,9 @@ const HeroSectionComponent = () => {
             ))}
           </div>
         </div>
+      </div>
 
-            <motion.div
-        variants={itemVariants}
-        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border"
-      >
+      <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">
           {features.map((feature, index) => (
             <FeatureCard feature={feature} key={index} />

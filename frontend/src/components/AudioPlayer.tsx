@@ -6,6 +6,8 @@ import React, {
 } from "react";
 import {
   AlertCircle,
+  ChevronDown,
+  ChevronUp,
   LoaderCircle,
   Pause,
   Play,

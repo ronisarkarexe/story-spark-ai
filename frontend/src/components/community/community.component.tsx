@@ -50,8 +50,7 @@ const CommunityComponent: React.FC = () => {
     <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
       {/* Hero Section */}
       <section
-        className="relative pb-20 overflow-hidden"
-        style={{ paddingTop: 'calc(var(--header-height, 0px) + 8rem)' }}
+        className="relative pt-16 pb-20 overflow-hidden"
       >
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] -z-10"></div>
 

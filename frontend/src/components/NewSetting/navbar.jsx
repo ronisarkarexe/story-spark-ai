@@ -27,6 +27,24 @@ export default function Navbar({ userName, isAuthenticated }: NavbarProps) {
   const closeMenu = () => setMenuOpen(false);
 
   return (
+
+    <nav className="navbar">
+      {/* Left Side: Brand Text */}
+      <div className="navbar-left">
+        <Link
+          to="/"
+          className="logo-brand-text"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
+          <img
+            src="/storysparkai2.png"
+            alt="StorySparkAI Logo"
+            className="navbar-logo"
+          />
+          <span>StorySparkAI</span>
+        </Link>
+      </div>
+
     <nav className="sticky top-0 z-50 bg-gray-900 border-b border-gray-800 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">

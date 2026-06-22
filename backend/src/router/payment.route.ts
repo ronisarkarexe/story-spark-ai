@@ -1,3 +1,4 @@
+import rateLimit from "express-rate-limit";
 import { Router } from "express";
 import { createOrder, verifyPayment } from "../controllers/payment.controller";
 import auth from "../app/middleware/auth.middleware";
