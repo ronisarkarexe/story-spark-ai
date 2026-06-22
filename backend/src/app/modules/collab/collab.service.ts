@@ -11,8 +11,9 @@ export class CollabService {
   static async getCollabState(roomId: string): Promise<string | undefined> {
     const room = await CollabRoom.findOne({ roomId }, { collabState: 1 }).lean();
     if (!room || !room.collabState) return undefined;
-    // collabState is stored as a Buffer; convert to base64
-    return (room.collabState as Buffer).toString('base64');
+    // collabState is a Buffer at runtime; .lean() types it as a BSON Binary,
+    // so bridge through `unknown` before reading it as a Buffer.
+    return (room.collabState as unknown as Buffer).toString('base64');
   }
 
   /**

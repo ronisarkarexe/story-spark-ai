@@ -3,13 +3,14 @@ import { vi } from 'vitest';
 import CollabEditor from './CollabEditor';
 import * as Y from 'yjs';
 import { io } from 'socket.io-client';
+import EventEmitter from 'events';
+import { Awareness } from 'y-protocols/awareness';
 
 // Mock socket.io-client
 vi.mock('socket.io-client', () => {
-  const EventEmitter = require('events');
   class MockSocket extends EventEmitter {
-    emit(event: string, ...args: any[]) {
-      this.emit(event, ...args); // echo for test simplicity
+    emit(event: string, ...args: any[]): boolean {
+      return super.emit(event, ...args); 
     }
     disconnect() {}
   }
@@ -28,7 +29,7 @@ vi.mock('y-indexeddb', () => {
   };
 });
 
-// Mock quill-cursors registration (no‑op)
+// Mock quill-cursors registration (no-op)
 vi.mock('quill-cursors', () => ({ default: {} }));
 
 describe('CollabEditor', () => {
@@ -67,7 +68,9 @@ describe('CollabEditor', () => {
     ytext.insert(0, 'Hello world');
     const update = Y.encodeStateAsUpdate(ydoc);
     const socket = (io as any).mock.results[0].value;
-    act(() => socket.emit('update', update));
+    act(() => {
+      socket.emit('update', update);
+    });
     // Quill should now contain the text
     const editor = container.querySelector('.ql-editor');
     expect(editor?.textContent).toContain('Hello world');
@@ -84,9 +87,12 @@ describe('CollabEditor', () => {
     );
     const socket = (io as any).mock.results[0].value;
     const emitSpy = vi.spyOn(socket, 'emit');
+    
     // Simulate selection change on the Quill instance
     // Since Quill instance is internal, we trigger the handler directly via the awareness ref
-    const awareness = (require('y-protocols/awareness').Awareness as any).prototype;
+    // Use the imported Awareness class directly instead of requiring it inline
+    const awareness = (Awareness as any).prototype;
+    
     // Not easily accessible – instead we verify that socket.emit was called at least once for awareness
     await act(async () => {});
     expect(emitSpy).toHaveBeenCalled();

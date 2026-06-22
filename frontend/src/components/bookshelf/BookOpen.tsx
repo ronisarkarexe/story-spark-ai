@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IBookStory, getGenreColor } from "./BookShelf";
+import { IBookStory, getGenreColor } from "./book.utils";
 
 interface Props {
   story: IBookStory;

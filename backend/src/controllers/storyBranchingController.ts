@@ -4,7 +4,7 @@ import sendResponse from "../shared/send_response";
 import { storyQueue } from "../services/storyRequestQueue";
 import { compressContext, serializeLore } from "../utils/contextCompressor";
 
-const sanitizeJsonText = (rawText: string): string => {
+export const sanitizeJsonText = (rawText: string): string => {
   const trimmed = rawText.trim();
   if (!trimmed.startsWith("```")) return trimmed;
   return trimmed

@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 declare module 'jsdiff' {
   export interface Change {
     value: string;

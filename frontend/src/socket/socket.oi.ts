@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 import { io, Socket } from "socket.io-client";
 import { getToken } from "../services/auth.service";
 import { resolveSocketUrl } from "../helpers/socket-url";

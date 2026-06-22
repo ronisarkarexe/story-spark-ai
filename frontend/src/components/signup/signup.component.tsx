@@ -298,7 +298,6 @@ const otpPayload = {
             </p>
           )}
           {/* Card */}
-          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
           {!showOtpField && (
             <div className="relative mb-6 w-full box-border">
               <div className="absolute inset-0 flex items-center">
@@ -380,14 +379,13 @@ const otpPayload = {
                   </p>
                   <ul className="space-y-1.5 list-none p-0 m-0 w-full box-border text-[11px] font-medium">
                     {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
-  const met = passwordChecks[key];
-  return (
-    <li key={key} className={`flex items-center gap-1.5 ${met ? "text-green-500" : "text-slate-400"}`}>
-      <span>{met ? "✓" : "○"}</span>
-      <span>{label}</span>
-    </li>
-  );
-})}
+                      const met = passwordChecks[key];
+                      return (
+                      <li key={key} className={`flex items-center gap-1.5 ${met ? "text-green-500" : "text-slate-400"}`}>
+                        <span>{met ? "✓" : "○"}</span>
+                        <span>{label}</span>
+                      </li>);
+                    })}
                   </ul>
                 </div>
               )}

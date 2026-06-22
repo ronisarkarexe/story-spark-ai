@@ -81,7 +81,7 @@ const AnalyticsPage = () => {
     load();
 
     return () => controller.abort();
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token]);  
 
   if (loading) return (
     <div className="flex items-center justify-center py-20">

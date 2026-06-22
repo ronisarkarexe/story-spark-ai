@@ -34,11 +34,11 @@ const SSInput = <T extends FieldValues>({
   autoComplete,
   autoFocus,
 }: SSInputProps<T>) => {
-  const [showLocalPassword, setShowLocalPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const isPasswordType = type === "password";
   const inputType = isPasswordType
-    ? showLocalPassword
+    ? showPassword
       ? "text"
       : "password"
     : type;
@@ -51,10 +51,10 @@ const SSInput = <T extends FieldValues>({
       >
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
-      <div className="relative mt-2 flex items-center">
+
+      <div className="relative w-full min-w-0 max-w-full box-border">
         {icon && (
-          //<span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
-            <span className="absolute left-3 text-gray-500 flex items-center pointer-events-none">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center text-slate-400 dark:text-slate-500 z-10 pointer-events-none">
             <i className={icon}></i>
           </span>
         )}
@@ -78,15 +78,13 @@ const SSInput = <T extends FieldValues>({
         {isPasswordType && (
           <button
             type="button"
-            onClick={() => setShowLocalPassword(!showLocalPassword)}
+            onClick={() => setShowPassword(!showPassword)}
             className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center text-slate-400 hover:text-slate-200 dark:text-slate-500 dark:hover:text-slate-300 z-10 focus:outline-none transition-colors cursor-pointer"
-            aria-label={showLocalPassword ? "Hide password" : "Show password"}
-            title={showLocalPassword ? "Hide password" : "Show password"}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            title={showPassword ? "Hide password" : "Show password"}
           >
             <i
-              className={
-                showLocalPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"
-              }
+              className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}
             ></i>
           </button>
         )}

@@ -105,7 +105,7 @@ export default function AnalyticsDashboard() {
     return () => {
       controller.abort();
     };
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token]);  
 
   if (loading) return (
     <div className="min-h-screen bg-[#0d0d14] flex items-center justify-center">

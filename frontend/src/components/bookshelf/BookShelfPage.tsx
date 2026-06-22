@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useGetPostListsQuery } from "../../redux/apis/post.api";
-import BookShelf, { IBookStory } from "./BookShelf";
+import BookShelf from "./BookShelf";
+import { IBookStory } from "./book.utils";
 
 export default function BookShelfPage() {
   const [page] = useState(1);
