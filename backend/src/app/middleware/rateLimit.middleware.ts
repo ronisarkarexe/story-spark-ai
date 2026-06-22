@@ -11,6 +11,7 @@ export const searchRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many search requests. Please wait a moment and try again.",
+  validate: { keyGenerator: false },
   keyGenerator: (req: any, _res: any): string => {
     const forwarded = (req.headers["x-forwarded-for"] as string) ?? "";
     return forwarded.split(",")[0]?.trim() || req.ip || "unknown";
@@ -27,6 +28,7 @@ export const apiRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many requests from this IP. Please try again after 15 minutes.",
+  validate: { keyGenerator: false },
   keyGenerator: (req: any, _res: any): string => {
     const forwarded = (req.headers["x-forwarded-for"] as string) ?? "";
     return forwarded.split(",")[0]?.trim() || req.ip || "unknown";
