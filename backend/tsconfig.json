@@ -2,13 +2,14 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "src/**/__tests__/**"],
   "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "commonjs",                                
+    "rootDir": "./src",                                  
+    "outDir": "./dist",                                  
     "noEmitOnError": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "target": "es2016", 
-    "module": "commonjs",                               
-    "rootDir": "./src",                                  
-    "outDir": "./dist",                                  
     "forceConsistentCasingInFileNames": true,            
     "strict": true                                      
   }

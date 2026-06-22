@@ -68,7 +68,7 @@ const CardCollection: React.FC<CardCollectionProps> = ({
               }`}
             >
               <StoryTradingCard story={story} compact />
-              <p className="mt-2 line-clamp-1 text-xs font-bold text-slate-200">
+              <p className="mt-2 line-clamp-2 break-words text-xs font-bold text-slate-200 overflow-hidden text-ellipsis">
                 {story.title}
               </p>
               <p className="text-[10px] uppercase tracking-wider text-slate-500">

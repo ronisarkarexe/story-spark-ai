@@ -184,7 +184,7 @@ export const sanitizeObjectStrings = <T extends Record<string, any>>(
 ): T => {
   if (!obj || typeof obj !== "object") return obj;
 
-  const result = { ...obj };
+  const result = { ...obj } as any;
   for (const key of Object.keys(result)) {
     if (typeof result[key] === "string") {
       result[key] = sanitizer(result[key]);

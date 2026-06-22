@@ -68,3 +68,67 @@ ${storyText}
   const clean = text.replace(/```json|```/g, "").trim();
   return JSON.parse(clean) as IConsistencyResult;
 };
+
+export interface IFactTimelineStep {
+  stepNumber: number;
+  eventSummary: string;
+  factsEstablished: string[];
+  factsSuperseded: string[];
+}
+
+export interface IFactContradiction {
+  description: string;
+  contradictedFact: string;
+  severity: "low" | "medium" | "high";
+  suggestion: string;
+}
+
+export interface IFactTrackingResult {
+  timeline: IFactTimelineStep[];
+  contradictions: IFactContradiction[];
+}
+
+export const trackStoryFacts = async (
+  storyText: string
+): Promise<IFactTrackingResult> => {
+  const prompt = `You are a professional narrative continuity editor. Analyze the following story to build a chronological timeline of key facts and identify any time-based/logical contradictions.
+
+First, logically segment the story into chronological events.
+For each event segment:
+1. State the brief event description.
+2. Identify new facts established (e.g. "Jack is carrying a golden key", "Jack is in the castle hall").
+3. Identify facts that were previously true but are now superseded/invalidated (e.g. "Jack drops the key" supersedes "Jack is carrying a golden key").
+
+Second, check for any logical/temporal contradictions where the narrative violates active facts established in previous steps.
+
+Return ONLY a valid JSON object matching this exact structure:
+{
+  "timeline": [
+    {
+      "stepNumber": 1,
+      "eventSummary": "<Summary of what happens in this step>",
+      "factsEstablished": ["<fact 1>", "<fact 2>"],
+      "factsSuperseded": ["<previous fact that is no longer true>"]
+    }
+  ],
+  "contradictions": [
+    {
+      "description": "<Description of the contradiction, e.g. Jack unlocks the gate but he previously dropped the key>",
+      "contradictedFact": "<The specific fact that was violated>",
+      "severity": "<low|medium|high>",
+      "suggestion": "<Suggested fix for the writer>"
+    }
+  ]
+}
+
+Story to analyze:
+"""
+${storyText}
+"""`;
+
+  const result = await model.generateContent(prompt);
+  const text = result.response.text();
+  const clean = text.replace(/```json|```/g, "").trim();
+  return JSON.parse(clean) as IFactTrackingResult;
+};
+

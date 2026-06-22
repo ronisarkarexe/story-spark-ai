@@ -131,7 +131,7 @@ const Career = () => {
               </a>
 
               <a
-                href="mailto:careers@storysparkai.com"
+                href="mailto:ronichandrasarkar@gmail.com?subject=Joining%20StorySparkAI"
                 className="inline-flex items-center rounded-2xl border border-slate-300 dark:border-white/10 bg-white/60 dark:bg-white/[0.04] px-7 py-4 font-semibold backdrop-blur-md hover:border-blue-500/40 hover:text-blue-600 transition-all duration-300"
               >
                 Introduce Yourself
@@ -275,7 +275,7 @@ const Career = () => {
                   </div>
 
                   <a
-                    href={`mailto:careers@storysparkai.com?subject=Application%3A%20${encodeURIComponent(
+                    href={`mailto:ronichandrasarkar@gmail.com?subject=Application%3A%20${encodeURIComponent(
                       title
                     )}`}
                     className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3.5 text-white font-semibold shadow-lg hover:scale-[1.02] hover:shadow-blue-500/25 transition-all duration-300"
@@ -349,7 +349,7 @@ const Career = () => {
               </p>
 
               <a
-                href="mailto:careers@storysparkai.com"
+                href="mailto:ronichandrasarkar@gmail.com?subject=Joining%20StorySparkAI"
                 className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-4 text-blue-700 font-semibold shadow-lg hover:scale-105 transition-all duration-300"
               >
                 Get in Touch

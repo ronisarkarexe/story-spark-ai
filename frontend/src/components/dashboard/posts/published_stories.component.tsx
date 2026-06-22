@@ -195,7 +195,7 @@ const PublishedStoriesComponent: React.FC = () => {
                     onClick={() => navigate(`/post/${story._id}`)}
                     className="text-left"
                   >
-                    <h3 className="line-clamp-2 text-lg font-black text-slate-900 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-300">
+                    <h3 className="line-clamp-2 break-words text-lg font-black text-slate-900 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-300 overflow-hidden text-ellipsis">
                       {story.title}
                     </h3>
                   </button>
