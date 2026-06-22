@@ -40,11 +40,9 @@
     "@types/express-serve-static-core": "^4.17.33"
   },
   "dependencies": {
-    "20": "^3.1.9",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "@react-oauth/google": "^0.13.5",
-    "bcryptjs": "^3.0.3",
     "express": "^4.21.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
