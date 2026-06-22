@@ -29,6 +29,28 @@ const validateUserStatus = (status?: string) => {
   }
 };
 
+const normalizeEmail = (email: unknown) => {
+  if (typeof email !== "string") {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid email address.");
+  }
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email address is required.");
+  }
+  return normalized;
+};
+
+const normalizeString = (value: unknown, fieldName: string) => {
+  if (typeof value !== "string") {
+    throw new ApiError(httpStatus.BAD_REQUEST, `${fieldName} must be a string.`);
+  }
+  const normalized = value.trim();
+  if (!normalized) {
+    throw new ApiError(httpStatus.BAD_REQUEST, `${fieldName} is required.`);
+  }
+  return normalized;
+};
+
 // Token claims; tokenVersion enables global session revocation.
 const buildClaims = (user: any) => ({
   _id: user._id,
@@ -64,8 +86,10 @@ const issueRefreshToken = async (user: any): Promise<string> => {
 };
 
 const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
-  const { email: userEmail, password, rememberMe } = payload;
-  const isExistUser = await User.findOne({ email: userEmail });
+  const email = normalizeEmail(payload.email);
+  const password = normalizeString(payload.password, "Password");
+  const { rememberMe } = payload;
+  const isExistUser = await User.findOne({ email });
   if (!isExistUser) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
@@ -94,7 +118,8 @@ const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
 };
 
 const register = async (payload: IUser & { verificationToken?: string; confirmPassword?: string }) => {
-  const { email: userEmail, verificationToken } = payload;
+  const email = normalizeEmail(payload.email);
+  const verificationToken = normalizeString(payload.verificationToken, "Verification token");
   
   if (!verificationToken) {
     throw new ApiError(
@@ -104,7 +129,7 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
   }
 
   const otpRecord = await OTPModel.findOne({
-    email: userEmail,
+    email,
     isVerified: true,
     verificationToken,
   });
@@ -126,16 +151,16 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
     );
   }
 
-  const isExistUser = await User.findOne({ email: userEmail });
+  const isExistUser = await User.findOne({ email });
   if (isExistUser) {
     throw new ApiError(httpStatus.CONFLICT, "User already exists!");
   }
   
   const { verificationToken: _, ...userPayload } = payload;
-  const result = await User.create(userPayload);
+  const result = await User.create({ ...userPayload, email });
 
   // Clean up OTP record after successful registration
-  await OTPModel.deleteOne({ email: userEmail });
+  await OTPModel.deleteOne({ email });
 
   const accessToken = issueAccessToken(result);
   const refreshToken = await issueRefreshToken(result);
@@ -161,8 +186,8 @@ const refreshToken = async (token: string) => {
     throw new ApiError(httpStatus.FORBIDDEN, "Invalid refresh token");
   }
 
-  const { email: userEmail } = verifiedToken;
-  const jti = (verifiedToken as any).jti as string | undefined;
+  const userEmail = normalizeEmail((verifiedToken as any).email);
+  const jti = typeof (verifiedToken as any).jti === "string" ? (verifiedToken as any).jti : undefined;
   const user = await User.findOne({ email: userEmail });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
@@ -225,8 +250,8 @@ const logout = async (token?: string) => {
       token,
       config.jwt.refresh_secret as Secret
     );
-    const jti = (verified as any).jti as string | undefined;
-    const userId = (verified as any)._id as string | undefined;
+    const jti = typeof (verified as any).jti === "string" ? (verified as any).jti : undefined;
+    const userId = typeof (verified as any)._id === "string" ? (verified as any)._id : undefined;
 
     // Revoke the refresh token session.
     if (jti) {
@@ -288,67 +313,6 @@ const googleLogin = async (payload: { token: string }) => {
           },
         },
       };
-<<<<<<< fix/restore-backend-auth-service-279
-
-      user = await User.create(newUser);
-    }
-
-    validateUserStatus(user.status);
-
-    const accessToken = issueAccessToken(user);
-    const refreshTokenData = await issueRefreshToken(user);
-
-    GamificationService.updateDailyStreak(String(user._id)).catch(console.error);
-
-    return {
-      accessToken,
-      refreshToken: refreshTokenData,
-    };
-  } catch (error: any) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error(`Google login error: ${errorMessage}`);
-    
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    
-    throw new ApiError(
-      httpStatus.UNAUTHORIZED,
-      error.message || "Google login failed"
-    );
-  }
-=======
-
-
-    const payload_data = ticket.getPayload();
-    if (!payload_data || !payload_data.email) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid Google token");
-    }
-
-    if (!payload_data.email_verified) {
-      throw new ApiError(httpStatus.UNAUTHORIZED, "Google email is not verified");
-    }
-
-    const { email, name: googleName, picture } = payload_data;
-    let user = await User.findOne({ email });
-
-    if (!user) {
-      const newUser: Partial<IUser> = {
-        email: email as string,
-        name: (googleName || email || "Google User").slice(0, 100),
-        status: "Active",
-        subscriptionType: "free",
-        profile: {
-          avatar: (picture as string) || "",
-          bio: "",
-          social: {
-            facebook: "",
-            twitter: "",
-            linkedin: "",
-            instagram: "",
-          },
-        },
-      };
 
       user = await User.create(newUser);
     }
@@ -407,84 +371,14 @@ const changePassword = async (userPayload: any, payload: any) => {
     user.tokenVersion = 1;
   }
   await user.save();
->>>>>>> main
 };
 const forgotPassword = async (email: string) => {
-  if (!email) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Email is required!");
-  }
-
-<<<<<<< fix/restore-backend-auth-service-279
-const changePassword = async (userPayload: any, payload: any) => {
-  const { oldPassword, newPassword } = payload;
-  const user = await User.findById(userPayload._id);
-
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
-  }
-
-  if (!user.password) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "User does not have a password set"
-    );
-  }
-
-  const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
-  if (!isPasswordMatch) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Old password is incorrect");
-  }
-
-  user.password = newPassword;
-
-  if (user.tokenVersion !== undefined) {
-    user.tokenVersion += 1;
-  } else {
-    user.tokenVersion = 1;
-  }
-  await user.save();
-=======
-  // Same response for real and unknown emails to prevent account enumeration.
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-  const user = await User.findOne({ email });
-  if (user) {
-    // Fire and forget so response timing does not vary with account existence.
-    VerifyEmailService.VerifyEmail({
-      email: user.email,
-      name: user.name || "User",
-    }).catch((err) => {
-      const message = err instanceof Error ? err.message : String(err);
-      logger.error(`forgotPassword OTP send failed for ${user.email}: ${message}`);
-    });
-  }
-
-
-  const user = await User.findOne({ email });
-  if (user) {
-    // Fire and forget so response timing does not vary with account existence.
-    VerifyEmailService.VerifyEmail({
-      email: user.email,
-      name: user.name || "User",
-    }).catch((err) => {
-      const message = err instanceof Error ? err.message : String(err);
-      logger.error(`forgotPassword OTP send failed for ${user.email}: ${message}`);
-    });
-  }
-
-  return { expiresAt };
->>>>>>> main
-};
-const forgotPassword = async (email: string) => {
-  if (!email) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Email is required!");
-  }
+  const safeEmail = normalizeEmail(email);
 
   // Same response for real and unknown emails to prevent account enumeration.
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-<<<<<<< fix/restore-backend-auth-service-279
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: safeEmail });
   if (user) {
     // Fire and forget so response timing does not vary with account existence.
     VerifyEmailService.VerifyEmail({
@@ -505,10 +399,11 @@ const resetPassword = async (payload: {
   confirmPassword: string;
   verificationToken: string;
 }) => {
-  const { email, password, confirmPassword, verificationToken } = payload;
-  if (!email || !password || !confirmPassword || !verificationToken) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "All fields are required!");
-  }
+  const email = normalizeEmail(payload.email);
+  const password = normalizeString(payload.password, "Password");
+  const confirmPassword = normalizeString(payload.confirmPassword, "Confirm password");
+  const verificationToken = normalizeString(payload.verificationToken, "Verification token");
+
   if (password !== confirmPassword) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
   }
@@ -573,102 +468,6 @@ const resetPassword = async (payload: {
   };
 };
 
-=======
-const resetPassword = async (payload: {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  verificationToken: string;
-}) => {
-  const { email, password, confirmPassword, verificationToken } = payload;
-  if (!email || !password || !confirmPassword || !verificationToken) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "All fields are required!");
-  }
-  if (password !== confirmPassword) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
-  }
-  
-  const getPasswordError = (pwd: string) => {
-    if (pwd.length < 8) return "Password must be at least 8 characters long";
-    if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
-    if (!/[a-z]/.test(pwd)) return "Password must contain at least one lowercase letter";
-    if (!/[0-9]/.test(pwd)) return "Password must contain at least one number";
-    if (!/[^A-Za-z0-9]/.test(pwd)) return "Password must contain at least one special character";
-    return "";
-  };
-  const passwordError = getPasswordError(password);
-  if (passwordError) {
-    throw new ApiError(httpStatus.BAD_REQUEST, passwordError);
-  }
-
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
-  }
-
-  const otpRecord = await OTPModel.findOne({
-    email,
-    isVerified: true,
-    verificationToken,
-  });
-
-  if (!otpRecord) {
-    throw new ApiError(
-      httpStatus.UNAUTHORIZED,
-      "Invalid or expired verification token. Please verify your email again."
-    );
-  }
-
-  if (
-    !otpRecord.verificationTokenExpires ||
-    new Date() > otpRecord.verificationTokenExpires
-  ) {
-    throw new ApiError(
-      httpStatus.UNAUTHORIZED,
-      "Verification token has expired. Please verify your email again."
-    );
-  }
-
-  // Bump tokenVersion and revoke sessions so the reset invalidates old logins.
-  user.password = password;
-  user.tokenVersion = (user.tokenVersion ?? 0) + 1;
-  await user.save();
-  await RefreshSession.updateMany({ userId: user._id }, { revoked: true });
-
-  // Clean up OTP record
-  await OTPModel.deleteOne({ email });
-
-  // Generate JWT tokens for auto-login with the new tokenVersion.
-  const accessToken = issueAccessToken(user);
-  const refreshToken = await issueRefreshToken(user);
-
-  return {
-    accessToken,
-    refreshToken,
-  };
-};
-
-
-  // Bump tokenVersion and revoke sessions so the reset invalidates old logins.
-  user.password = password;
-  user.tokenVersion = (user.tokenVersion ?? 0) + 1;
-  await user.save();
-  await RefreshSession.updateMany({ userId: user._id }, { revoked: true });
-
-  // Clean up OTP record
-  await OTPModel.deleteOne({ email });
-
-  // Generate JWT tokens for auto-login with the new tokenVersion.
-  const accessToken = issueAccessToken(user);
-  const refreshToken = await issueRefreshToken(user);
-
-  return {
-    accessToken,
-    refreshToken,
-  };
-};
-
->>>>>>> main
 export const AuthService = {
   login,
   register,
@@ -678,9 +477,4 @@ export const AuthService = {
   changePassword,
   forgotPassword,
   resetPassword,
-<<<<<<< fix/restore-backend-auth-service-279
 };
-=======
-};
-};
->>>>>>> main

@@ -24,8 +24,7 @@ router.post(
 
 // Google Login API route
 router.post("/google-login", loginRateLimiter, AuthController.googleLogin);
-
-// Register API route
+router.post("/send-otp", validateRequest(UserValidator.sendOtp), AuthController.sendOtp);// Register API route
 router.post(
   "/register",
   validateRequest(UserValidator.register),

@@ -5,6 +5,11 @@ const STORY_ROUTE = /^\/stor(?:y|ies)\/([^/?#]+)/;
 const API_BASE =
   process.env.VITE_API_BASE_URL || "https://storysparkai.vercel.app/api/v1";
 
+// Module-scoped cache — persists across invocations on the same edge instance  
+let cachedHtml: string | null = null;
+let cachedHtmlExpiry = 0;
+const HTML_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export const config = {
   matcher: ["/story/:id*", "/stories/:id*"],
 };
@@ -18,17 +23,30 @@ export default async function middleware(req: NextRequest) {
   const storyId = match[1];
 
   try {
-    const res = await fetch(`${API_BASE}/stories/${storyId}`, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(3000),
-    });
+    const now = Date.now();
+    const needsFreshHtml = !cachedHtml || now > cachedHtmlExpiry;
+
+    // Run story fetch and (conditionally) html fetch in parallel
+    const [res, html] = await Promise.all([
+      fetch(`${API_BASE}/stories/${storyId}`, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(3000),
+      }),
+      needsFreshHtml
+        ? fetch(new URL("/index.html", req.url).toString()).then((r) =>
+            r.text()
+          )
+        : Promise.resolve(cachedHtml as string),
+    ]);
 
     if (!res.ok) return NextResponse.next();
 
     const story = await res.json();
 
-    const htmlRes = await fetch(new URL("/index.html", req.url).toString());
-    const html = await htmlRes.text();
+    if (needsFreshHtml) {
+      cachedHtml = html;
+      cachedHtmlExpiry = now + HTML_CACHE_TTL_MS;
+    }
 
     const title = story.title ?? "Story Spark AI";
     const description = (story.content ?? story.description ?? "")

@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import * as newsletterService from "./newsletter.service";
-import { status as httpStatus } from "http-status";
 
 // Subscribe user to newsletter
 export const subscribe = async (req: Request, res: Response) => {
@@ -55,12 +54,13 @@ export const verify = async (req: Request, res: Response) => {
 // Unsubscribe via token from the email link. Safe, no email enumeration.
 export const unsubscribeByToken = async (req: Request, res: Response) => {
   try {
-    const token = (req.params.token as string || "").trim();
+    const { token } = req.params;
+    // Handle edge cases where token might be an array
     const safeToken = Array.isArray(token) ? token[0] : token;
 
     const result = await newsletterService.unsubscribeByToken(safeToken as string);
 
-    res.status(httpStatus.OK).json({
+    res.status(200).json({
       success: true,
       message: "Successfully unsubscribed",
       data: result,

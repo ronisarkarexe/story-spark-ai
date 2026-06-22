@@ -6,8 +6,8 @@ import sendResponse from "../../../shared/send_response";
 import { IUser } from "../user/user.interface";
 import catchAsync from "../../../shared/catch_async";
 import { setRefreshTokenCookie, clearRefreshTokenCookie } from "../../../utils/cookie.util";
-import jwt from "jsonwebtoken";
 import { TokenBlacklist } from "./tokenBlacklist.model";
+import { VerifyEmailService } from "../verify_email/verify_email.service";
 
 const login = catchAsync(async (req: Request, res: Response) => {
   const body: AuthModel = req.body;
@@ -142,8 +142,19 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-       message: "Password reset successfully!",
+    message: "Password reset successfully!",
     data: { accessToken },
+  });
+});
+
+const sendOtp = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
+  const result = await VerifyEmailService.VerifyEmail({ email, name: "User" });
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "OTP sent successfully!",
+    data: result,
   });
 });
 
@@ -156,4 +167,5 @@ export const AuthController = {
   changePassword,
   forgotPassword,
   resetPassword,
+  sendOtp,
 };

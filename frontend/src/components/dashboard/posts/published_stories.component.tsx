@@ -4,7 +4,6 @@ import { useDebounced } from "../../../hooks/global";
 import { Post } from "../../../models/post";
 import { useGetMyPublishedStoriesQuery } from "../../../redux/apis/post.api";
 import PaginationComponent from "../../pagination/pagination.component";
-import ImageFallback from "../../ImageFallback";
 
 const PAGE_SIZE = 6;
 
@@ -174,7 +173,7 @@ const PublishedStoriesComponent: React.FC = () => {
                   onClick={() => navigate(`/post/${story._id}`)}
                   className="h-48 w-full overflow-hidden bg-slate-100 text-left dark:bg-white/[0.04] sm:h-auto sm:w-44 sm:flex-shrink-0"
                 >
-                  <ImageFallback
+                  <img
                     src={story.imageURL}
                     alt={story.title}
                     className="h-full w-full object-cover transition duration-300 hover:scale-105"
@@ -196,7 +195,7 @@ const PublishedStoriesComponent: React.FC = () => {
                     onClick={() => navigate(`/post/${story._id}`)}
                     className="text-left"
                   >
-                    <h3 className="line-clamp-2 text-lg font-black text-slate-900 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-300">
+                    <h3 className="line-clamp-2 break-words text-lg font-black text-slate-900 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-300 overflow-hidden text-ellipsis">
                       {story.title}
                     </h3>
                   </button>

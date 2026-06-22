@@ -28,7 +28,7 @@ const HelpCategories: FC<HelpCategoriesProps> = ({ categories }) => {
           <HelpCategoryCard key={category.id} category={category} />
         ))}
       </div>
-    </motion.section>
+    </section>
   );
 };
 

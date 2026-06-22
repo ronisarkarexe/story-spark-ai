@@ -6,21 +6,11 @@ import LoadingAnimation from "../../loading/loading.component";
 
 const INITIAL_VISIBLE_COUNT = 6;
 
-// Helper to fix hardcoded localization bugs from AI streams
-const formatPostTitle = (title: string): string => {
-  if (!title) return "";
-  if (title.includes("कबूतरों का कूटनीतिक संकट")) {
-    return "The Pigeons' Diplomatic Crisis";
-  }
-  return title;
-};
-
 const LatestPostsComponent = () => {
   const { data, isLoading, isError, refetch } = useGetLatestListsQuery(undefined);
   const navigate = useNavigate();
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
-
 
   if (isLoading) return <LoadingAnimation />;
 
@@ -28,8 +18,8 @@ const LatestPostsComponent = () => {
     return (
       <section className="mb-12 text-slate-100">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-200 mb-6">
-  Latest Posts
-</h2>
+          Latest Posts
+        </h2>
         <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-center text-red-200">
           <p className="mb-3 font-semibold">Failed to load latest posts.</p>
           <button
@@ -43,12 +33,10 @@ const LatestPostsComponent = () => {
     );
   }
 
-  const seenIds = new Set<string>();
-  const uniquePosts = (data?.posts ?? []).filter((post: Post) => {
-    if (!post?._id || seenIds.has(post._id)) return false;
-    seenIds.add(post._id);
-    return true;
-  });
+  // Remove duplicate posts based on _id
+  const uniquePosts = Array.from(
+    new Map((data?.posts ?? []).map((post: Post) => [post._id, post])).values(),
+  );
 
   const shouldShowLoadMore = uniquePosts.length > INITIAL_VISIBLE_COUNT;
   const visiblePosts =
@@ -67,7 +55,7 @@ const LatestPostsComponent = () => {
   return (
 
     <section className="w-full min-w-0 max-w-full">
-      <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-gray-200">Latest Posts</h2>
+      <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-white">Latest Posts</h2>
 
       <div className="max-w-full space-y-3">
         {visiblePosts.length > 0 ? (
@@ -86,7 +74,7 @@ const LatestPostsComponent = () => {
                   onClick={() => toggleAccordion(post._id)}
                   className="flex w-full min-w-0 items-center justify-between p-4 text-left font-bold text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700/20 transition-colors"
                 >
-                 <span className="min-w-0 pr-4 text-lg break-words md:text-xl">{formatPostTitle(post.title)}</span>
+                  <span className="min-w-0 pr-4 text-lg break-words md:text-xl">{post.title}</span>
                   <span className="shrink-0 text-slate-500 dark:text-slate-400 font-mono text-sm transition-transform duration-200 select-none">
                     {isExpanded ? "▼" : "▶"}
                   </span>

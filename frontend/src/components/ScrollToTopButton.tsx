@@ -39,7 +39,6 @@ const ScrollToTopButton = () => {
         }
       `}
     >
-      ↑
     </button>
   );
 };

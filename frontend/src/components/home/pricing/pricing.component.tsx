@@ -1,4 +1,5 @@
 import React from "react";
+import React from "react";
 
 const PricingComponent = () => {
   return (
@@ -9,3 +10,4 @@ const PricingComponent = () => {
 };
 
 export default PricingComponent;
+
