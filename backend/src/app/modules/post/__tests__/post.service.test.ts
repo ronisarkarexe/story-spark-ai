@@ -18,11 +18,18 @@ jest.mock("../post.model", () => ({
 jest.mock("../../user/user.model", () => ({
   User: {
     findOne: jest.fn(),
+    findByIdAndUpdate: jest.fn().mockResolvedValue({}),
   },
 }));
 
 jest.mock("../../bookmark/bookmark.model", () => ({
   Bookmark: {
+    deleteMany: jest.fn().mockResolvedValue({}),
+  },
+}));
+
+jest.mock("../../comment/comment.model", () => ({
+  Comment: {
     deleteMany: jest.fn().mockResolvedValue({}),
   },
 }));

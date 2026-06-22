@@ -54,14 +54,9 @@ const StoryInspirationComponent: React.FC = () => {
 
         {/* Top Navigation */}
         <motion.div initial={{ opacity: 0, y: -15 }} animate={{ opacity: 1, y: 0 }} className="pt-10 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="group inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/70 dark:bg-white/[0.05] border border-white/60 dark:border-white/10 backdrop-blur-xl shadow-lg shadow-black/[0.03] hover:shadow-indigo-500/15 hover:border-indigo-400/40 transition-all duration-300">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center text-white shadow-lg">
-              <i className="fas fa-arrow-left text-sm group-hover:-translate-x-0.5 transition-transform" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-semibold text-slate-800 dark:text-white">Back to Home</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Return to homepage</p>
-            </div>
+          <button onClick={() => navigate("/")} className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/70 dark:bg-white/[0.05] border border-white/60 dark:border-white/10 backdrop-blur-xl shadow-sm hover:border-indigo-400/40 transition-all duration-300 text-slate-700 dark:text-slate-300 text-sm font-semibold">
+            <i className="fas fa-arrow-left text-xs group-hover:-translate-x-0.5 transition-transform" />
+            Back to Home
           </button>
           <div className="hidden md:flex items-center gap-3 px-4 py-2 rounded-full bg-white/70 dark:bg-white/[0.04] border border-white/60 dark:border-white/10 backdrop-blur-xl">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -85,7 +80,6 @@ const StoryInspirationComponent: React.FC = () => {
           <h1 className="text-5xl md:text-7xl xl:text-8xl font-black tracking-tight leading-[0.95] mb-8">
             <span className="block text-slate-900 dark:text-white">Story</span>
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-blue-600 to-purple-600 dark:from-indigo-300 dark:via-blue-300 dark:to-purple-300">
-
               Inspiration Hub
             </span>
           </h1>
@@ -122,7 +116,7 @@ const StoryInspirationComponent: React.FC = () => {
             {[
               { value: inspirationData.length, label: "Story Inspirations", icon: "fa-book-open" },
               { value: genres.length - 1, label: "Creative Genres", icon: "fa-layer-group" },
-              { value: "∞", label: "Writing Possibilities", icon: "fa-sparkles" },
+              { value: "∞", label: "Writing Possibilities", icon: "fa-infinity" },
             ].map((item, index) => (
               <motion.div key={index} whileHover={{ y: -6 }} className="relative overflow-hidden rounded-[2rem] border border-white/60 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] backdrop-blur-2xl p-7 shadow-xl shadow-black/[0.04]">
                 <div className="absolute top-0 right-0 w-28 h-28 bg-indigo-500/10 blur-3xl rounded-full" />

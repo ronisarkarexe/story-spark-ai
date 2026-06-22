@@ -5,12 +5,17 @@ import CookieConsentBanner from "../cookie-consent/cookie-consent.component";
 import FooterComponent from "../footer/footer.component";
 import ChatComponent from "../chat/Chat";
 
+
+
+
+
 interface RootLayoutProps {
   children: ReactNode;
 }
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
+
   const isAuthPage = pathname === "/login" || pathname === "/signup";
   const hideHeader = isAuthPage;
   const hideFooter = isAuthPage;
@@ -23,31 +28,18 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
 
   return (
     <div
-      className="flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100"
-      className={`flex flex-col min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${!isAuthPage ? "pb-20 lg:pb-0" : ""}`}
+      className={`flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${
+        !isAuthPage ? "pb-20 lg:pb-0" : ""
+      }`}
       style={{ paddingBottom: isAuthPage ? 0 : cookieBannerHeight }}
     >
       {!hideHeader && <NavListComponent />}
-
       <CookieConsentBanner onLayoutChange={handleCookieLayoutChange} />
-<<<<<<< fix-duplicate-variable-declaration
 
-      <div className="flex-grow min-h-0">
-        {children}
-      </div>
-
-=======
-      <div 
-        className="flex-grow min-h-0"
-        style={{ paddingBottom: isAuthPage ? 0 : cookieBannerHeight }}
-      >
-        {children}
-      </div>
       <div className="flex-grow min-h-0">{children}</div>
->>>>>>> main
-      {!hideFooter && <FooterComponent />}
 
-      <ChatComponent />
+      {!hideFooter && <FooterComponent />}
+<ChatComponent />
     </div>
   );
 };

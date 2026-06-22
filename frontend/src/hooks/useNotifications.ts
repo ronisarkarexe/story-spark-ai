@@ -107,14 +107,12 @@ export const useNotifications = () => {
       };
 
       socket.on("connect", handleSocketConnected);
-      socket.on("reconnect", handleSocketConnected);
       socket.on("notification:new", handleNewNotification);
       socket.on("notification:updated", handleNotificationUpdated);
       socket.on("notification:all-read", handleAllRead);
 
       return () => {
         socket.off("connect", handleSocketConnected);
-        socket.off("reconnect", handleSocketConnected);
         socket.off("notification:new", handleNewNotification);
         socket.off("notification:updated", handleNotificationUpdated);
         socket.off("notification:all-read", handleAllRead);

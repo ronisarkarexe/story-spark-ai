@@ -5,6 +5,7 @@ import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
 import { Post } from "./post.model";
 import { Bookmark } from "../bookmark/bookmark.model";
+import { Comment } from "../comment/comment.model";
 import { StoryVersionService } from "../story_version/story_version.service";
 import {
   IGenericResponse,
@@ -14,7 +15,10 @@ import paginationHelper from "../../../utils/pagination_helper";
 import { postSearchFields } from "./post.constant";
 import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
+import { WritingStreakService } from "../gamification/writing_streak.service";
 import { escapeRegex } from "../../../utils/regex.util";
+import { verifyPostAccess } from "./post.utils";
+
 const MAX_SEARCH_TERM_LENGTH = 100;
 
 interface ICursorPayload {
@@ -98,14 +102,21 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
   try {
-    const isPublished = payload.isPublished ?? true;
-    const res = await Post.create({
-      ...payload,
-      isPublished,
-      publishedAt: isPublished ? new Date() : null,
+    const postPayload = {
+      title: payload.title,
+      content: payload.content,
+      tag: payload.tag,
+      imageURL: payload.imageURL,
+      topic: payload.topic,
+      language: payload.language,
+      emotions: payload.emotions,
+      genre: payload.genre,
+      isPublished: true,
+      publishedAt: new Date(),
       author: user._id,
       updatedBy: user._id,
-    });
+    };
+    const res = await Post.create(postPayload);
 
     if (res && res.isPublished) {
       const updatedUser = await User.findByIdAndUpdate(
@@ -114,6 +125,7 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
         { new: true }
       );
       GamificationService.addXp(String(user._id), 50, "CREATED_POST").catch(console.error);
+      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
       if (updatedUser && updatedUser.postsCount === 1) {
         GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
       }
@@ -124,7 +136,7 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       httpStatus.INTERNAL_SERVER_ERROR,
       "Failed to create post"
     );
-  }
+    }
 };
 
 const getPosts = async (
@@ -367,6 +379,13 @@ const getSinglePost = async (id: string, token?: ITokenPayload | null) => {
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
+
+  let user = null;
+  if (token && token.email) {
+    user = await User.findOne({ email: token.email });
+  }
+  verifyPostAccess(postById, user);
+
   return postById;
 };
 
@@ -399,10 +418,12 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
-  if (!postExists) {
+  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
+
+  verifyPostAccess(post, user);
 
   const isBookmarked = await Post.exists({
     _id: postId,
@@ -506,7 +527,7 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
 
   if (post.isPublished) {
     await User.findByIdAndUpdate(
-      user._id,
+      post.author,
       { $inc: { postsCount: -1 } }
     );
   }
@@ -537,6 +558,8 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
+  verifyPostAccess(originalPost, user);
+
   const remixedContent = `[AI Remixed Version based on prompt: "${safePrompt}"]\n\n${originalPost.content}`;
 
   const res = await Post.create({
@@ -552,6 +575,7 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
       user._id,
       { $inc: { postsCount: 1 } }
     );
+    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
   }
 
   return res;
@@ -575,6 +599,8 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
+  verifyPostAccess(originalPost, user);
+
   const translatedContent = `[Translated to ${safeLanguage}]\n\n${originalPost.content}`;
 
   const res = await Post.create({
@@ -590,6 +616,7 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
       user._id,
       { $inc: { postsCount: 1 } }
     );
+    WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
   }
 
   return res;
