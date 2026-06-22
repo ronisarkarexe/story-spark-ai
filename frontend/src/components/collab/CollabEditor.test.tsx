@@ -1,5 +1,7 @@
-import { render, screen, act } from '@testing-library/react';
-import { vi } from 'vitest';
+// @vitest-environment jsdom
+import { render, screen, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import CollabEditor from './CollabEditor';
 import * as Y from 'yjs';
 import { io } from 'socket.io-client';
@@ -8,9 +10,9 @@ import { io } from 'socket.io-client';
 vi.mock('socket.io-client', () => {
   const EventEmitter = require('events');
   class MockSocket extends EventEmitter {
-    emit(event: string, ...args: any[]) {
-      this.emit(event, ...args); // echo for test simplicity
-    }
+    emit = vi.fn(function (this: any, event: string, ...args: any[]) {
+      EventEmitter.prototype.emit.apply(this, [event, ...args]);
+    });
     disconnect() {}
   }
   return { io: vi.fn(() => new MockSocket()) };
@@ -20,7 +22,9 @@ vi.mock('socket.io-client', () => {
 vi.mock('y-indexeddb', () => {
   return {
     IndexeddbPersistence: class {
-      constructor() {}
+      constructor(storyId: string, ydoc: any) {
+        (global as any).mockYdoc = ydoc;
+      }
       once(event: string, cb: () => void) {
         if (event === 'synced') cb();
       }
@@ -29,13 +33,21 @@ vi.mock('y-indexeddb', () => {
 });
 
 // Mock quill-cursors registration (no‑op)
-vi.mock('quill-cursors', () => ({ default: {} }));
+vi.mock('quill-cursors', () => ({
+  default: class {
+    constructor() {}
+  }
+}));
 
 describe('CollabEditor', () => {
   const storyId = 'test-story';
   const userId = 'user-1';
   const username = 'Tester';
   const userColor = '#ff0000';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('renders editor container', () => {
     render(
@@ -62,15 +74,18 @@ describe('CollabEditor', () => {
     // Wait for Yjs doc creation
     await act(async () => {});
     // Simulate remote update
-    const ydoc = new Y.Doc();
-    const ytext = ydoc.getText('quill');
-    ytext.insert(0, 'Hello world');
-    const update = Y.encodeStateAsUpdate(ydoc);
-    const socket = (io as any).mock.results[0].value;
-    act(() => socket.emit('update', update));
+    const mockYdoc = (global as any).mockYdoc;
+    act(() => {
+      mockYdoc.getText('quill').insert(0, 'Hello world');
+    });
+    
+    console.log("MOCKYDOC TEXT IN TEST:", mockYdoc?.getText('quill')?.toString());
+
     // Quill should now contain the text
     const editor = container.querySelector('.ql-editor');
-    expect(editor?.textContent).toContain('Hello world');
+    await waitFor(() => {
+      expect(editor?.textContent).toContain('Hello world');
+    });
   });
 
   it('broadcasts local cursor changes via awareness', async () => {
@@ -83,12 +98,14 @@ describe('CollabEditor', () => {
       />,
     );
     const socket = (io as any).mock.results[0].value;
-    const emitSpy = vi.spyOn(socket, 'emit');
-    // Simulate selection change on the Quill instance
-    // Since Quill instance is internal, we trigger the handler directly via the awareness ref
-    const awareness = (require('y-protocols/awareness').Awareness as any).prototype;
-    // Not easily accessible – instead we verify that socket.emit was called at least once for awareness
+    
+    // Simulate selection change on Quill
+    const mockQuill = (global as any).mockQuill;
+    act(() => {
+      mockQuill.emitter.emit('selection-change', { index: 0, length: 5 });
+    });
+
     await act(async () => {});
-    expect(emitSpy).toHaveBeenCalled();
+    expect(socket.emit).toHaveBeenCalledWith('awareness', expect.any(Uint8Array));
   });
 });

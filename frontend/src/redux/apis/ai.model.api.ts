@@ -115,6 +115,16 @@ const aiModelApi = baseApi.injectEndpoints({
       },
       invalidatesTags: [tagTypes.model],
     }),
+    analyzeChildSafety: build.mutation({
+      query: (data: { content: string }) => ({
+        url: `/child-safety/analyze`,
+        method: "POST",
+        data,
+      }),
+      transformResponse: (response: { data: any; message: string }) => {
+        return { data: response.data, message: response.message };
+      },
+    }),
   }),
 });
 
@@ -129,5 +139,6 @@ export const {
   useTranslateFreeStoryMutation,
   useContinueStoryMutation,
   useContinueFreeStoryMutation,
+  useAnalyzeChildSafetyMutation,
 } = aiModelApi;
 

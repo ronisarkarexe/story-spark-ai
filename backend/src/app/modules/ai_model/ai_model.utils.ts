@@ -9,6 +9,7 @@ import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
+import { ChildSafetyService } from "../child_safety/child_safety.service";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import type {
@@ -79,6 +80,15 @@ interface Story {
   emotions?: string[];
   genre?: string;
   enhancedPrompt?: string;
+  childSafety?: {
+    isSafeForChildren: boolean;
+    recommendedAgeGroup: string;
+    reasoning: string;
+    severity: string;
+    sentenceLevel: any[];
+    discourseLevel: any[];
+  };
+  contentWarnings?: string[];
 }
 
 // NEW: Map each tone label to a precise writing instruction injected into the AI prompt.
@@ -117,7 +127,8 @@ const GENRE_MODIFIER_INSTRUCTIONS: Record<string, string> = {
 
 const buildGenreInstruction = (genre?: string): string => {
   if (!genre) return "";
-  const instruction = GENRE_MODIFIER_INSTRUCTIONS[genre];
+  const cleanGenre = genre.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji}/gu, "").trim().toLowerCase().replace(/[^a-z]/g, "");
+  const instruction = GENRE_MODIFIER_INSTRUCTIONS[cleanGenre];
   if (!instruction) return "";
   return `Genre & Style Directive: ${instruction}\n\n`;
 };
@@ -226,6 +237,17 @@ export async function generateWithGeminiStories(
     const genreInstruction = buildGenreInstruction(genre);
     const toneInstruction = buildToneInstruction(tone);
     const charactersInstruction = buildCharactersInstruction(characters);
+    const cleanGenre = genre ? genre.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji}/gu, "").trim().toLowerCase().replace(/[^a-z]/g, "") : "";
+    const childSafetyPromptMod = (tone === "Children's" || cleanGenre === "childrens")
+      ? `\n\nCONTROLLABLE GENERATION COMPLIANCE:
+Because this story is targeted for children, you MUST strictly adhere to the following PG-STORY safety principles:
+- NO violence, danger, scary scenarios, weapons, self-harm, or nightmarish themes.
+- NO profanity, swearing, bad language, or insults.
+- NO sexual topics, implicit references, or nudity.
+- NO substance consumption references (alcohol, tobacco, drugs).
+- NO biases or discriminatory remarks/gender stereotypes.
+- The story must be gentle, warm, imaginative, and safe.`
+      : "";
 
     const response = await executeWithRetryAndFallback(async (activeModel) => {
       const chatSession = activeModel.startChat({
@@ -234,12 +256,8 @@ export async function generateWithGeminiStories(
         history: [],
       });
 
-      const toneInstruction = buildToneInstruction(tone);
-      const genreInstruction = buildGenreInstruction(genre);
-      const charactersInstruction = buildCharactersInstruction(characters);
-
       return chatSession.sendMessage(
-        `${buildGenreInstruction(genre)}${buildToneInstruction(tone)}${buildCharactersInstruction(characters)}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+        `${genreInstruction}${toneInstruction}${charactersInstruction}${childSafetyPromptMod}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
         First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
         Then, generate ${numStories} different short stories based on this ENHANCED prompt.
         The stories MUST be written entirely in the ${language} language.
@@ -268,8 +286,58 @@ export async function generateWithGeminiStories(
       );
     }
 
+    // Process stories to check safety, self-diagnose and correct
+    const processedStories: Story[] = [];
+    for (const story of stories) {
+      let finalStory: Story = { ...story };
+      let safetyReport: any = null;
+
+      try {
+        const cleanGenre = genre ? genre.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji}/gu, "").trim().toLowerCase().replace(/[^a-z]/g, "") : "";
+        if (tone === "Children's" || cleanGenre === "childrens") {
+          const corrected = await ChildSafetyService.runSelfDiagnosisAndCorrection(
+            prompt,
+            story.title || "Untitled",
+            story.content || "",
+            story.tag || "General",
+            tone,
+            genre,
+            signal
+          );
+          finalStory.title = corrected.title;
+          finalStory.content = corrected.content;
+          finalStory.tag = corrected.tag;
+          safetyReport = corrected.safetyReport;
+        } else {
+          safetyReport = await ChildSafetyService.performSafetyAnalysis(story.content || "", signal);
+        }
+      } catch (safetyErr) {
+        console.error("[Child Safety] Safety analysis failed during generation, fallback used:", safetyErr);
+        safetyReport = {
+          isSafeForChildren: true,
+          recommendedAgeGroup: "All Ages",
+          reasoning: "Safety auditor analysis was bypassed due to an error.",
+          severity: "Safe",
+          sentenceLevel: [],
+          discourseLevel: [],
+          contentWarnings: []
+        };
+      }
+
+      finalStory.childSafety = {
+        isSafeForChildren: safetyReport.isSafeForChildren,
+        recommendedAgeGroup: safetyReport.recommendedAgeGroup,
+        reasoning: safetyReport.reasoning,
+        severity: safetyReport.severity,
+        sentenceLevel: safetyReport.sentenceLevel,
+        discourseLevel: safetyReport.discourseLevel,
+      };
+      finalStory.contentWarnings = safetyReport.contentWarnings || [];
+      processedStories.push(finalStory);
+    }
+
     // Fetch images for stories concurrently
-    const imagePromises = stories.map(async (story) => {
+    const imagePromises = processedStories.map(async (story) => {
       try {
         const imageResponse = await fetchImageURL(
           String(story?.tag ?? story?.title ?? ""),
@@ -283,7 +351,7 @@ export async function generateWithGeminiStories(
 
     // Fetch cover images for stories sequentially
     const coverImages: string[] = [];
-    for (const story of stories) {
+    for (const story of processedStories) {
       try {
         const promptTitle = story?.title
           ? story.title
@@ -316,7 +384,7 @@ export async function generateWithGeminiStories(
 
     const imageUrls = await Promise.all(imagePromises);
 
-    return stories.map((story, index) => ({
+    return processedStories.map((story, index) => ({
       ...story,
       language,
       imageURL: imageUrls[index],

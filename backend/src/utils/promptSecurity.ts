@@ -29,9 +29,9 @@ const FORBIDDEN_PATTERNS: RegExp[] = [
   /do\s+anything\s+now/i,
   /dan\s+mode/i,
   /developer\s+mode/i,
-  /pretend\s+(you\s+are|to\s+be)\s+(a\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
-  /act\s+as\s+(if\s+you\s+are\s+)?(a\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
-  /you\s+are\s+now\s+(a\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
+  /pretend\s+(you\s+are|to\s+be)\s+(?:an?|the\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
+  /act\s+as\s+(if\s+you\s+are\s+)?(?:an?|the\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
+  /you\s+are\s+now\s+(?:an?|the\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
 
   // Roleplay-style attacks
   /in\s+this\s+(scenario|story|roleplay|game|simulation)\s+.{0,50}(no\s+rules?|no\s+restrictions?|anything\s+goes)/i,

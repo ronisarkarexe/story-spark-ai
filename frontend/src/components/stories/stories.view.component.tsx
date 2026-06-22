@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
 import StoryMoodDashboard from "./StoryMoodDashboard";
 import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
 import { CharacterProfile } from "./stories.utils";
-import React, { useEffect, useState, useRef, useMemo } from "react";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
-<<<<<<< HEAD
 import { useBiasDetectionMutation, IBiasDetectionResponse } from "../../redux/apis/analysis.api";
-=======
 import StoryTranslator from "../translate/StoryTranslator";
->>>>>>> 315ddd66228d1117d34fe086db8ca27819f00531
+import { ChildSafetyPanel } from "./ChildSafetyPanel";
+import DOMPurify from "dompurify";
+import AudioPlayer, { AudioPlayerHandle, NarrationPlaybackState } from "../AudioPlayer";
+import { StorySentenceSegment, buildSentenceSegments } from "./stories.helpers";
+import { useGenerateAlternateEndingsMutation, useGenerateFreeAlternateEndingsMutation } from "../../redux/apis/ai.model.api";
 
 export interface IStories {
   uuid: string;
@@ -23,6 +24,29 @@ export interface IStories {
   content: string;
   tag: string;
   imageURL: string;
+  language?: string;
+  genre?: string;
+  emotions?: string[];
+  enhancedPrompt?: string;
+  childSafety?: {
+    isSafeForChildren: boolean;
+    recommendedAgeGroup: string;
+    reasoning: string;
+    severity: string;
+    sentenceLevel: {
+      sentence: string;
+      category: string;
+      detail: string;
+      severity: string;
+    }[];
+    discourseLevel: {
+      aspect: string;
+      category: string;
+      detail: string;
+      severity: string;
+    }[];
+  };
+  contentWarnings?: string[];
 }
 
 interface IPost extends IStories {
@@ -49,15 +73,108 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
-<<<<<<< HEAD
   const [biasAnalysis, setBiasAnalysis] = useState<IBiasDetectionResponse | null>(null);
   const [createPost] = useCreatePostMutation();
   const [biasDetection, { isLoading: biasLoading }] = useBiasDetectionMutation();
-=======
   const [showTranslator, setShowTranslator] = useState<boolean>(false);
-  const [createPost] = useCreatePostMutation();
   const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
->>>>>>> 315ddd66228d1117d34fe086db8ca27819f00531
+
+  // Alternate ending state & hooks
+  const [endingsCache, setEndingsCache] = useState<{
+    [uuid: string]: { style: string; ending: string; fullStory: string }[];
+  }>({});
+  const [originalStoryContent, setOriginalStoryContent] = useState<{
+    [uuid: string]: string;
+  }>({});
+  const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
+  const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
+
+  const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
+  const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+
+  const audioPlayerRef = useRef<AudioPlayerHandle | null>(null);
+  const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
+  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+  const isNarrationActive = narrationState === "playing";
+
+  const sentenceSegments = useMemo(() => {
+    return selectedStory ? buildSentenceSegments(selectedStory.content) : [];
+  }, [selectedStory]);
+
+  useEffect(() => {
+    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
+      setOriginalStoryContent((prev) => ({
+        ...prev,
+        [selectedStory.uuid]: selectedStory.content,
+      }));
+    }
+  }, [selectedStory, originalStoryContent]);
+
+  const handleGenerateAlternateEndings = async () => {
+    if (!selectedStory) return;
+    setIsGeneratingEndings(true);
+    const toastId = toast.loading("Generating alternate endings...");
+    try {
+      const payload = {
+        title: selectedStory.title,
+        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
+        tag: selectedStory.tag,
+        language: selectedStory.language || "English",
+      };
+      
+      const generationRequest = isLogin
+        ? generateAlternateEndings(payload)
+        : generateFreeAlternateEndings(payload);
+        
+      const res = await generationRequest.unwrap();
+      if (res && res.data) {
+        setEndingsCache((prev) => ({
+          ...prev,
+          [selectedStory.uuid]: res.data,
+        }));
+        if (res.data.length > 0) {
+          setActiveEndingTab(res.data[0].style);
+        }
+        toast.success("Alternate endings generated successfully!");
+      } else {
+        toast.error("Failed to generate alternate endings.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate alternate endings. Please try again.");
+    } finally {
+      toast.dismiss(toastId);
+      setIsGeneratingEndings(false);
+    }
+  };
+
+  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
+    if (!selectedStory) return;
+    const updatedStory = {
+      ...selectedStory,
+      content: endingData.fullStory,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success(`${endingData.style} applied to story!`);
+  };
+
+  const handleResetEnding = () => {
+    if (!selectedStory) return;
+    const originalContent = originalStoryContent[selectedStory.uuid];
+    if (!originalContent) return;
+    const updatedStory = {
+      ...selectedStory,
+      content: originalContent,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success("Reverted to original story ending!");
+  };
 
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
@@ -255,6 +372,8 @@ const handleGenerateCharacterProfile = async () => {
     );
   }
 
+  if (!selectedStory) return null;
+
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
       <style>
@@ -395,7 +514,7 @@ const handleGenerateCharacterProfile = async () => {
                         key={segment.id}
                         className={isActiveSentence ? "text-slate-100 font-medium transition-colors duration-300" : undefined}
                       >
-                        {rawParts.map((part, partIdx) => {
+                        {rawParts.map((part: string, partIdx: number) => {
                           if (part === "") return null;
                           if (/^\s+$/.test(part)) {
                             return part;
@@ -428,11 +547,10 @@ const handleGenerateCharacterProfile = async () => {
                     );
                   })
                 ) : (
-                  DOMPurify.sanitize(selectedStory.content)
                   (() => {
-                    const rawParts = selectedStory.content.split(/(\s+)/);
+                    const rawParts = DOMPurify.sanitize(selectedStory.content).split(/(\s+)/);
                     let wordOffset = 0;
-                    return rawParts.map((part, partIdx) => {
+                    return rawParts.map((part: string, partIdx: number) => {
                       if (part === "") return null;
                       if (/^\s+$/.test(part)) {
                         return part;
@@ -485,7 +603,7 @@ const handleGenerateCharacterProfile = async () => {
           <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl sm:rounded-3xl shadow-xl p-6 mt-2 relative overflow-hidden">
             <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
             
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-200 dark:border-slate-700/40">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
                   Alternate Endings
@@ -502,12 +620,68 @@ const handleGenerateCharacterProfile = async () => {
                 >
                   <i className="fa-solid fa-rotate-left"></i> Reset to Original
                 </button>
-              {selectedStory ? (
-                <p className="break-words">{selectedStory.content}</p>
-              ) : (
-                <p>No story available. Please generate a story first.</p>
               )}
             </div>
+
+            {!endingsCache[selectedStory.uuid] ? (
+              <div className="flex flex-col items-center justify-center p-6 bg-slate-950/20 rounded-xl border border-dashed border-slate-700/50">
+                <p className="text-sm text-slate-400 mb-4 text-center">
+                  Need a different ending? Generate alternate endings tailored to your story.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleGenerateAlternateEndings}
+                  disabled={isGeneratingEndings}
+                  className="rounded-lg px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isGeneratingEndings ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin" />
+                      <span>Generating Endings...</span>
+                    </>
+                  ) : (
+                    <span>Generate Alternate Endings</span>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-700 mb-4 pb-2">
+                  {endingsCache[selectedStory.uuid].map((ending) => (
+                    <button
+                      key={ending.style}
+                      type="button"
+                      onClick={() => setActiveEndingTab(ending.style)}
+                      className={`pb-2 px-4 text-sm font-semibold transition-all border-b-2 ${
+                        activeEndingTab === ending.style
+                          ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
+                          : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                      }`}
+                    >
+                      {ending.style} Ending
+                    </button>
+                  ))}
+                </div>
+                {endingsCache[selectedStory.uuid]
+                  .filter((ending) => activeEndingTab === ending.style)
+                  .map((ending) => (
+                    <div key={ending.style} className="space-y-4">
+                      <div className="p-4 bg-slate-900/40 border border-slate-700/30 rounded-xl">
+                        <p className="text-sm text-slate-300 leading-relaxed italic">
+                          "{ending.ending}"
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleApplyEnding(ending)}
+                        className="rounded-lg px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                      >
+                        Apply Ending
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
           <div className="mt-6">
   {characterProfiles.length > 0 && (
@@ -582,6 +756,11 @@ const handleGenerateCharacterProfile = async () => {
       </div>
     )}
   </div>
+)}
+
+{/* Child Safety & PG-STORY safety check report */}
+{selectedStory && (
+  <ChildSafetyPanel story={selectedStory} />
 )}
           <div className="mt-7">
             <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">

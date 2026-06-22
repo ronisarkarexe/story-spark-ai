@@ -49,12 +49,16 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     const cursors = quill.getModule('cursors');
     // Store cursors manager reference
     (quillCursorsRef as any).current = cursors;
+    if (typeof window !== "undefined") {
+      (window as any).mockQuill = quill;
+    }
+    (global as any).mockQuill = quill;
 
     // Bind Yjs text to Quill
     const binding = new QuillBinding(ytext, quill);
 
     // Setup awareness for presence
-    const Awareness = require('y-protocols/awareness').Awareness;
+    const { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate } = require('y-protocols/awareness');
     const awareness = new Awareness(ydoc);
     awarenessRef.current = awareness;
     awareness.setLocalStateField('user', {
@@ -125,11 +129,11 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
       socket.emit('awareness', awarenessUpdate);
     };
     awareness.on('update', ({ added, updated, removed }: any) => {
-      const awUpdate = awareness.encodeUpdate(added.concat(updated).concat(removed));
+      const awUpdate = encodeAwarenessUpdate(awareness, added.concat(updated).concat(removed));
       sendAwareness(awUpdate);
     });
     socket.on('awareness', (aw: Uint8Array) => {
-      awareness.applyUpdate(aw);
+      applyAwarenessUpdate(awareness, aw, 'remote');
     });
 
     return () => {

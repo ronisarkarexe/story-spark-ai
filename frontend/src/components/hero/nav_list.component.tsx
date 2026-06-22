@@ -1,11 +1,17 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, X, Menu, ArrowRight } from "lucide-react";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
 
 const NavListComponent = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [glowEnabled, setGlowEnabled] = useState(false);
+  const toggleGlow = () => setGlowEnabled(!glowEnabled);
 
   const handleLogout = () => {
     removeUserInfo();
@@ -235,25 +241,6 @@ const NavListComponent = () => {
           </motion.div>
         )}
       </AnimatePresence>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          {loggedIn ? (
-            <button onClick={handleLogout} className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Logout</button>
-          ) : (
-            <Link to="/login" className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Login</Link>
-          )}
-          <button className="rounded-md px-2 py-1 text-slate-700 lg:hidden dark:text-slate-200" onClick={() => setMenuOpen((v) => !v)}>
-            <i className="fa-solid fa-bars" />
-          </button>
-        </div>
-      </div>
-      {menuOpen && (
-        <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 lg:hidden dark:border-white/10">
-          <NavLink to="/" end className={linkClass}>Home</NavLink>
-          <NavLink to="/explore" className={linkClass}>Explore</NavLink>
-          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
-        </div>
-      )}
     </header>
   );
 };

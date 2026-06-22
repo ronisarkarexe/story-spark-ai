@@ -1,8 +1,24 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import StoriesViewComponent from './stories.view.component';
+
+// --- LocalStorage Polyfill for JSDOM/Node context ---
+const mockStorage: Record<string, string> = {};
+const localStoragePolyfill = {
+  getItem: vi.fn((key: string) => mockStorage[key] || null),
+  setItem: vi.fn((key: string, value: string) => { mockStorage[key] = value; }),
+  removeItem: vi.fn((key: string) => { delete mockStorage[key]; }),
+  clear: vi.fn(() => { for (const k in mockStorage) delete mockStorage[k]; }),
+  length: 0,
+  key: vi.fn((index: number) => Object.keys(mockStorage)[index] || null),
+};
+Object.defineProperty(global, 'localStorage', { value: localStoragePolyfill, writable: true });
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'localStorage', { value: localStoragePolyfill, writable: true });
+}
 
 // --- Cleanup after every single test ---
 afterEach(() => {
@@ -44,6 +60,10 @@ vi.mock('../../redux/apis/ai.model.api', () => ({
 vi.mock('../../redux/apis/post.api', () => ({
   useCreatePostMutation: () => [vi.fn()],
   useDeletePostMutation: () => [vi.fn()],
+}));
+
+vi.mock('../../redux/apis/analysis.api', () => ({
+  useBiasDetectionMutation: () => [vi.fn(), { isLoading: false }],
 }));
 
 vi.mock('../../redux/apis/user.api', () => ({
@@ -100,7 +120,7 @@ describe('StoriesViewComponent - Error Handlers', () => {
 describe('StoriesViewComponent - Core Rendering', () => {
   const mockSetStories = vi.fn();
 
-  it('renders "No stories available." when stories array is empty', () => {
+  it('renders empty state message when stories array is empty', () => {
     render(
       <StoriesViewComponent
         stories={[]}
@@ -108,7 +128,7 @@ describe('StoriesViewComponent - Core Rendering', () => {
         setStories={mockSetStories}
       />
     );
-    expect(screen.getByText('No stories available.')).toBeInTheDocument();
+    expect(screen.getByText('Your AI-generated story will appear here')).toBeInTheDocument();
   });
 
   it('renders the first story correctly when stories are provided', () => {
@@ -119,8 +139,8 @@ describe('StoriesViewComponent - Core Rendering', () => {
         setStories={mockSetStories}
       />
     );
-    expect(screen.getByText('The Great AI Adventure')).toBeInTheDocument();
-    expect(screen.getByText('Once upon a time in a digital world...')).toBeInTheDocument();
+    expect(screen.getAllByText('The Great AI Adventure')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Once upon a time in a digital world...')[0]).toBeInTheDocument();
   });
 });
 
@@ -144,7 +164,7 @@ describe('StoriesViewComponent - Alternate Endings Generation', () => {
       />
     );
 
-    const generateBtn = screen.getByText('Generate Alternate Endings');
+    const generateBtn = screen.getByRole('button', { name: /Generate Alternate Endings/i });
     fireEvent.click(generateBtn);
 
     expect(generateBtn).toBeDisabled();
@@ -173,7 +193,7 @@ describe('StoriesViewComponent - Alternate Endings Generation', () => {
       />
     );
 
-    const generateBtn = screen.getByText('Generate Alternate Endings');
+    const generateBtn = screen.getByRole('button', { name: /Generate Alternate Endings/i });
     fireEvent.click(generateBtn);
 
     await waitFor(() => {

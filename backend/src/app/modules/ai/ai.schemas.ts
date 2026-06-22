@@ -177,3 +177,50 @@ export const BiasDetectionResponseSchema = z.object({
 });
 
 export type BiasDetectionResponse = z.infer<typeof BiasDetectionResponseSchema>;
+
+// ─── Child Safety / PG-STORY Analysis ─────────────────────────────────────────
+
+export const SentenceSafetySchema = z.object({
+  sentence: z.string().min(1),
+  category: z.enum([
+    "Violence & Scariness",
+    "Profanity & Slurs",
+    "Sex & Nudity",
+    "Substance Consumption",
+    "Biases & Discriminatory Language",
+  ]),
+  detail: z.string().min(1),
+  severity: z.enum(["Low", "Medium", "High"]),
+});
+
+export const DiscourseSafetySchema = z.object({
+  aspect: z.enum(["Plot", "Tone", "Implication", "Narrative Structure"]),
+  category: z.enum([
+    "Violence & Scariness",
+    "Profanity & Slurs",
+    "Sex & Nudity",
+    "Substance Consumption",
+    "Biases & Discriminatory Language",
+  ]),
+  detail: z.string().min(1),
+  severity: z.enum(["Low", "Medium", "High"]),
+});
+
+export const ChildSafetyReportSchema = z.object({
+  isSafeForChildren: z.boolean(),
+  recommendedAgeGroup: z.enum([
+    "All Ages",
+    "5-7 years",
+    "8-10 years",
+    "11+ years",
+    "Not suitable for children",
+  ]),
+  reasoning: z.string().min(1),
+  severity: z.enum(["Safe", "Borderline", "Unsafe"]),
+  sentenceLevel: z.array(SentenceSafetySchema),
+  discourseLevel: z.array(DiscourseSafetySchema),
+  contentWarnings: z.array(z.string()),
+});
+
+export type ChildSafetyReport = z.infer<typeof ChildSafetyReportSchema>;
+

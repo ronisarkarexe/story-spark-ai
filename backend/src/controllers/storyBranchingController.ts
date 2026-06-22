@@ -99,16 +99,6 @@ Task:
           "Search for another way",
           "Wait and see what happens",
         ];
-<<<<<<< HEAD
-      } else if (parsed.choices.length < 3) {
-        const tempChoices = [...parsed.choices];
-        while (tempChoices.length < 3) {
-          tempChoices.push(`Option ${tempChoices.length + 1}`);
-        }
-        parsed.choices = tempChoices;
-      } else if (parsed.choices.length > 3) {
-        parsed.choices = parsed.choices.slice(0, 3);
-=======
       } else if (finalChoices.length < 3) {
         finalChoices = [...finalChoices];
         while (finalChoices.length < 3) {
@@ -116,7 +106,6 @@ Task:
         }
       } else if (finalChoices.length > 3) {
         finalChoices = finalChoices.slice(0, 3);
->>>>>>> 315ddd66228d1117d34fe086db8ca27819f00531
       }
       parsed.choices = finalChoices;
 
