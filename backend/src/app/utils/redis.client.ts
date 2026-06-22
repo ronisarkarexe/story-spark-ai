@@ -17,6 +17,7 @@ class DisabledRedisClient implements RedisLike {
     return this;
   }
 
+
   async get() {
     return null;
   }

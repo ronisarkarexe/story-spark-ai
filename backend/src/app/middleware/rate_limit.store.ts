@@ -142,12 +142,13 @@ export const consumeRateLimit = async (
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    logger.error(`Rate limit store error for ${key}: ${message}`);
+    logger.error(`Rate limit store error for ${key}: ${message} - Failing OPEN.`);
+    // IMPORTANT: Fail open so the app can still function in degraded mode if DB is down.
     return {
-      allowed: false,
-      retryAfterSec: STORE_ERROR_RETRY_AFTER_SEC,
-      remaining: 0,
-      resetAt: Date.now() + STORE_ERROR_RETRY_AFTER_SEC * 1000,
+      allowed: true,
+      retryAfterSec: 0,
+      remaining: 1,
+      resetAt: Date.now() + 60000,
     };
   }
 };

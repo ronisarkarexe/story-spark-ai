@@ -27,7 +27,7 @@
     "build:frontend": "npm run build -w story-spark-ai-frontend",
     "typecheck": "npm run typecheck -w story-spark-ai-backend && npm run typecheck -w story-spark-ai-frontend",
     "start:backend": "npm run start -w story-spark-ai-backend",
-    "start:frontend": "npm run start -w story-spark-ai-frontend",
+    "start": "npm run dev",
     "lint": "npm run lint -w story-spark-ai-frontend"
   },
   "packageManager": "pnpm@9.15.9",

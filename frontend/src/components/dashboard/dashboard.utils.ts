@@ -20,7 +20,17 @@ export const menuItems: MenuItem[] = [
       USER_ROLE.WRITER,
     ],
   },
-  
+  {
+    name: "Favorites",
+    icon: "fas fa-bookmark",
+    path: "/bookmarks",
+    roles: [
+      USER_ROLE.USER,
+      USER_ROLE.ADMIN,
+      USER_ROLE.SUPER_ADMIN,
+      USER_ROLE.WRITER,
+    ],
+  },
   {
     name: "Analytics",
     icon: "fas fa-chart-line",
