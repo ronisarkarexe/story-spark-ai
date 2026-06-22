@@ -6,6 +6,7 @@ import {
 import { fetchImageURL } from "../../../utils/image_generation";
 import { generateStoryboardImage } from "../../../utils/storyboard_image_generation";
 import { GenerationAbortedError } from "../../../utils/generation_timeout";
+import { sanitizeJsonText } from "../../../utils/sanitize.util";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
@@ -751,7 +752,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,
