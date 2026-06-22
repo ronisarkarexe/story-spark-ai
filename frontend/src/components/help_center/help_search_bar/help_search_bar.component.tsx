@@ -1,92 +1,23 @@
-import { FC, FormEvent, useEffect, useRef, useState } from "react";
+import React, { FC } from "react";
 
 interface HelpSearchBarProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (next: string) => void;
+  onSubmit?: () => void;
   placeholder?: string;
   resultCount?: number;
   /** Optional handler invoked when the user explicitly submits a search (press Enter or clicks a chip) */
   onSearch?: (value: string) => void;
 }
 
-const HelpSearchBar: FC<HelpSearchBarProps> = ({
-  value,
-  onChange,
-  placeholder = "Search help articles, FAQs, and troubleshooting...",
-  resultCount,
-  onSearch,
-}) => {
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [isFocused, setIsFocused] = useState(false);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const STORAGE_KEY = "recent_help_searches";
-  const MAX_ITEMS = 10;
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setRecentSearches(JSON.parse(raw));
-    } catch (e) {
-      // ignore
-    }
-  }, []);
-
-  const persist = (items: string[]) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch (e) {
-      // ignore
-    }
-  };
-
-  const addRecent = (term: string) => {
-    const trimmed = term.trim();
-    if (!trimmed) return;
-    const existing = recentSearches.filter((s) => s.toLowerCase() !== trimmed.toLowerCase());
-    const next = [trimmed, ...existing].slice(0, MAX_ITEMS);
-    setRecentSearches(next);
-    persist(next);
-  };
-
-  const clearRecent = () => {
-    setRecentSearches([]);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (e) {
-      // ignore
-    }
-    inputRef.current?.focus();
-  };
-
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    onChange(trimmed);
-    addRecent(trimmed);
-    onSearch?.(trimmed);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const trimmed = value.trim();
-      if (!trimmed) return;
-      onChange(trimmed);
-      addRecent(trimmed);
-      onSearch?.(trimmed);
-    }
-  };
-
-  const handleChipClick = (term: string) => {
-    onChange(term);
-    addRecent(term);
-    onSearch?.(term);
+const HelpSearchBar: FC<HelpSearchBarProps> = ({ value, onChange, onSubmit, placeholder = "Search help center", resultCount }) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit?.();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative w-full max-w-3xl mx-auto px-4 sm:px-0 box-border">
+    <form onSubmit={handleSubmit} className="relative w-full max-w-3xl mx-auto">
       <label htmlFor="help-search" className="sr-only">
         Search help center
       </label>
@@ -106,8 +37,8 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
           onBlur={() => setIsFocused(false)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full bg-white border border-slate-300 text-slate-800 placeholder-slate-400 dark:bg-slate-900/40 dark:backdrop-blur-md dark:border-white/10 dark:text-slate-100 dark:placeholder-slate-500 rounded-2xl py-3.5 sm:py-4 pl-11 sm:pl-12 pr-11 sm:pr-12 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 box-border appearance-none [&::-webkit-search-cancel-button]:hidden"
           autoComplete="off"
+          className="w-full bg-white border border-slate-300 text-slate-800 placeholder-slate-400 dark:bg-slate-900/40 dark:backdrop-blur-md dark:border-white/10 dark:text-slate-100 dark:placeholder-slate-500 rounded-2xl py-3.5 sm:py-4 pl-11 sm:pl-12 pr-11 sm:pr-12 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 box-border appearance-none"
         />
 
         {value && (
@@ -117,16 +48,14 @@ const HelpSearchBar: FC<HelpSearchBarProps> = ({
             className="absolute inset-y-0 right-0 pr-4 sm:pr-5 flex items-center text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white transition-colors cursor-pointer"
             aria-label="Clear search"
           >
-            <i className="fas fa-times text-sm sm:text-base" aria-hidden="true"></i>
+            <i className="fas fa-times" aria-hidden="true"></i>
           </button>
         )}
       </div>
 
       {value && resultCount !== undefined && (
-        <p className="mt-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400 text-center font-medium tracking-wide" aria-live="polite">
-          {resultCount === 0
-            ? "No results found — try filtering by different keywords"
-            : `${resultCount} result${resultCount === 1 ? "" : "s"} uncovered inside ecosystem guides`}
+        <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 text-center" aria-live="polite">
+          {resultCount === 0 ? "No results found — try different keywords" : `${resultCount} result${resultCount === 1 ? "" : "s"} found`}
         </p>
       )}
 

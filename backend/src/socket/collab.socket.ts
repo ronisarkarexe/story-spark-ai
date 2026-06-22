@@ -311,7 +311,7 @@ export const setupCollabSocket = (io: Server) => {
               .join("\n");
 
             const prompt = storyContext
-              ? `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${storyContext}\n\nContinuation:`
+              ? `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\n${storyContext}`
               : "Start a collaborative story naturally and creatively in 2-3 sentences. Return ONLY the story text, do not add any quotes, titles, JSON, formatting, or labels.";
 
             const result = await AiModelService.aiModelStoryContinuation({

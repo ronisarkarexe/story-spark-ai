@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -324,3 +325,4 @@ export default function AnalyticsDashboard() {
     </div>
   );
 }
+

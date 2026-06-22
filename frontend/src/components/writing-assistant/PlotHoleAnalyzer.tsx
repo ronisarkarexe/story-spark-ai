@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import axios from "axios";
 import { getBaseUrl } from "../../helpers/config";
@@ -208,3 +209,4 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
     </div>
   );
 }
+

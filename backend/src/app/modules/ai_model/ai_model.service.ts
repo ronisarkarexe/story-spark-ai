@@ -304,37 +304,23 @@ const aiFreeModelChat = async (payload: IChatPayload, signal?: AbortSignal) => {
   }
 };
 
-const generateCharacterProfile = async (story: string) => {
-  try {
-    const characterPrompt = `
-Analyze the following story and extract all important characters.
-
-For each character provide:
-- name
-- role
-- personality
-- strengths
-- weaknesses
-- relationships
-
-Return the response only in JSON array format.
-
-Story:
-${story}
-`;
-
-    const result = await Promise.race([
-      timeoutLimit(30000),
-      generateWithGeminiStories(characterPrompt, 300, 1),
-    ]);
-
-    return result;
-  } catch (error) {
-    throw new ApiError(
-      httpStatus.GATEWAY_TIMEOUT,
-      "Failed to generate character profiles!"
+const aiFreeStoryContinuationMultiple = async (
+  payload: { prompt: string; language?: string; count?: number },
+  signal?: AbortSignal
+) => {
+  const { prompt, language = "English", count = 3 } = payload;
+  const safeCount = Math.min(Math.max(count, 1), 5);
+  const results: { continuation: string }[] = [];
+  for (let i = 0; i < safeCount; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    const result = await raceGenerationWithTimeout(
+      (s) => generateStoryContinuationWithGemini(prompt, language, s),
+      FREE_GENERATION_TIMEOUT_MS,
+      signal
     );
+    results.push({ continuation: result?.continuation ?? "" });
   }
+  return results;
 };
 
 export const AiModelService = {

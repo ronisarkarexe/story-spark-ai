@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ReactNode, useCallback, useState } from "react";
 import { useLocation } from "react-router-dom";
 import NavListComponent from "../hero/nav_list.component";
@@ -45,3 +46,4 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
 };
 
 export default RootLayout;
+

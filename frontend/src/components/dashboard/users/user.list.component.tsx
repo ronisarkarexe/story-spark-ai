@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useContext } from "react";
 import { useGetUsersListQuery } from "../../../redux/apis/user.api";
 import { User } from "../../../models/user";

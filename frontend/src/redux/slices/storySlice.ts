@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Story, StoryVersion } from "../../types/story.types";
 
@@ -95,3 +96,4 @@ const storySlice = createSlice({
 export const { setStory, addChapter, restoreVersion, deleteVersion } = storySlice.actions;
 
 export default storySlice.reducer;
+

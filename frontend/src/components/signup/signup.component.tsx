@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useForm, SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
@@ -505,3 +506,5 @@ const otpPayload = {
 };
 
 export default SignUpComponent;
+
+

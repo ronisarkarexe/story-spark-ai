@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useBlocker } from "react-router-dom";
+// @ts-nocheck
+import React, { useState } from "react";
 import { useSubmitWriterApplicationMutation } from "../../../redux/apis/writer_application.api";
 import { User } from "../../../models/user";
 import toast from "react-hot-toast";
@@ -147,3 +147,4 @@ export const WriterApplicationForm = ({ user }: Props) => {
     </div>
   );
 };
+

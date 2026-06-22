@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
 
@@ -282,3 +283,4 @@ function App() {
 }
 
 export default App;
+

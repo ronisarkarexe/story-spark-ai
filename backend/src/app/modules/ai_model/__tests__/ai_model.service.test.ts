@@ -6,6 +6,14 @@ import {
   raceGenerationWithTimeout,
 } from "../../../../utils/generation_timeout";
 
+jest.mock("../../user/user.model", () => ({
+  User: {
+    findOne: jest.fn(),
+    findOneAndUpdate: jest.fn(),
+    updateOne: jest.fn(),
+  },
+}));
+
 jest.mock("../ai_model.utils", () => ({
   generateWithGeminiStories: jest.fn(),
 }));
@@ -15,21 +23,19 @@ jest.mock("../../../../utils/generation_timeout", () => ({
   raceGenerationWithTimeout: jest.fn(),
 }));
 
-// Mock User to avoid DATABASE_URL check in config
-jest.mock("../../user/user.model", () => ({
-  User: {
-    findOne: jest.fn(),
-    findOneAndUpdate: jest.fn(),
-    updateOne: jest.fn(),
-  },
+jest.mock("../quota.lifecycle", () => ({
+  ...jest.requireActual("../quota.lifecycle"),
+  assertSuccessfulGeneration: jest.fn((result: unknown, message: string) => {
+    if (!Array.isArray(result) || result.length === 0) {
+      const ApiError = jest.requireActual("../../../../errors/api_error").default;
+      throw new ApiError(httpStatus.BAD_GATEWAY, message);
+    }
+  }),
 }));
 
-const mockedGenerate = generateWithGeminiStories as jest.MockedFunction<
-  typeof generateWithGeminiStories
->;
-const mockedRace = raceGenerationWithTimeout as jest.MockedFunction<
-  typeof raceGenerationWithTimeout
->;
+// ↓ both kept on one line to avoid TS multi-line generic parsing bug
+const mockedGenerate = generateWithGeminiStories as jest.MockedFunction<typeof generateWithGeminiStories>;
+const mockedRace = raceGenerationWithTimeout as jest.MockedFunction<typeof raceGenerationWithTimeout>;
 
 const story = {
   title: "x",
@@ -40,9 +46,7 @@ const story = {
 describe("AiModelService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedRace.mockImplementation(async (operation) =>
-      operation({} as AbortSignal)
-    );
+    mockedRace.mockImplementation(async (operation) => operation({} as AbortSignal));
   });
 
   it("returns stories on success without empty-array masking", async () => {
@@ -71,6 +75,26 @@ describe("AiModelService", () => {
       undefined,
       undefined,
       undefined
+    );
+  });
+
+  it("passes the selected genre through to story generation", async () => {
+    mockedGenerate.mockResolvedValue([story]);
+
+    await AiModelService.aiModelGenerate(
+      { prompt: "test", wordLength: 100, numStories: 1, genre: "Horror" },
+      { email: "user@example.com" } as never
+    );
+
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      "test",
+      100,
+      1,
+      "English",
+      expect.anything(),
+      undefined,   // tone
+      "Horror",    // genre
+      undefined    // characters
     );
   });
 
@@ -139,17 +163,14 @@ describe("AiModelService", () => {
     );
 
     expect(mockedGenerate).toHaveBeenCalledWith(
-      "test",   // prompt
-      100,      // wordLength
-      1,        // numStories
-      "English", // language default
+      "test",
+      100,
+      1,
+      "English",
       expect.any(Object), // AbortSignal
-      "Dark",   // tone
-      undefined, // genre
-      undefined  // characters
-
-      undefined,
-      undefined
+      "Dark",             // tone
+      undefined,          // genre
+      undefined           // characters
     );
   });
 
@@ -189,7 +210,7 @@ describe("AiModelService", () => {
       1,
       "English",
       expect.any(Object),
-      undefined, // no tone → undefined, so the util skips the directive
+      undefined,
       undefined,
       undefined
     );

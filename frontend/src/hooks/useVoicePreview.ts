@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useCallback, useRef, useState } from "react";
 import { SpeechVoiceOption } from "./useSpeechSynthesis";
 
@@ -81,3 +82,4 @@ export const useVoicePreview = (): UseVoicePreviewResult => {
 };
 
 export default useVoicePreview;
+

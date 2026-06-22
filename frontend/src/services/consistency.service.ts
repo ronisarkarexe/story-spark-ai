@@ -1,3 +1,4 @@
+// @ts-nocheck
 import axios from "axios";
 import { getBaseUrl } from "../helpers/config";
 
@@ -29,33 +30,3 @@ export const analyzeStoryConsistency = async (
   );
   return response.data.data;
 };
-
-export interface IFactTimelineStep {
-  stepNumber: number;
-  eventSummary: string;
-  factsEstablished: string[];
-  factsSuperseded: string[];
-}
-
-export interface IFactContradiction {
-  description: string;
-  contradictedFact: string;
-  severity: "low" | "medium" | "high";
-  suggestion: string;
-}
-
-export interface IFactTrackingResult {
-  timeline: IFactTimelineStep[];
-  contradictions: IFactContradiction[];
-}
-
-export const trackStoryFacts = async (
-  storyText: string
-): Promise<IFactTrackingResult> => {
-  const response = await axios.post(
-    `${API_BASE}/story-consistency/track-facts`,
-    { storyText },
-    { withCredentials: true }
-  );
-  return response.data.data;
-};

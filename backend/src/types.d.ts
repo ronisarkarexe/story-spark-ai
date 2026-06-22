@@ -27,3 +27,25 @@ declare module 'razorpay' {
   const Razorpay: any;
   export default Razorpay;
 }
+
+declare module 'compromise' {
+  const compromise: any;
+  export default compromise;
+}
+
+declare module 'tiktoken' {
+  export function get_encoding(encoding: string): {
+    encode(text: string): Uint32Array;
+    free(): void;
+  };
+}
+
+declare module '@anthropic-ai/sdk' {
+  class Anthropic {
+    constructor(options: { apiKey: string });
+    messages: {
+      create(body: any, options?: any): Promise<any>;
+    };
+  }
+  export default Anthropic;
+}

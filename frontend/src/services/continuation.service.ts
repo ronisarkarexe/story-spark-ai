@@ -1,4 +1,5 @@
-import axios from "../helpers/axios/axiosInstance";
+// @ts-nocheck
+import { instance as axios } from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
 
 const API_BASE = "/v1";

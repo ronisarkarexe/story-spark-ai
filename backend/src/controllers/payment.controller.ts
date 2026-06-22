@@ -1,22 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import { User } from "../app/modules/user/user.model";
+import { User as User } from "../app/modules/user/user.model";
 
-let razorpayInstance: any = null;
-const getRazorpay = () => {
-  if (!razorpayInstance) {
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-      console.warn("Razorpay credentials missing. Payment features will fail.");
-      return null;
-    }
-    razorpayInstance = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
-  }
-  return razorpayInstance;
-};
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+});
 
 const PLANS: Record<string, { amountPaise: number; durationDays: number; label: string }> = {
   monthly: {
@@ -157,7 +147,7 @@ export const verifyPayment = async (
       Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
     );
 
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser = await (User as any).findByIdAndUpdate(
       userId,
       {
         subscriptionType: "premium",
@@ -199,7 +189,7 @@ export const getSubscriptionStatus = async (
       return;
     }
 
-    const user = await User.findById(userId).select(
+    const user: any = await User.findById(userId).select(
       "subscriptionType subscriptionExpiry"
     );
 

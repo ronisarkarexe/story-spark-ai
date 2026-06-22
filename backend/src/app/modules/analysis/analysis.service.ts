@@ -132,13 +132,12 @@ const getDashboardAnalysis = async (userId: string, role: string) => {
     for (const entry of topicCountAgg) {
       topicCount[entry._id] = entry.count;
     }
-
     return {
       role,
       writerStats: {
         totalReaders,
         totalPosts,
-        subscriptionStatus: user.subscriptionType.toUpperCase(),
+        subscriptionStatus: user.subscriptionType?.toUpperCase() || SUBSCRIPTION_TYPE.FREE,
         applicationStatus,
         gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
       },
@@ -153,10 +152,11 @@ const getDashboardAnalysis = async (userId: string, role: string) => {
   return {
     role,
     userStats: {
-      subscriptionStatus: user.subscriptionType.toUpperCase(),
+      subscriptionStatus: user.subscriptionType?.toUpperCase() || SUBSCRIPTION_TYPE.FREE,
       applicationStatus,
       gamification: user.gamification || { xp: 0, level: 1, streak: 0, badges: [] },
-    }
+    },
+    status: user.status || USER_STATUS.ACTIVE,
   };
 };
 
