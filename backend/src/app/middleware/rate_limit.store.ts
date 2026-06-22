@@ -123,8 +123,9 @@ export const consumeRateLimit = async (
     return { allowed: true, retryAfterSec: 0 };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    logger.error(`Rate limit store error for ${key}: ${message}`);
-    return { allowed: false, retryAfterSec: STORE_ERROR_RETRY_AFTER_SEC };
+    logger.error(`Rate limit store error for ${key}: ${message} - Failing OPEN.`);
+    // IMPORTANT: Fail open so the app can still function in degraded mode if DB is down.
+    return { allowed: true, retryAfterSec: 0 };
   }
 };
 

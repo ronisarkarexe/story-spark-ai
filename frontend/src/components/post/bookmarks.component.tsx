@@ -26,7 +26,26 @@ const BookmarksComponent = () => {
     setSize(pageSize);
   };
 
-  const allPosts: Post[] = (data?.posts ?? []) as Post[];
+  const [offlinePosts, setOfflinePosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    const fetchOffline = () => {
+      try {
+        const data = localStorage.getItem("story_spark_offline_bookmarks");
+        if (data) setOfflinePosts(JSON.parse(data));
+      } catch (e) {}
+    };
+    fetchOffline();
+    window.addEventListener("offline_bookmarks_changed", fetchOffline);
+    return () => window.removeEventListener("offline_bookmarks_changed", fetchOffline);
+  }, []);
+
+  // Merge DB bookmarks and Offline bookmarks uniquely
+  const dbPosts: Post[] = (data?.posts ?? []) as Post[];
+  const mergedPostsMap = new Map();
+  dbPosts.forEach((p) => mergedPostsMap.set(p._id, p));
+  offlinePosts.forEach((p) => mergedPostsMap.set(p._id, p));
+  const allPosts = Array.from(mergedPostsMap.values());
 
   const [activeTab, setActiveTab] = useState<"posts" | "generated">("posts");
   const [sessionStories, setSessionStories] = useState<IStories[]>(() => getSessionBookmarks());
