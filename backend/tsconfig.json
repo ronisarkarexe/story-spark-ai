@@ -1,4 +1,8 @@
 {
+  "paths": {
+  "@utils/*": ["src/utils/*"],
+  "@app/*": ["src/app/*"]
+},
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "src/**/__tests__/**"],
   "compilerOptions": {
