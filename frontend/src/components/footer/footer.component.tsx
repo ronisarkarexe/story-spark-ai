@@ -315,7 +315,6 @@ const FooterComponent: React.FC = () => {
                   <span className="text-white/12">|</span>
                 )}
               </React.Fragment>
-
             ))}
           </div>
         </div>

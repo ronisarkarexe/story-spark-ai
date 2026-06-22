@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState, type MouseEvent } from "react";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -8,7 +7,7 @@ import Typewriter from "./typewriter.component";
 
 gsap.registerPlugin(useGSAP);
 
-const containerVariants = {
+const containerVariants: any = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -19,12 +18,12 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: any = {
   hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
     y: 0, 
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } as const 
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
   },
 };
 
@@ -317,7 +316,7 @@ const HeroSectionComponent = () => {
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
           </p>
           
-          <div className="w-full box-border flex flex-col items-center justify-center">
+          <motion.div className="w-full box-border flex flex-col items-center justify-center">
             <div className="relative max-w-3xl w-full box-border">
               <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
                 <Link to="/stories" className="w-full sm:w-auto">
@@ -334,7 +333,7 @@ const HeroSectionComponent = () => {
                 </Link>
               </div>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
 
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">

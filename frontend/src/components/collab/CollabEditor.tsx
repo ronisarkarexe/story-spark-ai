@@ -20,6 +20,9 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
   const socketRef = useRef<Socket | null>(null);
   const awarenessRef = useRef<any>(null);
   const quillCursorsRef = useRef<any>(null);
+  const bindingRef = useRef<any>(null);
+  const persistenceRef = useRef<any>(null);
+  const quillRef_editor = useRef<any>(null);
 
   useEffect(() => {
     if (!quillRef.current) return;
@@ -31,6 +34,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
 
     // IndexedDB persistence for offline support
     const persistence = new IndexeddbPersistence(storyId, ydoc);
+    persistenceRef.current = persistence;
     persistence.once('synced', () => {
       // Document is loaded from IndexedDB or empty
     });
@@ -46,12 +50,14 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
         toolbar: true,
       },
     });
+    quillRef_editor.current = quill;
     const cursors = quill.getModule('cursors');
     // Store cursors manager reference
     (quillCursorsRef as any).current = cursors;
 
     // Bind Yjs text to Quill
     const binding = new QuillBinding(ytext, quill);
+    bindingRef.current = binding;
 
     // Setup awareness for presence
     const Awareness = require('y-protocols/awareness').Awareness;
@@ -124,17 +130,39 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     const sendAwareness = (awarenessUpdate: Uint8Array) => {
       socket.emit('awareness', awarenessUpdate);
     };
-    awareness.on('update', ({ added, updated, removed }: any) => {
+    const handleAwarenessUpdate = ({ added, updated, removed }: any) => {
       const awUpdate = awareness.encodeUpdate(added.concat(updated).concat(removed));
       sendAwareness(awUpdate);
-    });
+    };
+    awareness.on('update', handleAwarenessUpdate);
     socket.on('awareness', (aw: Uint8Array) => {
       awareness.applyUpdate(aw);
     });
 
     return () => {
+      // Remove all event listeners
+      quill.off('selection-change', handleSelectionChange);
       ydoc.off('update', sendUpdate);
+      awareness.off('update', renderRemoteCursors);
+      awareness.off('update', handleAwarenessUpdate);
+      socket.off('sync');
+      socket.off('update');
+      socket.off('awareness');
+
+      // Disconnect socket
       socket.disconnect();
+
+      // Destroy binding (must be before destroying ydoc)
+      binding.destroy();
+
+      // Destroy awareness
+      awareness.destroy();
+
+      // Close IndexedDB connection
+      persistence.destroy();
+
+      // Destroy Yjs document
+      ydoc.destroy();
     };
   }, [storyId, userId, username, userColor]);
 

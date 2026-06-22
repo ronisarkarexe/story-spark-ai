@@ -3,14 +3,13 @@ import {
   Globe,
   GitPullRequest,
   Users,
+  Sparkles,
+  Trophy,
+  Zap,
   Star,
   ExternalLink,
   Code2,
-  Trophy,
-  GitBranch,
-  MessageCircle,
 } from "lucide-react";
-
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -23,7 +22,7 @@ interface Contributor {
   contributions: number;
 }
 
-/* ───────────── Floating Particles Background ───────────── */
+/* ──── Floating Particles Background ──── */
 const ParticleField = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -94,8 +93,9 @@ const ParticleField = () => {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `hsla(240, 60%, 70%, ${0.06 * (1 - dist / 100)
-              })`;
+            ctx.strokeStyle = `hsla(240, 60%, 70%, ${
+              0.06 * (1 - dist / 100)
+            })`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -120,7 +120,7 @@ const ParticleField = () => {
   );
 };
 
-/* ───────────── Animated Number Counter ───────────── */
+/* ──── Animated Number Counter ──── */
 const AnimatedCounter = ({
   value,
   suffix = "",
@@ -162,7 +162,7 @@ const AnimatedCounter = ({
   return <span ref={ref}>0{suffix}</span>;
 };
 
-/* ───────────── Contributor Card with 3D Tilt ───────────── */
+/* ──── Contributor Card with 3D Tilt ──── */
 const ContributorCard = ({
   contributor,
   index,
@@ -289,8 +289,9 @@ const ContributorCard = ({
         background: isTop3
           ? `linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,27,75,0.7) 50%, rgba(15,23,42,0.9) 100%)`
           : `linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(20,20,50,0.5) 100%)`,
-        border: `1px solid ${isTop3 ? rank!.borderColor : "rgba(148,163,184,0.08)"
-          }`,
+        border: `1px solid ${
+          isTop3 ? rank!.borderColor : "rgba(148,163,184,0.08)"
+        }`,
         transformStyle: "preserve-3d",
         transition: "box-shadow 0.3s ease",
       }}
@@ -319,10 +320,11 @@ const ContributorCard = ({
       {/* Avatar */}
       <div className="relative mb-5" style={{ transform: "translateZ(30px)" }}>
         <div
-          className={`absolute inset-[-4px] rounded-full transition-opacity duration-500 ${isTop3
+          className={`absolute inset-[-4px] rounded-full transition-opacity duration-500 ${
+            isTop3
               ? "opacity-40 group-hover:opacity-70"
               : "opacity-0 group-hover:opacity-30"
-            }`}
+          }`}
           style={{
             background: isTop3 ? rank!.glow : "rgba(99,102,241,0.4)",
             filter: "blur(12px)",
@@ -381,9 +383,7 @@ const ContributorCard = ({
   );
 };
 
-/* ═══════════════════════════════════════════════════════════
-   MAIN COMPONENT
-   ═══════════════════════════════════════════════════════════ */
+/* ──── MAIN COMPONENT ──── */
 const ContributorsComponent = () => {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -393,25 +393,24 @@ const ContributorsComponent = () => {
   const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchContributors = async () => {
+    (async () => {
       try {
-        const response = await fetch(
+        const res = await fetch(
           "https://api.github.com/repos/ronisarkarexe/story-spark-ai/contributors"
         );
-        const data = await response.json();
+        const data = await res.json();
         if (Array.isArray(data)) {
-          const filtered = data.filter(
-            (c: Contributor) => c.contributions >= 3
-          );
-          setContributors(filtered);
+          const sorted = data
+            .filter((c: Contributor) => c.contributions > 0)
+            .sort((a: Contributor, b: Contributor) => b.contributions - a.contributions);
+          setContributors(sorted);
         }
-      } catch (error) {
-        console.error("Failed to fetch contributors:", error);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
-    };
-    fetchContributors();
+    })();
   }, []);
 
   const totalPRs = contributors.reduce(
@@ -427,7 +426,6 @@ const ContributorsComponent = () => {
   useEffect(() => {
     if (loading) return;
 
-    // Small delay to let the DOM settle after state change
     const timer = setTimeout(() => {
       // HERO animations
       if (heroRef.current) {
@@ -662,7 +660,7 @@ const ContributorsComponent = () => {
           </div>
 
           <p className="hero-subtitle mt-8 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            The brilliant minds behind StorySparkAI — building, iterating, and
+            The brilliant minds behind StorySparkAI - building, iterating, and
             pushing the boundaries of AI-powered storytelling.
           </p>
 
