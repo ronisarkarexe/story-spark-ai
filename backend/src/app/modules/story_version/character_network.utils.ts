@@ -1,5 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import config from "../../../config";
+import {
+  safeParseAIResponse,
+  CharacterNetworkResponseSchema,
+  type CharacterNetworkResponse,
+} from "../ai";
 
 export interface ICharacter {
   id: string;
@@ -216,16 +221,15 @@ Return ONLY valid JSON format containing:
 
     const response = await model.generateContent(prompt);
     const text = response.response.text();
-    const trimmed = text.trim();
-    const cleanJson = trimmed.startsWith("```")
-      ? trimmed.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim()
-      : trimmed;
 
-    const parsed = JSON.parse(cleanJson);
-    if (Array.isArray(parsed?.characters) && Array.isArray(parsed?.relationships)) {
-      return parsed as ICharacterNetworkResponse;
-    }
-    throw new Error("Invalid structure returned from Gemini");
+    const parsed = safeParseAIResponse<CharacterNetworkResponse>(
+      text,
+      CharacterNetworkResponseSchema,
+      extractCharacterNetworkOffline(content),
+      { label: "Gemini character network" }
+    );
+
+    return parsed;
   } catch (error) {
     console.error("[AI] Gemini character network analysis failed:", error);
     console.log("[AI] Executing fallback offline character network extraction.");

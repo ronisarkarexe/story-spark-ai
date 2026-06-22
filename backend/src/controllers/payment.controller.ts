@@ -37,15 +37,22 @@ export const createOrder = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { plan } = req.body as { plan?: string };
-    
-    if (!plan || !PLANS[plan]) {
-      res.status(400).json({
-        success: false,
-        error: `Invalid plan. Valid options: ${Object.keys(PLANS).join(", ")}.`,
-      });
-      return;
-    }
+const userId = (req as any).user?._id;
+
+if (!userId) {
+   res.status(401).json({ success: false, message: "Unauthorized" });
+   return;
+}
+
+const { plan } = req.body as { plan?: string };
+
+if (!plan || !PLANS[plan]) {
+ res.status(400).json({
+  success: false,
+  error: `Invalid plan. Valid options: ${Object.keys(PLANS).join(", ")}.`,
+});
+return;
+}
 
     const selectedPlan = PLANS[plan];
 
@@ -106,10 +113,12 @@ export const verifyPayment = async (
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    const isSignatureValid = crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, "hex"),
-      Buffer.from(razorpay_signature, "hex")
-    );
+    const expectedBuffer = Buffer.from(expectedSignature, "hex");
+    const providedBuffer = Buffer.from(razorpay_signature, "hex");
+
+    const isSignatureValid =
+      expectedBuffer.length === providedBuffer.length &&
+      crypto.timingSafeEqual(expectedBuffer, providedBuffer);
 
     if (!isSignatureValid) {
       res.status(400).json({
@@ -137,7 +146,7 @@ export const verifyPayment = async (
     }
 
     const selectedPlan = PLANS[plan];
-    const userId = (req as Request & { user?: { _id: string } }).user?._id;
+    const userId = req.user?._id;
 
     if (!userId) {
       res.status(401).json({ success: false, error: "Unauthorised. Please log in." });
@@ -183,7 +192,7 @@ export const getSubscriptionStatus = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = (req as Request & { user?: { _id: string } }).user?._id;
+    const userId = req.user?._id;
 
     if (!userId) {
       res.status(401).json({ success: false, error: "Unauthorised." });

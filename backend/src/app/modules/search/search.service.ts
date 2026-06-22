@@ -39,6 +39,7 @@ const searchStories = async (
   }
 
   const sortStage: Record<string, 1 | -1 | { $meta: "textScore" }> =
+  const sortStage: any =
     sortBy === "date"
       ? { createdAt: -1 }
       : sortBy === "popularity"

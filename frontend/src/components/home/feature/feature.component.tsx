@@ -61,7 +61,7 @@ const FeatureComponent = () => {
       </h2>
 
       {posts.length > 0 ? (
-        <div className="flex gap-5 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-2 md:gap-8 md:overflow-visible md:pb-0 xl:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
           {posts.map((post: Post) => {
             const postUrl = `${window.location.origin}/post/${post._id}`;
 
@@ -102,7 +102,7 @@ const FeatureComponent = () => {
                             </span>
 
                             <p className="text-xs text-purple-400 font-medium flex items-center gap-1">
-                              <i className="fa-regular fa-clock"></i> {calculateReadingTime(post.content)} min read
+                              <i className="fa-solid fa-clock"></i> {calculateReadingTime(post.content)} min read
                             </p>
                           </div>
                         </div>

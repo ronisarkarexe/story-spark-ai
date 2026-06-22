@@ -235,12 +235,7 @@ html, body {
   padding-block: clamp(3rem, 7vw, 5.5rem);
 }
 
-.story-section-heading {
-  color: #f8fafc;
-  font-size: clamp(1.875rem, 4vw, 2.75rem);
-  font-weight: 800;
-  line-height: 1.08;
-}
+
 
 .story-section-copy {
   color: #94a3b8;
@@ -788,7 +783,7 @@ body {
 *,
 *::before,
 *::after {
-  box-sizing: inherit;
+  box-sizing: border-box;
 }
 
 button,
@@ -1604,7 +1599,14 @@ input::-ms-clear {
 
 input::-webkit-contacts-auto-fill-button,
 input::-webkit-credentials-auto-fill-button {
-  visibility: hidden;
+  visibility: hidden !important;
   display: none !important;
-  pointer-events: none;
+  pointer-events: none !important;
 }
+
+::-webkit-credentials-auto-fill-button {
+  visibility: hidden !important;
+  display: none !important;
+  pointer-events: none !important;
+}
+

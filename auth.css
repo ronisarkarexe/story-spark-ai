@@ -471,9 +471,12 @@ input[type="password"] {
     transition: background-color 9999s ease-in-out 0s;
 }
 
-.input-icon-wrapper {
+.input-icon-wrapper,
+.ds-input-group {
     position: relative;
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 
     color:#a78bfa;
 
@@ -653,12 +656,6 @@ input[type="password"] {
 .ds-btn-submit:hover {
     box-shadow: 0 0 42px rgba(249, 115, 22, 0.35), 0 10px 26px rgba(0, 0, 0, 0.3);
     transform: translateY(-1px);
-
-        transform:
-            translateY(0)
-            scale(1);
-    }
- 
 }
 
 /* ──────────────────────────────────────────────
@@ -741,7 +738,7 @@ input[type="password"] {
     line-height: 1.45;
     color: #ffb4ab;
     display: none;
-
+}
 
 
 /* ── Centered Layout Panel Constraints ── */
@@ -862,7 +859,10 @@ input:focus{
  
 .ds-feedback.match::before {
     content: "✓";
-    font-weight: 700; ──────────────────────────────────────────────
+    font-weight: 700;
+}
+
+/* ──────────────────────────────────────────────
    TERMS BOX
 ────────────────────────────────────────────── */
 
@@ -995,7 +995,8 @@ input:focus{
     background: rgba(255, 255, 255, 0.05);
     color: #e1e2ea;
     padding: 0 16px;
- 
+}
+
 .ds-btn-submit:hover{
 
     transform:
@@ -1154,7 +1155,13 @@ input:focus{
 .ds-btn-google{
     width:100%;
     max-width:100%;
+    min-width:0;
     box-sizing:border-box;
+}
+
+.auth-fields,
+.auth-form > * {
+    min-width: 0;
 }
 
 @media(max-width:1100px){
