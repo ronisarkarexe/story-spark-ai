@@ -805,8 +805,16 @@ const StoriesComponent = () => {
               <div className="!rounded-button bg-gray-100/80 hover:bg-gray-200/80 text-slate-900 dark:bg-white/20 dark:hover:bg-white/30 dark:text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap border border-gray-200 dark:border-white/10">
                 <i className="fa-solid fa-left-long"></i> {text.back}
               </div>
-            </Link>
+            )}
+
+            <div className="flex items-center justify-center py-20">
+              <StoryGeneratingAnimation />
+            </div>
           </div>
+        </div>
+      </div>
+    );
+  }
 
           {!login && (
             <div className="pt-2 text-center">

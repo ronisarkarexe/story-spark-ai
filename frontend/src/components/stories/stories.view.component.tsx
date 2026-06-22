@@ -1,5 +1,11 @@
+import React, { useEffect, useState } from "react";
+import CharacterProfileCard from "./CharacterProfileCard";
+import StoryGenreTransformation from "./StoryGenreTransformation";
+import StoryMoodDashboard from "./StoryMoodDashboard";
+import StoryTitleSuggestions from "./StoryTitleSuggestions";
+import StoryVersionHistory from "./StoryVersionHistory";
+import { CharacterProfile } from "./stories.utils";
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import DOMPurify from "dompurify";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
@@ -515,6 +521,27 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
   };
+
+  const handleRestoreVersion = (restoredContent: string) => {
+  if (!selectedStory) return;
+
+  const updatedStory = {
+    ...selectedStory,
+    content: restoredContent,
+  };
+
+  setSelectedStory(updatedStory);
+
+  setStories(
+    stories.map((story) =>
+      story.uuid === selectedStory.uuid
+        ? updatedStory
+        : story
+    )
+  );
+
+  toast.success("Story version restored successfully!");
+};
 
   const handleTopicClick = (index: number) => {
     setTopics((currentTopics) =>

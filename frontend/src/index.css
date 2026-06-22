@@ -235,12 +235,7 @@ html, body {
   padding-block: clamp(3rem, 7vw, 5.5rem);
 }
 
-.story-section-heading {
-  color: #f8fafc;
-  font-size: clamp(1.875rem, 4vw, 2.75rem);
-  font-weight: 800;
-  line-height: 1.08;
-}
+
 
 .story-section-copy {
   color: #94a3b8;
