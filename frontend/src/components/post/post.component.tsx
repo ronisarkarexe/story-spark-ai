@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useGetPostListsQuery, useGetGenresQuery } from "../../redux/apis/post.api";
 import type { Post } from "../../models/post";
 import { useDebounced } from "../../hooks/global";
@@ -16,13 +16,15 @@ export const ExploreComponent = () => {
   const [featuredPost, setFeaturedPost] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   
- useEffect(() => {
-  setSearchTerm("");
-  setSelectedTags([]);
-  setPage(1);
-  setSortBy("createdAt");
-  setSortOrder("desc");
-}, []);
+  const location = useLocation();
+
+  useEffect(() => {
+    setSearchTerm("");
+    setSelectedTags([]);
+    setPage(1);
+    setSortBy("createdAt");
+    setSortOrder("desc");
+  }, [location.key]);
 
   const query: Record<string, string | number> = {
     page,
