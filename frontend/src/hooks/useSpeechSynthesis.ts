@@ -1,9 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-type WordRange = {
-  start: number;
-  end: number;
-};
+import { useState } from 'react';
 
 export interface SpeechVoiceOption {
   id: string;
@@ -279,8 +274,14 @@ export const useSpeechSynthesis = (
     if (synthRef.current) {
       synthRef.current.cancel();
     }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.onend = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  };
 
-    utteranceRef.current = null;
+  const stop = () => {
+    window.speechSynthesis.cancel();
     setIsSpeaking(false);
     setIsPaused(false);
     setCurrentWordIndex(0);

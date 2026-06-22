@@ -49,7 +49,7 @@ export interface User {
 
   posts: string[];
 
-  hasAppliedForWriter: boolean;
+  isApplyForWriter: boolean;
 
   createdAt: string;
   updatedAt: string;

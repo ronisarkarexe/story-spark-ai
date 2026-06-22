@@ -37,6 +37,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
+  const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
 
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
@@ -74,6 +75,27 @@ useEffect(() => {
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
   };
+
+  const handleRestoreVersion = (restoredContent: string) => {
+  if (!selectedStory) return;
+
+  const updatedStory = {
+    ...selectedStory,
+    content: restoredContent,
+  };
+
+  setSelectedStory(updatedStory);
+
+  setStories(
+    stories.map((story) =>
+      story.uuid === selectedStory.uuid
+        ? updatedStory
+        : story
+    )
+  );
+
+  toast.success("Story version restored successfully!");
+};
 
   const handleTopicClick = (index: number) => {
     const updatedTopics = [...topics];
@@ -312,7 +334,24 @@ useEffect(() => {
           </div>
         </div>
       </div>
+      {showGenreTransformation && selectedStory && (
+        <StoryGenreTransformation
+          story={{
+            title: selectedStory.title,
+            content: selectedStory.content,
+          }}
+          onClose={() => setShowGenreTransformation(false)}
+        />
+      )}
       <Toaster position="top-right" reverseOrder={false} />
+
+      {showTranslator && selectedStory && (
+        <StoryTranslator
+          story={selectedStory}
+          isLogin={isLogin}
+          onClose={() => setShowTranslator(false)}
+        />
+      )}
     </div>
   );
 };
