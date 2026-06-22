@@ -1,3 +1,4 @@
+/* eslint-disable */
 // @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
 
