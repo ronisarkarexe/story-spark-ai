@@ -6,9 +6,21 @@
 let currentMode = 'signin';
 
 // ── Google Identity Services (GIS) Client ID ──
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = (typeof window !== 'undefined' && window.VITE_GOOGLE_CLIENT_ID) ? window.VITE_GOOGLE_CLIENT_ID : 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
 
 let isSubmitting = false;
+
+/**
+ * Close the login/signup page and return the user to their previous location.
+ * Falls back to the home page ('/') if there is no browser history to go back to.
+ */
+function handleClose() {
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = '/';
+    }
+}
 
 /* ── DOM Init & Global Handler Registrations ── */
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,8 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Initialize dynamic Google Sign-In text if present
     const googleBtnText = document.getElementById('google-btn-text');
     if (googleBtnText) {
-        googleBtnText.innerText = currentMode === 'signup' ? 'sign in with Google' : 'Sign in with Google';
-    }
+googleBtnText.innerText = currentMode === 'signup' ? 'Sign up with Google' : 'Sign in with Google';    }
 
     // 3. Initialize Particle Canvas System
     initParticleSystem();
@@ -42,6 +53,7 @@ function initInlineValidation() {
     const nameField = document.getElementById('name-field');
     const emailField = document.getElementById('email-field');
     const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
 
     if (nameField) {
         nameField.addEventListener('blur', () => validateName(true));
@@ -61,9 +73,21 @@ function initInlineValidation() {
         passwordField.addEventListener('blur', () => validatePassword(true));
         passwordField.addEventListener('input', () => {
             updatePasswordStrengthUI(passwordField.value || '');
+            updatePasswordChecklist(passwordField.value || '');
             if (passwordField.getAttribute('aria-invalid') === 'true') validatePassword(true);
+            if (confirmPasswordField && confirmPasswordField.value) {
+                validateConfirmPassword(false);
+            }
         });
+        
         updatePasswordStrengthUI(passwordField.value || '');
+    }
+
+    if (confirmPasswordField) {
+        confirmPasswordField.addEventListener('blur', () => validateConfirmPassword(true));
+        confirmPasswordField.addEventListener('input', () => {
+            validateConfirmPassword(false);
+        });
     }
 }
 
@@ -122,8 +146,7 @@ function validateEmail(showInline) {
     const value = (emailField.value || '').trim();
     let message = '';
     if (!value) message = 'Please enter your email address.';
-    else if (!emailField.checkValidity()) message = 'Enter a valid email address (e.g., name@example.com).';
-
+else if (!emailField.checkValidity()) message = 'Please enter a valid email address.';
     if (showInline) setFieldError('email-field', 'email-error', message);
     return !message;
 }
@@ -138,6 +161,30 @@ function getPasswordScore(password) {
     return Math.min(score, 4);
 }
 
+
+function updatePasswordChecklist(password) {
+    const checks = {
+        "rule-length": password.length >= 8,
+        "rule-upper": /[A-Z]/.test(password),
+        "rule-lower": /[a-z]/.test(password),
+        "rule-number": /\d/.test(password),
+        "rule-special": /[^A-Za-z0-9]/.test(password),
+    };
+
+    Object.entries(checks).forEach(([id, passed]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.textContent =
+            (passed ? "✓ " : "✗ ") +
+            el.textContent.replace(/^✓ |^✗ /, "");
+
+        el.classList.toggle("text-green-400", passed);
+        el.classList.toggle("text-red-400", !passed);
+    });
+}
+
+
 function updatePasswordStrengthUI(password) {
     const bar = document.getElementById('password-meter-bar');
     const strength = document.getElementById('password-strength');
@@ -151,14 +198,16 @@ function updatePasswordStrengthUI(password) {
         if (!password) {
             strength.textContent = '';
         } else if (score <= 1) {
-            strength.textContent = 'Strength: weak';
-        } else if (score === 2) {
-            strength.textContent = 'Strength: fair';
-        } else if (score === 3) {
-            strength.textContent = 'Strength: good';
-        } else {
-            strength.textContent = 'Strength: strong';
-        }
+    strength.textContent = 'Strength: Weak';
+} else if (score === 2) {
+    strength.textContent = 'Strength: Fair';
+} else if (score === 3) {
+    strength.textContent = 'Strength: Good';
+} else if (score === 4 && password.length >= 12) {
+    strength.textContent = 'Strength: Very Strong';
+} else {
+    strength.textContent = 'Strength: Strong';
+}
     }
 }
 
@@ -168,27 +217,90 @@ function validatePassword(showInline) {
 
     const value = passwordField.value || '';
     let message = '';
-    if (!value) message = 'Please enter your password.';
-    else if (value.length < 8) message = 'Password must be at least 8 characters.';
-    else if (!/[A-Za-z]/.test(value) || !/\d/.test(value)) message = 'Use a mix of letters and numbers.';
 
-    if (showInline) setFieldError('password-field', 'password-error', message);
+    if (!value)
+        message = 'Please enter your password.';
+    else if (value.length < 8)
+        message = 'Password must be at least 8 characters.';
+    else if (!/[A-Z]/.test(value))
+        message = 'Include at least one uppercase letter.';
+    else if (!/[a-z]/.test(value))
+        message = 'Include at least one lowercase letter.';
+    else if (!/\d/.test(value))
+        message = 'Include at least one number.';
+    else if (!/[^A-Za-z0-9]/.test(value))
+        message = 'Include at least one special character.';
+
+    if (showInline)
+        setFieldError('password-field', 'password-error', message);
+
     return !message;
+}
+
+function validateConfirmPassword(showInline) {
+    const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
+    if (!confirmPasswordField || currentMode !== 'signup') return true;
+
+    const password = (passwordField && passwordField.value) || '';
+    const confirmPassword = confirmPasswordField.value || '';
+    const feedbackEl = document.getElementById('confirm-password-feedback');
+    let message = '';
+    let isMatch = false;
+
+    if (!confirmPassword) {
+        message = '';
+    } else if (password !== confirmPassword) {
+        message = 'Passwords do not match';
+    } else {
+        message = 'Passwords match';
+        isMatch = true;
+    }
+
+    if (feedbackEl) {
+        if (!message) {
+            feedbackEl.classList.remove('is-visible', 'match', 'mismatch');
+            feedbackEl.textContent = '';
+        } else {
+            feedbackEl.classList.add('is-visible');
+            feedbackEl.textContent = message;
+            feedbackEl.classList.remove('match', 'mismatch');
+            feedbackEl.classList.add(isMatch ? 'match' : 'mismatch');
+        }
+    }
+
+    if (showInline) {
+        setFieldError('confirm-password-field', 'confirm-password-error', isMatch ? '' : message);
+    }
+
+    return isMatch || !confirmPassword;
 }
 
 function setSubmitting(submitting) {
     isSubmitting = submitting;
     const submitBtn = document.getElementById('submit-btn');
-    const spinner = document.getElementById('submit-btn-spinner');
+    const spinner = document.getElementById('submit-btn-spinner') || document.getElementById('btn-spinner');
+    const submitBtnText = document.getElementById('submit-btn-text') || document.getElementById('btn-label'); 
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
 
-    if (submitBtn) submitBtn.disabled = submitting;
+    if (submitBtn) {
+        submitBtn.disabled = submitting;
+        submitBtn.classList.toggle('opacity-70', submitting);
+        submitBtn.classList.toggle('cursor-not-allowed', submitting);
+    }
     if (spinner) spinner.classList.toggle('hidden', !submitting);
+    if (submitBtnText) {
+        submitBtnText.textContent = submitting
+            ? 'Processing...'
+            : (currentMode === 'signup' ? 'Create Account' : 'Log In to StorySparkAI');
+    }
     if (emailField) emailField.disabled = submitting;
     if (nameField) nameField.disabled = submitting;
     if (passwordField) passwordField.disabled = submitting;
+    if (confirmPasswordField) confirmPasswordField.disabled = submitting;
 }
 
 /* ── Advanced Particle System (Canvas + Mouse Interactions) ── */
@@ -305,8 +417,9 @@ function toggleAuthMode(mode) {
     setTimeout(() => {
         const signupFields = document.getElementById('signup-fields');
         const nameField = document.getElementById('name-field');
+        const passwordField = document.getElementById('password-field'); // Added for auto-fill fix
         const submitBtn = document.getElementById('submit-btn');
-        const submitBtnText = document.getElementById('submit-btn-text');
+        const submitBtnText = document.getElementById('btn-label') || document.getElementById('submit-btn-text'); // Support both IDs
         const tabSignin = document.getElementById('tab-signin');
         const tabSignup = document.getElementById('tab-signup');
         const forgotPass = document.getElementById('forgot-password-link') || document.querySelector('a[href="#"]');
@@ -317,46 +430,63 @@ function toggleAuthMode(mode) {
             if (signupFields) signupFields.classList.remove('hidden');
             if (nameField) nameField.required = true;
             if (forgotPass) forgotPass.classList.add('invisible');
-            if (submitBtnText) submitBtnText.innerText = 'Create Account';
-            else if (submitBtn) submitBtn.innerText = 'Create Account';
-            if (googleBtnText) googleBtnText.innerText = 'sign in with Google';
+            
+            // Safe Text Target updates to avoid destroying spinner nodes
+            if (submitBtnText) submitBtnText.textContent = 'Sign Up Free';
+            if (googleBtnText) googleBtnText.textContent = 'Continue with Google';
+            
+            // FIX: Dynamic autocomplete switch for password managers
+            if (passwordField) passwordField.setAttribute('autocomplete', 'new-password');
             
             // Tabs styling
-            if (tabSignup) tabSignup.className = "flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300";
-            if (tabSignin) tabSignin.className = "flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
+            if (tabSignup) tabSignup.className = "auth-tab-button flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300 active";
+            if (tabSignin) tabSignin.className = "auth-tab-button flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
             
-            // Bottom link toggle content
+            // FIX: Use javascript void anchors to prevent hard page refreshes on interaction links
             if (navToggle) {
-                navToggle.innerHTML = `Already have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold" href="login.html">Log In</a>`;
+                navToggle.innerHTML = `Already have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signin')">Log In</a>`;
             }
             
-            // Push address bar quietly without reload
             window.history.replaceState(null, '', 'signup.html');
         } else {
             if (signupFields) signupFields.classList.add('hidden');
-            if (nameField) nameField.required = false;
+            if (nameField) {
+                nameField.required = false;
+                nameField.value = ''; // Clear out stale text data
+            }
             if (forgotPass) forgotPass.classList.remove('invisible');
-            if (submitBtnText) submitBtnText.innerText = 'Log In to Story Spark';
-            else if (submitBtn) submitBtn.innerText = 'Log In to Story Spark';
-            if (googleBtnText) googleBtnText.innerText = 'Sign in with Google';
+            
+            // Safe Text Target updates to avoid destroying spinner nodes
+            if (submitBtnText) submitBtnText.textContent = 'Log In to StorySparkAI';
+            if (googleBtnText) googleBtnText.textContent = 'Continue with Google';
+            
+            // FIX: Dynamic autocomplete switch for password managers
+            if (passwordField) passwordField.setAttribute('autocomplete', 'current-password');
             
             // Tabs styling
-            if (tabSignin) tabSignin.className = "flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300";
-            if (tabSignup) tabSignup.className = "flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
+            if (tabSignin) tabSignin.className = "auth-tab-button flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300 active";
+            if (tabSignup) tabSignup.className = "auth-tab-button flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
             
-            // Bottom link toggle content
+            // FIX: Use javascript void anchors to prevent hard page refreshes on interaction links
             if (navToggle) {
-                navToggle.innerHTML = `Don't have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold" href="signup.html">Sign Up</a>`;
+                navToggle.innerHTML = `Don't have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signup')">Sign up free</a>`;
             }
             
-            // Push address bar quietly without reload
             window.history.replaceState(null, '', 'login.html');
         }
 
+        // Clean layout state tracking elements
         setAlert('', '');
         setFieldError('name-field', 'name-error', '');
         setFieldError('email-field', 'email-error', '');
         setFieldError('password-field', 'password-error', '');
+        setFieldError('confirm-password-field', 'confirm-password-error', '');
+        
+        const feedbackEl = document.getElementById('confirm-password-feedback');
+        if (feedbackEl) {
+            feedbackEl.classList.remove('is-visible', 'match', 'mismatch');
+            feedbackEl.textContent = '';
+        }
         setSubmitting(false);
 
         form.classList.remove('form-transitioning');
@@ -404,29 +534,182 @@ function closeLegalModal() {
     if (modal) modal.classList.remove('show');
 }
 
-/* ── Password Visibility Toggling ── */
-function togglePasswordVisibility() {
-    const field = document.getElementById('password-field');
-    const icon = document.getElementById('eye-icon');
-    if (!field || !icon) return;
+/* ── Password Visibility Toggling with Enhanced Accessibility ── */
 
-    if (field.type === 'password') {
-        field.type = 'text';
-        icon.className = 'fi fi-rr-eye text-[16px]';
-    } else {
-        field.type = 'password';
+/**
+ * Enhanced password visibility toggle with:
+ * - Keyboard support (Space/Enter)
+ * - Tooltip display on hover/focus
+ * - Better icon contrast for light/dark themes
+ * - ARIA attributes for screen readers
+ */
+function togglePasswordVisibility(event) {
+    event?.preventDefault?.();
+    
+    const field = document.getElementById('password-field');
+    const button = event?.currentTarget || document.querySelector('[onclick*="togglePasswordVisibility"]');
+    const icon = document.getElementById('eye-icon');
+    const tooltip = button?.querySelector('.password-tooltip');
+    const tooltipText = button?.querySelector('#tooltip-text');
+    
+    if (!field || !icon || !button) return;
+
+    const isVisible = field.type === 'text';
+    
+    // Toggle field type
+    field.type = isVisible ? 'password' : 'text';
+    
+    // Update icon with better contrast
+    if (isVisible) {
+        // Password hidden
         icon.className = 'fi fi-rr-eye-crossed text-[16px]';
+        button.setAttribute('aria-label', 'Show password. Press Space or Enter to toggle.');
+        button.setAttribute('aria-pressed', 'false');
+        button.setAttribute('title', 'Show password (Space/Enter)');
+        if (tooltipText) tooltipText.textContent = 'Show password (Space/Enter)';
+    } else {
+        // Password visible
+        icon.className = 'fi fi-rr-eye text-[16px]';
+        button.setAttribute('aria-label', 'Hide password. Press Space or Enter to toggle.');
+        button.setAttribute('aria-pressed', 'true');
+        button.setAttribute('title', 'Hide password (Space/Enter)');
+        if (tooltipText) tooltipText.textContent = 'Hide password (Space/Enter)';
+    }
+    
+    // Show tooltip briefly on toggle
+    if (tooltip) {
+        tooltip.classList.remove('hidden');
+        setTimeout(() => {
+            if (tooltip && !button.matches(':focus')) {
+                tooltip.classList.add('hidden');
+            }
+        }, 1500);
     }
 }
 
+function toggleConfirmPasswordVisibility(event) {
+    event?.preventDefault?.();
+    
+    const field = document.getElementById('confirm-password-field');
+    const button = event?.currentTarget || document.querySelector('[onclick*="toggleConfirmPasswordVisibility"]');
+    const icon = document.getElementById('confirm-eye-icon');
+    const tooltip = button?.querySelector('.password-tooltip');
+    const tooltipText = button?.querySelector('#confirm-tooltip-text');
+    
+    if (!field || !icon || !button) return;
+
+    const isVisible = field.type === 'text';
+    
+    // Toggle field type
+    field.type = isVisible ? 'password' : 'text';
+    
+    // Update icon with better contrast
+    if (isVisible) {
+        // Password hidden
+        icon.className = 'fi fi-rr-eye-crossed text-[16px]';
+        button.setAttribute('aria-label', 'Show confirm password. Press Space or Enter to toggle.');
+        button.setAttribute('aria-pressed', 'false');
+        button.setAttribute('title', 'Show password (Space/Enter)');
+        if (tooltipText) tooltipText.textContent = 'Show password (Space/Enter)';
+    } else {
+        // Password visible
+        icon.className = 'fi fi-rr-eye text-[16px]';
+        button.setAttribute('aria-label', 'Hide confirm password. Press Space or Enter to toggle.');
+        button.setAttribute('aria-pressed', 'true');
+        button.setAttribute('title', 'Hide password (Space/Enter)');
+        if (tooltipText) tooltipText.textContent = 'Hide password (Space/Enter)';
+    }
+    
+    // Show tooltip briefly on toggle
+    if (tooltip) {
+        tooltip.classList.remove('hidden');
+        setTimeout(() => {
+            if (tooltip && !button.matches(':focus')) {
+                tooltip.classList.add('hidden');
+            }
+        }, 1500);
+    }
+}
+
+// Add keyboard support and tooltip interactions
+document.addEventListener('DOMContentLoaded', () => {
+    const passwordButtons = document.querySelectorAll('.password-toggle-btn');
+    
+    passwordButtons.forEach(button => {
+        const tooltip = button.querySelector('.password-tooltip');
+        let tooltipTimeout;
+        
+        // Keyboard support (Space and Enter keys)
+        button.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                // Determine which toggle function to call based on the button's onclick
+                if (button.getAttribute('onclick').includes('toggleConfirmPasswordVisibility')) {
+                    toggleConfirmPasswordVisibility({ currentTarget: button });
+                } else {
+                    togglePasswordVisibility({ currentTarget: button });
+                }
+            }
+        });
+        
+        // Tooltip show/hide on hover
+        button.addEventListener('mouseenter', () => {
+            tooltipTimeout = setTimeout(() => {
+                if (tooltip) tooltip.classList.remove('hidden');
+            }, 300);
+        });
+        
+        button.addEventListener('mouseleave', () => {
+            clearTimeout(tooltipTimeout);
+            if (tooltip) tooltip.classList.add('hidden');
+        });
+        
+        // Show tooltip on focus
+        button.addEventListener('focus', () => {
+            if (tooltip) tooltip.classList.remove('hidden');
+        });
+        
+        // Hide tooltip on blur
+        button.addEventListener('blur', () => {
+            if (tooltip) tooltip.classList.add('hidden');
+        });
+    });
+});
+
+/* caps-lock-warning */
+const passwordField = document.getElementById("password-field");
+
+if (passwordField) {
+  passwordField.addEventListener("keyup", (event) => {
+    const loginCapsWarning = document.getElementById("login-caps-lock-warning");
+    const signupCapsWarning = document.getElementById("signup-caps-lock-warning");
+    const confirmCapsWarning = document.getElementById("confirm-caps-lock-warning");
+
+    const isCapsLockOn = event.getModifierState("CapsLock");
+
+    if (loginCapsWarning) {
+      loginCapsWarning.classList.toggle("hidden", !isCapsLockOn);
+    }
+
+    if (signupCapsWarning) {
+      signupCapsWarning.classList.toggle("hidden", !isCapsLockOn);
+    }
+    if (confirmCapsWarning) {
+      confirmCapsWarning.classList.toggle("hidden", !isCapsLockOn);
+    }
+  });
+}
+
 /* ── Form Submission handling ── */
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
     e.preventDefault();
     if (isSubmitting) return;
 
     const emailField = document.getElementById('email-field');
     const nameField = document.getElementById('name-field');
     const passwordField = document.getElementById('password-field');
+    const rememberCheckbox = document.getElementById('remember');
+    const confirmPasswordField = document.getElementById('confirm-password-field');
     if (!emailField) return;
 
     setAlert('', '');
@@ -434,8 +717,9 @@ function handleFormSubmit(e) {
     const okName = validateName(true);
     const okEmail = validateEmail(true);
     const okPassword = validatePassword(true);
+    const okConfirmPassword = currentMode === 'signup' ? validateConfirmPassword(true) : true;
 
-    const isValid = currentMode === 'signup' ? (okName && okEmail && okPassword) : (okEmail && okPassword);
+    const isValid = currentMode === 'signup' ? (okName && okEmail && okPassword && okConfirmPassword) : (okEmail && okPassword);
     if (!isValid) {
         setAlert('error', 'Please fix the highlighted fields and try again.');
         const firstInvalid =
@@ -447,20 +731,47 @@ function handleFormSubmit(e) {
 
     const email = (emailField.value || '').trim();
     const name = (nameField && nameField.value ? nameField.value.trim() : '');
+    const password = (passwordField && passwordField.value ? passwordField.value : '');
+    const rememberMe = rememberCheckbox ? rememberCheckbox.checked : false;
 
     setSubmitting(true);
     setAlert('info', currentMode === 'signup' ? 'Creating your account…' : 'Signing you in…');
 
-    window.setTimeout(() => {
-        setSubmitting(false);
+    try {
+        const endpoint = currentMode === 'signup' ? '/api/v1/auth/register' : '/api/v1/auth/login';
+        const body = currentMode === 'signup'
+            ? { email, name, password }
+            : { email, password, rememberMe };
+
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            setAlert('error', data.message || 'Something went wrong. Please try again.');
+            setSubmitting(false);
+            return;
+        }
+
+        localStorage.setItem('accessToken', data.data.accessToken);
+
         if (currentMode === 'signin') {
-            setAlert('success', `Signed in as <span class="font-semibold">${escapeHtml(email)}</span>.`);
+            setAlert('success', `Signed in as <span class="font-semibold">${escapeHtml(email)}</span>. Redirecting…`);
+            setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
         } else {
             const greeting = name ? `Welcome, <span class="font-semibold">${escapeHtml(name)}</span>!` : 'Welcome!';
             setAlert('success', `${greeting} Your account is ready. Redirecting to sign in…`);
-            window.setTimeout(() => toggleAuthMode('signin'), 900);
+            setTimeout(() => toggleAuthMode('signin'), 900);
         }
-    }, 900);
+    } catch (err) {
+        setAlert('error', 'Network error. Please check your connection and try again.');
+    }
+
+    setSubmitting(false);
 }
 
 function escapeHtml(text) {
@@ -482,16 +793,54 @@ function initGoogleAuth() {
     google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
+auto_select: true,
+      cancel_on_tap_outside: true,
     });
 }
 
 function decodeJwt(token) {
+    if (!token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+
     try {
-        const base64Url = token.split('.')[1];
+        const base64Url = parts[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        return JSON.parse(atob(base64));
+        const decoded = JSON.parse(atob(base64));
+
+        if (!decoded || typeof decoded !== 'object') return null;
+
+        // Required userId validation
+        if (typeof decoded.userId !== 'string' || decoded.userId.trim() === '') return null;
+
+        // Required email validation with format regex
+        if (typeof decoded.email !== 'string' || decoded.email.trim() === '') return null;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(decoded.email)) return null;
+
+        // Required role validation
+        if (typeof decoded.role !== 'string' || decoded.role.trim() === '') return null;
+        const validRoles = ['user', 'admin', 'guest'];
+        if (!validRoles.includes(decoded.role)) return null;
+
+        // Required subscriptionType validation
+        if (typeof decoded.subscriptionType !== 'string' || decoded.subscriptionType.trim() === '') return null;
+        const validSubscriptions = ['free', 'premium'];
+        if (!validSubscriptions.includes(decoded.subscriptionType)) return null;
+
+        // Required exp (expiration) validation
+        if (typeof decoded.exp !== 'number' || decoded.exp <= Math.floor(Date.now() / 1000)) return null;
+
+        // Required iat validation
+        if (typeof decoded.iat !== 'number') return null;
+
+        // Optional name validation
+        if (decoded.name !== undefined && typeof decoded.name !== 'string') return null;
+
+        // Optional postsCount validation
+        if (decoded.postsCount !== undefined && typeof decoded.postsCount !== 'number') return null;
+
+        return decoded;
     } catch (e) {
         return null;
     }
@@ -499,7 +848,7 @@ function decodeJwt(token) {
 
 async function handleGoogleCredentialResponse(response) {
     try {
-        const res = await fetch('/api/auth/google-login', {
+        const res = await fetch('/api/v1/auth/google-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: response.credential }),
@@ -512,7 +861,14 @@ async function handleGoogleCredentialResponse(response) {
             return;
         }
 
-        localStorage.setItem('accessToken', data.data.accessToken);
+        const token = data?.data?.accessToken || data?.accessToken || data?.token || (typeof data?.data === 'string' ? data.data : null);
+        
+        if (!token) {
+            setAlert('error', 'Google login failed. Invalid token received from server.');
+            return;
+        }
+
+        localStorage.setItem('accessToken', token);
         setAlert('success', 'Signed in with Google successfully! Redirecting…');
         setTimeout(() => {
             window.location.href = '/dashboard';

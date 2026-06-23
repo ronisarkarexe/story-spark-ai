@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { useGetPostListsQuery } from "../../../redux/apis/post.api";
+import { useGetPostListsQuery,useDeletePostMutation  } from "../../../redux/apis/post.api";
 import { useDebounced } from "../../../hooks/global";
 import { Topic } from "../../../models/post";
 import PaginationComponent from "../../pagination/pagination.component";
+import ImageFallback from "../../ImageFallback";
 
 const PostListsComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -15,7 +16,7 @@ const PostListsComponent: React.FC = () => {
 
   const debounceTerm = useDebounced({
     searchQuery: searchTerm,
-    daley: 600,
+    delay: 600,
   });
 
   if (debounceTerm) {
@@ -23,6 +24,18 @@ const PostListsComponent: React.FC = () => {
   }
 
   const { data, isLoading } = useGetPostListsQuery({ ...query });
+  const [deletePost] = useDeletePostMutation();
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDeleteId) return;
+    try {
+      await deletePost(confirmDeleteId).unwrap();
+      setConfirmDeleteId(null);
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+    }
+  };
 
   const onPaginationChange = (page: number, pageSize: number) => {
     setPage(page);
@@ -109,117 +122,67 @@ const PostListsComponent: React.FC = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-800/60">
-          <thead className="bg-[#141624]/80 backdrop-blur-sm">
-            <tr>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Title
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Author
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Topics
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Status
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Stats
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Created
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-800/60 bg-transparent">
-            {isLoading ? (
-              [...Array(5)].map((_, idx) => (
-                <tr key={idx} className="animate-pulse bg-transparent border-b border-gray-800/40">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-11 w-11 mr-4 rounded-lg bg-gray-800/40" />
-                      <div className="space-y-1.5 flex-1">
-                        <div className="h-4 bg-gray-800/60 rounded-md w-32" />
-                        <div className="h-3 bg-gray-800/30 rounded-md w-16" />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="space-y-1.5">
-                      <div className="h-4 bg-gray-800/50 rounded-md w-24" />
-                      <div className="h-3 bg-gray-800/30 rounded-md w-32" />
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex gap-1.5">
-                      <div className="h-5 bg-gray-800/40 rounded-full w-14" />
-                      <div className="h-5 bg-gray-800/40 rounded-full w-16" />
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="h-5 bg-gray-800/50 rounded-full w-16" />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex space-x-5">
-                      <div className="text-center">
-                        <div className="h-4 bg-gray-800/40 rounded-md w-6 mx-auto" />
-                        <div className="h-2 bg-gray-800/20 rounded-md w-8 mt-1" />
-                      </div>
-                      <div className="text-center">
-                        <div className="h-4 bg-gray-800/40 rounded-md w-6 mx-auto" />
-                        <div className="h-2 bg-gray-800/20 rounded-md w-8 mt-1" />
-                      </div>
-                      <div className="text-center">
-                        <div className="h-4 bg-gray-800/40 rounded-md w-6 mx-auto" />
-                        <div className="h-2 bg-gray-800/20 rounded-md w-8 mt-1" />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="h-4 bg-gray-800/40 rounded-md w-20" />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex items-center space-x-2">
-                      <div className="h-8 bg-gray-800/40 rounded-md w-12" />
-                      <div className="h-8 bg-gray-800/40 rounded-md w-14" />
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              data?.posts?.map((post) => (
+      {isLoading ? (
+        <div className="p-12 flex justify-center items-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-800/60">
+            <thead className="bg-[#141624]/80 backdrop-blur-sm">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Title
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Author
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Topics
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Stats
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Created
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-800/60 bg-transparent">
+              {data?.posts?.map((post) => (
                 <tr key={post._id} className="hover:bg-gray-800/30 transition-colors duration-200 group">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {post.imageURL && (
                         <div className="flex-shrink-0 h-11 w-11 mr-4 relative">
-                          <img
+                          <ImageFallback
                             className="h-11 w-11 rounded-lg object-cover shadow-md ring-1 ring-white/10"
                             src={post.imageURL}
                             alt={post.title}
@@ -240,7 +203,8 @@ const PostListsComponent: React.FC = () => {
                     <div className="text-sm text-gray-200">
                       {post.author?.name || 'Unknown User'}
                     </div>
-                    <div className="text-xs text-gray-500">
+
+                    <div className="text-xs text-gray-400">
                       {post.author?.email || 'N/A'}
                     </div>
                   </td>
@@ -289,17 +253,19 @@ const PostListsComponent: React.FC = () => {
                       <button className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 px-3 py-1.5 rounded-md transition-all">
                         Edit
                       </button>
-                      <button className="text-rose-400 hover:text-rose-300 hover:bg-rose-400/10 px-3 py-1.5 rounded-md transition-all">
-                        Delete
+                      <button
+                          onClick={() => setConfirmDeleteId(post._id)}
+                          className="text-rose-400 hover:text-rose-300 hover:bg-rose-400/10 px-3 py-1.5 rounded-md transition-all">
+                          Delete
                       </button>
                     </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {data?.meta && (
         <div className="sticky bottom-0 bg-[#1a1d2d]/90 backdrop-blur-md border-t border-gray-800/60 z-10 mt-2">
@@ -311,6 +277,30 @@ const PostListsComponent: React.FC = () => {
               onChange={onPaginationChange}
             />
           </div>
+          {confirmDeleteId && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+              <div className="bg-[#1a1d2d] border border-gray-700 rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
+                <h3 className="text-lg font-bold text-white mb-2">Delete Story?</h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  Are you sure you want to delete this story? This action cannot be undone.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setConfirmDeleteId(null)}
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-700 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteConfirm}
+                    className="px-4 py-2 rounded-lg text-sm font-medium bg-rose-600 hover:bg-rose-500 text-white transition-all"
+                  >
+                    Yes, Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

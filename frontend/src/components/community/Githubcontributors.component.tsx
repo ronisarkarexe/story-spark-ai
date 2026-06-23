@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import githubHero from "../../assets/github-hero.png";
-
+import ImageFallback from "../ImageFallback";
 interface GitHubContributor {
   id: number;
   login: string;
@@ -20,47 +20,47 @@ const GithubcontributorsComponent: React.FC = () => {
 
 
   useEffect(() => {
+    const controller = new AbortController();
+  
     const GithubcontributorData = async () => {
       try {
-        const githubRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contributors`, {
-          headers: {
-            'Accept': 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28'
-          }
-        });
-        if (!githubRes.ok) {
-          throw new Error(`HTTP error! Status: ${githubRes.status}`);
-        }
-        const data = await githubRes.json();
-        setGitHubContributors(data);
-
-        // To fetch real time stars count
-        const repoRes = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}`,
-          {
+        const [githubRes, repoRes] = await Promise.all([
+          fetch(`https://api.github.com/repos/${owner}/${repo}/contributors`, {
             headers: {
               Accept: "application/vnd.github+json",
               "X-GitHub-Api-Version": "2022-11-28",
             },
-          }
-        );
-
-        if (!repoRes.ok) {
-          throw new Error(`HTTP error! Status: ${repoRes.status}`);
-        }
-
+            signal: controller.signal,
+          }),
+          fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+            headers: {
+              Accept: "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+            signal: controller.signal,
+          }),
+        ]);
+  
+        const data = await githubRes.json();
         const repoData = await repoRes.json();
-
-        setRepoStars(repoData.stargazers_count);
-
-
-      } catch (e) {
-        console.log(e);
+  
+        if (!controller.signal.aborted) {
+          setGitHubContributors(data);
+          setRepoStars(repoData.stargazers_count);
+        }
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          console.error("Failed to load GitHub data", err);
+        }
       }
-
     };
+
     GithubcontributorData();
-  }, [])
+  
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
 
 
@@ -175,7 +175,7 @@ const GithubcontributorsComponent: React.FC = () => {
               className="
               w-full max-w-[620px]
               object-contain
-             drop-shadow-[0_0_60px_rgba(139,92,246,0.45)]
+              drop-shadow-[0_0_60px_rgba(139,92,246,0.45)]
             animate-[float_5s_ease-in-out_infinite]
             "
             />
@@ -432,16 +432,16 @@ const GithubcontributorsComponent: React.FC = () => {
 
                 {/* Avatar */}
                 <div className="flex justify-center mb-5">
-                  <img
-                    src={contributor.avatar_url}
-                    alt={contributor.login}
-                    className="
-                    w-24 h-24 rounded-full
-                    object-cover
-                    border-4 border-white/20
-                    shadow-2xl
-                  "
-                  />
+                  <ImageFallback
+                      src={contributor.avatar_url}
+                      alt={contributor.login}
+                      className="
+                      w-24 h-24 rounded-full
+                      object-cover
+                      border-4 border-white/20
+                      shadow-2xl
+                    "
+                    />
                 </div>
 
                 {/* Username */}

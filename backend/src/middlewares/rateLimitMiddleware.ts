@@ -7,10 +7,12 @@
  *  • 10 requests / minute  per IP for unauthenticated guests
  *  • Returns 429 + Retry-After header when exceeded
  *  • Zero external dependencies
+ *  • Self-pruning store (bounded memory under long uptime)
  *
  * GSSoC 2026 | feat/rate-limiting-api-key-rotation
  */
 import { Request, Response, NextFunction } from "express";
+import logger from "../utils/logger.util";
 
 interface WindowEntry {
   timestamps: number[];
@@ -18,8 +20,43 @@ interface WindowEntry {
 
 const store = new Map<string, WindowEntry>();
 
-const WINDOW_MS    = 60_000; // 1 minute sliding window
-const MAX_REQUESTS = 10;     // max requests per window
+const WINDOW_MS          = 60_000; // 1 minute sliding window
+const MAX_REQUESTS       = 10;     // max requests per window
+const PRUNE_INTERVAL_MS  = 60_000; // at most one full prune per minute
+let lastPruneAt         = 0;
+
+/**
+ * Prune the in-memory store to prevent unbounded growth.
+ *
+ * Without this, every unique key (IP / user id) that ever hit the
+ * limiter would persist in `store` forever with stale timestamps,
+ * leaking memory for the lifetime of the process. Pruning is
+ * piggy-backed on real traffic and runs at most once per minute so
+ * it has zero steady-state cost on hot paths.
+ */
+function pruneStaleEntries(now: number): void {
+  if (now - lastPruneAt < PRUNE_INTERVAL_MS) return;
+  lastPruneAt = now;
+
+  let removed = 0;
+  let trimmed = 0;
+  for (const [key, entry] of store.entries()) {
+    const active = entry.timestamps.filter((t) => now - t < WINDOW_MS);
+    if (active.length === 0) {
+      store.delete(key);
+      removed++;
+    } else if (active.length !== entry.timestamps.length) {
+      store.set(key, { timestamps: active });
+      trimmed++;
+    }
+  }
+
+  if (removed > 0 || trimmed > 0) {
+    logger.debug(
+      `rateLimitMiddleware: pruned ${removed} empty entries, trimmed ${trimmed} entries`
+    );
+  }
+}
 
 /**
  * Express middleware — apply to any AI generation route:
@@ -30,15 +67,19 @@ export function storyRateLimiter(
   res: Response,
   next: NextFunction
 ): void {
-  // Prefer authenticated user id, fall back to IP
+  // Prefer authenticated user id, fall back to IP.
+  // NOTE: Do NOT read X-Forwarded-For directly — the client controls that
+  // header and can spoof a new IP per request to bypass the limit.
+  // Instead rely on req.ip, which Express derives from the proxy chain
+  // when trust proxy is enabled (see app.set("trust proxy", 1) in app.ts).
   const key: string =
     (req as any).user?.id ??
-    (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0].trim() ??
     req.ip ??
     "anonymous";
 
-  const now    = Date.now();
-  const entry  = store.get(key) ?? { timestamps: [] };
+  const now   = Date.now();
+  pruneStaleEntries(now);
+  const entry = store.get(key) ?? { timestamps: [] };
 
   // Evict timestamps outside the sliding window
   entry.timestamps = entry.timestamps.filter((t) => now - t < WINDOW_MS);

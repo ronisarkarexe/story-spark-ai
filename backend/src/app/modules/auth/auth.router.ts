@@ -2,11 +2,16 @@ import express from "express";
 import { AuthController } from "./auth.controller";
 import validateRequest from "../../middleware/validate.request";
 import { UserValidator } from "../user/user.validation";
-import ipRateLimiter, {
+import auth from "../../middleware/auth.middleware";
+import { ENUM_USER_ROLE } from "../../../enums/user";
+import {
   loginRateLimiter,
   forgotPasswordRateLimiter,
   resetPasswordRateLimiter,
+  refreshTokenRateLimiter,
+  ipRateLimiter,
 } from "../../middleware/ip.rate-limiter";
+
 const router = express.Router();
 
 // Login API route
@@ -19,8 +24,7 @@ router.post(
 
 // Google Login API route
 router.post("/google-login", loginRateLimiter, AuthController.googleLogin);
-
-// Register API route
+router.post("/send-otp", validateRequest(UserValidator.sendOtp), AuthController.sendOtp);// Register API route
 router.post(
   "/register",
   validateRequest(UserValidator.register),
@@ -29,7 +33,23 @@ router.post(
 );
 
 // Refresh Token API route
-router.post("/refresh-token", AuthController.refreshToken);
+router.post("/refresh-token", refreshTokenRateLimiter, AuthController.refreshToken);
+
+// Logout API route
+router.post("/logout", AuthController.logout);
+
+// Change Password API route
+router.post(
+  "/change-password",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  validateRequest(UserValidator.changePassword),
+  AuthController.changePassword
+);
 
 // Forgot Password API route
 router.post(
@@ -48,4 +68,3 @@ router.post(
 );
 
 export const AuthRouter = router;
-

@@ -7,9 +7,12 @@ export interface Topic {
 
 interface Author {
   _id: string;
-  email: string;
+  email?: string;
   name: string;
   createdAt: string;
+  profile?: {
+    bio?: string;
+  };
 }
 
 interface Comment {
@@ -22,14 +25,9 @@ interface Comment {
 
 interface Reaction {
   postId: string;
-  userId: { email: string } | string;
+  userId: { _id: string } | string;
   type: "like" | "love" | "laugh" | "angry" | "sad";
   _id: string;
-}
-
-interface Bookmark {
-  _id?: string;
-  email: string;
 }
 
 export interface Post {
@@ -41,10 +39,14 @@ export interface Post {
   topic: Topic[];
   language?: string;
   emotions?: string[];
+  genre?: string;
   author: Author;
   likesCount: number;
   commentsCount: number;
+  bookmarksCount: number;
   viewsCount: number;
+  averageRating: number;
+  totalRatings: number;
   isPublished: boolean;
   isFeaturedPost: boolean;
   isDeleted?: boolean;
@@ -54,7 +56,6 @@ export interface Post {
   attachments: string[];
   comments: Comment[];
   reactions: Reaction[];
-  bookmarks?: Bookmark[];
   createdAt: string;
   updatedAt: string;
 }

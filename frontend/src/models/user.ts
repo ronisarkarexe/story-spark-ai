@@ -3,6 +3,8 @@ export interface SocialLinks {
   twitter?: string;
   linkedin?: string;
   instagram?: string;
+  github?: string;
+  discord?: string;
 }
 
 export interface UserProfile {
@@ -11,22 +13,48 @@ export interface UserProfile {
   bio?: string;
 }
 
+export interface WritingGoals {
+  dailyWordCount: number;
+  weeklyWordCount: number;
+}
+
+export interface UserConnection {
+  _id: string;
+  username: string;
+  profilePicture: string;
+}
+
+export type UserRole = "user" | "writer" | "admin";
+
+export type UserStatus = "active" | "inactive" | "banned";
+
+export type SubscriptionType = "free" | "premium" | "pro";
+
 export interface User {
   _id: string;
   email: string;
   name: string;
-  password: string;
-  role: string;
-  status: string;
-  subscriptionType: string;
+
+  role: UserRole;
+  status: UserStatus;
+  subscriptionType: SubscriptionType;
+
   postsCount: number;
-  followers: string[];
-  following: string[];
+
+  followers: UserConnection[];
+  following: UserConnection[];
+
   requestsThisMonth: number;
   lastRequestDate: string | null;
+
   posts: string[];
+
   isApplyForWriter: boolean;
+
   createdAt: string;
   updatedAt: string;
+
   profile: UserProfile;
+
+  writingGoals?: WritingGoals;
 }

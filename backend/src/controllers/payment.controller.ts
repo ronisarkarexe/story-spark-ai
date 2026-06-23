@@ -1,71 +1,227 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
+import Razorpay from "razorpay";
 import crypto from "crypto";
-import razorpayInstance from "../config/razorpay";
+import { User } from "../app/modules/user/user.model";
 
-// Validate RAZORPAY_KEY_SECRET is present at startup so misconfigured
-// deployments fail loudly rather than silently passing undefined to
-// crypto.createHmac() and returning an opaque 500 during payment verification.
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
-if (!RAZORPAY_KEY_SECRET) {
-  throw new Error(
-    "Missing required environment variable: RAZORPAY_KEY_SECRET. " +
-    "Payment verification cannot work without it."
-  );
+let razorpayInstance: any = null;
+const getRazorpay = () => {
+  if (!razorpayInstance) {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      console.warn("Razorpay credentials missing. Payment features will fail.");
+      return null;
+    }
+    razorpayInstance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+  return razorpayInstance;
+};
+
+const PLANS: Record<string, { amountPaise: number; durationDays: number; label: string }> = {
+  monthly: {
+    amountPaise: 49900,   
+    durationDays: 30,
+    label: "Monthly Premium",
+  },
+  yearly: {
+    amountPaise: 499900,  
+    durationDays: 365,
+    label: "Yearly Premium",
+  },
+};
+
+export const createOrder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+const userId = (req as any).user?._id;
+
+if (!userId) {
+   res.status(401).json({ success: false, message: "Unauthorized" });
+   return;
 }
 
-// Creates a new Razorpay order and returns the order details to the frontend
-export const createOrder = async (req: Request, res: Response) => {
-  try {
-    const { amount } = req.body;
+const { plan } = req.body as { plan?: string };
 
-    // Validate that amount is provided and is a positive number
-    if (!amount || typeof amount !== "number" || amount <= 0) {
-      return res.status(400).json({ success: false, message: "Invalid amount" });
+if (!plan || !PLANS[plan]) {
+ res.status(400).json({
+  success: false,
+  error: `Invalid plan. Valid options: ${Object.keys(PLANS).join(", ")}.`,
+});
+return;
+}
+
+    const selectedPlan = PLANS[plan];
+
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      res.status(500).json({ success: false, error: "Payment gateway not configured" });
+      return;
     }
 
-    const options = {
-      amount: amount * 100, // Razorpay accepts amount in paise (1 INR = 100 paise)
+    const order = await razorpay.orders.create({
+      amount: selectedPlan.amountPaise,  
       currency: "INR",
-      receipt: `receipt_${Date.now()}`, // Unique receipt ID using timestamp
-    };
+      receipt: `receipt_${Date.now()}`,
+      notes: {
+        plan,
+        label: selectedPlan.label,
+      },
+    });
 
-    const order = await razorpayInstance.orders.create(options);
-    res.status(200).json({ success: true, order });
+    res.status(201).json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      plan,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Order creation failed" });
+    next(error);
   }
 };
 
-// Verifies the payment signature to confirm the payment is legitimate
-export const verifyPayment = async (req: Request, res: Response) => {
+export const verifyPayment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = req.body as {
+      razorpay_order_id: string;
+      razorpay_payment_id: string;
+      razorpay_signature: string;
+    };
 
-    // Validate that all required payment fields are present
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ success: false, message: "Missing payment details" });
+      res.status(400).json({
+        success: false,
+        error: "Missing required payment fields: order ID, payment ID, or signature.",
+      });
+      return;
     }
-
-    // Razorpay signature verification: HMAC-SHA256 of "order_id|payment_id"
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    
     const expectedSignature = crypto
-      .createHmac("sha256", RAZORPAY_KEY_SECRET)
-      .update(body)
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    // Use timingSafeEqual to compare signatures and prevent timing-based attacks
     const expectedBuffer = Buffer.from(expectedSignature, "hex");
-    const receivedBuffer = Buffer.from(razorpay_signature, "hex");
-    const signaturesMatch =
-      expectedBuffer.length === receivedBuffer.length &&
-      crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+    const providedBuffer = Buffer.from(razorpay_signature, "hex");
 
-    if (!signaturesMatch) {
-      return res.status(400).json({ success: false, message: "Invalid signature" });
+    const isSignatureValid =
+      expectedBuffer.length === providedBuffer.length &&
+      crypto.timingSafeEqual(expectedBuffer, providedBuffer);
+
+    if (!isSignatureValid) {
+      res.status(400).json({
+        success: false,
+        error: "Payment signature verification failed. This request may be tampered.",
+      });
+      return;
+    }
+    
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      res.status(500).json({ success: false, error: "Payment gateway not configured" });
+      return;
     }
 
-    res.status(200).json({ success: true, message: "Payment verified successfully" });
+    const order = await razorpay.orders.fetch(razorpay_order_id);
+    const plan = (order.notes as Record<string, string>)?.plan;
+
+    if (!plan || !PLANS[plan]) {
+      res.status(400).json({
+        success: false,
+        error: "Could not determine the subscription plan from the order.",
+      });
+      return;
+    }
+
+    const selectedPlan = PLANS[plan];
+    const userId = req.user?._id;
+
+    if (!userId) {
+      res.status(401).json({ success: false, error: "Unauthorised. Please log in." });
+      return;
+    }
+
+    const subscriptionExpiry = new Date(
+      Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
+    );
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        subscriptionType: "premium",
+        subscriptionExpiry,
+        lastPaymentId: razorpay_payment_id,
+        lastOrderId: razorpay_order_id,
+      },
+      { new: true, select: "email subscriptionType subscriptionExpiry" }
+    );
+
+    if (!updatedUser) {
+      res.status(404).json({ success: false, error: "User not found." });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Subscription upgraded to ${selectedPlan.label} successfully.`,
+      subscription: {
+        type: updatedUser.subscriptionType,
+        expiry: updatedUser.subscriptionExpiry,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Payment verification failed" });
+    next(error);
+  }
+};
+
+export const getSubscriptionStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user?._id;
+
+    if (!userId) {
+      res.status(401).json({ success: false, error: "Unauthorised." });
+      return;
+    }
+
+    const user = await User.findById(userId).select(
+      "subscriptionType subscriptionExpiry"
+    );
+
+    if (!user) {
+      res.status(404).json({ success: false, error: "User not found." });
+      return;
+    }
+
+    const isActive =
+      user.subscriptionType === "premium" &&
+      user.subscriptionExpiry != null &&
+      new Date(user.subscriptionExpiry) > new Date();
+
+    res.status(200).json({
+      success: true,
+      subscription: {
+        type: user.subscriptionType ?? "free",
+        expiry: user.subscriptionExpiry ?? null,
+        isActive,
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 };
