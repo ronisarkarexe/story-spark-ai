@@ -97,8 +97,9 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
           placeholder="Enter your story prompt..."
           disabled={isLoading}
           rows={4}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+           className="w-full box-border p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
         />
+        
       </div>
 
       {/* Variation Count */}
