@@ -1,5 +1,7 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
+import { screen } from '@testing-library/dom';
 import { vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import CollabEditor from './CollabEditor';
 import * as Y from 'yjs';
 import { io } from 'socket.io-client';
@@ -47,7 +49,7 @@ describe('CollabEditor', () => {
       />,
     );
     const container = screen.getByRole('textbox', { hidden: true });
-    expect(container).toBeInTheDocument();
+    expect(container).toBeTruthy();
   });
 
   it('applies remote Yjs updates to the editor', async () => {

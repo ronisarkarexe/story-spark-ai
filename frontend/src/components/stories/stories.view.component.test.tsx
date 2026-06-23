@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/dom';
 import '@testing-library/jest-dom/vitest';
 import StoriesViewComponent from './stories.view.component';
 
