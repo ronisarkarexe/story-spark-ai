@@ -1,0 +1,238 @@
+/* ─── Reset & Core Framework ────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #09090e;
+  color: #e2e8f0;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ─── Animated Mesh Background ──────────────────────── */
+.ease-mesh-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  background: #09090e;
+  filter: blur(80px); /* Blends the moving elements into fluid liquid */
+  opacity: 0.75;
+  transition: background 0.8s ease;
+}
+
+/* Base Blob Properties using CSS variables for clean overrides */
+.ease-mesh-bg__blob {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  will-change: transform;
+  opacity: 0.6;
+}
+
+/* Individual Color Nodes and Animations */
+.ease-mesh-bg__blob--1 {
+  width: 50vw;
+  height: 50vw;
+  top: -10%;
+  left: -10%;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+  animation: easeMeshMovementOne 25s infinite alternate ease-in-out;
+}
+
+.ease-mesh-bg__blob--2 {
+  width: 60vw;
+  height: 60vw;
+  bottom: -20%;
+  right: -10%;
+  background: radial-gradient(circle, #ec4899 0%, transparent 70%);
+  animation: easeMeshMovementTwo 30s infinite alternate ease-in-out;
+}
+
+.ease-mesh-bg__blob--3 {
+  width: 45vw;
+  height: 45vw;
+  top: 40%;
+  left: 30%;
+  background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+  animation: easeMeshMovementThree 20s infinite alternate ease-in-out;
+}
+
+/* ─── Color Profile Modifiers ───────────────────────── */
+/* Sunset Variant */
+.ease-mesh-bg--sunset {
+  background: #0f0505;
+}
+.ease-mesh-bg--sunset .ease-mesh-bg__blob--1 { background: radial-gradient(circle, #f97316 0%, transparent 70%); }
+.ease-mesh-bg--sunset .ease-mesh-bg__blob--2 { background: radial-gradient(circle, #ef4444 0%, transparent 70%); }
+.ease-mesh-bg--sunset .ease-mesh-bg__blob--3 { background: radial-gradient(circle, #eab308 0%, transparent 70%); }
+
+/* Aurora Variant */
+.ease-mesh-bg--aurora {
+  background: #020b08;
+}
+.ease-mesh-bg--aurora .ease-mesh-bg__blob--1 { background: radial-gradient(circle, #10b981 0%, transparent 70%); }
+.ease-mesh-bg--aurora .ease-mesh-bg__blob--2 { background: radial-gradient(circle, #06b6d4 0%, transparent 70%); }
+.ease-mesh-bg--aurora .ease-mesh-bg__blob--3 { background: radial-gradient(circle, #64748b 0%, transparent 70%); }
+
+/* ─── Fluid Motion Trajectories ─────────────────────── */
+@keyframes easeMeshMovementOne {
+  0% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
+  50% { transform: translate(10vw, 15vh) rotate(90deg) scale(1.1); }
+  100% { transform: translate(-5vw, 25vh) rotate(180deg) scale(0.9); }
+}
+
+@keyframes easeMeshMovementTwo {
+  0% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
+  50% { transform: translate(-15vw, -20vh) rotate(-120deg) scale(0.85); }
+  100% { transform: translate(5vw, -5vh) rotate(-240deg) scale(1.15); }
+}
+
+@keyframes easeMeshMovementThree {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(-8vw, 10vh) scale(1.2); }
+  100% { transform: translate(12vw, -12vh) scale(0.8); }
+}
+
+/* ─── Presentational Container Layout ───────────────── */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+.hero {
+  text-align: center;
+  padding: 4rem 2rem 2rem;
+}
+
+.badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(4px);
+}
+
+.hero h1 {
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  font-weight: 900;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.hero p {
+  font-size: 1.15rem;
+  color: #94a3b8;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.section { margin: 2rem 0; }
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.variants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.variant-card {
+  background: rgba(15, 15, 25, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.25rem;
+  padding: 2rem;
+  text-align: center;
+  backdrop-filter: blur(12px);
+}
+
+.card-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+.variant-card h3 { font-size: 1.1rem; color: #f1f5f9; margin-bottom: 0.5rem; }
+.variant-card p { font-size: 0.875rem; color: #94a3b8; line-height: 1.6; margin-bottom: 1rem; }
+.variant-card code {
+  background: rgba(0,0,0,0.4);
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.78rem;
+  color: #a5b4fc;
+}
+
+.code-section {
+  background: rgba(15, 15, 25, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  margin: 3rem 0;
+  backdrop-filter: blur(12px);
+}
+
+.code-section h2 { font-size: 1.4rem; margin-bottom: 0.5rem; color: #f1f5f9; }
+.code-section p { color: #94a3b8; margin-bottom: 1.5rem; }
+.code-block { background: #040408; border-radius: 1rem; padding: 1.5rem; overflow-x: auto; }
+.code-block pre { font-family: monospace; font-size: 0.85rem; color: #38bdf8; line-height: 1.6; }
+
+/* ─── Presentational Controls ───────────────────────── */
+.controls-section {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 1.25rem;
+  backdrop-filter: blur(12px);
+}
+.controls-section h3 { margin-bottom: 0.5rem; }
+.controls-section p { color: #94a3b8; margin-bottom: 1.25rem; font-size: 0.9rem; }
+
+.btn-group {
+  display: inline-flex;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border-radius: 999px;
+}
+
+.btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 0.6rem 1.5rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.btn:hover { color: #fff; }
+.btn.active {
+  background: #ffffff;
+  color: #09090e;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.footer { text-align: center; padding: 3rem 0 1rem; color: #475569; font-size: 0.875rem; }
