@@ -102,7 +102,7 @@ describe("Character Network Controller", () => {
       characters: [{ id: "merlin", name: "Merlin", appearanceCount: 5, importanceScore: 80 }],
       relationships: [],
     };
-    (StoryVersionService.getCharacterNetwork as jest.Mock).mockResolvedValueOnce(mockData);
+    (StoryVersionService.getCharacterNetwork as any).mockResolvedValueOnce(mockData);
 
     await StoryVersionController.getCharacterNetwork(mockReq as Request, mockRes as Response, mockNext);
 
@@ -119,7 +119,7 @@ describe("Character Network Controller", () => {
 
   it("should call next with error when service throws", async () => {
     const err = new Error("DB connection failed");
-    (StoryVersionService.getCharacterNetwork as jest.Mock).mockRejectedValueOnce(err);
+    (StoryVersionService.getCharacterNetwork as any).mockRejectedValueOnce(err);
 
     await StoryVersionController.getCharacterNetwork(mockReq as Request, mockRes as Response, mockNext);
 
@@ -129,7 +129,7 @@ describe("Character Network Controller", () => {
 
   it("should call next with error when story version not found", async () => {
     const err = new Error("Story version not found");
-    (StoryVersionService.getCharacterNetwork as jest.Mock).mockRejectedValueOnce(err);
+    (StoryVersionService.getCharacterNetwork as any).mockRejectedValueOnce(err);
 
     await StoryVersionController.getCharacterNetwork(mockReq as Request, mockRes as Response, mockNext);
 
@@ -137,7 +137,7 @@ describe("Character Network Controller", () => {
   });
 
   it("should call service with correct storyId and userId", async () => {
-    (StoryVersionService.getCharacterNetwork as jest.Mock).mockResolvedValueOnce({
+    (StoryVersionService.getCharacterNetwork as any).mockResolvedValueOnce({
       characters: [],
       relationships: [],
     });
@@ -152,7 +152,7 @@ describe("Character Network Controller", () => {
 
   it("should return empty network when story has no characters", async () => {
     const emptyData = { characters: [], relationships: [] };
-    (StoryVersionService.getCharacterNetwork as jest.Mock).mockResolvedValueOnce(emptyData);
+    (StoryVersionService.getCharacterNetwork as any).mockResolvedValueOnce(emptyData);
 
     await StoryVersionController.getCharacterNetwork(mockReq as Request, mockRes as Response, mockNext);
 

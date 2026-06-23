@@ -81,39 +81,7 @@ const TopHeaderComponent = () => {
                 );
               })}
             </nav>
-import { useNavigate } from "react-router-dom";
-
-const TopHeaderComponent = () => {
-  const [, setShowNotification] = useState<boolean>(false);
-  const navigate = useNavigate();
-
-  return (
-    <div className="sticky top-0 z-50">
-      <div className="relative z-10 mx-auto max-w-8xl px-6 py-4 gradient-bg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-16">
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="/" className="flex items-center space-x-2">
-                <img loading="lazy" src={logo} alt="Logo" className="h-8 w-auto" />
-              </a>
-              <a href="/" className="text-white hover:text-custom transition">
-                HOME
-              </a>
-              <a
-                href="/http_codes"
-                className="text-white hover:text-custom transition"
-              >
-                EXPLORE
-              </a>
-              <a
-                href="/repos"
-                className="text-white hover:text-custom transition"
-              >
-                CATEGORIES
-              </a>
-            </div>
           </div>
-
           {/* Right side actions */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
@@ -123,8 +91,6 @@ const TopHeaderComponent = () => {
                 type="button"
                 className="p-2 rounded-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 aria-label="Search"
-                aria-label="Search"
-                className="!rounded-button p-2 text-gray-400 hover:text-gray-500"
               >
                 <Search size={20} />
               </button>
@@ -135,24 +101,12 @@ const TopHeaderComponent = () => {
                     type="button"
                     className="p-2 rounded-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 relative"
                     aria-label="Notifications"
-                    aria-label="Notifications"
-                    className="!rounded-button p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none cursor-pointer"
-                    onClick={() => setShowNotification(true)}
                   >
                     <Bell size={20} />
                   </button>
                   <Link
                     to="/dashboard"
                     className="flex items-center justify-center h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border border-slate-300 dark:border-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 hover:ring-2 hover:ring-indigo-400 transition-all"
-                </div>
-              </div>
-              <div className="ml-3 relative">
-                <div>
-                  <button
-                    type="button"
-                    aria-label="User profile"
-                    className="!rounded-button bg-white flex text-sm rounded-full focus:outline-none"
-                    onClick={() => navigate("/dashboard/profile")}
                   >
                     {user?.avatar ? (
                       <img src={user.avatar} alt="Profile" className="h-full w-full object-cover" />

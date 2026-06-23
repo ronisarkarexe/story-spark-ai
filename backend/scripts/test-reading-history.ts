@@ -15,7 +15,7 @@ async function runVerification() {
   console.log("=== StorySparkAI Verification: User Reading History & Post Views ===");
 
   if (!MONGO_URI) {
-    console.error("Error: DATABASE_URL is not set in your backend/.env file.");
+    console.error("Error: DATABASE_URL not set.");
     process.exit(1);
   }
 

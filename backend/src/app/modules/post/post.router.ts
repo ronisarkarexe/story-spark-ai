@@ -31,8 +31,20 @@ const AI_VARIATION_ROLES = [
 ] as const;
 
 // AI variation routes
-router.post("/remix", auth(...AI_VARIATION_ROLES), checkRequestLimit(), PostController.remixStory);
-router.post("/translate", auth(...AI_VARIATION_ROLES), checkRequestLimit(), PostController.translateStory);
+router.post(
+  "/remix",
+  auth(...AI_VARIATION_ROLES),
+  validateRequest(PostValidator.remixStory),
+  checkRequestLimit(),
+  PostController.remixStory
+);
+router.post(
+  "/translate",
+  auth(...AI_VARIATION_ROLES),
+  validateRequest(PostValidator.translateStory),
+  checkRequestLimit(),
+  PostController.translateStory
+);
 
 // Named GET routes must come before /:id to avoid the wildcard swallowing them
 router.get("/tag/:tag", PostController.getPostsByTag);

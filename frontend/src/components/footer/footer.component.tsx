@@ -80,15 +80,11 @@ const FooterComponent: React.FC = () => {
     { label: "Guidelines", to: "/guidelines" },
   ];
 
-  type SocialLink =
-    | { type: "fa"; icon: string; label: string; url: string }
-    | { type: "icon"; Icon: IconType; label: string; url: string };
-
-  const socialLinks: SocialLink[] = [
-    { type: "fa", icon: "fa-instagram", label: "Instagram", url: "https://www.instagram.com/" },
-    { type: "fa", icon: "fa-linkedin", label: "LinkedIn", url: "https://www.linkedin.com/" },
-    { type: "icon", Icon: FaXTwitter, label: "X", url: "https://x.com/" },
-    { type: "fa", icon: "fa-facebook", label: "Facebook", url: "https://www.facebook.com/" },
+  const socialLinks = [
+    { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
+    { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X" },
+    { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
+    { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
   ];
 
   const currentYear = new Date().getFullYear();
@@ -218,14 +214,14 @@ const FooterComponent: React.FC = () => {
                     aria-label={item.label}
                     className="group flex items-center gap-2.5 text-[14px] text-slate-300/85 hover:text-blue-300 transition-all duration-200"
                   >
-                    {item.type === "fa" ? (
-                      <i
-                        className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
-                      />
-                    ) : (
-                      <item.Icon className="text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors" />
-                    )}
-                    <span>{item.label}</span>
+                    <i
+                      className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
+                    />
+                    <span className="capitalize">
+                      {item.icon === "fa-x-twitter"
+                        ? "X"
+                        : item.icon.replace("fa-", "")}
+                    </span>
                   </a>
                 </li>
               ))}

@@ -1,5 +1,5 @@
 import React from "react";
-import PricingComponent from "../home/pricing/pricing.component";
+import PricingComponent from "./pricing.component";
 
 const PricingMainComponent = () => {
   return (
