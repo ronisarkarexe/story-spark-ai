@@ -248,3 +248,15 @@ export const analyzeStoryEmotion = (content: string) => {
     dominantEmotion,
   };
 };
+
+/**
+ * Calculates estimated reading time based on average 200 WPM reading speed.
+ * Returns a human-readable string like "1 min read" or "< 1 min read".
+ */
+export const getReadingTime = (content: string): string => {
+  if (!content || !content.trim()) return "";
+  const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.round(wordCount / 200);
+  if (minutes < 1) return "< 1 min read";
+  return `${minutes} min read`;
+};
