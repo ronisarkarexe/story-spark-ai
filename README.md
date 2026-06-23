@@ -36,6 +36,7 @@
 ## 📚 Table of Contents
 - [About 🚀](#about-🚀)
 - [Features 💪](#features-💪)
+- [Project Structure](#project-structure)
 - [Local Development](#local-development-monorepo)
 - [Environment Variables](#environment-variables)
 - [Minimal Working Example (Story Generation API)](#minimal-working-example-story-generation-api)
@@ -71,6 +72,47 @@
 - **User Reviews**: Share your experience and explore reviews from the community.
 - **Subscription Plans**: Access unlimited story generation and team collaboration with paid plans.
 - **Featured Posts**: Discover featured posts curated from the community.
+
+## Project Structure
+
+This repository is organized as a monorepo with one backend API app, one frontend app, and shared documentation.
+
+```
+story-spark-ai/
+├── backend/                # API server, database access, auth, AI/story services
+│   ├── src/                # backend source code
+│   ├── scripts/            # backend utility scripts
+│   ├── migrations/         # database migration files
+│   ├── ml/                 # model training and scoring helpers
+│   └── .env.example        # backend environment variables template
+├── frontend/               # React + Vite web app for users
+│   ├── public/             # static assets served by Vite
+│   ├── src/                # frontend application source code
+│   └── .env.example        # frontend env template for VITE_BASE_URL, etc.
+├── docs/                   # supporting documentation and architecture notes
+├── scripts/                # repo-level helper scripts
+├── CONTRIBUTING.md        # contribution guidelines
+├── package.json            # root workspace manifest for backend + frontend
+├── package-lock.json       # exact npm dependency lockfile
+└── pnpm-lock.yaml          # pnpm workspace lockfile
+```
+
+- `backend/` contains the Node.js API and server-side logic.
+- `frontend/` contains the client-side StorySparkAI web app.
+- `docs/` holds design, architecture, and AI pipeline documentation.
+- `scripts/` includes repo utilities and maintenance scripts.
+- Root `package.json` manages the monorepo workspaces.
+- `package-lock.json` and `pnpm-lock.yaml` lock dependency versions so installs are consistent.
+- `backend/.env.example` and `frontend/.env.example` show required environment variables without exposing secrets.
+- `CONTRIBUTING.md` explains how to contribute to the project.
+
+- `backend/` – Node.js API server for story generation, authentication, database access, AI integrations, and backend services.
+- `frontend/` – React + Vite app for the StorySparkAI user interface, client-side routing, and web interactions.
+- `docs/` – Supporting documentation for AI pipelines, architecture, and implementation notes.
+- `scripts/` – Utility scripts for maintenance, data migration, and repository support.
+- `package.json` – Root workspace manifest that manages `frontend` and `backend` via npm workspaces.
+- `pnpm-workspace.yaml` / `pnpm-lock.yaml` – Monorepo workspace configuration and locked dependency tree.
+- `README.md` – Project overview, setup instructions, and developer guidance.
 
 ## Local Development (Monorepo)
 
