@@ -53,7 +53,9 @@ const TopHeaderComponent = () => {
 
             <nav className="hidden md:flex items-center gap-1 relative">
               {navLinks.map((link) => {
-                const isActive = location.pathname === link.path || (link.path !== '/' && location.pathname.startsWith(link.path));
+                const isActive =
+                  location.pathname === link.path ||
+                  (link.path !== "/" && location.pathname.startsWith(link.path));
                 return (
                   <NavLink
                     key={link.name}
@@ -70,11 +72,7 @@ const TopHeaderComponent = () => {
                       <motion.div
                         layoutId="navbar-indicator"
                         className="absolute inset-0 bg-indigo-50 dark:bg-indigo-500/10 rounded-full"
-                        transition={{
-                          type: "spring",
-                          stiffness: 380,
-                          damping: 30,
-                        }}
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
                       />
                     )}
                   </NavLink>
@@ -85,7 +83,7 @@ const TopHeaderComponent = () => {
           {/* Right side actions */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            
+
             <div className="hidden sm:flex items-center gap-3">
               <button
                 type="button"
@@ -107,6 +105,7 @@ const TopHeaderComponent = () => {
                   <Link
                     to="/dashboard"
                     className="flex items-center justify-center h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border border-slate-300 dark:border-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 hover:ring-2 hover:ring-indigo-400 transition-all"
+                    aria-label="Your profile"
                   >
                     {user?.avatar ? (
                       <img src={user.avatar} alt="Profile" className="h-full w-full object-cover" />

@@ -8,16 +8,11 @@ interface ProtectedRouteProps {
   children?: ReactNode;
 }
 
-/**
- * ProtectedRoute Component
- * Guards a route by verifying the stored token is present, decodable,
- * and checks the user's role if allowedRoles is provided.
- */
 const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
   const location = useLocation();
 
   if (!isLoggedIn()) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles) {

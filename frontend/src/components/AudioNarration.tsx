@@ -29,6 +29,7 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
     setSelectedVoice,
     // detectedLanguage,
   } = useSpeechSynthesis(text);
+  const detectedLanguage: string | undefined = undefined;
 
   // Stop speech when component unmounts or text changes
   useEffect(() => {

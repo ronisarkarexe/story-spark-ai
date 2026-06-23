@@ -68,7 +68,6 @@ const LatestPostsComponent = () => {
                 >
                   <div className="min-w-0 p-5 bg-slate-50 dark:bg-slate-800/50">
                     <p className="text-slate-700 dark:text-slate-400 text-sm md:text-base leading-relaxed mb-4 whitespace-pre-wrap break-words">
-
                       {post.content || "No preview content available."}
                     </p>
 

@@ -82,36 +82,19 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
 
-      gsap.to(contentRef.current, {
-        x: x * 0.15,
-        y: y * 0.15,
-        ease: "power2.out",
-        duration: 0.3
-      });
-
+      gsap.to(contentRef.current, { x: x * 0.15, y: y * 0.15, ease: "power2.out", duration: 0.3 });
       gsap.to(card, {
         rotateY: (x / rect.width) * 15,
         rotateX: -(y / rect.height) * 15,
         transformPerspective: 1000,
         ease: "power2.out",
-        duration: 0.3
+        duration: 0.3,
       });
     };
 
     const handleMouseLeave = () => {
-      gsap.to(contentRef.current, {
-        x: 0,
-        y: 0,
-        ease: "power2.out",
-        duration: 0.7
-      });
-
-      gsap.to(card, {
-        rotateY: 0,
-        rotateX: 0,
-        ease: "power2.out",
-        duration: 0.7
-      });
+      gsap.to(contentRef.current, { x: 0, y: 0, ease: "power2.out", duration: 0.7 });
+      gsap.to(card, { rotateY: 0, rotateX: 0, ease: "power2.out", duration: 0.7 });
     };
 
     card.addEventListener("mousemove", handleMouseMove);
@@ -218,16 +201,7 @@ const HeroSectionComponent = () => {
     const badge = badgeRef.current;
     if (!badge) return;
 
-    gsap.fromTo(badge,
-      { x: -10 },
-      {
-        x: 10,
-        duration: 2,
-        ease: "sine.inOut",
-        yoyo: true,
-        repeat: -1,
-      }
-    );
+    gsap.fromTo(badge, { x: -10 }, { x: 10, duration: 2, ease: "sine.inOut", yoyo: true, repeat: -1 });
 
     gsap.to(badge, {
       boxShadow: "0 0 16px rgba(59, 130, 246, 0.2), 0 0 40px rgba(139, 92, 246, 0.1)",
@@ -248,8 +222,8 @@ const HeroSectionComponent = () => {
         "25%": { borderColor: "rgba(167, 139, 250, 0.4)" },
         "50%": { borderColor: "rgba(244, 114, 182, 0.4)" },
         "75%": { borderColor: "rgba(52, 211, 153, 0.4)" },
-        "100%": { borderColor: "rgba(59, 130, 246, 0.4)" }
-      }
+        "100%": { borderColor: "rgba(59, 130, 246, 0.4)" },
+      },
     });
   });
 
@@ -260,14 +234,11 @@ const HeroSectionComponent = () => {
     const id = nextStarId.current++;
     const size = 8 + Math.floor(Math.random() * 8);
 
-    setStars((prev) => {
-      const next = [...prev, { id, x, y, size }];
-      return next.slice(-18);
-    });
+    setStars((prev) => [...prev, { id, x, y, size }].slice(-18));
 
     const timerId = window.setTimeout(() => {
       setStars((prev) => prev.filter((star) => star.id !== id));
-      starTimers.current = starTimers.current.filter((timer) => timer !== timerId);
+      starTimers.current = starTimers.current.filter((t) => t !== timerId);
     }, 650);
     starTimers.current.push(timerId);
   };
@@ -299,7 +270,7 @@ const HeroSectionComponent = () => {
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">StorySparkAI v2.0 is live</span>
           </div>
 
-          <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none tracking-tight">
+          <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none">
             Ignite Your Imagination With <br className="hidden sm:block" />
             <span className="hero-gradient-text pb-2">
               <Typewriter
@@ -327,7 +298,7 @@ const HeroSectionComponent = () => {
                   </button>
                 </Link>
                 <Link to="/collab" className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
+                  <button type="button" className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
                     <span>✍️</span>
                     <span>Collab Mode</span>
                   </button>

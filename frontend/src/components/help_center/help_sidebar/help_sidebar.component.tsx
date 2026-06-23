@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 const HELP_SECTIONS = [
-  { id: "help-categories", label: "Categories", icon: "fa-layer-group", color: "from-blue-500 to-cyan-500" },
-  { id: "faq-section", label: "FAQs", icon: "fa-circle-question", color: "from-indigo-500 to-purple-500" },
-  { id: "troubleshoot-section", label: "Troubleshooting", icon: "fa-screwdriver-wrench", color: "from-orange-500 to-red-500" },
-  { id: "setup-guide-section", label: "Setup Guide", icon: "fa-rocket", color: "from-emerald-500 to-teal-500" },
-  { id: "support-links-section", label: "Support", icon: "fa-headset", color: "from-pink-500 to-rose-500" },
+  { id: "help-categories", label: "Categories", icon: "fa-layer-group" },
+  { id: "faq-section", label: "FAQs", icon: "fa-circle-question" },
+  { id: "troubleshoot-section", label: "Troubleshooting", icon: "fa-screwdriver-wrench" },
+  { id: "setup-guide-section", label: "Setup Guide", icon: "fa-rocket" },
+  { id: "support-links-section", label: "Support", icon: "fa-headset" },
 ];
 
 const HelpSidebar = () => {
@@ -41,10 +41,8 @@ const HelpSidebar = () => {
     const handleScroll = () => {
       const scrollBottom = window.innerHeight + window.scrollY;
       const documentHeight = document.documentElement.scrollHeight;
-      if (scrollBottom >= documentHeight - 120) {
-        if (scrollBottom >= documentHeight - 80) {
-          setActiveSection("support-links-section");
-        }
+      if (scrollBottom >= documentHeight - 80) {
+        setActiveSection("support-links-section");
       }
     };
 
@@ -59,8 +57,7 @@ const HelpSidebar = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (!element) return;
-    const yOffset = -100;
-    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    const y = element.getBoundingClientRect().top + window.pageYOffset - 100;
     window.scrollTo({ top: y, behavior: "smooth" });
   };
 
@@ -94,7 +91,6 @@ const HelpSidebar = () => {
               </div>
             </div>
 
-            {/* Section Buttons */}
             <div className="relative space-y-3">
               {HELP_SECTIONS.map((section) => {
                 const isActive = activeSection === section.id;
@@ -102,26 +98,34 @@ const HelpSidebar = () => {
                   <button
                     key={section.id}
                     onClick={() => scrollToSection(section.id)}
-                    className={`relative group w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all duration-300 overflow-hidden border focus:outline-none ${isActive
-                      ? "border-blue-300 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-indigo-500/10"
-                      : "border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/[0.03] hover:border-blue-200 dark:hover:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
-                      }`}
+                    className={`relative group w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all duration-300 overflow-hidden border focus:outline-none ${
+                      isActive
+                        ? "border-blue-300 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-indigo-500/10"
+                        : "border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/[0.03] hover:border-blue-200 dark:hover:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
+                    }`}
                   >
-                    <div className="flex items-center gap-4 min-w-0 flex-1">
-                      <i className={`fa-solid ${section.icon} text-sm ${isActive ? "text-blue-600" : "text-slate-500"}`} aria-hidden="true" />
-                      <p className={`font-bold text-xs sm:text-sm tracking-tight text-left transition-colors duration-200 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white"}`}>
+                    <div className="min-w-0 flex-1 flex items-center gap-4">
+                      <i className={`fa-solid ${section.icon} text-sm`} aria-hidden="true" />
+                      <p className={`font-bold text-xs sm:text-sm tracking-tight transition-colors duration-200 ${
+                        isActive
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white"
+                      }`}>
                         {section.label}
                       </p>
                     </div>
-                    <div className="shrink-0 ml-2">
-                      <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${isActive ? "bg-blue-500 scale-125 shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "bg-slate-300 dark:bg-slate-700"}`} />
+                    <div className="shrink-0">
+                      <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                        isActive
+                          ? "bg-blue-500 scale-125 shadow-[0_0_8px_rgba(59,130,246,0.6)]"
+                          : "bg-slate-300 dark:bg-slate-700"
+                      }`} />
                     </div>
                   </button>
                 );
               })}
             </div>
 
-            {/* Support Box */}
             <motion.div
               whileHover={{ y: -2 }}
               className="relative overflow-hidden mt-8 rounded-3xl border border-blue-200 dark:border-indigo-500/20 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-indigo-500/10 dark:via-blue-500/10 dark:to-slate-900/30 p-6"
@@ -133,17 +137,17 @@ const HelpSidebar = () => {
                     <i className="fa-solid fa-sparkles text-lg"></i>
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 dark:text-white text-sm">Need More Help?</h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Contact support</p>
+                    <h3 className="font-bold text-slate-800 dark:text-white">Need More Help?</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Contact support</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => scrollToSection("support-links-section")}
-                  className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 text-sm transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-blue-500/20"
-                >
-                  Support Links
-                </button>
               </div>
+              <button
+                onClick={() => scrollToSection("support-links-section")}
+                className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 text-sm transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-blue-500/20"
+              >
+                Support Links
+              </button>
             </motion.div>
           </motion.div>
         </div>
@@ -160,10 +164,11 @@ const HelpSidebar = () => {
               key={section.id}
               type="button"
               onClick={() => scrollToSection(section.id)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${activeSection === section.id
-                ? "bg-indigo-100 dark:bg-indigo-500/30 text-indigo-700 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-500/40"
-                : "bg-white dark:bg-white/5 text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
-                }`}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+                activeSection === section.id
+                  ? "bg-indigo-100 dark:bg-indigo-500/30 text-indigo-700 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-500/40"
+                  : "bg-white dark:bg-white/5 text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
+              }`}
               aria-current={activeSection === section.id ? "true" : undefined}
             >
               {section.label}
