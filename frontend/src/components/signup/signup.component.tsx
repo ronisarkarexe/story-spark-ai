@@ -293,13 +293,6 @@ const otpPayload = {
             </p>
           )}
           {!showOtpField && (
-            <p className="mt-2 mb-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 px-1">
-              Join StorySparkAI and begin your creative journey.
-            </p>
-          )}
-          {/* Card */}
-          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-          {!showOtpField && (
             <div className="relative mb-6 w-full box-border">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />

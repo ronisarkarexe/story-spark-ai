@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Chapter } from "../../types/story.types";
-import ReadingTimeBadge from "../ReadingTimeBadge";
 import toast from "react-hot-toast";
-import { AudioPlayer } from "../AudioPlayer"; // Sahi import path
-
+import ReadingTimeBadge from "../ReadingTimeBadge";
 interface Props {
   chapters: Chapter[];
   storyId: string;

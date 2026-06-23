@@ -60,7 +60,8 @@
     "y-quill": "^1.0.0",
     "y-indexeddb": "^9.0.12",
     "y-protocols": "^1.0.6",
-    "quill-cursors": "^4.0.2"
+    "quill-cursors": "^4.0.2",
+    "quill": "^2.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
