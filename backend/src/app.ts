@@ -11,7 +11,6 @@ import cookieParser from "cookie-parser";
 import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
-import leaderboardRoute from "./routes/leaderboard.route";
 import globalRateLimiter from "./app/middleware/global.rate-limiter";
 
 const app: Application = express();
@@ -72,7 +71,6 @@ app.use((req, res, next) => {
 
 // Primary API Router Matrix Engagement
 app.use("/api/v1", Routers);
-app.use("/api/v1/leaderboard", leaderboardRoute);
 
 // ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
 app.use((req: Request, res: Response, next: NextFunction) => {
