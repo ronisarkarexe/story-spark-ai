@@ -11,12 +11,20 @@ import { User } from "./user.model";
 import { WritingStreakService } from "../gamification/writing_streak.service";
 
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  const result = await UserService.getAllUsers();
+  const page = parseInt((req.query.page as string) ?? "1", 10);
+  const limit = parseInt((req.query.limit as string) ?? "20", 10);
+
+  const result = await UserService.getAllUsers(
+    isNaN(page) ? 1 : page,
+    isNaN(limit) ? 20 : limit
+  );
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "OK!",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 

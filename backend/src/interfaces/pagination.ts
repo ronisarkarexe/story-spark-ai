@@ -13,6 +13,7 @@ export interface IGenericResponse<T> {
     page: number;
     limit: number;
     total: number;
+    totalPages?: number;
     nextCursor?: string;
     hasMore?: boolean;
   };

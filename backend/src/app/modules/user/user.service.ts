@@ -11,12 +11,35 @@ import { Bookmark } from "../bookmark/bookmark.model";
 import { Notification } from "../notification/notification.model";
 import { StoryVersion } from "../story_version/story_version.model";
 import { Report } from "../report/report.model";
+import { IGenericResponse } from "../../../interfaces/pagination";
 
 const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram", "github", "discord"] as const;
 
-const getAllUsers = async (): Promise<IUser[]> => {
-  const result = await User.find({}).select("-password");
-  return result;
+const getAllUsers = async (
+  page: number = 1,
+  limit: number = 20
+): Promise<IGenericResponse<IUser[]>> => {
+  const safeLimit = Math.min(limit, 100);
+  const safePage = Math.max(page, 1);
+  const skip = (safePage - 1) * safeLimit;
+
+  const users = await User.find({})
+    .select("-password")
+    .skip(skip)
+    .limit(safeLimit)
+    .lean();
+
+  const total = await User.countDocuments();
+
+  return {
+    meta: {
+      page: safePage,
+      limit: safeLimit,
+      total,
+      totalPages: Math.ceil(total / safeLimit),
+    },
+    data: users as IUser[],
+  };
 };
 
 const getUser = async (payload: string): Promise<IUser | null> => {
