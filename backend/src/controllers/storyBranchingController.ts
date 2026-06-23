@@ -91,7 +91,6 @@ Task:
           "Search for another way",
           "Wait and see what happens",
         ];
-<<<<<<< HEAD
       } else if (parsed.choices.length < 3) {
         const tempChoices = [...parsed.choices];
         while (tempChoices.length < 3) {
@@ -100,15 +99,6 @@ Task:
         parsed.choices = tempChoices;
       } else if (parsed.choices.length > 3) {
         parsed.choices = parsed.choices.slice(0, 3);
-=======
-      } else if (finalChoices.length < 3) {
-        finalChoices = [...finalChoices];
-        while (finalChoices.length < 3) {
-          finalChoices.push(`Option ${finalChoices.length + 1}`);
-        }
-      } else if (finalChoices.length > 3) {
-        finalChoices = finalChoices.slice(0, 3);
->>>>>>> origin/fix/story-translation-bug-1826
       }
       parsed.choices = finalChoices;
 
