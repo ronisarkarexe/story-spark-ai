@@ -124,10 +124,6 @@ const getStreak = async (userId: string) => {
 
     if (diffDays > 1) {
       currentStreak = 0;
-      // Update in DB dynamically
-      await User.findByIdAndUpdate(userId, {
-        "writingStreak.currentStreak": 0,
-      });
     }
   }
 

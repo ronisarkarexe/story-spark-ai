@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+node-v20.20.2-win-x64*
 
 # Build output
 dist-ssr/
@@ -61,3 +62,9 @@ node_modules/
 dist/
 .claude
 .refact
+temp*.tsx
+test.tsx
+tatus
+vzdfx
+*.save
+*.txt

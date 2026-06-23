@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import confetti from "canvas-confetti";
 import { WritingStreak } from "../types";
 
 interface StreakCardProps {
@@ -7,6 +8,45 @@ interface StreakCardProps {
 }
 
 const StreakCard: React.FC<StreakCardProps> = ({ streak, isLoading }) => {
+  useEffect(() => {
+    if (isLoading || !streak) return;
+    const { currentStreak, totalWritingDays } = streak;
+    if (currentStreak === 0) return;
+
+    const streakKey = `${currentStreak}-${totalWritingDays}`;
+    const lastCelebrated = localStorage.getItem("last_celebrated_streak");
+
+    let shouldTrigger = false;
+    if (!lastCelebrated) {
+      shouldTrigger = true;
+    } else {
+      const parts = lastCelebrated.split("-").map(Number);
+      const prevStreak = parts[0];
+      const prevTotalDays = parts[1];
+
+      if (Number.isFinite(prevStreak) && Number.isFinite(prevTotalDays)) {
+        if (currentStreak > prevStreak || totalWritingDays > prevTotalDays) {
+          shouldTrigger = true;
+        }
+      } else {
+        shouldTrigger = true;
+        localStorage.removeItem("last_celebrated_streak");
+      }
+    }
+
+    if (shouldTrigger) {
+      // Trigger a beautiful flame/indigo-colored confetti burst
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ["#f97316", "#f59e0b", "#eab308", "#6366f1", "#3b82f6"],
+      });
+    }
+
+    localStorage.setItem("last_celebrated_streak", streakKey);
+  }, [streak, isLoading]);
+
   if (isLoading) {
     return (
       <div 
