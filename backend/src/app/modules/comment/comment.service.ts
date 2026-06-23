@@ -8,6 +8,7 @@ import { startSession, Types } from "mongoose";
 import { Post } from "../post/post.model";
 import { ENUM_USER_ROLE } from "../../../enums/user";
 import { assertContentSafe } from "../../../utils/contentModeration";
+import { verifyPostAccess } from "../post/post.utils";
 
 const createComment = async (
   payload: ICommentPayload,
@@ -25,6 +26,8 @@ const createComment = async (
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
+
+  verifyPostAccess(post, user);
 
   // Content moderation — block inappropriate comments before persisting
   try {
@@ -92,7 +95,17 @@ const createComment = async (
   }
 };
 
-const getCommentsByPostId = async (postId: string) => {
+const getCommentsByPostId = async (postId: string, token?: ITokenPayload | null) => {
+  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+  }
+  let user = null;
+  if (token && token.email) {
+    user = await User.findOne({ email: token.email });
+  }
+  verifyPostAccess(post, user);
+
   return await Comment.find({ postId }).populate("userId", "name profile.avatar").sort({ createdAt: -1 });
 };
 
@@ -113,6 +126,7 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
+  verifyPostAccess(post, user);
   
   // Replace the read-modify-write likes toggle with atomic MongoDB operators.
   const isCurrentlyLiked = await Comment.exists({
@@ -173,6 +187,16 @@ const deleteComment = async (commentId: string, token: ITokenPayload) => {
   if (!comment) {
     throw new ApiError(httpStatus.NOT_FOUND, "Comment not found!");
   }
+
+  const post = await Post.findOne({
+    _id: comment.postId,
+    isDeleted: { $ne: true },
+  });
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+  }
+  verifyPostAccess(post, user);
+
   // Only the comment author or an admin/super-admin can delete
   const isAuthor = comment.userId.toString() === user._id.toString();
   const isAdmin = role === ENUM_USER_ROLE.ADMIN || role === ENUM_USER_ROLE.SUPER_ADMIN;

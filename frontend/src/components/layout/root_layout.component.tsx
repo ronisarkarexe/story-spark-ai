@@ -5,6 +5,10 @@ import CookieConsentBanner from "../cookie-consent/cookie-consent.component";
 import FooterComponent from "../footer/footer.component";
 import ChatComponent from "../chat/Chat";
 
+
+
+
+
 interface RootLayoutProps {
   children: ReactNode;
 }
@@ -35,8 +39,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
       <div className="flex-grow min-h-0">{children}</div>
 
       {!hideFooter && <FooterComponent />}
-
-      {!isAuthPage && <ChatComponent />}
+<ChatComponent />
     </div>
   );
 };

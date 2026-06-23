@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import AnimatedBook from "../hero/AnimatedBook";
 import Typewriter from "./typewriter.component";
 
 gsap.registerPlugin(useGSAP);
@@ -16,12 +16,12 @@ const containerVariants = {
   },
 };
 
-const itemVariants: any = {
+const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
     y: 0, 
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } as const 
   },
 };
 
@@ -111,7 +111,75 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
   );
 };
 
+const PARTICLE_CONFIG = [
+  { color: "#60a5fa", size: 14, left: "8%", top: "18%", xMove: 40, yMove: -60, dur: 5 },
+  { color: "#a78bfa", size: 10, left: "22%", top: "55%", xMove: -30, yMove: -70, dur: 6 },
+  { color: "#f472b6", size: 12, left: "68%", top: "12%", xMove: 50, yMove: -40, dur: 4.5 },
+  { color: "#34d399", size: 8, left: "82%", top: "42%", xMove: -40, yMove: -50, dur: 7 },
+  { color: "#fb923c", size: 11, left: "48%", top: "72%", xMove: 35, yMove: -55, dur: 5.5 },
+  { color: "#38bdf8", size: 10, left: "12%", top: "78%", xMove: -25, yMove: -65, dur: 6.5 },
+  { color: "#818cf8", size: 16, left: "58%", top: "50%", xMove: 45, yMove: -35, dur: 4 },
+  { color: "#c084fc", size: 9, left: "38%", top: "28%", xMove: -35, yMove: -45, dur: 7.5 },
+  { color: "#67e8f9", size: 12, left: "88%", top: "68%", xMove: 30, yMove: -50, dur: 5.8 },
+  { color: "#fbbf24", size: 13, left: "32%", top: "8%", xMove: -20, yMove: -70, dur: 6.2 },
+  { color: "#86efac", size: 8, left: "76%", top: "82%", xMove: 50, yMove: -30, dur: 5 },
+  { color: "#f9a8d4", size: 10, left: "4%", top: "48%", xMove: -45, yMove: -55, dur: 8 },
+  { color: "#93c5fd", size: 18, left: "52%", top: "38%", xMove: 0, yMove: -25, dur: 9 },
+  { color: "#c4b5fd", size: 15, left: "18%", top: "32%", xMove: 0, yMove: -30, dur: 10 },
+  { color: "#fda4af", size: 12, left: "72%", top: "22%", xMove: 0, yMove: -20, dur: 8 },
+];
+
+const HeroParticles = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const particles = container.querySelectorAll(".gsap-particle");
+    particles.forEach((particle, i) => {
+      const config = PARTICLE_CONFIG[i];
+      gsap.to(particle, {
+        x: config.xMove,
+        y: config.yMove,
+        scale: 1.4,
+        opacity: 0.9,
+        duration: config.dur / 2,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+        delay: i * 0.3,
+      });
+    });
+  }, { scope: containerRef });
+
+  return (
+    <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden select-none" style={{ zIndex: 1 }} aria-hidden="true">
+      {PARTICLE_CONFIG.map((p, i) => (
+        <span
+          key={i}
+          className="gsap-particle"
+          style={{
+            position: "absolute",
+            borderRadius: "9999px",
+            left: p.left,
+            top: p.top,
+            width: p.size,
+            height: p.size,
+            opacity: 0.3,
+            background: `radial-gradient(circle, ${p.color}, ${p.color}88, transparent)`,
+            boxShadow: `0 0 ${p.size * 4}px ${p.color}, 0 0 ${p.size * 8}px ${p.color}44`,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
 const HeroSectionComponent = () => {
+  const [stars, setStars] = useState<Array<{ id: number; x: number; y: number; size: number }>>([]);
+  const nextStarId = useRef(1);
+  const starTimers = useRef<number[]>([]);
   const badgeRef = useRef<HTMLAnchorElement>(null);
 
   useGSAP(() => {
@@ -120,12 +188,41 @@ const HeroSectionComponent = () => {
     gsap.fromTo(badge, { x: -10 }, { x: 10, duration: 2, ease: "sine.inOut", yoyo: true, repeat: -1 });
   });
 
+  // Added the missing mouse tracking sparkle generator
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (Math.random() > 0.35) return; 
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const id = nextStarId.current++;
+    const size = Math.random() * 12 + 6;
+
+    setStars((prev) => [...prev, { id, x, y, size }]);
+
+    const timer = window.setTimeout(() => {
+      setStars((prev) => prev.filter((s) => s.id !== id));
+      starTimers.current = starTimers.current.filter((t) => t !== timer);
+    }, 800);
+
+    starTimers.current.push(timer);
+  };
+
+  useEffect(() => {
+    return () => {
+      starTimers.current.forEach(clearTimeout);
+    };
+  }, []);
+
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden w-full box-border">
-      <div className="relative overflow-hidden w-full box-border">
-        <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 text-center w-full box-border">
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden transition-colors duration-300 w-full box-border">
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-sky-200/40 dark:bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-10 select-none transition-colors duration-300" />
+      <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-fuchsia-200/30 dark:bg-purple-600/10 rounded-full blur-[120px] pointer-events-none -z-10 select-none transition-colors duration-300" />
+
+      <HeroParticles />
+
+      <div className="relative overflow-hidden w-full box-border" onMouseMove={handleMouseMove}>
+        <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border">
           
-          {/* Your Feature Fix Applied Safely Below */}
           <Link
             to="/login"
             ref={badgeRef}
@@ -142,8 +239,52 @@ const HeroSectionComponent = () => {
               <Typewriter phrases={["AI-Driven Storytelling", "Smart Writing Assistant"]} />
             </span>
           </motion.h1>
+
+          <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
+            Create, edit, and generate engaging multiple story variations from a single prompt.
+            Perfect for writers, creators, and enthusiasts exploring the future of fiction.
+          </p>
+          
+          <div className="w-full box-border flex flex-col items-center justify-center">
+            <div className="relative max-w-3xl w-full box-border">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
+                <Link to="/stories" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
+                    <i className="fa fa-wand-magic-sparkles text-sm"></i>
+                    <span>Get Started</span>
+                  </button>
+                </Link>
+                <Link to="/collab" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
+                    <span>✍️</span>
+                    <span>Collab Mode</span>
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
         </motion.div>
+
+        <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
+          <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
+            {stars.map((star) => (
+              <span
+                key={star.id}
+                className={`hero-cursor-star ${star.size > 12 ? "hero-cursor-star-large" : ""}`}
+                style={{ left: star.x, top: star.y, width: star.size, height: star.size }}
+              />
+            ))}
+          </div>
+        </div>
       </div>
+
+      <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">
+          {features.map((feature, index) => (
+            <FeatureCard feature={feature} key={index} />
+          ))}
+        </div>
+      </motion.div>
     </motion.div>
   );
 };

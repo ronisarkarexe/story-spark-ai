@@ -1,5 +1,7 @@
 process.env.JWT_SECRET = 'test-secret';
 process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
+process.env.JWT_EXPIRES_IN = '15m';
+process.env.JWT_REFRESH_EXPIRES_IN = '30d';
 process.env.VERIFY_EMAIL = 'test@example.com';
 process.env.VERIFY_PASSWORD = 'testpassword';
 process.env.DEFAULT_ADMIN_PASSWORD = 'admin';
