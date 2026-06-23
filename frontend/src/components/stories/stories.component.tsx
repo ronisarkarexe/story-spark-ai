@@ -2303,12 +2303,18 @@ onKeyDown={(e) => {
 
       <RecentPromptsPanel
         recentPrompts={recentPrompts}
-        onSelectPrompt={handleSelectRecentPrompt}
+        onSelectPrompt={(prompt) => {
+          setTextareaValue(prompt);
+          setValue("prompt", prompt);
+          // Optionally focus the prompt editor for instant reuse
+          requestAnimationFrame(() => inputRef.current?.focus());
+        }}
         onRemovePrompt={removePrompt}
         onClearAll={clearAll}
         isOpen={isRecentPromptsOpen}
         onToggle={handleToggleRecentPrompts}
         text={recentPromptsText}
+        onPromptUse={recordPromptUse}
       />
 
       {showHelpModal && (
