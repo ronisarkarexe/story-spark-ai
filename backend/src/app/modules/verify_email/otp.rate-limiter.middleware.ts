@@ -1,80 +1,103 @@
 import { Request, Response, NextFunction } from "express";
-import logger from "../../../utils/logger.util";
+import ApiError from "../../../errors/api_error";
+import httpStatus from "http-status";
 
-interface WindowEntry {
-  timestamps: number[];
+interface RateLimitStore {
+  [key: string]: {
+    attempts: number;
+    blockUntil: number;
+  };
 }
 
-const store = new Map<string, WindowEntry>();
+const rateLimitStore: RateLimitStore = {};
 
-const WINDOW_MS = 15 * 60 * 1000; // 15 minutes sliding window
-const MAX_REQUESTS = 5; // max 5 requests per window
-const PRUNE_INTERVAL_MS = 60_000; // at most one full prune per minute
-let lastPruneAt = 0;
+const PHASE_1_MAX_ATTEMPTS = 5;
+const COOLDOWN_TIME = 5 * 60 * 1000; // 5 minutes
+const PHASE_2_MAX_ATTEMPTS = 8; // 5 + 3 final chances
+const PERMANENT_BLOCK_TIME = 24 * 60 * 60 * 1000; // 24 hours block
 
-function pruneStaleEntries(now: number): void {
-  if (now - lastPruneAt < PRUNE_INTERVAL_MS) return;
-  lastPruneAt = now;
-
-  let removed = 0;
-  let trimmed = 0;
-  for (const [key, entry] of store.entries()) {
-    const active = entry.timestamps.filter((t) => now - t < WINDOW_MS);
-    if (active.length === 0) {
-      store.delete(key);
-      removed++;
-    } else if (active.length !== entry.timestamps.length) {
-      store.set(key, { timestamps: active });
-      trimmed++;
+// Cleanup old keys periodically to prevent memory leaks
+const cleanupInterval = setInterval(() => {
+  const now = Date.now();
+  for (const key of Object.keys(rateLimitStore)) {
+    const record = rateLimitStore[key];
+    if (
+      (now > record.blockUntil && record.attempts >= PHASE_2_MAX_ATTEMPTS) ||
+      (now > record.blockUntil + COOLDOWN_TIME && record.attempts < PHASE_2_MAX_ATTEMPTS)
+    ) {
+      delete rateLimitStore[key];
     }
   }
+}, 60 * 60 * 1000); // every hour
+cleanupInterval.unref();
 
-  if (removed > 0 || trimmed > 0) {
-    logger.debug(
-      `otpRateLimiter: pruned ${removed} empty entries, trimmed ${trimmed} entries`
-    );
-  }
-}
-
-export function otpRateLimiter(
+/**
+ * Tiered Rate limiting middleware for OTP verification
+ * - 5 free attempts
+ * - 5 mins cooldown
+ * - 3 final chances
+ * - 24 hour block
+ */
+export const otpRateLimiter = (
   req: Request,
   res: Response,
   next: NextFunction
-): void {
-  const key: string =
-    (req as any).user?.id ??
-    req.body?.email ??
-    req.ip ??
-    "anonymous";
+) => {
+  const email = req.body?.email;
 
-  const now = Date.now();
-  pruneStaleEntries(now);
-  const entry = store.get(key) ?? { timestamps: [] };
-
-  // Evict timestamps outside the sliding window
-  entry.timestamps = entry.timestamps.filter((t) => now - t < WINDOW_MS);
-
-  if (entry.timestamps.length >= MAX_REQUESTS) {
-    const oldestTs = entry.timestamps[0];
-    const retryAfterMs = WINDOW_MS - (now - oldestTs);
-    const retryAfterSec = Math.ceil(retryAfterMs / 1000);
-
-    res.setHeader("Retry-After", String(retryAfterSec));
-    res.status(429).json({
-      success: false,
-      message: `Too many OTP verification attempts. You can make ${MAX_REQUESTS} attempts every 15 minutes. Please retry after ${retryAfterSec} seconds.`,
-      retryAfter: retryAfterSec,
-      limit: MAX_REQUESTS,
-      windowMs: WINDOW_MS,
-    });
-    return;
+  if (!email) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email is required");
   }
 
-  entry.timestamps.push(now);
-  store.set(key, entry);
-  next();
-}
+  const normalizedEmail = email.toString().toLowerCase().trim();
+  const now = Date.now();
+  const key = `otp_${normalizedEmail}`;
 
-export function clearOtpRateLimitStore(key?: string): void {
-  key ? store.delete(key) : store.clear();
-}
+  // Initialize or get record
+  const record = rateLimitStore[key] || { attempts: 0, blockUntil: 0 };
+
+  // Check if currently blocked
+  if (record.blockUntil > now) {
+    const minsLeft = Math.ceil((record.blockUntil - now) / 60000);
+    const hoursLeft = Math.ceil((record.blockUntil - now) / (60000 * 60));
+    
+    if (record.attempts >= PHASE_2_MAX_ATTEMPTS) {
+      throw new ApiError(
+        httpStatus.TOO_MANY_REQUESTS,
+        `You have been blocked from verifying due to too many attempts. Please try again after ${hoursLeft} hours.`
+      );
+    } else {
+      throw new ApiError(
+        httpStatus.TOO_MANY_REQUESTS,
+        `Too many OTP verification attempts. Please try again after ${minsLeft} minutes.`
+      );
+    }
+  }
+
+  // If the 24 hour block has passed, reset attempts
+  if (record.attempts >= PHASE_2_MAX_ATTEMPTS && now > record.blockUntil) {
+    record.attempts = 0;
+  }
+
+  // Increment attempts
+  record.attempts += 1;
+
+  // Apply cooldowns based on new attempt count
+  if (record.attempts === PHASE_1_MAX_ATTEMPTS) {
+    record.blockUntil = now + COOLDOWN_TIME;
+  } else if (record.attempts >= PHASE_2_MAX_ATTEMPTS) {
+    record.blockUntil = now + PERMANENT_BLOCK_TIME;
+  }
+
+  rateLimitStore[key] = record;
+
+  next();
+};
+
+export const clearOtpAttempts = (email: string) => {
+  const normalizedEmail = email.toString().toLowerCase().trim();
+  const key = `otp_${normalizedEmail}`;
+  if (rateLimitStore[key]) {
+    delete rateLimitStore[key];
+  }
+};

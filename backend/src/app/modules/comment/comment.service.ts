@@ -1,11 +1,14 @@
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
 import { User } from "../user/user.model";
-import { IComment, ICommentDTO, ICommentPayload, ILeanComment } from "./comment.interface";
+import { IComment, ICommentPayload } from "./comment.interface";
 import httpStatus from "http-status";
 import { Comment } from "./comment.model";
 import { startSession, Types } from "mongoose";
 import { Post } from "../post/post.model";
+import { ENUM_USER_ROLE } from "../../../enums/user";
+import { assertContentSafe } from "../../../utils/contentModeration";
+import { verifyPostAccess } from "../post/post.utils";
 
 const getValidParentCommentId = async (
   parentCommentId: string,
@@ -54,6 +57,16 @@ const createComment = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
 
+  verifyPostAccess(post, user);
+
+  // Content moderation — block inappropriate comments before persisting
+  try {
+    assertContentSafe(payload.comment);
+  } catch (moderationError) {
+    const msg = moderationError instanceof Error ? moderationError.message : "Comment blocked by content moderation.";
+    throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, msg);
+  }
+
   const commentData: Omit<IComment, "parentCommentId"> = {
     postId: new Types.ObjectId(payload.postId),
     userId: user._id,
@@ -94,7 +107,17 @@ const createComment = async (
   }
 };
 
-const getCommentsByPostId = async (postId: string) => {
+const getCommentsByPostId = async (postId: string, token?: ITokenPayload | null) => {
+  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+  }
+  let user = null;
+  if (token && token.email) {
+    user = await User.findOne({ email: token.email });
+  }
+  verifyPostAccess(post, user);
+
   return await Comment.find({ postId }).populate("userId", "name profile.avatar").sort({ createdAt: -1 });
 };
 
@@ -115,16 +138,9 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   if (!post) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
+  verifyPostAccess(post, user);
   
   // Replace the read-modify-write likes toggle with atomic MongoDB operators.
-  // The original pattern read likes, checked membership with includes, mutated
-  // the array, and saved. Two concurrent toggles by the same user can both pass
-  // the includes check (both see the ID absent), both push, and both save,
-  // resulting in a duplicate like entry.
-  //
-  // $addToSet adds the user ID only if it is not already present (like).
-  // $pull removes all matching entries (unlike). Both are atomic.
-  // Checking the current state first determines which operation to perform.
   const isCurrentlyLiked = await Comment.exists({
     _id: comment._id,
     likes: user._id,
@@ -140,6 +156,39 @@ const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
   return updatedComment;
 };
 
+const toggleCommentHelpful = async (commentId: string, token: ITokenPayload) => {
+  const { _id, email } = token;
+  const user = _id ? await User.findById(_id) : await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Comment not found!");
+  }
+  const post = await Post.findOne({
+    _id: comment.postId,
+    isDeleted: { $ne: true },
+  });
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+  }
+
+  const isCurrentlyHelpful = await Comment.exists({
+    _id: comment._id,
+    helpful: user._id,
+  });
+
+  const updatedComment = await Comment.findByIdAndUpdate(
+    comment._id,
+    isCurrentlyHelpful
+      ? { $pull: { helpful: user._id } }
+      : { $addToSet: { helpful: user._id } },
+    { new: true }
+  );
+  return updatedComment;
+};
+
 const deleteComment = async (commentId: string, token: ITokenPayload) => {
   const { _id, email, role } = token;
   const user = _id ? await User.findById(_id) : await User.findOne({ email });
@@ -150,9 +199,19 @@ const deleteComment = async (commentId: string, token: ITokenPayload) => {
   if (!comment) {
     throw new ApiError(httpStatus.NOT_FOUND, "Comment not found!");
   }
+
+  const post = await Post.findOne({
+    _id: comment.postId,
+    isDeleted: { $ne: true },
+  });
+  if (!post) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
+  }
+  verifyPostAccess(post, user);
+
   // Only the comment author or an admin/super-admin can delete
   const isAuthor = comment.userId.toString() === user._id.toString();
-  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+  const isAdmin = role === ENUM_USER_ROLE.ADMIN || role === ENUM_USER_ROLE.SUPER_ADMIN;
   if (!isAuthor && !isAdmin) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
@@ -167,9 +226,44 @@ const deleteComment = async (commentId: string, token: ITokenPayload) => {
   return { message: "Comment deleted successfully!" };
 };
 
+const hideComment = async (commentId: string) => {
+  const comment = await Comment.findByIdAndUpdate(
+    commentId,
+    {
+      isHidden: true,
+    },
+    { new: true }
+  );
+
+  if (!comment) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Comment not found!");
+  }
+
+  return comment;
+};
+
+const restoreComment = async (commentId: string) => {
+  const comment = await Comment.findByIdAndUpdate(
+    commentId,
+    {
+      isHidden: false,
+    },
+    { new: true }
+  );
+
+  if (!comment) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Comment not found!");
+  }
+
+  return comment;
+};
+
 export const CommentService = {
   createComment,
   getCommentsByPostId,
   toggleCommentLike,
+  toggleCommentHelpful,
   deleteComment,
+  hideComment,
+  restoreComment,
 };

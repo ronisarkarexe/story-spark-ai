@@ -14,9 +14,8 @@ jest.mock("../app/modules/verify_email/verify_email.service", () => ({
 }));
 
 jest.mock("../app/modules/auth/refresh_session.model", () => ({
-  RefreshSession: {
+    updateMany: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     create: jest.fn().mockResolvedValue({}),
-    updateMany: jest.fn().mockResolvedValue({}),
   },
 }));
 

@@ -29,6 +29,28 @@ const validateUserStatus = (status?: string) => {
   }
 };
 
+const normalizeEmail = (email: unknown) => {
+  if (typeof email !== "string") {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid email address.");
+  }
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email address is required.");
+  }
+  return normalized;
+};
+
+const normalizeString = (value: unknown, fieldName: string) => {
+  if (typeof value !== "string") {
+    throw new ApiError(httpStatus.BAD_REQUEST, `${fieldName} must be a string.`);
+  }
+  const normalized = value.trim();
+  if (!normalized) {
+    throw new ApiError(httpStatus.BAD_REQUEST, `${fieldName} is required.`);
+  }
+  return normalized;
+};
+
 // Token claims; tokenVersion enables global session revocation.
 const buildClaims = (user: any) => ({
   _id: user._id,
@@ -64,8 +86,10 @@ const issueRefreshToken = async (user: any): Promise<string> => {
 };
 
 const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
-  const { email: userEmail, password, rememberMe } = payload;
-  const isExistUser = await User.findOne({ email: userEmail });
+  const email = normalizeEmail(payload.email);
+  const password = normalizeString(payload.password, "Password");
+  const { rememberMe } = payload;
+  const isExistUser = await User.findOne({ email });
   if (!isExistUser) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
   }
@@ -94,7 +118,8 @@ const login = async (payload: AuthModel & { rememberMe?: boolean }) => {
 };
 
 const register = async (payload: IUser & { verificationToken?: string; confirmPassword?: string }) => {
-  const { email: userEmail, verificationToken } = payload;
+  const email = normalizeEmail(payload.email);
+  const verificationToken = normalizeString(payload.verificationToken, "Verification token");
   
   if (!verificationToken) {
     throw new ApiError(
@@ -104,7 +129,7 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
   }
 
   const otpRecord = await OTPModel.findOne({
-    email: userEmail,
+    email,
     isVerified: true,
     verificationToken,
   });
@@ -126,16 +151,16 @@ const register = async (payload: IUser & { verificationToken?: string; confirmPa
     );
   }
 
-  const isExistUser = await User.findOne({ email: userEmail });
+  const isExistUser = await User.findOne({ email });
   if (isExistUser) {
     throw new ApiError(httpStatus.CONFLICT, "User already exists!");
   }
   
   const { verificationToken: _, ...userPayload } = payload;
-  const result = await User.create(userPayload);
+  const result = await User.create({ ...userPayload, email });
 
   // Clean up OTP record after successful registration
-  await OTPModel.deleteOne({ email: userEmail });
+  await OTPModel.deleteOne({ email });
 
   const accessToken = issueAccessToken(result);
   const refreshToken = await issueRefreshToken(result);
@@ -161,8 +186,8 @@ const refreshToken = async (token: string) => {
     throw new ApiError(httpStatus.FORBIDDEN, "Invalid refresh token");
   }
 
-  const { email: userEmail } = verifiedToken;
-  const jti = (verifiedToken as any).jti as string | undefined;
+  const userEmail = normalizeEmail((verifiedToken as any).email);
+  const jti = typeof (verifiedToken as any).jti === "string" ? (verifiedToken as any).jti : undefined;
   const user = await User.findOne({ email: userEmail });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
@@ -225,8 +250,8 @@ const logout = async (token?: string) => {
       token,
       config.jwt.refresh_secret as Secret
     );
-    const jti = (verified as any).jti as string | undefined;
-    const userId = (verified as any)._id as string | undefined;
+    const jti = typeof (verified as any).jti === "string" ? (verified as any).jti : undefined;
+    const userId = typeof (verified as any)._id === "string" ? (verified as any)._id : undefined;
 
     // Revoke the refresh token session.
     if (jti) {
@@ -348,14 +373,12 @@ const changePassword = async (userPayload: any, payload: any) => {
   await user.save();
 };
 const forgotPassword = async (email: string) => {
-  if (!email) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Email is required!");
-  }
+  const safeEmail = normalizeEmail(email);
 
   // Same response for real and unknown emails to prevent account enumeration.
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: safeEmail });
   if (user) {
     // Fire and forget so response timing does not vary with account existence.
     VerifyEmailService.VerifyEmail({
@@ -376,10 +399,11 @@ const resetPassword = async (payload: {
   confirmPassword: string;
   verificationToken: string;
 }) => {
-  const { email, password, confirmPassword, verificationToken } = payload;
-  if (!email || !password || !confirmPassword || !verificationToken) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "All fields are required!");
-  }
+  const email = normalizeEmail(payload.email);
+  const password = normalizeString(payload.password, "Password");
+  const confirmPassword = normalizeString(payload.confirmPassword, "Confirm password");
+  const verificationToken = normalizeString(payload.verificationToken, "Verification token");
+
   if (password !== confirmPassword) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Passwords do not match!");
   }

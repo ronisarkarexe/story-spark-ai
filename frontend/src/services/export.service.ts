@@ -16,13 +16,38 @@ export interface IExportStory {
  * with a canvas CORS fallback.
  */
 export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
+  const CACHE_NAME = "story-spark-ai-image-cache";
+
+  if ("caches" in window) {
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      const cachedResponse = await cache.match(url);
+      if (cachedResponse) {
+        return await cachedResponse.blob();
+      }
+    } catch (e) {
+      console.warn("[ExportService] Failed to match image in Cache Storage:", e);
+    }
+  }
+
   try {
     // Try standard fetch first
     const response = await fetch(url, { mode: "cors" });
     if (!response.ok) {
       throw new Error(`Direct fetch failed with status ${response.status}`);
     }
-    return await response.blob();
+    const blob = await response.blob();
+
+    if ("caches" in window) {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(url, response.clone());
+      } catch (cacheError) {
+        console.warn("[ExportService] Failed to cache image:", cacheError);
+      }
+    }
+
+    return blob;
   } catch (error) {
     console.warn("Direct image fetch failed (CORS or network). Trying HTML Canvas fallback...", error);
     
@@ -43,6 +68,11 @@ export const fetchImageAsBlob = async (url: string): Promise<Blob> => {
           ctx.drawImage(img, 0, 0);
           canvas.toBlob((blob) => {
             if (blob) {
+              if ("caches" in window) {
+                caches.open(CACHE_NAME).then((cache) => {
+                  cache.put(url, new Response(blob));
+                }).catch(() => {});
+              }
               resolve(blob);
             } else {
               reject(new Error("Canvas toBlob yielded null blob"));

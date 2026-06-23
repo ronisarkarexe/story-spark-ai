@@ -3,8 +3,8 @@ import ApiError from "../../../errors/api_error";
 import { Post } from "../post/post.model";
 import { User } from "../user/user.model";
 import { ITokenPayload } from "../../../interfaces/token";
-import mongoose from "mongoose";
 import { IPost } from "../post/post.interface";
+
 const getPersonalizedRecommendations = async (token: ITokenPayload) => {
   const user = await User.findById(token._id)
     .select("readingPreferences readingHistory")
@@ -27,6 +27,7 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
 
   // If user has preferences, try to match them
   if (readingPreferences) {
+    // Create copies before sorting to avoid mutating the original arrays
     const favoriteGenres = [...(readingPreferences.favoriteGenres || [])]
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
@@ -50,6 +51,7 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
       recommendations = await Post.find(prefQuery)
         .select("_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt")
         .populate("author", "name profile.avatar")
+        .select("_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt")
         .sort({ likesCount: -1, viewsCount: -1 })
         .limit(10)
         .lean() as unknown as IPost[];
@@ -74,6 +76,7 @@ const getPersonalizedRecommendations = async (token: ITokenPayload) => {
     const popularPosts = await Post.find(fallbackQuery)
       .select("_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt")
       .populate("author", "name profile.avatar")
+      .select("_id title imageURL author emotions genre likesCount viewsCount publishedAt createdAt")
       .sort({ likesCount: -1, viewsCount: -1 })
       .limit(limit)
       .lean() as unknown as IPost[];
