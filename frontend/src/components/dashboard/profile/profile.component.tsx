@@ -9,6 +9,7 @@ import { ProfileSettingComponent } from "./profile.setting.component";
 import { ProfileSavedStoriesSection } from "./profile.saved_stories.component";
 import { WriterApplicationForm } from "./writer_application.form";
 import AuthContext from "../../auth.context";
+import { ProfileCompletionIndicator } from "./ProfileCompletionIndicator";
 import { instance } from "../../../helpers/axios/axiosInstance";
 
 const ProfileComponent = () => {
@@ -137,12 +138,12 @@ const ProfileComponent = () => {
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 pb-12">
       {data && (
         <>
-          {/* <ProfileCompletionIndicator
-          name={data.name}
-          bio={data.bio}
-          avatar={data.avatar}
-          socialLinks={data.socialLinks}
-          /> */}
+          <ProfileCompletionIndicator
+            name={data.name}
+            bio={data.profile?.bio}
+            avatar={data.profile?.avatar}
+            socialLinks={data.profile?.social}
+          />
 
           <ProfileSettingComponent
             user={data}
