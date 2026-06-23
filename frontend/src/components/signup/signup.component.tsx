@@ -481,7 +481,7 @@ const otpPayload = {
                 </div>
               </div>
 
-              <div className="flex justify-center w-full box-border overflow-hidden">
+              <div className="flex justify-center w-full min-w-0 box-border overflow-hidden">
                 <GoogleLogin
                   onSuccess={handleGoogleLoginSuccess}
                   onError={handleGoogleLoginError}
