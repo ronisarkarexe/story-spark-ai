@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import ReadingPreferencesSettingsSection from "./ReadingPreferencesSettingsSection";
 
 interface Preferences {
   aiProvider: string;
@@ -106,6 +107,7 @@ const SettingComponent = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ReadingPreferencesSettingsSection />
           {/* AI Settings Card */}
           <div className={cardClass}>
             <div>
