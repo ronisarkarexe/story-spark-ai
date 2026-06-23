@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {
+import type {
   UseFormRegister,
   FieldValues,
   Path,
@@ -66,12 +66,12 @@ const SSInput = <T extends FieldValues>({
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           {...register(name, validation)}
-          className={`w-full min-w-0 max-w-full h-11 block box-border rounded-xl border bg-white dark:bg-slate-900/40 text-sm transition-all duration-200 focus:outline-none focus:ring-2 ${
+          className={`w-full min-w-0 max-w-full h-11 block box-border rounded-xl border-none bg-[#e0e5ec] dark:bg-[#1a1f2e] shadow-neumorphic-inset text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 ${
             icon ? "pl-11" : "px-4"
           } ${isPasswordType ? "pr-11" : "pr-4"} ${
             error
-              ? "border-rose-500/80 focus:ring-rose-500/20 focus:border-rose-500 text-rose-200"
-              : "border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+              ? "ring-2 ring-rose-500/50 text-rose-500 dark:text-rose-400"
+              : "text-slate-900 dark:text-slate-200"
           }`}
         />
 

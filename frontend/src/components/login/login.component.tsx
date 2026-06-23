@@ -79,20 +79,8 @@ const LoginComponent = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6 lg:px-8 box-border">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.5 }}
-        className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"
-      />
+    <div className="min-h-screen w-full bg-[#e0e5ec] dark:bg-[#1a1f2e] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6 lg:px-8 box-border">
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.5, delay: 0.2 }}
-        className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"
-      />
 
       <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 box-border">
         <motion.div
@@ -151,7 +139,7 @@ const LoginComponent = () => {
         </motion.div>
 
                 <div className="flex justify-center w-full box-border">
-          <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
+          <div className="w-full max-w-md bg-[#e0e5ec] dark:bg-[#1a1f2e] shadow-neumorphic rounded-2xl p-6 sm:p-8 lg:p-10 box-border overflow-hidden relative mx-auto">
             <button
               onClick={() => (window.location.href = "/")}
               className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
@@ -216,10 +204,10 @@ const LoginComponent = () => {
 
             <div className="relative my-8 w-full">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+                <div className="w-full border-t border-slate-300 dark:border-slate-700" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-50 dark:bg-slate-800 px-4 text-slate-400 font-semibold tracking-wide">
+                <span className="bg-[#e0e5ec] dark:bg-[#1a1f2e] px-4 text-slate-400 font-semibold tracking-wide rounded-md">
                   Or
                 </span>
               </div>
