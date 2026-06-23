@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Chapter } from "../../types/story.types";
 import ReadingTimeBadge from "../ReadingTimeBadge";
 import toast from "react-hot-toast";
+import { AudioPlayer } from "../AudioPlayer"; // Sahi import path
 
 interface Props {
   chapters: Chapter[];
@@ -113,25 +114,15 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
           />
         </div>
         <div className="flex justify-between items-center mt-2">
-          <span className="text-sm text-zinc-400">Reading Progress</span>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleShare}
-              className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1 cursor-pointer"
-              title="Share this story"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              Share
-            </button>
-            <span className="text-sm font-medium text-indigo-400">
-              {progress === 100 ? "Completed! 🎉" : `${progress}%`}
-            </span>
-          </div>
-        </div>
-      </div>
+  <span className="text-sm text-zinc-400">
+    Reading Progress
+  </span>
 
+  <span className="text-sm font-medium text-indigo-400">
+    {progress}%
+  </span>
+</div>
+      </div>
       <div className="max-w-4xl mx-auto">
         {chapters.map((chapter) => (
           <div key={chapter.id} className="mb-16">
