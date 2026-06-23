@@ -7,6 +7,7 @@ import { fetchImageURL } from "../../../utils/image_generation";
 import { generateStoryboardImage } from "../../../utils/storyboard_image_generation";
 import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
+import { sanitizeJsonText } from "../../../utils/sanitize.util";
 import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
@@ -210,6 +211,10 @@ export async function generateWithGeminiStories(
   throwIfAborted(signal);
 
   assertGeminiApiKeyConfigured();
+
+  const genreInstruction = buildGenreInstruction(genre);
+  const toneInstruction = buildToneInstruction(tone);
+  const charactersInstruction = buildCharactersInstruction(characters);
 
   try {
     const genreInstruction = buildGenreInstruction(genre);
@@ -751,7 +756,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,

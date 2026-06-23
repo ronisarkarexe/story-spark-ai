@@ -251,7 +251,6 @@ const aiFreeStoryContinuationMultiple = async (
   signal?: AbortSignal
 ) => {
   const { prompt, language = "English", count = 3 } = payload;
-
   try {
     const result = await raceGenerationWithTimeout(
       (s) => generateStoryContinuationMultipleWithGemini(prompt, count, language, s),

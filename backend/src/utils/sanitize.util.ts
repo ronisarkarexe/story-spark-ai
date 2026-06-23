@@ -184,7 +184,7 @@ export const sanitizeObjectStrings = <T extends Record<string, any>>(
 ): T => {
   if (!obj || typeof obj !== "object") return obj;
 
-  const result = { ...obj } as any;
+  const result = { ...obj } as Record<string, any>;
   for (const key of Object.keys(result)) {
     if (typeof result[key] === "string") {
       result[key] = sanitizer(result[key]);
@@ -197,7 +197,7 @@ export const sanitizeObjectStrings = <T extends Record<string, any>>(
       result[key] = sanitizeObjectStrings(result[key], sanitizer);
     }
   }
-  return result;
+  return result as T;
 };
 
 /**
@@ -236,4 +236,17 @@ export const sanitizeStoryPayload = <T extends { title?: string; content?: strin
   }
 
   return sanitized;
+};
+
+/**
+ * Strip markdown code blocks from a JSON response text.
+ */
+export const sanitizeJsonText = (rawText: string): string => {
+  if (!rawText || typeof rawText !== "string") return "";
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
 };

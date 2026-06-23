@@ -14,9 +14,20 @@ jest.mock("../app/modules/verify_email/verify_email.service", () => ({
 }));
 
 jest.mock("../app/modules/auth/refresh_session.model", () => ({
-  RefreshSession: {
     updateMany: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     create: jest.fn().mockResolvedValue({}),
+  },
+}));
+
+jest.mock("../config", () => ({
+  __esModule: true,
+  default: {
+    jwt: {
+      secret: "test-secret",
+      refresh_secret: "test-refresh-secret",
+      expires_in: "15m",
+      refresh_expires_in: "7d",
+    },
   },
 }));
 

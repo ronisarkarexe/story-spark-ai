@@ -89,7 +89,7 @@ const doFeaturedPosts = catchAsync(async (req: Request, res: Response) => {
 
 const getSinglePost = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
-  
+
   let token = null;
   try {
     token = await getToken(req);

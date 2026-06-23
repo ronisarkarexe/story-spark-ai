@@ -193,7 +193,6 @@ export const setupCollabSocket = (io: Server) => {
       }
     });
 
-    // Yjs document updates
     socket.on("collab:yjs-update", async ({ roomId, update }) => {
       try {
         const userId = socket.data.userId;

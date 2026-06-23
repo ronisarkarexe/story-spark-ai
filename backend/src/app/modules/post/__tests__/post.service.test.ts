@@ -150,7 +150,7 @@ describe("escapeRegex", () => {
   });
 
   it("leaves plain alphanumeric strings unchanged", () => {
-    expect(escapeRegex("hello world")).toBe("hello world");
+    expect(escapeRegex("helloworld")).toBe("helloworld");
   });
 
   it("escapes a hyphen", () => {

@@ -10,6 +10,36 @@ import { ENUM_USER_ROLE } from "../../../enums/user";
 import { assertContentSafe } from "../../../utils/contentModeration";
 import { verifyPostAccess } from "../post/post.utils";
 
+const getValidParentCommentId = async (
+  parentCommentId: string,
+  postId: string,
+) => {
+  if (!Types.ObjectId.isValid(parentCommentId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid parentCommentId");
+  }
+
+  const parentComment = await Comment.findOne({
+    _id: parentCommentId,
+    postId,
+  });
+
+  if (!parentComment) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Parent comment not found for this post!",
+    );
+  }
+
+  if (parentComment.parentCommentId) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Replies can only be added to top-level comments!",
+    );
+  }
+
+  return new Types.ObjectId(parentCommentId);
+};
+
 const createComment = async (
   payload: ICommentPayload,
   token: ITokenPayload
@@ -37,61 +67,43 @@ const createComment = async (
     throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, msg);
   }
 
-  // Validate parent comment if parentCommentId is provided
+  const commentData: Omit<IComment, "parentCommentId"> = {
+    postId: new Types.ObjectId(payload.postId),
+    userId: user._id,
+    comment: payload.comment,
+  };
   if (payload.parentCommentId) {
-    if (!Types.ObjectId.isValid(payload.parentCommentId)) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid parentCommentId");
-    }
-    const parentComment = await Comment.findOne({
-      _id: payload.parentCommentId,
-      postId: payload.postId,
-    });
-    if (!parentComment) {
-      throw new ApiError(
-        httpStatus.NOT_FOUND,
-        "Parent comment not found for this post!"
-      );
-    }
-    if (parentComment.parentCommentId) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "Replies can only be added to top-level comments!"
-      );
-    }
+    (commentData as IComment).parentCommentId = await getValidParentCommentId(
+      payload.parentCommentId,
+      payload.postId,
+    );
   }
-
   const session = await startSession();
+
   try {
     session.startTransaction();
 
+    const [createdComment] = await Comment.create([commentData], { session });
     const updateResult = await Post.updateOne(
-      { _id: post._id, isDeleted: { $ne: true } },
+      {
+        _id: post._id,
+        isDeleted: { $ne: true },
+      },
       { $inc: { commentsCount: 1 } },
       { session }
     );
 
-    if (updateResult.modifiedCount === 0) {
+    if (updateResult.modifiedCount !== 1) {
       throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
     }
 
-    const commentData: any = {
-      postId: new Types.ObjectId(payload.postId),
-      userId: user._id,
-      comment: payload.comment,
-    };
-    if (payload.parentCommentId) {
-      commentData.parentCommentId = new Types.ObjectId(payload.parentCommentId);
-    }
-
-    const res = await Comment.create([commentData], { session });
-
     await session.commitTransaction();
-    await session.endSession();
-    return res[0];
+    return createdComment;
   } catch (error) {
     await session.abortTransaction();
-    await session.endSession();
     throw error;
+  } finally {
+    await session.endSession();
   }
 };
 

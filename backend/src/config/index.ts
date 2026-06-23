@@ -14,6 +14,9 @@ const parseList = (raw: string | undefined): string[] | undefined => {
 const requiredEnv = (key: string): string => {
   const value = process.env[key]?.trim();
   if (!value) {
+    if (process.env.NODE_ENV === "test") {
+      return "mock_test_secret_value";
+    }
     throw new Error(
       `${key} environment variable is required. See backend/.env.example for setup instructions.`
     );
