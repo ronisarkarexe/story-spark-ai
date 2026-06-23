@@ -11,8 +11,146 @@ import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
-import StoryTranslator from "../translate/StoryTranslator";
+import {
+  fetchImageAsBlob,
+  blobToBase64,
+  exportStoryToPDF,
+  exportStoryToEPUB
+} from "../../services/export.service";
+import StoryWorldMap from "../story-map/StoryWorldMap";
+import StoryRemix from "../remix/StoryRemix";
+import StoryTrailer from "../trailer/StoryTrailer";
+import BookmarkButton from "../BookmarkButton";
+import logo from "../../assets/logoNew.png";
+import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
+import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setStory } from "../../redux/slices/storySlice";
+import ContinueStoryButton from "../story/ContinueStoryButton";
+import { useApiError } from "../../hooks/useApiError";
+import { useLocation } from "react-router-dom";
+import {
+  useGenerateAlternateEndingsMutation,
+  useGenerateFreeAlternateEndingsMutation,
+} from "../../redux/apis/ai.model.api";
+import ImageFallback from "../ImageFallback";
+import StoryVisualizer from "../story-visualizer/StoryVisualizer";
+import ContinueStoryModal from "./ContinueStoryModal";
 
+import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
+import EmptyStoriesState from "./EmptyStoriesState";
+
+const StoryWorldMap = React.lazy(() => import("../story-map/StoryWorldMap"));
+const StoryRemix = React.lazy(() => import("../remix/StoryRemix"));
+
+
+// --- Custom Error Classes & Helper Types ---
+export class ApiError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.status === 429) {
+      return "The AI service is currently busy. Please wait a moment and try again.";
+    }
+    if ([502, 503, 504].includes(error.status)) {
+      return "The server took too long to respond. Please try again shortly.";
+    }
+    if (error.status >= 500) {
+      return "A server error occurred. Please try again later.";
+    }
+  }
+  if (error instanceof TypeError) {
+    return "Could not reach the server. Please check your connection and try again.";
+  }
+  return "An unexpected error occurred. Please try again.";
+}
+
+// Dummy themes helper
+const getGenreTheme = (tag: string) => {
+  return { gradient: "45deg, #1e1b4b, #311042", accent: "#a855f7", icon: "✨" };
+};
+const getInitials = (title: string) => title.slice(0, 2).toUpperCase();
+
+interface StoryCoverImageProps {
+  title?: string;
+  tag?: string;
+  size?: "thumb" | "full";
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
+  title = "",
+  tag = "default",
+  size = "full",
+  className = "",
+  style = {},
+}) => {
+  const theme = getGenreTheme(tag);
+  const initials = getInitials(title);
+
+  if (size === "thumb") {
+    return (
+      <div
+        className={className}
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: "50%",
+          background: `linear-gradient(${theme.gradient})`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "1.1rem",
+          fontWeight: 700,
+          color: "#fff",
+          letterSpacing: "0.05em",
+          textShadow: "0 1px 4px rgba(0,0,0,0.4)",
+          userSelect: "none",
+          ...style,
+        }}
+      >
+        {initials}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={className}
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: "192px",
+        position: "relative",
+        overflow: "hidden",
+        background: `linear-gradient(${theme.gradient})`,
+        borderRadius: "inherit",
+        ...style,
+      }}
+    >
+      <div style={{ position: "absolute", top: "-30%", right: "-15%", width: "60%", height: "120%", background: "rgba(255,255,255,0.08)", borderRadius: "50%", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "-20%", left: "-10%", width: "45%", height: "80%", background: "rgba(0,0,0,0.12)", borderRadius: "50%", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "12px", right: "16px", fontSize: "3.5rem", color: theme.accent, opacity: 0.35, lineHeight: 1, userSelect: "none", pointerEvents: "none", fontWeight: 300 }}>{theme.icon}</div>
+      <div style={{ position: "absolute", top: "14px", left: "14px", background: "rgba(0,0,0,0.28)", backdropFilter: "blur(6px)", color: "#fff", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "3px 10px", borderRadius: "999px", border: `1px solid ${theme.accent}55`, userSelect: "none" }}>{tag}</div>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontSize: "5rem", fontWeight: 900, color: "rgba(255,255,255,0.12)", letterSpacing: "-0.04em", lineHeight: 1, userSelect: "none", pointerEvents: "none" }}>{initials}</div>
+      </div>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)", padding: "32px 14px 12px" }}>
+        <p style={{ margin: 0, color: "#fff", fontSize: "0.9rem", fontWeight: 700, lineHeight: 1.3, textShadow: "0 1px 6px rgba(0,0,0,0.5)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{title}</p>
+      </div>
+    </div>
+  );
+};
+
+import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
+import ContinueStoryModal from "./ContinueStoryModal";
 export interface IStories {
   uuid: string;
   title: string;
@@ -29,23 +167,229 @@ interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
+  onPublishSuccess?: () => void;
 }
+
+type StorySentenceSegment = {
+  id: string;
+  text: string;
+  startWordIndex: number;
+  endWordIndex: number;
+};
+
+const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+  if (!content.trim()) {
+    return [];
+  }
+
+  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
+  const segments: StorySentenceSegment[] = [];
+  let wordCursor = 0;
+
+  sentenceMatches.forEach((sentence, index) => {
+    const trimmedSentence = sentence.trim();
+    if (!trimmedSentence) {
+      return;
+    }
+
+    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
+    const startWordIndex = wordCursor;
+    const endWordIndex =
+      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
+
+    segments.push({
+      id: `${index}-${startWordIndex}-${endWordIndex}`,
+      text: sentence,
+      startWordIndex,
+      endWordIndex,
+    });
+    wordCursor += wordsInSentence;
+  });
+  return segments;
+};
+
+const getSafeFileName = (title: string, extension: "md" | "docx" | "pdf"): string => {
+  const safeTitle = (title || "story")
+    .trim()
+    .replace(/[^a-z0-9]+/gi, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase();
+
+  return `${safeTitle || "story"}.${extension}`;
+};
+
+const downloadBlob = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+    wordCursor += wordsInSentence;
+  });
+
+export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
+  const navigate = useNavigate();
+  const filteredPosts = posts.filter((post) => post._id !== currentPostId);
+
+  return (
+    <div className="mt-8">
+      <h4 className="text-lg font-bold text-slate-200 mb-4">Related Content</h4>
+      {filteredPosts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredPosts.map((post) => (
+            <div
+              key={post._id}
+              onClick={() => navigate(`/stories/${post._id}`)}
+              className="p-4 bg-slate-700/40 rounded-xl border border-slate-600/30 cursor-pointer hover:bg-slate-700/60 transition-colors"
+            >
+              <p className="text-sm font-semibold text-white truncate">{post.title}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-slate-500 py-4 border border-dashed border-slate-700 rounded-xl">No related stories found.</p>
+      )}
+    </div>
+  );
+  return segments;
+};
+
+const detectStoryMood = (content: string) => {
+  const lowercase = content.toLowerCase();
+  
+  const moodKeywords = {
+    Happy: {
+      emoji: "😊",
+      words: ["happy", "joy", "smile", "laugh", "glad", "cheerful", "delighted", "celebrat", "sunshine", "peace", "content", "love", "wonderful", "positive"],
+      colorClass: "text-amber-300",
+      bgClass: "bg-amber-900/60",
+      borderClass: "border-amber-700/50"
+    },
+    Suspense: {
+      emoji: "😨",
+      words: ["shadow", "mysteri", "mystery", "whisper", "dark", "silence", "sudden", "fear", "dread", "tense", "tension", "escape", "warning", "danger", "trap", "alert", "nervous", "heartbeat", "chill"],
+      colorClass: "text-orange-300",
+      bgClass: "bg-orange-900/60",
+      borderClass: "border-orange-700/50"
+    },
+    Sad: {
+      emoji: "💔",
+      words: ["sad", "tears", "tear", "cry", "weep", "grief", "grieve", "loss", "lost", "lonely", "pain", "sorrow", "mourn", "broken", "empty", "tragic", "regret"],
+      colorClass: "text-cyan-300",
+      bgClass: "bg-cyan-900/60",
+      borderClass: "border-cyan-700/50"
+    },
+    Action: {
+      emoji: "🔥",
+      words: ["run", "fight", "battle", "sword", "strike", "clash", "weapon", "burst", "speed", "explod", "explosion", "chase", "leap", "attack", "defense", "power"],
+      colorClass: "text-rose-300",
+      bgClass: "bg-rose-900/60",
+      borderClass: "border-rose-700/50"
+    },
+    Fantasy: {
+      emoji: "✨",
+      words: ["magic", "spell", "wizard", "witch", "elf", "dwarf", "fairy", "dragon", "portal", "crystal", "kingdom", "cast", "wand", "sparkle", "enchant", "dream", "myth", "legend"],
+      colorClass: "text-purple-300",
+      bgClass: "bg-purple-900/60",
+      borderClass: "border-purple-700/50"
+    }
+  };
+
+  const scores: Record<string, number> = {
+    Happy: 0,
+    Suspense: 0,
+    Sad: 0,
+    Action: 0,
+    Fantasy: 0
+  };
+
+  for (const [mood, data] of Object.entries(moodKeywords)) {
+    data.words.forEach(word => {
+      const regex = new RegExp(`\\b${word}`, 'g');
+      const matches = lowercase.match(regex);
+      if (matches) {
+        scores[mood] += matches.length;
+      }
+    });
+  }
+
+  let maxMood = "Fantasy"; // default fallback mood
+  let maxScore = 0;
+
+  for (const [mood, score] of Object.entries(scores)) {
+    if (score > maxScore) {
+      maxScore = score;
+      maxMood = mood;
+    }
+  }
+
+  return {
+    label: maxMood,
+    emoji: moodKeywords[maxMood as keyof typeof moodKeywords].emoji,
+    colorClass: moodKeywords[maxMood as keyof typeof moodKeywords].colorClass,
+    bgClass: moodKeywords[maxMood as keyof typeof moodKeywords].bgClass,
+    borderClass: moodKeywords[maxMood as keyof typeof moodKeywords].borderClass
+  };
+};
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
   setStories,
 }) => {
-  const [selectedStory, setSelectedStory] = useState<IStories | null>(
-    stories && stories[0]
-  );
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const storyScrollContainerRef = useRef<HTMLDivElement>(null);
+  const {
+    isPlaying: isAntiGravityPlaying,
+    setIsPlaying: setIsAntiGravityPlaying,
+    targetSpeed: antiGravitySpeed,
+    setTargetSpeed: setAntiGravitySpeed,
+  } = useAntiGravityScroll(storyScrollContainerRef);
+
+  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+
+  // States
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Export states
+  const [exportState, setExportState] = useState<"idle" | "processing" | "compiling" | "success" | "error">("idle");
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState<boolean>(false);
+  const dropdownMenuRef = useRef<HTMLDivElement>(null);
+
+  // Standard functional states
+  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+
+  // Start with a clean state that adapts dynamically
+  const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
+  const [newTopicTitle, setNewTopicTitle] = useState<string>("");
+  const [isCopied, setIsCopied] = useState<boolean>(false);
+  
+  // Modals
+  const [showContinueModal, setShowContinueModal] = useState<boolean>(false);
+  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
+  const [showRemix, setShowRemix] = useState<boolean>(false);
+  const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [showStoryVisualizer, setShowStoryVisualizer] = useState<boolean>(false);
+  
+  // StoryVisualizer states
+  const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]);
+  const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
-  const [profileLoading, setProfileLoading] = useState<boolean>(false);
-  const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
+  const [, setShowRemix] = useState<boolean>(false);
+  const [showContinueModal, setShowContinueModal] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
 
