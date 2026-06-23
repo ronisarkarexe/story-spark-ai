@@ -201,6 +201,12 @@ const toggleFollow = async (token: ITokenPayload, authorId: string) => {
   if (!author) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Author not found!");
   }
+  if (currentUser._id.toString() === author._id.toString()) {
+  throw new ApiError(
+    httpStatus.BAD_REQUEST,
+    "You cannot follow yourself!"
+  );
+}
 
   const existingFollow = await Follow.findOne({
   follower: currentUser._id,
@@ -211,15 +217,31 @@ const isFollowing = !!existingFollow;
 
 if (isFollowing) {
   await Follow.findByIdAndDelete(existingFollow!._id);
+
+  await User.findByIdAndUpdate(currentUser._id, {
+    $pull: { following: author._id },
+  });
+
+  await User.findByIdAndUpdate(author._id, {
+    $pull: { followers: currentUser._id },
+  });
+
   return { isFollowing: false };
 } else {
   await Follow.create({
     follower: currentUser._id,
     following: author._id,
-});
+  });
+  await User.findByIdAndUpdate(currentUser._id, {
+    $addToSet: { following: author._id },
+  });
+
+  await User.findByIdAndUpdate(author._id, {
+    $addToSet: { followers: currentUser._id },
+  });
 
   return { isFollowing: true };
-}
+  }
 };
 const getFollowStatus = async (token: ITokenPayload, authorId: string) => {
   const currentUser = await User.findOne({ email: token.email });
