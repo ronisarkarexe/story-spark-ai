@@ -7,6 +7,17 @@ import PaginationComponent from "../pagination/pagination.component";
 import { getSessionBookmarks } from "../../utils/session-bookmarks";
 import StoryTradingCard from "../cards/StoryTradingCard";
 import { IStories } from "../stories/stories.view.component";
+import {
+  useGetRecentReadingProgressQuery,
+  useDeleteReadingProgressMutation,
+} from "../../redux/apis/readingProgress.api";
+import {
+  getRecentStories,
+  removeRecentStory,
+  type RecentStory,
+} from "../../utils/recent-stories";
+import { isLoggedIn } from "../../services/auth.service";
+import { toast } from "react-hot-toast";
 
 const BookmarksComponent = () => {
   const navigate = useNavigate();
@@ -28,8 +39,29 @@ const BookmarksComponent = () => {
 
   const allPosts: Post[] = (data?.posts ?? []) as Post[];
 
-  const [activeTab, setActiveTab] = useState<"posts" | "generated">("posts");
+  const [activeTab, setActiveTab] = useState<"posts" | "generated" | "recent">("posts");
   const [sessionStories, setSessionStories] = useState<IStories[]>(() => getSessionBookmarks());
+  const [recentStories, setRecentStories] = useState<RecentStory[]>([]);
+
+  const loggedIn = isLoggedIn();
+  const { data: dbRecentData } = useGetRecentReadingProgressQuery(undefined, {
+    skip: !loggedIn,
+  });
+  const [deleteRecentProgress] = useDeleteReadingProgressMutation();
+
+  const handleDeleteRecent = async (story: RecentStory) => {
+    removeRecentStory(story.id);
+    if (!story.isDraft && loggedIn) {
+      try {
+        await deleteRecentProgress(story.id).unwrap();
+        toast.success("Removed from reading history!");
+      } catch (error) {
+        console.error("Failed to delete reading progress from DB:", error);
+      }
+    } else {
+      toast.success("Removed from reading history!");
+    }
+  };
 
   useEffect(() => {
     const handleBookmarkChange = () => {
@@ -41,12 +73,55 @@ const BookmarksComponent = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleRecentChange = () => {
+      const local = getRecentStories();
+      let merged = [...local];
+
+      if (dbRecentData?.data) {
+        dbRecentData.data.forEach((dbItem: any) => {
+          if (!dbItem.storyId) return;
+          const story = dbItem.storyId;
+          const exists = merged.some((item) => item.id === story._id);
+          if (!exists) {
+            merged.push({
+              id: story._id,
+              title: story.title,
+              imageURL: story.imageURL,
+              tag: story.tag,
+              progress: dbItem.progress,
+              lastScrollPosition: dbItem.lastScrollPosition || 0,
+              updatedAt: new Date(dbItem.updatedAt).getTime(),
+              isDraft: false,
+            });
+          }
+        });
+      }
+
+      merged.sort((a, b) => b.updatedAt - a.updatedAt);
+      setRecentStories(merged);
+    };
+
+    handleRecentChange();
+    window.addEventListener("recent_stories_changed", handleRecentChange);
+    return () => {
+      window.removeEventListener("recent_stories_changed", handleRecentChange);
+    };
+  }, [dbRecentData]);
+
   const filteredSessionStories = sessionStories.filter(
     (story: IStories) =>
       story &&
       ((story.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (story.tag?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
+  );
+
+  const filteredRecentStories = recentStories.filter(
+    (story: RecentStory) =>
+      story &&
+      ((story.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (story.tag?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
   );
 
   // Implement client-side instant search for bookmarks
@@ -150,6 +225,17 @@ const BookmarksComponent = () => {
               >
                 Generated Drafts ({sessionStories.length})
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("recent")}
+                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
+                  activeTab === "recent"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                }`}
+              >
+                Recently Viewed ({recentStories.length})
+              </button>
             </div>
 
             {/* Content Rendering */}
@@ -180,7 +266,7 @@ const BookmarksComponent = () => {
                     isLoading={isLoading}
                   />
                 )
-              ) : (
+              ) : activeTab === "generated" ? (
                 sessionStories.length === 0 ? (
                   /* Elegant Responsive Empty State for Generated Drafts */
                   <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-[2.5rem] border border-slate-200/60 shadow-xl backdrop-blur-md dark:bg-[#0f172a]/60 dark:border-white/5 dark:text-white">
@@ -204,6 +290,86 @@ const BookmarksComponent = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
                     {filteredSessionStories.map((story) => (
                       <StoryTradingCard key={story.uuid} story={story} />
+                    ))}
+                  </div>
+                )
+              ) : (
+                filteredRecentStories.length === 0 ? (
+                  /* Elegant Empty State for Recently Viewed */
+                  <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-[2.5rem] border border-slate-200/60 shadow-xl backdrop-blur-md dark:bg-[#0f172a]/60 dark:border-white/5 dark:text-white">
+                    <div className="w-24 h-24 rounded-full bg-indigo-50 dark:bg-blue-500/10 flex items-center justify-center mb-8 text-indigo-500 dark:text-blue-400 border border-indigo-100/50 dark:border-blue-500/10 shadow-inner">
+                      <i className="fas fa-history text-4xl"></i>
+                    </div>
+                    <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight dark:text-gray-200">
+                      No recently viewed stories
+                    </h3>
+                    <p className="text-slate-500 max-w-sm mb-10 text-lg leading-relaxed dark:text-gray-400">
+                      Your reading history is clean. Read stories and draft creations to see them tracked automatically here.
+                    </p>
+                    <button
+                      onClick={() => navigate("/explore")}
+                      className="cursor-pointer !rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 py-4 shadow-lg shadow-slate-200 transition-all duration-300 hover:-translate-y-1 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:shadow-none"
+                    >
+                      Browse Stories
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+                    {filteredRecentStories.map((story) => (
+                      <div key={story.id} className="relative group w-full bg-white dark:bg-slate-800/60 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-700/50 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-indigo-500/10 flex flex-col justify-between">
+                        {/* Glow decoration */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                        
+                        <div className="relative z-10 flex flex-col h-full justify-between">
+                          <div>
+                            {/* Cover and Tag */}
+                            <div className="relative h-44 w-full rounded-xl overflow-hidden mb-4 bg-slate-800">
+                              <img src={story.imageURL} alt={story.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              <span className="absolute top-2.5 right-2.5 px-2.5 py-1 bg-slate-900/80 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-slate-100 rounded-full border border-white/10">
+                                {story.tag?.toUpperCase() || "AI STORY"}
+                              </span>
+                              {story.isDraft && (
+                                <span className="absolute top-2.5 left-2.5 px-2.5 py-1 bg-indigo-600 text-[10px] font-bold uppercase tracking-wider text-white rounded-full shadow-md">
+                                  Draft
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Title */}
+                            <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100 line-clamp-2 mb-4">
+                              {story.title}
+                            </h4>
+                          </div>
+
+                          {/* Reading Progress */}
+                          <div className="mt-auto">
+                            <div className="flex justify-between items-center mb-1 text-xs">
+                              <span className="text-slate-500 dark:text-slate-400 font-medium">Reading Progress</span>
+                              <span className="text-indigo-600 dark:text-indigo-400 font-bold">{Math.round(story.progress)}%</span>
+                            </div>
+                            <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4">
+                              <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300" style={{ width: `${story.progress}%` }}></div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => navigate(story.isDraft ? "/stories" : `/posts/${story.id}`)}
+                                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-md shadow-indigo-600/10 hover:shadow-indigo-500/20 transition active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                              >
+                                <i className="fas fa-book-open"></i> Resume
+                              </button>
+                              <button
+                                onClick={() => handleDeleteRecent(story)}
+                                className="p-2.5 border border-slate-200 hover:border-red-200 dark:border-slate-700 dark:hover:border-red-900 text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition active:scale-95 cursor-pointer"
+                                title="Remove from history"
+                              >
+                                <i className="fas fa-trash-alt"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )

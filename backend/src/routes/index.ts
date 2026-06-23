@@ -15,6 +15,7 @@ import { NewsletterRouter } from "../app/modules/newsletter/newsletter.route";
 import paymentRouter from "../router/payment.route";
 import { AIEditorRouter } from "../app/modules/ai_editor/ai_editor.router";
 import { BookmarkRouter } from "../app/modules/bookmark/bookmark.router";
+import { ReadingProgressRouter } from "../app/modules/reading_progress/reading_progress.router";
 import { StoryVersionRouter } from "../app/modules/story_version/story_version.router";
 import { AnalyticsRouter } from "../app/modules/analytics/analytics.router";
 import { BugReportRouter } from "../app/modules/bug_report/bug_report.router";
@@ -84,6 +85,10 @@ const modules = [
   {
     path: "/bookmarks",
     router: BookmarkRouter,
+  },
+  {
+    path: "/reading-progress",
+    router: ReadingProgressRouter,
   },
   {
     path: "/story-consistency",

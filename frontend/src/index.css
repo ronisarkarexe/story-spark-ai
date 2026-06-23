@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&display=swap");
 @import "tailwindcss";
-@plugin "@tailwindcss/forms"; 
+
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -1571,24 +1571,22 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
   transform: none;
 }
 /* Fix: Prevent Flash of Unstyled Text (FOUT) on Dynamic Generated Text Canvas */
-@layer utilities {
-  .story-canvas-content, 
-  [class*="story-text"], 
-  [class*="generated-content"] {
-    font-display: swap;
-    animation: fontHydrationLock 0.3s ease-in-out forwards;
+.story-canvas-content, 
+[class*="story-text"], 
+[class*="generated-content"] {
+  font-display: swap;
+  animation: fontHydrationLock 0.3s ease-in-out forwards;
+}
+
+
+@keyframes fontHydrationLock {
+  from {
+    opacity: 0.85;
+    filter: blur(0.5px);
   }
-
-
-  @keyframes fontHydrationLock {
-    from {
-      opacity: 0.85;
-      filter: blur(0.5px);
-    }
-    to {
-      opacity: 1;
-      filter: blur(0px);
-    }
+  to {
+    opacity: 1;
+    filter: blur(0px);
   }
 }
 /* Hide browser-native password reveal button (Edge/IE/Chrome/Safari) */
