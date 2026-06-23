@@ -1,16 +1,12 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
 import { CharacterProfile } from "./stories.utils";
-import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
+import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
-import DOMPurify from "dompurify";
 import AudioPlayer, { AudioPlayerHandle, NarrationPlaybackState } from "../AudioPlayer";
 import StoryTranslator from "../translate/StoryTranslator";
 import {

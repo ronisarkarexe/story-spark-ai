@@ -117,9 +117,18 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
     Reading Progress
   </span>
 
-  <span className="text-sm font-medium text-indigo-400">
-    {progress}%
-  </span>
+  <div className="flex items-center gap-3">
+    <span className="text-sm font-medium text-indigo-400">
+      {progress}%
+    </span>
+    <button
+      onClick={handleShare}
+      className="text-xs px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+      title="Share story"
+    >
+      Share
+    </button>
+  </div>
 </div>
       </div>
       <div className="max-w-4xl mx-auto">
