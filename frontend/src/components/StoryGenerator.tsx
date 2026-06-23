@@ -3,14 +3,14 @@ import { useState } from 'react';
 import api from '../services/api';
 
 interface StoryGeneratorProps {
-  onStoryGenerated?: (stories: any[]) => void;
+  onStoryGenerated?: (stories: string[]) => void;
 }
 
 export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated }) => {
   const [prompt, setPrompt] = useState('');
   const [variationCount, setVariationCount] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
-  const [stories, setStories] = useState<any[]>([]);
+  const [stories, setStories] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
@@ -40,21 +40,21 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
         throw new Error('No variations received from AI service');
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('AI Generation Error:', error);
 
       // ✅ Handle different error types
       let errorMessage = 'Failed to generate stories. Please try again.';
-
-      if (error.response?.status === 429) {
+      const err = error as { response?: { status?: number }; code?: string; message?: string };
+      if (err.response?.status === 429) {
         errorMessage = 'The AI service is currently busy. Please wait a moment and try again.';
-      } else if (error.response?.status === 504) {
+      } else if (err.response?.status === 504) {
         errorMessage = 'The AI service is taking too long. Please try again later.';
-      } else if (error.response?.status === 500) {
+      } else if (err.response?.status === 500) {
         errorMessage = 'Server error. Please try again later.';
-      } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      } else if (err.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
         errorMessage = 'Request timed out. Please try again.';
-      } else if (!error.response) {
+      } else if (!err.response) {
         errorMessage = 'Network error. Please check your connection.';
       }
 
