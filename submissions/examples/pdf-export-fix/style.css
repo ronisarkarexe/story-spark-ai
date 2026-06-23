@@ -1,0 +1,179 @@
+/* ─── Global Base Structure ─────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f172a;
+  color: #f1f5f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+/* Card Wrapper Layout */
+.app-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  width: 100%;
+  max-width: 540px;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.app-header {
+  background: #0f172a;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #334155;
+}
+
+.logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.badge {
+  background: #e11d48;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+}
+
+.content {
+  padding: 1.5rem;
+}
+
+/* Form Styles */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.input-group input {
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.input-group input:focus {
+  border-color: #38bdf8;
+}
+
+.input-group small {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+/* Live Analytics Box */
+.preview-box {
+  background: #0f172a;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px dashed #475569;
+}
+
+.preview-box h4 {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.preview-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.preview-line span {
+  color: #64748b;
+}
+
+.preview-line code {
+  font-family: monospace;
+  background: #1e293b;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  word-break: break-all;
+}
+
+.preview-line code.highlight {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+/* Trigger Controls */
+.btn-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.btn {
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background: #38bdf8;
+  color: #0f172a;
+}
+
+.btn-secondary {
+  background: #475569;
+  color: #f1f5f9;
+}
+
+/* Status Alert System */
+.status-box {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin-top: 1rem;
+}
+
+.status-success { background: rgba(74, 222, 128, 0.1); border: 1px solid #4ade80; color: #4ade80; }
+.status-warning { background: rgba(251, 146, 60, 0.1); border: 1px solid #fb923c; color: #fb923c; }
+.status-error { background: rgba(248, 113, 113, 0.1); border: 1px solid #f87171; color: #f87171; }
+
+.hidden { display: none; }
