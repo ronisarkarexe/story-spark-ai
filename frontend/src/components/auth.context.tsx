@@ -2,10 +2,10 @@ import React, { createContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getUserInfo,
+  getToken,
   removeUserInfo,
   storeUserInfo,
 } from "../services/auth.service";
-import { AUTH_KEY } from "../constants/storage-key";
 
 interface User {
   id: string;
@@ -27,7 +27,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(
-    localStorage.getItem(AUTH_KEY),
+    getToken(),
   );
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = useCallback(() => {
     setAccessToken(null);
     setUser(null);
-    removeUserInfo(); // handles localStorage removal via AUTH_KEY
+    removeUserInfo();
     navigate("/login");
   }, [navigate]);
 

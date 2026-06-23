@@ -4,9 +4,8 @@ import {
   PieChart, Pie, Cell, CartesianGrid, LineChart, Line
 } from "recharts";
 import { Link } from "react-router-dom";
-import { AUTH_KEY } from "../../constants/storage-key";
 import { getBaseUrl } from "../../helpers/config";
-import { getFromLocalStorage } from "../../utils/local-storage";
+import { getToken } from "../../services/auth.service";
 
 const API_BASE = getBaseUrl();
 
@@ -43,7 +42,7 @@ export default function AnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const token = getFromLocalStorage(AUTH_KEY) || "";
+  const token = getToken() || "";
 
   const fetchData = async (
     endpoint: string,

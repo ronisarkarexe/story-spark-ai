@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { getSocketIo } from '../../socket/socket.oi';
+import { removeUserInfo, storeUserInfo } from '../../services/auth.service';
 
 const instance = axios.create({
   baseURL: '/api',
+  withCredentials: true,
 });
 
 instance.interceptors.response.use(
@@ -12,9 +14,11 @@ instance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const { data } = await axios.post('/api/auth/refresh-token');
+        const { data } = await axios.post('/api/auth/refresh-token', {}, {
+          withCredentials: true,
+        });
         const newToken = data.data.accessToken;
-        localStorage.setItem('accessToken', newToken);
+        storeUserInfo({ accessToken: newToken });
 
         const socket = getSocketIo();
         if (socket) {
@@ -28,10 +32,10 @@ instance.interceptors.response.use(
           })
         );
 
-        originalRequest.headers.Authorization = newToken;
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return instance(originalRequest);
       } catch {
-        localStorage.removeItem('accessToken');
+        removeUserInfo();
         window.location.href = '/login';
       }
     }
