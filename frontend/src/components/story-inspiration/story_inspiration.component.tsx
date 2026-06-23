@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import StoryInspirationCard from "./story_inspiration_card.component";
-import { inspirationData } from "./inspirationData";
+import StoryInspirationCard, {
+  type StoryInspiration,
+} from "./story_inspiration_card.component";
 import { getSavedWorkspacePreferences } from "../../hooks/useWorkspacePreferences";
+
+const INSPIRATION_DATA_URL = "/assets/inspirationData.json";
 
 const StoryInspirationComponent: React.FC = () => {
   const navigate = useNavigate();
@@ -25,8 +28,36 @@ const StoryInspirationComponent: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedGenre, setSelectedGenre] = useState<string>(initialGenre);
+  const [stories, setStories] = useState<StoryInspiration[]>([]);
+const [isLoading, setIsLoading] = useState(true);
+const [loadError, setLoadError] = useState<string | null>(null);
 
-  const filteredStories = inspirationData.filter((story) => {
+const loadInspirationData = useCallback(async () => {
+  setIsLoading(true);
+  setLoadError(null);
+
+  try {
+    const response = await fetch(INSPIRATION_DATA_URL);
+
+    if (!response.ok) {
+      throw new Error("Unable to load inspiration data.");
+    }
+
+    const data = (await response.json()) as StoryInspiration[];
+    setStories(Array.isArray(data) ? data : []);
+  } catch {
+    setStories([]);
+    setLoadError("Failed to load story inspiration data. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+}, []);
+
+useEffect(() => {
+  void loadInspirationData();
+}, [loadInspirationData]);
+
+  const filteredStories = stories.filter((story) => {
     const matchesGenre = selectedGenre === "All" || story.genre === selectedGenre;
     const searchLower = searchQuery.toLowerCase().trim();
     const matchesSearch =
@@ -38,7 +69,42 @@ const StoryInspirationComponent: React.FC = () => {
       story.themes.some((theme) => theme.toLowerCase().includes(searchLower));
     return matchesGenre && matchesSearch;
   });
+    
+if (isLoading) {
+  return (
+    <div className="min-h-screen bg-[#f5f7ff] dark:bg-[#050816] text-slate-900 dark:text-white flex items-center justify-center px-6">
+      <div className="text-center">
+        <div className="mx-auto mb-5 h-12 w-12 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin" />
+        <h2 className="text-2xl font-bold">
+          Loading story inspirations...
+        </h2>
+      </div>
+    </div>
+  );
+}
 
+if (loadError) {
+  return (
+    <div className="min-h-screen bg-[#f5f7ff] dark:bg-[#050816] text-slate-900 dark:text-white flex items-center justify-center px-6">
+      <div className="max-w-md text-center">
+        <h2 className="text-2xl font-bold">
+          Unable to load inspirations
+        </h2>
+
+        <p role="alert" className="mt-3">
+          {loadError}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => void loadInspirationData()}
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+  );
+}
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f5f7ff] dark:bg-[#050816] text-slate-900 dark:text-white transition-colors duration-300">
 
@@ -114,8 +180,7 @@ const StoryInspirationComponent: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-20 max-w-4xl mx-auto">
             {[
-              { value: inspirationData.length, label: "Story Inspirations", icon: "fa-book-open" },
-              { value: genres.length - 1, label: "Creative Genres", icon: "fa-layer-group" },
+{ value: stories.length, label: "Story Inspirations", icon: "fa-book-open" },              { value: genres.length - 1, label: "Creative Genres", icon: "fa-layer-group" },
               { value: "∞", label: "Writing Possibilities", icon: "fa-infinity" },
             ].map((item, index) => (
               <motion.div key={index} whileHover={{ y: -6 }} className="relative overflow-hidden rounded-[2rem] border border-white/60 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] backdrop-blur-2xl p-7 shadow-xl shadow-black/[0.04]">
