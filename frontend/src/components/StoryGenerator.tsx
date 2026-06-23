@@ -52,7 +52,7 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
         errorMessage = 'The AI service is taking too long. Please try again later.';
       } else if (err.response?.status === 500) {
         errorMessage = 'Server error. Please try again later.';
-      } else if (err.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
         errorMessage = 'Request timed out. Please try again.';
       } else if (!err.response) {
         errorMessage = 'Network error. Please check your connection.';
