@@ -12,10 +12,7 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
-    },
+    transition: { staggerChildren: 0.15, delayChildren: 0.1 },
   },
 };
 
@@ -29,10 +26,9 @@ const itemVariants = {
 };
 
 const features = [
-// ... (rest of the features array remains the same)
   {
     title: "Infinite Variations",
-    description: "Generate multiple unique branches of your story from a single starting prompt. Explore every creative possibility.",
+    description: "Generate multiple unique branches of your story from a single starting prompt.",
     bgClass: "bg-gradient-to-br from-blue-900 to-sky-600/70 dark:from-blue-950 dark:to-sky-800/90",
     icon: (
       <svg className="w-7 h-7 text-sky-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -42,7 +38,7 @@ const features = [
   },
   {
     title: "AI Co-Writer",
-    description: "Stuck on a paragraph? Let our advanced AI models suggest the next perfect sentence to keep your momentum going.",
+    description: "Stuck on a paragraph? Let our advanced AI models suggest the next perfect sentence.",
     bgClass: "bg-gradient-to-br from-indigo-900 to-purple-600/70 dark:from-indigo-950 dark:to-purple-800/90",
     icon: (
       <svg className="w-7 h-7 text-purple-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -52,7 +48,7 @@ const features = [
   },
   {
     title: "Community Driven",
-    description: "Publish your stories, gather likes, and interact with other creators in a thriving, collaborative ecosystem.",
+    description: "Publish your stories, gather likes, and interact with other creators in a thriving ecosystem.",
     bgClass: "bg-gradient-to-br from-fuchsia-900 to-pink-600/70 dark:from-fuchsia-950 dark:to-pink-800/90",
     icon: (
       <svg className="w-7 h-7 text-pink-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,41 +78,17 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
 
-      gsap.to(contentRef.current, {
-        x: x * 0.15,
-        y: y * 0.15,
-        ease: "power2.out",
-        duration: 0.3
-      });
-
-      gsap.to(card, {
-        rotateY: (x / rect.width) * 15,
-        rotateX: -(y / rect.height) * 15,
-        transformPerspective: 1000,
-        ease: "power2.out",
-        duration: 0.3
-      });
+      gsap.to(contentRef.current, { x: x * 0.15, y: y * 0.15, ease: "power2.out", duration: 0.3 });
+      gsap.to(card, { rotateY: (x / rect.width) * 15, rotateX: -(y / rect.height) * 15, transformPerspective: 1000, ease: "power2.out", duration: 0.3 });
     };
 
     const handleMouseLeave = () => {
-      gsap.to(contentRef.current, {
-        x: 0,
-        y: 0,
-        ease: "power2.out",
-        duration: 0.7
-      });
-
-      gsap.to(card, {
-        rotateY: 0,
-        rotateX: 0,
-        ease: "power2.out",
-        duration: 0.7
-      });
+      gsap.to(contentRef.current, { x: 0, y: 0, ease: "power2.out", duration: 0.7 });
+      gsap.to(card, { rotateY: 0, rotateX: 0, ease: "power2.out", duration: 0.7 });
     };
 
     card.addEventListener("mousemove", handleMouseMove);
     card.addEventListener("mouseleave", handleMouseLeave);
-
     return () => {
       card.removeEventListener("mousemove", handleMouseMove);
       card.removeEventListener("mouseleave", handleMouseLeave);
@@ -125,12 +97,8 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
 
   return (
     <div style={{ perspective: "1000px" }} className="h-full w-full box-border">
-      <div
-        ref={cardRef}
-        className={`motion-card relative overflow-hidden backdrop-blur-xl border border-slate-200/50 dark:border-white/10 rounded-3xl p-6 sm:p-8 transition-shadow duration-500 shadow-sm group cursor-pointer ${feature.bgClass} hover:shadow-[0_0_40px_rgba(255,255,255,0.12)] h-full w-full box-border`}
-      >
+      <div ref={cardRef} className={`motion-card relative overflow-hidden backdrop-blur-xl border border-slate-200/50 dark:border-white/10 rounded-3xl p-6 sm:p-8 transition-shadow duration-500 shadow-sm group cursor-pointer ${feature.bgClass} hover:shadow-[0_0_40px_rgba(255,255,255,0.12)] h-full w-full box-border`}>
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-
         <div ref={contentRef} className="relative z-10 pointer-events-none w-full box-border">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-5 sm:mb-6 bg-white/10 shadow-md group-hover:scale-105 transition-transform duration-300 shrink-0">
             {feature.icon}
@@ -212,70 +180,36 @@ const HeroSectionComponent = () => {
   const [stars, setStars] = useState<Array<{ id: number; x: number; y: number; size: number }>>([]);
   const nextStarId = useRef(1);
   const starTimers = useRef<number[]>([]);
-  const badgeRef = useRef<HTMLDivElement>(null);
+  const badgeRef = useRef<HTMLAnchorElement>(null);
 
   useGSAP(() => {
     const badge = badgeRef.current;
     if (!badge) return;
-
-    gsap.fromTo(badge,
-      { x: -10 },
-      {
-        x: 10,
-        duration: 2,
-        ease: "sine.inOut",
-        yoyo: true,
-        repeat: -1,
-      }
-    );
-
-    gsap.to(badge, {
-      boxShadow: "0 0 16px rgba(59, 130, 246, 0.2), 0 0 40px rgba(139, 92, 246, 0.1)",
-      duration: 1.2,
-      ease: "sine.inOut",
-      yoyo: true,
-      repeat: -1,
-    });
-
-    gsap.to(badge, {
-      borderColor: "rgba(244, 114, 182, 0.6)",
-      duration: 1,
-      repeat: -1,
-      yoyo: true,
-      ease: "none",
-      keyframes: {
-        "0%": { borderColor: "rgba(59, 130, 246, 0.4)" },
-        "25%": { borderColor: "rgba(167, 139, 250, 0.4)" },
-        "50%": { borderColor: "rgba(244, 114, 182, 0.4)" },
-        "75%": { borderColor: "rgba(52, 211, 153, 0.4)" },
-        "100%": { borderColor: "rgba(59, 130, 246, 0.4)" }
-      }
-    });
+    gsap.fromTo(badge, { x: -10 }, { x: 10, duration: 2, ease: "sine.inOut", yoyo: true, repeat: -1 });
   });
 
-  const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+  // Added the missing mouse tracking sparkle generator
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (Math.random() > 0.35) return; 
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     const id = nextStarId.current++;
-    const size = 8 + Math.floor(Math.random() * 8);
+    const size = Math.random() * 12 + 6;
 
-    setStars((prev) => {
-      const next = [...prev, { id, x, y, size }];
-      return next.slice(-18);
-    });
+    setStars((prev) => [...prev, { id, x, y, size }]);
 
-    const timerId = window.setTimeout(() => {
-      setStars((prev) => prev.filter((star) => star.id !== id));
-      starTimers.current = starTimers.current.filter((timer) => timer !== timerId);
-    }, 650);
-    starTimers.current.push(timerId);
+    const timer = window.setTimeout(() => {
+      setStars((prev) => prev.filter((s) => s.id !== id));
+      starTimers.current = starTimers.current.filter((t) => t !== timer);
+    }, 800);
+
+    starTimers.current.push(timer);
   };
 
   useEffect(() => {
     return () => {
-      starTimers.current.forEach((timerId) => window.clearTimeout(timerId));
-      starTimers.current = [];
+      starTimers.current.forEach(clearTimeout);
     };
   }, []);
 
@@ -288,27 +222,21 @@ const HeroSectionComponent = () => {
 
       <div className="relative overflow-hidden w-full box-border" onMouseMove={handleMouseMove}>
         <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border">
-          <div
+          
+          <Link
+            to="/login"
             ref={badgeRef}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 backdrop-blur-md mb-8 shadow-sm cursor-pointer select-none"
           >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">
+              StorySparkAI v2.0 is live
             </span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">StorySparkAI v2.0 is live</span>
-          </div>
+          </Link>
 
-          <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none tracking-tight">
-            Ignite Your Imagination With <br className="hidden sm:block" />
-            <span className="hero-gradient-text pb-2">
-              <Typewriter
-                phrases={[
-                  "AI-Driven Storytelling",
-                  "Creative Story Generation",
-                  "Smart Writing Assistant",
-                ]}
-              />
+          <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
+            Ignite Your Imagination With <br />
+            <span className="hero-gradient-text">
+              <Typewriter phrases={["AI-Driven Storytelling", "Smart Writing Assistant"]} />
             </span>
           </motion.h1>
 
