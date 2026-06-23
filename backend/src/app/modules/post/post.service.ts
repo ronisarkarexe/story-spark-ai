@@ -93,11 +93,9 @@ const getCursorCondition = (
 };
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
-  const { email, role } = token;
-  const user = await User.findOne({
-    email: email,
-    role: role,
-  });
+  const { _id } = token;
+
+  const user = await User.findById(_id).select("_id role postsCount");
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
