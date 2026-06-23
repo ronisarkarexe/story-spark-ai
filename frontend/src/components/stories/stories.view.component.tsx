@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
 import StoryVersionHistory from "./StoryVersionHistory";
-import { CharacterProfile, getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES, getReadingTime } from "./stories.utils";
+import { CharacterProfile, getShortenedText, ITopicData, topicsData, getReadingTime } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
@@ -245,8 +245,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                     <button
                       key={story.uuid}
                       className={`relative w-16 h-16 rounded-full border-2 ${selectedStory?.uuid === story.uuid
-                          ? "border-blue-500 scale-110"
-                          : "border-white"
+                        ? "border-blue-500 scale-110"
+                        : "border-white"
                         } hover:scale-110 transition-transform duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-fuchsia-600`}
                       onClick={() => handelStorySelection(story)}
                     >
@@ -317,8 +317,8 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                 <button
                   type="button"
                   className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 ${loading
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/25 active:scale-95"
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/25 active:scale-95"
                     }`}
                   onClick={handelPublishStory}
                   disabled={loading}
