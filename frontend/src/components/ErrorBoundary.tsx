@@ -10,6 +10,7 @@ interface State {
   error?: Error;
   errorInfo?: ErrorInfo;
   retryCount: number;
+  retryLimitReached: boolean;
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -17,19 +18,24 @@ class ErrorBoundary extends Component<Props, State> {
     super(props);
     this.state = { 
       hasError: false,
-      retryCount: 0
+      retryCount: 0,
+      retryLimitReached: false,
     };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { 
       hasError: true,
       error,
-      retryCount: 0
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Track retry count across errors
+    this.setState((prev) => ({
+      retryCount: prev.retryCount + 1,
+    }));
+
     // Console logging
     console.error("Error caught by ErrorBoundary:", error, errorInfo);
 
@@ -69,6 +75,7 @@ class ErrorBoundary extends Component<Props, State> {
     
     // Cap retries at 3 to prevent infinite loops
     if (retryCount >= 3) {
+      this.setState({ retryLimitReached: true });
       window.location.reload();
       return;
     }
@@ -78,7 +85,6 @@ class ErrorBoundary extends Component<Props, State> {
       hasError: false,
       error: undefined,
       errorInfo: undefined,
-      retryCount: prev.retryCount + 1,
     }));
   };
 

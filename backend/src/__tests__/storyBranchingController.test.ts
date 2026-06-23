@@ -114,4 +114,98 @@ describe("StoryBranchingController", () => {
       },
     });
   });
+
+  it("should strip markdown code fences before parsing", async () => {
+    mockGenerateStory.mockResolvedValueOnce({
+      story: '```json\n{\n  "storySegment": "Markdown-wrapped segment.",\n  "choices": ["A", "B", "C"]\n}\n```',
+      provider: "openai",
+      fallbackUsed: false,
+    });
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      data: expect.objectContaining({
+        storySegment: "Markdown-wrapped segment.",
+        choices: ["A", "B", "C"],
+      }),
+    }));
+  });
+
+  it("should recover from truncated JSON by falling back to raw text", async () => {
+    mockGenerateStory.mockResolvedValueOnce({
+      story: '{ "title": "The Quest", "branches": [ { "id": 1, ',
+      provider: "openai",
+      fallbackUsed: false,
+    });
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      success: true,
+      statusCode: 200,
+      data: expect.objectContaining({
+        storySegment: expect.stringContaining('{ "title": "The Quest", "branches": [ { "id": 1,'),
+      }),
+    }));
+  });
+
+  it("should fall back when AI returns invalid keys", async () => {
+    mockGenerateStory.mockResolvedValueOnce({
+      story: JSON.stringify({
+        hallucinatedKey: "unexpected",
+        choices: ["A", "B", "C"],
+      }),
+      provider: "openai",
+      fallbackUsed: false,
+    });
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      success: true,
+      statusCode: 200,
+      data: expect.objectContaining({
+        choices: ["Explore the surroundings", "Search for another way", "Wait and see what happens"],
+      }),
+    }));
+  });
+
+  it("should normalize choices to exactly 3 when fewer are provided", async () => {
+    mockGenerateStory.mockResolvedValueOnce({
+      story: JSON.stringify({
+        storySegment: "Segment with one choice.",
+        choices: ["Only choice"],
+      }),
+      provider: "openai",
+      fallbackUsed: false,
+    });
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      data: expect.objectContaining({
+        choices: ["Only choice", "Option 2", "Option 3"],
+      }),
+    }));
+  });
+
+  it("should truncate choices to exactly 3 when more are provided", async () => {
+    mockGenerateStory.mockResolvedValueOnce({
+      story: JSON.stringify({
+        storySegment: "Segment with too many choices.",
+        choices: ["A", "B", "C", "D", "E"],
+      }),
+      provider: "openai",
+      fallbackUsed: false,
+    });
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      data: expect.objectContaining({
+        choices: ["A", "B", "C"],
+      }),
+    }));
+  });
 });

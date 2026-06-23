@@ -5,3 +5,8 @@ dist-ssr/
 .env
 .env.*
 !.env.example
+stories_base.tsx
+stories_clean.tsx
+stories_feature.tsx
+stories_new.tsx
+stories_old.tsx
