@@ -119,7 +119,7 @@ const aiTranslate = z.object({
   body: z.object({
     title: z.string({ required_error: "Title is required!" }),
     content: z.string().min(10).max(10000),
-    language: z.string({ required_error: "Language is required!" }),
+    targetLanguage: z.string({ required_error: "Target language is required!" }).min(1).max(50),
   }),
 });
 
