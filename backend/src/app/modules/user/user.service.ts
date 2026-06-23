@@ -13,7 +13,15 @@ import { StoryVersion } from "../story_version/story_version.model";
 import { Report } from "../report/report.model";
 
 const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram", "github", "discord"] as const;
+const isSafeUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
 
+    return parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
 const getAllUsers = async (): Promise<IUser[]> => {
   const result = await User.find({}).select("-password");
   return result;
@@ -37,25 +45,40 @@ const updateUser = async (token: ITokenPayload, payload: Partial<IUser>) => {
     }
     updateData.name = trimmedName;
   }
-
-  if (payload.profile) {
-    if (typeof payload.profile.avatar === "string") {
-      updateData["profile.avatar"] = payload.profile.avatar;
+if (payload.profile) {
+  if (typeof payload.profile.avatar === "string") {
+    if (!isSafeUrl(payload.profile.avatar)) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Invalid avatar URL"
+      );
     }
 
-    if (typeof payload.profile.bio === "string") {
-      updateData["profile.bio"] = payload.profile.bio;
-    }
+    updateData["profile.avatar"] = payload.profile.avatar;
+  }
 
-    if (payload.profile.social) {
-      for (const field of allowedSocialFields) {
-        const value = payload.profile.social[field];
-        if (typeof value === "string") {
-          updateData[`profile.social.${field}`] = value;
+  if (typeof payload.profile.bio === "string") {
+    updateData["profile.bio"] = payload.profile.bio;
+  }
+
+  if (payload.profile.social) {
+    for (const field of allowedSocialFields) {
+      const value = payload.profile.social[field];
+
+      if (typeof value === "string") {
+        if (!isSafeUrl(value)) {
+          throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            `Invalid URL provided for ${field}`
+          );
         }
+
+        updateData[`profile.social.${field}`] = value;
       }
     }
   }
+}
+ 
 
   // ─── ADDED: PARSE WRITING GOALS PAYLOADS FOR INJECTION ───
   if (payload.writingGoals) {
