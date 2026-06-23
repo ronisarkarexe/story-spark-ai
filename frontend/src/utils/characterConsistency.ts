@@ -19,7 +19,7 @@ export const checkCharacterConsistency = (
 
   chapters.forEach((chapter) => {
     const matches = chapter.content.matchAll(
-      /([A-Z][a-z]+).*?(silver|black|brown|blonde|red)\s+hair/gi
+      /([A-Z][a-z]*).*?(silver|black|brown|blonde|red|white|grey|gray|auburn|chestnut|platinum|ginger|golden|dark|light)\s+hair/gi
     );
 
     for (const match of matches) {
