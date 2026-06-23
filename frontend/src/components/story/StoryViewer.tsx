@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Chapter } from "../../types/story.types";
 import ReadingTimeBadge from "../ReadingTimeBadge";
+import toast from "react-hot-toast";
+import { AudioPlayer } from "../AudioPlayer"; // Sahi import path
 
 interface Props {
   chapters: Chapter[];
@@ -61,6 +63,22 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
     setShowResumeBanner(false);
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = document.title || "StorySparkAI Story";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch {
+        // user cancelled share dialog
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard!");
+    }
+  };
+
   return (
     <div
       ref={containerRef}
@@ -69,7 +87,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
       {showResumeBanner && (
         <div className="sticky top-0 z-20 bg-indigo-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
           <span className="text-sm text-indigo-200">
-            You left off at {progress}% — continue where you stopped?
+            You left off at {progress}% ï¿½ continue where you stopped?
           </span>
           <div className="flex gap-2">
             <button
@@ -96,13 +114,15 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
           />
         </div>
         <div className="flex justify-between items-center mt-2">
-          <span className="text-sm text-zinc-400">Reading Progress</span>
-          <span className="text-sm font-medium text-indigo-400">
-            {progress === 100 ? "Completed! ??" : `${progress}%`}
-          </span>
-        </div>
-      </div>
+  <span className="text-sm text-zinc-400">
+    Reading Progress
+  </span>
 
+  <span className="text-sm font-medium text-indigo-400">
+    {progress}%
+  </span>
+</div>
+      </div>
       <div className="max-w-4xl mx-auto">
         {chapters.map((chapter) => (
           <div key={chapter.id} className="mb-16">

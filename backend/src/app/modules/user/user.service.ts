@@ -109,6 +109,10 @@ const deleteUser = async (id: string): Promise<void> => {
   await Notification.deleteMany({ userId: id });
   await Post.deleteMany({ author: id });
 
+  // ─── FIX: REMOVE DANGLING REFERENCES ───
+  await User.updateMany({ followers: id }, { $pull: { followers: id } });
+  await User.updateMany({ following: id }, { $pull: { following: id } });
+
   const result = await User.deleteOne({ _id: id });
 
   if (result.deletedCount === 0) {
@@ -155,6 +159,9 @@ const approveWriterApplication = async (email: string) => {
     );
     return result;
   } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
     if (error instanceof Error) {
       throw new ApiError(httpStatus.BAD_REQUEST, error.message);
     } else {

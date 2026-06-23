@@ -24,7 +24,9 @@ sys.path.insert(0, str(ML_DIR))
 from ml.score_api import score_bp
 import json
 import random
+import pandas as pd
 import numpy as np
+import pandas as pd
 import streamlit as st
 
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -152,6 +154,17 @@ FEATURE_KEYS = [
     "confidence_score", "blocked_word_count",
 ]
 
+FEATURE_LABELS = [
+    "Prompt Length",
+    "Time To Submit",
+    "Regeneration Count",
+    "Session Duration",
+    "Backspace Ratio",
+    "Pause Duration",
+    "Confidence Score",
+    "Blocked Word Count",
+]
+
 SUGGESTIONS = {
     "prompt_length":      [
         "Stuck on what to write? Start with a feeling your character has right now.",
@@ -198,19 +211,70 @@ def get_suggestion(session_raw: np.ndarray) -> str:
 
 
 def run_detection(session_raw: np.ndarray, model, scaler, threshold) -> dict:
+    
     from model import SEQ_LEN, N_FEATURES
     seq_scaled    = scaler.transform(session_raw).reshape(1, SEQ_LEN, N_FEATURES)
     reconstructed = model.predict(seq_scaled, verbose=0)
+    feature_errors = np.mean(
+    np.square(seq_scaled - reconstructed),
+    axis=(0,1)
+    )
+
+    feature_importance = {
+        FEATURE_KEYS[i]: float(feature_errors[i])
+        for i in range(len(FEATURE_KEYS))
+    }
+    
+    top_feature = max(
+        feature_importance,
+        key=feature_importance.get
+    )
     score         = float(np.mean((seq_scaled - reconstructed) ** 2))
     is_stuck      = score > threshold
     ratio         = score / threshold
     confidence    = "N/A" if not is_stuck else ("High" if ratio > 2 else ("Medium" if ratio > 1.2 else "Low"))
     return {
-        "is_stuck":      is_stuck,
-        "confidence":    confidence,
-        "anomaly_score": round(score, 6),
-        "threshold":     round(threshold, 6),
-        "suggestion":    get_suggestion(session_raw) if is_stuck else "",
+    "is_stuck": is_stuck,
+    "confidence": confidence,
+    "anomaly_score": round(score, 6),
+    "threshold": round(threshold, 6),
+    "suggestion": get_suggestion(session_raw) if is_stuck else "",
+    "feature_importance": feature_importance,
+    "main_cause": top_feature
+}
+
+
+def build_explainability(session_raw: np.ndarray) -> dict:
+    feature_means = np.mean(session_raw, axis=0)
+    total = float(np.sum(np.abs(feature_means))) or 1.0
+
+    contributions = [
+        {
+            "feature": label,
+            "key": key,
+            "value": round(float(value), 3),
+            "contribution": round((abs(float(value)) / total) * 100, 2),
+        }
+        for label, key, value in zip(FEATURE_LABELS, FEATURE_KEYS, feature_means)
+    ]
+
+    ranked = sorted(contributions, key=lambda item: item["contribution"], reverse=True)
+
+    timeline = [
+        {
+            "step": index + 1,
+            "confidence_score": float(row[6]),
+            "pause_duration": float(row[5]),
+            "backspace_ratio": float(row[4]),
+        }
+        for index, row in enumerate(session_raw)
+    ]
+
+    return {
+        "primary_cause": ranked[0],
+        "top_features": ranked[:3],
+        "feature_importance": ranked,
+        "timeline": timeline,
     }
 
 
@@ -342,6 +406,27 @@ with tab_auto:
         for col, key, val in zip(cols, FEATURE_KEYS, avg):
             with col:
                 st.metric(key.replace("_", " "), f"{val:.1f}")
+        st.divider()
+
+    if st.session_state.session_raw is not None:
+
+        st.divider()
+        st.markdown("### Session Timeline Analysis")
+
+        df = pd.DataFrame(
+            st.session_state.session_raw,
+            columns=FEATURE_KEYS
+        )
+
+        st.line_chart(
+            df[
+                [
+                    "confidence_score",
+                    "pause_duration",
+                    "backspace_ratio"
+                ]
+            ]
+        )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -359,29 +444,218 @@ if st.session_state.result:
         '<span class="badge-flow">🟢 NORMAL CREATIVE FLOW</span>'
     )
     st.markdown(status_html, unsafe_allow_html=True)
+    CAUSE_EXPLANATIONS = {
+    "backspace_ratio":
+        "Heavy editing/perfectionism detected.",
+
+    "pause_duration":
+        "Long thinking pauses detected.",
+
+    "confidence_score":
+        "Low writing confidence detected.",
+
+    "regeneration_count":
+        "Too many regenerations detected.",
+
+    "prompt_length":
+        "Prompt may be too short or unclear.",
+
+    "blocked_word_count":
+        "Frustration signals detected."
+}
+
+    cause = r["main_cause"]
+
+    st.info(
+        f"Primary Cause: {cause.replace('_',' ').title()}"
+    )
+    
+
+    if cause in CAUSE_EXPLANATIONS:
+        st.warning(CAUSE_EXPLANATIONS[cause])
 
     st.markdown(f"""
     <div class="metric-row">
-      <div class="metric-box">
+    <div class="metric-box">
         <div class="metric-val">{r['anomaly_score']}</div>
         <div class="metric-lbl">Anomaly Score</div>
-      </div>
-      <div class="metric-box">
+    </div>
+    <div class="metric-box">
         <div class="metric-val">{r['threshold']}</div>
         <div class="metric-lbl">Threshold</div>
-      </div>
-      <div class="metric-box">
+    </div>
+    <div class="metric-box">
         <div class="metric-val">{r['confidence']}</div>
         <div class="metric-lbl">Confidence</div>
-      </div>
+    </div>
     </div>
     """, unsafe_allow_html=True)
 
     if r["is_stuck"] and r["suggestion"]:
-        st.markdown(f'<div class="suggestion">💡 {r["suggestion"]}</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="suggestion">💡 {r["suggestion"]}</div>',
+            unsafe_allow_html=True
+        )
+
+# ==========================
+# Feature Importance Section
+# ==========================
+
+    st.markdown("### Feature Importance Analysis")
+
+    import pandas as pd
+
+    fi_df = pd.DataFrame(
+        list(r["feature_importance"].items()),
+        columns=["Feature", "Importance"]
+    )
+
+    fi_df = fi_df.sort_values(
+        by="Importance",
+        ascending=False
+    )
+
+    st.bar_chart(
+        fi_df.set_index("Feature")
+    )
+    
+    
+    
+    fig = px.pie(
+        fi_df,
+        values="Importance",
+        names="Feature",
+        title="Feature Contribution Breakdown"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    dominance = (
+        fi_df.iloc[0]["Importance"] /
+        fi_df["Importance"].sum()
+    ) * 100
+
+    st.metric(
+        "Top Feature Contribution",
+        f"{dominance:.1f}%"
+    )    
+      
+
+    st.markdown("#### Top Contributing Features")
+
+    top3 = fi_df.head(3)
+    st.markdown("### Root Cause Ranking")
+
+    for rank, (_, row) in enumerate(top3.iterrows(), start=1):
+        st.write(
+            f"{rank}. {row['Feature'].replace('_',' ').title()} "
+            f"({row['Importance']:.6f})"
+        )
+
+    for _, row in top3.iterrows():
+        st.write(
+            f"🔹 **{row['Feature']}** : {row['Importance']:.6f}"
+        )
+
+    explainability = build_explainability(st.session_state.session_raw)
+
+    st.markdown("## Explainable AI Dashboard")
+    st.caption("Understand which writing behavior signals contributed most to the prediction.")
+
+    primary = explainability["primary_cause"]
+    top_features = explainability["top_features"]
+    importance_df = pd.DataFrame(explainability["feature_importance"])
+    timeline_df = pd.DataFrame(explainability["timeline"])
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        st.metric(
+            "Primary Cause",
+            primary["feature"],
+            f"{primary['contribution']}% contribution",
+        )
+
+    with c2:
+        st.metric(
+            "Top Feature Contribution",
+            f"{primary['contribution']}%",
+            primary["feature"],
+        )
+
+    st.markdown("### Root Cause Ranking")
+    for index, item in enumerate(top_features, start=1):
+        st.markdown(
+            f"**{index}. {item['feature']}** — {item['contribution']}% contribution "
+            f"(avg value: `{item['value']}`)"
+        )
+
+    chart_col, pie_col = st.columns(2)
+
+    with chart_col:
+        st.markdown("### Feature Importance")
+        st.bar_chart(
+            importance_df.set_index("feature")["contribution"],
+            use_container_width=True,
+        )
+
+    with pie_col:
+        st.markdown("### Feature Contribution Pie Chart")
+        st.vega_lite_chart(
+            importance_df,
+            {
+                "mark": {"type": "arc", "innerRadius": 45},
+                "encoding": {
+                    "theta": {"field": "contribution", "type": "quantitative"},
+                    "color": {"field": "feature", "type": "nominal"},
+                    "tooltip": [
+                        {"field": "feature", "type": "nominal"},
+                        {"field": "contribution", "type": "quantitative", "title": "Contribution %"},
+                        {"field": "value", "type": "quantitative", "title": "Average Value"},
+                    ],
+                },
+            },
+            use_container_width=True,
+        )
+
+    st.markdown("### Feature Contribution Details")
+    st.dataframe(
+        importance_df[["feature", "contribution", "value"]],
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.markdown("### Session Timeline Analysis")
+    st.line_chart(
+        timeline_df.set_index("step")[["confidence_score", "pause_duration", "backspace_ratio"]],
+        use_container_width=True,
+    )
+
+    export_payload = {
+        **r,
+        "explainability": explainability,
+    }
+
+    st.download_button(
+        label="⬇️ Download Results as JSON",
+        data=json.dumps(export_payload, indent=2),
+        file_name="writer_block_detection_result.json",
+        mime="application/json",
+        use_container_width=True,
+    )
 
     st.markdown("#### Raw API response (what the frontend receives)")
-    st.markdown(f'<div class="json-block">{json.dumps(r, indent=2)}</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="json-block">{json.dumps(r, indent=2)}</div>',
+        unsafe_allow_html=True
+    )
+    st.download_button(
+        label="📥 Download Result JSON",
+        data=json.dumps(r, indent=2),
+        file_name="writers_block_result.json",
+        mime="application/json"
+    )
+        
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════

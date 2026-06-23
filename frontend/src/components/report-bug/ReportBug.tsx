@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
+
 import { 
   Bug, 
   Send, 
@@ -15,8 +16,6 @@ import {
   ClipboardList,
   Target,
   FileWarning,
-  Image as ImageIcon,
-  X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -29,6 +28,7 @@ interface ReportBugFormData {
   expected: string;
   actual: string;
   email?: string;
+  screenshot?: File;
 }
 
 const CATEGORIES = [
@@ -75,7 +75,8 @@ const ReportBug = () => {
       
       // Scroll to top of form or success message
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch {
+    } catch (err) {
+      console.error("Bug report submission failed:", err);
       toast.error("Failed to submit report. Please try again.");
     }
   };
@@ -162,7 +163,12 @@ const ReportBug = () => {
                         </div>
                         <input
                           id="title"
-                          {...register("title", { required: "Bug title is required" })}
+                          {...register("title", {
+                            required: "Bug title is required",
+                            maxLength: { value: 150, message: "Title must be under 150 characters" }
+                          })}
+                          maxLength={150}
+                          aria-required="true"
                           placeholder="Summarize the issue in a few words"
                           className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.title ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 font-medium`}
                         />
@@ -185,6 +191,7 @@ const ReportBug = () => {
                         <select
                           id="category"
                           {...register("category", { required: "Please select a category" })}
+                          aria-required="true"
                           className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.category ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-10 py-4 text-slate-900 dark:text-white appearance-none outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 font-medium cursor-pointer`}
                         >
                           <option value="" className="dark:bg-slate-900">Select category</option>
@@ -214,6 +221,7 @@ const ReportBug = () => {
                         <select
                           id="severity"
                           {...register("severity", { required: "Please select severity" })}
+                          aria-required="true"
                           className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.severity ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-10 py-4 text-slate-900 dark:text-white appearance-none outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 font-medium cursor-pointer`}
                         >
                           <option value="" className="dark:bg-slate-900">Select severity</option>
@@ -245,7 +253,12 @@ const ReportBug = () => {
                         </div>
                         <textarea
                           id="description"
-                          {...register("description", { required: "Description is required" })}
+                          {...register("description", {
+                            required: "Description is required",
+                            maxLength: { value: 2000, message: "Description must be under 2000 characters" }
+                          })}
+                          maxLength={2000}
+                          aria-required="true"
                           rows={4}
                           placeholder="Briefly describe what's happening"
                           className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.description ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 resize-none font-medium`}
@@ -268,7 +281,12 @@ const ReportBug = () => {
                         </div>
                         <textarea
                           id="steps"
-                          {...register("steps", { required: "Steps to reproduce are required" })}
+                          {...register("steps", {
+                            required: "Steps to reproduce are required",
+                            maxLength: { value: 2000, message: "Steps must be under 2000 characters" }
+                          })}
+                          maxLength={2000}
+                          aria-required="true"
                           rows={4}
                           placeholder="1. Go to... &#10;2. Click on... &#10;3. See error..."
                           className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.steps ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 resize-none font-medium`}
@@ -292,7 +310,12 @@ const ReportBug = () => {
                           </div>
                           <textarea
                             id="expected"
-                            {...register("expected", { required: "Expected behavior is required" })}
+                            {...register("expected", {
+                              required: "Expected behavior is required",
+                              maxLength: { value: 1000, message: "Must be under 1000 characters" }
+                            })}
+                            maxLength={1000}
+                            aria-required="true"
                             rows={3}
                             placeholder="What should have happened?"
                             className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.expected ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 resize-none font-medium`}
@@ -315,7 +338,12 @@ const ReportBug = () => {
                           </div>
                           <textarea
                             id="actual"
-                            {...register("actual", { required: "Actual behavior is required" })}
+                            {...register("actual", {
+                              required: "Actual behavior is required",
+                              maxLength: { value: 1000, message: "Must be under 1000 characters" }
+                            })}
+                            maxLength={1000}
+                            aria-required="true"
                             rows={3}
                             placeholder="What actually happened?"
                             className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.actual ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 resize-none font-medium`}
@@ -345,8 +373,10 @@ const ReportBug = () => {
                           pattern: {
                             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                             message: "Invalid email address"
-                          }
+                          },
+                          maxLength: { value: 254, message: "Email is too long" }
                         })}
+                        maxLength={254}
                         type="email"
                         placeholder="your@email.com"
                         className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 font-medium`}
