@@ -209,6 +209,9 @@ const StoryWorkspace = () => {
             <StoryViewer
               chapters={currentStory.chapters}
               storyId={currentStory.id}
+              title={currentStory.title}
+              tag={(currentStory as any).genre || (currentStory as any).tag}
+              imageURL={(currentStory as any).imageURL}
             />
 
             <div className="p-6 border-t border-zinc-800">

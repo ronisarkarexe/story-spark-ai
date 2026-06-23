@@ -2,14 +2,24 @@ import React, { useEffect, useRef, useState } from "react";
 import { Chapter } from "../../types/story.types";
 import ReadingTimeBadge from "../ReadingTimeBadge";
 import toast from "react-hot-toast";
-import { AudioPlayer } from "../AudioPlayer"; // Sahi import path
+import AudioPlayer from "../AudioPlayer"; // Sahi import path
+import { saveRecentStory } from "../../utils/recent-stories";
 
 interface Props {
   chapters: Chapter[];
   storyId: string;
+  title?: string;
+  tag?: string;
+  imageURL?: string;
 }
 
-const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
+const StoryViewer: React.FC<Props> = ({
+  chapters,
+  storyId,
+  title,
+  tag,
+  imageURL,
+}) => {
   const [progress, setProgress] = useState(0);
   const [showResumeBanner, setShowResumeBanner] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -29,6 +39,19 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
   }, [storageKey]);
 
   useEffect(() => {
+    // Add to recently viewed on initial mount/load
+    saveRecentStory({
+      id: storyId,
+      title: title || "Untitled AI Story",
+      imageURL: imageURL || "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&auto=format&fit=crop&q=60",
+      tag: tag || "AI Draft",
+      progress: progress,
+      lastScrollPosition: 0,
+      isDraft: true,
+    });
+  }, [storyId, title, tag, imageURL]);
+
+  useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -39,6 +62,17 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
       const rounded = Math.min(100, Math.max(0, Math.round(currentProgress)));
       setProgress(rounded);
       localStorage.setItem(storageKey, rounded.toString());
+
+      saveRecentStory({
+        id: storyId,
+        title: title || "Untitled AI Story",
+        imageURL: imageURL || "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&auto=format&fit=crop&q=60",
+        tag: tag || "AI Draft",
+        progress: rounded,
+        lastScrollPosition: container.scrollTop,
+        isDraft: true,
+      });
+
       if (rounded === 100) {
         localStorage.removeItem(storageKey);
       }
@@ -46,7 +80,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
 
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [storageKey]);
+  }, [storageKey, storyId, title, tag, imageURL, progress]);
 
   const handleResume = () => {
     const container = containerRef.current;

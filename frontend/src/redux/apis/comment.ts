@@ -1,6 +1,6 @@
 import { CommentResponse } from "../../models/comment";
 import baseApi from "../base_api/base.api";
-import { COMMENT_URL } from "../base_api/base.endpoints";
+import { COMMENT_URL, REPORT_URL } from "../base_api/base.endpoints";
 import { tagTypes } from "../tag-types";
 
 const commentApi = baseApi.injectEndpoints({
@@ -49,6 +49,15 @@ const commentApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.post, tagTypes.comment],
     }),
+
+    reportComment: build.mutation({
+      query: (data) => ({
+        url: `/${REPORT_URL}`,
+        method: "POST",
+        data: data,
+      }),
+      invalidatesTags: [tagTypes.post, tagTypes.comment],
+    }),
   }),
 });
 
@@ -58,4 +67,5 @@ export const {
   useToggleCommentLikeMutation,
   useDeleteCommentMutation,
   useToggleCommentHelpfulMutation,
+  useReportCommentMutation,
 } = commentApi;

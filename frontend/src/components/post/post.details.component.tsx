@@ -43,6 +43,14 @@ import {
 import { toast } from "react-hot-toast";
 import StoryTranslator from "../translate/StoryTranslator";
 import { IStories } from "../stories/stories.view.component";
+import {
+  useSaveReadingProgressMutation,
+  useGetReadingProgressQuery,
+} from "../../redux/apis/readingProgress.api";
+import {
+  saveRecentStory,
+  getRecentStoryProgress,
+} from "../../utils/recent-stories";
 
 
 
@@ -127,15 +135,107 @@ const PostDetailsComponent = () => {
     skip: !id || (!showTimeline && !showComparison),
   });
   const [restoreVersion, { isLoading: isRestoring }] = useRestoreVersionMutation();
+
+  // Reading Progress States & Mutations
+  const [saveProgressMutation] = useSaveReadingProgressMutation();
+  const loggedIn = isLoggedIn();
+  const { data: dbProgressData } = useGetReadingProgressQuery(id || "", {
+    skip: !id || !loggedIn,
+  });
+
+  const [showResumeBanner, setShowResumeBanner] = useState(false);
+  const [savedProgress, setSavedProgress] = useState(0);
+  const [savedScrollPosition, setSavedScrollPosition] = useState(0);
+  const hasResumed = useRef(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize saved progress on mount/load
   useEffect(() => {
-    const handleScroll = () => {
+    if (!id || !post) return;
+
+    const localProg = getRecentStoryProgress(id);
+    let initialProgress = localProg?.progress || 0;
+    let initialPosition = localProg?.lastScrollPosition || 0;
+
+    if (dbProgressData?.data) {
+      initialProgress = dbProgressData.data.progress;
+      initialPosition = dbProgressData.data.lastScrollPosition || 0;
+    }
+
+    if (initialProgress > 5 && initialProgress < 95 && !hasResumed.current) {
+      setSavedProgress(initialProgress);
+      setSavedScrollPosition(initialPosition);
+      setShowResumeBanner(true);
+    }
+  }, [id, dbProgressData, post]);
+
+  // Scroll handler that calculates progress & saves (debounced for DB)
+  useEffect(() => {
+    if (!id || !post) return;
+
+    const handleScrollAndSave = () => {
       const el = document.documentElement;
       const total = el.scrollHeight - el.clientHeight;
-      setReadProgress(total > 0 ? (el.scrollTop / total) * 100 : 0);
+      if (total <= 0) return;
+
+      const currentProgress = Math.min(100, Math.max(0, (el.scrollTop / total) * 100));
+      setReadProgress(currentProgress);
+
+      // Instant save to localStorage
+      saveRecentStory({
+        id,
+        title: post.title,
+        imageURL: post.imageURL,
+        tag: post.tag,
+        progress: currentProgress,
+        lastScrollPosition: el.scrollTop,
+        isDraft: false,
+      });
+
+      // Debounce saving to the database
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+
+      if (loggedIn) {
+        saveTimeoutRef.current = setTimeout(async () => {
+          try {
+            await saveProgressMutation({
+              storyId: id,
+              progress: currentProgress,
+              lastScrollPosition: el.scrollTop,
+            }).unwrap();
+          } catch (err) {
+            console.error("Failed to auto-save reading progress to DB:", err);
+          }
+        }, 2500);
+      }
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+
+    window.addEventListener("scroll", handleScrollAndSave, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScrollAndSave);
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [id, post, loggedIn, saveProgressMutation]);
+
+  const handleResumeReading = () => {
+    hasResumed.current = true;
+    setShowResumeBanner(false);
+
+    const el = document.documentElement;
+    const total = el.scrollHeight - el.clientHeight;
+    if (total > 0) {
+      const scrollTarget = (savedProgress / 100) * total;
+      window.scrollTo({
+        top: scrollTarget,
+        behavior: "smooth",
+      });
+      toast.success(`Resumed reading from ${Math.round(savedProgress)}%`);
+    }
+  };
 
   const { data: storyTree } = useGetStoryTreeQuery(id || "", { skip: !id || !showTree,});
 
@@ -324,6 +424,34 @@ const PostDetailsComponent = () => {
         imageURL={post?.imageURL}
         postId={id}
       />
+
+      {showResumeBanner && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-md w-[90%] md:w-auto bg-slate-900/95 dark:bg-[#0f172a]/95 backdrop-blur-md border border-indigo-500/30 rounded-2xl shadow-[0_8px_32px_rgba(99,102,241,0.2)] p-4 flex items-center justify-between gap-4 animate-fade-in-up text-white">
+          <div className="flex items-center gap-3 font-sans">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+              <i className="fas fa-book-open"></i>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-100 leading-tight">Resume reading?</p>
+              <p className="text-xs text-slate-400 mt-0.5 leading-none">You previously read to {Math.round(savedProgress)}%</p>
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={() => setShowResumeBanner(false)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 transition cursor-pointer"
+            >
+              Dismiss
+            </button>
+            <button
+              onClick={handleResumeReading}
+              className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 transition active:scale-95 cursor-pointer"
+            >
+              Resume
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Reading Progress Bar */}
       <div
