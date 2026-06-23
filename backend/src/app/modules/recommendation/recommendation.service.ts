@@ -14,6 +14,7 @@ const AUTHOR_RECOMMENDATION_FIELDS = "name profile.avatar";
 const getLengthCategory = (content: string): PreferredLength => {
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
 
+  
   if (wordCount < 1000) {
     return "short";
   }
