@@ -67,10 +67,10 @@ PostSchema.index({
 
 // Full-text search index for unified search feature
 PostSchema.index(
-  { title: "text", content: "text", tag: "text" },
+  { title: "text", tag: "text" },
   {
-    name: "title_text_content_text_tag_text",
-    weights: { title: 10, tag: 5, content: 1 },
+    name: "title_text_tag_text",
+    weights: { title: 10, tag: 5 },
     default_language: "english",
   }
 );

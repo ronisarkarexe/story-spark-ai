@@ -14,6 +14,7 @@ const search = catchAsync(async (req: Request, res: Response) => {
     limit,
     dateFrom,
     dateTo,
+    searchType,
   } = req.query as Record<string, string>;
 
   if (!q || !q.trim()) {
@@ -73,6 +74,7 @@ const search = catchAsync(async (req: Request, res: Response) => {
     limit: Math.min(parsedLimit, 50),
     dateFrom,
     dateTo,
+    searchType: searchType as "simple" | "complex" | "auto",
   });
 
   sendResponse(res, {

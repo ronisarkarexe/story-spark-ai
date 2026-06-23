@@ -10,6 +10,7 @@ interface SearchQuery {
   limit?: number;
   dateFrom?: string;
   dateTo?: string;
+  searchType?: "simple" | "complex" | "auto";
 }
 
 // Escape MongoDB operator characters from user input
@@ -17,12 +18,96 @@ const sanitizeQuery = (input: string): string => {
   return input.replace(/[$\.]/g, "").trim().slice(0, 200);
 };
 
-const searchStories = async (
+const isComplexQuery = (q: string): boolean => {
+  const words = q.split(" ").filter(w => w.trim().length > 0);
+  return words.length > 3 || q.length > 30;
+};
+
+const searchStoriesAdvanced = async (
   q: string,
   filters: Pick<SearchQuery, "genre" | "sortBy" | "dateFrom" | "dateTo">,
   page: number,
   limit: number
 ) => {
+  const { genre, sortBy, dateFrom, dateTo } = filters;
+
+  const pipeline: any[] = [
+    {
+      $search: {
+        index: "post_search",
+        text: {
+          query: q,
+          path: ["title", "content", "tag"]
+        }
+      }
+    },
+    { $match: { isDeleted: false, isPublished: true } }
+  ];
+
+  if (genre) {
+    pipeline.push({ $match: { genre } });
+  }
+
+  if (dateFrom || dateTo) {
+    const dateMatch: any = {};
+    if (dateFrom) dateMatch.$gte = new Date(dateFrom);
+    if (dateTo) dateMatch.$lte = new Date(dateTo);
+    pipeline.push({ $match: { createdAt: dateMatch } });
+  }
+
+  const sortStage: any =
+    sortBy === "date"
+      ? { createdAt: -1 }
+      : sortBy === "popularity"
+      ? { likesCount: -1, viewsCount: -1 }
+      : null; // relevance is default by score
+
+  if (sortStage) {
+    pipeline.push({ $sort: sortStage });
+  } else {
+    pipeline.push({ $sort: { score: { $meta: "textScore" } } }); // fallback if needed though Atlas ranks natively
+  }
+
+  pipeline.push({ $skip: (page - 1) * limit });
+  pipeline.push({ $limit: limit });
+
+  const countPipeline = [...pipeline];
+  countPipeline.splice(countPipeline.length - 2, 2); // remove skip and limit
+  countPipeline.push({ $count: "total" });
+
+  const [results, countResult] = await Promise.all([
+    Post.aggregate(pipeline),
+    Post.aggregate(countPipeline)
+  ]);
+
+  const total = countResult.length > 0 ? countResult[0].total : 0;
+
+  // Populate author since aggregate doesn't populate by default
+  await Post.populate(results, { path: "author", select: "name profile.avatar" });
+
+  return { results, total };
+};
+
+const searchStories = async (
+  q: string,
+  filters: Pick<SearchQuery, "genre" | "sortBy" | "dateFrom" | "dateTo">,
+  page: number,
+  limit: number,
+  searchType: "simple" | "complex" | "auto" = "auto"
+) => {
+  const isComplex = searchType === "complex" || (searchType === "auto" && isComplexQuery(q));
+
+  // If complex search is needed, try to route to Atlas Search.
+  if (isComplex) {
+    try {
+      // In a real environment, we'd ensure 'post_search' Atlas index exists.
+      // If it fails, fallback to simple MongoDB text search.
+      return await searchStoriesAdvanced(q, filters, page, limit);
+    } catch (error) {
+      console.warn("Atlas search failed or index not found. Falling back to simple text search.", error);
+    }
+  }
+
   const { genre, sortBy, dateFrom, dateTo } = filters;
 
   const matchStage: Record<string, unknown> = {
@@ -112,7 +197,7 @@ export const SearchService = {
     const storyFilters = { genre, sortBy, dateFrom, dateTo };
 
     const [storiesResult, usersResult, tagsResult] = await Promise.all([
-      type === "story" || type === "all" ? searchStories(q, storyFilters, page, limit) : null,
+      type === "story" || type === "all" ? searchStories(q, storyFilters, page, limit, params.searchType) : null,
       type === "user" || type === "all" ? searchUsers(q, page, limit) : null,
       type === "tag" || type === "all" ? searchTags(q, page, limit) : null,
     ]);
