@@ -145,8 +145,8 @@ describe("AiModelService", () => {
       "English", // language default
       expect.any(Object), // AbortSignal
       "Dark",   // tone
-      undefined,
-      undefined
+      undefined, // genre
+      undefined  // characters
     );
   });
 

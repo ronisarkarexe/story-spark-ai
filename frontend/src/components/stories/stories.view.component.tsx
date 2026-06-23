@@ -1,10 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import CharacterProfileCard from "./CharacterProfileCard";
+import StoryGenreTransformation from "./StoryGenreTransformation";
+import StoryMoodDashboard from "./StoryMoodDashboard";
+import StoryTitleSuggestions from "./StoryTitleSuggestions";
+import StoryVersionHistory from "./StoryVersionHistory";
 import { CharacterProfile } from "./stories.utils";
-import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
+import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
+import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
+import DOMPurify from "dompurify";
+import AudioPlayer, { AudioPlayerHandle, NarrationPlaybackState } from "../AudioPlayer";
+import StoryTranslator from "../translate/StoryTranslator";
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
@@ -38,6 +46,44 @@ const escapeHtml = (str: string) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+interface StorySentenceSegment {
+  id: string;
+  text: string;
+  startWordIndex: number;
+  endWordIndex: number;
+}
+
+const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+  if (!content.trim()) {
+    return [];
+  }
+
+  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
+  const segments: StorySentenceSegment[] = [];
+  let wordCursor = 0;
+
+  sentenceMatches.forEach((sentence, index) => {
+    const trimmedSentence = sentence.trim();
+    if (!trimmedSentence) {
+      return;
+    }
+
+    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
+    const startWordIndex = wordCursor;
+    const endWordIndex =
+      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
+
+    segments.push({
+      id: `${index}-${startWordIndex}-${endWordIndex}`,
+      text: sentence,
+      startWordIndex,
+      endWordIndex,
+    });
+    wordCursor += wordsInSentence;
+  });
+  return segments;
+};
+
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
@@ -52,31 +98,106 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
+  const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
+  const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+  
+  // Narration ref & states
+  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
+  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+  const isNarrationActive = narrationState !== "idle";
+
+  // Alternate ending state & hooks
+  const [endingsCache, setEndingsCache] = useState<{
+    [uuid: string]: { style: string; ending: string; fullStory: string }[];
+  }>({});
+  const [originalStoryContent, setOriginalStoryContent] = useState<{
+    [uuid: string]: string;
+  }>({});
+
   const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
+  const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
+
+  useEffect(() => {
+    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
+      setOriginalStoryContent((prev) => ({
+        ...prev,
+        [selectedStory.uuid]: selectedStory.content,
+      }));
+    }
+  }, [selectedStory, originalStoryContent]);
+
+  useEffect(() => {
+    setNarrationWordIndex(0);
+    setNarrationState("idle");
+  }, [selectedStory?.uuid]);
+
+  const sentenceSegments = useMemo(() => {
+    return buildSentenceSegments(selectedStory?.content ?? "");
+  }, [selectedStory?.content]);
 
   const handleGenerateAlternateEndings = async () => {
     if (!selectedStory) return;
     setIsGeneratingEndings(true);
+    const toastId = toast.loading("Generating alternate endings...");
     try {
       const payload = {
         title: selectedStory.title,
-        content: selectedStory.content,
+        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
         tag: selectedStory.tag,
         language: "English",
       };
-      if (isLogin) {
-        await generateAlternateEndings(payload).unwrap();
+      const generationRequest = isLogin
+        ? generateAlternateEndings(payload)
+        : generateFreeAlternateEndings(payload);
+      const res = await generationRequest.unwrap();
+      if (res && res.data) {
+        setEndingsCache((prev) => ({
+          ...prev,
+          [selectedStory.uuid]: res.data,
+        }));
+        toast.success("Alternate endings generated successfully!");
       } else {
-        await generateFreeAlternateEndings(payload).unwrap();
+        toast.error("Failed to generate alternate endings.");
       }
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate alternate endings. Please try again.");
     } finally {
+      toast.dismiss(toastId);
       setIsGeneratingEndings(false);
     }
+  };
+
+  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
+    if (!selectedStory) return;
+    const updatedStory = {
+      ...selectedStory,
+      content: endingData.fullStory,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success(`${endingData.style} applied to story!`);
+  };
+
+  const handleResetEnding = () => {
+    if (!selectedStory) return;
+    const originalContent = originalStoryContent[selectedStory.uuid];
+    if (!originalContent) return;
+    const updatedStory = {
+      ...selectedStory,
+      content: originalContent,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success("Reverted to original story ending!");
   };
 
   useEffect(() => {
@@ -112,6 +233,27 @@ useEffect(() => {
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
   };
+
+  const handleRestoreVersion = (restoredContent: string) => {
+  if (!selectedStory) return;
+
+  const updatedStory = {
+    ...selectedStory,
+    content: restoredContent,
+  };
+
+  setSelectedStory(updatedStory);
+
+  setStories(
+    stories.map((story) =>
+      story.uuid === selectedStory.uuid
+        ? updatedStory
+        : story
+    )
+  );
+
+  toast.success("Story version restored successfully!");
+};
 
   const handleTopicClick = (index: number) => {
     const updatedTopics = [...topics];
@@ -309,6 +451,13 @@ const handleGenerateCharacterProfile = async () => {
                     >
                       📄 Export PDF
                     </button>
+                    <button
+                      type="button"
+                      className="rounded-lg px-4 py-2 bg-emerald-700 text-white font-semibold cursor-pointer hover:bg-emerald-600 transition-colors"
+                      onClick={() => setShowTranslator(true)}
+                    >
+                      🌍 Translate
+                    </button>
                   </>
                 )}
                 <button
@@ -326,23 +475,237 @@ const handleGenerateCharacterProfile = async () => {
               </div>
             </div>
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
-              {selectedStory ? (
-                <p className="break-words">{escapeHtml(selectedStory.content)}</p>
-              ) : (
-                <p>No story available. Please generate a story first.</p>
-              )}
+              <p className="break-words whitespace-pre-wrap">
+                {sentenceSegments.length > 0 ? (
+                  sentenceSegments.map((segment: StorySentenceSegment) => {
+                    const isActiveSentence =
+                      isNarrationActive &&
+                      narrationWordIndex >= segment.startWordIndex &&
+                      narrationWordIndex <= segment.endWordIndex;
+
+                    const rawParts = segment.text.split(/(\s+)/);
+                    let wordOffset = 0;
+
+                    return (
+                      <span
+                        key={segment.id}
+                        className={isActiveSentence ? "text-slate-100 font-medium transition-colors duration-300" : undefined}
+                      >
+                        {rawParts.map((part, partIdx) => {
+                          if (part === "") return null;
+                          if (/^\s+$/.test(part)) {
+                            return part;
+                          }
+
+                          const absoluteWordIndex = segment.startWordIndex + wordOffset;
+                          wordOffset++;
+
+                          const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+
+                          if (isActiveWord) {
+                            return (
+                              <span
+                                key={partIdx}
+                                className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
+                                data-active-word="true"
+                              >
+                                {part}
+                              </span>
+                            );
+                          }
+
+                          return (
+                            <span key={partIdx}>
+                              {part}
+                            </span>
+                          );
+                        })}
+                      </span>
+                    );
+                  })
+                ) : (
+                  (() => {
+                    const rawParts = selectedStory?.content?.split(/(\s+)/) ?? [];
+                    let wordOffset = 0;
+                    return rawParts.map((part, partIdx) => {
+                      if (part === "") return null;
+                      if (/^\s+$/.test(part)) {
+                        return part;
+                      }
+
+                      const absoluteWordIndex = wordOffset;
+                      wordOffset++;
+
+                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+
+                      if (isActiveWord) {
+                        return (
+                          <span
+                            key={partIdx}
+                            className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
+                            data-active-word="true"
+                          >
+                            {part}
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <span key={partIdx}>
+                          {part}
+                        </span>
+                      );
+                    });
+                  })()
+                )}
+              </p>
             </div>
+
             {selectedStory && (
-              <div className="mt-4 pt-4 border-t border-slate-700/50">
+              <>
+                <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
+                  <AudioPlayer 
+                    ref={audioPlayerRef} 
+                    text={selectedStory.content} 
+                    title={selectedStory.title} 
+                    onWordIndexChange={setNarrationWordIndex} 
+                    onPlaybackStateChange={setNarrationState} 
+                  />
+                </div>
+                <StoryVersionHistory
+                  story={selectedStory}
+                  onRestore={handleRestoreVersion}
+                />
+              </>
+            )}
+          </div>
+
+          {/* Alternate Endings Section */}
+          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl sm:rounded-3xl shadow-xl p-6 mt-2 relative overflow-hidden">
+            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                  Alternate Endings
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Explore alternate narrative styles for your story context.
+                </p>
+              </div>
+              {selectedStory && selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
                 <button
                   type="button"
-                  onClick={handleGenerateAlternateEndings}
-                  disabled={isGeneratingEndings}
-                  className="rounded-xl px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  onClick={handleResetEnding}
+                  className="rounded-lg px-4 py-2 bg-red-100 dark:bg-red-950/40 hover:bg-red-200 dark:hover:bg-red-900/60 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
                 >
-                  {isGeneratingEndings ? "Generating Endings..." : "Generate Alternate Endings"}
+                  <i className="fa-solid fa-rotate-left"></i> Reset to Original
                 </button>
-              </div>
+              )}
+            </div>
+
+            {selectedStory && (
+              <>
+                {isGeneratingEndings ? (
+                  <div className="flex flex-col items-center justify-center py-10">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mb-4"></div>
+                    <p className="text-slate-600 dark:text-slate-300 text-sm font-medium animate-pulse">
+                      Generating alternate endings...
+                    </p>
+                  </div>
+                ) : endingsCache[selectedStory.uuid]?.length > 0 ? (
+                  <div>
+                    <div className="flex border-b border-slate-200 dark:border-slate-700/50 mb-6 overflow-x-auto whitespace-nowrap scrollbar-none">
+                      {[
+                        { name: "Happy Ending" },
+                        { name: "Dark Ending" },
+                        { name: "Plot Twist Ending" },
+                        { name: "Open Ending" },
+                        { name: "Cliffhanger Ending" }
+                      ].map((s) => {
+                        const hasEndings = endingsCache[selectedStory.uuid] || [];
+                        const endingData = hasEndings.find((e) => e.style === s.name);
+                        const isApplied = endingData && selectedStory.content === endingData.fullStory;
+                        
+                        return (
+                          <button
+                            key={s.name}
+                            type="button"
+                            onClick={() => setActiveEndingTab(s.name)}
+                            className={`px-5 py-3 font-semibold text-sm flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                              activeEndingTab === s.name
+                                ? "border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/5"
+                                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
+                            }`}
+                          >
+                            <span>{s.name}</span>
+                            {isApplied && (
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {(() => {
+                      const currentEndings = endingsCache[selectedStory.uuid] || [];
+                      const currentEndingData = currentEndings.find((e) => e.style === activeEndingTab);
+                      if (!currentEndingData) return null;
+                      
+                      const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
+                      
+                      return (
+                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-6 border border-slate-200 dark:border-slate-700/50">
+                          <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                              {activeEndingTab} Excerpt
+                            </h4>
+                            <div>
+                              {isCurrentlyApplied ? (
+                                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100/30 dark:bg-emerald-500/10 px-3 py-1.5 rounded-lg flex items-center gap-1">
+                                  ✓ Active Ending
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleApplyEnding(currentEndingData)}
+                                  className="rounded-lg px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
+                                >
+                                  Apply Ending
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div className="space-y-4">
+                            <div className="bg-white dark:bg-slate-950 p-4 rounded-lg border border-slate-200 dark:border-slate-800 leading-relaxed text-slate-600 dark:text-slate-300 text-sm italic whitespace-pre-wrap">
+                              "{currentEndingData.ending}"
+                            </div>
+                            <details className="group border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-transparent">
+                              <summary className="list-none flex items-center justify-between p-4 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer select-none">
+                                <span>Preview Full Reconfigured Story</span>
+                                <span className="transition-transform duration-200 group-open:rotate-180">▼</span>
+                              </summary>
+                              <div className="p-4 border-t border-slate-200 dark:border-slate-800 text-sm text-slate-500 leading-relaxed max-h-60 overflow-y-auto whitespace-pre-wrap bg-slate-50/50 dark:bg-transparent">
+                                {currentEndingData.fullStory}
+                              </div>
+                            </details>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-10 bg-slate-50 dark:bg-slate-900/20 border border-dashed border-slate-200 dark:border-slate-700/50 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={handleGenerateAlternateEndings}
+                      className="rounded-lg px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm transition-all hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer"
+                    >
+                      Generate Alternate Endings
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
           <div className="mt-6">
@@ -435,7 +798,24 @@ const handleGenerateCharacterProfile = async () => {
           </div>
         </div>
       </div>
+      {showGenreTransformation && selectedStory && (
+        <StoryGenreTransformation
+          story={{
+            title: selectedStory.title,
+            content: selectedStory.content,
+          }}
+          onClose={() => setShowGenreTransformation(false)}
+        />
+      )}
       <Toaster position="top-right" reverseOrder={false} />
+
+      {showTranslator && selectedStory && (
+        <StoryTranslator
+          story={selectedStory}
+          isLogin={isLogin}
+          onClose={() => setShowTranslator(false)}
+        />
+      )}
     </div>
   );
 };

@@ -71,7 +71,6 @@ const SSInput = <T extends FieldValues>({
         <input
           type={inputType}
           id={name}
-
           placeholder={placeholder}
           autoComplete={autoComplete}
           autoFocus={autoFocus}

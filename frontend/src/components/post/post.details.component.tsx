@@ -24,7 +24,7 @@ import { useReaderPreferences } from "../reader-preferences/useReaderPreferences
 
 import { formatDateShort } from "../../utils/time-formate";
 import { formatReadingStats } from "../../utils/story-utils";
-import { getUserInfo } from "../../services/auth.service";
+import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
 
@@ -41,6 +41,8 @@ import {
 } from "../../redux/apis/storyVersion.api";
 
 import { toast } from "react-hot-toast";
+import StoryTranslator from "../translate/StoryTranslator";
+import { IStories } from "../stories/stories.view.component";
 
 
 
@@ -117,6 +119,7 @@ const PostDetailsComponent = () => {
   const [selectedVersionForBranch, setSelectedVersionForBranch] = useState<string | null>(null);
   const [showComparison, setShowComparison] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showTranslator, setShowTranslator] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
   const readerPreferences = useReaderPreferences();
@@ -544,6 +547,12 @@ const PostDetailsComponent = () => {
   >
     🔗 Share
   </button>
+  <button
+    onClick={() => setShowTranslator(true)}
+    className="px-3 py-2 rounded bg-emerald-700 text-white hover:bg-emerald-600 transition ml-2"
+  >
+    🌍 Translate
+  </button>
 
   {showShareMenu && (
     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
@@ -790,6 +799,20 @@ const PostDetailsComponent = () => {
       )}
 
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+
+      {showTranslator && post && (
+        <StoryTranslator
+          story={{
+            uuid: post._id || "",
+            title: post.title || "",
+            content: post.content || "",
+            tag: post.tag || "",
+            imageURL: post.imageURL || "",
+          } as IStories}
+          isLogin={isLoggedIn()}
+          onClose={() => setShowTranslator(false)}
+        />
+      )}
     </div>
   );
 };
