@@ -22,6 +22,18 @@ router.get(
   UserController.getProfileInfo,
 );
 
+router.patch(
+  "/me/preferences",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  validateRequest(UserValidator.updateReadingPreferences),
+  UserController.updateReadingPreferences
+);
+
 // Apply for Writer
 router.get(
   "/writer-application-list",

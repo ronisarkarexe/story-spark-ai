@@ -77,6 +77,54 @@ const changePassword = z.object({
   }),
 });
 
+const updateReadingPreferences = z.object({
+  body: z
+    .object({
+      skip: z.boolean().optional(),
+      genres: z
+        .array(z.string())
+        .min(1, "Select at least one genre")
+        .max(10, "You can select up to 10 genres")
+        .optional(),
+      preferredLength: z.enum(["short", "medium", "long"]).optional(),
+      moods: z
+        .array(z.string())
+        .min(1, "Select at least one mood")
+        .max(10, "You can select up to 10 moods")
+        .optional(),
+    })
+    .strict()
+    .superRefine((body, ctx) => {
+      if (body.skip) {
+        return;
+      }
+
+      if (!body.genres?.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select at least one genre",
+          path: ["genres"],
+        });
+      }
+
+      if (!body.preferredLength) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Preferred story length is required",
+          path: ["preferredLength"],
+        });
+      }
+
+      if (!body.moods?.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select at least one mood",
+          path: ["moods"],
+        });
+      }
+    }),
+});
+
 export const UserValidator = {
   register,
   login,
@@ -84,4 +132,5 @@ export const UserValidator = {
   resetPassword,
   updateUser,
   changePassword,
+  updateReadingPreferences,
 };

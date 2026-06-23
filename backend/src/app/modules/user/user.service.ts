@@ -11,6 +11,12 @@ import { Bookmark } from "../bookmark/bookmark.model";
 import { Notification } from "../notification/notification.model";
 import { StoryVersion } from "../story_version/story_version.model";
 import { Report } from "../report/report.model";
+import {
+  PREFERRED_LENGTHS,
+  READING_GENRES,
+  READING_MOODS,
+  PreferredLength,
+} from "./reading_preferences.constants";
 
 const allowedSocialFields = ["facebook", "twitter", "linkedin", "instagram", "github", "discord"] as const;
 
@@ -221,6 +227,90 @@ const getFollowStatus = async (token: ITokenPayload, authorId: string) => {
   return { isFollowing };
 };
 
+type ReadingPreferencesPayload = {
+  skip?: boolean;
+  genres?: string[];
+  preferredLength?: PreferredLength;
+  moods?: string[];
+};
+
+const validateAllowedValues = (
+  values: string[],
+  allowed: readonly string[],
+  fieldName: string
+) => {
+  const invalid = values.filter((value) => !allowed.includes(value));
+  if (invalid.length > 0) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Invalid ${fieldName}: ${invalid.join(", ")}`
+    );
+  }
+};
+
+const updateReadingPreferences = async (
+  token: ITokenPayload,
+  payload: ReadingPreferencesPayload
+) => {
+  if (payload.skip) {
+    const result = await User.findOneAndUpdate(
+      { email: token.email },
+      {
+        $set: {
+          hasCompletedOnboarding: true,
+          "readingPreferences.onboardingCompleted": true,
+          "readingPreferences.updatedAt": new Date(),
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!result) {
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+    }
+
+    return result;
+  }
+
+  const { genres = [], preferredLength, moods = [] } = payload;
+
+  if (!preferredLength || !PREFERRED_LENGTHS.includes(preferredLength)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid preferred story length!");
+  }
+
+  validateAllowedValues(genres, READING_GENRES, "genres");
+  validateAllowedValues(moods, READING_MOODS, "moods");
+
+  const now = new Date();
+  const favoriteGenres = genres.map((name) => ({ name, count: 1 }));
+  const favoriteEmotions = moods.map((name) => ({ name, count: 1 }));
+
+  const result = await User.findOneAndUpdate(
+    { email: token.email },
+    {
+      $set: {
+        hasCompletedOnboarding: true,
+        readingPreferences: {
+          genres,
+          preferredLength,
+          moods,
+          favoriteGenres,
+          favoriteEmotions,
+          onboardingCompleted: true,
+          updatedAt: now,
+        },
+      },
+    },
+    { new: true, runValidators: true }
+  );
+
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
+  return result;
+};
+
 export const UserService = {
   getAllUsers,
   getUser,
@@ -232,4 +322,5 @@ export const UserService = {
   getAllWriterApplicationUsers,
   toggleFollow,
   getFollowStatus,
+  updateReadingPreferences,
 };

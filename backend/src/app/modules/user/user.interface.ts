@@ -22,9 +22,7 @@ export interface IUser {
       twitter: string;
       linkedin: string;
       instagram: string;
-    github: string;
-    discord: string;
-      github: string;  
+      github: string;
       discord: string;
     };
   };
@@ -46,9 +44,15 @@ export interface IUser {
     lastActiveDate: Date | null;
     totalWritingDays: number;
   };
+  hasCompletedOnboarding?: boolean;
   readingPreferences?: {
     favoriteGenres: { name: string; count: number }[];
     favoriteEmotions: { name: string; count: number }[];
+    genres?: string[];
+    preferredLength?: "short" | "medium" | "long";
+    moods?: string[];
+    onboardingCompleted?: boolean;
+    updatedAt?: Date;
   };
   readingHistory?: Types.ObjectId[];
   writingGoals: IWritingGoals;

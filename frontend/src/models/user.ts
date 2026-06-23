@@ -18,6 +18,16 @@ export interface WritingGoals {
   weeklyWordCount: number;
 }
 
+export interface ReadingPreferences {
+  favoriteGenres?: { name: string; count: number }[];
+  favoriteEmotions?: { name: string; count: number }[];
+  genres?: string[];
+  preferredLength?: "short" | "medium" | "long";
+  moods?: string[];
+  onboardingCompleted?: boolean;
+  updatedAt?: string;
+}
+
 export interface User {
   _id: string;
   email: string;
@@ -43,6 +53,8 @@ export interface User {
   lastRequestDate: string | null;
   posts: string[];
   isApplyForWriter: boolean;
+  hasCompletedOnboarding?: boolean;
+  readingPreferences?: ReadingPreferences;
 
   createdAt: string;
   updatedAt: string;

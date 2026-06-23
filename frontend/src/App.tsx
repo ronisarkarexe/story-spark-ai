@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import ReadingPreferencesOnboardingGate from "./components/onboarding/ReadingPreferencesOnboardingGate";
 
 import { USER_ROLE } from "./constants/role";
 
@@ -169,7 +170,12 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <ReadingPreferencesOnboardingGate />
+    </>
+  );
 }
 
 export default App;

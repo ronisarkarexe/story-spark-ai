@@ -68,6 +68,22 @@ const userApi = baseApi.injectEndpoints({
         response.data,
       providesTags: [tagTypes.user],
     }),
+    updateReadingPreferences: build.mutation<
+      { success: boolean; message: string },
+      | {
+          genres: string[];
+          preferredLength: "short" | "medium" | "long";
+          moods: string[];
+        }
+      | { skip: true }
+    >({
+      query: (data) => ({
+        url: `/${USER_URL}/me/preferences`,
+        method: "PATCH",
+        data,
+      }),
+      invalidatesTags: [tagTypes.user],
+    }),
   }),
 });
 
@@ -79,4 +95,5 @@ export const {
   useUpdateWritingGoalsMutation,
   useToggleFollowMutation,
   useGetFollowStatusQuery,
+  useUpdateReadingPreferencesMutation,
 } = userApi;

@@ -190,6 +190,17 @@ const updateWritingStreak = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateReadingPreferences = catchAsync(async (req: Request, res: Response) => {
+  const token = await getToken(req);
+  await UserService.updateReadingPreferences(token, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Preferences updated successfully",
+  });
+});
+
 export const UserController = {
   getAllUsers,
   getUser,
@@ -204,4 +215,5 @@ export const UserController = {
   getWritingStreak,
   getAchievements,
   updateWritingStreak,
+  updateReadingPreferences,
 };

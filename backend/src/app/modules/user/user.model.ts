@@ -70,6 +70,7 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
       lastActiveDate: { type: Date, default: null },
       totalWritingDays: { type: Number, default: 0 },
     },
+    hasCompletedOnboarding: { type: Boolean, default: false },
     readingPreferences: {
       favoriteGenres: [
         {
@@ -83,6 +84,14 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
           count: { type: Number, default: 0 },
         },
       ],
+      genres: [{ type: String }],
+      preferredLength: {
+        type: String,
+        enum: ["short", "medium", "long"],
+      },
+      moods: [{ type: String }],
+      onboardingCompleted: { type: Boolean, default: false },
+      updatedAt: { type: Date },
     },
     readingHistory: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     writingGoals: {
