@@ -237,3 +237,16 @@ export const sanitizeStoryPayload = <T extends { title?: string; content?: strin
 
   return sanitized;
 };
+
+/**
+ * Strip markdown code blocks from a JSON response text.
+ */
+export const sanitizeJsonText = (rawText: string): string => {
+  if (!rawText || typeof rawText !== "string") return "";
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
