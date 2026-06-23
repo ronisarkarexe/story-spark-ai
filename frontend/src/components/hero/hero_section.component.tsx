@@ -320,18 +320,18 @@ const HeroSectionComponent = () => {
           <div className="w-full box-border flex flex-col items-center justify-center">
             <div className="relative max-w-3xl w-full box-border">
               <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
-                <Link to="/stories" className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+                  <Link to="/stories" className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/50">
                     <i className="fa fa-wand-magic-sparkles text-sm"></i>
                     <span>Get Started</span>
-                  </button>
-                </Link>
-                <Link to="/collab" className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+                  <Link to="/collab" className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:shadow-[0_0_15px_rgba(148,163,184,0.3)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-500/50">
                     <span>✍️</span>
                     <span>Collab Mode</span>
-                  </button>
-                </Link>
+                  </Link>
+                </motion.div>
               </div>
             </div>
           </div>
