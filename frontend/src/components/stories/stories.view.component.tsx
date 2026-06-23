@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
 import StoryMoodDashboard from "./StoryMoodDashboard";
