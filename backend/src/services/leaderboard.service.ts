@@ -2,47 +2,57 @@ import {
   LeaderboardUser,
   WeeklyLeaderboard,
 } from "../models/leaderboard.model";
+import { Post } from "../app/modules/post/post.model";
+import { User } from "../app/modules/user/user.model";
 
 export const getWeeklyLeaderboard =
   async (): Promise<WeeklyLeaderboard> => {
-    // Mock data for now
-    // Later you can connect database models here
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    const stories = [
+    const results = await Post.aggregate([
       {
-        username: "PremDhakad07",
-        avatar: "https://avatars.githubusercontent.com/u/1?v=4",
-        contributions: 34,
+        $match: {
+          isDeleted: { $ne: true },
+          publishedAt: { $gte: oneWeekAgo },
+        },
       },
       {
-        username: "Roni",
-        avatar: "https://avatars.githubusercontent.com/u/2?v=4",
-        contributions: 28,
+        $group: {
+          _id: "$author",
+          score: { $sum: 1 },
+        },
       },
+      { $sort: { score: -1 } },
+      { $limit: 50 },
       {
-        username: "Alex",
-        avatar: "https://avatars.githubusercontent.com/u/3?v=4",
-        contributions: 21,
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
       },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
-        username: "Sarah",
-        avatar: "https://avatars.githubusercontent.com/u/4?v=4",
-        contributions: 18,
+        $project: {
+          _id: 0,
+          username: { $ifNull: ["$user.name", "deleted"] },
+          avatar: { $ifNull: ["$user.profile.avatar", ""] },
+          score: 1,
+        },
       },
-    ];
+    ]);
 
-    const leaderboard: LeaderboardUser[] = stories.map(
-      (s): LeaderboardUser => ({
-        username: s.username,
-        avatar: s.avatar,
-        score: Number(s.contributions),
-      })
-    );
+    const leaderboard: LeaderboardUser[] = results;
 
-    leaderboard.sort((a, b) => b.score - a.score);
+    const totalStories = await Post.countDocuments({
+      isDeleted: { $ne: true },
+      publishedAt: { $gte: oneWeekAgo },
+    });
 
     return {
-      totalStories: stories.length,
+      totalStories,
       leaderboard,
     };
   };

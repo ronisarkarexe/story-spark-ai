@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { SearchController } from "../../app/modules/search/search.controller";
-import { SearchService } from "../../app/modules/search/search.service";
+import { SearchController } from "../app/modules/search/search.controller";
+import { SearchService } from "../app/modules/search/search.service";
 
-jest.mock("../../app/modules/search/search.service");
+jest.mock("../app/modules/search/search.service");
 
 const mockSendResponse = jest.fn();
-jest.mock("../../shared/send_response", () => ({
+jest.mock("../shared/send_response", () => ({
   __esModule: true,
   default: (...args: unknown[]) => mockSendResponse(...args),
 }));

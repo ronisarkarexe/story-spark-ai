@@ -7,9 +7,9 @@ import {
   ExternalLink,
   Code2,
   Trophy,
+  GitBranch,
+  MessageCircle,
 } from "lucide-react";
-
-import { Github, Twitter, Linkedin } from "lucide-react";
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -94,9 +94,8 @@ const ParticleField = () => {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `hsla(240, 60%, 70%, ${
-              0.06 * (1 - dist / 100)
-            })`;
+            ctx.strokeStyle = `hsla(240, 60%, 70%, ${0.06 * (1 - dist / 100)
+              })`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -290,9 +289,8 @@ const ContributorCard = ({
         background: isTop3
           ? `linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,27,75,0.7) 50%, rgba(15,23,42,0.9) 100%)`
           : `linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(20,20,50,0.5) 100%)`,
-        border: `1px solid ${
-          isTop3 ? rank!.borderColor : "rgba(148,163,184,0.08)"
-        }`,
+        border: `1px solid ${isTop3 ? rank!.borderColor : "rgba(148,163,184,0.08)"
+          }`,
         transformStyle: "preserve-3d",
         transition: "box-shadow 0.3s ease",
       }}
@@ -321,11 +319,10 @@ const ContributorCard = ({
       {/* Avatar */}
       <div className="relative mb-5" style={{ transform: "translateZ(30px)" }}>
         <div
-          className={`absolute inset-[-4px] rounded-full transition-opacity duration-500 ${
-            isTop3
+          className={`absolute inset-[-4px] rounded-full transition-opacity duration-500 ${isTop3
               ? "opacity-40 group-hover:opacity-70"
               : "opacity-0 group-hover:opacity-30"
-          }`}
+            }`}
           style={{
             background: isTop3 ? rank!.glow : "rgba(99,102,241,0.4)",
             filter: "blur(12px)",
@@ -666,7 +663,6 @@ const ContributorsComponent = () => {
 
           <p className="hero-subtitle mt-8 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
             The brilliant minds behind StorySparkAI — building, iterating, and
-            The brilliant minds behind StorySparkAI - building, iterating, and
             pushing the boundaries of AI-powered storytelling.
           </p>
 
