@@ -121,7 +121,7 @@ const aiModelApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
-      transformResponse: (response: { data: any; message: string }) => {
+      transformResponse: (response: { data: NonNullable<IStories["childSafety"]>; message: string }) => {
         return { data: response.data, message: response.message };
       },
     }),

@@ -18,11 +18,6 @@ import HomeComponent from "./components/home/home.component";
 import NotFoundComponent from "./components/not-found.component";
 import Leaderboard from "./pages/Leaderboard";
 
-type ProtectedRouteProps = {
-  allowedRoles: string[];
-  element?: React.ReactElement;
-};
-
 // Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
 const WritingAssistantComponent = lazy(() => import("./components/writing-assistant/writing_assistant.component"));
@@ -64,7 +59,6 @@ const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analyt
 const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
-const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];

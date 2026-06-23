@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import StoriesViewComponent from './stories.view.component';
+import StoriesViewComponent, { IStories } from './stories.view.component';
 
 // --- LocalStorage Polyfill for JSDOM/Node context ---
 const mockStorage: Record<string, string> = {};
@@ -71,7 +71,7 @@ vi.mock('../../redux/apis/user.api', () => ({
 }));
 
 // --- Test Data ---
-const mockStories: any[] = [
+const mockStories: IStories[] = [
   {
     uuid: '123-abc',
     title: 'The Great AI Adventure',

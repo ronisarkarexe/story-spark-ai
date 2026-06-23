@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
+
 import StoryVersionHistory from "./StoryVersionHistory";
 import { CharacterProfile } from "./stories.utils";
-import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
+import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
@@ -205,7 +203,7 @@ useEffect(() => {
   };
 
   autoSaveStory();
-}, [selectedStory, isLogin, selectTopics]);
+}, [selectedStory, isLogin, selectTopics, createPost]);
 
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
@@ -759,9 +757,7 @@ const handleGenerateCharacterProfile = async () => {
 )}
 
 {/* Child Safety & PG-STORY safety check report */}
-{selectedStory && (
-  <ChildSafetyPanel story={selectedStory} />
-)}
+<ChildSafetyPanel story={selectedStory} />
           <div className="mt-7">
             <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
               <h3 className="text-lg font-bold text-slate-200 mb-4">

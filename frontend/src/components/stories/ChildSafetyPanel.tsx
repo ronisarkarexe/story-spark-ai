@@ -22,7 +22,7 @@ export const ChildSafetyPanel: React.FC<ChildSafetyPanelProps> = ({ story }) => 
     );
   }
 
-  const { isSafeForChildren, recommendedAgeGroup, reasoning, severity, sentenceLevel = [], discourseLevel = [] } = childSafety;
+  const { recommendedAgeGroup, reasoning, severity, sentenceLevel = [], discourseLevel = [] } = childSafety;
 
   const severityConfig = {
     Safe: {
