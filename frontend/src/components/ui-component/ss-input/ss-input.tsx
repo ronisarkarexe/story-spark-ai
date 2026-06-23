@@ -32,7 +32,7 @@ const SSInput = <T extends FieldValues>({
   validation,
   error,
   autoComplete,
-  autoFocus
+  autoFocus,
 }: SSInputProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
 

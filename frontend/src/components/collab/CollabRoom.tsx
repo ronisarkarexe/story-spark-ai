@@ -6,7 +6,7 @@ import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 
 interface Participant {
-  userId: string; 
+  userId: string;
   username: string;
   color: string;
   socketId: string;
@@ -37,6 +37,8 @@ interface CollabRoomResponse {
 interface CollabStoryResponse {
   story?: StoryChunk[];
 }
+
+import CollabEditor from './CollabEditor';
 
 export default function CollabRoom() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -308,22 +310,13 @@ export default function CollabRoom() {
                 </div>
               )}
 
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newText}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  onBlur={handleInputBlur}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddText()}
-                  placeholder="Add to the story..."
-                  className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
+              <div className="flex gap-2 items-start">
+                <CollabEditor
+                  storyId={roomId}
+                  userId={user?.userId || ''}
+                  username={user?.name || 'Anonymous'}
+                  userColor="#FF6B6B"
                 />
-                <button
-                  onClick={handleAddText}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors cursor-pointer"
-                >
-                  Send
-                </button>
                 <button
                   onClick={handleAIContinue}
                   disabled={isAiThinking}

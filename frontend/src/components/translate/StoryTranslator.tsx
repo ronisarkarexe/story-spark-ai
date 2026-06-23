@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { useTranslateStoryMutation, useTranslateFreeStoryMutation } from "../../redux/apis/ai.model.api";
@@ -25,6 +25,38 @@ const LANGUAGES = [
   { code: "Bengali", flag: "🇧🇩" },
 ];
 
+const SUPPORTED_LANGUAGE_CODES = new Set(LANGUAGES.map((l) => l.code));
+
+/**
+ * Extract a human-readable error message from an RTK Query mutation error.
+ */
+function extractErrorMessage(error: unknown): string {
+  if (typeof error === "object" && error !== null) {
+    const err = error as Record<string, unknown>;
+
+    // RTK Query wraps axios errors as { status, data }
+    if (err.data) {
+      const data = err.data as Record<string, unknown>;
+
+      // Backend sends { errorMessages: [{ path, message }] } or { message }
+      if (Array.isArray(data.errorMessages) && data.errorMessages.length > 0) {
+        const first = data.errorMessages[0] as Record<string, unknown>;
+        if (typeof first.message === "string") return first.message;
+      }
+      if (typeof data.message === "string") return data.message;
+    }
+
+    // Timeout
+    if (err.status === 504 || err.status === "FETCH_ERROR") {
+      return "Translation timed out. The AI service may be busy — please try again in a moment.";
+    }
+
+    if (typeof err.message === "string") return err.message;
+  }
+
+  return "Translation failed. Please try again.";
+}
+
 export default function StoryTranslator({ story, isLogin, onClose }: Props) {
   const navigate = useNavigate();
 
@@ -36,11 +68,38 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
   const [isDone, setIsDone] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
+  // Guard against concurrent translation requests
+  const isRequestInFlight = useRef(false);
+
   const [translateStory] = useTranslateStoryMutation();
   const [translateFreeStory] = useTranslateFreeStoryMutation();
 
   const handleTranslate = async () => {
-    if (!selectedLanguage) return;
+    // ── Input validation ──────────────────────────────────────────────
+    if (!selectedLanguage) {
+      setError("Please select a language first.");
+      return;
+    }
+
+    if (!SUPPORTED_LANGUAGE_CODES.has(selectedLanguage)) {
+      setError(`"${selectedLanguage}" is not a supported language.`);
+      return;
+    }
+
+    if (!story.content || story.content.trim().length < 10) {
+      setError("Story content is too short to translate.");
+      return;
+    }
+
+    if (!story.title || story.title.trim().length === 0) {
+      setError("Story title is missing.");
+      return;
+    }
+
+    // ── Duplicate request guard ───────────────────────────────────────
+    if (isRequestInFlight.current) return;
+    isRequestInFlight.current = true;
+
     setIsTranslating(true);
     setError("");
     setIsDone(false);
@@ -57,14 +116,25 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
         : await translateFreeStory(payload).unwrap();
 
       if (result?.data) {
-        setTranslatedTitle(result.data.title);
-        setTranslatedContent(result.data.content);
+        const { title: tTitle, content: tContent } = result.data;
+
+        // Handle empty translation response
+        if (!tTitle && !tContent) {
+          setError("The AI returned an empty translation. Please try again or choose a different language.");
+          return;
+        }
+
+        setTranslatedTitle(tTitle || story.title);
+        setTranslatedContent(tContent || "");
         setIsDone(true);
+      } else {
+        setError("No translation data received from the server.");
       }
-    } catch {
-      setError("Translation failed. Please try again.");
+    } catch (err) {
+      setError(extractErrorMessage(err));
     } finally {
       setIsTranslating(false);
+      isRequestInFlight.current = false;
     }
   };
 
@@ -139,7 +209,7 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
-                onClick={() => { setSelectedLanguage(lang.code); setIsDone(false); }}
+                onClick={() => { setSelectedLanguage(lang.code); setIsDone(false); setError(""); }}
                 className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm transition-all ${
                   selectedLanguage === lang.code
                     ? "border-emerald-500 bg-emerald-500/15 text-emerald-300"
@@ -177,7 +247,7 @@ export default function StoryTranslator({ story, isLogin, onClose }: Props) {
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-emerald-400">✅ Translated to {selectedLanguage}!</p>
                 <button
-                  onClick={() => { setIsDone(false); setSelectedLanguage(""); }}
+                  onClick={() => { setIsDone(false); setSelectedLanguage(""); setError(""); }}
                   className="text-xs text-white/40 hover:text-white border border-white/10 px-3 py-1 rounded-lg transition"
                 >
                   Translate Again

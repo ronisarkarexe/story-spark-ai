@@ -13,6 +13,7 @@ import PersonalizedRecommendationsComponent from "./personalized_recommendations
 import { isLoggedIn } from "../../services/auth.service";
 import BackToTop from "../ScrollToTopButton";
 import StoryInspirationHomeCard from "./story_inspiration_card/StoryInspirationHomeCard";
+import PictureCarouselComponent from "./picture_carousel/picture_carousel.component";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -57,6 +58,7 @@ const HomeComponent = () => {
 
         <aside className="col-span-12 lg:col-span-4 min-w-0 w-full box-border">
           <div className="space-y-6 lg:sticky lg:top-24 w-full box-border">
+            <PictureCarouselComponent />
             {isLogin && <FeatureProfileComponent />}
             {isLogin && <PersonalizedRecommendationsComponent />}
             <StoryInspirationHomeCard />
