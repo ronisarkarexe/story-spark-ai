@@ -191,7 +191,7 @@ Variables marked Yes are required. Variables marked Optional are only required w
 | `SALT_ROUNDS` | `10` | ✅ Yes | bcrypt hashing rounds |
 | `JWT_SECRET` | `any_random_string` | ✅ Yes | Access token signing secret |
 | `JWT_REFRESH_SECRET` | `another_random_string` | ✅ Yes | Refresh token signing secret |
-| `JWT_EXPIRES_IN` | `60d` | ✅ Yes | Access token expiry |
+| `JWT_EXPIRES_IN` | `15m` | ✅ Yes | Access token expiry, keep short |
 | `JWT_REFRESH_EXPIRES_IN` | `120d` | ✅ Yes | Refresh token expiry |
 | `DEFAULT_ADMIN_PASSWORD` | `admin123` | ✅ Yes | Initial admin password for seeding |
 | `ADMIN_EMAIL` | `admin@example.com` | ✅ Yes | Admin account email |
