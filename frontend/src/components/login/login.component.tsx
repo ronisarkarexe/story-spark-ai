@@ -25,6 +25,7 @@ const LoginComponent = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<Inputs>({ mode: "onChange" });
 
@@ -161,9 +162,9 @@ const LoginComponent = () => {
 
             <div className="mb-6 text-center">
               <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
-                Welcome back
+                Login
               </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 Sign in to your Story Spark AI account
               </p>
             </div>
@@ -197,6 +198,8 @@ const LoginComponent = () => {
                   validation={{ required: "Password is required" }}
                   error={errors.password}
                   autoComplete="current-password"
+                  enablePasswordGenerator={true}
+                  onGeneratePassword={(newPass) => setValue('password', newPass, { shouldValidate: true })}
                 />
 
                 <div className="flex justify-end pt-2">
@@ -244,8 +247,6 @@ const LoginComponent = () => {
           </div>
         </div>
       </div>
-
-      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };
