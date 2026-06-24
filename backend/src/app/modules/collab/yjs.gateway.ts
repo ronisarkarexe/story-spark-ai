@@ -14,7 +14,7 @@ export class YjsGateway {
   private readonly saveDelay = 2000; // ms
 
   constructor(io: Server) {
-    this.io = io.of('/yjs');
+   this.io = io.of('/yjs') as any;
     this.setup();
   }
 
