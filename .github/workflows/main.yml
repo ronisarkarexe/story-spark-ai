@@ -47,7 +47,12 @@ jobs:
         run: pnpm --filter story-spark-ai-frontend add lightningcss-linux-x64-gnu
       - name: Build
         if: github.event_name != 'pull_request' || steps.changes.outputs.backend == 'true'
-        run: pnpm run build
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ steps.changes.outputs.frontend }}" != "true" ]; then
+            pnpm run build:backend
+          else
+            pnpm run build
+          fi
       - name: Validate changed frontend files
         if: github.event_name == 'pull_request' && steps.changes.outputs.frontend == 'true' && steps.changes.outputs.backend != 'true'
         shell: bash
