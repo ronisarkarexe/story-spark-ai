@@ -62,6 +62,8 @@ const session = {
 const buildPost = (commentsCount = 0) => ({
   _id: postId,
   commentsCount,
+  isPublished: true,
+  author: userId,
 });
 
 describe("CommentService.createComment", () => {
