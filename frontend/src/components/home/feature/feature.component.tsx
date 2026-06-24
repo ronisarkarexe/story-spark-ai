@@ -41,12 +41,18 @@ const FeatureComponent = () => {
     );
   }
 
-  if (isError) {
+ if (isError) {
     return (
       <div className="mb-12 text-slate-900 dark:text-slate-100">
         <h2 className="text-2xl font-bold mb-6">Featured Posts</h2>
-        <div className="rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-900/20 px-4 py-5 text-red-700 dark:text-red-400">
-          Failed to load featured posts. Please try again later.
+        <div className="rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-900/20 px-4 py-5 text-red-700 dark:text-red-400 flex flex-col items-center gap-3">
+          <p>Failed to load featured posts. Please try again later.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            🔄 Retry
+          </button>
         </div>
       </div>
     );
