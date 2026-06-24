@@ -106,6 +106,7 @@ const FloatingNavComponent: React.FC = () => {
                   <ThemeToggle />
                   <button
                     onClick={() => setIsMoreOpen(false)}
+                    aria-label="Close menu"
                     className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 hover:text-slate-950 dark:hover:text-white transition-all cursor-pointer"
                   >
                     <X size={16} />

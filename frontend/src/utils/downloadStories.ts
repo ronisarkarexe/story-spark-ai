@@ -1,28 +1,20 @@
-export const downloadTXT = (param1: string, param2?: string): void => {
+export const downloadTXT = (story: any) => {
   if (typeof window === "undefined") {
     return;
   }
 
-  let filename = "story.txt";
-  let text = param1;
+  const content = `Title: ${story.title}\nPrompt: ${story.prompt}\nStory: ${story.content}\nGenerated: ${new Date().toLocaleString()}`;
 
-  if (param2 !== undefined) {
-    if (param2.endsWith(".txt") || param2.includes("/") || param2.includes(".")) {
-      filename = param2;
-      text = param1;
-    } else {
-      filename = param1.endsWith(".txt") ? param1 : `${param1}.txt`;
-      text = param2;
-    }
-  }
+  const blob = new Blob([content], { type: "text/plain" });
 
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+
+  const link = document.createElement("a");
+  link.href = url;
+
+  link.download = `${story.title.replace(/[\\/:*?"<>|\s]+/g, "_")}.txt`;
+
+  link.click();
+
   URL.revokeObjectURL(url);
 };

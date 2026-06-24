@@ -1,13 +1,16 @@
 export interface Review {
   _id?: string;
+
   name: string;
   role: string;
   feedback: string;
+  rating: number;
   imgSrc?: string;
 
-  rating: number; 
-}
+  status: "pending" | "approved" | "rejected";
 
-  rating?: number;
+  approvedAt?: Date;
+  rejectedAt?: Date;
+  createdAt?: Date;
 }
 

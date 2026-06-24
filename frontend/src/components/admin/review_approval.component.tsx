@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
 import {
@@ -7,22 +7,44 @@ import {
   useGetPendingReviewsQuery,
 } from "../../redux/apis/review.api";
 import { Review } from "../../models/review";
-import defaultAvatar from "../../assets/logoNew.png";
-import ImageFallback from "../ImageFallback";
 
 const ReviewApprovalComponent = () => {
   const { data: reviews = [], isLoading } = useGetPendingReviewsQuery({});
   const [approveReview, { isLoading: isApproving }] = useApproveReviewMutation();
+  const [selectedReviews, setSelectedReviews] = useState<string[]>([]);
+
+
+  const handleCheckbox = (id: string) => {
+    setSelectedReviews((prev) =>
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
+    );
+  };
+
 
   const handleApprove = async (id: string) => {
     try {
       await approveReview(id).unwrap();
       toast.success("Review approved successfully!");
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error("Failed to approve review. Please try again.");
       console.error(error);
     }
   };
+
+  const handleApproveSelected = async () => {
+    try {
+      await Promise.all(selectedReviews.map((id) => approveReview(id).unwrap()));
+      toast.success(`${selectedReviews.length} reviews approved successfully!`);
+      setSelectedReviews([]);
+    } catch (error: unknown) {
+      toast.error("Failed to approve some reviews. Please try again.");
+      console.error(error);
+    }
+  };
+
+
 
   if (isLoading) {
     return (
@@ -39,7 +61,7 @@ const ReviewApprovalComponent = () => {
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 px-4 py-12 relative overflow-hidden w-full box-border">
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none select-none" />
-      
+
       <Toaster position="top-right" reverseOrder={false} />
 
       <div className="max-w-6xl mx-auto relative z-10 w-full box-border">
@@ -51,6 +73,15 @@ const ReviewApprovalComponent = () => {
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Pending Reviews
           </h2>
+          <p className="text-sm text-blue-500 mt-2">
+            Selected Reviews: {selectedReviews.length}
+          </p>
+          <button
+            className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg"
+            onClick={handleApproveSelected}
+          >
+            Approve Selected ({selectedReviews.length})
+          </button>
           <p className="mt-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
             Evaluate, approve, or filter user submissions before deployment into the production feedback directory stream.
           </p>
@@ -65,6 +96,14 @@ const ReviewApprovalComponent = () => {
               >
                 <div className="w-full box-border">
                   <div className="flex items-center gap-4 mb-5 select-none w-full box-border">
+
+                    <input
+                      type="checkbox"
+                     checked={review._id ? selectedReviews.includes(review._id) : false}
+                      onChange={() => review._id && handleCheckbox(review._id)}
+                      className="w-4 h-4 cursor-pointer"
+                    />
+
                     <img
                       src={review.imgSrc || "https://i.pravatar.cc/150?img=33"}
                       alt={review.name}

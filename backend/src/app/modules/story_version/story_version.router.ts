@@ -17,6 +17,18 @@ router.get(
   StoryVersionController.getVersionsByStoryId
 );
 
+// Retrieve character relationship network analysis
+router.get(
+  "/:id/character-network",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  StoryVersionController.getCharacterNetwork
+);
+
 router.get(
   "/:id/tree",
   auth(

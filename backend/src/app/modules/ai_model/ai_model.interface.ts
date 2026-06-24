@@ -1,3 +1,9 @@
+export interface ICharacter {
+  name: string;
+  role: string;
+  personality: string;
+}
+
 export interface IAIModel {
   prompt: string;
   wordLength: number;
@@ -5,6 +11,7 @@ export interface IAIModel {
   language?: string;
   tone?: string;
   genre?: string;
+  characters?: ICharacter[];
 }
 
 export interface IStory {

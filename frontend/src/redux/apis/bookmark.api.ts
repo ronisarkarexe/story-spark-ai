@@ -20,6 +20,21 @@ const bookmarkApi = baseApi.injectEndpoints({
         method: "GET",
         params: arg,
       }),
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        const newArgs = { ...queryArgs };
+        delete newArgs.page;
+        return { endpointName, ...newArgs };
+      },
+      merge: (currentCache, newItems) => {
+        if (!newItems.meta || newItems.meta.page === 1) {
+          return newItems;
+        }
+        currentCache.posts.push(...newItems.posts);
+        currentCache.meta = newItems.meta;
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.page !== previousArg?.page;
+      },
       transformResponse: (response: {
         data: Post[];
         meta: IMeta;

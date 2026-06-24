@@ -44,7 +44,7 @@ const AnalyticsPage = () => {
     const res = await fetch(
       `${API_BASE}/analytics/${endpoint}`,
       {
-        headers: { Authorization: token },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         signal,
       }
     );
