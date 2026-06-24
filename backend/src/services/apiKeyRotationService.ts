@@ -1,71 +1,39 @@
-/**
- * apiKeyRotationService.ts
- * ────────────────────────
- * Round-robin API key rotation for the AI provider.
- *
- * Setup (.env):
- *   AI_API_KEYS=sk-key1,sk-key2,sk-key3
- *
- * Backward-compatible: falls back to OPEN_AI_KEY or
- * GEMINI_API_KEY if AI_API_KEYS is not set.
- *
- * Usage:
- *   import { getNextApiKey, availableKeyCount } from "./apiKeyRotationService";
- *   const key = getNextApiKey(); // use in your AI SDK call
- *
- * GSSoC 2026 | feat/rate-limiting-api-key-rotation
- */
-
+// Cache the keys outside the function so they persist between requests
+let cachedKeys: string[] | null = null;
 let _index = 0;
 
-/** Parse and return all configured AI API keys */
-function loadKeys(): string[] {
-  const raw = process.env.AI_API_KEYS ?? "";
-  const keys = raw
-    .split(",")
-    .map((k) => k.trim())
-    .filter(Boolean);
+// 1. Initialize keys lazily and reuse them
+function getKeys(): string[] {
+  if (!cachedKeys) {
+    const raw = process.env.AI_API_KEYS ?? "";
 
-  if (keys.length > 0) return keys;
+    // Parse, trim, and remove empty entries
+    cachedKeys = raw
+      .split(",")
+      .map(key => key.trim())
+      .filter(Boolean);
 
-  // Backward-compat fallbacks (single-key setups)
-  // Check both naming conventions for compatibility
-  const fallback =
-    process.env.OPEN_AI_KEY ??
-    process.env.OPENAI_API_KEY ??
-    process.env.GEMINI_API_KEY ??
-    process.env.GOOGLE_GEMINI_API_KEY ??
-    "";
-
-  return fallback ? [fallback] : [];
-}
-
-/**
- * Returns the next API key in round-robin rotation.
- * Throws a descriptive error when no keys are configured.
- */
-export function getNextApiKey(): string {
-  const keys = loadKeys();
-
-  if (keys.length === 0) {
-    throw new Error(
-      "[apiKeyRotationService] No AI API keys found.\n" +
-      "Set AI_API_KEYS=key1,key2,key3 in your .env file.\n" +
-      "Or set OPEN_AI_KEY / GEMINI_API_KEY for single-key mode."
-    );
+    // Fail fast if no valid keys exist
+    if (cachedKeys.length === 0) {
+      throw new Error("No AI API keys configured");
+    }
   }
 
+  return cachedKeys;
+}
+
+// 2. Updated Rotation Logic
+export function getNextApiKey(): string {
+  const keys = getKeys();
+
   const key = keys[_index % keys.length];
-  _index     = (_index + 1) % Number.MAX_SAFE_INTEGER; // prevent overflow
+
+  _index = (_index + 1) % Number.MAX_SAFE_INTEGER;
+
   return key;
 }
 
-/** Returns how many keys are currently loaded */
-export function availableKeyCount(): number {
-  return loadKeys().length;
-}
-
-/** Reset rotation index — useful in tests */
-export function resetRotationIndex(): void {
-  _index = 0;
+// 3. Expose an explicit reload helper for the test environment
+export function reloadKeys(): void {
+  cachedKeys = null;
 }
