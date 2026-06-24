@@ -5,8 +5,12 @@ import sendResponse from "../../../shared/send_response";
 import { analyzeConsistency, trackStoryFacts } from "./story_consistency.service";
 
 const analyze = catchAsync(async (req: Request, res: Response) => {
-  const { storyText } = req.body as { storyText: string };
-  const result = await analyzeConsistency(storyText);
+  const { content, title, genre } = req.body as {
+    content: string;
+    title?: string;
+    genre?: string;
+  };
+  const result = await analyzeConsistency(content, title, genre);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

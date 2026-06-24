@@ -28,10 +28,19 @@ export interface IConsistencyResult {
 }
 
 export const analyzeConsistency = async (
-  storyText: string
+  content: string,
+  title?: string,
+  genre?: string
 ): Promise<IConsistencyResult> => {
-  const prompt = `You are an expert story editor. Analyze the following story for narrative consistency issues.
+  const contextHeader = [
+    title ? `Story Title: ${title}` : null,
+    genre ? `Genre: ${genre}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
 
+  const prompt = `You are an expert story editor. Analyze the following story for narrative consistency issues.
+${contextHeader ? `\n${contextHeader}\n` : ""}
 Detect these specific problems:
 - Character personality contradictions (a character acts against their established traits)
 - Timeline inconsistencies (events happen in impossible order)
@@ -60,7 +69,7 @@ Return ONLY a valid JSON object with this exact structure:
 
 Story to analyze:
 """
-${storyText}
+${content}
 """`;
 
   const result = await model.generateContent(prompt);

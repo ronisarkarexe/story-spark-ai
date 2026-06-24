@@ -95,6 +95,7 @@ const EmailValidationComponent = lazy(() => import("./components/email_validatio
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
 const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
+const StoryConsistencyGuardian = lazy(() => import("./components/story-consistency/StoryConsistencyGuardian"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
@@ -150,6 +151,7 @@ const router = createBrowserRouter([
           { path: "stories", element: <StoriesComponent /> },
           { path: "branching-story", element: <BranchingStory /> },
           { path: "story-workspace", element: <StoryWorkspace /> },
+          { path: "story-consistency", element: <StoryConsistencyGuardian /> },
         ],
       },
       { path: "*", element: <NotFoundComponent /> },
