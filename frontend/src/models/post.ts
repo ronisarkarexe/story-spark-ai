@@ -45,6 +45,8 @@ export interface Post {
   commentsCount: number;
   bookmarksCount: number;
   viewsCount: number;
+  averageRating: number;
+  totalRatings: number;
   isPublished: boolean;
   isFeaturedPost: boolean;
   isDeleted?: boolean;

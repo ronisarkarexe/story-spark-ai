@@ -8,6 +8,8 @@ import React, {
 } from "react";
 import {
   AlertCircle,
+  ChevronDown,
+  ChevronUp,
   LoaderCircle,
   Pause,
   Play,
@@ -52,7 +54,23 @@ const controlButtonBaseClass =
 
 const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
   ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
-    const [voiceGender, setVoiceGender] = useState<"female" | "male">("female");
+    const [voiceGender, setVoiceGender] = useState<"female" | "male">(() => {
+      try {
+        const saved = localStorage.getItem("story-spark-narration-gender");
+        return (saved === "female" || saved === "male") ? saved : "female";
+      } catch {
+        return "female";
+      }
+    });
+
+    useEffect(() => {
+      try {
+        localStorage.setItem("story-spark-narration-gender", voiceGender);
+      } catch (e) {
+        console.warn(e);
+      }
+    }, [voiceGender]);
+
     const speech = useSpeechSynthesis(text, voiceGender);
     const preview = useVoicePreview();
     const favorites = useVoiceFavorites();
@@ -106,7 +124,68 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
-    }, [showFavoritesOnly, displayedVoices, speech]);
+    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
+
+    useEffect(() => {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        const target = event.target as HTMLElement;
+        if (
+          target &&
+          (target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            target.tagName === "SELECT" ||
+            target.isContentEditable)
+        ) {
+          return;
+        }
+
+        if (event.key === " ") {
+          event.preventDefault();
+          if (speech.isPlaying) {
+            speech.pause();
+          } else if (speech.isPaused) {
+            speech.resume();
+          } else {
+            speech.play();
+          }
+        } else if (event.key === "ArrowUp" || event.key === "ArrowRight") {
+          event.preventDefault();
+          const currentIndex = SPEED_OPTIONS.indexOf(speech.rate as unknown as typeof SPEED_OPTIONS[number]);
+          if (currentIndex !== -1 && currentIndex < SPEED_OPTIONS.length - 1) {
+            speech.setRate(SPEED_OPTIONS[currentIndex + 1]);
+          } else if (speech.rate < 2) {
+            speech.setRate(Math.min(2, speech.rate + 0.25));
+          }
+        } else if (event.key === "ArrowDown" || event.key === "ArrowLeft") {
+          event.preventDefault();
+          const currentIndex = SPEED_OPTIONS.indexOf(speech.rate as unknown as typeof SPEED_OPTIONS[number]);
+          if (currentIndex !== -1 && currentIndex > 0) {
+            speech.setRate(SPEED_OPTIONS[currentIndex - 1]);
+          } else if (speech.rate > 0.5) {
+            speech.setRate(Math.max(0.5, speech.rate - 0.25));
+          }
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
+
+    const scrollToTop = () => {
+      const container = document.querySelector('[role="region"]');
+      if (container) {
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    const scrollToBottom = () => {
+      const container = document.querySelector('[role="region"]');
+      if (container) {
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      }
+    };
 
     const isLoading = speech.isSupported && !speech.isReady;
     const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
@@ -174,7 +253,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           </div>
         ) : (
           <div className="mt-4 space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <button
                 type="button"
                 role="button"
@@ -265,7 +344,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                       role="combobox"
                       value={speech.rate}
                       onChange={(event) => speech.setRate(Number(event.target.value))}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                      className="w-full  min-w-0  rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                     >
                       {SPEED_OPTIONS.map((option) => (
                         <option key={option} value={option}>
@@ -290,7 +369,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                       role="combobox"
                       value={voiceGender}
                       onChange={(event) => setVoiceGender(event.target.value as "female" | "male")}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                      className="w-full  min-w-0  rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                     >
                       <option value="female">Female voice</option>
                       <option value="male">Male voice</option>
@@ -340,7 +419,9 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                   </div>
                 </div>
               </div>
-
+               <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+  Changes to voice, pitch, volume, and playback speed are applied when narration is restarted.
+</p>
               <div className="space-y-2">
                 <label
                   htmlFor={languageSelectId}
@@ -355,7 +436,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     role="combobox"
                     value={speech.selectedLanguage}
                     onChange={(event) => speech.setSelectedLanguage(event.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                    className="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                   >
                     {speech.languageOptions.map((option) => (
                       <option key={option.lang} value={option.lang}>
@@ -373,7 +454,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 >
                   Voice
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
@@ -386,14 +467,14 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                   >
                     <Star className="h-4 w-4" fill={showFavoritesOnly ? "currentColor" : "none"} />
                   </button>
-                  <div className="relative flex-1">
+                 <div className="relative min-w-0 flex-1">
                     <select
                       id={voiceSelectId}
                       aria-label="Narration voice"
                       role="combobox"
                       value={speech.selectedVoiceId}
                       onChange={(event) => speech.setSelectedVoiceId(event.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
+                      className="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                     >
                       {displayedVoices.length === 0 ? (
                         <option disabled>No favorites available</option>
@@ -413,7 +494,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Voice controls
                 </label>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={() => {
@@ -437,31 +518,51 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     <Volume className="h-4 w-4" />
                     Preview
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => favorites.toggleFavorite(speech.selectedVoiceId)}
-                    disabled={!speech.isReady || speech.voices.length === 0}
-                    title={
-                      favorites.isFavorite(speech.selectedVoiceId)
-                        ? "Remove from favorites"
-                        : "Add to favorites"
-                    }
-                    aria-label={
-                      favorites.isFavorite(speech.selectedVoiceId)
-                        ? "Remove from favorites"
-                        : "Add to favorites"
-                    }
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-950 ${favorites.isFavorite(speech.selectedVoiceId)
-                        ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
-                        : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                      }`}
-                  >
-                    <Star
-                      className="h-4 w-4"
-                      fill={favorites.isFavorite(speech.selectedVoiceId) ? "currentColor" : "none"}
-                    />
-                    Favorite
-                  </button>
+                 <button
+  type="button"
+  onClick={() => favorites.toggleFavorite(speech.selectedVoiceId)}
+  disabled={!speech.isReady || speech.voices.length === 0}
+  title={
+    favorites.isFavorite(speech.selectedVoiceId)
+      ? "Remove from favorites"
+      : "Add to favorites"
+  }
+  aria-label={
+    favorites.isFavorite(speech.selectedVoiceId)
+      ? "Remove from favorites"
+      : "Add to favorites"
+  }
+  className={`inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-950 ${favorites.isFavorite(speech.selectedVoiceId)
+      ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+      : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+    }`}
+>
+  <Star
+    className="h-4 w-4"
+    fill={favorites.isFavorite(speech.selectedVoiceId) ? "currentColor" : "none"}
+  />
+  Favorite
+</button>
+
+<button
+  type="button"
+  onClick={scrollToTop}
+  title="Scroll to top"
+  aria-label="Scroll to top"
+  className="inline-flex items-center justify-center rounded-xl border px-3 py-2.5"
+>
+  <ChevronUp className="h-4 w-4" />
+</button>
+
+<button
+  type="button"
+  onClick={scrollToBottom}
+  title="Scroll to bottom"
+  aria-label="Scroll to bottom"
+  className="inline-flex items-center justify-center rounded-xl border px-3 py-2.5"
+>
+  <ChevronDown className="h-4 w-4" />
+</button>
                 </div>
               </div>
             </div>

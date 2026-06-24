@@ -6,8 +6,8 @@
  * Setup (.env):
  *   AI_API_KEYS=sk-key1,sk-key2,sk-key3
  *
- * Backward-compatible: falls back to OPENAI_API_KEY or
- * GOOGLE_GEMINI_API_KEY if AI_API_KEYS is not set.
+ * Backward-compatible: falls back to OPEN_AI_KEY or
+ * GEMINI_API_KEY if AI_API_KEYS is not set.
  *
  * Usage:
  *   import { getNextApiKey, availableKeyCount } from "./apiKeyRotationService";
@@ -29,8 +29,11 @@ function loadKeys(): string[] {
   if (keys.length > 0) return keys;
 
   // Backward-compat fallbacks (single-key setups)
+  // Check both naming conventions for compatibility
   const fallback =
+    process.env.OPEN_AI_KEY ??
     process.env.OPENAI_API_KEY ??
+    process.env.GEMINI_API_KEY ??
     process.env.GOOGLE_GEMINI_API_KEY ??
     "";
 
@@ -48,7 +51,7 @@ export function getNextApiKey(): string {
     throw new Error(
       "[apiKeyRotationService] No AI API keys found.\n" +
       "Set AI_API_KEYS=key1,key2,key3 in your .env file.\n" +
-      "Or set OPENAI_API_KEY / GOOGLE_GEMINI_API_KEY for single-key mode."
+      "Or set OPEN_AI_KEY / GEMINI_API_KEY for single-key mode."
     );
   }
 
