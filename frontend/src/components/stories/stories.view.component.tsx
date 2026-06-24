@@ -88,7 +88,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       } else {
       setReadingStreak(streak);
     }
-  },
+  };
   updateStreak();
 },  [selectedStory]);
 
