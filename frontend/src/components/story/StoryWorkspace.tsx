@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -9,7 +9,7 @@ import ChapterSidebar from "./ChapterSidebar";
 import StoryViewer from "./StoryViewer";
 import ContinueStoryButton from "./ContinueStoryButton";
 import CharacterNetwork from "../CharacterNetwork";
-
+import ReadingProgressBar from "./ReadingProgressBar";
 import {
   getSafeFileName,
   downloadBlob,
@@ -21,8 +21,8 @@ const StoryWorkspace = () => {
   const currentStory = useSelector(
     (state: RootState) => state.story.currentStory
   );
-  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
-
+const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
+  const storyContentRef = useRef<HTMLDivElement>(null);
   const handleCopyStory = async () => {
   if (!currentStory) {
     toast.error("No story available to copy.");
@@ -146,6 +146,9 @@ const StoryWorkspace = () => {
 
   return (
     <div className="flex bg-black h-screen">
+      {workspaceMode === "editor" && (
+        <ReadingProgressBar containerRef={storyContentRef} />
+      )}
       <Toaster position="top-right" reverseOrder={false} />
       <ChapterSidebar
         chapters={currentStory.chapters}
@@ -209,6 +212,7 @@ const StoryWorkspace = () => {
             <StoryViewer
               chapters={currentStory.chapters}
               storyId={currentStory.id}
+              externalRef={storyContentRef}
             />
 
             <div className="p-6 border-t border-zinc-800">

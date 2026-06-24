@@ -7,12 +7,13 @@ import { AudioPlayer } from "../AudioPlayer"; // Sahi import path
 interface Props {
   chapters: Chapter[];
   storyId: string;
+  externalRef?: React.RefObject<HTMLDivElement>;
 }
-
-const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
+const StoryViewer: React.FC<Props> = ({ chapters, storyId, externalRef }) => {
   const [progress, setProgress] = useState(0);
   const [showResumeBanner, setShowResumeBanner] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const internalRef = useRef<HTMLDivElement>(null);
+  const containerRef = externalRef ?? internalRef;
   const storageKey = `story-progress-${storyId}`;
 
   useEffect(() => {
@@ -87,7 +88,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
       {showResumeBanner && (
         <div className="sticky top-0 z-20 bg-indigo-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
           <span className="text-sm text-indigo-200">
-            You left off at {progress}% � continue where you stopped?
+            You left off at {progress}%   continue where you stopped?
           </span>
           <div className="flex gap-2">
             <button
