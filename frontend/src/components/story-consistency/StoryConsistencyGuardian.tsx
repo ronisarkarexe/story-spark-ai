@@ -69,6 +69,8 @@ const IssueCard = ({ issue }: { issue: IConsistencyIssue }) => (
 
 export default function StoryConsistencyGuardian() {
   const [storyText, setStoryText] = useState("");
+  const [title, setTitle] = useState("");
+  const [genre, setGenre] = useState("");
   const [activeTab, setActiveTab] = useState<"consistency" | "fact-tracker">("consistency");
 
   // General Consistency state
@@ -82,14 +84,18 @@ export default function StoryConsistencyGuardian() {
   const [factError, setFactError] = useState("");
 
   const handleAnalyze = async () => {
-    if (storyText.trim().length < 100) {
-      setError("Please enter at least 100 characters of story text.");
+    if (storyText.trim().length < 500) {
+      setError("Please enter at least 500 characters of story text.");
       return;
     }
     setError("");
     setLoading(true);
     try {
-      const data = await analyzeStoryConsistency(storyText);
+      const data = await analyzeStoryConsistency(
+        storyText,
+        title.trim() || undefined,
+        genre.trim() || undefined
+      );
       setResult(data);
     } catch {
       setError("Analysis failed. Please try again.");
@@ -157,7 +163,29 @@ export default function StoryConsistencyGuardian() {
 
         {/* Input */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-          <label className="text-sm font-semibold text-white/70">Your Story Text</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider">Story Title (optional)</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. The Last Kingdom"
+                className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider">Genre (optional)</label>
+              <input
+                type="text"
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
+                placeholder="e.g. Fantasy, Sci-Fi, Romance"
+                className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+          <label className="text-sm font-semibold text-white/70">Your Story Text <span className="text-white/30 font-normal">(min. 500 characters)</span></label>
           <textarea
             value={storyText}
             onChange={(e) => setStoryText(e.target.value)}

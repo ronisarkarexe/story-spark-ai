@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 
 import { RootState } from "../../redux/store";
@@ -21,6 +22,7 @@ const StoryWorkspace = () => {
   const currentStory = useSelector(
     (state: RootState) => state.story.currentStory
   );
+  const navigate = useNavigate();
   const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
 
   const handleCopyStory = async () => {
@@ -194,6 +196,12 @@ const StoryWorkspace = () => {
               className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
             >
               ⬇️ Word (DOCX)
+            </button>
+            <button
+              onClick={() => navigate("/story-consistency")}
+              className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
+            >
+              ✨ Check Consistency
             </button>
             <button
               onClick={handleExportPDF}

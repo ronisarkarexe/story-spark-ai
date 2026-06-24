@@ -1,4 +1,15 @@
-export const downloadTXT = (story: any) => {
+interface Story {
+  title: string;
+  prompt: string;
+  content: string;
+}
+
+export const downloadTXT = (story: Story) => {
+
+  if (typeof window === "undefined") {
+    return;
+  }
+
   const content = `Title: ${story.title}\nPrompt: ${story.prompt}\nStory: ${story.content}\nGenerated: ${new Date().toLocaleString()}`;
 
   const blob = new Blob([content], { type: "text/plain" });
