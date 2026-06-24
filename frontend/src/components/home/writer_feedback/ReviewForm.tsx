@@ -575,8 +575,6 @@ const ReviewForm: React.FC = () => {
   
 </div>
   );
-    </div>
-  );
 };
 
 export default ReviewForm;

@@ -26,22 +26,24 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
     setCookieBannerHeight(height);
   }, []);
 
-  return (
-    <div
-      className={`flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${
-        !isAuthPage ? "pb-20 lg:pb-0" : ""
-      }`}
-      style={{ paddingBottom: isAuthPage ? 0 : cookieBannerHeight }}
-    >
-      {!hideHeader && <NavListComponent />}
-      <CookieConsentBanner onLayoutChange={handleCookieLayoutChange} />
+ return (
+  <div
+    className="flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100"
+    style={{ paddingBottom: isAuthPage ? 0 : cookieBannerHeight }}
+  >
+    {!hideHeader && <NavListComponent />}
 
-      <div className="flex-grow min-h-0">{children}</div>
+    <CookieConsentBanner onLayoutChange={handleCookieLayoutChange} />
 
-      {!hideFooter && <FooterComponent />}
-<ChatComponent />
+    <div className="flex-grow min-h-0">
+      {children}
     </div>
-  );
+
+    {!hideFooter && <FooterComponent />}
+
+    <ChatComponent />
+  </div>
+);
 };
 
 export default RootLayout;

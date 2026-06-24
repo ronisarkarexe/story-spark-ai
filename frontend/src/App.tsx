@@ -134,7 +134,6 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
-      
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "leaderboard", element: <Leaderboard /> },
       { path: "community", element: <CommunityComponent /> },

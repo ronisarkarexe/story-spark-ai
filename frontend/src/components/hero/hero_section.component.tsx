@@ -335,7 +335,7 @@ const HeroSectionComponent = () => {
               </div>
             </div>
           </div>
-        </motion.div>
+          </motion.div>
 
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
           <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
@@ -357,6 +357,7 @@ const HeroSectionComponent = () => {
           ))}
         </div>
       </motion.div>
+      </div>
     </motion.div>
   );
 };
