@@ -4,48 +4,89 @@ import { Bookmark } from "../src/app/modules/bookmark/bookmark.model";
 import config from "../src/config";
 
 // Idempotent migration: backfill legacy Post.bookmarks into Bookmark docs + bookmarksCount.
+
+const toValidObjectIdString = (value: unknown): string | null => {
+  if (value instanceof mongoose.Types.ObjectId) {
+    return value.toString();
+  }
+
+  if (typeof value === "string" && mongoose.Types.ObjectId.isValid(value)) {
+    return value;
+  }
+
+  return null;
+};
+
 const migrateBookmarks = async () => {
-  await mongoose.connect(config.database_url as string);
-
-  // Read the legacy array directly; the Post schema no longer defines it.
-  const docs = await Post.collection
-    .find({ bookmarks: { $exists: true, $type: "array" } })
-    .project({ bookmarks: 1 })
-    .toArray();
-
   let createdBookmarks = 0;
   let updatedPosts = 0;
 
-  for (const doc of docs) {
-    const userIds: mongoose.Types.ObjectId[] = Array.isArray(doc.bookmarks)
-      ? doc.bookmarks
-      : [];
+  try {
+    await mongoose.connect(config.database_url as string);
 
-    for (const userId of userIds) {
-      const res = await Bookmark.updateOne(
-        { userId, storyId: doc._id },
-        { $setOnInsert: { userId, storyId: doc._id } },
-        { upsert: true }
+    // Read the legacy array directly; the Post schema no longer defines it.
+    const docs = await Post.collection
+      .find({ bookmarks: { $exists: true, $type: "array" } })
+      .project({ bookmarks: 1 })
+      .toArray();
+
+    for (const doc of docs) {
+      const rawBookmarks = Array.isArray(doc.bookmarks) ? doc.bookmarks : [];
+
+      // Remove invalid IDs and duplicate user IDs from the legacy bookmarks array.
+      const userIds = [
+        ...new Set(
+          rawBookmarks
+            .map((id) => toValidObjectIdString(id))
+            .filter((id): id is string => Boolean(id))
+        ),
+      ].map((id) => new mongoose.Types.ObjectId(id));
+
+      if (userIds.length > 0) {
+        const result = await Bookmark.bulkWrite(
+          userIds.map((userId) => ({
+            updateOne: {
+              filter: {
+                userId,
+                storyId: doc._id,
+              },
+              update: {
+                $setOnInsert: {
+                  userId,
+                  storyId: doc._id,
+                },
+              },
+              upsert: true,
+            },
+          })),
+          { ordered: false }
+        );
+
+        createdBookmarks += result.upsertedCount || 0;
+      }
+
+      const count = await Bookmark.countDocuments({ storyId: doc._id });
+
+      await Post.collection.updateOne(
+        { _id: doc._id },
+        {
+          $set: { bookmarksCount: count },
+          $unset: { bookmarks: "" },
+        }
       );
-      if (res.upsertedCount) createdBookmarks += 1;
+
+      updatedPosts += 1;
     }
 
-    const count = await Bookmark.countDocuments({ storyId: doc._id });
-    await Post.collection.updateOne(
-      { _id: doc._id },
-      { $set: { bookmarksCount: count }, $unset: { bookmarks: "" } }
+    console.log(
+      `Migration complete. Posts updated: ${updatedPosts}, bookmarks created: ${createdBookmarks}.`
     );
-    updatedPosts += 1;
+  } finally {
+    await mongoose.disconnect();
   }
-
-  console.log(
-    `Migration complete. Posts updated: ${updatedPosts}, bookmarks created: ${createdBookmarks}.`
-  );
-  await mongoose.disconnect();
 };
 
-migrateBookmarks().catch(async (error) => {
+migrateBookmarks().catch((error) => {
   console.error("Bookmark migration failed:", error);
-  await mongoose.disconnect();
   process.exit(1);
 });

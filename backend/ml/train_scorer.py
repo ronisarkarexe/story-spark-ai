@@ -12,7 +12,7 @@ Place at: backend/ml/train_scorer.py
 import os, random, string
 import numpy as np
 import joblib
-
+import matplotlib.pyplot as plt
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import tensorflow as tf
@@ -27,6 +27,7 @@ tf.random.set_seed(SEED)
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from scorer import build_model, MAX_VOCAB, MAX_LEN, SAVE_DIR
+from sklearn.model_selection import train_test_split
 
 # ── Weak-label heuristics ──────────────────────────────────────────────────────
 # These are deliberately simple proxies. Real labels accumulate from user
@@ -127,6 +128,8 @@ def random_story(prompt: str, quality: str = "medium") -> str:
 
 
 def build_dataset(n_samples: int = 2000):
+    if n_samples < 1:
+        raise ValueError("n_samples must be positive")
     stories, prompts = [], []
     coh_labels, cre_labels, rel_labels = [], [], []
 
@@ -150,46 +153,96 @@ if __name__ == "__main__":
     print("Building synthetic dataset…")
     stories, prompts, coh, cre, rel = build_dataset(2000)
 
-    tokenizer = Tokenizer(num_words=MAX_VOCAB, oov_token="<OOV>")
-    tokenizer.fit_on_texts(stories + prompts)
+    (
+        train_stories,
+        val_stories,
+        train_prompts,
+        val_prompts,
+        train_coh,
+        val_coh,
+        train_cre,
+        val_cre,
+        train_rel,
+        val_rel,
+    ) = train_test_split(
+        stories,
+        prompts,
+        coh,
+        cre,
+        rel,
+        test_size=0.15,
+        random_state=SEED,
+    )
 
+    tokenizer = Tokenizer(
+        num_words=MAX_VOCAB,
+        oov_token="<OOV>"
+    )
+
+    # Fit ONLY on training data
+    tokenizer.fit_on_texts(
+        train_stories + train_prompts
+    )
     def encode(texts):
         seqs = tokenizer.texts_to_sequences(texts)
         return pad_sequences(seqs, maxlen=MAX_LEN, padding="post", truncating="post")
 
-    story_enc  = encode(stories)
-    prompt_enc = encode(prompts)
+    train_story_enc = encode(train_stories)
+    train_prompt_enc = encode(train_prompts)
+
+    val_story_enc = encode(val_stories)
+    val_prompt_enc = encode(val_prompts)
 
     model = build_model()
     model.summary()
 
     print("Training…")
-    model.fit(
-        {"story": story_enc, "prompt": prompt_enc},
-        {"coherence": coh, "creativity": cre, "relevance": rel},
+    history=model.fit(
+        {
+            "story": train_story_enc,
+            "prompt": train_prompt_enc,
+        },
+        {
+            "coherence": train_coh,
+            "creativity": train_cre,
+            "relevance": train_rel,
+        },
         epochs=10,
         batch_size=32,
-        validation_split=0.15,
+        validation_data=(
+            {
+                "story": val_story_enc,
+                "prompt": val_prompt_enc,
+            },
+            {
+                "coherence": val_coh,
+                "creativity": val_cre,
+                "relevance": val_rel,
+            },
+        ),
         verbose=1,
     )
-
+    plt.plot(history.history["loss"])
+    plt.plot(history.history["val_loss"])
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend(["Train", "Validation"])
     os.makedirs(SAVE_DIR, exist_ok=True)
     model.save(os.path.join(SAVE_DIR, "scorer.keras"))
     joblib.dump(tokenizer, os.path.join(SAVE_DIR, "tokenizer.pkl"))
     print(f"Saved to {SAVE_DIR}/")
     
     
-    import matplotlib.pyplot as plt
-    import numpy as np
+   
 
     # Predictions lao
-    val_size = int(0.15 * len(stories))
-    val_stories = story_enc[-val_size:]
-    val_prompts = prompt_enc[-val_size:]
-    val_coh, val_cre, val_rel = coh[-val_size:], cre[-val_size:], rel[-val_size:]
 
     pred_coh, pred_cre, pred_rel = model.predict(
-        {"story": val_stories, "prompt": val_prompts}, verbose=0
+        {
+            "story": val_story_enc,
+            "prompt": val_prompt_enc,
+        },
+        verbose=0,
     )
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
