@@ -15,6 +15,9 @@ import BackToTop from "../ScrollToTopButton";
 import StoryInspirationHomeCard from "./story_inspiration_card/StoryInspirationHomeCard";
 import PictureCarouselComponent from "./picture_carousel/picture_carousel.component";
 
+// NEW: Import Community Home
+import CommunityHome from "./community/communityhome";
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -49,6 +52,10 @@ const HomeComponent = () => {
         <main className="col-span-12 lg:col-span-8 min-w-0 w-full box-border space-y-8 sm:space-y-12">
           <FeatureComponent />
           <LatestPostsComponent />
+
+          {/* Community Section - Linked here */}
+          <CommunityHome />
+
           <CommunitySpotlightComponent />
           <ResourceComponent />
           <WriterFeedbackComponent />
