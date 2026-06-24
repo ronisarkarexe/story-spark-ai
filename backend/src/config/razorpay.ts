@@ -2,7 +2,7 @@ import Razorpay from "razorpay";
 
 let razorpayInstance: InstanceType<typeof Razorpay> | null = null;
 
-const getRazorpay = (): InstanceType<typeof Razorpay> => {
+export const getRazorpay = (): InstanceType<typeof Razorpay> => {
   if (!razorpayInstance) {
     razorpayInstance = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID!,
@@ -10,7 +10,9 @@ const getRazorpay = (): InstanceType<typeof Razorpay> => {
     });
   }
 
-  return razorpayInstance;
+  // At this point the instance must be initialized.
+  return razorpayInstance as InstanceType<typeof Razorpay>;
 };
 
 export default getRazorpay;
+

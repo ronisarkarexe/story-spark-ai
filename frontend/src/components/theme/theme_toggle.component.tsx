@@ -31,7 +31,10 @@ const ThemeToggle: React.FC = () => {
 
   const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     const doc = document as Document & {
-      startViewTransition?: (callback: () => void) => { ready: Promise<void> };
+      startViewTransition?: (callback: () => void) => {
+        ready: Promise<void>;
+        finished: Promise<void>;
+      };
     };
     
     // Check if the browser supports View Transitions API and user respects motion
@@ -43,8 +46,8 @@ const ThemeToggle: React.FC = () => {
     const x = e.clientX;
     const y = e.clientY;
     const endRadius = Math.hypot(
-      Math.max(x, innerWidth - x),
-      Math.max(y, innerHeight - y)
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
     );
 
     const isDarkCurrent = isDark;
@@ -87,6 +90,8 @@ const ThemeToggle: React.FC = () => {
     <button
       type="button"
       aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      aria-pressed={isDark}
+      title={isDark ? "Switch to light theme" : "Switch to dark theme"}
       onClick={handleToggle}
       className="rounded-full p-2 text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 transition-all duration-300 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
     >
