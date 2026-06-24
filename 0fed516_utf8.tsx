@@ -1044,6 +1044,11 @@ if (isLoading) {
                     <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
                       ΓÅ▒∩╕Å {calculateReadingTime(selectedStory.content)} min read
                     </div>
+
+                    <div className="inline-flex items-center rounded-full bg-slate-700 py-1 px-2.5 text-xs font-medium text-slate-300 shadow-sm gap-1">
+  📝 {getWordCount(selectedStory.content).toLocaleString()} words
+</div>
+
                   </div>
                   <div>
                     <BookmarkButton storyId={selectedStory.uuid} />

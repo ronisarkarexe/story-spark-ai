@@ -43,7 +43,13 @@ export default function DualScrollButton() {
       aria-label={isBottomMode ? "Scroll to bottom" : "Scroll to top"}
       title={isBottomMode ? "Scroll to bottom" : "Scroll to top"}
       className={`
+
+        fixed bottom-24
+         right-6 
+         z-50
+
        fixed bottom-28 right-6 z-50
+
         flex items-center justify-center
         w-14 h-14 rounded-full
         text-white
