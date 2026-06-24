@@ -12,9 +12,13 @@ const LatestPostsComponent = () => {
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
+  const posts = (data?.posts ?? []) as Post[];
+
+
   useEffect(() => {
     setShowAllPosts(false);
   }, [data?.posts]);
+
 
 
   if (isLoading) return <LoadingAnimation />;
@@ -45,6 +49,12 @@ const LatestPostsComponent = () => {
     return true;
   });
 
+  // Remove duplicate posts based on _id
+  const uniquePosts = Array.from(
+    new Map((data?.posts ?? []).map((post) => [post._id, post])).values(),
+  );
+
+
   const shouldShowLoadMore = uniquePosts.length > INITIAL_VISIBLE_COUNT;
   const visiblePosts =
     showAllPosts || !shouldShowLoadMore
@@ -58,7 +68,7 @@ const LatestPostsComponent = () => {
   return (
 
     <section className="w-full min-w-0 max-w-full">
-      <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-gray-200">Latest Posts</h2>
+      <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-white">Latest Posts</h2>
 
       <div className="max-w-full space-y-3">
         {visiblePosts.length > 0 ? (

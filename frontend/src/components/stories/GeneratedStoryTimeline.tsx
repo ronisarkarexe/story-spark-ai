@@ -15,6 +15,7 @@ type GeneratedStoryTimelineProps = {
   title: string;
   narrationState: NarrationPlaybackState;
   narrationWordIndex: number;
+  onNavigate?: (wordStart: number) => void;
 };
 
 const EVENT_COUNT = 5;
@@ -86,6 +87,7 @@ const GeneratedStoryTimeline = ({
   title,
   narrationState,
   narrationWordIndex,
+  onNavigate,
 }: GeneratedStoryTimelineProps) => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const events = useMemo(() => splitStoryIntoEvents(content), [content]);
@@ -147,7 +149,10 @@ const GeneratedStoryTimeline = ({
               <button
                 type="button"
                 key={event.id}
-                onClick={() => setSelectedEventId(event.id)}
+                onClick={() => {
+                  setSelectedEventId(event.id);
+                  onNavigate?.(event.wordStart);
+                }}
                 className={`group relative rounded-xl border p-4 text-left transition-all duration-300 md:ml-8 ${
                   isActive
                     ? "border-cyan-300/60 bg-cyan-400/10 shadow-lg shadow-cyan-500/10"
