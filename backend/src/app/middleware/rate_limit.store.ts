@@ -133,6 +133,25 @@ import Redis from "ioredis";
 // We use ioredis to securely track token quotas
 const redisClient = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : new Redis();
 
+const QUOTA_LUA = `
+local key     = KEYS[1]
+local needed  = tonumber(ARGV[1])
+local limit   = tonumber(ARGV[2])
+local ttl_sec = tonumber(ARGV[3])
+
+local current = tonumber(redis.call('GET', key) or 0)
+if current + needed > limit then
+  return {0, current, redis.call('TTL', key)}
+end
+
+local after = redis.call('INCRBY', key, needed)
+if after == needed then
+  -- Key was just created (first request); set the expiry now.
+  redis.call('EXPIRE', key, ttl_sec)
+end
+return {1, after, ttl_sec}
+`;
+
 export const consumeTokenQuota = async (
   userIdOrIp: string,
   tokensRequired: number,
@@ -141,29 +160,44 @@ export const consumeTokenQuota = async (
   const dateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
   const key = `token_quota:${userIdOrIp}:${dateStr}`;
 
+  // TTL: seconds remaining until midnight UTC
+  const now = new Date();
+  const tomorrow = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + 1
+  ));
+  const ttlSec = Math.ceil((tomorrow.getTime() - now.getTime()) / 1000);
+
   try {
-    const currentTokens = await redisClient.get(key);
-    const usedTokens = currentTokens ? parseInt(currentTokens, 10) : 0;
+    // eval(script, numkeys, ...keys, ...args) – ioredis signature
+    const result = await redisClient.eval(
+      QUOTA_LUA,
+      1,           // number of KEYS
+      key,         // KEYS[1]
+      String(tokensRequired),
+      String(dailyQuotaLimit),
+      String(ttlSec)
+    ) as [number, number, number];
 
-    if (usedTokens + tokensRequired > dailyQuotaLimit) {
-      // Calculate seconds until midnight UTC
-      const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-      tomorrow.setUTCHours(0, 0, 0, 0);
-      const retryAfterSec = Math.ceil((tomorrow.getTime() - now.getTime()) / 1000);
+    const [allowed, usedOrAfter] = result;
 
-      return { allowed: false, remainingTokens: dailyQuotaLimit - usedTokens, retryAfterSec };
+    if (allowed === 0) {
+      return {
+        allowed: false,
+        remainingTokens: Math.max(0, dailyQuotaLimit - usedOrAfter),
+        retryAfterSec: ttlSec,
+      };
     }
 
-    // Atomically increment and set expiry to 48 hours (to be safe)
-    await redisClient.incrby(key, tokensRequired);
-    await redisClient.expire(key, 48 * 60 * 60);
-
-    return { allowed: true, remainingTokens: dailyQuotaLimit - (usedTokens + tokensRequired), retryAfterSec: 0 };
+    return {
+      allowed: true,
+      remainingTokens: Math.max(0, dailyQuotaLimit - usedOrAfter),
+      retryAfterSec: 0,
+    };
   } catch (error) {
     logger.error(`Redis token quota error: ${error}`);
-    // Fail open or closed? Typically fail closed for financial limits.
+    // Fail closed: deny when the quota store is unreachable.
     return { allowed: false, remainingTokens: 0, retryAfterSec: 60 };
   }
 };
