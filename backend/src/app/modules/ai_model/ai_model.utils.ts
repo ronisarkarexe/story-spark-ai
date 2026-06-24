@@ -31,6 +31,15 @@ const genAI = new GoogleGenerativeAI(geminiApiKey);
 const MISSING_GEMINI_API_KEY_MESSAGE =
   "Gemini API key is not configured. Set GEMINI_API_KEY before using Gemini generation features.";
 
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
+
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
 });
@@ -751,7 +760,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-    );
 
       return {
         sceneNumber: index + 1,
