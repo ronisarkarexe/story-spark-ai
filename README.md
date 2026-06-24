@@ -39,6 +39,42 @@
 - [Local Development](#local-development-monorepo)
 - [Environment Variables](#environment-variables)
 - [Minimal Working Example (Story Generation API)](#minimal-working-example-story-generation-api)
+- [API Reference](#api-reference)
+## 📡 API Reference
+
+The following section provides an overview of the primary API endpoints available in StorySparkAI.
+
+> **Note:** Most endpoints require authentication and appropriate user roles (`USER`, `WRITER`, `ADMIN`, or `SUPER_ADMIN`).
+
+### ✨ Story Generation
+
+| Method | Endpoint                      | Description                                    | Authentication |
+| ------ | ----------------------------- | ---------------------------------------------- | -------------- |
+| POST   | `/api/v1/story/generate`      | Generate a new AI-powered story from a prompt  | Required       |
+| POST   | `/api/v1/story/continue`      | Continue an existing story from a given prompt | Required       |
+| POST   | `/api/v1/story/continuations` | Generate multiple continuations for a story    | Required       |
+
+### 🌳 Story Branching
+
+| Method | Endpoint                    | Description                                             | Authentication |
+| ------ | --------------------------- | ------------------------------------------------------- | -------------- |
+| POST   | `/api/v1/stories/branching` | Create alternate story paths based on a selected choice | Required       |
+
+### ⭐ Reviews
+
+| Method | Endpoint               | Description                           | Authentication |
+| ------ | ---------------------- | ------------------------------------- | -------------- |
+| POST   | `/api/v1/story/create` | Submit a review for generated content | Required       |
+
+### Example Request
+
+```bash
+curl -X POST http://localhost:5000/api/v1/story/generate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>" \
+  -d '{
+    "prompt": "A lost astronaut discovers a planet made of memories"
+  }'
 - [Troubleshooting 🛠️](#troubleshooting-🛠️)
 - [Contributing 👨‍💻](#contributing-👨‍💻)
 - [Contributors 🤝](#contributors-🤝)
