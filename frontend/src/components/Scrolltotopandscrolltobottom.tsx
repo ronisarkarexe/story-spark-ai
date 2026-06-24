@@ -4,7 +4,7 @@ import { ArrowUp, ArrowDown } from "lucide-react";
 const DEFAULT_BOTTOM = "1.5rem"; // resting position
 
 export default function DualScrollButton() {
-  const [scrollY, setScrollY] = useState(0);
+  const [, setScrollY] = useState(0);
   const [visible, setVisible] = useState(false);
   const [bottomOffset, setBottomOffset] = useState(DEFAULT_BOTTOM);
   const footerObserverRef = useRef<IntersectionObserver | null>(null);
@@ -89,11 +89,10 @@ export default function DualScrollButton() {
         transition: "bottom 0.25s ease, opacity 0.3s ease, transform 0.3s ease",
         zIndex: 50,
       }}
-      className={`flex items-center gap-4 transition-all duration-300 ease-in-out ${
-        visible
-          ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-4 pointer-events-none"
-      }`}
+      className={`flex items-center gap-4 transition-all duration-300 ease-in-out ${visible
+        ? "opacity-100 translate-y-0"
+        : "opacity-0 translate-y-4 pointer-events-none"
+        }`}
     >
       <button
         onClick={handleScrollToBottom}
