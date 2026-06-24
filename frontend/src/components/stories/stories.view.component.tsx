@@ -5,6 +5,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useAntiGravityScroll } from "../../hooks/useAntiGravityScroll";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
+import { getServerDateString } from "../../utils/getServerDate";
 import jsPDF from "jspdf";
 import {
   fetchImageAsBlob,
@@ -535,26 +536,31 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   }, [stories, dispatch]);
 
   useEffect(() => {
-    const today = new Date().toDateString();
-    const lastReadDate = localStorage.getItem("lastReadDate");
-    const streak = Number(localStorage.getItem("readingStreak") || "0");
+    if(!selectedStory) return;
 
-    if (lastReadDate !== today) {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
+    const updateStreak = async () => {
+      const today = await getServerDateString();
+      const lastReadDate = localStorage.getItem("lastReadDate");
+      const streak = Number(localStorage.getItem("readingStreak") || "0");
 
-      let newStreak = 1;
-      if (lastReadDate === yesterday.toDateString()) {
-        newStreak = streak + 1;
-      }
+      if (lastReadDate !== today) {
+        const servernow = new Date(today);
+        const yesterday = new Date(servernow);
+        yesterday.setDate(yesterday.getDate() - 1);
 
-      localStorage.setItem("readingStreak", String(newStreak));
-      localStorage.setItem("lastReadDate", today);
-      setReadingStreak(newStreak);
-    } else {
+        const newStreak = lastReadDate === yesterday.toDateString()
+        ? streak + 1
+        : 1;
+      
+        localStorage.setItem("readingStreak", String(newStreak));
+        localStorage.setItem("lastReadDate", today);
+        setReadingStreak(newStreak);
+      } else {
       setReadingStreak(streak);
     }
-  }, [selectedStory]);
+  },
+  updateStreak();
+},  [selectedStory]);
 
   useEffect(() => {
     const autoSaveStory = async () => {
