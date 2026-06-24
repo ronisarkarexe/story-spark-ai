@@ -40,6 +40,7 @@ import ImageFallback from "../ImageFallback";
 import StoryVisualizer from "../story-visualizer/StoryVisualizer";
 import ContinueStoryModal from "./ContinueStoryModal";
 import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
+import PublishConfirmModal from "./PublishConfirmModal";
 
 // --- Custom Error Classes & Helper Types ---
 export class ApiError extends Error {
@@ -364,6 +365,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]);
   const [storyboardStyleGuide, setStoryboardStyleGuide] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false); // Used for initial generative state
 
   // Modals
@@ -2040,7 +2042,7 @@ ${content}
                 <button type="button" className="rounded-xl px-3 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white border border-transparent text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-sm" onClick={() => setShowContinueModal(true)}>
                   ✦ Continue →
                 </button>
-                <button type="button" className={`rounded-xl px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50 ${loading ? 'opacity-70' : ''}`} onClick={handelPublishStory} disabled={loading}>
+                <button type="button" className={`rounded-xl px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50 ${loading ? 'opacity-70' : ''}`} onClick={() => setShowPublishConfirm(true)} disabled={loading}>
                   {loading ? "Publishing..." : "Publish"}
                 </button>
               </div>
@@ -2400,8 +2402,15 @@ ${content}
           onClose={() => setShowContinueModal(false)}
         />
       )}
+      {showPublishConfirm && (
+        <PublishConfirmModal
+          onConfirm={() => {
+            setShowPublishConfirm(false);
+            handelPublishStory();
+          }}
+          onCancel={() => setShowPublishConfirm(false)}
+        />
+      )}
     </div>
-  );
-};
 
 export default StoriesViewComponent;
