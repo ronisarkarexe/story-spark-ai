@@ -57,8 +57,9 @@ export const checkCharacterConsistency = (
   const characterMemory: Record<string, { hair?: string }> = {};
 
   chapters.forEach((chapter) => {
-    // Split into sentences so name + color stay in the same context
-    const sentences = chapter.content.split(/(?<=[.!?])\s+|(?<=\n)/);
+    const matches = chapter.content.matchAll(
+      /([A-Z][a-z]+(?:(?:\s+[A-Z][a-z]+)?))\b[^w]*?(silver|black|brown|blonde|red)\s+hair/gi
+    );
 
     for (const sentence of sentences) {
       const hairColor = extractHairColor(sentence);
