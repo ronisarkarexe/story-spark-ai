@@ -10,7 +10,12 @@ jest.mock("../shared/send_response", () => ({
   default: jest.fn(),
 }));
 
-import { StoryBranchingController } from "../controllers/storyBranchingController";
+import {
+  MAX_CHOICE_LENGTH,
+  MAX_STORY_CONTEXT_LENGTH,
+  StoryBranchingController,
+  validateBranchingRequest,
+} from "../controllers/storyBranchingController";
 import { generateStory } from "../services/ai.service";
 import sendResponse from "../shared/send_response";
 
@@ -207,5 +212,123 @@ describe("StoryBranchingController", () => {
         choices: ["A", "B", "C"],
       }),
     }));
+  });
+
+  it("should reject non-string genre without calling AI", async () => {
+    mockReq.body.genre = 42;
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    expect(mockGenerateStory).not.toHaveBeenCalled();
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, {
+      success: false,
+      statusCode: 400,
+      message: "genre must be a string.",
+      data: null,
+    });
+  });
+
+  it("should reject unknown genre and list valid options", async () => {
+    mockReq.body.genre = "Space Opera";
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    expect(mockGenerateStory).not.toHaveBeenCalled();
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, expect.objectContaining({
+      success: false,
+      statusCode: 400,
+      message: expect.stringContaining("genre must be one of:"),
+      data: expect.objectContaining({
+        validGenres: expect.arrayContaining(["fantasy", "mystery", "romance", "sci-fi"]),
+      }),
+    }));
+  });
+
+  it("should reject storyContext over the length limit", async () => {
+    mockReq.body.storyContext = "a".repeat(MAX_STORY_CONTEXT_LENGTH + 1);
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    expect(mockGenerateStory).not.toHaveBeenCalled();
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, {
+      success: false,
+      statusCode: 400,
+      message: `storyContext must not exceed ${MAX_STORY_CONTEXT_LENGTH} characters.`,
+      data: null,
+    });
+  });
+
+  it("should reject empty selectedChoice", async () => {
+    mockReq.body.selectedChoice = "   ";
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    expect(mockGenerateStory).not.toHaveBeenCalled();
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, {
+      success: false,
+      statusCode: 400,
+      message: "selectedChoice cannot be empty.",
+      data: null,
+    });
+  });
+
+  it("should reject selectedChoice over the length limit", async () => {
+    mockReq.body.selectedChoice = "a".repeat(MAX_CHOICE_LENGTH + 1);
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    expect(mockGenerateStory).not.toHaveBeenCalled();
+    expect(mockSendResponse).toHaveBeenCalledWith(mockRes, {
+      success: false,
+      statusCode: 400,
+      message: `selectedChoice must not exceed ${MAX_CHOICE_LENGTH} characters.`,
+      data: null,
+    });
+  });
+
+  it("should sanitize valid request strings before building the prompt", async () => {
+    mockReq.body = {
+      storyContext: "  Once UPON a Time.  ",
+      selectedChoice: "  Enter The Door  ",
+      genre: "  Fantasy  ",
+    };
+    mockGenerateStory.mockResolvedValueOnce({
+      story: JSON.stringify({
+        storySegment: "A new scene.",
+        choices: ["A", "B", "C"],
+      }),
+      provider: "openai",
+      fallbackUsed: false,
+    });
+
+    await StoryBranchingController.createBranchingStory(mockReq as Request, mockRes as Response);
+
+    const prompt = mockGenerateStory.mock.calls[0][0];
+    expect(prompt).toContain("Genre: fantasy");
+    expect(prompt).toContain("once upon a time.");
+    expect(prompt).toContain('The player chose: "enter the door"');
+  });
+});
+
+describe("validateBranchingRequest", () => {
+  it("should be a pure validation helper that does not mutate the request body", () => {
+    const body = {
+      storyContext: "  Story Context  ",
+      selectedChoice: "  Choice  ",
+      genre: "  Fantasy  ",
+    };
+    const original = { ...body };
+
+    const result = validateBranchingRequest(body);
+
+    expect(body).toEqual(original);
+    expect(result).toEqual({
+      isValid: true,
+      data: {
+        storyContext: "story context",
+        selectedChoice: "choice",
+        genre: "fantasy",
+      },
+    });
   });
 });

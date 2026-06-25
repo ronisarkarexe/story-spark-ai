@@ -1,7 +1,11 @@
 import express from "express";
 import { z } from "zod";
 import validateRequest from "../app/middleware/validate.request";
-import { StoryBranchingController } from "../controllers/storyBranchingController";
+import {
+  MAX_CHOICE_LENGTH,
+  MAX_STORY_CONTEXT_LENGTH,
+  StoryBranchingController,
+} from "../controllers/storyBranchingController";
 import auth from "../app/middleware/auth.middleware";
 import { ENUM_USER_ROLE } from "../enums/user";
 
@@ -11,15 +15,20 @@ const branchingStorySchema = z.object({
   body: z.object({
     storyContext: z
       .string({ required_error: "storyContext is required!" })
+      .trim()
       .min(1, "storyContext cannot be empty")
-      .max(8000, "storyContext must not exceed 8000 characters"),
+      .max(
+        MAX_STORY_CONTEXT_LENGTH,
+        `storyContext must not exceed ${MAX_STORY_CONTEXT_LENGTH} characters`
+      ),
 
     selectedChoice: z
       .string({ required_error: "selectedChoice is required!" })
+      .trim()
       .min(1, "selectedChoice cannot be empty")
-      .max(500, "selectedChoice must not exceed 500 characters"),
+      .max(MAX_CHOICE_LENGTH, `selectedChoice must not exceed ${MAX_CHOICE_LENGTH} characters`),
 
-    genre: z.string().min(1, "genre cannot be empty").max(120).optional(),
+    genre: z.string().trim().min(1, "genre cannot be empty").max(120).optional(),
   }),
 });
 
