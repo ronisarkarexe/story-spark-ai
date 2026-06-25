@@ -98,6 +98,28 @@ router.get(
   UserController.getFollowStatus
 );
 
+router.get(
+  "/followers/:id",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  UserController.getFollowers
+);
+
+router.get(
+  "/following/:id",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  UserController.getFollowing
+);
+
 // Streaks and Achievements routes
 router.get(
   "/me/streak",

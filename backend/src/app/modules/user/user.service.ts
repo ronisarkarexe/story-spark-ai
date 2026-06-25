@@ -255,6 +255,18 @@ const getFollowStatus = async (token: ITokenPayload, authorId: string) => {
 
 return { isFollowing: !!follow };
 };
+const getFollowers = async (userId: string) => {
+  const followers = await Follow.find({ following: userId })
+    .populate("follower", "name profile");
+
+  return followers.map((follow) => follow.follower);
+};
+const getFollowing = async (userId: string) => {
+  const following = await Follow.find({ follower: userId })
+    .populate("following", "name profile");
+
+  return following.map((follow) => follow.following);
+};
 
 export const UserService = {
   getAllUsers,
@@ -267,4 +279,6 @@ export const UserService = {
   getAllWriterApplicationUsers,
   toggleFollow,
   getFollowStatus,
+  getFollowers,
+  getFollowing,
 };
