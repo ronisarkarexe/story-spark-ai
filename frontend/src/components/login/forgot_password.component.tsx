@@ -10,7 +10,7 @@ import {
   useForgotPasswordMutation,
   useResetPasswordMutation,
 } from "../../redux/apis/auth.api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 interface Inputs {
   email: string;
@@ -56,6 +56,7 @@ const ForgotPasswordComponent = () => {
   const [emailAddress, setEmailAddress] = useState<string>("");
   const [verificationToken, setVerificationToken] = useState<string>("");
   const [isBusy, setIsBusy] = useState<boolean>(false);
+  const [otpSent, setOtpSent] = useState<boolean>(false);
   const [cooldown, setCooldown] = useState<number>(0);
   const [expiredAt, setExpiredAt] = useState<number>(0);
 
@@ -123,6 +124,7 @@ const ForgotPasswordComponent = () => {
         setExpiredAt(new Date(expiresAt).getTime());
         setEmailAddress(data.email);
         toast.success("OTP sent to your email successfully!");
+        setOtpSent(true);
         setCooldown(60);
         setStep(2);
       }
@@ -133,8 +135,6 @@ const ForgotPasswordComponent = () => {
           "Failed to request OTP. Please ensure email is registered.",
         ),
       );
-      console.log("error: ", error);
-    } finally {
       setIsBusy(false);
     }
   };
@@ -170,9 +170,7 @@ const ForgotPasswordComponent = () => {
           "OTP verification failed. Please check the code and try again.",
         ),
       );
-      console.log("error: ", error);
     } finally {
-      setIsBusy(false);
     }
   };
 
@@ -208,10 +206,19 @@ const ForgotPasswordComponent = () => {
       toast.error(
         getApiErrorMessage(error, "Password reset failed. Please restart the process."),
       );
-      console.log("error: ", error);
     } finally {
       setIsBusy(false);
     }
+  };
+
+  const handleBackToStep1 = () => {
+    setStep(1);
+    setOtpSent(false);
+    setTimeout(() => {
+      if (emailAddress) {
+        setValue("email", emailAddress);
+      }
+    }, 0);
   };
 
   const handleResendOtp = async () => {
@@ -228,7 +235,6 @@ const ForgotPasswordComponent = () => {
       }
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, "Failed to resend OTP. Please try again."));
-      console.log("resend error: ", error);
     } finally {
       setIsBusy(false);
     }
@@ -266,12 +272,24 @@ const ForgotPasswordComponent = () => {
                 register={register}
                 error={errors.email}
               />
-              <SSButton text="Send OTP" type="submit" isLoading={isBusy} />
+              <SSButton text="Send OTP" type="submit" isLoading={isBusy} disabled={otpSent} />
             </form>
           )}
 
           {step === 2 && (
-            <form className="space-y-4" onSubmit={handleSubmit(handleVerifyOtp)}>
+            <form className="space-y-4 w-full min-w-0 box-border" onSubmit={handleSubmit(handleVerifyOtp)}>
+              <div className="text-center text-sm text-slate-400 dark:text-gray-300 select-none">
+                OTP sent to <span className="font-semibold text-indigo-400">{emailAddress}</span>
+                <button
+                  type="button"
+                  onClick={handleBackToStep1}
+                  disabled={isBusy}
+                  className="ml-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 hover:underline transition-colors focus:outline-none cursor-pointer"
+                >
+                  Change
+                </button>
+              </div>
+
               <SSInput
                 label="OTP"
                 name="otp"
@@ -279,15 +297,30 @@ const ForgotPasswordComponent = () => {
                 required={true}
                 icon="fas fa-key"
                 register={register}
+                validation={{
+                  required: "Please enter OTP",
+                  minLength: { value: 6, message: "OTP must be 6 digits" },
+                  maxLength: { value: 6, message: "OTP must be 6 digits" },
+                  pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
+                }}
+                error={errors.otp}
               />
               <SSButton text="Verify OTP" type="submit" isLoading={isBusy} />
 
-              <div className="text-center mt-2">
+              <div className="flex justify-between items-center mt-2 px-1 select-none w-full">
+                <button
+                  type="button"
+                  onClick={handleBackToStep1}
+                  disabled={isBusy}
+                  className="text-sm font-semibold text-gray-400 hover:text-gray-300 transition-colors duration-200 focus:outline-none cursor-pointer"
+                >
+                  ← Go Back
+                </button>
                 <button
                   type="button"
                   onClick={handleResendOtp}
                   disabled={cooldown > 0 || isBusy}
-                  className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-gray-500 transition-colors duration-200 focus:outline-none disabled:cursor-not-allowed"
+                  className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 disabled:text-gray-500 transition-colors duration-200 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
                 >
                   {cooldown > 0 ? `Resend OTP (${cooldown}s)` : "Resend OTP"}
                 </button>
@@ -360,9 +393,9 @@ const ForgotPasswordComponent = () => {
           )}
 
           <div className="text-center text-sm text-indigo-600">
-            <a href="/login" className="block text-custom hover:underline">
+            <Link to="/login" className="block text-custom hover:underline">
               Back to Sign In
-            </a>
+            </Link>
           </div>
         </div>
       </AuthLayout>

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface ShortcutHandlers {
   onOpenHelp: () => void;
@@ -17,6 +17,26 @@ const useKeyboardShortcuts = ({
   focusPrompt,
   hasStory,
 }: ShortcutHandlers) => {
+  const handlersRef = useRef({
+    onOpenHelp,
+    onCloseHelp,
+    onGenerate,
+    onPublish,
+    focusPrompt,
+    hasStory,
+  });
+
+  useEffect(() => {
+    handlersRef.current = {
+      onOpenHelp,
+      onCloseHelp,
+      onGenerate,
+      onPublish,
+      focusPrompt,
+      hasStory,
+    };
+  }, [onOpenHelp, onCloseHelp, onGenerate, onPublish, focusPrompt, hasStory]);
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const active = document.activeElement;
@@ -26,34 +46,29 @@ const useKeyboardShortcuts = ({
 
       if (e.shiftKey && e.code === "Slash") {
         e.preventDefault();
-        onOpenHelp();
+        handlersRef.current.onOpenHelp();
         return;
       }
 
       if (e.key === "Escape") {
         e.preventDefault();
-        onCloseHelp();
+        handlersRef.current.onCloseHelp();
         return;
       }
 
-      if (e.ctrlKey && e.key === "Enter") {
-        e.preventDefault();
-        onGenerate();
-        return;
-      }
 
       if (isTyping) return;
 
       if (e.key === "/") {
         e.preventDefault();
-        focusPrompt();
+        handlersRef.current.focusPrompt();
         return;
       }
 
       if (e.ctrlKey && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        if (hasStory) {
-          onPublish();
+        if (handlersRef.current.hasStory) {
+          handlersRef.current.onPublish();
         }
       }
     };
@@ -62,7 +77,7 @@ const useKeyboardShortcuts = ({
     return () => {
       document.removeEventListener("keydown", handler);
     };
-  }, [onOpenHelp, onCloseHelp, onGenerate, onPublish, focusPrompt, hasStory]);
+  }, []);
 };
 
 export default useKeyboardShortcuts;

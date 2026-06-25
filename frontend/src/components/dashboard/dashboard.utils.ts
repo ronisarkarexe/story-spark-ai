@@ -20,6 +20,7 @@ export const menuItems: MenuItem[] = [
       USER_ROLE.WRITER,
     ],
   },
+  
   {
     name: "Analytics",
     icon: "fas fa-chart-line",
@@ -72,7 +73,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     name: "Profile",
-    icon: "fas fa-cog",
+    icon: "fas fa-user-circle",
     path: "/dashboard/profile",
     roles: [
       USER_ROLE.USER,

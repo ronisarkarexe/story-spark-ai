@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import ImageFallback from "../ImageFallback";
 export interface StoryInspiration {
   id: string;
   title: string;
@@ -87,22 +87,19 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
   };
 
   return (
-    <div className="motion-card group relative bg-white border border-gray-100 hover:border-indigo-500/40 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full transition-colors duration-300 dark:bg-slate-900/50 dark:border-none dark:shadow-xl">
+    <div className="motion-card group relative bg-white border border-gray-100 hover:border-indigo-500/40 hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/20 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full transition-all duration-300 dark:bg-slate-900/50 dark:border-none dark:shadow-xl">
       
       {/* Zoom-in Card Cover Image */}
       <div className="relative h-44 w-full overflow-hidden bg-gray-100 dark:bg-[#0A0E17]">
         <div className="absolute inset-0 bg-gradient-to-t from-gray-100 via-gray-100/50 to-transparent z-10 pointer-events-none dark:from-[#0B0F19] dark:via-[#0B0F19]/50 dark:to-transparent" />
-        <img
-          src={image}
-          alt={title}
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-          className="motion-image w-full h-full object-cover"
+        <ImageFallback
+            src={image}
+            alt={title}
+            className="motion-image w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
         />
         
         {/* Genre tag */}
-        <div className={`absolute top-4 right-4 z-20 px-3.5 py-1.5 rounded-full backdrop-blur-md border bg-gray-100 text-slate-700 border-gray-200 text-[10px] font-bold tracking-widest uppercase shadow-md flex items-center gap-1.5 ${genreBadgeClasses[genre] || "dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300"}`}>
+        <div className={`absolute top-4 right-4 z-20 px-3.5 py-1.5 rounded-full backdrop-blur-md border bg-gray-100 text-slate-700 border-gray-200 text-[10px] font-bold tracking-widest uppercase shadow-md flex items-center gap-1.5 transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg ${genreBadgeClasses[genre] || "dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300"}`}>
           <i className={`${config.icon} text-xs`}></i>
           {genre}
         </div>
@@ -112,30 +109,30 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
       <div className="p-6 flex flex-col flex-grow relative z-20 -mt-8 bg-white dark:bg-transparent">
         
         {/* Title and Author */}
-        <div className="mb-3">
-          <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-500 transition-colors duration-300 tracking-tight leading-snug dark:text-white dark:group-hover:text-indigo-400">
+        <div className="mb-4">
+          <h3 className="text-2xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors duration-300 tracking-tight leading-snug dark:text-white dark:group-hover:text-indigo-400">
             {title}
           </h3>
-          <span className="text-xs text-slate-500 flex items-center gap-1.5 font-medium mt-1 dark:text-slate-400">
-            <i className="fas fa-feather-alt text-indigo-400/70"></i> By {author}
+          <span className="text-sm text-slate-700 flex items-center gap-1.5 font-medium mt-2 dark:text-slate-300">
+            <i className="fas fa-feather-alt text-indigo-500/70"></i> By {author}
           </span>
         </div>
 
         {/* Short Summary */}
-        <p className="text-slate-600 text-sm leading-relaxed mb-5 flex-grow font-light dark:text-slate-300">
+        <p className="text-slate-800 text-base leading-relaxed mb-6 flex-grow font-normal dark:text-slate-200">
           {summary}
         </p>
 
         {/* Key Themes */}
-        <div className="mb-6">
-          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-2 font-mono dark:text-indigo-400">
+        <div className="mb-7">
+          <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider block mb-3 font-mono dark:text-indigo-400">
             Core Themes
           </span>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {themes.map((theme, i) => (
               <span
                 key={i}
-                className="text-[11px] px-2 py-0.5 rounded bg-gray-100 text-slate-700 border border-gray-200 font-medium hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-colors duration-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                className="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-slate-800 border border-gray-300 font-medium hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-colors duration-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600"
               >
                 {theme}
               </span>
@@ -144,24 +141,24 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
         </div>
 
         {/* Inspiration Prompts Selector */}
-        <div className="mb-6 border-t border-gray-200 pt-4 dark:border-white/5">
-          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-3 font-mono dark:text-indigo-400">
+        <div className="mb-8 border-t border-gray-200 pt-5 dark:border-white/10">
+          <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider block mb-4 font-mono dark:text-indigo-400">
             Choose an Inspiration Prompt
           </span>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {prompts.map((prompt, i) => (
               <div
                 key={i}
                 onClick={() => setSelectedPromptIdx(i)}
-                className={`motion-card-subtle p-3 rounded-lg border text-xs leading-relaxed cursor-pointer ${
+                className={`motion-card-subtle p-3.5 rounded-lg border text-sm leading-relaxed cursor-pointer transition-all duration-200 ${
                   selectedPromptIdx === i
-                    ? "bg-indigo-500/10 border-indigo-500/40 text-indigo-900 shadow-sm dark:text-indigo-200"
-                    : "bg-gray-50 border-gray-200 text-slate-600 hover:bg-gray-100 hover:text-slate-900 dark:bg-white/[0.01] dark:border-white/5 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-300"
+                    ? "bg-indigo-50 border-indigo-400 text-indigo-950 shadow-md dark:bg-indigo-500/20 dark:border-indigo-400/50 dark:text-indigo-100"
+                    : "bg-gray-50 border-gray-300 text-slate-700 hover:bg-gray-100 hover:border-gray-400 hover:text-slate-900 dark:bg-white/[0.02] dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/[0.05] dark:hover:text-white"
                 }`}
               >
-                <div className="flex gap-2.5 items-start">
-                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0 ${
-                    selectedPromptIdx === i ? "bg-indigo-500 text-white" : "bg-gray-200 text-slate-600 dark:bg-white/10 dark:text-gray-400"
+                <div className="flex gap-3 items-start">
+                  <span className={`text-xs font-mono px-2 py-0.5 rounded-md shrink-0 mt-0.5 ${
+                    selectedPromptIdx === i ? "bg-indigo-600 text-white dark:bg-indigo-500" : "bg-gray-200 text-slate-700 dark:bg-white/10 dark:text-gray-300"
                   }`}>
                     0{i + 1}
                   </span>
@@ -175,10 +172,10 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
         {/* Generate CTA Button */}
         <button
           onClick={handleGenerateSimilar}
-          className="motion-cta w-full mt-auto py-3.5 rounded-xl bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-100 hover:border-purple-300 font-semibold flex items-center justify-center gap-2 group/btn shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-lg hover:shadow-indigo-500/15 transition-colors duration-300 dark:bg-gradient-to-r dark:from-blue-600/80 dark:to-indigo-600/80 dark:text-white dark:border-white/10 dark:hover:from-blue-600 dark:hover:to-indigo-600 dark:hover:border-indigo-300/30 dark:shadow-[0_4px_12px_rgba(0,0,0,0.15)] dark:hover:shadow-indigo-500/25"
+          className="motion-cta w-full mt-auto py-4 rounded-xl bg-purple-100 text-purple-950 border border-purple-300 hover:bg-purple-200 hover:border-purple-400 text-base font-bold flex items-center justify-center gap-2.5 group/btn shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-lg hover:shadow-indigo-500/15 transition-all duration-300 dark:bg-gradient-to-r dark:from-blue-600/90 dark:to-indigo-600/90 dark:text-white dark:border-white/10 dark:hover:from-blue-600 dark:hover:to-indigo-600 dark:hover:border-indigo-300/40 dark:shadow-[0_4px_12px_rgba(0,0,0,0.2)] dark:hover:shadow-indigo-500/30"
         >
           <span>Generate Similar Story</span>
-          <i className="motion-icon fas fa-wand-magic-sparkles text-sm group-hover/btn:translate-x-0.5 group-hover/btn:rotate-12"></i>
+          <i className="motion-icon fas fa-wand-magic-sparkles text-base group-hover/btn:translate-x-1 group-hover/btn:rotate-12"></i>
         </button>
 
       </div>

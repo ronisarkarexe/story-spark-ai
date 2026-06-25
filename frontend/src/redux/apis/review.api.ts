@@ -8,37 +8,38 @@ const reviewApi = baseApi.injectEndpoints({
         url: "/review/lists",
         method: "GET",
       }),
-
       transformResponse: (response: {
         data: Review[];
         message: string;
       }) => response.data,
     }),
-
     getPendingReviews: build.query({
       query: () => ({
         url: "/review/pending",
         method: "GET",
       }),
-
       transformResponse: (response: {
         data: Review[];
         message: string;
       }) => response.data,
     }),
-
     approveReview: build.mutation({
       query: (id: string) => ({
         url: `/review/${id}`,
         method: "PATCH",
       }),
     }),
-    
     createReview: build.mutation({
-      query: (body: { name: string; role: string; feedback: string; rating: number }) => ({
+      query: (body: {
+        name: string;
+        role: string;
+        feedback: string;
+        rating?: number;
+        imgSrc?: string;
+      }) => ({
         url: "/review/create",
         method: "POST",
-        body,
+        data: body,
       }),
     }),
   }),

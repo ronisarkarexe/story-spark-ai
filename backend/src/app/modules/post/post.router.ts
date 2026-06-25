@@ -1,54 +1,76 @@
 import express from "express";
 import { PostController } from "./post.controller";
-import { protect } from "../../middlewares/auth.middleware"; 
-import { checkRequestLimit } from "../../middlewares/quota.middleware"; 
+import { PostMetaController } from "./post.meta.controller";
+import auth from "../../middleware/auth.middleware";
+import checkRequestLimit from "../../middleware/check.request.limit";
+import validateRequest from "../../middleware/validate.request";
+import { PostValidator } from "./post.validation";
+import { ENUM_USER_ROLE } from "../../../enums/user";
 
 const router = express.Router();
 
-/* ============================================================
-   SYSTEM LAYOUT CONFIGURATIONS & CORE INBOUND PUBLIC ENTRIES
-   ============================================================ */
-
+// Create a new post
 router.post(
-  "/create-post",
-  protect,
+  "/create",
+  auth(
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN,
+    ENUM_USER_ROLE.USER
+  ),
+  validateRequest(PostValidator.createPost),
   PostController.createPost
 );
 
-router.get(
-  "/",
-  PostController.getPosts
+// All authenticated roles allowed to use AI variation features
+const AI_VARIATION_ROLES = [
+  ENUM_USER_ROLE.USER,
+  ENUM_USER_ROLE.WRITER,
+  ENUM_USER_ROLE.ADMIN,
+  ENUM_USER_ROLE.SUPER_ADMIN,
+] as const;
+
+// AI variation routes
+router.post(
+  "/remix",
+  auth(...AI_VARIATION_ROLES),
+  validateRequest(PostValidator.remixStory),
+  checkRequestLimit(),
+  PostController.remixStory
+);
+router.post(
+  "/translate",
+  auth(...AI_VARIATION_ROLES),
+  validateRequest(PostValidator.translateStory),
+  checkRequestLimit(),
+  PostController.translateStory
 );
 
-router.get(
-  "/latest-posts",
-  PostController.getLatestPosts
-);
+// Named GET routes must come before /:id to avoid the wildcard swallowing them
+router.get("/tag/:tag", PostController.getPostsByTag);
 
-router.get(
-  "/featured-posts",
-  PostController.getFeaturedPosts
-);
+// /latest-lists is a client-facing alias for /latest-posts (both serve the same handler)
+router.get("/latest-posts", PostController.getLatestPosts);
+router.get("/latest-lists", PostController.getLatestPosts);
+
+// /feature-lists is a client-facing alias for /featured-posts (both serve the same handler)
+router.get("/featured-posts", PostController.getFeaturedPosts);
+router.get("/feature-lists", PostController.getFeaturedPosts);
 
 router.patch(
   "/featured/:postId",
-  protect,
+  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
   PostController.doFeaturedPosts
-);
-
-router.get(
-  "/:id",
-  PostController.getSinglePost
-);
-
-router.get(
-  "/tag/:tag",
-  PostController.getPostsByTag
 );
 
 router.patch(
   "/bookmark/:id",
-  protect,
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   PostController.toggleBookmark
 );
 
@@ -60,41 +82,25 @@ router.patch(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
+  validateRequest(PostValidator.updatePost),
   PostController.updatePost
 );
 
 router.delete(
   "/:id",
-  protect,
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   PostController.deletePost
 );
 
-/* ============================================================
-   PATCHED MODULE ROUTES — GSSoC '26 RESOURCE MANAGEMENT
-   ============================================================ */
+// OG meta route for social media bots — must be before /:id
+router.get("/meta/:id", PostMetaController.serveOgShell);
 
-/**
- * @route   POST /api/v1/post/remix
- * @desc    Remix an existing story prompt variant using AI models
- * @access  Private (Quota Monitored)
- */
-router.post(
-  "/remix",
-  protect,
-  checkRequestLimit, // <-- FIXED: Intercepts request if user exceeded monthly quota balance
-  PostController.remixStory
-);
-
-/**
- * @route   POST /api/v1/post/translate
- * @desc    Translate generated story variations across languages
- * @access  Private (Quota Monitored)
- */
-router.post(
-  "/translate",
-  protect,
-  checkRequestLimit, // <-- FIXED: Intercepts request if user exceeded monthly quota balance
-  PostController.translateStory
-);
+// /:id must be last among GET routes — it matches any segment
+router.get("/:id", PostController.getSinglePost);
 
 export const PostRouter = router;

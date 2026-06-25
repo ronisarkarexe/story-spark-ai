@@ -5,7 +5,7 @@ export interface IReview {
   name: string;
   role: string;
   feedback: string;
-  imgSrc: string;
+  imgSrc?: string;
   rating?: number;
   isPublished: boolean;
   sortOrder?: number;
@@ -17,6 +17,6 @@ export interface IReviewPayload {
   name: string;
   role: string;
   feedback: string;
-  imgSrc: string;
+  imgSrc?: string;
   rating?: number;
 }

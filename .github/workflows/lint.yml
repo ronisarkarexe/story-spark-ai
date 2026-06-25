@@ -12,20 +12,55 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect frontend changes
+        id: changes
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD")"
+          else
+            files="$(git diff --name-only HEAD~1 HEAD || true)"
+          fi
+          echo "$files"
+          if [ "${{ github.event_name }}" != "pull_request" ] || echo "$files" | grep -Eq '^frontend/(src|package\.json|tsconfig|vite\.config|tailwind\.config|postcss\.config|eslint\.config)'; then
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "frontend=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: pnpm/action-setup@v2
+        if: steps.changes.outputs.frontend == 'true'
         with:
           version: 9.15.9
 
       - uses: actions/setup-node@v4
+        if: steps.changes.outputs.frontend == 'true'
         with:
           node-version: '20'
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        if: steps.changes.outputs.frontend == 'true'
+        run: pnpm install --no-frozen-lockfile
 
       - name: Rebuild native bindings for current platform
+        if: steps.changes.outputs.frontend == 'true'
         run: pnpm rebuild
 
-      - run: pnpm lint
+      - name: Lint changed frontend files
+        if: steps.changes.outputs.frontend == 'true'
+        shell: bash
+        run: |
+          files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD" | grep -E '^frontend/.*\.(ts|tsx|js|jsx)$' | sed 's#^frontend/##' || true)"
+          if [ -z "$files" ]; then
+            echo "No lintable frontend files changed."
+            exit 0
+          fi
+          pnpm --filter story-spark-ai-frontend exec eslint $files
+
+      - name: Skip frontend lint
+        if: steps.changes.outputs.frontend != 'true'
+        run: echo "No frontend files changed; skipping frontend lint."

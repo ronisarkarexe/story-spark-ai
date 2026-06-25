@@ -37,6 +37,24 @@ const postApi = baseApi.injectEndpoints({
         params: arg,
       }),
 
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        const newArgs = { ...queryArgs };
+        delete newArgs.page;
+        return { endpointName, ...newArgs };
+      },
+      
+      merge: (currentCache, newItems) => {
+        if (!newItems.meta || newItems.meta.page === 1) {
+          return newItems;
+        }
+        currentCache.posts.push(...newItems.posts);
+        currentCache.meta = newItems.meta;
+      },
+      
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.page !== previousArg?.page;
+      },
+
       transformResponse: (response: {
         data: Post[];
         meta: IMeta;
@@ -65,6 +83,24 @@ const postApi = baseApi.injectEndpoints({
         method: "GET",
         params: arg,
       }),
+
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        const newArgs = { ...queryArgs };
+        delete newArgs.page;
+        return { endpointName, ...newArgs };
+      },
+      
+      merge: (currentCache, newItems) => {
+        if (!newItems.meta || newItems.meta.page === 1) {
+          return newItems;
+        }
+        currentCache.posts.push(...newItems.posts);
+        currentCache.meta = newItems.meta;
+      },
+      
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.page !== previousArg?.page;
+      },
 
       transformResponse: (response: {
         data: Post[];
@@ -198,6 +234,15 @@ const postApi = baseApi.injectEndpoints({
         tagTypes.bookmark,
       ],
     }),
+
+    getGenres: build.query<string[], void>({
+      query: () => ({
+        url: `/${POST_URL}/genres`,
+        method: "GET",
+      }),
+      transformResponse: (response: { data: string[] }) => response.data,
+      providesTags: [tagTypes.post],
+    }),
   }),
 });
 
@@ -211,4 +256,5 @@ export const {
   useGetPostByIdQuery,
   useGetPostByTagQuery,
   useDeletePostMutation,
+  useGetGenresQuery,
 } = postApi;

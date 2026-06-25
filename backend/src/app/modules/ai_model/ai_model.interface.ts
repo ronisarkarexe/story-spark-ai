@@ -1,9 +1,17 @@
+export interface ICharacter {
+  name: string;
+  role: string;
+  personality: string;
+}
+
 export interface IAIModel {
   prompt: string;
   wordLength: number;
   numStories: number;
   language?: string;
   tone?: string;
+  genre?: string;
+  characters?: ICharacter[];
 }
 
 export interface IStory {
@@ -42,4 +50,13 @@ export interface IAlternateEndingPayload {
   content: string;
   tag: string;
   language?: string;
+}
+export interface IChatMessage {
+  role: "user" | "model";
+  parts: string;
+}
+
+export interface IChatPayload {
+  message: string;
+  history?: IChatMessage[];
 }

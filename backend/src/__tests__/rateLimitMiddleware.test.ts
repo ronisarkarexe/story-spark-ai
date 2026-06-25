@@ -15,10 +15,10 @@ import {
 import type { Request, Response, NextFunction } from "express";
 
 // ── Mock factory ──────────────────────────────
-function buildMocks(ip: string, userId?: string) {
+function buildMocks(ip: string, userId?: string, headers?: Record<string, string>) {
   const req = {
     ip,
-    headers : {} as Record<string, string>,
+    headers : (headers ?? {}) as Record<string, string>,
     user    : userId ? { id: userId } : undefined,
   } as unknown as Request;
 
@@ -26,9 +26,9 @@ function buildMocks(ip: string, userId?: string) {
     statusCode : 200,
     body       : null as unknown,
     headers    : {} as Record<string, string>,
-    status(code: number) { this.statusCode = code; return this; },
-    json(body: unknown)  { this.body = body;        return this; },
-    setHeader(k: string, v: string) { this.headers[k] = v; },
+    status(code: number) { (this as any).statusCode = code; return this; },
+    json(body: unknown)  { (this as any).body = body;        return this; },
+    setHeader(k: string, v: string) { (this as any).headers[k] = v; },
   } as unknown as Response;
 
   const next: NextFunction = jest.fn();
@@ -78,6 +78,32 @@ describe("storyRateLimiter — basic behaviour", () => {
   });
 });
 
+describe("storyRateLimiter — X-Forwarded-For spoofing", () => {
+  it("ignores X-Forwarded-For and keys on req.ip", () => {
+    const { req, res, next } = buildMocks("10.0.0.1", undefined, {
+      "x-forwarded-for": "1.2.3.4",
+    });
+    for (let i = 0; i < 10; i++) storyRateLimiter(req, res, next);
+    // 11th should be blocked — same req.ip regardless of header
+    storyRateLimiter(req, res, next);
+    expect((res as any).statusCode).toBe(429);
+  });
+
+  it("does not create separate buckets per X-Forwarded-For value", () => {
+    const { req: r1, res: s1, next: n1 } = buildMocks("10.0.0.1", undefined, {
+      "x-forwarded-for": "1.1.1.1",
+    });
+    const { req: r2, res: s2, next: n2 } = buildMocks("10.0.0.1", undefined, {
+      "x-forwarded-for": "2.2.2.2",
+    });
+    // First requestor fills the bucket
+    for (let i = 0; i < 10; i++) storyRateLimiter(r1, s1, n1);
+    // Second requestor shares same req.ip → should be blocked
+    storyRateLimiter(r2, s2, n2);
+    expect((s2 as any).statusCode).toBe(429);
+  });
+});
+
 describe("storyRateLimiter — store management", () => {
   it("clearRateLimitStore(key) removes only that key", () => {
     const { req: r1, res: s1, next: n1 } = buildMocks("10.0.0.10");
@@ -94,5 +120,36 @@ describe("storyRateLimiter — store management", () => {
     // r2 still blocked
     storyRateLimiter(r2, s2, n2);
     expect((s2 as any).statusCode).toBe(429);
+  });
+
+  it("prunes entries whose timestamps are all outside the window (memory-leak fix)", () => {
+    // Bug: store grew unbounded because entries with only stale timestamps
+    // were never deleted. Fix: pruneStaleEntries removes entries with zero
+    // active timestamps whenever a request triggers a prune pass.
+    const nowSpy = jest.spyOn(Date, "now");
+
+    // Anchor to real Date.now() so the module-level lastPruneAt (updated
+    // by previous tests) does not cause a future-pinned time to look
+    // "before" a stale prune watermark.
+    const t0 = Date.now();
+    nowSpy.mockReturnValue(t0);
+    const a = buildMocks("10.0.0.40");
+    storyRateLimiter(a.req, a.res, a.next);
+    expect(getRateLimitStatus("10.0.0.40").count).toBe(1);
+
+    // t = t0 + 120s: well past WINDOW_MS (60s) and PRUNE_INTERVAL_MS (60s).
+    // Any new request will now run the prune pass.
+    nowSpy.mockReturnValue(t0 + 120_000);
+    const b = buildMocks("10.0.0.41");
+    storyRateLimiter(b.req, b.res, b.next);
+
+    // 10.0.0.40's only timestamp is now 120s old → older than the 60s window.
+    // The entry should be deleted, not just stale. getRateLimitStatus
+    // distinguishes the two: deleted → resetInMs=0; stale-but-present → resetInMs=WINDOW_MS.
+    const status = getRateLimitStatus("10.0.0.40");
+    expect(status.count).toBe(0);
+    expect(status.resetInMs).toBe(0);
+
+    nowSpy.mockRestore();
   });
 });

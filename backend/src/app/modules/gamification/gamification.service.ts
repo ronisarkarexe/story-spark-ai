@@ -1,23 +1,52 @@
 import { User } from "../user/user.model";
 
+const DAILY_LOGIN_XP = 10;
+
+const calculateLevel = (xp: number) => {
+  return Math.floor(Math.sqrt(xp / 100)) + 1;
+};
+
 const updateDailyStreak = async (userId: string) => {
   try {
-    const user = await User.findById(userId);
-    if (!user) return;
-
-    if (!user.gamification) {
-      user.gamification = { xp: 0, level: 1, streak: 0, badges: [], lastActiveDate: null };
-    }
-
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let lastActive = user.gamification.lastActiveDate;
+    const now = new Date();
+
+    const user = await User.findById(userId).select(
+      "gamification.lastActiveDate gamification.xp gamification.level"
+    );
+    if (!user) return;
+
+    const currentXp = user.gamification?.xp || 0;
+    const newLevel = calculateLevel(currentXp + DAILY_LOGIN_XP);
+
+    const lastActive = user.gamification?.lastActiveDate;
+
     if (!lastActive) {
-      user.gamification.streak = 1;
-      user.gamification.lastActiveDate = new Date();
-      await user.save();
-      await addXp(userId, 10, "First login");
+      await User.findOneAndUpdate(
+        {
+          _id: userId,
+          $or: [
+            { "gamification.lastActiveDate": { $exists: false } },
+            { "gamification.lastActiveDate": null },
+          ],
+        },
+        {
+          $set: {
+            "gamification.streak": 1,
+            "gamification.lastActiveDate": now,
+          },
+          $inc: { "gamification.xp": DAILY_LOGIN_XP },
+          $max: { "gamification.level": newLevel },
+          $setOnInsert: {
+            "gamification.xp": 0,
+            "gamification.level": 1,
+            "gamification.badges": [],
+          },
+        }
+      );
+
       return;
     }
 
@@ -28,17 +57,35 @@ const updateDailyStreak = async (userId: string) => {
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 1) {
-      // Logged in yesterday
-      user.gamification.streak += 1;
-      user.gamification.lastActiveDate = new Date();
-      await user.save();
-      await addXp(userId, 10, "Daily Streak XP");
+      await User.findOneAndUpdate(
+        {
+          _id: userId,
+          "gamification.lastActiveDate": lastActive,
+        },
+        {
+          $inc: {
+            "gamification.streak": 1,
+            "gamification.xp": DAILY_LOGIN_XP,
+          },
+          $set: { "gamification.lastActiveDate": now },
+          $max: { "gamification.level": newLevel },
+        }
+      );
     } else if (diffDays > 1) {
-      // Missed a day
-      user.gamification.streak = 1;
-      user.gamification.lastActiveDate = new Date();
-      await user.save();
-      await addXp(userId, 10, "Daily Login XP");
+      await User.findOneAndUpdate(
+        {
+          _id: userId,
+          "gamification.lastActiveDate": lastActive,
+        },
+        {
+          $inc: { "gamification.xp": DAILY_LOGIN_XP },
+          $set: {
+            "gamification.streak": 1,
+            "gamification.lastActiveDate": now,
+          },
+          $max: { "gamification.level": newLevel },
+        }
+      );
     }
   } catch (error) {
     console.error("Error updating daily streak:", error);
@@ -47,44 +94,36 @@ const updateDailyStreak = async (userId: string) => {
 
 const addXp = async (userId: string, amount: number, reason: string) => {
   try {
-    const user = await User.findById(userId);
-    if (!user) return;
-
-    if (!user.gamification) {
-      user.gamification = { xp: 0, level: 1, streak: 0, badges: [], lastActiveDate: null };
-    }
-
-    const currentXp = user.gamification.xp || 0;
-    const newXp = currentXp + amount;
-    
-    // Level formula: Level = floor(sqrt(xp / 100)) + 1
-    const newLevel = Math.floor(Math.sqrt(newXp / 100)) + 1;
-
-    user.gamification.xp = newXp;
-    
-    if (newLevel > user.gamification.level) {
-      user.gamification.level = newLevel;
-    }
-
-    await user.save();
+    await User.updateOne(
+      { _id: userId },
+      [
+        {
+          $set: {
+            "gamification.xp": { $add: [{ $ifNull: ["$gamification.xp", 0] }, amount] }
+          }
+        },
+        {
+          $set: {
+            "gamification.level": {
+              $max: [
+                { $ifNull: ["$gamification.level", 1] },
+                { $add: [{ $floor: { $sqrt: { $divide: ["$gamification.xp", 100] } } }, 1] }
+              ]
+            }
+          }
+        }
+      ]
+    );
   } catch (error) {
-    console.error("Error adding XP:", error);
+    console.error(`Error adding XP for ${reason}:`, error);
   }
 };
 
 const awardBadge = async (userId: string, badgeName: string) => {
   try {
-    const user = await User.findById(userId);
-    if (!user) return;
-
-    if (!user.gamification) {
-      user.gamification = { xp: 0, level: 1, streak: 0, badges: [], lastActiveDate: null };
-    }
-
-    if (!user.gamification.badges.includes(badgeName)) {
-      user.gamification.badges.push(badgeName);
-      await user.save();
-    }
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { "gamification.badges": badgeName },
+    });
   } catch (error) {
     console.error("Error awarding badge:", error);
   }
