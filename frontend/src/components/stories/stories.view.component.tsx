@@ -407,11 +407,13 @@ const handleGenerateCharacterProfile = async () => {
                           : "border-white"
                       } hover:scale-110 transition-transform duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-fuchsia-600`}
                       onClick={() => handelStorySelection(story)}
+                      aria-label={story.title ? DOMPurify.sanitize(story.title) : "Story"}
                     >
-                      <img
-                        src={sanitizeUrl(story.imageURL)}
-                        alt={story.title ? DOMPurify.sanitize(story.title) : ""}
-                        className="w-full h-full object-cover rounded-full"
+                      <div
+                        role="img"
+                        aria-label={story.title ? DOMPurify.sanitize(story.title) : "Story"}
+                        className="w-full h-full object-cover rounded-full bg-cover bg-center"
+                        style={{ backgroundImage: `url(${sanitizeUrl(story.imageURL)})` }}
                       />
                     </button>
                   ))
@@ -779,10 +781,11 @@ const handleGenerateCharacterProfile = async () => {
             {selectedStory ? (
               <div className="relative flex flex-col rounded-lg">
                 <div className="relative m-3 overflow-hidden text-white rounded-xl">
-                  <img
-                    src={sanitizeUrl(selectedStory.imageURL)}
-                    alt="card-image"
-                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                  <div
+                    role="img"
+                    aria-label="story cover"
+                    className="w-full h-48 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                    style={{ backgroundImage: `url(${sanitizeUrl(selectedStory.imageURL)})` }}
                   />
                 </div>
                 <div className="px-3 py-1">
