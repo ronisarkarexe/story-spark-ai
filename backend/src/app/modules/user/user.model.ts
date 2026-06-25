@@ -88,10 +88,23 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
       ],
     },
     readingHistory: [{ type: Schema.Types.ObjectId, ref: "Post" }],
-    writingGoals: {
-      dailyWordCount: { type: Number, default: 0 },
-      weeklyWordCount: { type: Number, default: 0 },
+   pushSubscriptions: [
+  {
+    endpoint: { type: String, required: true },
+    expirationTime: { type: Date, default: null },
+    keys: {
+      p256dh: { type: String, required: true },
+      auth: { type: String, required: true },
     },
+    createdAt: { type: Date, default: Date.now },
+  },
+],
+notificationPreferences: {
+  likes: { type: Boolean, default: true },
+  comments: { type: Boolean, default: true },
+  followers: { type: Boolean, default: true },
+  newStories: { type: Boolean, default: true },
+},
   },
   {
     timestamps: true,

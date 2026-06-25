@@ -12,14 +12,15 @@ const allRoles = auth(
   ENUM_USER_ROLE.USER
 );
 
+// Existing routes
 router.get("/", allRoles, NotificationController.getUserNotifications);
-
-// Static routes MUST come before dynamic /:id routes so Express does not
-// treat "mark-all-read" as an :id value.
 router.patch("/mark-all-read", allRoles, NotificationController.markAllNotificationsAsRead);
-
 router.patch("/:id/read", allRoles, NotificationController.markNotificationAsRead);
-
 router.delete("/", allRoles, NotificationController.deleteAllNotifications);
+
+// New push notification routes
+router.post("/subscribe", allRoles, NotificationController.subscribePush);
+router.delete("/subscribe", allRoles, NotificationController.unsubscribePush);
+router.patch("/preferences", allRoles, NotificationController.updateNotificationPreferences);
 
 export const NotificationRouter = router;
