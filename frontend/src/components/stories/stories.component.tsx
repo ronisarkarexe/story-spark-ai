@@ -38,7 +38,6 @@ type Inputs = {
 };
 
 const MAX_PROMPT_LENGTH = 2000;
-const WARN_THRESHOLD = 0.85;
 const lengths = ["short", "medium", "long"] as const;
 
 const StoriesComponent = () => {
@@ -1140,7 +1139,7 @@ const handleClearPrompt = () => {
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
-  
+  const isDangerLimit = textareaValue.length >= MAX_PROMPT_LENGTH * DANGER_THRESHOLD;
   useKeyboardShortcuts({
   onOpenHelp: () => setShowHelpModal(true),
   onCloseHelp: () => setShowHelpModal(false),
