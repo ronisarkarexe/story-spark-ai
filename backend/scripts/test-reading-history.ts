@@ -66,17 +66,23 @@ async function runVerification() {
     console.log("\n=== VERIFICATION RESULTS ===");
     console.log(`Initial Views: 0 | Post Views in DB: ${updatedPost?.viewsCount}`);
     console.log(`User Reading History Count in DB: ${updatedUser?.readingHistory?.length}`);
-    console.log(`User Reading History Contains Post: ${updatedUser?.readingHistory?.includes(testPost._id as any)}`);
+    const containsPost = updatedUser?.readingHistory?.some((id: mongoose.Types.ObjectId) => id.toString() === testPost._id.toString()) ?? false;
+
+console.log(
+  `User Reading History Contains Post: ${containsPost}`
+);
 
     let success = true;
     if (updatedPost?.viewsCount !== 1) {
       console.error("❌ FAILURE: viewsCount did not increment correctly.");
       success = false;
     }
-    if (!updatedUser?.readingHistory?.includes(testPost._id as any)) {
-      console.error("❌ FAILURE: Post ID was not pushed into user's readingHistory.");
+    const historyContainsPost = updatedUser?.readingHistory?.some(
+      (id: mongoose.Types.ObjectId) => id.toString() === testPost._id.toString()) ?? false;
+    
+      if (!historyContainsPost) {console.error("❌ FAILURE: Post ID was not pushed into user's readingHistory.");
       success = false;
-    }
+}
 
     if (success) {
       console.log("\n🎉 SUCCESS! Both post viewsCount and user readingHistory were successfully updated in Mongoose.");
