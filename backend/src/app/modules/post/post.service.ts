@@ -93,11 +93,8 @@ const getCursorCondition = (
 };
 
 const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
-  const { email, role } = token;
-  const user = await User.findOne({
-    email: email,
-    role: role,
-  });
+  const user = await User.findById(token._id)
+    .select("_id role postsCount");
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
@@ -136,7 +133,7 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       httpStatus.INTERNAL_SERVER_ERROR,
       "Failed to create post"
     );
-    }
+  }
 };
 
 const getPosts = async (
