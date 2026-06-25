@@ -1,102 +1,43 @@
-import axios, { AxiosResponse } from "axios";
-import {
-  getFromLocalStorage,
-  setToLocalStorage,
-  removeFromLocalStorage,
-} from "../../utils/local-storage";
-import { AUTH_KEY } from "../../constants/storage-key";
-import { IMeta, ResponseErrorType } from "../../types";
-import { getBaseUrl } from "../config";
+import axios from 'axios';
+import { getSocketIo } from '../../socket/socket.oi';
 
-const instance = axios.create();
-instance.defaults.headers.post["Content-Type"] = "application/json";
-instance.defaults.headers["Accept"] = "application/json";
-instance.defaults.timeout = 60000;
-
-export interface ApiResponseData<T = unknown> {
-  data: T;
-  meta?: IMeta | undefined;
-}
-
-instance.interceptors.request.use(
-  function (config) {
-    const accessToken = getFromLocalStorage(AUTH_KEY);
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return config;
-  },
-  function (error) {
-    return Promise.reject(error);
-  },
-);
+const instance = axios.create({
+  baseURL: '/api',
+});
 
 instance.interceptors.response.use(
-  (response: AxiosResponse<ApiResponseData>) => {
-    return response;
-  },
-  async function (error) {
+  (response) => response,
+  async (error) => {
     const originalRequest = error.config;
-
-    // If 401 and we haven't retried yet — attempt token refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
       try {
-        const baseUrl = getBaseUrl();
-        const response = await axios.post(
-          `${baseUrl}/auth/refresh-token`,
-          {},
-          { withCredentials: true }, // sends the httpOnly refresh token cookie
+        const { data } = await axios.post('/api/auth/refresh-token');
+        const newToken = data.data.accessToken;
+        localStorage.setItem('accessToken', newToken);
+
+        const socket = getSocketIo();
+        if (socket) {
+          (socket as any).auth = { token: newToken };
+          socket.emit('reauthenticate', newToken);
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('story-spark-token-refreshed', {
+            detail: { token: newToken },
+          })
         );
 
-        const newAccessToken = response.data?.data?.accessToken;
-
-        if (newAccessToken) {
-          setToLocalStorage(AUTH_KEY, newAccessToken);
-          originalRequest.headers.Authorization = newAccessToken;
-          return instance(originalRequest); // retry original request
-        }
+        originalRequest.headers.Authorization = newToken;
+        return instance(originalRequest);
       } catch {
-        // Refresh failed — clear session and redirect to login
-        removeFromLocalStorage(AUTH_KEY);
-        window.location.href = "/login";
-        return Promise.reject(error);
+        localStorage.removeItem('accessToken');
+        window.location.href = '/login';
       }
     }
-
-    let errorObject: ResponseErrorType;
-    if (error.code === "ERR_NETWORK") {
-      errorObject = {
-        statusCode: 503,
-        message: "Network Error - Unable to connect to the server",
-        errorMessages: [
-          {
-            path: "",
-            message: "Please check your internet connection and try again",
-          },
-        ],
-      };
-    } else if (error.response) {
-      errorObject = {
-        statusCode: error.response.data?.statusCode || 500,
-        message: error.response.data?.message || "Something went wrong!",
-        errorMessages: error.response.data?.errorMessages || [],
-      };
-    } else {
-      errorObject = {
-        statusCode: 500,
-        message: error.message || "Something went wrong!",
-        errorMessages: [
-          {
-            path: "",
-            message: "An unexpected error occurred",
-          },
-        ],
-      };
-    }
-    return Promise.reject(errorObject);
-  },
+    return Promise.reject(error);
+  }
 );
 
+export default instance;
 export { instance };

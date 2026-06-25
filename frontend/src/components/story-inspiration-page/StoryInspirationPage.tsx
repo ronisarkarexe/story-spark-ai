@@ -1,11 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useBlocker } from 'react-router-dom';
+
 import { getBaseUrl } from '../../helpers/config';
+import StoryGeneratingAnimation from '../loading/story-generating-animation.component';
 
 const StoryInspirationPage: React.FC = () => {
   const [intro, setIntro] = useState('');
   const [ideas, setIdeas] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const isDirty = intro.trim().length > 0;
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      const proceed = window.confirm(
+        "You have unsaved content in the intro field. Are you sure you want to leave?"
+      );
+      if (proceed) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
 
   const fetchIdeas = async () => {
     setLoading(true);
@@ -36,16 +70,36 @@ const StoryInspirationPage: React.FC = () => {
         placeholder="Enter your story intro..."
         value={intro}
         onChange={e => setIntro(e.target.value)}
+        disabled={loading}
       />
-      <button
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        onClick={fetchIdeas}
-        disabled={loading || !intro.trim()}
-      >
-        {loading ? 'Generating...' : 'Get Ideas'}
-      </button>
+
+    <div className="flex gap-2">
+  <button
+    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+    onClick={fetchIdeas}
+    disabled={loading || !intro.trim()}
+  >
+    {loading ? 'Generating...' : 'Get Ideas'}
+  </button>
+
+  {intro.trim() && (
+    <button
+      type="button"
+      onClick={() => {
+        setIntro('');
+        setIdeas([]);
+        setError('');
+      }}
+      className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+    >
+      Clear Prompt
+    </button>
+  )}
+</div>
+
       {error && <div className="text-red-600 mt-4">{error}</div>}
-      {ideas.length > 0 && (
+
+      {!loading && ideas.length > 0 && (
         <div className="mt-6">
           <h3 className="text-xl font-semibold mb-2">Story Ideas:</h3>
           <ul className="list-disc pl-6">
@@ -60,3 +114,4 @@ const StoryInspirationPage: React.FC = () => {
 };
 
 export default StoryInspirationPage;
+

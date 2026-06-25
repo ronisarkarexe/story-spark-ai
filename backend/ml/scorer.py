@@ -83,17 +83,21 @@ def _load_artifacts() -> None:
     """
     global _model, _tokenizer
 
-    model_path     = os.path.join(SAVE_DIR, "scorer.keras")
+    model_path = os.path.join(SAVE_DIR, "scorer.keras")
     tokenizer_path = os.path.join(SAVE_DIR, "tokenizer.pkl")
-
+    
     if not os.path.exists(model_path):
         raise FileNotFoundError(
             f"{model_path} not found — run train_scorer.py first."
-        )
-
+    )
+    
+    if not os.path.exists(tokenizer_path):
+        raise FileNotFoundError(
+            f"{tokenizer_path} not found — tokenizer artifacts are missing."
+    )
+    
     if _model is None:
         _model = load_model(model_path)
-
     if _tokenizer is None:
         _tokenizer = joblib.load(tokenizer_path)
 
@@ -134,7 +138,7 @@ def score(story_text: str, prompt_text: str) -> dict:
         "overall": round((coherence + creativity + relevance) / 3, 3),
     }
     
-def batch_score(stories: list[dict], prompt_text: str) -> list[dict]:
+def score_story(stories: list[dict], prompt_text: str) -> list[dict]:
     """
     Score multiple stories in a single model forward pass.
     Much faster than calling score() in a loop for large batches.
@@ -162,10 +166,19 @@ def batch_score(stories: list[dict], prompt_text: str) -> list[dict]:
     skipped = []
 
     for s in stories:
+        if not isinstance(s, dict):
+            skipped.append({
+            "uuid": "unknown",
+            "error": "Story item must be a dictionary"
+        })
+            continue
         content = s.get("content", "")
+        
         if not isinstance(content, str) or not content.strip():
-            skipped.append({"uuid": s.get("uuid", "unknown"),
-                            "error": "Empty or missing content"})
+            skipped.append({
+            "uuid": s.get("uuid", "unknown"),
+            "error": "Empty or missing content"
+        })
         else:
             valid.append(s)
 
