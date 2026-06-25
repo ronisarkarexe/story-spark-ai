@@ -1,5 +1,5 @@
 // frontend/src/components/StoryGenerator.tsx
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import api from '../services/api';
 
 interface StoryGeneratorProps {
@@ -12,25 +12,36 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
   const [isLoading, setIsLoading] = useState(false);
   const [stories, setStories] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsLoading(false);
+    setError('Story generation was cancelled.');
+  };
 
   const handleGenerate = async () => {
-    // Don't generate if no prompt
     if (!prompt.trim()) {
       setError('Please enter a story prompt.');
       return;
     }
-
-    // Reset previous error
     setError(null);
     setIsLoading(true);
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
       const response = await api.post('/ai/generate', {
         prompt: prompt.trim(),
         variations: variationCount,
+      }, {
+        signal: controller.signal,
       });
 
-      // ✅ Check if response has data
       if (response?.data?.variations) {
         setStories(response.data.variations);
         if (onStoryGenerated) {
@@ -39,13 +50,13 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
       } else {
         throw new Error('No variations received from AI service');
       }
-
     } catch (error: any) {
+      if (error.name === 'CanceledError' || error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
+        setError('Story generation was cancelled.');
+        return;
+      }
       console.error('AI Generation Error:', error);
-
-      // ✅ Handle different error types
       let errorMessage = 'Failed to generate stories. Please try again.';
-
       if (error.response?.status === 429) {
         errorMessage = 'The AI service is currently busy. Please wait a moment and try again.';
       } else if (error.response?.status === 504) {
@@ -53,15 +64,13 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
       } else if (error.response?.status === 500) {
         errorMessage = 'Server error. Please try again later.';
       } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-        errorMessage = 'Request timed out. Please try again.';
+        errorMessage = 'Request timed out after 30 seconds. Please try again.';
       } else if (!error.response) {
         errorMessage = 'Network error. Please check your connection.';
       }
-
       setError(errorMessage);
-
     } finally {
-      // ✅ ALWAYS reset loading state
+      abortControllerRef.current = null;
       setIsLoading(false);
     }
   };
@@ -118,24 +127,37 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
         />
       </div>
 
-      {/* Generate Button */}
-      <button
-        onClick={handleGenerate}
-        disabled={isLoading || !prompt.trim()}
-        className="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-      >
-        {isLoading ? (
-          <>
-            <i className="fas fa-spinner fa-spin" />
-            Generating Stories...
-          </>
-        ) : (
-          <>
-            <i className="fas fa-wand-magic-sparkles" />
-            Generate Stories
-          </>
+      {/* Generate / Cancel Buttons */}
+      <div className="flex gap-3">
+        <button
+          onClick={handleGenerate}
+          disabled={isLoading || !prompt.trim()}
+          className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <i className="fas fa-spinner fa-spin" />
+              Generating Stories...
+            </>
+          ) : (
+            <>
+              <i className="fas fa-wand-magic-sparkles" />
+              Generate Stories
+            </>
+          )}
+        </button>
+
+        {isLoading && (
+          <button
+            onClick={handleCancel}
+            className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center justify-center gap-2"
+            aria-label="Cancel story generation"
+          >
+            <i className="fas fa-times" />
+            Cancel
+          </button>
         )}
-      </button>
+      </div>
 
       {/* Generated Stories */}
       {stories.length > 0 && (
