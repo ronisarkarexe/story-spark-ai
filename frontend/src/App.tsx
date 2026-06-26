@@ -141,15 +141,16 @@ const router = createBrowserRouter([
       { path: "report-bug", element: <ReportBug /> },
       { path: "chat", element: <ChatPage /> },
       {
-        element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-        children: [
-          { path: "explore", element: <ExploreComponent /> },
-          { path: "bookmarks", element: <BookmarksComponent /> },
-          { path: "resources", element: <ResourcesListComponent /> },
-          { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
-          { path: "stories", element: <StoriesComponent /> },
-          { path: "branching-story", element: <BranchingStory /> },
-          { path: "story-workspace", element: <StoryWorkspace /> },
+        path: "resources", element: <ResourcesListComponent /> },
+{ path: "resources/:resourceName", element: <ResourceDetailComponent /> },
+{
+  element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+  children: [
+    { path: "explore", element: <ExploreComponent /> },
+    { path: "bookmarks", element: <BookmarksComponent /> },
+    { path: "stories", element: <StoriesComponent /> },
+    { path: "branching-story", element: <BranchingStory /> },
+    { path: "story-workspace", element: <StoryWorkspace /> },
         ],
       },
       { path: "*", element: <NotFoundComponent /> },
