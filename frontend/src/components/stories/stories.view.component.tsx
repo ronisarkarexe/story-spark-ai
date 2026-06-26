@@ -95,6 +95,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [newTopicTitle, setNewTopicTitle] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [readingProgress, setReadingProgress] = useState(0);
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [deletePost] = useDeletePostMutation();
@@ -256,6 +257,27 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   };
 
   useEffect(() => {
+  const handleScroll = () => {
+    const scrollTop = window.scrollY;
+
+    const documentHeight =
+      document.documentElement.scrollHeight -
+      document.documentElement.clientHeight;
+
+    const progress =
+      (scrollTop / documentHeight) * 100;
+
+    setReadingProgress(progress);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+  };
+}, []);
+
+  useEffect(() => {
     return () => {
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
@@ -295,6 +317,25 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     hasSavedSessionRef.current = false;
     savedPostIdRef.current = null;
   }, [stories]);
+useEffect(() => {
+  const handleScroll = () => {
+    const scrollTop = window.scrollY;
+
+    const documentHeight =
+      document.documentElement.scrollHeight -
+      document.documentElement.clientHeight;
+
+    const progress =
+      (scrollTop / documentHeight) * 100;
+
+    setReadingProgress(progress);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+
+  return () =>
+    window.removeEventListener("scroll", handleScroll);
+}, []);
 
   useEffect(() => {
     const autoSaveStory = async () => {
@@ -723,7 +764,8 @@ if (isLoading) {
     return null;
   }
 
-  return (
+   (
+    
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
       <style>
         {`
@@ -736,6 +778,12 @@ if (isLoading) {
           }
         `}
       </style>
+      <div className="fixed top-0 left-0 w-full h-1 bg-slate-200 z-50">
+  <div
+    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-150"
+    style={{ width: `${readingProgress}%` }}
+  />
+</div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in-up">
         <div className="col-span-1 lg:col-span-8 flex flex-col">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
@@ -804,7 +852,7 @@ if (isLoading) {
                   className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleExportPDF}
                   disabled={!selectedStory}
-                >
+                >return
                   📄 Export PDF
                 </button>
                 <button
