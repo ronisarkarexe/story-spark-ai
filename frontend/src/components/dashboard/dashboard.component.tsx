@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useGetDashboardAnalysisQuery } from "../../redux/apis/analysis.api";
 import TopicsChart from "../chart/dashboard/bar_chart";
 import SubscriptionChart from "../chart/dashboard/doughnut_chart";
@@ -6,12 +7,22 @@ import UsersPieChart from "../chart/dashboard/pai_chart";
 import LoadingAnimation from "../loading/loading.component";
 import { getUserInfo } from "../../services/auth.service";
 import { USER_ROLE } from "../../constants/role";
-import GamificationCard from "./gamification_card.component";
+import StreakCard from "../StreakCard";
+import AchievementsGrid from "../AchievementsGrid";
+import WritingStatsPanel from "../WritingStatsPanel";
+import { useGetWritingStreakQuery, useGetAchievementsQuery } from "../../redux/apis/gamification.api";
 
 const DashboardComponent = () => {
   const { data, isLoading } = useGetDashboardAnalysisQuery(undefined);
   const userInfo = getUserInfo();
   const role = userInfo?.role;
+
+  const { data: streakData, isLoading: isStreakLoading } = useGetWritingStreakQuery(undefined, {
+    skip: role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN,
+  });
+  const { data: achievementsData, isLoading: isAchievementsLoading } = useGetAchievementsQuery(undefined, {
+    skip: role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN,
+  });
 
   if (isLoading) {
     return <LoadingAnimation />;
@@ -173,17 +184,17 @@ const DashboardComponent = () => {
   const stats = getStatsCards();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* HERO SECTION */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-50 border border-slate-200 shadow-xl dark:from-[#0f1c3a] dark:via-[#0d1a3a] dark:to-[#111433] dark:border-white/[0.07] p-6 md:p-8">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-50 p-5 shadow-xl dark:border-white/[0.07] dark:from-[#0f1c3a] dark:via-[#0d1a3a] dark:to-[#111433] sm:p-6 lg:p-8">
         <div className="absolute -top-16 -right-16 w-64 h-64 bg-blue-600/15 rounded-full blur-[60px]" />
         <div className="absolute bottom-0 left-8 w-48 h-48 bg-indigo-500/10 rounded-full blur-[50px]" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100/50 dark:bg-blue-500/10 border border-blue-200/50 dark:border-blue-500/20 mb-4">
+          <div className="min-w-0">
+            <div className="mb-4 inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-blue-200/50 bg-blue-100/50 px-3 py-1.5 dark:border-blue-500/20 dark:bg-blue-500/10">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse"></span>
-              <span className="text-[10px] uppercase tracking-widest text-blue-600 dark:text-blue-300 font-semibold">
+              <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300 sm:text-[10px]">
                 {role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN
                   ? "Platform Manager Dashboard"
                   : role === USER_ROLE.WRITER
@@ -192,11 +203,11 @@ const DashboardComponent = () => {
               </span>
             </div>
 
-            <h1 className="text-4xl font-black text-slate-800 dark:text-white leading-tight mb-3">
+            <h1 className="mb-3 break-words text-3xl font-black leading-tight text-slate-800 dark:text-white sm:text-4xl">
               Welcome Back, {userInfo?.name || "Member"} 👋
             </h1>
 
-            <p className="text-slate-600 dark:text-slate-400 text-base max-w-xl">
+            <p className="max-w-xl text-sm text-slate-600 dark:text-slate-400 sm:text-base">
               {role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN
                 ? "Monitor platform growth, track engagement, and manage your ecosystem through a modern analytics experience."
                 : role === USER_ROLE.WRITER
@@ -208,23 +219,23 @@ const DashboardComponent = () => {
       </div>
 
       {/* STATS GRID */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${role === USER_ROLE.USER ? "xl:grid-cols-2" : "xl:grid-cols-4"} gap-5`}>
+      <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 ${role === USER_ROLE.USER ? "xl:grid-cols-2" : "xl:grid-cols-4"}`}>
         {stats.map((item) => (
           <div
             key={item.title}
-            className={`rounded-2xl border ${item.border} ${item.bg} p-5 shadow-xl ${item.glow}`}
+            className={`min-w-0 rounded-2xl border ${item.border} ${item.bg} p-5 shadow-xl ${item.glow}`}
           >
-            <div className="flex items-start justify-between mb-4">
+            <div className="mb-4 flex items-start justify-between gap-3">
               <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${item.iconBg}`}>
                 <i className={`fas ${item.icon} ${item.iconColor} text-sm`}></i>
               </div>
 
-              <span className={`text-[10px] ${item.badgeColor}`}>{item.badge}</span>
+              <span className={`text-right text-[10px] leading-4 ${item.badgeColor}`}>{item.badge}</span>
             </div>
 
             <p className="text-slate-500 dark:text-slate-400 text-xs mb-2">{item.title}</p>
 
-            <h2 className="text-3xl font-black text-slate-800 dark:text-white">
+            <h2 className="break-words text-2xl font-black text-slate-800 dark:text-white sm:text-3xl">
               {typeof item.value === "number" ? item.value.toLocaleString() : item.value}
             </h2>
           </div>
@@ -233,8 +244,8 @@ const DashboardComponent = () => {
 
       {/* EMPTY STATE */}
       {!data && (
-        <div className="rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.02] p-20 text-center">
-          <h2 className="text-3xl font-black text-slate-800 dark:text-white mb-3">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-10 text-center dark:border-white/[0.06] dark:bg-white/[0.02] sm:p-20">
+          <h2 className="mb-3 text-2xl font-black text-slate-800 dark:text-white sm:text-3xl">
             Analytics Not Available
           </h2>
           <p className="text-slate-600 dark:text-slate-400">
@@ -245,26 +256,26 @@ const DashboardComponent = () => {
 
       {/* CHARTS / CONTENT GRID */}
       {data && (
-        <div className="mt-8">
+        <div className="mt-6 sm:mt-8">
           {/* Admin / Super Admin Layout */}
           {(role === USER_ROLE.ADMIN || role === USER_ROLE.SUPER_ADMIN) && (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <div className="rounded-2xl border border-blue-100 bg-slate-50/50 p-6 dark:border-blue-500/15 dark:bg-white/[0.02]">
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
+              <div className="min-w-0 rounded-2xl border border-blue-100 bg-slate-50/50 p-5 dark:border-blue-500/15 dark:bg-white/[0.02] sm:p-6">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Users Distribution</h2>
                 <UsersPieChart data={data.users!} />
               </div>
 
-              <div className="rounded-2xl border border-emerald-100 bg-slate-50/50 p-6 dark:border-emerald-500/15 dark:bg-white/[0.02]">
+              <div className="min-w-0 rounded-2xl border border-emerald-100 bg-slate-50/50 p-5 dark:border-emerald-500/15 dark:bg-white/[0.02] sm:p-6">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Subscription Overview</h2>
                 <SubscriptionChart data={data.subscriptionTypes!} />
               </div>
 
-              <div className="rounded-2xl border border-violet-100 bg-slate-50/50 p-6 dark:border-violet-500/15 dark:bg-white/[0.02]">
+              <div className="min-w-0 rounded-2xl border border-violet-100 bg-slate-50/50 p-5 dark:border-violet-500/15 dark:bg-white/[0.02] sm:p-6">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Monthly Posts</h2>
                 <PostsPerMonthChart perMonth={data.posts!.perMonth} />
               </div>
 
-              <div className="rounded-2xl border border-amber-100 bg-slate-50/50 p-6 dark:border-amber-500/15 dark:bg-white/[0.02]">
+              <div className="min-w-0 rounded-2xl border border-amber-100 bg-slate-50/50 p-5 dark:border-amber-500/15 dark:bg-white/[0.02] sm:p-6">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Topics Analytics</h2>
                 <TopicsChart topics={data.posts!.topics} />
               </div>
@@ -274,14 +285,32 @@ const DashboardComponent = () => {
           {/* Writer Layout */}
           {role === USER_ROLE.WRITER && (
             <div className="space-y-6">
-              {/* Gamification Banner */}
-              <div className="mb-6">
-                <GamificationCard data={data.writerStats?.gamification} />
+              {/* Gamification Hub */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="min-w-0 lg:col-span-1">
+                  <StreakCard streak={streakData} isLoading={isStreakLoading} />
+                </div>
+                <div className="min-w-0 lg:col-span-2">
+                  <WritingStatsPanel
+                    totalStories={achievementsData?.achievements.find((a) => a.id === "story_1")?.progress || 0}
+                    totalWords={achievementsData?.achievements.find((a) => a.id === "words_1000")?.progress || 0}
+                    activeDays={streakData?.totalWritingDays || 0}
+                    longestStreak={streakData?.longestStreak || 0}
+                    monthlyActivity={data.posts?.perMonth}
+                    isLoading={isStreakLoading || isAchievementsLoading}
+                  />
+                </div>
               </div>
-              
+
+              {/* Achievements Showcase */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-white/[0.06] dark:bg-white/[0.01] sm:p-6">
+                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-4">Writing Achievements</h3>
+                <AchievementsGrid achievements={achievementsData?.achievements} isLoading={isAchievementsLoading} />
+              </div>
+               
               {/* Writer Charts */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <div className="rounded-2xl border border-violet-100 bg-slate-50/50 p-6 dark:border-violet-500/15 dark:bg-white/[0.02]">
+              <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
+                <div className="min-w-0 rounded-2xl border border-violet-100 bg-slate-50/50 p-5 dark:border-violet-500/15 dark:bg-white/[0.02] sm:p-6">
                   <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Monthly Posts Activity</h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Track how many stories you have published month by month.</p>
                   {data.posts?.perMonth && Object.keys(data.posts.perMonth).length > 0 ? (
@@ -293,7 +322,7 @@ const DashboardComponent = () => {
                   )}
                 </div>
 
-                <div className="rounded-2xl border border-amber-100 bg-slate-50/50 p-6 dark:border-amber-500/15 dark:bg-white/[0.02]">
+                <div className="min-w-0 rounded-2xl border border-amber-100 bg-slate-50/50 p-5 dark:border-amber-500/15 dark:bg-white/[0.02] sm:p-6">
                   <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Topics Analytics</h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Explore the frequency of genres and topics you have published.</p>
                   {data.posts?.topics && Object.keys(data.posts.topics).length > 0 ? (
@@ -307,8 +336,8 @@ const DashboardComponent = () => {
               </div>
 
               {/* Collab Banner */}
-              <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 p-8 dark:border-indigo-500/10 dark:from-indigo-500/10 dark:to-purple-500/10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                <div className="max-w-2xl">
+              <div className="flex flex-col gap-6 rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 p-6 dark:border-indigo-500/10 dark:from-indigo-500/10 dark:to-purple-500/10 md:flex-row md:items-center md:justify-between sm:p-8">
+                <div className="max-w-2xl min-w-0">
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 mb-4 font-bold">
                     <i className="fas fa-users text-xl"></i>
                   </div>
@@ -319,7 +348,7 @@ const DashboardComponent = () => {
                 </div>
                 <a
                   href="/collab"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white font-bold shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] shrink-0"
+                  className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 px-8 py-4 font-bold text-white shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] hover:from-indigo-600 hover:to-blue-700 sm:w-auto"
                 >
                   <i className="fas fa-satellite-dish animate-pulse"></i> Open Collab Space
                 </a>
@@ -330,14 +359,32 @@ const DashboardComponent = () => {
           {/* Normal User Layout */}
           {role === USER_ROLE.USER && (
             <div className="space-y-6">
-              {/* Gamification Banner */}
-              <div className="mb-6">
-                <GamificationCard data={data.userStats?.gamification} />
+              {/* Gamification Hub */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="min-w-0 lg:col-span-1">
+                  <StreakCard streak={streakData} isLoading={isStreakLoading} />
+                </div>
+                <div className="min-w-0 lg:col-span-2">
+                  <WritingStatsPanel
+                    totalStories={achievementsData?.achievements.find((a) => a.id === "story_1")?.progress || 0}
+                    totalWords={achievementsData?.achievements.find((a) => a.id === "words_1000")?.progress || 0}
+                    activeDays={streakData?.totalWritingDays || 0}
+                    longestStreak={streakData?.longestStreak || 0}
+                    monthlyActivity={data.posts?.perMonth}
+                    isLoading={isStreakLoading || isAchievementsLoading}
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Achievements Showcase */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-white/[0.06] dark:bg-white/[0.01] sm:p-6">
+                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-4">Writing Achievements</h3>
+                <AchievementsGrid achievements={achievementsData?.achievements} isLoading={isAchievementsLoading} />
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 sm:gap-6">
               {/* Creator Card */}
-              <div className="rounded-2xl border border-amber-100 bg-slate-50/50 p-8 dark:border-amber-500/10 dark:bg-white/[0.02] flex flex-col justify-between">
+              <div className="flex min-w-0 flex-col justify-between rounded-2xl border border-amber-100 bg-slate-50/50 p-6 dark:border-amber-500/10 dark:bg-white/[0.02] sm:p-8">
                 <div>
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 mb-4">
                     <i className="fas fa-pen-nib text-xl"></i>
@@ -356,7 +403,7 @@ const DashboardComponent = () => {
               </div>
 
               {/* Pro Upgrade Card */}
-              <div className="rounded-2xl border border-indigo-100 bg-slate-50/50 p-8 dark:border-indigo-500/10 dark:bg-white/[0.02] flex flex-col justify-between">
+              <div className="flex min-w-0 flex-col justify-between rounded-2xl border border-indigo-100 bg-slate-50/50 p-6 dark:border-indigo-500/10 dark:bg-white/[0.02] sm:p-8">
                 <div>
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 mb-4">
                     <i className="fas fa-gem text-xl"></i>

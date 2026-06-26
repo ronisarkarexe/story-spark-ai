@@ -5,26 +5,21 @@ import { ENUM_USER_ROLE } from "../../../enums/user";
 
 const router = express.Router();
 
-router.get(
-  "/",
-  auth(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.WRITER,
-    ENUM_USER_ROLE.USER
-  ),
-  NotificationController.getUserNotifications
+const allRoles = auth(
+  ENUM_USER_ROLE.ADMIN,
+  ENUM_USER_ROLE.SUPER_ADMIN,
+  ENUM_USER_ROLE.WRITER,
+  ENUM_USER_ROLE.USER
 );
 
-router.patch(
-  "/:id/read",
-  auth(
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN,
-    ENUM_USER_ROLE.WRITER,
-    ENUM_USER_ROLE.USER
-  ),
-  NotificationController.markNotificationAsRead
-);
+router.get("/", allRoles, NotificationController.getUserNotifications);
+
+// Static routes MUST come before dynamic /:id routes so Express does not
+// treat "mark-all-read" as an :id value.
+router.patch("/mark-all-read", allRoles, NotificationController.markAllNotificationsAsRead);
+
+router.patch("/:id/read", allRoles, NotificationController.markNotificationAsRead);
+
+router.delete("/", allRoles, NotificationController.deleteAllNotifications);
 
 export const NotificationRouter = router;
