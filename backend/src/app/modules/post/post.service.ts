@@ -40,13 +40,19 @@ const decodeCursor = (cursor?: string): ICursorPayload | null => {
   try {
     const decoded = Buffer.from(cursor, "base64").toString("utf-8");
     const parsed = JSON.parse(decoded);
-    if (!parsed?.id || parsed.value === undefined) {
-      return null;
-    }
+   if (!parsed?.id || parsed.value === undefined) {
+  throw new ApiError(
+    httpStatus.BAD_REQUEST,
+    "Invalid pagination cursor"
+  );
+}
     return parsed as ICursorPayload;
   } catch {
-    return null;
-  }
+  throw new ApiError(
+    httpStatus.BAD_REQUEST,
+    "Invalid pagination cursor"
+  );
+}
 };
 
 const getCursorCondition = (
