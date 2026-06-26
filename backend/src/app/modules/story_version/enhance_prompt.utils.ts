@@ -9,6 +9,11 @@ import {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
+const SYSTEM_INSTRUCTION = `You are a creative writing assistant.
+Rewrite the user's story prompt to be more vivid, specific, and engaging.
+Add a character name, setting details, and a central conflict.
+Return ONLY the enhanced prompt — no explanation, no prefix, nothing else.`;
+
 export const enhancePromptWithGemini = async (
   prompt: string,
   signal?: AbortSignal,
@@ -16,16 +21,16 @@ export const enhancePromptWithGemini = async (
 ): Promise<string> => {
   const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
 
-  const safePrompt = prompt
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, "\\\"")
-    .replace(/\n/g, " ")
-    .replace(/\r/g, "");
+  // User prompt is clearly delimited — never bleeds into system instructions
+  const metaPrompt = `${SYSTEM_INSTRUCTION}
 
+Story context (if available):
+${compressedContext ?? "No previous context"}
 
-  const metaPrompt = `You are a creative writing assistant.\n\nPrompt: ${safePrompt}\n\nUse the following story context if available:\n\n${
-    compressedContext ?? "No previous context"
-  }\n\nRewrite the following story prompt to be more vivid, specific, and engaging.\nAdd a character name, setting details, and a central conflict.\n\nReturn ONLY the enhanced prompt, nothing else.`;
+User prompt:
+"""
+${prompt}
+"""`;
 
   const resultPromise = model.generateContent(metaPrompt);
 
@@ -53,19 +58,14 @@ export const enhancePromptWithOpenAI = async (
 ): Promise<string> => {
   const client = getOpenAIClient();
 
-  const metaPrompt = `You are a creative writing assistant.
-
-Rewrite the following story prompt to be more vivid, specific, and engaging.
-Add a character name, setting details, and a central conflict.
-
-Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
-
-Prompt: ${prompt}`;
-
+  // System instruction and user prompt are structurally separated via roles
   const response = await client.chat.completions.create(
     {
       model: OPENAI_MODEL,
-      messages: [{ role: "user", content: metaPrompt }],
+      messages: [
+        { role: "system", content: SYSTEM_INSTRUCTION },
+        { role: "user", content: prompt },
+      ],
       max_tokens: 1000,
     },
     { signal }
@@ -86,20 +86,13 @@ export const enhancePromptWithAnthropic = async (
 ): Promise<string> => {
   const client = getAnthropicClient();
 
-  const metaPrompt = `You are a creative writing assistant.
-
-Rewrite the following story prompt to be more vivid, specific, and engaging.
-Add a character name, setting details, and a central conflict.
-
-Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
-
-Prompt: ${prompt}`;
-
+  // System instruction and user prompt are structurally separated via roles
   const response = await client.messages.create(
     {
       model: CLAUDE_MODEL,
       max_tokens: 1000,
-      messages: [{ role: "user", content: metaPrompt }],
+      system: SYSTEM_INSTRUCTION,
+      messages: [{ role: "user", content: prompt }],
     },
     { signal }
   );
