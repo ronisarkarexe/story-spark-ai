@@ -126,8 +126,9 @@ const CommunitySpotlightComponent = () => {
       </div>
     );
   }
-
-  const spotlightPosts = data?.posts ?? [];
+const spotlightPosts = Array.from(
+  new Map((data?.posts ?? []).map((post) => [post._id, post])).values(),
+);
 
   return (
     <section className="w-full box-border py-6 sm:py-10 text-slate-900 dark:text-slate-100">
