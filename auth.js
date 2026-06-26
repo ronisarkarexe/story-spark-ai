@@ -31,8 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Initialize dynamic Google Sign-In text if present
     const googleBtnText = document.getElementById('google-btn-text');
     if (googleBtnText) {
-        googleBtnText.innerText = currentMode === 'signup' ? 'sign in with Google' : 'Sign in with Google';
-    }
+googleBtnText.innerText = currentMode === 'signup' ? 'Sign up with Google' : 'Sign in with Google';    }
 
     // 3. Initialize Particle Canvas System
     initParticleSystem();
@@ -74,11 +73,13 @@ function initInlineValidation() {
         passwordField.addEventListener('blur', () => validatePassword(true));
         passwordField.addEventListener('input', () => {
             updatePasswordStrengthUI(passwordField.value || '');
+            updatePasswordChecklist(passwordField.value || '');
             if (passwordField.getAttribute('aria-invalid') === 'true') validatePassword(true);
             if (confirmPasswordField && confirmPasswordField.value) {
                 validateConfirmPassword(false);
             }
         });
+        
         updatePasswordStrengthUI(passwordField.value || '');
     }
 
@@ -145,8 +146,7 @@ function validateEmail(showInline) {
     const value = (emailField.value || '').trim();
     let message = '';
     if (!value) message = 'Please enter your email address.';
-    else if (!emailField.checkValidity()) message = 'Enter a valid email address (e.g., name@example.com).';
-
+else if (!emailField.checkValidity()) message = 'Please enter a valid email address.';
     if (showInline) setFieldError('email-field', 'email-error', message);
     return !message;
 }
@@ -161,6 +161,30 @@ function getPasswordScore(password) {
     return Math.min(score, 4);
 }
 
+
+function updatePasswordChecklist(password) {
+    const checks = {
+        "rule-length": password.length >= 8,
+        "rule-upper": /[A-Z]/.test(password),
+        "rule-lower": /[a-z]/.test(password),
+        "rule-number": /\d/.test(password),
+        "rule-special": /[^A-Za-z0-9]/.test(password),
+    };
+
+    Object.entries(checks).forEach(([id, passed]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.textContent =
+            (passed ? "✓ " : "✗ ") +
+            el.textContent.replace(/^✓ |^✗ /, "");
+
+        el.classList.toggle("text-green-400", passed);
+        el.classList.toggle("text-red-400", !passed);
+    });
+}
+
+
 function updatePasswordStrengthUI(password) {
     const bar = document.getElementById('password-meter-bar');
     const strength = document.getElementById('password-strength');
@@ -174,14 +198,16 @@ function updatePasswordStrengthUI(password) {
         if (!password) {
             strength.textContent = '';
         } else if (score <= 1) {
-            strength.textContent = 'Strength: weak';
-        } else if (score === 2) {
-            strength.textContent = 'Strength: fair';
-        } else if (score === 3) {
-            strength.textContent = 'Strength: good';
-        } else {
-            strength.textContent = 'Strength: strong';
-        }
+    strength.textContent = 'Strength: Weak';
+} else if (score === 2) {
+    strength.textContent = 'Strength: Fair';
+} else if (score === 3) {
+    strength.textContent = 'Strength: Good';
+} else if (score === 4 && password.length >= 12) {
+    strength.textContent = 'Strength: Very Strong';
+} else {
+    strength.textContent = 'Strength: Strong';
+}
     }
 }
 
@@ -191,11 +217,23 @@ function validatePassword(showInline) {
 
     const value = passwordField.value || '';
     let message = '';
-    if (!value) message = 'Please enter your password.';
-    else if (value.length < 8) message = 'Password must be at least 8 characters.';
-    else if (!/[A-Za-z]/.test(value) || !/\d/.test(value)) message = 'Use a mix of letters and numbers.';
 
-    if (showInline) setFieldError('password-field', 'password-error', message);
+    if (!value)
+        message = 'Please enter your password.';
+    else if (value.length < 8)
+        message = 'Password must be at least 8 characters.';
+    else if (!/[A-Z]/.test(value))
+        message = 'Include at least one uppercase letter.';
+    else if (!/[a-z]/.test(value))
+        message = 'Include at least one lowercase letter.';
+    else if (!/\d/.test(value))
+        message = 'Include at least one number.';
+    else if (!/[^A-Za-z0-9]/.test(value))
+        message = 'Include at least one special character.';
+
+    if (showInline)
+        setFieldError('password-field', 'password-error', message);
+
     return !message;
 }
 
@@ -401,8 +439,8 @@ function toggleAuthMode(mode) {
             if (passwordField) passwordField.setAttribute('autocomplete', 'new-password');
             
             // Tabs styling
-            if (tabSignup) tabSignup.className = "flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300";
-            if (tabSignin) tabSignin.className = "flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
+            if (tabSignup) tabSignup.className = "auth-tab-button flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300 active";
+            if (tabSignin) tabSignin.className = "auth-tab-button flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
             
             // FIX: Use javascript void anchors to prevent hard page refreshes on interaction links
             if (navToggle) {
@@ -426,8 +464,8 @@ function toggleAuthMode(mode) {
             if (passwordField) passwordField.setAttribute('autocomplete', 'current-password');
             
             // Tabs styling
-            if (tabSignin) tabSignin.className = "flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300";
-            if (tabSignup) tabSignup.className = "flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
+            if (tabSignin) tabSignin.className = "auth-tab-button flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300 active";
+            if (tabSignup) tabSignup.className = "auth-tab-button flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300";
             
             // FIX: Use javascript void anchors to prevent hard page refreshes on interaction links
             if (navToggle) {
@@ -496,34 +534,147 @@ function closeLegalModal() {
     if (modal) modal.classList.remove('show');
 }
 
-/* ── Password Visibility Toggling ── */
-function togglePasswordVisibility() {
+/* ── Password Visibility Toggling with Enhanced Accessibility ── */
+
+/**
+ * Enhanced password visibility toggle with:
+ * - Keyboard support (Space/Enter)
+ * - Tooltip display on hover/focus
+ * - Better icon contrast for light/dark themes
+ * - ARIA attributes for screen readers
+ */
+function togglePasswordVisibility(event) {
+    event?.preventDefault?.();
+    
     const field = document.getElementById('password-field');
+    const button = event?.currentTarget || document.querySelector('[onclick*="togglePasswordVisibility"]');
     const icon = document.getElementById('eye-icon');
-    if (!field || !icon) return;
+    const tooltip = button?.querySelector('.password-tooltip');
+    const tooltipText = button?.querySelector('#tooltip-text');
+    
+    if (!field || !icon || !button) return;
 
-    if (field.type === 'password') {
-        field.type = 'text';
-        icon.className = 'fi fi-rr-eye text-[16px]';
-    } else {
-        field.type = 'password';
+    const isVisible = field.type === 'text';
+    
+    // Toggle field type
+    field.type = isVisible ? 'password' : 'text';
+    
+    // Update icon with better contrast
+    if (isVisible) {
+        // Password hidden
         icon.className = 'fi fi-rr-eye-crossed text-[16px]';
+        button.setAttribute('aria-label', 'Show password. Press Space or Enter to toggle.');
+        button.setAttribute('aria-pressed', 'false');
+        button.setAttribute('title', 'Show password (Space/Enter)');
+        if (tooltipText) tooltipText.textContent = 'Show password (Space/Enter)';
+    } else {
+        // Password visible
+        icon.className = 'fi fi-rr-eye text-[16px]';
+        button.setAttribute('aria-label', 'Hide password. Press Space or Enter to toggle.');
+        button.setAttribute('aria-pressed', 'true');
+        button.setAttribute('title', 'Hide password (Space/Enter)');
+        if (tooltipText) tooltipText.textContent = 'Hide password (Space/Enter)';
+    }
+    
+    // Show tooltip briefly on toggle
+    if (tooltip) {
+        tooltip.classList.remove('hidden');
+        setTimeout(() => {
+            if (tooltip && !button.matches(':focus')) {
+                tooltip.classList.add('hidden');
+            }
+        }, 1500);
     }
 }
 
-function toggleConfirmPasswordVisibility() {
+function toggleConfirmPasswordVisibility(event) {
+    event?.preventDefault?.();
+    
     const field = document.getElementById('confirm-password-field');
+    const button = event?.currentTarget || document.querySelector('[onclick*="toggleConfirmPasswordVisibility"]');
     const icon = document.getElementById('confirm-eye-icon');
-    if (!field || !icon) return;
+    const tooltip = button?.querySelector('.password-tooltip');
+    const tooltipText = button?.querySelector('#confirm-tooltip-text');
+    
+    if (!field || !icon || !button) return;
 
-    if (field.type === 'password') {
-        field.type = 'text';
-        icon.className = 'fi fi-rr-eye text-[16px]';
-    } else {
-        field.type = 'password';
+    const isVisible = field.type === 'text';
+    
+    // Toggle field type
+    field.type = isVisible ? 'password' : 'text';
+    
+    // Update icon with better contrast
+    if (isVisible) {
+        // Password hidden
         icon.className = 'fi fi-rr-eye-crossed text-[16px]';
+        button.setAttribute('aria-label', 'Show confirm password. Press Space or Enter to toggle.');
+        button.setAttribute('aria-pressed', 'false');
+        button.setAttribute('title', 'Show password (Space/Enter)');
+        if (tooltipText) tooltipText.textContent = 'Show password (Space/Enter)';
+    } else {
+        // Password visible
+        icon.className = 'fi fi-rr-eye text-[16px]';
+        button.setAttribute('aria-label', 'Hide confirm password. Press Space or Enter to toggle.');
+        button.setAttribute('aria-pressed', 'true');
+        button.setAttribute('title', 'Hide password (Space/Enter)');
+        if (tooltipText) tooltipText.textContent = 'Hide password (Space/Enter)';
+    }
+    
+    // Show tooltip briefly on toggle
+    if (tooltip) {
+        tooltip.classList.remove('hidden');
+        setTimeout(() => {
+            if (tooltip && !button.matches(':focus')) {
+                tooltip.classList.add('hidden');
+            }
+        }, 1500);
     }
 }
+
+// Add keyboard support and tooltip interactions
+document.addEventListener('DOMContentLoaded', () => {
+    const passwordButtons = document.querySelectorAll('.password-toggle-btn');
+    
+    passwordButtons.forEach(button => {
+        const tooltip = button.querySelector('.password-tooltip');
+        let tooltipTimeout;
+        
+        // Keyboard support (Space and Enter keys)
+        button.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                // Determine which toggle function to call based on the button's onclick
+                if (button.getAttribute('onclick').includes('toggleConfirmPasswordVisibility')) {
+                    toggleConfirmPasswordVisibility({ currentTarget: button });
+                } else {
+                    togglePasswordVisibility({ currentTarget: button });
+                }
+            }
+        });
+        
+        // Tooltip show/hide on hover
+        button.addEventListener('mouseenter', () => {
+            tooltipTimeout = setTimeout(() => {
+                if (tooltip) tooltip.classList.remove('hidden');
+            }, 300);
+        });
+        
+        button.addEventListener('mouseleave', () => {
+            clearTimeout(tooltipTimeout);
+            if (tooltip) tooltip.classList.add('hidden');
+        });
+        
+        // Show tooltip on focus
+        button.addEventListener('focus', () => {
+            if (tooltip) tooltip.classList.remove('hidden');
+        });
+        
+        // Hide tooltip on blur
+        button.addEventListener('blur', () => {
+            if (tooltip) tooltip.classList.add('hidden');
+        });
+    });
+});
 
 /* caps-lock-warning */
 const passwordField = document.getElementById("password-field");
@@ -642,8 +793,8 @@ function initGoogleAuth() {
     google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
+auto_select: true,
+      cancel_on_tap_outside: true,
     });
 }
 

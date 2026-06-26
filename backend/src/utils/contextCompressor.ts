@@ -1,3 +1,4 @@
+ fix/audio-word-count-1214
  feat-context-compression
 export interface ICompressedContext {
   characters: string[];
@@ -63,6 +64,8 @@ Events: ${keyEvents.slice(0, 5).join(" | ")}
 Settings: ${Array.from(setting).join(" | ")}
     `.trim()
 
+
+ main
 import { get_encoding } from "tiktoken";
 
 export interface LorePayload {
@@ -200,6 +203,9 @@ export function compressContext(
     window,
     totalTokens: usedTokens,
     droppedNodeCount: nodes.length - window.length,
+ fix/audio-word-count-1214
+ main
+
  main
   };
 }

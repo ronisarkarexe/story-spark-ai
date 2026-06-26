@@ -4,24 +4,9 @@
 <head>
 
     <meta charset="utf-8"/>
-<<<<<<< fix/noscript-fallback
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Create Account | Story Spark AI</title>
     <meta name="description" content="Sign in or create an account for Story Spark AI — turn your imagination into fully illustrated multi-variation AI stories."/>
-=======
->>>>>>> main
-
-    <meta
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        name="viewport"
-    />
-
-    <title>Signup | Story Spark AI</title>
-
-    <meta
-        name="description"
-        content="Sign in or create an account for Story Spark AI."
-    />
 
     <!-- FONTS -->
 
@@ -50,7 +35,6 @@
     <link href="auth.css" rel="stylesheet"/>
 
 </head>
-<<<<<<< fix/noscript-fallback
 <body class="bg-background text-on-surface font-body-md min-h-screen selection:bg-primary/30">
 <noscript>
   <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#101319;color:#e1e2ea;font-family:sans-serif;text-align:center;padding:2rem;">
@@ -85,7 +69,7 @@
 
     <!-- Right Pane: Auth Form -->
     <section class="w-full md:w-1/2 flex items-center justify-center p-4 md:p-10 bg-surface z-10">
-        <div class="w-full max-w-[400px] glass-panel p-6 md:p-8 rounded-2xl relative">
+        <div class="auth-form-card glass-panel p-6 md:p-8 rounded-2xl relative">
             <!-- Brand Anchor -->
             <div class="flex justify-center mb-5">
                 <div class="font-display-lg text-[18px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary">
@@ -152,9 +136,7 @@
                     <div class="ds-input-group">
                         <i class="fi fi-rr-envelope ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
                         <input class="auth-field w-full ds-input with-icon pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required aria-describedby="email-help email-error" aria-invalid="false"/>
-=======
 
-<body>
 
     <!-- MAIN WRAPPER -->
 
@@ -167,8 +149,6 @@
             <!-- LEFT PANEL -->
 
             <section class="left-pane">
-
-                <canvas id="particle-canvas"></canvas>
 
                 <div class="hero-content">
 
@@ -225,7 +205,6 @@
                             Story Spark AI
                         </div>
 
->>>>>>> main
                     </div>
 
                     <!-- HEADER -->
@@ -353,223 +332,32 @@
                         <div class="auth-divider-line"></div>
 
                     </div>
-
-                    <!-- FORM -->
-
-                    <form
-                        class="auth-form"
-                        id="auth-form"
-                        novalidate
-                    >
-
-                        <div class="auth-fields">
-
-                            <!-- NAME -->
-
-                            <div
-                                class="hidden"
-                                id="signup-fields"
-                            >
-
-                                <label
-                                    class="ds-label"
-                                    for="name-field"
-                                >
-                                    Full Name
-                                </label>
-
-                                <div class="ds-input-group">
-
-                                    <i
-                                        class="fi fi-rr-user ds-input-icon"
-                                    ></i>
-
-                                    <input
-                                        type="text"
-                                        id="name-field"
-                                        placeholder="Alex Spark"
-                                        autocomplete="name"
-                                    />
-
-                                </div>
-
-                            </div>
-
-                            <!-- EMAIL -->
-
-                            <div>
-
-                                <label
-                                    class="ds-label"
-                                    for="email-field"
-                                >
-                                    Email Address
-                                </label>
-
-                                <div class="ds-input-group">
-
-                                    <i
-                                        class="fi fi-rr-envelope ds-input-icon"
-                                    ></i>
-
-                                    <input
-                                        type="email"
-                                        id="email-field"
-                                        placeholder="name@storyspark.ai"
-                                        autocomplete="email"
-                                        required
-                                    />
-
-                                </div>
-
-                            </div>
-
-                            <!-- PASSWORD -->
-
-                            <div>
-
-                                <div
-                                    style="
-                                        display:flex;
-                                        justify-content:space-between;
-                                        align-items:center;
-                                        margin-bottom:10px;
-                                    "
-                                >
-
-                                    <label
-                                        class="ds-label"
-                                        for="password-field"
-                                        style="margin:0;"
-                                    >
-                                        Password
-                                    </label>
-
-                                    <a
-                                        id="forgot-password-link"
-                                        style="
-                                            font-size:12px;
-                                            color:#8b5cf6;
-                                            cursor:pointer;
-                                            font-weight:600;
-                                        "
-                                    >
-                                        Forgot?
-                                    </a>
-
-                                </div>
-
-                                <div class="ds-input-group">
-
-                                    <i
-                                        class="fi fi-rr-lock ds-input-icon"
-                                    ></i>
-
-                                    <input
-                                        id="password-field"
-                                        placeholder="••••••••"
-                                        type="password"
-                                        autocomplete="current-password"
-                                        required
-                                    />
-
-                                    <button
-                                        onclick="togglePasswordVisibility()"
-                                        type="button"
-                                        aria-label="Toggle password visibility"
-                                        style="
-                                            position:absolute;
-                                            right:18px;
-                                            top:50%;
-                                            transform:translateY(-50%);
-                                            background:none;
-                                            border:none;
-                                            color:rgba(255,255,255,.5);
-                                            cursor:pointer;
-                                        "
-                                    >
-
-                                        <i
-                                            class="fi fi-rr-eye-crossed"
-                                            id="eye-icon"
-                                        ></i>
-
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <!-- TERMS -->
-
-                        <div class="auth-terms">
-
-                            <input
-                                id="terms-checkbox"
-                                type="checkbox"
-                            >
-
-                            <div class="auth-terms-text">
-
-                                I agree to the
-
-                                <a onclick="openLegalModal('terms')">
-                                    Terms
-                                </a>
-
-                                and
-
-                                <a onclick="openLegalModal('privacy')">
-                                    Privacy Policy
-                                </a>
-
-                            </div>
-
-                        </div>
-
-                        <!-- BUTTON -->
-
-                        <div class="auth-actions">
-
-                            <button
-                                class="ds-btn-submit"
-                                id="submit-btn"
-                                type="submit"
-                            >
-
-                                <span
-                                    class="btn-spinner"
-                                    id="btn-spinner"
-                                ></span>
-
-                                <span
-                                    class="btn-label"
-                                    id="btn-label"
-                                >
-                                    Create Account
-                                </span>
-
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                    <!-- FOOTER -->
-
-                    <div
-                        class="auth-footer"
-                        id="nav-toggle"
-                    >
-
-                        Already have an account?
-
-                        <a href="login.html">
-                            Log in
-                        </a>
-
+                    <div class="ds-meter" aria-hidden="true"><div class="ds-meter-bar" id="password-meter-bar"></div></div>
+                    <p class="ds-help" id="password-help">Use 8+ characters with a mix of letters and numbers.</p>
+                    <div id="password-checklist" class="mt-3 space-y-1 text-sm">
+                        <p id="rule-length" class="text-red-400">✗ At least 8 characters</p>
+                        <p id="rule-upper" class="text-red-400">✗ One uppercase letter</p>
+                        <p id="rule-lower" class="text-red-400">✗ One lowercase letter</p>
+                        <p id="rule-number" class="text-red-400">✗ One number</p>
+                        <p id="rule-special" class="text-red-400">✗ One special character</p>
+                    </div>
+                    <p class="ds-help" id="password-strength"></p>
+                    <p class="ds-error" id="password-error" role="alert" aria-live="polite"></p>
+                    <p 
+                 id="signup-caps-lock-warning" 
+                 class="hidden text-yellow-400 text-sm mt-2"
+                 >
+                 Caps Lock is ON
+                </p>
+                </div>
+                <div class="ds-field">
+                    <label class="block text-label-caps text-on-surface-variant mb-2" for="confirm-password-field">CONFIRM PASSWORD</label>
+                    <div class="ds-input-group has-action">
+                        <i class="fi fi-rr-lock ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
+                        <input class="w-full ds-input with-icon pl-11 pr-11" id="confirm-password-field" name="confirmPassword" autocomplete="new-password" placeholder="Re-enter your password" type="password" required aria-describedby="confirm-password-help confirm-password-error confirm-password-feedback" aria-invalid="false"/>
+                        <button class="ds-input-action flex items-center justify-center" onclick="toggleConfirmPasswordVisibility()" type="button" aria-label="Toggle confirm password visibility">
+                            <i class="fi fi-rr-eye-crossed text-[16px]" id="confirm-eye-icon"></i>
+                        </button>
                     </div>
 
                 </div>

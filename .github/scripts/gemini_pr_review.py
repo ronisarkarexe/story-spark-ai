@@ -10,15 +10,15 @@ GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 EVENT_PATH = os.environ.get("GITHUB_EVENT_PATH")
 
 if not GEMINI_API_KEY:
-    print("Error: GEMINI_API_KEY environment variable is not set.")
+    print("Error: GEMINI_API_KEY not set.")
     sys.exit(1)
 
 if not GITHUB_TOKEN:
-    print("Error: GITHUB_TOKEN environment variable is not set.")
+    print("Error: GITHUB_TOKEN not set.")
     sys.exit(1)
 
 if not EVENT_PATH or not os.path.exists(EVENT_PATH):
-    print("Error: GITHUB_EVENT_PATH is not set or file does not exist.")
+    print("Error: GITHUB_EVENT_PATH not set or file missing.")
     sys.exit(1)
 
 # Read GITHUB_EVENT_PATH JSON
@@ -29,7 +29,7 @@ pr_number = event_data.get("pull_request", {}).get("number")
 repo_name = event_data.get("repository", {}).get("full_name")
 
 if not pr_number or not repo_name:
-    print("Error: Could not extract PR number or repository name from event JSON.")
+    print("Error: could not extract PR number or repository name from event JSON.")
     sys.exit(1)
 
 # Function to perform GitHub API calls
@@ -160,7 +160,7 @@ except Exception as e:
 # 5. Extract and apply auto-fixes if present
 comment_body_text = gemini_response
 if "<auto_fixes>" in gemini_response and "</auto_fixes>" in gemini_response:
-    print("Auto-fixes found! Applying replacements...")
+    print("Auto-fixes found; applying replacements...")
     parts = gemini_response.split("<auto_fixes>")
     comment_body_text = parts[0]
     if "</auto_fixes>" in parts[1]:
@@ -190,7 +190,7 @@ if "<auto_fixes>" in gemini_response and "</auto_fixes>" in gemini_response:
                     print(f"Successfully applied auto-fix to {file_path}")
                 else:
                     # Also try matching without strict whitespace differences
-                    print(f"Warning: Find block not found in {file_path}")
+                    print(f"Warning: find block not found in {file_path}")
     except Exception as e:
         print(f"Failed to apply auto-fixes: {e}")
 
