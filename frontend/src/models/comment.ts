@@ -11,6 +11,7 @@ interface Comment {
   comment: string;
   parentCommentId: string | null;
   likes: string[];
+  helpful?: string[];
   createdAt: string;
   updatedAt: string;
   replies: Comment[];

@@ -56,10 +56,20 @@ const updateUser = z.object({
               twitter: z.string().max(200).optional(),
               linkedin: z.string().max(200).optional(),
               instagram: z.string().max(200).optional(),
+              github: z.string().max(200).optional(),
+              discord: z.string().max(200).optional(),
             })
             .partial()
             .strict()
             .optional(),
+        })
+        .partial()
+        .strict()
+        .optional(),
+      writingGoals: z
+        .object({
+          dailyWordCount: z.number().min(0).optional(),
+          weeklyWordCount: z.number().min(0).optional(),
         })
         .partial()
         .strict()

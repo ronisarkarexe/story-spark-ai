@@ -135,8 +135,6 @@ const ForgotPasswordComponent = () => {
           "Failed to request OTP. Please ensure email is registered.",
         ),
       );
-      console.log("error: ", error);
-    } finally {
       setIsBusy(false);
     }
   };
@@ -172,9 +170,7 @@ const ForgotPasswordComponent = () => {
           "OTP verification failed. Please check the code and try again.",
         ),
       );
-      console.log("error: ", error);
     } finally {
-      setIsBusy(false);
     }
   };
 
@@ -210,7 +206,6 @@ const ForgotPasswordComponent = () => {
       toast.error(
         getApiErrorMessage(error, "Password reset failed. Please restart the process."),
       );
-      console.log("error: ", error);
     } finally {
       setIsBusy(false);
     }
@@ -240,7 +235,6 @@ const ForgotPasswordComponent = () => {
       }
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, "Failed to resend OTP. Please try again."));
-      console.log("resend error: ", error);
     } finally {
       setIsBusy(false);
     }

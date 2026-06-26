@@ -2,6 +2,11 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import config from "../../../config";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
+import {
+  parseAIResponseOrThrow,
+  PlotHoleAnalysisResponseSchema,
+  type PlotHoleAnalysisResponse,
+} from "../ai";
 
 const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
 
@@ -17,13 +22,13 @@ const generationConfig = {
   responseMimeType: "application/json",
 };
 
-interface IPlotHole {
+export interface IPlotHole {
   inconsistency: string;
   context: string;
   suggested_fix: string;
 }
 
-interface IAnalysisResponse {
+export interface IAnalysisResponse {
   plot_holes: IPlotHole[];
 }
 
@@ -60,23 +65,14 @@ If the story is perfectly logical and has zero plot holes or inconsistencies, re
     const response = await chatSession.sendMessage(prompt);
     const text = response.response.text();
 
-    let result: IAnalysisResponse;
-    try {
-      result = JSON.parse(text);
-    } catch (parseError: unknown) {
-      const errorMsg = parseError instanceof Error ? parseError.message : String(parseError);
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        `AI returned invalid JSON for plot hole analysis: ${errorMsg}`
-      );
-    }
-
-    if (!result || !Array.isArray(result.plot_holes)) {
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        "AI response does not contain the expected 'plot_holes' array structure."
-      );
-    }
+    const result = parseAIResponseOrThrow<PlotHoleAnalysisResponse>(
+      text,
+      PlotHoleAnalysisResponseSchema,
+      {
+        label: "Gemini plot hole analysis",
+        errorMessage: "AI returned invalid JSON for plot hole analysis",
+      }
+    );
 
     return result;
   } catch (error: unknown) {
