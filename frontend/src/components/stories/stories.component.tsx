@@ -1220,6 +1220,24 @@ const [, setShowRemix] = useState<boolean>(false);
     }
   }, [isGenerateDisabled]);
 
+  const handleClearPrompt = useCallback(() => {
+    setTextareaValue("");
+    setSelectedPrompt("");
+
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      // ignore storage errors
+    }
+
+    setValue("prompt", "");
+
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }, [setValue]);
+
+
   const handlePublishShortcut = useCallback(() => {
     const publishBtn = document.getElementById("publish-story-btn");
     publishBtn?.click();
@@ -2306,7 +2324,6 @@ onKeyDown={(e) => {
         onSelectPrompt={(prompt) => {
           setTextareaValue(prompt);
           setValue("prompt", prompt);
-          // Optionally focus the prompt editor for instant reuse
           requestAnimationFrame(() => inputRef.current?.focus());
         }}
         onRemovePrompt={removePrompt}
@@ -2316,6 +2333,7 @@ onKeyDown={(e) => {
         text={recentPromptsText}
         onPromptUse={recordPromptUse}
       />
+
 
       {showHelpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
