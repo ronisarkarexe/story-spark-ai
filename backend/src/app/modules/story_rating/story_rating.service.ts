@@ -5,6 +5,45 @@ import httpStatus from "http-status";
 import { Post } from "../post/post.model";
 
 /**
+ * Apply an incremental rating-stat delta to the Post document atomically.
+ *
+ * @param storyId       Post._id as string
+ * @param totalDelta    +1 for new rating, -1 for deletion, 0 for update
+ * @param ratingDelta   delta to add to the running ratingSum field
+ */
+async function syncPostStats(
+  storyId: string,
+  totalDelta: number,
+  ratingDelta: number
+): Promise<void> {
+  // Use an aggregation-pipeline update so averageRating can be computed from
+  // the post-mutation totalRatings / ratingSum in a single round-trip.
+  await Post.findByIdAndUpdate(storyId, [
+    {
+      $set: {
+        totalRatings: { $add: ["$totalRatings", totalDelta] },
+        ratingSum: {
+          $add: [{ $ifNull: ["$ratingSum", 0] }, ratingDelta],
+        },
+      },
+    },
+    {
+      $set: {
+        averageRating: {
+          $cond: {
+            if: { $gt: ["$totalRatings", 0] },
+            then: {
+              $round: [{ $divide: ["$ratingSum", "$totalRatings"] }, 1],
+            },
+            else: 0,
+          },
+        },
+      },
+    },
+  ]);
+}
+
+/**
  * Upserts a rating for a story by a user
  */
 const rateStory = async (
@@ -29,17 +68,18 @@ const rateStory = async (
     userId: new Types.ObjectId(userId),
     storyId: new Types.ObjectId(storyId),
   };
+  const existing = await StoryRating.findOne(filter, { rating: 1 }).lean();
   const update = { rating, review };
   const options = { new: true, upsert: true, setDefaultsOnInsert: true };
-
   const result = await StoryRating.findOneAndUpdate(filter, update, options);
 
-  // Sync metrics to Post model
-  const stats = await getAverageRating(storyId);
-  await Post.findByIdAndUpdate(storyId, {
-    averageRating: stats.averageRating,
-    totalRatings: stats.totalRatings,
-  });
+  if (existing) {
+    // Rating updated — totalRatings unchanged, adjust ratingSum by the diff.
+    await syncPostStats(storyId, 0, rating - existing.rating);
+  } else {
+    // New rating inserted — increment totalRatings and ratingSum by full value.
+    await syncPostStats(storyId, 1, rating);
+  }
 
   return result;
 };
@@ -133,12 +173,8 @@ const deleteRating = async (userId: string, ratingId: string) => {
 
   await StoryRating.findByIdAndDelete(ratingId);
 
-  // Sync metrics to Post model
-  const stats = await getAverageRating(rating.storyId.toString());
-  await Post.findByIdAndUpdate(rating.storyId, {
-    averageRating: stats.averageRating,
-    totalRatings: stats.totalRatings,
-  });
+  // Atomically decrement totalRatings and ratingSum by the deleted rating value.
+  await syncPostStats(rating.storyId.toString(), -1, -rating.rating);
 
   return { message: "Rating deleted successfully" };
 };
