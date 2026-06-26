@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+﻿import React, { useEffect, useState, useRef, useMemo } from "react";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
@@ -225,9 +225,12 @@ const downloadBlob = (blob: Blob, fileName: string) => {
   document.body.appendChild(link);
   link.click();
   link.remove();
+};
 
-    wordCursor += wordsInSentence;
-  });
+interface IRelatedStoriesComponentProps {
+  posts: Array<{ _id: string; title: string }>;
+  currentPostId: string;
+}
 
 export const RelatedStoriesComponent: React.FC<IRelatedStoriesComponentProps> = ({ posts, currentPostId }) => {
   const navigate = useNavigate();

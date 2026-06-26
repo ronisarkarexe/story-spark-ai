@@ -127,6 +127,19 @@ describe('StoriesViewComponent - Core Rendering', () => {
     expect(screen.getByText('The Great AI Adventure')).toBeInTheDocument();
     expect(screen.getByText('Once upon a time in a digital world...')).toBeInTheDocument();
   });
+
+  it('shows live word count and estimated reading time for the selected story', () => {
+    render(
+      <StoriesViewComponent
+        stories={mockStories}
+        isLogin={true}
+        setStories={mockSetStories}
+      />
+    );
+
+    expect(screen.getByText('8 words')).toBeInTheDocument();
+    expect(screen.getByText('1 min read')).toBeInTheDocument();
+  });
 });
 
 describe('StoriesViewComponent - Alternate Endings Generation', () => {
