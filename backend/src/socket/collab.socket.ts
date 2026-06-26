@@ -31,7 +31,17 @@ function getColorForUser(index: number): string {
   return COLORS[index % COLORS.length];
 }
 
-const activeAiGenerations = new Set<string>();
+async function acquireAiLock(roomId: string) {
+  return CollabRoom.findOneAndUpdate(
+    { roomId, isAiGenerating: { $ne: true } }, // only matches when NOT locked
+    { $set: { isAiGenerating: true } },
+    { new: true }                               // return the updated document
+  );
+}
+
+async function releaseAiLock(roomId: string) {
+  await CollabRoom.updateOne({ roomId }, { $set: { isAiGenerating: false } });
+}
 
 export const setupCollabSocket = (io: Server) => {
   const collabNamespace = io.of("/collab");
@@ -145,13 +155,6 @@ export const setupCollabSocket = (io: Server) => {
     // User adds text to story
     socket.on("collab:add_text", async ({ roomId, text }) => {
       try {
-        if (activeAiGenerations.has(roomId)) {
-          socket.emit("collab:error", {
-            message: "AI is currently writing. Please wait until it completes.",
-          });
-          return;
-        }
-
         const userId = socket.data.userId;
         const room = await CollabRoom.findOne({ roomId });
         if (!room) return;
@@ -242,55 +245,55 @@ export const setupCollabSocket = (io: Server) => {
     // AI continues the story
     socket.on("collab:ai_continue", async ({ roomId }) => {
       try {
-        if (activeAiGenerations.has(roomId)) {
-          socket.emit("collab:error", {
-            message: "AI is already generating a continuation for this room.",
-          });
-          return;
-        }
-
-        const room = await CollabRoom.findOne({ roomId });
-        if (!room) return;
-
         const userId = socket.data.userId;
         if (!userId) {
           socket.emit("collab:error", { message: "Unauthorized" });
           return;
         }
 
-        const participant = room.participants.find((p) => p.userId === userId);
-        if (!participant) {
-          socket.emit("collab:error", {
-            message: "You are not a participant of this room",
-          });
-          return;
-        }
-
-        // Check if AI is already generating
-        if (room.isAiGenerating) {
-          socket.emit("collab:error", {
-            message: "AI is already generating. Please wait for it to finish.",
-          });
-          return;
-        }
-
+        // Validate user and participant before touching the lock.
         const user = await User.findById(userId);
         if (!user) {
           socket.emit("collab:error", { message: "User not found!" });
           return;
         }
 
-        activeAiGenerations.add(roomId);
+        // ── Atomic distributed lock ──────────────────────────────────────────
+        // acquireAiLock does a single findOneAndUpdate with { isAiGenerating: {$ne:true} }
+        // as the filter. MongoDB's document-level write lock ensures only one
+        // caller across all server processes can win the CAS for a given roomId.
+        const lockedRoom = await acquireAiLock(roomId);
+        if (!lockedRoom) {
+          // Either the room doesn't exist or the lock is already held.
+          const exists = await CollabRoom.exists({ roomId });
+          socket.emit("collab:error", {
+            message: exists
+              ? "AI is already generating a continuation for this room."
+              : "Room not found.",
+          });
+          return;
+        }
+        // From this point on, isAiGenerating=true is persisted in MongoDB.
+        // releaseAiLock() in finally guarantees it is cleared even if the
+        // process crashes and restarts — the next process reads false from DB.
+        // ────────────────────────────────────────────────────────────────────
+
+        const participant = lockedRoom.participants.find((p) => p.userId === userId);
+        if (!participant) {
+          socket.emit("collab:error", {
+            message: "You are not a participant of this room",
+          });
+          await releaseAiLock(roomId);
+          return;
+        }
 
         try {
           await reserveUserQuota(user.email);
-        } catch (error: any) {
+        } catch (error: unknown) {
           const errorMsg =
-            error instanceof Error
-              ? error.message
-              : "Monthly request limit exceeded!";
+            error instanceof Error ? error.message : "Monthly request limit exceeded!";
           socket.emit("collab:error", { message: errorMsg });
-          activeAiGenerations.delete(roomId);
+          await releaseAiLock(roomId);
           return;
         }
 
@@ -298,14 +301,14 @@ export const setupCollabSocket = (io: Server) => {
 
         try {
           await runWithQuotaCleanup(guard, async () => {
-            // Set AI generating flag to true and remember current story length
-            room.isAiGenerating = true;
-            const initialStoryLength = room.story.length;
-            await room.save();
+            // Snapshot story length at the moment the lock was acquired so the
+            // AI chunk is inserted at the correct position even if users add
+            // text while the AI model is running.
+            const initialStoryLength = lockedRoom.story.length;
 
             collabNamespace.to(roomId).emit("collab:ai_thinking", { roomId });
 
-            const storyContext = room.story
+            const storyContext = lockedRoom.story
               .map((chunk) => chunk.text)
               .filter(Boolean)
               .join("\n");
@@ -320,7 +323,6 @@ export const setupCollabSocket = (io: Server) => {
             });
 
             const continuationText = result?.continuation?.trim();
-
             if (!continuationText) {
               throw new Error("Empty response from AI");
             }
@@ -334,12 +336,14 @@ export const setupCollabSocket = (io: Server) => {
               timestamp: new Date(),
             };
 
+            // Re-fetch to pick up any human edits made during AI generation,
+            // then splice the AI chunk at the original insertion point.
             const latestRoom = await CollabRoom.findOne({ roomId });
             if (latestRoom) {
-              // Insert the AI chunk right after the last chunk that existed when we started the AI call
-              // This ensures the AI's continuation is in the correct context position even if users added text in between
               latestRoom.story.splice(initialStoryLength, 0, aiChunk);
-              latestRoom.isAiGenerating = false;
+              // isAiGenerating is reset by releaseAiLock() in finally; do not
+              // double-write it here so the finally path remains the single
+              // source of truth for lock release.
               await latestRoom.save();
 
               collabNamespace.to(roomId).emit("collab:story_updated", {
@@ -354,18 +358,10 @@ export const setupCollabSocket = (io: Server) => {
             message: "AI continuation failed. Please try again.",
           });
         } finally {
-          // Make sure we unset the flag even if there's an error
-          const roomToUpdate = await CollabRoom.findOne({ roomId });
-          if (roomToUpdate && roomToUpdate.isAiGenerating) {
-            roomToUpdate.isAiGenerating = false;
-            await roomToUpdate.save();
-          }
-
-          activeAiGenerations.delete(roomId);
-
-          collabNamespace.to(roomId).emit("collab:user_stop_typing", {
-            userId: "ai",
-          });
+          // Unconditional single-query release — works across processes and
+          // survives partial failures in the generation path above.
+          await releaseAiLock(roomId);
+          collabNamespace.to(roomId).emit("collab:user_stop_typing", { userId: "ai" });
         }
       } catch (err) {
         logger.error("Error in AI continuation process", err);
