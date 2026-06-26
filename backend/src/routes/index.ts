@@ -28,7 +28,9 @@ import { PlotHoleRouter } from "../app/modules/plot_hole_detector/plot_hole.rout
 import { StoryRatingRouter } from "../app/modules/story_rating/story_rating.router";
 import PromptAnalysisRouter from "../app/modules/prompt_analysis/prompt_analysis.router";
 import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
+import { UsageRouter } from "../app/modules/usage/usage.router";
 import characterRouter from "./character.routes";
+
 
 const router = express.Router();
 
@@ -104,6 +106,10 @@ const modules = [
   {
     path: "/characters",
     router: characterRouter,
+  },
+  {
+    path: "/usage",
+    router: UsageRouter,
   },
 ];
 
