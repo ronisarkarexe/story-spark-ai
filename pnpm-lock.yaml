@@ -273,7 +273,7 @@ importers:
         version: 4.0.0
       lucide-react:
         specifier: ^1.16.0
-        version: 1.21.0(react@19.2.7)
+        version: 1.16.0(react@19.2.6)
       quill-cursors:
         specifier: ^4.0.2
         version: 4.3.0
@@ -4606,6 +4606,9 @@ packages:
     resolution: {integrity: sha512-TcdjPibTksa1NQximqep2r17ISRiNE9fwlfbg3F8ANdvP5/yrFTew86VcO//jk4QTaMlbjypPBq76HN2zaKfZQ==}
     engines: {node: '>=4'}
 
+  invariant@2.2.4:
+    resolution: {integrity: sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==}
+
   iobuffer@5.4.0:
     resolution: {integrity: sha512-DRebOWuqDvxunfkNJAlc3IzWIPD5xVxwUNbHr7xKB8E6aLJxIPfNX3CoMJghcFjpv6RWQsrcJbghtEwSPoJqMA==}
 
@@ -5974,6 +5977,9 @@ packages:
   parchment@3.0.0:
     resolution: {integrity: sha512-HUrJFQ/StvgmXRcQ1ftY6VEZUq3jA2t9ncFN4F84J/vN0/FPpQF+8FKXb3l6fLces6q0uOHj6NJn+2xvZnxO6A==}
 
+  parchment@3.0.0:
+    resolution: {integrity: sha512-HUrJFQ/StvgmXRcQ1ftY6VEZUq3jA2t9ncFN4F84J/vN0/FPpQF+8FKXb3l6fLces6q0uOHj6NJn+2xvZnxO6A==}
+
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
@@ -6219,8 +6225,16 @@ packages:
     peerDependencies:
       react: ^19.2.7
 
-  react-hook-form@7.80.0:
-    resolution: {integrity: sha512-4P+fk6oXsxY+6xSj7Euhc2sumQD8zQqCuVHoJwoyp9EchP+IUW9OESB7uHFJOKsIBQ4MQqYE84INJFqUCYNoOg==}
+  react-fast-compare@3.2.2:
+    resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
+
+  react-helmet-async@2.0.5:
+    resolution: {integrity: sha512-rYUYHeus+i27MvFE+Jaa4WsyBKGkL6qVgbJvSBoX8mbsWoABJXdEO0bZyi0F6i+4f0NuIb8AvqPMj3iXFHkMwg==}
+    peerDependencies:
+      react: ^16.6.0 || ^17.0.0 || ^18.0.0
+
+  react-hook-form@7.76.1:
+    resolution: {integrity: sha512-rYM7tPiWlu3nZchkR/ex7piyzui2vFPyaLnXnI/RnblB/L4qfMmyses8llJVtF1NpE9WBBsJlGtcSZzPCXW1qQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -6553,6 +6567,9 @@ packages:
 
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
+
+  shallowequal@1.1.0:
+    resolution: {integrity: sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ==}
 
   shebang-command@1.2.0:
     resolution: {integrity: sha512-EV3L1+UQWGor21OmnvojK36mhg+TyIKDh3iFBKBohr5xeXIhNBcx8oWdgkTEEQ+BEFFYdLRuqMfd5L84N1V5Vg==}
@@ -12589,6 +12606,10 @@ snapshots:
       p-is-promise: 1.1.0
     optional: true
 
+  invariant@2.2.4:
+    dependencies:
+      loose-envify: 1.4.0
+
   iobuffer@5.4.0: {}
 
   ioredis@5.11.1:
@@ -13876,6 +13897,9 @@ snapshots:
   napi-macros@2.0.0:
     optional: true
 
+  napi-macros@2.0.0:
+    optional: true
+
   natural-compare@1.4.0: {}
 
   negotiator@0.6.3: {}
@@ -14135,6 +14159,8 @@ snapshots:
 
   parchment@3.0.0: {}
 
+  parchment@3.0.0: {}
+
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
@@ -14363,7 +14389,16 @@ snapshots:
       react: 19.2.7
       scheduler: 0.27.0
 
-  react-hook-form@7.80.0(react@19.2.7):
+  react-fast-compare@3.2.2: {}
+
+  react-helmet-async@2.0.5(react@19.2.6):
+    dependencies:
+      invariant: 2.2.4
+      react: 19.2.6
+      react-fast-compare: 3.2.2
+      shallowequal: 1.1.0
+
+  react-hook-form@7.76.1(react@19.2.6):
     dependencies:
       react: 19.2.7
 
@@ -14746,6 +14781,8 @@ snapshots:
   setimmediate@1.0.5: {}
 
   setprototypeof@1.2.0: {}
+
+  shallowequal@1.1.0: {}
 
   shebang-command@1.2.0:
     dependencies:
@@ -15974,7 +16011,7 @@ snapshots:
       async-limiter: 1.0.1
     optional: true
 
-  ws@8.21.0: {}
+  ws@8.20.1: {}
 
   xml-js@1.6.11:
     dependencies:
