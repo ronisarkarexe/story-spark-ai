@@ -6,13 +6,15 @@ import { USER_ROLE } from "./constants/role";
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import LoadingAnimation from "./components/loading/loading.component";
-import ProtectedRoute from "./components/ProtectedRoute";
-import ScrollToTopButton from "./components/ScrollToTopButton";
-import ScrollToTop from "./components/ScrollToTop";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import NotFoundComponent from "./components/not-found.component";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ScrollToTopButton from "./components/ScrollToTopButton";
+import PageTitleUpdater from "./components/PageTitleUpdater";
+import ResourcesListComponent from "./components/community/resources_list.component";
+import SettingComponent from "./components/dashboard/settings/settings.component";
 
 // Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { ArrowUp } from "lucide-react";
 
 const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsVisible(window.scrollY > 200);
+      setIsVisible(window.scrollY > 300);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -46,7 +47,7 @@ const ScrollToTopButton = () => {
         zIndex: 9999,
       }}
     >
-      ↑
+        <ArrowUp size={22} strokeWidth={2.5} />
     </button>
   );
 };
