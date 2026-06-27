@@ -2,6 +2,7 @@ import config from "../config";
 
 const OPENAI_IMAGE_GENERATION_URL = "https://api.openai.com/v1/images/generations";
 const IMAGE_REQUEST_TIMEOUT_MS = 45000;
+const IMAGE_DOWNLOAD_TIMEOUT_MS = 20000;
 
 type OpenAIImageResponse = {
   data?: Array<{
@@ -20,6 +21,49 @@ const getApiKey = (): string => {
     config.openai_key ||
     ""
   ).trim();
+};
+const persistTemporaryImageUrl = async (
+  temporaryUrl: string,
+  signal?: AbortSignal
+): Promise<string | null> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    IMAGE_DOWNLOAD_TIMEOUT_MS
+  );
+
+  let abortHandler: (() => void) | null = null;
+  if (signal) {
+    if (signal.aborted) {
+      clearTimeout(timeoutId);
+      controller.abort();
+      return null;
+    }
+    abortHandler = () => {
+      controller.abort();
+    };
+    signal.addEventListener("abort", abortHandler);
+  }
+
+  try {
+    const response = await fetch(temporaryUrl, { signal: controller.signal });
+    if (!response.ok) {
+      return null;
+    }
+
+    const contentType = response.headers.get("content-type") || "image/png";
+    const arrayBuffer = await response.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+
+    return `data:${contentType};base64,${base64}`;
+  } catch (error) {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+    if (signal && abortHandler) {
+      signal.removeEventListener("abort", abortHandler);
+    }
+  }
 };
 
 const generateWithOpenAI = async (
@@ -73,8 +117,11 @@ const generateWithOpenAI = async (
 
     const data = (await response.json()) as OpenAIImageResponse;
     const image = data.data?.[0];
+
     if (image?.url) {
-      return image.url;
+      // Fetch and re-persist immediately — OpenAI's `url` is temporary by
+      // design and will eventually stop working if saved as-is (#4284).
+      return await persistTemporaryImageUrl(image.url, signal);
     }
 
     if (image?.b64_json) {
@@ -108,4 +155,3 @@ export const generateStoryboardImage = async (
 
   return null;
 };
-
