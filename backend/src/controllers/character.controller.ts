@@ -4,6 +4,28 @@ import { Character } from '../models/Character.model';
 export const createCharacter = async (req: Request, res: Response) => {
   try {
     const { name, age, personality, appearance, background, traits, notes } = req.body;
+    
+    if (!name || typeof name !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required"
+      });
+    }
+
+    if (!appearance || typeof appearance !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Appearance is required"
+      });
+    }
+
+    if (personality && !Array.isArray(personality)) {
+      return res.status(400).json({
+        success: false,
+        message: "Personality must be an array"
+      });
+    }
+
     const userId = req.user?.id;
 
     if (!userId) {
