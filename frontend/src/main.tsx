@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 // import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
-import { store } from "./redux/store.ts";
+import { store } from "./redux/store";
 import { ThemeProvider } from "./components/theme/theme.context";
 import "./index.css";
 

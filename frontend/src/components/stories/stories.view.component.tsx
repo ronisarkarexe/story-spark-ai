@@ -14,29 +14,16 @@ import { useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setStory } from "../../redux/slices/storySlice";
 import ContinueStoryButton from "../story/ContinueStoryButton";
-
-const isSafeUrl = (url: string | undefined): boolean => {
-  if (!url) return false;
-  const lower = url.trim().toLowerCase();
-  return lower.startsWith("/") || lower.startsWith("http://") || lower.startsWith("https://");
-};
+import DOMPurify from "dompurify";
 
 const getSafeImageSrc = (url: string | undefined): string => {
-  if (!url || !isSafeUrl(url)) {
-    return "";
+  if (!url) return "";
+  const sanitized = DOMPurify.sanitize(url).trim();
+  const lower = sanitized.toLowerCase();
+  if (lower.startsWith("/") || lower.startsWith("http://") || lower.startsWith("https://")) {
+    return sanitized;
   }
-
-  const trimmedUrl = url.trim();
-  if (trimmedUrl.startsWith("/")) {
-    return trimmedUrl;
-  }
-
-  try {
-    const parsedUrl = new URL(trimmedUrl);
-    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:" ? parsedUrl.toString() : "";
-  } catch {
-    return "";
-  }
+  return "";
 };
 
 import {
@@ -962,8 +949,7 @@ if (isLoading) {
             </div>
 
             {/* Alternate Endings Section */}
-            {selectedStory && (
-              <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
+            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
                 <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
                 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -1095,7 +1081,6 @@ if (isLoading) {
                   </div>
                 )}
               </div>
-            )}
           </div>
         </div>
 
@@ -1142,7 +1127,7 @@ if (isLoading) {
           </div>
         </div>
       </div>
-      {showRemix && selectedStory && (
+      {showRemix && (
         <StoryRemix
           story={selectedStory}
           isLogin={isLogin}
@@ -1154,7 +1139,7 @@ if (isLoading) {
           onClose={() => setShowRemix(false)}
         />
       )}
-      {showWorldMap && selectedStory && (
+      {showWorldMap && (
         <StoryWorldMap
           story={selectedStory.content}
           title={selectedStory.title}
