@@ -5,6 +5,7 @@ import { buildStoryPrompt, PromptOptions } from "../utils/promptBuilder";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Anthropic from "@anthropic-ai/sdk";
+import { aiLimit } from "../utils/aiLimiter";
 
 let openai: OpenAI | null = null;
 let genAI: GoogleGenerativeAI | null = null;
@@ -59,18 +60,18 @@ interface AIResponse {
 
 async function generateWithOpenAI(systemPrompt: string, userPrompt: string): Promise<string> {
   const client = getOpenAIClient();
-  const response = await client.chat.completions.create(
+  const response = await aiLimit(() => client.chat.completions.create(
     {
       model: OPENAI_MODEL,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
       ],
-      response_format: { type: "json_object" }, // Enforce structured JSON output
+      response_format: { type: "json_object" },
       max_tokens: 1500,
     },
     { timeout: 60000 }
-  );
+  ));
 
   const text = response.choices[0]?.message?.content;
   if (!text) throw new Error("OpenAI returned an empty response");
@@ -81,15 +82,15 @@ async function generateWithOpenAI(systemPrompt: string, userPrompt: string): Pro
 
 async function generateWithAnthropic(systemPrompt: string, userPrompt: string): Promise<string> {
   const client = getAnthropicClient();
-  const response = await client.messages.create(
+  const response = await aiLimit(() => client.messages.create(
     {
       model: CLAUDE_MODEL,
-      system: systemPrompt, // Anthropic handles system instructions top-level
+      system: systemPrompt,
       max_tokens: 1500,
       messages: [{ role: "user", content: userPrompt }],
     },
     { timeout: 60000 }
-  );
+  ));
 
   const textBlock = response.content.find((block) => block.type === "text");
   const text = textBlock && "text" in textBlock ? textBlock.text : "";
@@ -108,12 +109,12 @@ async function generateWithGemini(systemPrompt: string, userPrompt: string): Pro
     systemInstruction: systemPrompt 
   });
   
-  const result = await model.generateContent({
+  const result = await aiLimit(() => model.generateContent({
     contents: [{ role: "user", parts: [{ text: userPrompt }] }],
     generationConfig: {
-      responseMimeType: "application/json", // Enforce structured JSON output
+      responseMimeType: "application/json",
     }
-  });
+  }));
   
   const text = result.response.text();
   if (!text) throw new Error("Gemini returned an empty response");
