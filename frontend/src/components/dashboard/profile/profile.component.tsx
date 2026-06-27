@@ -11,13 +11,28 @@ import { WriterApplicationForm } from "./writer_application.form";
 import AuthContext from "../../auth.context";
 import { ProfileCompletionIndicator } from "./ProfileCompletionIndicator";
 import { instance } from "../../../helpers/axios/axiosInstance";
+import {
+  useGetWritingStreakQuery,
+  useGetAchievementsQuery,
+} from "../../../redux/apis/gamification.api";
+import StreakCard from "../../StreakCard";
+import AchievementsGrid from "../../AchievementsGrid";
+import { WritingGoalsForm } from "./profile.goals.component";
 
 const ProfileComponent = () => {
   const { data, isLoading } = useGetProfileInfoQuery();
   const [updateProfile] = useUpdateProfileMutation();
   const [loading, setLoading] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<"settings" | "stats" | "goals">("settings");
   const auth = useContext(AuthContext);
+
+  const { data: streakData, isLoading: isStreakLoading } = useGetWritingStreakQuery(undefined, {
+    skip: !data,
+  });
+  const { data: achievementsData, isLoading: isAchievementsLoading } = useGetAchievementsQuery(undefined, {
+    skip: !data,
+  });
 
   const onSave = async (data: Partial<User>) => {
     setLoading(true);
@@ -138,22 +153,114 @@ const ProfileComponent = () => {
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 pb-12">
       {data && (
         <>
-          <ProfileCompletionIndicator
-            name={data.name}
-            bio={data.profile?.bio}
-            avatar={data.profile?.avatar}
-            socialLinks={data.profile?.social}
-          />
+          {/* Tabbed Navigation Bar */}
+          <div className="flex border-b border-slate-200 dark:border-slate-800 mb-2">
+            <button
+              onClick={() => setActiveTab("settings")}
+              className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+                activeTab === "settings"
+                  ? "border-indigo-600 text-indigo-650 dark:text-indigo-400 dark:border-indigo-500"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+              }`}
+            >
+              <i className="fas fa-cog"></i> Settings
+            </button>
+            <button
+              onClick={() => setActiveTab("stats")}
+              className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+                activeTab === "stats"
+                  ? "border-indigo-600 text-indigo-650 dark:text-indigo-400 dark:border-indigo-500"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+              }`}
+            >
+              <i className="fas fa-trophy"></i> Stats & Achievements
+            </button>
+            <button
+              onClick={() => setActiveTab("goals")}
+              className={`px-5 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+                activeTab === "goals"
+                  ? "border-indigo-600 text-indigo-650 dark:text-indigo-400 dark:border-indigo-500"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+              }`}
+            >
+              <i className="fas fa-bullseye"></i> Writing Goals
+            </button>
+          </div>
 
-          <ProfileSettingComponent
-            user={data}
-            onSave={onSave}
-            loading={loading}
-            onDeleteAccount={onDeleteAccount}
-            deleting={deleting}
-          />
-          <ProfileSavedStoriesSection />
-          <WriterApplicationForm user={data} />
+          {/* Conditional Tab Rendering */}
+          {activeTab === "settings" && (
+            <div className="space-y-8 animate-fadeIn">
+              <ProfileCompletionIndicator
+                name={data.name}
+                bio={data.profile?.bio}
+                avatar={data.profile?.avatar}
+                socialLinks={data.profile?.social}
+              />
+
+              <ProfileSettingComponent
+                user={data}
+                onSave={onSave}
+                loading={loading}
+                onDeleteAccount={onDeleteAccount}
+                deleting={deleting}
+              />
+              <ProfileSavedStoriesSection />
+              <WriterApplicationForm user={data} />
+            </div>
+          )}
+
+          {activeTab === "stats" && (
+            <div className="space-y-8 animate-fadeIn">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-1">
+                  <StreakCard streak={streakData} isLoading={isStreakLoading} />
+                </div>
+                <div className="md:col-span-2">
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-6 shadow-md h-full flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
+                        Writing Summary
+                      </h3>
+                      <p className="text-slate-600 dark:text-gray-300 text-sm leading-relaxed mb-6">
+                        Track your progress and activity on Story Spark AI. Publish stories to unlock achievements and increase your writing streak!
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
+                        <p className="text-xs text-slate-550 dark:text-slate-400">Total Stories</p>
+                        <p className="text-2xl font-black text-slate-800 dark:text-white mt-1">
+                          {data.postsCount ?? 0}
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
+                        <p className="text-xs text-slate-550 dark:text-slate-400">Account Type</p>
+                        <p className="text-2xl font-black text-slate-800 dark:text-white mt-1 capitalize">
+                          {data.role}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t border-slate-250 dark:border-slate-800/60 pt-6">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
+                  Unlocked Achievements & Badges
+                </h3>
+                <AchievementsGrid achievements={achievementsData?.achievements} isLoading={isAchievementsLoading} />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "goals" && (
+            <div className="animate-fadeIn">
+              <WritingGoalsForm
+                user={data}
+                onSave={onSave}
+                loading={loading}
+              />
+            </div>
+          )}
         </>
       )}
       <Toaster position="top-right" reverseOrder={false} />

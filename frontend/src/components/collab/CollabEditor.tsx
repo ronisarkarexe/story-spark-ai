@@ -5,6 +5,7 @@ import * as Y from 'yjs';
 import { QuillBinding } from 'y-quill';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { io, Socket } from 'socket.io-client';
+import { Awareness, applyAwarenessUpdate, encodeAwarenessUpdate } from 'y-protocols/awareness';
 import { resolveSocketUrl } from '../../helpers/socket-url';
 
 interface CollabEditorProps {
@@ -18,7 +19,9 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
   const quillRef = useRef<HTMLDivElement>(null);
   const ydocRef = useRef<Y.Doc | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const awarenessRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const quillCursorsRef = useRef<any>(null);
 
   useEffect(() => {
@@ -48,13 +51,13 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     });
     const cursors = quill.getModule('cursors');
     // Store cursors manager reference
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (quillCursorsRef as any).current = cursors;
 
     // Bind Yjs text to Quill
-    const binding = new QuillBinding(ytext, quill);
+    new QuillBinding(ytext, quill);
 
     // Setup awareness for presence
-    const Awareness = require('y-protocols/awareness').Awareness;
     const awareness = new Awareness(ydoc);
     awarenessRef.current = awareness;
     awareness.setLocalStateField('user', {
@@ -64,6 +67,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     });
 
     // Handle local cursor changes and broadcast via awareness
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleSelectionChange = (range: any) => {
       if (!range) {
         awareness.setLocalStateField('cursor', null);
@@ -79,16 +83,20 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     // Render remote cursors from awareness updates
     const renderRemoteCursors = () => {
       const states = awareness.getStates();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       states.forEach((state: any, clientId: number) => {
         if (clientId === awareness.clientID) return;
         const user = state.user;
         const cursor = state.cursor;
         if (user && cursor) {
           const cursorId = clientId.toString();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const existing = (quillCursorsRef as any).current?.cursors?.[cursorId];
           if (!existing) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (quillCursorsRef as any).current?.createCursor(cursorId, user.name, user.color);
           }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (quillCursorsRef as any).current?.moveCursor(cursorId, cursor);
         }
       });
@@ -124,12 +132,13 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     const sendAwareness = (awarenessUpdate: Uint8Array) => {
       socket.emit('awareness', awarenessUpdate);
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     awareness.on('update', ({ added, updated, removed }: any) => {
-      const awUpdate = awareness.encodeUpdate(added.concat(updated).concat(removed));
+      const awUpdate = encodeAwarenessUpdate(awareness, added.concat(updated).concat(removed));
       sendAwareness(awUpdate);
     });
     socket.on('awareness', (aw: Uint8Array) => {
-      awareness.applyUpdate(aw);
+      applyAwarenessUpdate(awareness, aw, socket.id);
     });
 
     return () => {
