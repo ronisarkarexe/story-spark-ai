@@ -49,6 +49,14 @@ const commentApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.post, tagTypes.comment],
     }),
+
+    reportComment: build.mutation({
+      query: (data) => ({
+        url: `/reports`,
+        method: "POST",
+        data: data,
+      }),
+    }),
   }),
 });
 
@@ -58,4 +66,5 @@ export const {
   useToggleCommentLikeMutation,
   useDeleteCommentMutation,
   useToggleCommentHelpfulMutation,
+  useReportCommentMutation,
 } = commentApi;

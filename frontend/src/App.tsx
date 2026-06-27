@@ -3,18 +3,6 @@ import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-rou
 
 import { USER_ROLE } from "./constants/role";
 
-import React from "react";
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
-import HeroSectionComponent from "./components/hero/hero_section.component";
-import HomeComponent from "./components/home/home.component";
-import LoginComponent from "./components/login/login.component";
-import SignUpComponent from "./components/signup/signup.component";
-import DashboardComponent from "./components/dashboard/dashboard.component";
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import LoadingAnimation from "./components/loading/loading.component";
@@ -29,28 +17,6 @@ import HomeComponent from "./components/home/home.component";
 
 import NotFoundComponent from "./components/not-found.component";
 import Leaderboard from "./pages/Leaderboard";
-import PaymentComponent from "./components/home/pricing/payment.component";
-import PostDetailsComponent from "./components/post/post.details.component";
-import PostListsComponent from "./components/dashboard/posts/post_lists.component";
-import PricingComponent from "./components/pricing/pricing.component";
-import PrivacyPolicy from "./components/footer/Privacy.tsx";
-import ProfileComponent from "./components/dashboard/profile/profile.component";
-import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
-import ReportBug from "./components/report-bug/ReportBug";
-import ResourceDetailComponent from "./components/community/resource_detail.component";
-import ResourcesListComponent from "./components/community/resources_list.component";
-import ScrollToTop from "./components/ScrollToTop";
-import ScrollToTopButton from "./components/ScrollToTopButton";
-import SettingComponent from "./components/dashboard/settings/settings.component";
-import SignUpComponent from "./components/signup/signup.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
-import StoriesComponent from "./components/stories/stories.component";
-import ChatPage from "./components/chat/ChatPage";
-
-type ProtectedRouteProps = {
-  allowedRoles: string[];
-  element?: React.ReactElement;
-};
 
 // Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
@@ -63,15 +29,15 @@ const PricingComponent = lazy(() => import("./components/pricing/pricing.compone
 const PostDetailsComponent = lazy(() => import("./components/post/post.details.component"));
 const PublicProfileComponent = lazy(() => import("./components/profile/public_profile.component"));
 const Contact = lazy(() => import("./components/contactus/contactus"));
-const AboutUsComponent = lazy(() => import("./components/footer/about-us.tsx"));
-const CareerComponent = lazy(() => import("./components/footer/career.tsx"));
-const BlogComponent = lazy(() => import("./components/footer/blog.tsx"));
-const PrivacyPolicy = lazy(() => import("./components/footer/Privacy.tsx"));
-const CookiePolicy = lazy(() => import("./components/footer/cookie-policy.tsx"));
-const Terms = lazy(() => import("./components/footer/terms.tsx"));
+const AboutUsComponent = lazy(() => import("./components/footer/about-us"));
+const CareerComponent = lazy(() => import("./components/footer/career"));
+const BlogComponent = lazy(() => import("./components/footer/blog"));
+const PrivacyPolicy = lazy(() => import("./components/footer/Privacy"));
+const CookiePolicy = lazy(() => import("./components/footer/cookie-policy"));
+const Terms = lazy(() => import("./components/footer/terms"));
 const HelpCenterComponent = lazy(() => import("./components/help_center/help_center.component"));
-const GuidelinesComponent = lazy(() => import("./components/footer/guidelines.tsx"));
-const ContributorsComponent = lazy(() => import("./components/footer/contributors.tsx"));
+const GuidelinesComponent = lazy(() => import("./components/footer/guidelines"));
+const ContributorsComponent = lazy(() => import("./components/footer/contributors"));
 const ReportBug = lazy(() => import("./components/report-bug/ReportBug"));
 const ExploreComponent = lazy(() => import("./components/post/post.component"));
 const BookmarksComponent = lazy(() => import("./components/post/bookmarks.component"));
@@ -139,7 +105,8 @@ const router = createBrowserRouter([
       { path: "leaderboard", element: <Leaderboard /> },
       { path: "community", element: <CommunityComponent /> },
       { path: "report-bug", element: <ReportBug /> },
-      { path: "chat", element: <ChatPage /> },
+      { path: "search", element: lazyPage(<SearchPageComponent />) },
+      { path: "chat", element: lazyPage(<ChatPage />) },
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
