@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { Character } from '../models/Character.model';
 
-export const createCharacter = async (req: Request, res: Response) => {
+export const createCharacter = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, age, personality, appearance, background, traits, notes } = req.body;
     const userId = req.user?.id;
@@ -24,12 +24,11 @@ export const createCharacter = async (req: Request, res: Response) => {
     await character.save();
     res.status(201).json({ success: true, data: character });
   } catch (error) {
-    console.error('Create character error:', error);
-    res.status(500).json({ success: false, message: 'Failed to create character' });
+    next(error);
   }
 };
 
-export const getCharacters = async (req: Request, res: Response) => {
+export const getCharacters = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -39,12 +38,11 @@ export const getCharacters = async (req: Request, res: Response) => {
     const characters = await Character.find({ userId }).sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: characters });
   } catch (error) {
-    console.error('Get characters error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch characters' });
+    next(error);
   }
 };
 
-export const getCharacterById = async (req: Request, res: Response) => {
+export const getCharacterById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
@@ -60,12 +58,11 @@ export const getCharacterById = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, data: character });
   } catch (error) {
-    console.error('Get character error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch character' });
+    next(error);
   }
 };
 
-export const updateCharacter = async (req: Request, res: Response) => {
+export const updateCharacter = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
@@ -87,12 +84,11 @@ export const updateCharacter = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, data: character });
   } catch (error) {
-    console.error('Update character error:', error);
-    res.status(500).json({ success: false, message: 'Failed to update character' });
+    next(error);
   }
 };
 
-export const deleteCharacter = async (req: Request, res: Response) => {
+export const deleteCharacter = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
@@ -108,7 +104,6 @@ export const deleteCharacter = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, message: 'Character deleted successfully' });
   } catch (error) {
-    console.error('Delete character error:', error);
-    res.status(500).json({ success: false, message: 'Failed to delete character' });
+    next(error);
   }
 };
