@@ -21,6 +21,24 @@ const isSafeUrl = (url: string | undefined): boolean => {
   return lower.startsWith("/") || lower.startsWith("http://") || lower.startsWith("https://");
 };
 
+const getSafeImageSrc = (url: string | undefined): string => {
+  if (!url || !isSafeUrl(url)) {
+    return "";
+  }
+
+  const trimmedUrl = url.trim();
+  if (trimmedUrl.startsWith("/")) {
+    return trimmedUrl;
+  }
+
+  try {
+    const parsedUrl = new URL(trimmedUrl);
+    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:" ? parsedUrl.toString() : "";
+  } catch {
+    return "";
+  }
+};
+
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
@@ -757,7 +775,7 @@ if (isLoading) {
                       onClick={() => handelStorySelection(story)}
                     >
                       <img
-                        src={isSafeUrl(story.imageURL) ? story.imageURL : ""}
+                        src={getSafeImageSrc(story.imageURL)}
                         alt={story.title}
                         className="w-full h-full object-cover rounded-full"
                       />
@@ -1091,7 +1109,7 @@ if (isLoading) {
             <div className="relative flex flex-col rounded-lg">
               <div className="relative m-3 overflow-hidden text-white rounded-xl">
                 <img
-                  src={isSafeUrl(selectedStory.imageURL) ? selectedStory.imageURL : ""}
+                  src={getSafeImageSrc(selectedStory.imageURL)}
                   alt="card-image"
                   className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
                 />
