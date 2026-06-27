@@ -44,11 +44,10 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
               onClick={() => setRating(star)}
               onMouseEnter={() => setHovered(star)}
               onMouseLeave={() => setHovered(0)}
-              className={`text-2xl transition-all duration-150 focus-visible:outline-none rounded-md px-1 cursor-pointer ${
-                filled
+              className={`text-2xl transition-all duration-150 focus-visible:outline-none rounded-md px-1 cursor-pointer ${filled
                   ? "text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.7)] scale-110"
                   : "text-gray-300 dark:text-gray-600 hover:text-yellow-300"
-              }`}
+                }`}
             >
               ★
             </button>
@@ -72,7 +71,6 @@ const ReviewForm: React.FC = () => {
   const [rating, setRating] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
-  const [isDark, setIsDark] = useState(false);
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
@@ -102,7 +100,7 @@ const ReviewForm: React.FC = () => {
       setFeedback("");
       setRating(0);
       setErrors({});
-    } catch (err) {
+    } catch {
       setErrors({ submit: "Failed to submit review. Please try again." });
       setSuccess(false);
     }
@@ -237,9 +235,8 @@ const ReviewForm: React.FC = () => {
               )}
 
               <p
-                className={`text-xs ${
-                  feedback.length > 450 ? "text-yellow-400" : "text-slate-500"
-                }`}
+                className={`text-xs ${feedback.length > 450 ? "text-yellow-400" : "text-slate-500"
+                  }`}
               >
                 {feedback.length}/500
               </p>
