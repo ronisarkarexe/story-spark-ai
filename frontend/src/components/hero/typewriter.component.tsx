@@ -60,7 +60,7 @@ const Typewriter: React.FC<TypewriterProps> = ({
     }
 
     return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [charIndex, isDeleting, phraseIndex, phrases, typingSpeed, deletingSpeed, pause]);
 
   return (
