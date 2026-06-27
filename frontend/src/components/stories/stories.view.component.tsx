@@ -15,6 +15,12 @@ import { useDispatch } from "react-redux";
 import { setStory } from "../../redux/slices/storySlice";
 import ContinueStoryButton from "../story/ContinueStoryButton";
 
+const isSafeUrl = (url: string | undefined): boolean => {
+  if (!url) return false;
+  const lower = url.trim().toLowerCase();
+  return lower.startsWith("/") || lower.startsWith("http://") || lower.startsWith("https://");
+};
+
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
@@ -610,9 +616,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
       const isoDate = new Date().toISOString().split("T")[0];
 
-      const cleanTitle = title.replace(/"/g, '\\"');
-      const cleanTag = tag.replace(/"/g, '\\"');
-      const cleanAuthor = authorName.replace(/"/g, '\\"');
+      const cleanTitle = title.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      const cleanTag = tag.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      const cleanAuthor = authorName.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
       const markdownContent = `---
 title: "${cleanTitle}"
@@ -751,7 +757,7 @@ if (isLoading) {
                       onClick={() => handelStorySelection(story)}
                     >
                       <img
-                        src={story.imageURL}
+                        src={isSafeUrl(story.imageURL) ? story.imageURL : ""}
                         alt={story.title}
                         className="w-full h-full object-cover rounded-full"
                       />
@@ -1085,7 +1091,7 @@ if (isLoading) {
             <div className="relative flex flex-col rounded-lg">
               <div className="relative m-3 overflow-hidden text-white rounded-xl">
                 <img
-                  src={selectedStory.imageURL.startsWith("javascript:") ? "" : selectedStory.imageURL}
+                  src={isSafeUrl(selectedStory.imageURL) ? selectedStory.imageURL : ""}
                   alt="card-image"
                   className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
                 />
