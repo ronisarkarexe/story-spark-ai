@@ -1,6 +1,9 @@
 // Dynamically loads the Razorpay checkout script into the DOM
 // Returns true if loaded successfully, false if it fails
 export const loadRazorpayScript = (): Promise<boolean> => {
+  if (typeof window === "undefined") {
+    return Promise.resolve(false);
+  }
   return new Promise((resolve) => {
     // Avoid loading the script twice if it already exists
     if (document.getElementById("razorpay-script")) {
