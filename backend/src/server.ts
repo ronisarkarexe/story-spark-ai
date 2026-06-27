@@ -66,7 +66,8 @@ async function main() {
     process.exit(1);
   }
 
-  const httpServer = http.createServer(app);
+  try {
+    const httpServer = http.createServer(app);
   const defaultCorsOrigins = 
     process.env.NODE_ENV === "development"
       ? ["http://localhost:4001", "http://localhost:4002"]
@@ -77,11 +78,59 @@ async function main() {
       ? config.cors_origins
       : defaultCorsOrigins;
 
-  // Start the server listener
-  const PORT = config.port || 4000;
-  httpServer.listen(PORT, () => {
-    logger.info(`🚀 Server running smoothly on port ${PORT}`);
-  });
+    const io = new Server(httpServer, {
+        cors: {
+          origin: socketCorsOrigins,
+          credentials: true,
+        },
+    });
+
+    const [{ setNotificationSocket }, { setupCollabSocket }, { YjsGateway }] = await Promise.all([
+      import("./socket/notification.socket"),
+      import("./socket/collab.socket"),
+      import("./app/modules/collab/yjs.gateway"),
+    ]);
+
+    setNotificationSocket(io);
+    setupCollabSocket(io);
+    new YjsGateway(io);
+
+    io.use((socket, next) => {
+      try {
+        const token = socket.handshake.auth?.token as string | undefined;
+        if (!token) {
+          return next(new Error("Unauthorized"));
+        }
+
+        const verifiedUser = JwtHelpers.verifyToken(
+          token,
+          config.jwt.secret as Secret
+        );
+        const userId = verifiedUser._id || verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
+        if (!userId) {
+          return next(new Error("Unauthorized"));
+        }
+
+        socket.data.userId = userId.toString();
+        next();
+      } catch (error) {
+        next(new Error("Unauthorized"));
+      }
+    });
+
+    io.on("connection", (socket) => {
+      const userId = socket.data.userId as string | undefined;
+      if (userId) {
+        socket.join(`user:${userId}`);
+      }
+    });
+
+    httpServer.listen(config.port, () => {
+      logger.info(`Story-Spark-AI app listening on port ${config.port}`);
+    });
+  } catch (error) {
+    logger.error("Error in main startup sequence:", error);
+  }
 }
 
 // Invoke the main initialization lifecycle block
