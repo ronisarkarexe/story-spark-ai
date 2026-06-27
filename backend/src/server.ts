@@ -53,13 +53,15 @@ async function main() {
         },
     });
 
-    const [{ setNotificationSocket }, { setupCollabSocket }] = await Promise.all([
+    const [{ setNotificationSocket }, { setupCollabSocket }, { YjsGateway }] = await Promise.all([
       import("./socket/notification.socket"),
       import("./socket/collab.socket"),
+      import("./app/modules/collab/yjs.gateway"),
     ]);
 
     setNotificationSocket(io);
     setupCollabSocket(io);
+    new YjsGateway(io);
 
     io.use((socket, next) => {
       try {
