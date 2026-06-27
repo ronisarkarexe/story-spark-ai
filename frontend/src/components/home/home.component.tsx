@@ -40,7 +40,9 @@ const HomeComponent = () => {
   const isLogin = isLoggedIn();
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
+    if (window.scrollY > 0) {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
   }, []);
 
   return (
