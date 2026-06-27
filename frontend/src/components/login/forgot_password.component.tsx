@@ -110,7 +110,7 @@ const ForgotPasswordComponent = () => {
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setInterval(() => {
-      setCooldown((prev) => prev - 1);
+      setCooldown((prev) => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(timer);
   }, [cooldown]);
@@ -163,6 +163,7 @@ const ForgotPasswordComponent = () => {
       } else {
         throw new Error("Verification token missing in response");
       }
+      setIsBusy(false);
     } catch (error: unknown) {
       toast.error(
         getApiErrorMessage(
@@ -170,7 +171,7 @@ const ForgotPasswordComponent = () => {
           "OTP verification failed. Please check the code and try again.",
         ),
       );
-    } finally {
+      setIsBusy(false);
     }
   };
 
