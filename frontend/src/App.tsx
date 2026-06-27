@@ -44,14 +44,11 @@ import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import SettingComponent from "./components/dashboard/settings/settings.component";
 import SignUpComponent from "./components/signup/signup.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
+
 import StoriesComponent from "./components/stories/stories.component";
 import ChatPage from "./components/chat/ChatPage";
 
-type ProtectedRouteProps = {
-  allowedRoles: string[];
-  element?: React.ReactElement;
-};
+
 
 // Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
@@ -94,7 +91,7 @@ const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analyt
 const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
-const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
+
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
@@ -135,7 +132,7 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
-      
+
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "leaderboard", element: <Leaderboard /> },
       { path: "community", element: <CommunityComponent /> },
@@ -205,7 +202,7 @@ const router = createBrowserRouter([
           { path: "terms", element: <Terms /> },
           { path: "help-center", element: <HelpCenterComponent /> },
           { path: "guidelines", element: <GuidelinesComponent /> },
-          
+
           { path: "contributors", element: <ContributorsComponent /> },
           { path: "community", element: <CommunityComponent /> },
           { path: "report-bug", element: <ReportBug /> },
@@ -283,9 +280,9 @@ function App() {
     const handleOnline = () => {
       toast.success("You are back online!", { id: "network-status" });
     };
-    
+
     const handleOffline = () => {
-      toast.error("You are currently offline. Some features may not be available.", { 
+      toast.error("You are currently offline. Some features may not be available.", {
         id: "network-status",
         duration: Infinity
       });
