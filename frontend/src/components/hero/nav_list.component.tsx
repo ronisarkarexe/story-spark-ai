@@ -14,13 +14,10 @@ const NavListComponent = () => {
     setMenuOpen(false);
   };
 
-  const handleNavClick = () => {
-    setMenuOpen(false);
-  };
+  const handleNavClick = () => setMenuOpen(false);
 
-  const isActive = (path: string) => {
-    return pathname === path || (path === "/" && pathname === "/");
-  };
+  const isActive = (path: string) =>
+    pathname === path || (path === "/" && pathname === "/");
 
   const navItems = [
     { to: "/", label: "Home" },
@@ -84,61 +81,33 @@ const NavListComponent = () => {
             </div>
           </motion.div>
 
-          <div className="hidden items-center gap-2 lg:flex">
-            {loggedIn ? (
-              <motion.button
-                onClick={handleLogout}
-                whileHover={{ y: -1 }}
-                whileTap={{ scale: 0.97 }}
-                className="h-10 rounded-full border border-slate-200/80 bg-white/60 px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white"
-              >
-                Logout
-              </motion.button>
-            ) : (
-              <>
-                <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}>
-                  <Link
-                    to="/login"
-                    onClick={handleNavClick}
-                    className="inline-flex h-10 items-center rounded-full border border-slate-200/80 bg-white/60 px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white"
-                  >
-                    Login
-                  </Link>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ y: -1, scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                >
-                  <Link
-                    to="/signup"
-                    onClick={handleNavClick}
-                    className="group inline-flex h-10 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300 hover:shadow-indigo-600/40"
-                  >
-                    <span>Get Started</span>
-                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                  </Link>
-                </motion.div>
-              </>
-            )}
-          </div>
-
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            type="button"
-            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-            aria-expanded={menuOpen}
-            className="grid h-10 w-10 place-items-center rounded-full border border-slate-200/80 bg-white/60 text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white lg:hidden"
-            onClick={() => setMenuOpen(!menuOpen)}
+      {/* Bottom controls row (FIXED placement — now INSIDE return, not outside header) */}
+      <div className="flex items-center gap-2 sm:gap-3 px-4 pb-3 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex items-center gap-2"
+        >
+          <button
+            onClick={toggleGlow}
+            className={`grid h-10 w-10 place-items-center rounded-full border ${
+              glowEnabled
+                ? "border-indigo-300 bg-indigo-50 text-indigo-600"
+                : "border-slate-200 text-slate-500"
+            }`}
+            aria-label="Toggle glow"
           >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
-          </motion.button>
-        </div>
+            <Sparkles size={18} />
+          </button>
+
+          <div className="grid h-10 w-10 place-items-center rounded-full border">
+            <ThemeToggle />
+          </div>
+        </motion.div>
       </div>
 
+      {/* Animate mobile menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -146,91 +115,26 @@ const NavListComponent = () => {
             animate="visible"
             exit="exit"
             variants={mobileMenuVariants}
-            className="overflow-hidden border-b border-slate-200/70 bg-white/80 shadow-xl shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/85 lg:hidden"
+            className="lg:hidden border-t bg-white/80 dark:bg-slate-950/90"
           >
-            <div className="mx-auto max-w-7xl px-4 pb-5 pt-2 sm:px-6">
-              <div className="space-y-2 rounded-2xl border border-slate-200/70 bg-white/55 p-2 shadow-sm shadow-slate-900/5 dark:border-white/10 dark:bg-white/[0.04]">
-                {navItems.map((item, index) => (
-                  <motion.div
-                    key={item.to}
-                    custom={index}
-                    initial="hidden"
-                    animate="visible"
-                    variants={mobileItemVariants}
-                  >
-                    <NavLink
-                      to={item.to}
-                      end={item.to === "/"}
-                      onClick={handleNavClick}
-                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
-                        isActive(item.to)
-                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
-                          : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
-                      }`}
-                    >
-                      <span>{item.label}</span>
-                      {isActive(item.to) && <span className="h-2 w-2 rounded-full bg-white/90" />}
-                    </NavLink>
-                  </motion.div>
-                ))}
-
-                {loggedIn && (
-                  <motion.div
-                    custom={navItems.length}
-                    initial="hidden"
-                    animate="visible"
-                    variants={mobileItemVariants}
-                  >
-                    <NavLink
-                      to="/dashboard"
-                      onClick={handleNavClick}
-                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
-                        isActive("/dashboard")
-                          ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/20"
-                          : "text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
-                      }`}
-                    >
-                      <span>Dashboard</span>
-                      {isActive("/dashboard") && <span className="h-2 w-2 rounded-full bg-white/90" />}
-                    </NavLink>
-                  </motion.div>
-                )}
-
+            <div className="p-4 space-y-2">
+              {navItems.map((item, index) => (
                 <motion.div
-                  custom={navItems.length + 1}
+                  key={item.to}
+                  custom={index}
                   initial="hidden"
                   animate="visible"
                   variants={mobileItemVariants}
-                  className="grid gap-2 border-t border-slate-200/70 pt-2 dark:border-white/10"
                 >
-                  {loggedIn ? (
-                    <button
-                      onClick={handleLogout}
-                      className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-white/10"
-                    >
-                      Logout
-                    </button>
-                  ) : (
-                    <>
-                      <Link
-                        to="/login"
-                        onClick={handleNavClick}
-                        className="flex items-center justify-center rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-300 dark:hover:bg-white/10"
-                      >
-                        Login
-                      </Link>
-                      <Link
-                        to="/signup"
-                        onClick={handleNavClick}
-                        className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition-all duration-300"
-                      >
-                        <span>Get Started</span>
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </>
-                  )}
+                  <NavLink
+                    to={item.to}
+                    onClick={handleNavClick}
+                    className={mobileLinkClass}
+                  >
+                    {item.label}
+                  </NavLink>
                 </motion.div>
-              </div>
+              ))}
             </div>
           </motion.div>
         )}

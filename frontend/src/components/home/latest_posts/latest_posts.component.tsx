@@ -12,8 +12,6 @@ const LatestPostsComponent = () => {
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
-  const posts = (data?.posts ?? []) as Post[];
-
   useEffect(() => {
     setShowAllPosts(false);
   }, [posts.length]);
@@ -63,7 +61,9 @@ const LatestPostsComponent = () => {
 
                 <div
                   className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isExpanded ? "max-h-[500px] border-t border-slate-200 dark:border-slate-700/30" : "max-h-0"
+                    isExpanded
+                      ? "max-h-[500px] border-t border-slate-200 dark:border-slate-700/30"
+                      : "max-h-0"
                   }`}
                 >
                   <div className="min-w-0 p-5 bg-slate-50 dark:bg-slate-800/50">
@@ -93,6 +93,7 @@ const LatestPostsComponent = () => {
           </div>
         )}
       </div>
+
       {shouldShowLoadMore && !showAllPosts && (
         <div className="mt-6">
           <button
@@ -109,3 +110,4 @@ const LatestPostsComponent = () => {
 };
 
 export default LatestPostsComponent;
+

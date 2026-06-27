@@ -5,7 +5,7 @@ import { isLoggedIn, getUserInfo } from '../services/auth.service';
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
 /**
@@ -31,3 +31,4 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
 };
 
 export default ProtectedRoute;
+

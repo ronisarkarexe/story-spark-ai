@@ -43,7 +43,7 @@ const HelpCenterComponent = lazy(() => import("./components/help_center/help_cen
 const GuidelinesComponent = lazy(() => import("./components/footer/guidelines.tsx"));
 const ContributorsComponent = lazy(() => import("./components/footer/contributors.tsx"));
 const ReportBug = lazy(() => import("./components/report-bug/ReportBug"));
-const ExploreComponent = lazy(() => import("./components/post/post.component"));
+const ExploreComponent = lazy(() => import("./components/post/post.component.tsx"));
 const BookmarksComponent = lazy(() => import("./components/post/bookmarks.component"));
 const CommunityComponent = lazy(() => import("./components/community/community.component"));
 const ResourcesListComponent = lazy(() => import("./components/community/resources_list.component"));
