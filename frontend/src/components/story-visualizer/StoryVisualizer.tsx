@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { StoryboardScene } from "../../redux/apis/story.visualizer.api";
+import { useCachedImage } from "../../hooks/useCachedImage";
 
 type StoryVisualizerProps = {
   scenes: StoryboardScene[];
@@ -14,6 +15,7 @@ type IllustrationPreviewProps = {
 
 const IllustrationPreview = ({ scene }: IllustrationPreviewProps) => {
   const [imageFailed, setImageFailed] = useState(false);
+  const { cachedSrc } = useCachedImage(scene.imageUrl);
   const shouldShowImage =
     Boolean(scene.imageUrl) &&
     scene.imageStatus !== "failed" &&
@@ -23,7 +25,7 @@ const IllustrationPreview = ({ scene }: IllustrationPreviewProps) => {
     return (
       <div className="aspect-[4/3] min-h-64 overflow-hidden rounded-2xl border border-indigo-300/20 bg-slate-950 shadow-inner">
         <img
-          src={scene.imageUrl}
+          src={cachedSrc || scene.imageUrl}
           alt={`Storyboard illustration for scene ${scene.sceneNumber}: ${scene.caption}`}
           className="h-full w-full object-cover"
           loading="lazy"

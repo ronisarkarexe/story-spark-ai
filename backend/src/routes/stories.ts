@@ -9,13 +9,17 @@ const router = express.Router();
 
 const branchingStorySchema = z.object({
   body: z.object({
-    storyContext: z.string({ required_error: "storyContext is required!" }).max(8000),
+    storyContext: z
+      .string({ required_error: "storyContext is required!" })
+      .min(1, "storyContext cannot be empty")
+      .max(8000, "storyContext must not exceed 8000 characters"),
 
     selectedChoice: z
       .string({ required_error: "selectedChoice is required!" })
+      .min(1, "selectedChoice cannot be empty")
       .max(500, "selectedChoice must not exceed 500 characters"),
 
-    genre: z.string().max(120).optional(),
+    genre: z.string().min(1, "genre cannot be empty").max(120).optional(),
   }),
 });
 

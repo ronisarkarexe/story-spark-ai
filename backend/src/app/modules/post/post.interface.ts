@@ -25,6 +25,8 @@ export interface IPost extends IPostPayload {
   commentsCount: number;
   viewsCount: number;
   bookmarksCount: number;  
+  averageRating: number;
+  totalRatings: number;
   isPublished: boolean;
   isFeaturedPost?: boolean;
   isDeleted?: boolean;

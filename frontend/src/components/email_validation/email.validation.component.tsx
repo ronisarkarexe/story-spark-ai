@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -13,7 +13,7 @@ interface Inputs {
 
 const EmailValidationComponent = () => {
   const navigate = useNavigate();
-  const { register, getValues } = useForm<Inputs>({
+  const { register, getValues, formState: { errors } } = useForm<Inputs>({
     mode: "onChange",
   });
   const [verifyOtp] = useVerifyOtpMutation();
@@ -84,8 +84,12 @@ const EmailValidationComponent = () => {
     }
   };
 
+  const handleChangeEmail = () => {
+    navigate("/signup", { replace: true });
+  };
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center relative overflow-hidden px-4">
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center relative overflow-hidden px-4 box-border">
       {/* Ambient glows */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
@@ -99,17 +103,31 @@ const EmailValidationComponent = () => {
         ← Back to Home
       </button>
       
-      <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 shadow-2xl w-full max-w-md relative z-10">
+      <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-2xl w-full max-w-md min-w-0 box-border overflow-hidden relative z-10">
         <h2 className="text-3xl font-bold tracking-tight text-slate-200 mb-3 text-center">
           Verify your email
         </h2>
-        <p className="text-sm text-center text-slate-400 mb-8 leading-relaxed">
+        <p className="text-sm text-center text-slate-400 mb-2 leading-relaxed">
           Enter the verification code sent to <br/>
           <span className="font-semibold text-blue-400">{email || "your email"}</span>
         </p>
+
+        {/* Change Email link */}
+        <p className="text-xs text-center text-slate-500 mb-6">
+          Wrong address?{" "}
+          <button
+            type="button"
+            onClick={handleChangeEmail}
+            disabled={isBusy}
+            className="font-semibold text-blue-400 hover:text-blue-300 underline transition-colors cursor-pointer disabled:cursor-not-allowed"
+            aria-label="Go back to sign up to change your email"
+          >
+            Change email
+          </button>
+        </p>
         
         <form
-          className="space-y-4"
+          className="space-y-4 w-full min-w-0 box-border"
           onSubmit={(e) => {
             e.preventDefault();
             onVerify();
@@ -122,6 +140,13 @@ const EmailValidationComponent = () => {
             required={true}
             icon="fas fa-key"
             register={register}
+            validation={{
+              required: "Please enter OTP",
+              minLength: { value: 6, message: "OTP must be 6 digits" },
+              maxLength: { value: 6, message: "OTP must be 6 digits" },
+              pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
+            }}
+            error={errors.otp}
           />
           
           {/* Visual Feedback Banner Row */}
@@ -149,7 +174,18 @@ const EmailValidationComponent = () => {
           />
         </form>
         
-        <p className="mt-8 text-sm text-center text-slate-400">
+        <p className="mt-6 text-sm text-center text-slate-400 select-none">
+          Entered the wrong email?{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/signup", { replace: true })}
+            className="font-semibold text-blue-400 hover:text-blue-300 hover:underline transition-colors duration-200 cursor-pointer"
+          >
+            Sign Up Again
+          </button>
+        </p>
+
+        <p className="mt-6 text-sm text-center text-slate-400">
           Need help? Contact us at{" "}
           <a
             className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"

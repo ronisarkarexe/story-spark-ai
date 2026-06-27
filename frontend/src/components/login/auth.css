@@ -42,6 +42,13 @@ body {
     50% { opacity: 1; transform: scale(1.5); }
 }
 
+/* Box size fixed  */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 /* ── Particles Canvas (Canvas-driven background) ── */
 
 #particle-canvas {
@@ -71,6 +78,7 @@ body {
     #f97316
   );
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -124,9 +132,29 @@ body {
     transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+.auth-form-card,
+.auth-form-card * {
+    max-width: 100%;
+}
+
 #auth-form.form-transitioning {
     opacity: 0;
     transform: translateY(16px) scale(0.95);
+}
+
+.auth-field,
+.input-icon-wrapper,
+.ds-input-group {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    min-width: 0;
 }
 
 /* ── Legal Modal Styles ── */
@@ -191,6 +219,8 @@ body {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
+    width: 100%;
+    max-width: 100%;
     height: var(--ds-input-height);
     font-size: 15px;
     line-height: calc(var(--ds-input-height) - 2px);
