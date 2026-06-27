@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 
 import { USER_ROLE } from "./constants/role";
 
@@ -278,7 +279,38 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  React.useEffect(() => {
+    const handleOnline = () => {
+      toast.success("Your internet connection was restored.", {
+        id: "connection-status",
+      });
+    };
+    const handleOffline = () => {
+      toast.error("You are offline. Some features may be unavailable.", {
+        id: "connection-status",
+        duration: Infinity,
+      });
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    if (!navigator.onLine) {
+      handleOffline();
+    }
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  return (
+    <>
+      <RouterProvider router={router} />
+      <Toaster position="bottom-right" />
+    </>
+  );
 }
 
 export default App;
