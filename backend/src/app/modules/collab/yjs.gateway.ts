@@ -8,7 +8,7 @@ import { CollabService } from './collab.service';
  * and persists the document state to MongoDB.
  */
 export class YjsGateway {
-  private readonly io: Server;
+  private readonly io: any;
   private readonly docs: Map<string, Y.Doc> = new Map();
   private readonly debouncedSaves: Map<string, () => void> = new Map();
   private readonly saveDelay = 2000; // ms
