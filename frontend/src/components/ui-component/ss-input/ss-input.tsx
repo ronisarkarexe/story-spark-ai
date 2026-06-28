@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type {
   FieldValues,
   Path,
@@ -35,6 +35,8 @@ const SSInput = <T extends FieldValues>({
   autoFocus,
 }: SSInputProps<T>) => {
   const [showLocalPassword, setShowLocalPassword] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isPasswordType = type === "password";
   const inputType = isPasswordType
@@ -42,6 +44,30 @@ const SSInput = <T extends FieldValues>({
       ? "text"
       : "password"
     : type;
+
+  const togglePasswordVisibility = () => {
+    setShowLocalPassword(!showLocalPassword);
+  };
+
+  const handlePasswordToggleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.code === "Space" || e.code === "Enter") {
+      e.preventDefault();
+      togglePasswordVisibility();
+    }
+  };
+
+  const handleMouseEnter = () => {
+    tooltipTimeoutRef.current = setTimeout(() => {
+      setShowTooltip(true);
+    }, 300);
+  };
+
+  const handleMouseLeave = () => {
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current);
+    }
+    setShowTooltip(false);
+  };
 
   return (
     <div className="w-full min-w-0 max-w-full box-border">
@@ -76,15 +102,42 @@ const SSInput = <T extends FieldValues>({
         />
 
         {isPasswordType && (
-          <button
-            type="button"
-            onClick={() => setShowLocalPassword(!showLocalPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center text-slate-400 hover:text-slate-200 dark:text-slate-500 dark:hover:text-slate-300 z-10 focus:outline-none transition-colors cursor-pointer"
-            aria-label={showLocalPassword ? "Hide password" : "Show password"}
-            title={showLocalPassword ? "Hide password" : "Show password"}
-          >
-            <i className={showLocalPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"} />
-          </button>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+            {/* Tooltip */}
+            {showTooltip && (
+              <div 
+                className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-medium rounded shadow-lg whitespace-nowrap z-50 pointer-events-none"
+                role="tooltip"
+              >
+                {showLocalPassword ? "Hide password (Space/Enter)" : "Show password (Space/Enter)"}
+                <div className="absolute top-full right-2 -mt-1 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+              </div>
+            )}
+
+            {/* Toggle Button */}
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              onKeyDown={handlePasswordToggleKeyDown}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              onFocus={handleMouseEnter}
+              onBlur={handleMouseLeave}
+              className="p-1.5 rounded-lg flex items-center text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 z-10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              aria-label={showLocalPassword ? `Hide ${label} password. Press Space or Enter to toggle.` : `Show ${label} password. Press Space or Enter to toggle.`}
+              aria-pressed={showLocalPassword}
+              title={showLocalPassword ? "Hide password (Space/Enter)" : "Show password (Space/Enter)"}
+            >
+              <i 
+                className={`text-[16px] transition-colors ${
+                  showLocalPassword 
+                    ? "fi fi-rr-eye text-blue-500 dark:text-blue-400" 
+                    : "fi fi-rr-eye-crossed text-slate-400 dark:text-slate-500"
+                }`}
+                aria-hidden="true"
+              ></i>
+            </button>
+          </div>
         )}
       </div>
 
