@@ -2,6 +2,7 @@
 import { StoryMetaTags } from "./StoryMetaTags";
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import ReadingTime from "../ReadingTime";
 import {
   useDeletePostMutation,
   useGetPostByIdQuery,
@@ -377,8 +378,10 @@ const PostDetailsComponent = () => {
                     )}
                   </h3>
 
-                  <div className="flex items-center text-sm text-slate-500 dark:text-gray-500">
+                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-gray-500 flex-wrap">
                     <span>{formatDateShort(post ? post?.createdAt : "")}</span>
+                    <span>•</span>
+                    <ReadingTime content={post?.content} className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-gray-500 font-medium" />
                   </div>
                 </div>
               </div>

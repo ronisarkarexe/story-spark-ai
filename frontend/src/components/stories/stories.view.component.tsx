@@ -337,6 +337,13 @@ if (!stories || stories.length === 0) {
               <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
                 {selectedStory?.title}
               </h1>
+              {selectedStory && (
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-medium">Genre: {selectedStory.tag}</span>
+                  <span className="text-slate-650 text-xs">•</span>
+                  <ReadingTime content={selectedStory.content} className="inline-flex items-center gap-1.5 text-xs text-slate-400 font-medium" />
+                </div>
+              )}
             </div>
             <div className="flex justify-start sm:justify-end">
               <div className="flex -space-x-5">
@@ -600,8 +607,11 @@ if (!stories || stories.length === 0) {
                   />
                 </div>
                 <div className="px-3 py-1">
-                  <div className="mb-2 inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
-                   {selectedStory.tag.toUpperCase()}
+                  <div className="mb-2 flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
+                     {selectedStory.tag.toUpperCase()}
+                    </span>
+                    <ReadingTime content={selectedStory.content} className="inline-flex items-center gap-1 text-xs text-slate-400 font-medium" />
                   </div>
                   <h6 className="mb-1 text-gray-300 text-xl font-semibold">
                     {selectedStory.title}
