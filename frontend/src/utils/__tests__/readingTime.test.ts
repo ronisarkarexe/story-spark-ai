@@ -1,69 +1,56 @@
-import { describe, it, expect } from "vitest";
-import { calculateReadingTime } from "../readingTime";
+import { getReadingTime } from "../readingTime";
 
-describe("calculateReadingTime utility", () => {
-  it("should return '1 min read' for empty, null, or undefined content", () => {
-    expect(calculateReadingTime(undefined)).toBe("1 min read");
-    expect(calculateReadingTime(null)).toBe("1 min read");
-    expect(calculateReadingTime("")).toBe("1 min read");
-    expect(calculateReadingTime("   ")).toBe("1 min read");
+describe("getReadingTime", () => {
+  it("returns wordCount 0 and minutes 1 for empty string", () => {
+    const result = getReadingTime("");
+    expect(result.wordCount).toBe(0);
+    expect(result.minutes).toBe(1); // minimum floor
   });
 
-  it("should return '1 min read' for short text", () => {
-    expect(calculateReadingTime("Hello world!")).toBe("1 min read");
+  it("returns wordCount 1 and minutes 1 for a single word", () => {
+    const result = getReadingTime("hello");
+    expect(result.wordCount).toBe(1);
+    expect(result.minutes).toBe(1);
   });
 
-  it("should calculate reading time correctly using formula ceiling of words/200", () => {
-    // 200 words should be 1 min read
-    const content200 = Array(200).fill("word").join(" ");
-    expect(calculateReadingTime(content200)).toBe("1 min read");
-
-    // 201 words should be 2 min read
-    const content201 = Array(201).fill("word").join(" ");
-    expect(calculateReadingTime(content201)).toBe("2 min read");
-
-    // 400 words should be 2 min read
-    const content400 = Array(400).fill("word").join(" ");
-    expect(calculateReadingTime(content400)).toBe("2 min read");
-
-    // 401 words should be 3 min read
-    const content401 = Array(401).fill("word").join(" ");
-    expect(calculateReadingTime(content401)).toBe("3 min read");
+  it("returns wordCount 200 and minutes 1 for exactly 200 words", () => {
+    const words = Array(200).fill("word").join(" ");
+    const result = getReadingTime(words);
+    expect(result.wordCount).toBe(200);
+    expect(result.minutes).toBe(1);
   });
 
-  it("should ignore Markdown images completely", () => {
-    // A Markdown image should not add to word count
-    const content = "Hello ![Alt text](https://example.com/image.png) world";
-    // Remaining words: "Hello", "world" (2 words)
-    expect(calculateReadingTime(content)).toBe("1 min read");
-    
-    // Test large mock content with many images to ensure they do not increase reading time
-    const text200 = Array(200).fill("word").join(" ");
-    const contentWithImages = text200 + " ![Image](img.png) ![Image2](img2.jpg)";
-    // 200 words + images should still be 200 words -> 1 min read
-    expect(calculateReadingTime(contentWithImages)).toBe("1 min read");
+  it("returns wordCount 400 and minutes 2 for 400 words", () => {
+    const words = Array(400).fill("word").join(" ");
+    const result = getReadingTime(words);
+    expect(result.wordCount).toBe(400);
+    expect(result.minutes).toBe(2);
   });
 
-  it("should extract and count only visible text from Markdown links", () => {
-    // [anchor text](url) -> anchor text
-    const content = "Visit [Google](https://google.com) today";
-    // Cleaned: "Visit Google today" (3 words)
-    expect(calculateReadingTime(content)).toBe("1 min read");
+  it("returns wordCount 220 and minutes 2 for 220 words (over 200)", () => {
+    const words = Array(220).fill("word").join(" ");
+    const result = getReadingTime(words);
+    expect(result.wordCount).toBe(220);
+    expect(result.minutes).toBe(2);
   });
 
-  it("should ignore HTML tags and calculate only visible text", () => {
-    // HTML tags stripped, keeping visible text
-    const content = "<p>Hello <strong>world</strong>! Visit <a href='https://example.com'>our site</a>.</p>";
-    // Cleaned: "Hello world! Visit our site." (5 words)
-    expect(calculateReadingTime(content)).toBe("1 min read");
+  it("handles whitespace-only string as having zero words", () => {
+    const result = getReadingTime("     \t\n   ");
+    expect(result.wordCount).toBe(0);
+    expect(result.minutes).toBe(1); // minimum floor
   });
 
-  it("should handle mixed HTML, Markdown and edge cases correctly", () => {
-    const text198 = Array(198).fill("word").join(" ");
-    // Mixed content: 198 words + 1 markdown link (2 words) + 1 markdown image (0 words) + HTML tag (0 words)
-    // Total words should be 200 words.
-    const content = `<div class="content">${text198} Visit [our site](http://site.com) today! <img src="logo.png" /></div>`;
-    // Cleaned words count: 198 (text198) + "Visit" + "our" + "site" + "today!" = 202 words -> 2 min read
-    expect(calculateReadingTime(content)).toBe("2 min read");
+  it("counts words correctly with multiple spaces between words", () => {
+    const result = getReadingTime("once  upon   a   time");
+    expect(result.wordCount).toBe(4);
+    expect(result.minutes).toBe(1);
+  });
+
+  it("returns an object with both minutes and wordCount properties", () => {
+    const result = getReadingTime("a story begins here");
+    expect(result).toHaveProperty("minutes");
+    expect(result).toHaveProperty("wordCount");
+    expect(typeof result.minutes).toBe("number");
+    expect(typeof result.wordCount).toBe("number");
   });
 });
