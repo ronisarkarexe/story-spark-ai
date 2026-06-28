@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import jsPDF from "jspdf";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
@@ -86,23 +87,17 @@ useEffect(() => {
   setValue("prompt", textareaValue);
 }, [textareaValue, setValue]);
 
-  const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    if (!login && guestRequestCount >= 3) {
-      setShowLimitModal(true);
+const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
+    if (isGenerationInProgressRef.current) return;
+    
+    if (getWordCount(data.prompt) < 10) {
+      toast.error("Please enter a prompt with at least 10 words to generate a story.");
       return;
     }
 
-    if (data.prompt === "") {
-      toast.error("Please enter a prompt to generate a story.");
-      return;
-    }
-    if (getWordCount(data.prompt) < 10) {
-      toast.error(
-        "Please enter a prompt with at least 10 words to generate a story.",
-      );
-      return;
-    }
     setLoading(true);
+    setIsHighLatency(false);
+    isGenerationInProgressRef.current = true;
 
     try {
       const payload = {
@@ -114,12 +109,16 @@ useEffect(() => {
           : selectedLength === "long" ? 500
           : 250,
       };
-      const res = login
-        ? await generateModel(payload).unwrap()
-        : await generateFreeModel(payload).unwrap();
+
+      const generationRequest = login ? generateModel(payload) : generateFreeModel(payload);
+      activeGenerationRef.current = generationRequest;
+      const res = await generationRequest.unwrap();
+      
       if (res) {
         toast.success(res.message);
-        setStories(res.data as IStories[]);
+        addPrompt(data.prompt);
+        setStories(getUniqueStories(res.data as IStories[]));
+        setTextareaValue("");
         setSelectedPrompt("");
         setValue("prompt", "");
         reset();

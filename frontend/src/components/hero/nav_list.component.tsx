@@ -3,7 +3,13 @@ import { Link, NavLink } from "react-router-dom";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
 
-const NavListComponent = () => {
+import { useNavigate, useLocation } from "react-router-dom";
+
+
+  
+  const NavListComponent = () => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 

@@ -1,14 +1,14 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
-import { useState, useEffect } from "react";
-import { storeUserInfo } from "../../services/auth.service";
+import { useState, useEffect, useContext } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { Link, useNavigate } from "react-router-dom";
 import { useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import { useEmailVerifyMutation, useVerifyOtpMutation } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
+import AuthContext from "../auth.context";
 
 interface IRegisterInfo {
   name: string;
@@ -54,6 +54,7 @@ const PASSWORD_REQUIREMENTS = [
 
 const SignUpComponent = () => {
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
   const [emailVerify] = useEmailVerifyMutation();
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerUser] = useRegisterUserMutation();
@@ -152,8 +153,10 @@ const SignUpComponent = () => {
           verificationToken: otpResponse.data.verificationToken,
         }).unwrap();
         if (res.data.accessToken) {
-          toast.success("OTP validated successfully!");
-          storeUserInfo({ accessToken: res.data.accessToken });
+          toast.success("Registration successful! Welcome to StorySparkAI!");
+          // Use AuthContext.login() so React auth state updates synchronously
+          // alongside localStorage persistence — fixes session not initialising after signup
+          authContext?.login(res.data.accessToken);
           navigate("/");
         }
       } else {
@@ -196,7 +199,9 @@ const SignUpComponent = () => {
       const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
       if (res.data.accessToken) {
         toast.success("User logged in successfully with Google!");
-        storeUserInfo({ accessToken: res.data.accessToken });
+        // Use AuthContext.login() so React auth state updates synchronously
+        // alongside localStorage persistence — fixes session not initialising after Google signup
+        authContext?.login(res.data.accessToken);
         navigate("/");
       }
     } catch {
@@ -364,8 +369,7 @@ const SignUpComponent = () => {
                   Change Email
                 </button>
               </div>
-            </div>
-          )}
+            )}
 
           {!showOtpField && (
             <div className="w-full">
