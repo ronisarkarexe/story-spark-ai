@@ -17,7 +17,7 @@ jest.mock("mongoose", () => ({
   model: jest.fn(() => ({
     findOneAndUpdate: mockFindOneAndUpdate,
   })),
-}), { virtual: true });
+}));
 
 jest.mock("../utils/logger.util", () => ({
   __esModule: true,
@@ -29,7 +29,7 @@ jest.mock("../utils/logger.util", () => ({
 jest.mock("../app/utils/redis.client", () => ({
   __esModule: true,
   default: mockRedisClient,
-}), { virtual: true });
+}));
 
 import { consumeRateLimit, consumeTokenQuota } from "../app/middleware/rate_limit.store";
 

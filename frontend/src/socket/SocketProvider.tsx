@@ -12,6 +12,7 @@ import { isLoggedIn } from "../services/auth.service";
  */
 const SocketContext = createContext<Socket | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSocket = (): Socket | null => useContext(SocketContext);
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({

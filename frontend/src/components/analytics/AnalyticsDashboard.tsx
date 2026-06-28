@@ -92,6 +92,7 @@ export default function AnalyticsDashboard() {
         if ((e as Error).name !== "AbortError") {
           console.error(e);
           setError(e instanceof Error ? e.message : "Unable to load analytics data");
+          console.error(error);
         }
       } finally {
         if (!controller.signal.aborted) {

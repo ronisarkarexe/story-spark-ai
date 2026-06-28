@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useDebounce } from "../../hooks/useDebounce";
 import { searchApi, type SearchResults, type StoryResult, type UserResult } from "../../services/searchApi";
@@ -8,7 +8,6 @@ const GENRES = ["Fantasy", "Sci-Fi", "Mystery", "Romance", "Thriller", "Horror",
 
 const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [type, setType] = useState<"all" | "story" | "user" | "tag">(
@@ -35,7 +34,7 @@ const SearchPage: React.FC = () => {
     if (sortBy !== "relevance") p.sortBy = sortBy;
     if (page > 1) p.page = String(page);
     setSearchParams(p, { replace: true });
-  }, [debouncedQuery, type, genre, sortBy, page]);
+  }, [debouncedQuery, type, genre, sortBy, page, setSearchParams]);
 
   // Fetch on param change
   useEffect(() => {

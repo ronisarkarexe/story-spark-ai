@@ -1,4 +1,4 @@
-﻿import {
+import {
   GoogleGenerativeAI,
   HarmCategory,
   HarmBlockThreshold,
@@ -128,6 +128,7 @@ const buildToneInstruction = (tone?: string): string => {
   return `Tone & Style Directive: ${instruction}\n\n`;
 };
 
+
 const throwIfAborted = (signal?: AbortSignal): void => {
   if (signal?.aborted) {
     throw new GenerationAbortedError();
@@ -145,11 +146,6 @@ const buildCharactersInstruction = (characters?: ICharacter[]): string => {
   return `Cast of Characters (You MUST incorporate these characters into all generated stories and maintain their roles, relationship dynamics, and traits consistently):\n${charsString}\n\n`;
 };
 
-const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) return trimmed;
-  return trimmed.replace(/^```(json)?/, "").replace(/```$/, "").trim();
-};
 
 import { GenerativeModel } from "@google/generative-ai";
 

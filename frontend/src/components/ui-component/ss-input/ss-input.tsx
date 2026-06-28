@@ -14,7 +14,7 @@ interface SSInputProps<T extends FieldValues> {
   placeholder?: string;
   required?: boolean;
   icon?: string;
-  register: UseFormRegister<T>;   // <-- fixed, properly typed instead of `any`
+  register: UseFormRegister<T>;
   validation?: RegisterOptions<T>;
   error?: FieldError;
   autoComplete?: string;
@@ -26,7 +26,7 @@ const SSInput = <T extends FieldValues>({
   name,
   type = "text",
   placeholder,
-  required,
+  required = false,
   icon,
   register,
   validation,
@@ -73,6 +73,7 @@ const SSInput = <T extends FieldValues>({
               ? "border-rose-500/80 bg-white dark:bg-slate-900/40 text-rose-600 dark:text-rose-200 focus:ring-rose-500/20 focus:border-rose-500"
               : "border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 text-slate-900 dark:text-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
           }`}
+          style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
         />
 
         {isPasswordType && (

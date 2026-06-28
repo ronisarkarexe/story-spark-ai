@@ -16,6 +16,7 @@ export interface IPostPayload {
   emotions?: string[];
   genre?: string;
   isPublished?: boolean;
+  parentStoryId?: Types.ObjectId | string | null;
 }
 
 export interface IPost extends IPostPayload {
@@ -38,8 +39,11 @@ export interface IPost extends IPostPayload {
   comments?: Types.ObjectId[];
   reactions?: Types.ObjectId[];
   bookmarks?: Types.ObjectId[];
-  parentStoryId?: Types.ObjectId;
+  parentStoryId?: Types.ObjectId | null;
   rootStoryId?: Types.ObjectId;
+  branchDepth?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export type PostModel = Model<IPost, object>;

@@ -80,7 +80,9 @@ app.use((req, res, next) => {
   ) {
     req.url = req.url.replace(/^\/api\/story\//, "/api/v1/story/");
   }
-
+  if (req.method === "GET" && /^\/api\/stories\/[a-f0-9]{24}\/tree$/i.test(req.path)) {
+    req.url = req.url.replace(/^\/api\/stories\//, "/api/v1/stories/");
+  }
   next();
 });
 

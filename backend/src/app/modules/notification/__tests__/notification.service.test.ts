@@ -16,18 +16,18 @@ jest.mock("../notification.model", () => ({
     updateMany: mockUpdateMany,
     deleteMany: mockDeleteMany,
   },
-}), { virtual: true });
+}));
 
 jest.mock("../../user/user.model", () => ({
   User: {
     findOne: mockFindOne,
   },
-}), { virtual: true });
+}));
 
 jest.mock("../../../../socket/notification.socket", () => ({
   emitNotificationToUser: mockEmitNotificationToUser,
   emitNotificationStateToUser: mockEmitNotificationStateToUser,
-}), { virtual: true });
+}));
 
 import { NotificationService } from "../notification.service";
 

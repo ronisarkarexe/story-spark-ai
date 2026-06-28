@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   setToLocalStorage,
   getFromLocalStorage,
@@ -43,7 +44,7 @@ describe("setToLocalStorage", () => {
   });
 
   it("calls localStorage.setItem and returns its result when window is defined", () => {
-    const result = setToLocalStorage("theme", "dark");
+    setToLocalStorage("theme", "dark");
     expect(LOCAL_STORAGE_MOCK.setItem).toHaveBeenCalledWith("theme", "dark");
     expect(LOCAL_STORAGE_MOCK.store["theme"]).toBe("dark");
   });
@@ -94,7 +95,7 @@ describe("removeFromLocalStorage", () => {
 
   it("calls localStorage.removeItem when window is defined", () => {
     LOCAL_STORAGE_MOCK.store["draft"] = "some content";
-    const result = removeFromLocalStorage("draft");
+    removeFromLocalStorage("draft");
     expect(LOCAL_STORAGE_MOCK.removeItem).toHaveBeenCalledWith("draft");
     expect(LOCAL_STORAGE_MOCK.store).not.toHaveProperty("draft");
   });

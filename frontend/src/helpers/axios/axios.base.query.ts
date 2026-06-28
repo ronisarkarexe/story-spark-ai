@@ -37,7 +37,12 @@ export const axiosBaseQuery =
         message: result.data.message,
       };
     } catch (axiosError) {
-      const err = axiosError as any;
+      const err = axiosError as {
+        response?: {
+          data?: { message?: string };
+          status?: number;
+        };
+      };
       
       if (api.signal.aborted) {
         return {

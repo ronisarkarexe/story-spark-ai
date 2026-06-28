@@ -81,7 +81,7 @@ class ErrorBoundary extends Component<Props, State> {
     }
 
     // Clear error boundary state to retry
-    this.setState((prev) => ({
+    this.setState(() => ({
       hasError: false,
       error: undefined,
       errorInfo: undefined,

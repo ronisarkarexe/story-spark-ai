@@ -34,7 +34,9 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
   const [results, setResults] = useState<SearchResults | null>(null);
   const [loading, setLoading] = useState(false);
   const [recent, setRecent] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeIdx, setActiveIdx] = useState(0);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 

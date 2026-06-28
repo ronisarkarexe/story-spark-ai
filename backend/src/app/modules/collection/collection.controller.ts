@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import catchAsync from "../../../shared/catch_async";
 import { routeParam } from "../../../shared/route_param";
 import { getToken } from "../../middleware/token";
+import { ITokenPayload } from "../../../interfaces/token";
 import sendResponse from "../../../shared/send_response";
 import httpStatus from "http-status";
 import { CollectionService } from "./collection.service";
@@ -25,9 +26,9 @@ interface AddStoryBody {
 }
 
 // --- Helper Utility (Can be moved to your token middleware file) ---
-const getOptionalToken = async (req: Request): Promise<string | null> => {
+const getOptionalToken = (req: Request): ITokenPayload | null => {
   try {
-    return await getToken(req);
+    return getToken(req);
   } catch {
     return null; // Unauthenticated visitor
   }

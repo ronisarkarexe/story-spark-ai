@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { io, Socket } from "socket.io-client";
+import { resolveSocketUrl } from "../../helpers/socket-url";
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import CollabEditor from './CollabEditor';
@@ -43,7 +45,7 @@ export default function CollabRoom() {
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [collabSocket, setCollabSocket] = useState<any>(null);
+  const [collabSocket, setCollabSocket] = useState<Socket | null>(null);
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
@@ -68,7 +70,7 @@ export default function CollabRoom() {
       return;
     }
 
-    let socketInstance: any;
+    let socketInstance: Socket;
 
     try {
       socketInstance = io(`${socketUrl}/collab`, {
@@ -154,7 +156,6 @@ export default function CollabRoom() {
       setLoading(false);
     }
   }, [roomId, navigate]);
-
   const handleAIContinue = () => {
     if (!roomId || !collabSocket) return;
     collabSocket.emit("collab:ai_continue", { roomId });

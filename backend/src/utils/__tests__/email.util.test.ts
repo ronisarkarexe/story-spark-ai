@@ -2,7 +2,6 @@
  * email.util.test.ts
  * Unit tests for backend/src/utils/email.util.ts
  */
-import { escapeHtml, sendVerificationEmail, sendContactEmail } from "../email.util";
 
 // Mock nodemailer
 const mockSendMail = jest.fn();
@@ -12,14 +11,22 @@ jest.mock("nodemailer", () => ({
   }),
 }));
 
-// Mock config
-jest.mock("../../config", () => ({
-  default: {
-    verify_email: "test@example.com",
-    verify_password: "test-password",
-    cors_origins: ["http://localhost:4001"],
-  },
-}));
+import config from "../../config/index";
+
+let escapeHtml: any;
+let sendVerificationEmail: any;
+let sendContactEmail: any;
+
+beforeAll(() => {
+  (config as any).verify_email = "test@example.com";
+  (config as any).verify_password = "test-password";
+  (config as any).cors_origins = ["http://localhost:4001"];
+
+  const emailUtil = require("../email.util");
+  escapeHtml = emailUtil.escapeHtml;
+  sendVerificationEmail = emailUtil.sendVerificationEmail;
+  sendContactEmail = emailUtil.sendContactEmail;
+});
 
 beforeEach(() => {
   mockSendMail.mockReset();

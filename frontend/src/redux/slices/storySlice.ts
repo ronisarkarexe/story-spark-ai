@@ -39,8 +39,8 @@ const storySlice = createSlice({
         };
         
         localStorage.setItem(storageKey, JSON.stringify(safeData));
-      } catch (error: any) {
-        if (error.name === "QuotaExceededError") {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name === "QuotaExceededError") {
           console.error("Storage limit reached. Cannot save story locally.");
         } else {
           console.error("Error saving story to storage", error);
@@ -70,8 +70,8 @@ const storySlice = createSlice({
         };
         
         localStorage.setItem(storageKey, JSON.stringify(safeData));
-      } catch (error: any) {
-        if (error.name === "QuotaExceededError") {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name === "QuotaExceededError") {
           console.error("Storage limit reached. Cannot save story locally.");
         } else {
           console.error("Error saving story to storage", error);

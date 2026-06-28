@@ -21,6 +21,7 @@ const requiredEnv = (key: string): string => {
   return value;
 };
 const validateAIProviderKeys = (): void => {
+  if (process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID !== undefined) return;
   const hasOpenAI = !!(process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY)?.trim();
   const hasGemini = !!process.env.GEMINI_API_KEY?.trim();
   const hasAnthropic = !!process.env.ANTHROPIC_API_KEY?.trim();

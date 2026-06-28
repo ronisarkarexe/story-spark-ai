@@ -1,49 +1,71 @@
-export const validateTokenPayload = (decodedData: Record<string, unknown>): void => {
+/**
+ * Validates a decoded JWT token payload and strictly checks its claims format and existence.
+ * Throws a descriptive Error if validation fails.
+ */
+export const validateTokenPayload = (decodedData: unknown): void => {
   if (!decodedData || typeof decodedData !== "object") {
     throw new Error("Token payload is not a valid object.");
   }
-  const userId = decodedData.userId || decodedData._id || decodedData.sub;
+
+  const payload = decodedData as Record<string, unknown>;
+
+  // Support _id, userId, or sub for the user identifier claim
+  const userId = payload.userId || payload._id || payload.sub;
   if (!userId || typeof userId !== "string" || userId.trim() === "") {
     throw new Error("Token is missing a valid user identifier ('userId', '_id', or 'sub').");
   }
-  if (typeof decodedData.email !== "string" || decodedData.email.trim() === "") {
+
+  // Validate email address claim
+  if (typeof payload.email !== "string" || payload.email.trim() === "") {
     throw new Error("Token is missing a valid 'email' claim.");
   }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(decodedData.email)) {
+  if (!emailRegex.test(payload.email)) {
     throw new Error("Token 'email' claim is not a valid email address.");
   }
-  if (typeof decodedData.role !== "string" || decodedData.role.trim() === "") {
+
+  // Validate role claim (must match backend database roles)
+  if (typeof payload.role !== "string" || payload.role.trim() === "") {
     throw new Error("Token is missing a valid 'role' claim.");
   }
   const validRoles = ["admin", "super_admin", "user", "writer", "guest"];
-  if (!validRoles.includes(decodedData.role)) {
+  if (!validRoles.includes(payload.role)) {
     throw new Error(`Token 'role' claim must be one of: ${validRoles.join(", ")}`);
   }
-  if (typeof decodedData.subscriptionType !== "string" || decodedData.subscriptionType.trim() === "") {
+
+  // Validate subscriptionType claim (must match backend database subscription types)
+  if (typeof payload.subscriptionType !== "string" || payload.subscriptionType.trim() === "") {
     throw new Error("Token is missing a valid 'subscriptionType' claim.");
   }
   const validSubscriptions = ["free", "pro", "premium"];
-  if (!validSubscriptions.includes(decodedData.subscriptionType)) {
+  if (!validSubscriptions.includes(payload.subscriptionType)) {
     throw new Error(`Token 'subscriptionType' claim must be one of: ${validSubscriptions.join(", ")}`);
   }
-  if (typeof decodedData.exp !== "number" || isNaN(decodedData.exp)) {
+
+  // Validate exp claim (must be a valid timestamp number in seconds)
+  if (typeof payload.exp !== "number" || isNaN(payload.exp)) {
     throw new Error("Token is missing a valid numeric 'exp' claim.");
   }
   const currentTime = Math.floor(Date.now() / 1000);
-  if (decodedData.exp < currentTime) {
+  if (payload.exp < currentTime) {
     throw new Error("Token has expired.");
   }
-  if (typeof decodedData.iat !== "number" || isNaN(decodedData.iat)) {
+
+  // Validate iat claim (must be a valid timestamp number in seconds)
+  if (typeof payload.iat !== "number" || isNaN(payload.iat)) {
     throw new Error("Token is missing a valid numeric 'iat' claim.");
   }
-  if (decodedData.iat >= decodedData.exp) {
+  if (payload.iat >= payload.exp) {
     throw new Error("Token 'iat' must be before 'exp'.");
   }
-  if (decodedData.name !== undefined && typeof decodedData.name !== "string") {
+
+  // Validate optional name claim type if present
+  if (payload.name !== undefined && typeof payload.name !== "string") {
     throw new Error("Token 'name' claim must be a string.");
   }
-  if (decodedData.postsCount !== undefined && typeof decodedData.postsCount !== "number") {
+
+  // Validate optional postsCount claim type if present
+  if (payload.postsCount !== undefined && typeof payload.postsCount !== "number") {
     throw new Error("Token 'postsCount' claim must be a number.");
   }
 };

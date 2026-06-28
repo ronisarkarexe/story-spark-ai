@@ -170,7 +170,6 @@ const ForgotPasswordComponent = () => {
           "OTP verification failed. Please check the code and try again.",
         ),
       );
-    } finally {
     }
   };
 

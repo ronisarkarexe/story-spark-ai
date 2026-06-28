@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useGetDashboardAnalysisQuery } from "../../redux/apis/analysis.api";
 import TopicsChart from "../chart/dashboard/bar_chart";
 import SubscriptionChart from "../chart/dashboard/doughnut_chart";
@@ -353,6 +352,25 @@ const DashboardComponent = () => {
                   <i className="fas fa-satellite-dish animate-pulse"></i> Open Collab Space
                 </a>
               </div>
+
+              {/* Story Branching Visualizer Banner — Writer */}
+              <div className="flex flex-col gap-6 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-500/5 to-indigo-500/5 p-6 dark:border-violet-500/10 dark:from-violet-500/10 dark:to-indigo-500/10 md:flex-row md:items-center md:justify-between sm:p-8">
+                <div className="max-w-2xl min-w-0">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400 mb-4">
+                    <i className="fas fa-project-diagram text-xl"></i>
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-2">Story Branching Visualizer</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Visualize the creative evolution of your stories. Navigate the lineage tree of AI variations and refinements — click any node to jump straight into that version of your story.
+                  </p>
+                </div>
+                <a
+                  href="/dashboard/published-stories"
+                  className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 px-8 py-4 font-bold text-white shadow-lg shadow-violet-500/20 transition-all hover:scale-[1.02] hover:from-violet-600 hover:to-indigo-700 sm:w-auto"
+                >
+                  <i className="fas fa-sitemap"></i> Open Story Lineage
+                </a>
+              </div>
             </div>
           )}
 
@@ -420,6 +438,25 @@ const DashboardComponent = () => {
                   <i className="fas fa-shopping-cart"></i> View Premium Plans
                 </a>
               </div>
+            </div>
+
+            {/* Story Branching Visualizer Banner — User */}
+            <div className="flex flex-col gap-6 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-500/5 to-indigo-500/5 p-6 dark:border-violet-500/10 dark:from-violet-500/10 dark:to-indigo-500/10 md:flex-row md:items-center md:justify-between sm:p-8">
+              <div className="max-w-2xl min-w-0">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400 mb-4">
+                  <i className="fas fa-project-diagram text-xl"></i>
+                </div>
+                <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-2">Story Branching Visualizer</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Explore the creative evolution of AI stories as a visual tree. Navigate each branch and variation — click any node to instantly jump into that version of a story.
+                </p>
+              </div>
+              <a
+                href="/dashboard/published-stories"
+                className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 px-8 py-4 font-bold text-white shadow-lg shadow-violet-500/20 transition-all hover:scale-[1.02] hover:from-violet-600 hover:to-indigo-700 sm:w-auto"
+              >
+                <i className="fas fa-sitemap"></i> Explore Story Lineage
+              </a>
             </div>
             </div>
           )}

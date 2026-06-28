@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, MessageSquare, Trash2, Bot, User, Sparkles, RefreshCw, AlertCircle, HelpCircle, BookOpen, Compass, Zap } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { chatWithSparky, ISparkyMessage } from "../../services/ai.service";
 import toast from "react-hot-toast";
 
@@ -67,9 +67,9 @@ const ChatPage: React.FC = () => {
       const response = await chatWithSparky(updatedMessages);
       const botMessage: ISparkyMessage = { role: "model", content: response.content };
       setMessages((prev) => [...prev, botMessage]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      const errMsg = err.message || "Failed to communicate with Sparky AI service.";
+      const errMsg = err instanceof Error ? err.message : "Failed to communicate with Sparky AI service.";
       setErrorState(errMsg);
       toast.error(errMsg);
     } finally {

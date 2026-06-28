@@ -72,7 +72,7 @@ const StoryImprovementSuggestions: React.FC<Props> = ({
         </div>
 
         <p className="text-gray-400 mb-5">
-          Review suggestions to improve your story quality.
+          Review suggestions to improve "{story.title}".
         </p>
 
         <div className="space-y-4">

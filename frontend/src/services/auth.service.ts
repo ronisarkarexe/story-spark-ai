@@ -67,23 +67,41 @@ export const getValidDecodedToken = () => {
         return null;
       }
 
-      if (
-        typeof decodedData.exp === "number" &&
-        decodedData.exp <= Math.floor(Date.now() / 1000)
-      ) {
+      // 1. Validate userId/_id presence
+      const userId = decodedData.userId ?? decodedData._id;
+      if (!userId) {
+        removeFromLocalStorage(AUTH_KEY);
+        return null;
+      }
+
+      // 2. Validate role presence and correctness
+      const validRoles = ["user", "admin", "guest"];
+      if (!decodedData.role || !validRoles.includes(decodedData.role)) {
+        removeFromLocalStorage(AUTH_KEY);
+        return null;
+      }
+
+      // 3. Validate exp and iat are numbers
+      if (typeof decodedData.exp !== "number" || typeof decodedData.iat !== "number") {
+        removeFromLocalStorage(AUTH_KEY);
+        return null;
+      }
+
+      // 4. Validate expiration
+      if (decodedData.exp <= Math.floor(Date.now() / 1000)) {
         removeFromLocalStorage(AUTH_KEY);
         return null;
       }
 
       return buildUserInfo({
         email: decodedData.email ?? "",
-        role: decodedData.role ?? "",
-        userId: decodedData.userId ?? decodedData._id ?? "",
+        role: decodedData.role,
+        userId: userId,
         name: decodedData.name ?? "",
         postsCount: decodedData.postsCount ?? 0,
         subscriptionType: decodedData.subscriptionType ?? "free",
-        exp: decodedData.exp ?? 0,
-        iat: decodedData.iat ?? 0,
+        exp: decodedData.exp,
+        iat: decodedData.iat,
       });
     } catch (error) {
       console.error("Invalid auth token:", error);

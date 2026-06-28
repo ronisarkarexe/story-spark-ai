@@ -7,8 +7,6 @@ import {
   ExternalLink,
   Code2,
   Trophy,
-  GitBranch,
-  MessageCircle,
 } from "lucide-react";
 
 import gsap from "gsap";

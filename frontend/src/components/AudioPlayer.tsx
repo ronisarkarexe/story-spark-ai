@@ -124,7 +124,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
-    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
+    }, [showFavoritesOnly, displayedVoices, speech]);
 
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -171,7 +171,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
       };
-    }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
+    }, [speech]);
 
     const scrollToTop = () => {
       const container = document.querySelector('[role="region"]');

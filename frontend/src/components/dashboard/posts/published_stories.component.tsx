@@ -4,7 +4,6 @@ import { useDebounced } from "../../../hooks/global";
 import { Post } from "../../../models/post";
 import { useGetMyPublishedStoriesQuery } from "../../../redux/apis/post.api";
 import PaginationComponent from "../../pagination/pagination.component";
-
 const PAGE_SIZE = 6;
 
 const stripMarkup = (content: string) =>
@@ -35,6 +34,7 @@ const PublishedStoriesComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(PAGE_SIZE);
+  const [viewMode, setViewMode] = useState<"list" | "tree">("list");
 
   const debounceTerm = useDebounced({
     searchQuery: searchTerm,
@@ -83,14 +83,59 @@ const PublishedStoriesComponent: React.FC = () => {
           </p>
         </div>
 
-        <Link
-          to="/story-workspace"
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-500"
-        >
-          <i className="fas fa-pen-nib text-xs"></i>
-          Write Story
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* List / Tree view toggle */}
+          <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200 dark:border-white/[0.07]">
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={`h-9 px-3 rounded-md text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                viewMode === "list"
+                  ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
+              title="List View"
+              aria-label="Switch to List View"
+            >
+              <i className="fas fa-list text-[11px]"></i>
+              List View
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("tree")}
+              className={`h-9 px-3 rounded-md text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                viewMode === "tree"
+                  ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
+              title="Tree View — select a story below to visualize its lineage"
+              aria-label="Switch to Tree View"
+            >
+              <i className="fas fa-project-diagram text-[11px]"></i>
+              Tree View
+            </button>
+          </div>
+
+          <Link
+            to="/story-workspace"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-500"
+          >
+            <i className="fas fa-pen-nib text-xs"></i>
+            Write Story
+          </Link>
+        </div>
       </div>
+
+      {/* Tree View hint banner */}
+      {viewMode === "tree" && (
+        <div className="flex items-start gap-3 rounded-xl border border-indigo-200 bg-indigo-50/60 px-4 py-3 dark:border-indigo-500/20 dark:bg-indigo-500/10">
+          <i className="fas fa-project-diagram mt-0.5 text-indigo-500 dark:text-indigo-400 shrink-0"></i>
+          <p className="text-sm text-indigo-700 dark:text-indigo-300">
+            <span className="font-semibold">Tree View active.</span> Click{" "}
+            <span className="font-bold">"View Lineage Tree"</span> on any story card below to open its full branching visualizer.
+          </p>
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/[0.07] dark:bg-[#0a1020] md:flex-row md:items-center md:justify-between">
         <div>
@@ -229,6 +274,24 @@ const PublishedStoriesComponent: React.FC = () => {
                         Published
                       </p>
                     </div>
+                  </div>
+
+                  {/* View Lineage Tree button — visible in both modes */}
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/story-tree/${story.rootStoryId ?? story._id}`)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition cursor-pointer ${
+                        viewMode === "tree"
+                          ? "border-indigo-500 bg-indigo-600 text-white hover:bg-indigo-500"
+                          : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 dark:border-white/[0.07] dark:bg-white/[0.03] dark:text-slate-400 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400 dark:hover:border-indigo-500/40"
+                      }`}
+                      title="Open the branching lineage tree for this story"
+                      aria-label={`View lineage tree for ${story.title}`}
+                    >
+                      <i className="fas fa-project-diagram text-[11px]"></i>
+                      View Lineage Tree
+                    </button>
                   </div>
                 </div>
               </div>

@@ -3,7 +3,7 @@ import { useState, useRef } from 'react';
 import api from '../services/api';
 
 interface StoryGeneratorProps {
-  onStoryGenerated?: (stories: any[]) => void;
+  onStoryGenerated?: (stories: unknown[]) => void;
 }
 
 const MIN_PROMPT_LENGTH = 10;
@@ -13,10 +13,14 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
   const [prompt, setPrompt] = useState('');
   const [variationCount, setVariationCount] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
-  const [stories, setStories] = useState<any[]>([]);
+  const [stories, setStories] = useState<unknown[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const abortContollerRef = useRef<AbortController | null>(null);
+  const trimmedPrompt = prompt.trim();
+  const promptLength = trimmedPrompt.length;
+  const isPromptInvalid = promptLength < MIN_PROMPT_LENGTH || promptLength > MAX_PROMPT_LENGTH;
+
+  const abortControllerRef = useRef<AbortController | null>(null);
   const handleGenerate = async () => {
     if (!trimmedPrompt) {
       setError('Please enter a story prompt.');
@@ -46,7 +50,7 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
         prompt: trimmedPrompt,
         variations: variationCount,
       }, {
-        signal: abortControlerRef.current.signal,
+        signal: abortControllerRef.current.signal,
       });
       clearTimeout(timeoutld);
 
@@ -58,10 +62,11 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
       } else {
         throw new Error('No variations received from AI service');
       }
-    } catch (error: any) {
-      console.error('AI Generation Error:', error);
+    } catch (err: unknown) {
+      console.error('AI Generation Error:', err);
 
       let errorMessage = 'Failed to generate stories. Please try again.';
+      const error = err as { response?: { status: number }; code?: string; message?: string; name?: string };
 
       if (error.response?.status === 429) {
         errorMessage = 'The AI service is currently busy. Please wait a moment and try again.';
@@ -195,7 +200,7 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
             {stories.map((story, index) => (
               <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h4 className="font-medium text-indigo-600">Variation {index + 1}</h4>
-                <p className="text-gray-700 mt-1">{story}</p>
+                <p className="text-gray-700 mt-1">{story as string}</p>
               </div>
             ))}
           </div>

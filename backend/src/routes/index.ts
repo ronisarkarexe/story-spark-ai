@@ -25,6 +25,7 @@ import { StoryRatingRouter } from "../app/modules/story_rating/story_rating.rout
 import PromptAnalysisRouter from "../app/modules/prompt_analysis/prompt_analysis.router";
 import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
 import characterRouter from "./character.routes";
+import { StoriesRouter } from "./stories";
 
 const router = express.Router();
 
@@ -104,5 +105,7 @@ const modules = [
 ];
 
 modules.forEach((route) => router.use(route.path, route.router));
+
+router.use("/stories", StoriesRouter);
 
 export const Routers = router;

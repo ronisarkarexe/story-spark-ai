@@ -3,7 +3,6 @@ import { Chapter } from "../../types/story.types";
 import ReadingTimeBadge from "../ReadingTimeBadge";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
-import { AudioPlayer } from "../AudioPlayer";
 
 interface Props {
   chapters: Chapter[];
@@ -221,9 +220,18 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
     Reading Progress
   </span>
 
-  <span className="text-sm font-medium text-indigo-400">
-    {progress}%
-  </span>
+  <div className="flex items-center gap-3">
+    <span className="text-sm font-medium text-indigo-400">
+      {progress}%
+    </span>
+    <button
+      onClick={handleShare}
+      className="text-xs px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+      title="Share story"
+    >
+      Share
+    </button>
+  </div>
 </div>
         <button
           onClick={handleExportPDF}

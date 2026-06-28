@@ -69,7 +69,7 @@ describe("escapeRegex", () => {
   it("escapes all metacharacters in a combined string", () => {
     const result = escapeRegex("[a-z]{1,3}(foo|bar)+?bar$");
     expect(result).toBe(
-      "\\[a\\-z\\]\\{1\\,3\\}\\(foo\\|bar\\)\\+?bar\\$"
+      "\\[a\\-z\\]\\{1\\,3\\}\\(foo\\|bar\\)\\+\\?bar\\$"
     );
   });
 

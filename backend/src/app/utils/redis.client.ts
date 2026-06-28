@@ -2,7 +2,7 @@ import Redis from "ioredis";
 
 type RedisLike = {
   status: string;
-  on: (event: string, listener: (...args: unknown[]) => void) => RedisLike;
+  on: (event: string, listener: (...args: any[]) => void) => RedisLike;
   get: (key: string) => Promise<string | null>;
   set: (...args: unknown[]) => Promise<unknown>;
   del: (...args: unknown[]) => Promise<unknown>;

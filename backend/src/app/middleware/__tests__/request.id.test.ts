@@ -18,8 +18,8 @@ function buildMocks(incomingHeader?: string | string[]) {
     _headerSet: false,
     _headerValue: "",
     setHeader(key: string, val: string) {
-      this._headerValue = val;
-      this._headerSet = key === "X-Request-Id";
+      (this as any)._headerValue = val;
+      (this as any)._headerSet = key === "X-Request-Id";
     },
   } as unknown as Response;
   const next = jest.fn();
@@ -58,14 +58,14 @@ describe("request.id middleware", () => {
   it("sets X-Request-Id response header with the assigned id", () => {
     const { req, res, next } = buildMocks("response-id");
     requestId(req, res, next);
-    expect(res._headerSet).toBe(true);
-    expect(res._headerValue).toBe("response-id");
+    expect((res as any)._headerSet).toBe(true);
+    expect((res as any)._headerValue).toBe("response-id");
   });
 
   it("sets X-Request-Id response header with generated UUID when no incoming header", () => {
     const { req, res, next } = buildMocks();
     requestId(req, res, next);
-    expect(res._headerSet).toBe(true);
-    expect(res._headerValue).toBe("mock-uuid-v4");
+    expect((res as any)._headerSet).toBe(true);
+    expect((res as any)._headerValue).toBe("mock-uuid-v4");
   });
 });

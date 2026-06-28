@@ -10,11 +10,11 @@ export default function BookShelfPage() {
     limit: 50,
   });
 
-  const stories: IBookStory[] = (data?.posts || []).map((post: any) => ({
-    uuid: post._id || post.uuid,
+  const stories: IBookStory[] = (data?.posts || []).map((post: { _id?: string; uuid?: string; title: string; content: string; tag?: string; imageURL?: string }) => ({
+    uuid: post._id || post.uuid || "",
     title: post.title,
     content: post.content,
-    tag: post.tag,
+    tag: post.tag || "",
     imageURL: post.imageURL,
   }));
 

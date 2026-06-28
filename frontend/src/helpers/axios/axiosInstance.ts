@@ -21,7 +21,7 @@ instance.interceptors.response.use(
 
         const socket = getSocketIo();
         if (socket) {
-          (socket as any).auth = { token: newToken };
+                  (socket as { auth: Record<string, string> }).auth = { token: newToken };
           socket.emit('reauthenticate', newToken);
         }
 

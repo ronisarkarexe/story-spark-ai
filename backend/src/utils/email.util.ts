@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import config from "../config";
+import config from "../config/index";
 
 export const escapeHtml = (unsafe: string): string => {
   return unsafe
