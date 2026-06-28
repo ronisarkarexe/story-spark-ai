@@ -9,6 +9,8 @@ import {
   getAnthropicClient,
 } from "../../../services/ai.service";
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
 export const enhancePrompt = (prompt: string, context?: string): string => {
   // Use the following story context if available
   const compressedContext = context ? context : "No previous context";
