@@ -51,8 +51,10 @@ const SSInput = <T extends FieldValues>({
       >
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
+
+      <div className="relative mt-2 flex items-center w-full min-w-0">
+
       
-      <div className="relative mt-2 flex items-center">
         {icon && (
           <span className="absolute left-3 text-gray-500 flex items-center pointer-events-none">
             <i className={icon}></i>
