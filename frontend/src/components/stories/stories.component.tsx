@@ -18,14 +18,14 @@ import StoryGeneratingAnimation from "../loading/story-generating-animation.comp
 import { useDebounce } from "../../hooks/useDebounce";
 
 const soundtrackMap: Record<string, string> = {
-  "ðŸ§™ Fantasy": "/audio/fantasy.mp3",
-  "ðŸ˜± Horror": "/audio/horror.mp3",
-  "ðŸ’• Romance": "/audio/romance.mp3",
-  "ðŸŽ­ Drama": "/audio/drama.mp3", 
-  "ðŸ˜‚ Comedy": "/audio/comedy.mp3", 
-  "ðŸš€ Sci-Fi": "/audio/sci-fi.mp3", 
-  "ðŸ” Mystery": "/audio/mystery.mp3", 
-  "ðŸŒŸ Adventure": "/audio/adventure.mp3"
+  "🧙 Fantasy": "/audio/fantasy.mp3",
+  "😱 Horror": "/audio/horror.mp3",
+  "💕 Romance": "/audio/romance.mp3",
+  "🎭 Drama": "/audio/drama.mp3", 
+  "😂 Comedy": "/audio/comedy.mp3", 
+  "🚀 Sci-Fi": "/audio/sci-fi.mp3", 
+  "🔍 Mystery": "/audio/mystery.mp3", 
+  "🌟 Adventure": "/audio/adventure.mp3"
 };
 
 type Inputs = {
@@ -51,14 +51,14 @@ const LANGUAGES = [
 ];
 
 const GENRES = [
-  { value: "ðŸŽ­ Drama", icon: "ðŸŽ­", name: "Drama" },
-  { value: "ðŸ˜‚ Comedy", icon: "ðŸ˜‚", name: "Comedy" },
-  { value: "ðŸ˜± Horror", icon: "ðŸ˜±", name: "Horror" },
-  { value: "ðŸ’• Romance", icon: "ðŸ’•", name: "Romance" },
-  { value: "ðŸš€ Sci-Fi", icon: "ðŸš€", name: "Sci-Fi" },
-  { value: "ðŸ§™ Fantasy", icon: "ðŸ§™", name: "Fantasy" },
-  { value: "ðŸ” Mystery", icon: "ðŸ”", name: "Mystery" },
-  { value: "ðŸŒŸ Adventure", icon: "ðŸŒŸ", name: "Adventure" },
+  { value: "🎭 Drama", icon: "🎭", name: "Drama" },
+  { value: "😂 Comedy", icon: "😂", name: "Comedy" },
+  { value: "😱 Horror", icon: "😱", name: "Horror" },
+  { value: "💕 Romance", icon: "💕", name: "Romance" },
+  { value: "🚀 Sci-Fi", icon: "🚀", name: "Sci-Fi" },
+  { value: "🧙 Fantasy", icon: "🧙", name: "Fantasy" },
+  { value: "🔍 Mystery", icon: "🔍", name: "Mystery" },
+  { value: "🌟 Adventure", icon: "🌟", name: "Adventure" },
 ] as const;
 
 type GenreName = (typeof GENRES)[number]["name"];
@@ -98,7 +98,7 @@ const GENRE_LABELS: Record<string, Record<GenreName, string>> = {
   },
   Bengali: {
     Drama: "নাটক", Comedy: "কৌতুক", Horror: "ভৌতিক", Romance: "প্রেম",
-    "Sci-Fi": "বিজ্ঞান কল্পকাহিনি", Fantasy: "কল্পনা", Mystery: "রহস্য", Adventure: "অভিযান",
+    "Sci-Fi": "বিজ্ঞান কল্পকাহিনি", Fantasy: "কল্পনা", Mystery: "रहस्य", Adventure: "অভিযান",
   },
   Tamil: {
     Drama: "நாடகம்", Comedy: "நகைச்சுவை", Horror: "திகில்", Romance: "காதல்",
@@ -109,8 +109,8 @@ const GENRE_LABELS: Record<string, Record<GenreName, string>> = {
     "Sci-Fi": "విజ్ఞాన కథ", Fantasy: "கాల్పనికం", Mystery: "రహస్యం", Adventure: "సాహసం",
   },
   Marathi: {
-    Drama: "à¤¨à¤¾à¤Ÿà¤•", Comedy: "à¤µà¤¿à¤¨à¥‹à¤¦", Horror: "à¤­à¤¯à¤•à¤¥à¤¾", Romance: "à¤ªà¥à¤°à¥‡à¤®à¤•à¤¥à¤¾",
-    "Sci-Fi": "à¤µà¤¿à¤œà¥à¤žà¤¾à¤¨à¤•à¤¥à¤¾", Fantasy: "à¤•à¤²à¥à¤ªà¤¨à¤¾à¤°à¤®à¥à¤¯", Mystery: "à¤°à¤¹à¤¸à¥à¤¯", Adventure: "à¤¸à¤¾à¤¹à¤¸",
+    Drama: "नाटक", Comedy: "विनोद", Horror: "भयकथा", Romance: "प्रेमकथा",
+    "Sci-Fi": "विज्ञानकथा", Fantasy: "कल्पनारम्य", Mystery: "रहस्य", Adventure: "साहस",
   },
 };
 

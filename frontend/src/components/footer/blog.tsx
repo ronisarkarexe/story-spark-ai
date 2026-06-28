@@ -77,13 +77,13 @@ const Blog = () => {
         <div className="mt-8">
           <Link
             to="/"
-            className="px-6 py-3 bg-blue-500 text-white font-semibold text-lg rounded-full shadow-md hover:bg-blue-600 transition"
+            className="px-6 py-3 bg-blue-500 text-white font-semibold text-lg rounded-full shadow-md hover:bg-blue-600 active:scale-95 transition-all duration-150"
           >
             ⬅ Back to Home
           </Link>
-        </div>
       </div>
     </div>
+  </div>
   );
 };
 

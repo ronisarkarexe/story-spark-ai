@@ -3,7 +3,7 @@ import type { AxiosRequestConfig } from "axios";
 import { instance as AxiosInstance } from "./axiosInstance";
 import { IMeta, ResponseErrorType } from "../../types";
 
-const axiosBaseQuery =
+export const axiosBaseQuery =
   (
     { baseUrl }: { baseUrl: string } = { baseUrl: "" }
   ): BaseQueryFn<
@@ -19,7 +19,7 @@ const axiosBaseQuery =
     unknown,
     unknown
   > =>
-  async ({ url, method, data, params, contentType, headers }, api) => {
+  async ({ url, method, data, params, contentType }, api) => {
     try {
       const result = await AxiosInstance({
         url: baseUrl + url,
@@ -29,7 +29,6 @@ const axiosBaseQuery =
         signal: api.signal,
         headers: {
           "Content-Type": contentType || "application/json",
-          ...headers,
         },
       });
       return {
@@ -38,7 +37,13 @@ const axiosBaseQuery =
         message: result.data.message,
       };
     } catch (axiosError) {
-      const err = axiosError as ResponseErrorType;
+      const err = axiosError as {
+        response?: {
+          data?: { message?: string };
+          status?: number;
+        };
+      };
+      
       if (api.signal.aborted) {
         return {
           error: {
@@ -47,10 +52,26 @@ const axiosBaseQuery =
           },
         };
       }
+
+      // Check if the message contains our unique key error phrase
+      const backendErrorData = err.response?.data;
+      if (backendErrorData && backendErrorData.message?.includes("ERROR_MISSING_API_KEY")) {
+        return {
+          error: {
+            status: err.response?.status || 500,
+            code: "MISSING_API_KEY",
+            message: "AI Generation provider keys are not configured on the server. Please check your backend/.env file.",
+            data: [{ path: "api_key", message: backendErrorData.message }]
+          },
+        };
+      }
+      
+      // Fallback structural layout mapping for ordinary errors
+      const standardErr = axiosError as ResponseErrorType;
       return {
         error: {
-          status: err.statusCode,
-          data: err.errorMessages || [{ path: "", message: err.message }],
+          status: standardErr.statusCode,
+          data: standardErr.errorMessages || [{ path: "", message: standardErr.message }],
         },
       };
     }

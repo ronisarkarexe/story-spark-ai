@@ -105,10 +105,11 @@ Task:
           "Wait and see what happens",
         ];
       } else if (finalChoices.length < 3) {
-        finalChoices = [...finalChoices];
-        while (finalChoices.length < 3) {
-          finalChoices.push(`Option ${finalChoices.length + 1}`);
+        const padded = [...finalChoices];
+        while (padded.length < 3) {
+          padded.push(`Option ${padded.length + 1}`);
         }
+        finalChoices = padded;
       } else if (finalChoices.length > 3) {
         finalChoices = finalChoices.slice(0, 3);
       }

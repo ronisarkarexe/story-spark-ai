@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
@@ -12,8 +12,24 @@ const StarRating = ({
 }) => {
   const [hovered, setHovered] = useState(0);
 
+  const handleKey = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "ArrowLeft") setRating(Math.max(0, rating - 1));
+      if (e.key === "ArrowRight") setRating(Math.min(5, rating + 1));
+      const num = parseInt(e.key, 10);
+      if (!Number.isNaN(num) && num >= 1 && num <= 5) setRating(num);
+    },
+    [rating, setRating]
+  );
+
   return (
-    <div className="space-y-2">
+    <div
+      role="radiogroup"
+      aria-label="Star rating"
+      tabIndex={0}
+      onKeyDown={handleKey}
+      className="space-y-2"
+    >
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
@@ -53,7 +69,6 @@ const ReviewForm = () => {
   const [success, setSuccess] = useState(false);
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
-
   const validate = () => {
     const newErrors: Record<string, string> = {};
 

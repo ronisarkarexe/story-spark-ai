@@ -395,7 +395,12 @@ const getSinglePost = async (id: string, token?: ITokenPayload | null) => {
       path: "reactions",
       populate: { path: "userId", select: "email" },
     })
-    .populate("bookmarks", "email");
+    .populate("bookmarks", "email")
+    .populate({
+      path: "parentStoryId",
+      select: "title author",
+      populate: { path: "author", select: "name _id" },
+    });
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
@@ -648,6 +653,41 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
   return res;
 };
 
+const forkStory = async (postId: string, token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  const originalPost = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!originalPost) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
+  }
+
+  // Ensure the original post is published (can't fork unpublished drafts)
+  if (!originalPost.isPublished) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Cannot fork an unpublished story!");
+  }
+
+  const res = await Post.create({
+    title: originalPost.title,
+    content: originalPost.content,
+    author: user._id,
+    updatedBy: user._id,
+    tag: originalPost.tag,
+    imageURL: originalPost.imageURL,
+    topic: originalPost.topic,
+    language: originalPost.language,
+    emotions: originalPost.emotions,
+    genre: originalPost.genre,
+    isPublished: false, // It's a draft!
+    parentStoryId: originalPost._id,
+    rootStoryId: originalPost.rootStoryId || originalPost._id,
+  });
+
+  return res;
+};
+
 const getGenres = async (): Promise<string[]> => {
   const genres = await Post.distinct("tag", { isDeleted: { $ne: true }, tag: { $nin: [null, ""] } });
   return genres.sort();
@@ -668,6 +708,7 @@ export const PostService = {
   deletePost,
   remixStory,
   translateStory,
+  forkStory,
   getGenres,
 };
 

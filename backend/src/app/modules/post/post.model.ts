@@ -36,7 +36,7 @@ export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
     reactions: [{ type: Schema.Types.ObjectId, ref: "Reaction" }],
     bookmarks: [{ type: Schema.Types.ObjectId, ref: "User" }],
     parentStoryId: { type: Schema.Types.ObjectId, ref: "Post", default: null },
-    rootStoryId: { type: Schema.Types.ObjectId, ref: "Post" },
+    rootStoryId: { type: Schema.Types.ObjectId, ref: "Post", default: null },
     branchDepth: { type: Number, default: 0 },
   },
   {

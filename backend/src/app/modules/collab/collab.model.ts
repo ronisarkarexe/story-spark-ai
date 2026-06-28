@@ -26,6 +26,7 @@ const CollabRoomSchema = new Schema<ICollabRoom>(
     expiresAt: { type: Date, required: true },
     collabState: { type: Buffer },
     isAiGenerating: { type: Boolean, required: true, default: false },
+    isPublic: { type: Boolean, required: true, default: true },
   },
   {
     timestamps: true,

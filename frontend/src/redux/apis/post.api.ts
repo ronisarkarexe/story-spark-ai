@@ -1,7 +1,7 @@
 import { Post } from "../../models/post";
 import { IMeta } from "../../types";
 import baseApi from "../base_api/base.api";
-import { POST_URL } from "../base_api/base.endpoints";
+import { POST_URL, STORIES_URL } from "../base_api/base.endpoints";
 import { tagTypes } from "../tag-types";
 
 interface QueryErrorResponse {
@@ -27,6 +27,14 @@ const postApi = baseApi.injectEndpoints({
         data: arg.data,
       }),
       invalidatesTags: [tagTypes.post],
+    }),
+
+    forkStory: build.mutation({
+      query: (id: string) => ({
+        url: `/${STORIES_URL}/${id}/fork`,
+        method: "POST",
+      }),
+      invalidatesTags: [tagTypes.post, tagTypes.user],
     }),
 
 
@@ -258,6 +266,7 @@ const postApi = baseApi.injectEndpoints({
 export const {
   useCreatePostMutation,
   useUpdatePostMutation,
+  useForkStoryMutation,
   useGetPostListsQuery,
   useGetMyPublishedStoriesQuery,
   useGetLatestListsQuery,

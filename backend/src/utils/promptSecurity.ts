@@ -114,3 +114,16 @@ export const validateOutput = (aiResponse: string): string => {
 
   return aiResponse;
 };
+
+/**
+ * Strip markdown code fences (e.g. ```json ... ```) from raw AI text
+ * before attempting JSON.parse.
+ */
+export const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};

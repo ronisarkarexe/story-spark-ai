@@ -10,6 +10,7 @@ import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
 import toast, { Toaster } from "react-hot-toast";
+import UserCollectionsTab from "../collections/UserCollectionsTab";
 
 const PublicProfileComponent = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +33,7 @@ const PublicProfileComponent = () => {
 
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"stories" | "collections">("stories");
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -275,73 +277,103 @@ const PublicProfileComponent = () => {
           </div>
         </div>
 
-        {/* STORIES SECTION */}
+        {/* STORIES / COLLECTIONS TABS */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
-            <i className="fas fa-book-open text-indigo-500"></i> Stories Published
-          </h2>
+          {/* Tab bar */}
+          <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800">
+            <button
+              onClick={() => setActiveTab("stories")}
+              className={`px-5 py-2.5 text-sm font-bold rounded-t-lg transition cursor-pointer ${
+                activeTab === "stories"
+                  ? "bg-indigo-600 text-white"
+                  : "text-slate-500 hover:text-indigo-500 dark:text-slate-400"
+              }`}
+            >
+              <i className="fas fa-book-open mr-1.5" /> Stories
+            </button>
+            <button
+              onClick={() => setActiveTab("collections")}
+              className={`px-5 py-2.5 text-sm font-bold rounded-t-lg transition cursor-pointer ${
+                activeTab === "collections"
+                  ? "bg-indigo-600 text-white"
+                  : "text-slate-500 hover:text-indigo-500 dark:text-slate-400"
+              }`}
+            >
+              📚 Collections
+            </button>
+          </div>
 
-          {isPostsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 animate-pulse">
-                  <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4" />
-                  <div className="space-y-2">
-                    <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
-                    <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-5/6" />
-                  </div>
-                  <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4 pt-4" />
+          {/* Stories tab */}
+          {activeTab === "stories" && (
+            <>
+              {isPostsLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 animate-pulse">
+                      <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4" />
+                      <div className="space-y-2">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-5/6" />
+                      </div>
+                      <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4 pt-4" />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          ) : posts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {posts.map((post) => (
-                <div
-                  key={post._id}
-                  className="bg-white border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800/80 rounded-2xl p-6 shadow-md transition duration-200 hover:shadow-xl flex flex-col justify-between"
-                >
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30">
-                        {post.tag}
-                      </span>
-                      <span className="text-xs text-slate-400">
-                        {new Date(post.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white hover:text-indigo-500 dark:hover:text-indigo-400 transition line-clamp-1">
-                      <Link to={`/post/${post._id}`}>{post.title}</Link>
-                    </h3>
-
-                    <p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-3">
-                      {post.content || "No preview available."}
-                    </p>
-                  </div>
-
-                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
-                    <div className="flex gap-4">
-                      <span><i className="fas fa-heart text-red-500/70 mr-1.5" />{post.likesCount || 0}</span>
-                      <span><i className="fas fa-eye text-blue-500/70 mr-1.5" />{post.viewsCount || 0}</span>
-                    </div>
-
-                    <Link
-                      to={`/post/${post._id}`}
-                      className="text-indigo-650 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold transition flex items-center gap-1"
+              ) : posts.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {posts.map((post) => (
+                    <div
+                      key={post._id}
+                      className="bg-white border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800/80 rounded-2xl p-6 shadow-md transition duration-200 hover:shadow-xl flex flex-col justify-between"
                     >
-                      Read Story <i className="fas fa-arrow-right text-[10px]" />
-                    </Link>
-                  </div>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30">
+                            {post.tag}
+                          </span>
+                          <span className="text-xs text-slate-400">
+                            {new Date(post.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white hover:text-indigo-500 dark:hover:text-indigo-400 transition line-clamp-1">
+                          <Link to={`/post/${post._id}`}>{post.title}</Link>
+                        </h3>
+
+                        <p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-3">
+                          {post.content || "No preview available."}
+                        </p>
+                      </div>
+
+                      <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+                        <div className="flex gap-4">
+                          <span><i className="fas fa-heart text-red-500/70 mr-1.5" />{post.likesCount || 0}</span>
+                          <span><i className="fas fa-eye text-blue-500/70 mr-1.5" />{post.viewsCount || 0}</span>
+                        </div>
+
+                        <Link
+                          to={`/post/${post._id}`}
+                          className="text-indigo-650 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold transition flex items-center gap-1"
+                        >
+                          Read Story <i className="fas fa-arrow-right text-[10px]" />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-350 dark:border-slate-800 bg-white/40 dark:bg-slate-900/10 p-12 text-center text-slate-450 dark:text-slate-500">
-              <i className="fas fa-book-open text-4xl mb-4 text-slate-350 dark:text-slate-700 block" />
-              <p className="font-semibold text-lg">No Stories Published</p>
-              <p className="text-sm mt-1">This writer hasn't published any stories yet.</p>
-            </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-slate-350 dark:border-slate-800 bg-white/40 dark:bg-slate-900/10 p-12 text-center text-slate-450 dark:text-slate-500">
+                  <i className="fas fa-book-open text-4xl mb-4 text-slate-350 dark:text-slate-700 block" />
+                  <p className="font-semibold text-lg">No Stories Published</p>
+                  <p className="text-sm mt-1">This writer hasn't published any stories yet.</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Collections tab */}
+          {activeTab === "collections" && id && (
+            <UserCollectionsTab userId={id} isOwner={isOwnProfile} />
           )}
         </div>
       </div>

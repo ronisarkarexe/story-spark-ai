@@ -1,3 +1,4 @@
+import { ICollabRoom } from './collab.interface';
 import { CollabRoom } from './collab.model';
 
 /**
@@ -26,5 +27,16 @@ export class CollabService {
    */
   static async updateCollabState(roomId: string, base64: string): Promise<void> {
     await CollabRoom.updateOne({ roomId }, { collabState: Buffer.from(base64, 'base64') });
+  }
+
+  /**
+   * Dynamically update room visibility status parameters
+   */
+  static async updatePrivacyStatus(roomId: string, isPublic: boolean): Promise<ICollabRoom | null> {
+    return await CollabRoom.findOneAndUpdate(
+      { roomId },
+      { isPublic },
+      { new: true }
+    );
   }
 }

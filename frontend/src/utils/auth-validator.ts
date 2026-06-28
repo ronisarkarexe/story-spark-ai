@@ -19,7 +19,6 @@ export const validateTokenPayload = (decodedData: unknown): void => {
   if (typeof payload.email !== "string" || payload.email.trim() === "") {
     throw new Error("Token is missing a valid 'email' claim.");
   }
-
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(payload.email)) {
     throw new Error("Token 'email' claim is not a valid email address.");
@@ -29,7 +28,6 @@ export const validateTokenPayload = (decodedData: unknown): void => {
   if (typeof payload.role !== "string" || payload.role.trim() === "") {
     throw new Error("Token is missing a valid 'role' claim.");
   }
-
   const validRoles = ["admin", "super_admin", "user", "writer", "guest"];
   if (!validRoles.includes(payload.role)) {
     throw new Error(`Token 'role' claim must be one of: ${validRoles.join(", ")}`);
@@ -39,7 +37,6 @@ export const validateTokenPayload = (decodedData: unknown): void => {
   if (typeof payload.subscriptionType !== "string" || payload.subscriptionType.trim() === "") {
     throw new Error("Token is missing a valid 'subscriptionType' claim.");
   }
-
   const validSubscriptions = ["free", "pro", "premium"];
   if (!validSubscriptions.includes(payload.subscriptionType)) {
     throw new Error(`Token 'subscriptionType' claim must be one of: ${validSubscriptions.join(", ")}`);
@@ -49,10 +46,17 @@ export const validateTokenPayload = (decodedData: unknown): void => {
   if (typeof payload.exp !== "number" || isNaN(payload.exp)) {
     throw new Error("Token is missing a valid numeric 'exp' claim.");
   }
+  const currentTime = Math.floor(Date.now() / 1000);
+  if (payload.exp < currentTime) {
+    throw new Error("Token has expired.");
+  }
 
   // Validate iat claim (must be a valid timestamp number in seconds)
   if (typeof payload.iat !== "number" || isNaN(payload.iat)) {
     throw new Error("Token is missing a valid numeric 'iat' claim.");
+  }
+  if (payload.iat >= payload.exp) {
+    throw new Error("Token 'iat' must be before 'exp'.");
   }
 
   // Validate optional name claim type if present
