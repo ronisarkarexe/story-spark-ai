@@ -160,4 +160,13 @@ export const verifyEmailChangeRateLimiter = createRateLimiter({
   actionLabel: "email verification",
 });
 
+/** Change Password: 10 attempts per 15 minutes, 15-minute block */
+export const changePasswordRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxRequests: 10,
+  blockTimeMs: 15 * 60 * 1000, // 15 minutes
+  keyPrefix: "change_password",
+  actionLabel: "password change",
+});
+
 export default ipRateLimiter;
