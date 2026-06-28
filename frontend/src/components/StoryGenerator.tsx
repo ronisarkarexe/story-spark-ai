@@ -1,5 +1,5 @@
 // frontend/src/components/StoryGenerator.tsx
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import api from '../services/api';
 
 interface StoryGeneratorProps {
@@ -16,7 +16,12 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
   const [stories, setStories] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const abortContollerRef = useRef<AbortController | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const trimmedPrompt = prompt.trim();
+  const promptLength = trimmedPrompt.length;
+  const isPromptInvalid = promptLength < MIN_PROMPT_LENGTH || promptLength > MAX_PROMPT_LENGTH;
+
   const handleGenerate = async () => {
     if (!trimmedPrompt) {
       setError('Please enter a story prompt.');
@@ -46,7 +51,7 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
         prompt: trimmedPrompt,
         variations: variationCount,
       }, {
-        signal: abortControlerRef.current.signal,
+        signal: abortControllerRef.current.signal,
       });
       clearTimeout(timeoutld);
 

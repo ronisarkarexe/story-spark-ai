@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
+import { io } from "socket.io-client";
+import { resolveSocketUrl } from "../../helpers/socket-url";
 import CollabEditor from './CollabEditor';
 interface Participant {
   userId: string;

@@ -1,3 +1,4 @@
+/// <reference types="@testing-library/jest-dom" />
 import { render, screen, act } from '@testing-library/react';
 import { vi } from 'vitest';
 import CollabEditor from './CollabEditor';
