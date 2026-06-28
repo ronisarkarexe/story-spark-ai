@@ -212,8 +212,7 @@ export class ToneAdaptationEngine {
     const cuesToInject = Math.ceil(sentences.length * intensity * 0.3);
     const selectedCues = characteristics.emotionalCues.slice(0, cuesToInject);
 
-    let adapted = story;
-    selectedCues.forEach((cue, idx) => {
+    selectedCues.forEach((cue) => {
       const randomSentenceIdx = Math.floor(Math.random() * sentences.length);
       const sentence = sentences[randomSentenceIdx];
 
