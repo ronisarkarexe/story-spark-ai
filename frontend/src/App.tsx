@@ -1,3 +1,4 @@
+import { ThemeToggle } from './components/ThemeToggle';
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
 import { USER_ROLE } from "./constants/role";
