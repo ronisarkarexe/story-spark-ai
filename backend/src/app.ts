@@ -13,6 +13,7 @@ import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import leaderboardRoute from "./routes/leaderboard.route";
 import globalRateLimiter from "./app/middleware/global.rate-limiter";
+import { sanitizeAllMiddleware } from "./app/middleware/sanitize.middleware";
 
 const app: Application = express();
 app.set("trust proxy", 1);
@@ -71,6 +72,9 @@ app.use(globalRateLimiter);
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(cookieParser());
+
+// Global XSS sanitization for all incoming request bodies and query parameters
+app.use(sanitizeAllMiddleware);
 
 // Legacy Route Rewrite Rewrite Rules
 app.use((req, res, next) => {

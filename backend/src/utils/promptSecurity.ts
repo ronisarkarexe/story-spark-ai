@@ -62,7 +62,7 @@ const normalizeInput = (input: string): string => {
  */
 export const sanitizeJsonText = (rawText: string): string => {
   const trimmed = rawText.trim();
-  return (input ?? "")
+  return (trimmed ?? "")
     .normalize("NFKC")
     .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
     .replace(/[\s\u00A0]+/g, " ")

@@ -127,7 +127,8 @@ export const sanitizeRichText = (input: string | undefined | null): string => {
   }
 
   // Remove event handlers as inline attributes (catch-all)
-  sanitized = sanitized.replace(/\son\w+\s*=\s*["'][^"']*["']/gi, "");
+  // Covers quoted (" '), backtick (`), and unquoted attribute values
+  sanitized = sanitized.replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|`[^`]*`|[^\s>]*)/gi, "");
 
   // Remove expression() and binding() for older IE
   sanitized = sanitized.replace(/expression\s*\(/gi, "( ");
