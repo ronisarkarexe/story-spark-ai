@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Security middleware to prevent prompt injection and jailbreaks.
  * Improvements:
  * - Input normalization before pattern matching
