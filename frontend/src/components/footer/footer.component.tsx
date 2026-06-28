@@ -295,11 +295,13 @@ const FooterComponent: React.FC = () => {
         />
 
         {/* Bottom bar */}
-        <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-slate-400/80">
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 gap-y-1 text-center md:text-left">
-            <span className="text-slate-400/80">
-              &copy; {currentYear} StorySparkAI. All rights reserved.
-            </span>
+      <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-slate-400/80 dark:text-slate-200">
+        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 gap-y-1 text-center md:text-left">
+          <span className="text-slate-400/80 dark:text-slate-200">
+            &copy; {currentYear} StorySparkAI. All rights reserved.
+          </span>
+        </div>
+
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">

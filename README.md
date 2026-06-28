@@ -57,6 +57,15 @@
   - Save favorites
   - Leverage AI analysis to enhance their creative writing journey
 
+- story-spark-ai - [Website](https://storysparkai.vercel.app/)
+- **`StorySparkAI`** is an open-source platform designed to empower creative minds by generating and showcasing AI-crafted stories from user prompts in a simple, engaging way.
+- With **`StorySparkAI`**, users can input an idea, explore multiple story variations, save their favorites, and leverage AI analysis to enhance their creative writing journey.
+
+<a id="features"></a>
+
+## Features 💪
+
+- **Dark Mode**: Toggle between light and dark themes for a comfortable reading experience.
 ---
 
 ## Features 💪
@@ -86,6 +95,7 @@
    cd story-spark-ai
    ```
 
+2. **Install dependencies** (single install at the repo root — pnpm workspaces)
 3. **Install dependencies** (single install at the repo root — npm workspaces)
 
    ```bash
@@ -95,6 +105,7 @@
 4. **Environment files**
 
    - Copy `backend/.env.example` → `backend/.env` and fill in all values (see [Environment variables](#environment-variables)).
+   - Copy `frontend/.env.example` → `frontend/.env` and set `VITE_BASE_URL` to your API base URL (e.g., `http://localhost:5000/api/v1` when the backend runs on port 5000). Optionally set `VITE_SOCKET_URL` for real-time notifications; the frontend uses your logged-in access token to join the notification room.
    - Copy `frontend/.env.example` → `frontend/.env` and set `VITE_BASE_URL` to your API base URL (e.g. `http://localhost:5000/api/v1` when the backend runs on port 5000). Optionally set `VITE_SOCKET_URL` for real-time notifications; the frontend uses your logged-in access token to join the notification room.
 
    > Never commit `backend/.env` or `frontend/.env`. Only `.env.example` files belong in git.
@@ -150,7 +161,7 @@ Use **two** Vercel projects from this monorepo:
 
 <a id="environment-variables"></a>
 
-### Environment variables
+### Environment Variables
 
 After cloning, create your env files from the examples in the repo:
 
@@ -159,8 +170,8 @@ After cloning, create your env files from the examples in the repo:
 git clone https://github.com/ronisarkarexe/story-spark-ai.git
 cd story-spark-ai
 
-# 2. Install all dependencies (npm workspaces — single install)
-npm install
+# 2. Install all dependencies (pnpm workspaces — single install)
+pnpm install
 ```
 
 Copy the example env files and fill in your values:
@@ -171,6 +182,7 @@ cp frontend/.env.example frontend/.env
 ```
 
 #### Backend (`backend/.env`)
+Variables marked **Yes** are required. Variables marked for a specific feature are only required when using that feature.
 Variables marked Yes are required. Variables marked Optional are only required when you use that feature.
 
 #### 🖥️ Server Configuration (Backend)
@@ -216,7 +228,7 @@ Variables marked Yes are required. Variables marked Optional are only required w
 #### 📧 Email Verification
 | Variable | Example | Required | Description |
 |----------|---------|----------|-------------|
-| `VERIFY_EMAIL` | `noreply@example.com` | ⚠️ Optional | Sender email for verification mails |
+| `VERIFY_EMAIL` | `noreply@example.com` | ⚠️ Optional | Sender email for verification emails |
 | `VERIFY_PASSWORD` | `app_password` | ⚠️ Optional | Email app password (not your login password) |
 
 #### 🔑 Google OAuth
@@ -297,6 +309,7 @@ npm run start:frontend   # serves built static app (preview)
 
 Once your backend is running (`pnpm dev:backend` or `npm run dev:backend`) and you have a valid auth token, use the examples below to quickly verify your setup by generating a story.
 
+**Backend environment variables** *(set in Vercel dashboard)*:
 > ℹ️ You must be authenticated first (e.g. via the login endpoint or Google Login) to obtain a Bearer token, and at least one AI provider key (`OPEN_AI_KEY`, `GEMINI_API_KEY`, or `AI_API_KEYS`) must be set in `backend/.env`.
 
 ### 1. Sample Request (cURL)
@@ -330,6 +343,11 @@ console.log(data);
 
 ### 3. Example Response
 
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_BASE_URL` | Yes | Backend API base URL, e.g., `http://localhost:5000/api/v1` for local development. |
+| `VITE_SOCKET_URL` | No | Socket.IO server URL, e.g., `http://localhost:5000`. Optional unless you are using real-time notifications. |
+| `VITE_GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID from the [Google Cloud Console](https://console.cloud.google.com). |
 ```json
 {
   "success": true,
@@ -483,6 +501,22 @@ If you get an error instead of a response, see [Troubleshooting](#troubleshootin
 - **Possible cause:** `VITE_SOCKET_URL` is incorrect, missing, or the backend/socket service is not running.
 - **Suggested solution:** Check `frontend/.env` and verify `VITE_SOCKET_URL` points to the active socket service. Make sure the backend/socket service is running, then check the browser console for connection errors.
 
+### Contributing workflow
+
+1. Fork the repository and clone your fork.
+2. Create a branch: `git checkout -b your-feature-branch`
+3. Install with `pnpm install` at the repo root, configure `.env` files, then `git add`, `git commit`, `git push`, and open a pull request.
+
+
+
+<a id="troubleshooting"></a>
+## Troubleshooting 🛠️
+
+Running into issues during setup? Here are the most common errors and how to fix them.
+
+---
+
+### 1. `npm error Override for @types/express conflicts with direct dependency`
 #### `npm error Override for @types/express conflicts with direct dependency`
 
 **Cause:** There's a version mismatch in the root `package.json` — `@types/express` is set to `^5.0.6` in `devDependencies`, which conflicts with what the project expects.
@@ -542,6 +576,7 @@ git commit -m "chore: regenerate pnpm-lock.yaml"
 
 ### Contributing workflow
 
+> 💡 **Still stuck?** Open an issue or check existing ones — your problem may already have a solution!
 1. Fork the repository and clone your fork.
 2. Create a branch: `git checkout -b your-feature-branch`
 3. Install with `pnpm install` at the repo root, configure `.env` files, then `git add`, `git commit`, `git push`, and open a pull request.
@@ -557,7 +592,7 @@ Contributions make the open source community such an amazing place to learn, ins
 
 ## Contributors 🤝
 
-Thanks to everyone who has helped build **Story Spark AI**. This grid updates automatically from [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
+Thanks to everyone who has helped build **StorySparkAI**. This grid updates automatically from [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
 
 <a href="https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&max=1000&columns=16" alt="Contributors" />
@@ -613,3 +648,7 @@ Thanks to everyone who has helped build **Story Spark AI**. This grid updates au
 
 Thank you for contributing to our open-source project! We appreciate your support 🚀 <br>
 Don't forget to leave a star ⭐
+
+### Proposed Feature: Trending Topics & UI Enhancements
+- Added responsive writing genres (Fantasy, Mystery, Romance) next to recommended writers.
+- Implemented a clean 'How It Works' section to polish the landing page layout.

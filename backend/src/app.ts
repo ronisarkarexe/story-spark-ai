@@ -18,17 +18,14 @@ const app: Application = express();
 app.set("trust proxy", 1);
 app.use(helmet());
 
-const defaultCorsOrigins =  
+const defaultCorsOrigins =
   process.env.NODE_ENV === "development"
     ? ["http://localhost:4001", "http://localhost:4002"]
-    : [
-        "https://storysparkai.vercel.app",
-        "https://www.storysparkai.vercel.app",
-      ];
+    : ["https://storysparkai.vercel.app"];
 
 const corsOrigins =
   config.cors_origins && config.cors_origins.length > 0
-    ? config.cors_origins
+    ? config.cors_origins.map((origin) => origin.replace(/\/$/, ""))
     : defaultCorsOrigins;
 
 app.use(
@@ -36,16 +33,23 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) {
         if (process.env.NODE_ENV === "production") {
-          return callback(new Error("Origin header required"));
+          const corsError: any = new Error("Origin header required");
+          corsError.statusCode = httpStatus.FORBIDDEN;
+          return callback(corsError);
         }
+
         return callback(null, true);
       }
 
       if (corsOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy"));
+        return callback(null, true);
       }
+
+      const corsError: any = new Error(
+        "Blocked by Cross-Origin Resource Sharing (CORS) Policy"
+      );
+      corsError.statusCode = httpStatus.FORBIDDEN;
+      return callback(corsError);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -64,15 +68,19 @@ app.use(cookieParser());
 
 // Legacy Route Rewrite Rewrite Rules
 app.use((req, res, next) => {
-  if (req.method === "GET" && /^\/api\/story\/[a-f0-9]{24}\/character-network$/i.test(req.path)) {
+  if (
+    req.method === "GET" &&
+    /^\/api\/story\/[a-f0-9]{24}\/character-network$/i.test(req.path)
+  ) {
     req.url = req.url.replace(/^\/api\/story\//, "/api/v1/story/");
   }
+
   next();
 });
 
 // Primary API Router Matrix Engagement
-app.use("/api/v1", Routers);
 app.use("/api/v1/leaderboard", leaderboardRoute);
+app.use("/api/v1", Routers);
 
 // ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
 app.use((req: Request, res: Response, next: NextFunction) => {

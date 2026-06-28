@@ -30,7 +30,10 @@ const soundtrackMap: Record<string, string> = {
   "😂 Comedy": "/audio/comedy.mp3",
   "🚀 Sci-Fi": "/audio/sci-fi.mp3",
   "🔍 Mystery": "/audio/mystery.mp3",
-  "🌟 Adventure": "/audio/adventure.mp3"
+  "🌟 Adventure": "/audio/adventure.mp3",
+  "🗺️ Adventurous": "/audio/adventure.mp3",
+  "🤖 Tech / Sci-Fi": "/audio/sci-fi.mp3",
+  "💖 Romance / Love": "/audio/romance.mp3",
 };
 
 type Inputs = {
@@ -69,6 +72,11 @@ const GENRES = [
   { value: "🧙 Fantasy", icon: "🧙", name: "Fantasy" },
   { value: "🔍 Mystery", icon: "🔍", name: "Mystery" },
   { value: "🌟 Adventure", icon: "🌟", name: "Adventure" },
+
+  // New premium genres
+  { value: "🗺️ Adventurous", icon: "🗺️", name: "Adventurous" },
+  { value: "🤖 Tech / Sci-Fi", icon: "🤖", name: "Tech / Sci-Fi" },
+  { value: "💖 Romance / Love", icon: "💖", name: "Romance / Love" },
 ] as const;
 
 
@@ -78,53 +86,88 @@ const GENRE_LABELS: Record<string, Record<GenreName, string>> = {
   English: {
     Drama: "Drama", Comedy: "Comedy", Horror: "Horror", Romance: "Romance",
     "Sci-Fi": "Sci-Fi", Fantasy: "Fantasy", Mystery: "Mystery", Adventure: "Adventure",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   Spanish: {
     Drama: "Drama", Comedy: "Comedia", Horror: "Terror", Romance: "Romance",
     "Sci-Fi": "Ciencia ficcion", Fantasy: "Fantasia", Mystery: "Misterio", Adventure: "Aventura",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   French: {
     Drama: "Drame", Comedy: "Comedie", Horror: "Horreur", Romance: "Romance",
     "Sci-Fi": "Science-fiction", Fantasy: "Fantastique", Mystery: "Mystere", Adventure: "Aventure",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   Portuguese: {
     Drama: "Drama", Comedy: "Comedia", Horror: "Terror", Romance: "Romance",
     "Sci-Fi": "Ficcao cientifica", Fantasy: "Fantasia", Mystery: "Misterio", Adventure: "Aventura",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   Hindi: {
     Drama: "नाटक", Comedy: "à¤¹à¤¾à¤¸à¥à¤¯", Horror: "डरावनी", Romance: "à¤ªà¥à¤°à¥‡à¤®",
     "Sci-Fi": "à¤µà¤¿à¤œà¥à¤žà¤¾à¤¨ à¤•à¤¥à¤¾", Fantasy: "à¤•à¤²à¥à¤ªà¤¨à¤¾", Mystery: "à¤°à¤¹à¤¸à¥à¤¯", Adventure: "रोमांच",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   German: {
     Drama: "Drama", Comedy: "Komodie", Horror: "Horror", Romance: "Romanze",
     "Sci-Fi": "Science-Fiction", Fantasy: "Fantasy", Mystery: "Mysterie", Adventure: "Abenteuer",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   Japanese: {
     Drama: "ãƒ‰ãƒ©ãƒž", Comedy: "ã‚³ãƒ¡ãƒ‡ã‚£", Horror: "ãƒ›ãƒ©ãƒ¼", Romance: "ãƒ­ãƒžãƒ³ã‚¹",
     "Sci-Fi": "SF", Fantasy: "ãƒ•ã‚¡ãƒ³ã‚¿ã‚¸ãƒ¼", Mystery: "ãƒŸã‚¹ãƒ†ãƒªãƒ¼", Adventure: "å†’é™º",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   Korean: {
     Drama: "ë“œë¼ë§ˆ", Comedy: "ì½”ë¯¸ë””", Horror: "ê³µí¬", Romance: "ë¡œë§¨ìŠ¤",
     "Sci-Fi": "SF", Fantasy: "íŒíƒ€ì§€", Mystery: "ë¯¸ìŠ¤í„°ë¦¬", Adventure: "ëª¨í—˜",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   Bengali: {
 
     Drama: "à¦¨à¦¾à¦Ÿà¦•", Comedy: "à¦•à§Œà¦¤à§à¦•", Horror: "à¦­à§Œà¦¤à¦¿à¦•", Romance: "à¦ªà§à¦°à§‡à¦®",
     "Sci-Fi": "à¦¬à¦¿à¦œà§à¦žà¦¾à¦¨ à¦•à¦²à§à¦ªà¦•à¦¾à¦¹à¦¿à¦¨à¦¿", Fantasy: "à¦•à¦²à§à¦ªà¦¨à¦¾", Mystery: "à¦°à¦¹à¦¸à§à¦¯", Adventure: "à¦…à¦­à¦¿à¦¯à¦¾à¦¨",
-
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   Tamil: {
     Drama: "à®¨à®¾à®Ÿà®•à®®à¯", Comedy: "à®¨à®•à¯ˆà®šà¯à®šà¯à®µà¯ˆ", Horror: "à®¤à®¿à®•à®¿à®²à¯", Romance: "à®•à®¾à®¤à®²à¯",
     "Sci-Fi": "à®…à®±à®¿à®µà®¿à®¯à®²à¯ à®ªà¯à®©à¯ˆà®µà¯", Fantasy: "à®•à®±à¯à®ªà®©à¯ˆ", Mystery: "à®®à®°à¯à®®à®®à¯", Adventure: "à®šà®¾à®•à®šà®®à¯",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   Telugu: {
     Drama: "à°¨à°¾à°Ÿà°•à°‚", Comedy: "à°¹à°¾à°¸à±à°¯à°‚", Horror: "à°­à°¯à°¾à°¨à°•à°‚", Romance: "à°ªà±à°°à±‡à°®",
     "Sci-Fi": "à°µà°¿à°œà±à°žà°¾à°¨ à°•à°¥", Fantasy: "à°•à°¾à°²à±à°ªà°¨à°¿à°•à°‚", Mystery: "à°°à°¹à°¸à±à°¯à°‚", Adventure: "à°¸à°¾à°¹à°¸à°‚",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
   },
   Marathi: {
 
     Drama: "नाटक", Comedy: "विनोद", Horror: "भयकथा", Romance: "à¤ªà¥à¤°à¥‡à¤®à¤•à¤¥à¤¾",
     "Sci-Fi": "à¤µà¤¿à¤œà¥à¤žà¤¾à¤¨à¤•à¤¥à¤¾", Fantasy: "à¤•à¤²à¥à¤ªà¤¨à¤¾à¤°à¤®à¥à¤¯", Mystery: "à¤°à¤¹à¤¸à¥à¤¯", Adventure: "साहस",
+    Adventurous: "Adventurous",
+    "Tech / Sci-Fi": "Tech / Sci-Fi",
+    "Romance / Love": "Romance / Love",
 
   },
 };
