@@ -237,6 +237,31 @@ const socialLinks = [
               Writing tips, product updates, and stories straight to your inbox.
             </p>
 
+          <form
+            onSubmit={handleSubscribe}
+            noValidate
+            className="mt-1 flex flex-col gap-2"
+        >
+      <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
+          <i className="fa-solid fa-envelope text-slate-500 text-[13px]" aria-hidden="true" />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@storyspark.ai"
+            disabled={status === "loading"}
+            className="w-full h-full bg-transparent text-[13px] text-white placeholder-slate-500 focus:outline-none"
+          />
+           </div>
+
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="self-start h-8 px-3 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 text-[11px] font-medium text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60 cursor-pointer"
+            >
+              {status === "loading" ? "..." : "Subscribe"}
+            </button>
+           </form>
             <form
               onSubmit={handleSubscribe}
               noValidate

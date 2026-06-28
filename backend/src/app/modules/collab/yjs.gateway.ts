@@ -52,7 +52,8 @@ export class YjsGateway {
         this.scheduleSave(storyId, doc!);
       });
       // Awareness (cursors/selection)
-      const awareness = new (require('y-protocols/awareness')).Awareness(doc);
+      import { Awareness } from 'y-protocols/awareness';
+      const awareness = new Awareness(doc);
       awareness.setLocalStateField('user', {
         name: socket.id,
         color: this.randomColor(),

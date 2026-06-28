@@ -1,7 +1,8 @@
+import React, { useState, useEffect } from "react";
 import React, { useState, useMemo } from "react";
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useGetPostListsQuery, useGetGenresQuery } from "../../redux/apis/post.api";
 import type { Post } from "../../models/post";
 import { useDebounced } from "../../hooks/global";
@@ -15,6 +16,12 @@ export const ExploreComponent = () => {
   const [page, setPage] = useState<number>(1);
   const [featuredPost, setFeaturedPost] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [searchParams] = useSearchParams();
+
+useEffect(() => {
+  const q = searchParams.get("search");
+  if (q) setSearchTerm(q);
+}, []);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
   const query: Record<string, string | number> = {

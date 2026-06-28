@@ -5,6 +5,11 @@ import { USER_ROLE } from "./constants/role";
 // Eagerly loaded layouts, utilities, and components
 import LoadingAnimation from "./components/loading/loading.component";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ScrollToTopButton from "./components/ScrollToTopButton";
+import ScrollToTop from "./components/ScrollToTop";
+import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
+import HeroSectionComponent from "./components/hero/hero_section.component";
+import HomeComponent from "./components/home/home.component";
 import NotFoundComponent from "./components/not-found.component";
 import Leaderboard from "./pages/Leaderboard";
 import HeroSectionComponent from "./components/hero/hero_section.component";
@@ -31,7 +36,6 @@ const SignUpComponent = lazy(() => import("./components/signup/signup.component"
 const ForgotPasswordComponent = lazy(() => import("./components/login/forgot_password.component"));
 const PricingComponent = lazy(() => import("./components/pricing/pricing.component"));
 const PostDetailsComponent = lazy(() => import("./components/post/post.details.component"));
-const PublicProfileComponent = lazy(() => import("./components/profile/public_profile.component"));
 const Contact = lazy(() => import("./components/contactus/contactus"));
 const AboutUsComponent = lazy(() => import("./components/footer/about-us.tsx"));
 const CareerComponent = lazy(() => import("./components/footer/career.tsx"));
@@ -76,11 +80,17 @@ const lazyPage = (element: React.ReactElement) => (
 
 const router = createBrowserRouter([
   {
+    path: "/",
     element: (
       <>
+        <ScrollToTopButton />
+        <MagicCursorComponent />
         <ScrollToTop />
-        <PageTitleUpdater />
-        <Outlet />
+        <RootLayout>
+          <Suspense fallback={<LoadingAnimation />}>
+            <Outlet />
+          </Suspense>
+        </RootLayout>
       </>
     ),
     children: [
@@ -94,8 +104,6 @@ const router = createBrowserRouter([
       { path: "forgot-password", element: <ForgotPasswordComponent /> },
       { path: "pricing", element: <PricingComponent /> },
       { path: "post/:id", element: <PostDetailsComponent /> },
-      { path: "profile/:id", element: <PublicProfileComponent /> },
-      { path: "collections/:id", element: lazyPage(<CollectionPage />) },
       { path: "contact-us", element: <Contact /> },
       { path: "about-us", element: <AboutUsComponent /> },
       { path: "career", element: <CareerComponent /> },
@@ -107,38 +115,20 @@ const router = createBrowserRouter([
       { path: "guidelines", element: <GuidelinesComponent /> },
       
       { path: "contributors", element: <ContributorsComponent /> },
-      { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES}>{lazyPage(<WritingAssistantComponent />)}</ProtectedRoute> },
-      { path: "story-inspiration", element: lazyPage(<StoryInspirationWrapper />) },
-      { path: "login", element: lazyPage(<LoginComponent />) },
-      { path: "signup", element: lazyPage(<SignUpComponent />) },
-      { path: "forgot-password", element: lazyPage(<ForgotPasswordComponent />) },
-      { path: "pricing", element: lazyPage(<PricingComponent />) },
-      { path: "post/:id", element: lazyPage(<PostDetailsComponent />) },
-      { path: "profile/:id", element: lazyPage(<PublicProfileComponent />) },
-      { path: "contact-us", element: lazyPage(<Contact />) },
-      { path: "about-us", element: lazyPage(<AboutUsComponent />) },
-      { path: "career", element: lazyPage(<CareerComponent />) },
-      { path: "blog", element: lazyPage(<BlogComponent />) },
-      { path: "privacy-policy", element: lazyPage(<PrivacyPolicy />) },
-      { path: "cookie-policy", element: lazyPage(<CookiePolicy />) },
-      { path: "terms", element: lazyPage(<Terms />) },
-      { path: "help-center", element: lazyPage(<HelpCenterComponent />) },
-      { path: "guidelines", element: lazyPage(<GuidelinesComponent />) },
-      { path: "contributors", element: lazyPage(<ContributorsComponent />) },
-      { path: "leaderboard", element: <Leaderboard /> },
-      { path: "community", element: lazyPage(<CommunityComponent />) },
-      { path: "report-bug", element: lazyPage(<ReportBug />) },
-      { path: "chat", element: lazyPage(<ChatPage />) },
+      { path: "community", element: <CommunityComponent /> },
+      { path: "explore", element: <ExploreComponent /> },
+      { path: "report-bug", element: <ReportBug /> },
+      { path: "chat", element: <ChatPage /> },
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
-          { path: "explore", element: lazyPage(<ExploreComponent />) },
-          { path: "bookmarks", element: lazyPage(<BookmarksComponent />) },
-          { path: "resources", element: lazyPage(<ResourcesListComponent />) },
-          { path: "resources/:resourceName", element: lazyPage(<ResourceDetailComponent />) },
-          { path: "stories", element: lazyPage(<StoriesComponent />) },
-          { path: "branching-story", element: lazyPage(<BranchingStory />) },
-          { path: "story-workspace", element: lazyPage(<StoryWorkspace />) },
+        
+          { path: "bookmarks", element: <BookmarksComponent /> },
+          { path: "resources", element: <ResourcesListComponent /> },
+          { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
+          { path: "stories", element: <StoriesComponent /> },
+          { path: "branching-story", element: <BranchingStory /> },
+          { path: "story-workspace", element: <StoryWorkspace /> },
         ],
       },
       { path: "*", element: <NotFoundComponent /> },
@@ -161,18 +151,10 @@ const router = createBrowserRouter([
     element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
     children: [
       {
-        path: "/",
         element: (
-          <>
-            <ScrollToTopButton />
-            <MagicCursorComponent />
-            <ThemeSwitcher />
-            <RootLayout>
-              <Suspense fallback={<LoadingAnimation />}>
-                <Outlet />
-              </Suspense>
-            </RootLayout>
-          </>
+          <Suspense fallback={<LoadingAnimation />}>
+            <DashboardLayout />
+          </Suspense>
         ),
         children: [
           { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
@@ -204,60 +186,19 @@ const router = createBrowserRouter([
 
           // Protected routes
           {
-            element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+            element: <ProtectedRoute allowedRoles={ELEVATED_ADMIN_ROLES} />,
             children: [
-              { path: "bookmarks", element: lazyPage(<BookmarksComponent />) },
-              { path: "stories", element: lazyPage(<StoriesComponent />) },
-              { path: "branching-story", element: lazyPage(<BranchingStory />) },
-              { path: "story-workspace", element: lazyPage(<StoryWorkspace />) },
+              { path: "writers", element: <WriterApplicationComponent /> },
+              { path: "users", element: <UserComponent /> },
             ],
           },
-          { path: "*", element: <NotFoundComponent /> },
-        ],
-      },
-      {
-        path: "/auth/email-validation",
-        element: lazyPage(<EmailValidationComponent />),
-      },
-      {
-        element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-        children: [
-          { path: "/payment", element: lazyPage(<PaymentComponent />) },
-          { path: "/collab", element: lazyPage(<CollabHome />) },
-          { path: "/collab/:roomId", element: lazyPage(<CollabRoom />) },
-        ],
-      },
-      {
-        path: "/dashboard",
-        element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
-        children: [
           {
-            element: (
-              <Suspense fallback={<LoadingAnimation />}>
-                <DashboardLayout />
-              </Suspense>
-            ),
-            children: [
-              { index: true, element: lazyPage(<DashboardComponent />) },
-              { path: "profile", element: lazyPage(<ProfileComponent />) },
-              { path: "settings", element: lazyPage(<SettingComponent />) },
-              { path: "published-stories", element: lazyPage(<PublishedStoriesComponent />) },
-              {
-                element: <ProtectedRoute allowedRoles={ELEVATED_ADMIN_ROLES} />,
-                children: [
-                  { path: "writers", element: lazyPage(<WriterApplicationComponent />) },
-                  { path: "users", element: lazyPage(<UserComponent />) },
-                ],
-              },
-              {
-                element: <ProtectedRoute allowedRoles={[USER_ROLE.WRITER]} />,
-                children: [{ path: "analytics", element: lazyPage(<AnalyticsPage />) }],
-              },
-              {
-                element: <ProtectedRoute allowedRoles={WRITER_PLUS_ADMIN_ROLES} />,
-                children: [{ path: "post-lists", element: lazyPage(<PostListsComponent />) }],
-              },
-            ],
+            element: <ProtectedRoute allowedRoles={[USER_ROLE.WRITER]} />,
+            children: [{ path: "analytics", element: <AnalyticsPage /> }],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={WRITER_PLUS_ADMIN_ROLES} />,
+            children: [{ path: "post-lists", element: <PostListsComponent /> }],
           },
         ],
       },

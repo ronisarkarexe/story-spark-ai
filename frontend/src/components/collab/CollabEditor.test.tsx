@@ -6,8 +6,10 @@ import { io } from 'socket.io-client';
 
 // Mock socket.io-client
 vi.mock('socket.io-client', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const EventEmitter = require('events');
   class MockSocket extends EventEmitter {
+
     emit(event: string, ...args: any[]) {
       this.emit(event, ...args); // echo for test simplicity
     }
@@ -86,7 +88,6 @@ describe('CollabEditor', () => {
     const emitSpy = vi.spyOn(socket, 'emit');
     // Simulate selection change on the Quill instance
     // Since Quill instance is internal, we trigger the handler directly via the awareness ref
-    const awareness = (require('y-protocols/awareness').Awareness as any).prototype;
     // Not easily accessible – instead we verify that socket.emit was called at least once for awareness
     await act(async () => {});
     expect(emitSpy).toHaveBeenCalled();

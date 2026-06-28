@@ -36,12 +36,12 @@ const SSInput = <T extends FieldValues>({
 }: SSInputProps<T>) => {
   const [showLocalPassword, setShowLocalPassword] = useState(false);
 
-  const isPasswordType = type === "password";
-  const inputType = isPasswordType
-    ? showLocalPassword
-      ? "text"
-      : "password"
-    : type;
+
+
+
+
+  const inputType = type === "password" ? (showLocalPassword ? "text" : "password") : type;
+
 
   return (
     <div className="w-full min-w-0 max-w-full box-border">
@@ -66,28 +66,42 @@ const SSInput = <T extends FieldValues>({
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           {...register(name, validation)}
-          className={`w-full min-w-0 max-w-full h-11 block box-border rounded-xl border text-sm transition-all duration-200 focus:outline-none focus:ring-2 ${
-            icon ? "pl-11" : "px-4"
-          } ${isPasswordType ? "pr-11" : "pr-4"} ${
+
+          className={`w-full max-w-full h-11 block rounded-xl border bg-transparent text-sm transition-all duration-200 focus:outline-none focus:ring-2 ${
+            icon ? "pl-10" : "px-4"
+          } ${type === "password" ? "pr-10" : "pr-4"} ${
             error
-              ? "border-rose-500/80 bg-white dark:bg-slate-900/40 text-rose-600 dark:text-rose-200 focus:ring-rose-500/20 focus:border-rose-500"
-              : "border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 text-slate-900 dark:text-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+              ? "border-rose-500 focus:ring-rose-500/20 focus:border-rose-500 text-rose-900 dark:text-rose-200"
+              : "border-slate-200 dark:border-slate-700 text-gray-900 dark:text-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
           }`}
+          style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
         />
 
-        {isPasswordType && (
+
+
+
+        {/* Right Password Eye Toggle */}
+
+        {type === "password" && (
+
           <button
             type="button"
             onClick={() => setShowLocalPassword(!showLocalPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center text-slate-400 hover:text-slate-200 dark:text-slate-500 dark:hover:text-slate-300 z-10 focus:outline-none transition-colors cursor-pointer"
+
+            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
             aria-label={showLocalPassword ? "Hide password" : "Show password"}
-            title={showLocalPassword ? "Hide password" : "Show password"}
+
+
+
           >
-            <i className={showLocalPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"} />
+            <i className={showLocalPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
           </button>
         )}
+
+
       </div>
 
+      {/* Error Message */}
       {error && (
         <p
           className="text-xs font-semibold text-rose-400 mt-1.5 text-left w-full break-words"
@@ -96,6 +110,11 @@ const SSInput = <T extends FieldValues>({
           {error.message}
         </p>
       )}
+
+
+
+
+
     </div>
   );
 };
