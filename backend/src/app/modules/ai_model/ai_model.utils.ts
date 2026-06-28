@@ -900,9 +900,4 @@ Return only valid JSON with this exact structure:
     );
   }
 }
-const sanitizeJsonText = (text: string): string => {
-  return text
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
-};
+;
