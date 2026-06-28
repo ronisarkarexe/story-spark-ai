@@ -1,4 +1,8 @@
  fix/audio-word-count-1214
+ fix/audio-word-count-1214
+
+ fix/story-parser-locations-1035
+ main
 // backend/src/app/modules/story_version/enhance_prompt.utils.ts
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -16,6 +20,10 @@ export const enhancePrompt = (prompt: string, context?: string): string => {
   const compressedContext = context ? context : "No previous context";
 
  fix/audio-word-count-1214
+ fix/audio-word-count-1214
+
+ fix/story-parser-locations-1035
+ main
   const metaPrompt = `You are a creative writing assistant. Rewrite the following story prompt to be more vivid, specific, and engaging. Add a character name, setting details, and a central conflict. Return ONLY the enhanced prompt, nothing else. Do not add any explanation or prefix.
 
 Context: ${compressedContext}
