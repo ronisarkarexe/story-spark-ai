@@ -9,8 +9,6 @@
  */
 import { assertContentSafe } from "./contentModeration";
 
-import { assertContentSafe } from "./contentModeration";
-
 const FORBIDDEN_PATTERNS: RegExp[] = [
   // Direct instruction override attempts
   /ignore\s+(?:.*?\s+)?(?:instructions?|prompts?|context|rules?|constraints?)/i,
@@ -63,8 +61,7 @@ const normalizeInput = (input: string): string => {
  * before attempting JSON.parse.
  */
 export const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  return (input ?? "")
+  return (rawText ?? "")
     .normalize("NFKC")
     .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
     .replace(/[\s\u00A0]+/g, " ")

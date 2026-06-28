@@ -96,7 +96,7 @@ export class ParallelStoryGenerator {
 
     const queue: GenerationTask[] = [...sortedTasks];
     const results: GenerationResult[] = [];
-    const activePromises: Promise<GenerationResult>[] = [];
+    const activePromises: Promise<GenerationResult | void>[] = [];
 
     const processQueue = async (): Promise<void> => {
       while (queue.length > 0 || activePromises.length > 0) {

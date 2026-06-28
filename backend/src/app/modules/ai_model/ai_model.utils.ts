@@ -11,7 +11,6 @@ import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
-import { sanitizeJsonText } from "../../../utils/promptSecurity";
 import type {
   IStoryVisualizerPayload,
   IStoryVisualizerResult,
