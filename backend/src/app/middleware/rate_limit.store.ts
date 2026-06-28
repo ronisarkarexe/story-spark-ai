@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import logger from "../../utils/logger.util";
+import redis from "../utils/redis.client";
 
 // Shared, serverless safe rate limit store backed by MongoDB. The previous
 // in-memory Map could not work across Vercel function instances or cold starts,
@@ -128,11 +129,6 @@ export const consumeRateLimit = async (
   }
 };
 
-import Redis from "ioredis";
-
-// We use ioredis to securely track token quotas
-const redisClient = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : new Redis();
-
 export const consumeTokenQuota = async (
   userIdOrIp: string,
   tokensRequired: number,
@@ -141,8 +137,16 @@ export const consumeTokenQuota = async (
   const dateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
   const key = `token_quota:${userIdOrIp}:${dateStr}`;
 
+  if (redis.status !== "ready") {
+    return {
+      allowed: true,
+      remainingTokens: dailyQuotaLimit,
+      retryAfterSec: 0,
+    };
+  }
+
   try {
-    const currentTokens = await redisClient.get(key);
+    const currentTokens = await redis.get(key);
     const usedTokens = currentTokens ? parseInt(currentTokens, 10) : 0;
 
     if (usedTokens + tokensRequired > dailyQuotaLimit) {
@@ -157,8 +161,8 @@ export const consumeTokenQuota = async (
     }
 
     // Atomically increment and set expiry to 48 hours (to be safe)
-    await redisClient.incrby(key, tokensRequired);
-    await redisClient.expire(key, 48 * 60 * 60);
+    await redis.incrby(key, tokensRequired);
+    await redis.expire(key, 48 * 60 * 60);
 
     return { allowed: true, remainingTokens: dailyQuotaLimit - (usedTokens + tokensRequired), retryAfterSec: 0 };
   } catch (error) {
