@@ -218,29 +218,31 @@ const StoryInspirationComponent: React.FC = () => {
         </motion.section>
 
         {/* Stories Grid */}
-        {filteredStories.length > 0 ? (
-          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredStories.map((story) => (
-              <StoryInspirationCard key={story.id} story={story} />
-            ))}
-          </motion.div>
-        ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto rounded-[2.5rem] border border-white/60 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] backdrop-blur-2xl p-16 text-center shadow-2xl">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-white flex items-center justify-center mx-auto shadow-2xl shadow-indigo-500/25">
-              <i className="fas fa-search-minus text-3xl" />
-            </div>
-            <h3 className="mt-8 text-3xl font-black text-slate-900 dark:text-white">No Inspiration Found</h3>
-            <p className="mt-4 text-slate-600 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
-              Try adjusting your search keywords or explore different genres to uncover more creative ideas.
-            </p>
-            <button
-              onClick={() => { setSearchQuery(""); setSelectedGenre("All"); }}
-              className="mt-10 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold hover:scale-[1.03] transition-all duration-300 shadow-xl shadow-indigo-500/20"
-            >
-              Reset Filters
-            </button>
-          </motion.div>
-        )}
+        <div className="w-full min-h-[50vh] transition-all duration-300">
+          {filteredStories.length > 0 ? (
+            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredStories.map((story) => (
+                <StoryInspirationCard key={story.id} story={story} />
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto rounded-[2.5rem] border border-white/60 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] backdrop-blur-2xl p-16 text-center shadow-2xl">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-white flex items-center justify-center mx-auto shadow-2xl shadow-indigo-500/25">
+                <i className="fas fa-search-minus text-3xl" />
+              </div>
+              <h3 className="mt-8 text-3xl font-black text-slate-900 dark:text-white">No Inspiration Found</h3>
+              <p className="mt-4 text-slate-600 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
+                Try adjusting your search keywords or explore different genres to uncover more creative ideas.
+              </p>
+              <button
+                onClick={() => { setSearchQuery(""); setSelectedGenre("All"); }}
+                className="mt-10 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold hover:scale-[1.03] transition-all duration-300 shadow-xl shadow-indigo-500/20"
+              >
+                Reset Filters
+              </button>
+            </motion.div>
+          )}
+        </div>
 
         {/* How to Use guidance section */}
         <motion.section

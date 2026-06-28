@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
@@ -11,7 +11,6 @@ type StarRatingProps = {
 const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
   const [hovered, setHovered] = useState(0);
 
-  // keyboard support: left/right arrows to change rating, 1-5 keys to set directly
   const handleKey = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "ArrowLeft") setRating(Math.max(0, rating - 1));
@@ -23,53 +22,13 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
   );
 
   return (
-    <div>
-      <div
-        role="radiogroup"
-        aria-label="Star rating"
-        tabIndex={0}
-        onKeyDown={handleKey}
-        className="flex items-center gap-2"
-      >
-        {[1, 2, 3, 4, 5].map((star) => {
-          const filled = star <= (hovered || rating);
-          return (
-            <button
-              key={star}
-              type="button"
-              role="radio"
-              aria-checked={rating === star}
-              aria-label={`${star} star${star > 1 ? "s" : ""}`}
-              onClick={() => setRating(star)}
-              onMouseEnter={() => setHovered(star)}
-              onMouseLeave={() => setHovered(0)}
-              className={`text-2xl transition-all duration-150 focus-visible:outline-none rounded-md px-1 ${
-                filled
-                  ? "text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.7)] scale-110"
-                  : "text-gray-300 dark:text-gray-600 hover:text-yellow-300"
-              }`}
-            >
-              ★
-            </button>
-          );
-        })}
-      </div>
-
-      {(hovered || rating) > 0 && (
-        <p className="mt-1 text-xs font-medium text-yellow-400">{ratingLabels[hovered || rating]}</p>
-  const renderStarIcon = (index: number) => {
-    // index is 1..5
-    if (rating >= index) return <i className="fa-solid fa-star" />;
-    if (rating >= index - 0.5) return <i className="fa-solid fa-star-half-stroke" />;
-    return <i className="fa-regular fa-star" />;
-  };
-
-  const handleClick = (value: number) => {
-    setRating(value);
-  };
-
-  return (
-    <div className="space-y-2">
+    <div
+      role="radiogroup"
+      aria-label="Star rating"
+      tabIndex={0}
+      onKeyDown={handleKey}
+      className="space-y-2"
+    >
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
@@ -111,13 +70,7 @@ const ReviewForm: React.FC = () => {
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
 
-    if (!name.trim()) newErrors.name = "Name is required";
-    if (!role.trim()) newErrors.role = "Role is required";
-    if (!feedback.trim()) newErrors.feedback = "Review is required";
-    if (feedback.length > 500) newErrors.feedback = "Max 500 characters";
     if (rating === 0) newErrors.rating = "Please select a rating";
 
   const validate = useCallback(() => {
