@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from 'vitest';
 import { a11yUtils, keyboardShortcuts, focusManagement, contrastUtils } from '../utils/accessibility';
 
 describe('Accessibility Utilities', () => {
@@ -6,7 +7,7 @@ describe('Accessibility Utilities', () => {
       document.body.innerHTML = '';
     });
 
-    test('announce() creates and removes screen reader announcement', (done) => {
+    test('announce() creates and removes screen reader announcement', async () => {
       a11yUtils.announce('Test message');
 
       const announcement = document.querySelector('[role="status"]');
@@ -14,18 +15,15 @@ describe('Accessibility Utilities', () => {
       expect(announcement?.textContent).toBe('Test message');
       expect(announcement?.getAttribute('aria-live')).toBe('polite');
 
-      setTimeout(() => {
-        expect(document.querySelector('[role="status"]')).toBeFalsy();
-        done();
-      }, 1100);
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+      expect(document.querySelector('[role="status"]')).toBeFalsy();
     });
 
-    test('announce() supports assertive priority', (done) => {
+    test('announce() supports assertive priority', () => {
       a11yUtils.announce('Important message', 'assertive');
 
       const announcement = document.querySelector('[role="status"]');
       expect(announcement?.getAttribute('aria-live')).toBe('assertive');
-      done();
     });
 
     test('setAriaLabel() sets aria-label attribute', () => {
