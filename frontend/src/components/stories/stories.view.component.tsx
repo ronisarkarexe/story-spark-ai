@@ -13,6 +13,8 @@ import StoryGenreTransformation from "./StoryGenreTransformation";
 import StoryMoodDashboard from "./StoryMoodDashboard";
 import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
+import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
+import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
@@ -21,6 +23,8 @@ import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
 import StoryTranslator from "../translate/StoryTranslator";
+import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
+import { useLocation } from "react-router-dom";
 
 export interface IStories {
   uuid: string;
@@ -29,6 +33,46 @@ export interface IStories {
   tag: string;
   imageURL: string;
 }
+
+export type StorySentenceSegment = {
+  id: string;
+  text: string;
+  startWordIndex: number;
+  endWordIndex: number;
+};
+
+const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+  if (!content.trim()) {
+    return [];
+  }
+
+  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
+  const segments: StorySentenceSegment[] = [];
+  let wordCursor = 0;
+
+  sentenceMatches.forEach((sentence, index) => {
+    const trimmedSentence = sentence.trim();
+    if (!trimmedSentence) {
+      return;
+    }
+
+    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
+    const startWordIndex = wordCursor;
+    const endWordIndex =
+      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
+
+    segments.push({
+      id: `${index}-${startWordIndex}-${endWordIndex}`,
+      text: sentence,
+      startWordIndex,
+      endWordIndex,
+    });
+
+    wordCursor += wordsInSentence;
+  });
+
+  return segments;
+};
 
 interface IPost extends IStories {
   topic: ITopicData[];
@@ -58,6 +102,28 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [createPost] = useCreatePostMutation();
   const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
 
+  const location = useLocation();
+  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
+  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+
+  const sentenceSegments = useMemo(() => {
+    return buildSentenceSegments(selectedStory?.content ?? "");
+  }, [selectedStory?.content]);
+
+  const isNarrationActive = narrationState !== "idle";
+
+  useEffect(() => {
+    return () => {
+      audioPlayerRef.current?.stop();
+    };
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setNarrationWordIndex(0);
+    setNarrationState("idle");
+  }, [selectedStory?.uuid]);
+
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
   }, [topics]);
@@ -70,7 +136,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
 useEffect(() => {
   const autoSaveStory = async () => {
-    if (!selectedStory) return;
+    if (!selectedStory || !isLogin) return;
 
     const post: IPost = {
       ...selectedStory,
@@ -179,7 +245,6 @@ const handleGenerateCharacterProfile = async () => {
       }
     );
 
-
     const data = await response.json();
 
     setCharacterProfiles(data.data);
@@ -249,7 +314,7 @@ if (!stories || stories.length === 0) {
       </div>
     </div>
   );
-
+}
 
 
   return (
@@ -409,6 +474,7 @@ if (!stories || stories.length === 0) {
                   })
                 ) : (
                   (() => {
+                    if (!selectedStory) return null;
                     const rawParts = selectedStory.content.split(/(\s+)/);
                     let wordOffset = 0;
                     return rawParts.map((part, partIdx) => {
@@ -445,49 +511,23 @@ if (!stories || stories.length === 0) {
               </p>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
-              <AudioPlayer 
-                ref={audioPlayerRef} 
-                text={selectedStory.content} 
-                title={selectedStory.title} 
-                onWordIndexChange={setNarrationWordIndex} 
-                onPlaybackStateChange={setNarrationState} 
-              />
-            </div>
-            <StoryVersionHistory
-              story={selectedStory}
-              onRestore={handleRestoreVersion}
-            />
-          </div>
-
-          {/* Alternate Endings Section */}
-          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl sm:rounded-3xl shadow-xl p-6 mt-2 relative overflow-hidden">
-            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
-                  Alternate Endings
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Explore alternate narrative styles for your story context.
-                </p>
-              </div>
-              {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
-                <button
-                  type="button"
-                  onClick={handleResetEnding}
-                  className="rounded-lg px-4 py-2 bg-red-100 dark:bg-red-950/40 hover:bg-red-200 dark:hover:bg-red-900/60 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
-                >
-                  <i className="fa-solid fa-rotate-left"></i> Reset to Original
-                </button>
-              )}
-              {selectedStory ? (
-                <p className="break-words">{selectedStory.content}</p>
-              ) : (
-                <p>No story available. Please generate a story first.</p>
-              )}
-            </div>
+            {selectedStory && (
+              <>
+                <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
+                  <AudioPlayer 
+                    ref={audioPlayerRef} 
+                    text={selectedStory.content} 
+                    title={selectedStory.title} 
+                    onWordIndexChange={setNarrationWordIndex} 
+                    onPlaybackStateChange={setNarrationState} 
+                  />
+                </div>
+                <StoryVersionHistory
+                  story={selectedStory}
+                  onRestore={handleRestoreVersion}
+                />
+              </>
+            )}
           </div>
           <div className="mt-6">
   {characterProfiles.length > 0 && (
@@ -600,7 +640,5 @@ if (!stories || stories.length === 0) {
     </div>
   );
 };
-};
 
 export default StoriesViewComponent;
-

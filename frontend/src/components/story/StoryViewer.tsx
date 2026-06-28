@@ -8,9 +8,10 @@ import { AudioPlayer } from "../AudioPlayer";
 interface Props {
   chapters: Chapter[];
   storyId: string;
+  truncated?: boolean;
 }
 
-const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
+const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
   const [progress, setProgress] = useState(0);
   const [showResumeBanner, setShowResumeBanner] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -179,6 +180,13 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId }) => {
       ref={containerRef}
       className="flex-1 overflow-y-auto px-8 py-10 bg-zinc-950"
     >
+      {truncated && (
+        <div className="sticky top-0 z-30 bg-yellow-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
+          <span className="text-sm text-yellow-200">
+            Your story was truncated because it exceeded the maximum length. Try a shorter prompt.
+          </span>
+        </div>
+      )}
       {showResumeBanner && (
         <div className="sticky top-0 z-20 bg-indigo-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
           <span className="text-sm text-indigo-200">

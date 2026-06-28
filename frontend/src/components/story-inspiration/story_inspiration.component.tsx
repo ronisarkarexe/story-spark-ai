@@ -150,8 +150,18 @@ const StoryInspirationComponent: React.FC = () => {
               </div>
             </div>
 
-            <div className="relative flex items-center gap-4 rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 px-6 py-5 shadow-lg focus-within:border-indigo-500/40 transition-all duration-300">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div
+              className="
+    relative flex items-center gap-4
+    rounded-3xl border border-slate-200
+    dark:border-white/10
+    bg-white dark:bg-slate-900/60
+    px-6 py-5 shadow-lg
+    focus-within:ring-2
+    focus-within:ring-indigo-500/20
+    transition-all duration-200
+  "
+            >            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
                 <i className="fas fa-search" />
               </div>
               <input
@@ -159,7 +169,20 @@ const StoryInspirationComponent: React.FC = () => {
                 placeholder="Search titles, themes, genres, authors..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent outline-none text-lg text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="
+    w-full
+    h-12
+    bg-transparent
+    text-lg
+    text-slate-800
+    dark:text-white
+    placeholder:text-slate-400
+    dark:placeholder:text-slate-500
+    outline-none
+    border-none
+    focus:outline-none
+    focus:ring-0
+  "
               />
               {searchQuery.length > 0 && (
                 <button onClick={() => setSearchQuery("")} className="w-11 h-11 rounded-2xl bg-red-50 dark:bg-red-500/10 hover:scale-105 transition-all duration-300 text-red-500">

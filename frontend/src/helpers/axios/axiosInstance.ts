@@ -31,7 +31,7 @@ instance.interceptors.response.use(
           })
         );
 
-        originalRequest.headers.Authorization = newToken;
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return instance(originalRequest);
       } catch {
         localStorage.removeItem('accessToken');
