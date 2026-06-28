@@ -2,26 +2,36 @@ import React, { useState, useEffect, useRef } from "react";
 import jsPDF from "jspdf";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useForm, SubmitHandler } from "react-hook-form";
+import toast, { Toaster } from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Sparkles, 
+  HelpCircle, 
+  Trash2, 
+  Plus, 
+  ChevronRight, 
+  Eye, 
+  Edit3, 
+  Languages, 
+  Gauge, 
+  Music,
+  Compass
+} from "lucide-react";
+
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
-import { getRequestLimit, getWordCount, prompts } from "./stories.utils";
+import { getRequestLimit, prompts } from "./stories.utils";
 import {
   useGenerateFreeModelMutation,
   useGenerateModelMutation,
 } from "../../redux/apis/ai.model.api";
-import toast, { Toaster } from "react-hot-toast";
-import { SubmitHandler, useForm } from "react-hook-form";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import { getErrorMessage } from "../../error/error.message";
 import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
-import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
-import { useDebounce } from "../../hooks/useDebounce";
-import ConfirmDialog from "./ConfirmDialog";
-import {
-  clearStoryDraft,
-  loadStoryDraft,
-  saveStoryDraft,
-  type StoryDraftData,
-} from "../../utils/story-draft";
+
+import StoriesViewComponent, { IStories } from "./stories.view.component";
+import SkeletonLoader from "./SkeletonLoader";
+import EmptyStoriesState from "./EmptyStoriesState";
 
 const soundtrackMap: Record<string, string> = {
   "🧙 Fantasy": "/audio/fantasy.mp3",
@@ -41,11 +51,14 @@ type Inputs = {
   prompt: string;
 };
 
-const MAX_PROMPT_LENGTH = 2000;
-const WARN_THRESHOLD = 0.85;
-const lengths = ["short", "medium", "long"] as const;
+interface ICharacter {
+  id: string;
+  name: string;
+  role: string;
+  personality: string;
+}
 
-const StoriesComponent = () => {
+const MAX_PROMPT_LENGTH = 2000;
 const WARN_THRESHOLD = 0.8;
 const DANGER_THRESHOLD = 0.95;
 
@@ -379,614 +392,178 @@ const LANGUAGE_STORAGE_KEY = "storySparkLanguage";
 // for the active/inactive pill states.
 
 const TONES = [
-  {
-    label: "Dark",
-    emoji: "🌑",
-    activeClass: "bg-gray-700 text-gray-100 border-gray-500 shadow-gray-700/40",
-    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
-  },
-  {
-    label: "Whimsical",
-    emoji: "🌈",
-    activeClass: "bg-sky-500/20 text-sky-300 border-sky-500/60 shadow-sky-500/20",
-    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
-  },
-  {
-    label: "Dramatic",
-    emoji: "🎬",
-    activeClass: "bg-red-500/20 text-red-300 border-red-500/60 shadow-red-500/20",
-    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
-  },
-  {
-    label: "Humorous",
-    emoji: "😄",
-    activeClass: "bg-yellow-500/20 text-yellow-300 border-yellow-500/60 shadow-yellow-500/20",
-    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
-  },
-  {
-    label: "Suspenseful",
-    emoji: "😨",
-    activeClass: "bg-orange-500/20 text-orange-300 border-orange-500/60 shadow-orange-500/20",
-    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
-  },
-  {
-    label: "Heartwarming",
-    emoji: "🥰",
-    activeClass: "bg-pink-500/20 text-pink-300 border-pink-500/60 shadow-pink-500/20",
-    inactiveClass: "bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-gray-200",
-  },
+  { label: "Dark", emoji: "🌑" },
+  { label: "Whimsical", emoji: "🌈" },
+  { label: "Dramatic", emoji: "🎬" },
+  { label: "Humorous", emoji: "😄" },
+  { label: "Suspenseful", emoji: "😨" },
+  { label: "Heartwarming", emoji: "🥰" },
 ] as const;
 
-type ToneLabel = (typeof TONES)[number]["label"];
-
-interface TonePickerProps {
-  selected: ToneLabel | "";
-  onChange: (tone: ToneLabel | "") => void;
-}
-
-const TonePicker: React.FC<TonePickerProps> = React.memo(({ selected, onChange }) => {
-  return (
-    <div className="flex flex-wrap gap-2 mb-3">
-      <span className="w-full text-xs text-gray-400 mb-1">🎭 Tone:</span>
-      {TONES.map((tone) => {
-        const isActive = selected === tone.label;
-        return (
-          <button
-            key={tone.label}
-            type="button"
-            onClick={() => onChange(isActive ? "" : tone.label)}
-            aria-pressed={isActive}
-            title={isActive ? `Remove "${tone.label}" tone` : `Set tone to "${tone.label}"`}
-            className={`
-              px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200
-              ${isActive
-                ? `${tone.activeClass} shadow-md scale-105`
-                : tone.inactiveClass
-              }
-            `}
-          >
-            {tone.emoji} {tone.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-});
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
-import { useLocation } from "react-router-dom";
-import {
-  useGenerateAlternateEndingsMutation,
-  useGenerateFreeAlternateEndingsMutation,
-} from "../../redux/apis/ai.model.api";
-import ImageFallback from "../ImageFallback";
-import GeneratedStoryTimeline from "./GeneratedStoryTimeline";
-export interface IStories {
-  uuid: string;
-  title: string;
-  content: string;
-  tag: string;
-  emotions?: string[];
-  enhancedPrompt?: string;
-  imageURL: string;
-  language?: string;
-  genre?: string;
-}
-
-interface IPost extends IStories {
-  topic: ITopicData[];
-}
-
-interface StoriesComponentProps {
-  stories: IStories[];
-  isLogin: boolean;
-  setStories: (stories: IStories[]) => void;
-  onPublishSuccess?: () => void;
-}
-
-type StorySentenceSegment = {
-  id: string;
-  text: string;
-  startWordIndex: number;
-  endWordIndex: number;
-};
-
-
-const getStoryDedupKey = (story: IStories) => {
-  const storyData = story as Partial<IStories> & {
-    id?: string;
-    _id?: string;
-    uuid?: string;
-  };
-  const title = String(storyData.title ?? "").trim().toLowerCase();
-  const content = String(storyData.content ?? "").trim().toLowerCase();
-  const tag = String(storyData.tag ?? "").trim().toLowerCase();
-
-  return title || content || tag
-    ? `${title}-${content}-${tag}`
-    : String(storyData.uuid ?? storyData._id ?? storyData.id ?? "");
-};
-
-const getUniqueStories = (storyList: IStories[]) => {
-  const seenStories = new Set<string>();
-
-  return storyList.filter((story) => {
-    const dedupKey = getStoryDedupKey(story);
-
-    if (!dedupKey) return true;
-    if (seenStories.has(dedupKey)) return false;
-
-    seenStories.add(dedupKey);
-    return true;
-  });
-};
-// ---------------------------------------------------------------------------
-// Main StoriesComponent
-// ---------------------------------------------------------------------------
-const StoriesComponent = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const storiesPerPage = 10;
+const StoriesComponent: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
 
-
-  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
-  const segments: StorySentenceSegment[] = [];
-  let wordCursor = 0;
-
-  sentenceMatches.forEach((sentence, index) => {
-    const trimmedSentence = sentence.trim();
-    if (!trimmedSentence) {
-      return;
+  // Fetch initial draft from LocalStorage
+  const draft = useMemo(() => {
+    try {
+      const draftJson = localStorage.getItem("story_spark_draft");
+      return draftJson ? JSON.parse(draftJson) : null;
+    } catch {
+      return null;
     }
+  }, []);
 
-
-  const [stories, setStories] = useState<IStories[]>(
-    draft?.stories?.length ? getUniqueStories(draft.stories) : [{ uuid: "test-1", title: "The Wizard's Journey", content: "Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.", tag: "Fantasy", imageURL: "" }]
-  );
-
-  const [loading, setLoading] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [searchFilter, setSearchFilter] = useState<string>("all");
-
-  const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
-
-  const filteredStories = useMemo(() => {
-    if (!searchQuery.trim()) return uniqueStories;
-
-    const query = searchQuery.toLowerCase();
-
-    return uniqueStories.filter((story) => {
-      switch (searchFilter) {
-        case "title":
-          return story.title?.toLowerCase().includes(query);
-        case "content":
-          return story.content?.toLowerCase().includes(query);
-        case "genre":
-          return story.tag?.toLowerCase().includes(query);
-        case "all":
-        default:
-          return (
-            story.title?.toLowerCase().includes(query) ||
-            story.content?.toLowerCase().includes(query) ||
-            story.tag?.toLowerCase().includes(query)
-          );
-      }
-    });
-  }, [uniqueStories, searchQuery, searchFilter]);
-  const indexOfLastStory = currentPage * storiesPerPage;
-  const indexOfFirstStory = indexOfLastStory - storiesPerPage;
-
-  const currentStories = filteredStories.slice(
-    indexOfFirstStory,
-    indexOfLastStory
-  );
-
-  const totalPages = Math.ceil(
-    filteredStories.length / storiesPerPage
-  );
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, searchFilter]);
-
-
-
-    wordCursor += wordsInSentence;
+  // Shared States
+  const [stories, setStories] = useState<IStories[]>(() => {
+    return draft?.stories?.length ? draft.stories : [];
+  });
+  const [selectedStory, setSelectedStory] = useState<IStories | null>(() => {
+    return draft?.stories?.length ? draft.stories[0] : null;
   });
 
-  return segments;
-};
-
-interface ICharacter {
-  id: string;
-  name: string;
-  role: string;
-  personality: string;
-}
-
-const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
-  stories,
-  isLogin,
-  setStories,
-  isLoading,
-  onPublishSuccess,
-}) => {
-  const location = useLocation();
-const navigate = useNavigate();
-const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
-  const [stories, setStories] = useState<IStories[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const { data } = useGetProfileInfoQuery(undefined);
-  const userRole = getUserInfo();
-  const subscriptionType = (userRole?.subscriptionType as string) || "free";
-  const login = isLoggedIn();
-  const [generateModel] = useGenerateModelMutation();
-  const [generateFreeModel] = useGenerateFreeModelMutation();
-  const [selectedPrompt, setSelectedPrompt] = useState<string>("");
-  const [showHelpModal, setShowHelpModal] = useState(false);
-const [selectedGenre, setSelectedGenre] = useState<string>("");
-const [selectedLength, setSelectedLength] = useState<string>("medium");
-const [textareaValue, setTextareaValue] = useState<string>("");
-const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-const dropdownRef = useRef<HTMLDivElement>(null);
-const inputRef = useRef<HTMLTextAreaElement>(null);
-const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-  parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
-);
-const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
-
-useEffect(() => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}, []);
-
-useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
-      setIsDropdownOpen(false);
-    }
-  };
-
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      setIsDropdownOpen(false);
-
-  const [selectedGenre, setSelectedGenre] = useState<string>(
-
-    draft?.genre
-      ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
-      : "🧙 Fantasy",
-  );
-
-  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
+  const [selectedGenre, setSelectedGenre] = useState<string>(() => {
+    return draft?.genre || "🧙 Fantasy";
+  });
+  const [selectedLength, setSelectedLength] = useState<string>(() => {
+    return draft?.length || "medium";
+  });
+  const [selectedTone, setSelectedTone] = useState<string>(() => {
+    return draft?.tone || "Dramatic";
+  });
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
+    return draft?.language || "English";
+  });
   const [textareaValue, setTextareaValue] = useState<string>(() => {
     return location.state?.prompt || draft?.prompt || "";
   });
+  const [characters, setCharacters] = useState<ICharacter[]>(() => {
+    return draft?.characters || [];
+  });
 
-
+  // UI state variables
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
+  const [showHelpModal, setShowHelpModal] = useState<boolean>(false);
+  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+  const [activeMobileTab, setActiveMobileTab] = useState<"create" | "read">("create");
 
-
-
-
+  // Refs & Soundtracks
   const dropdownRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const login = isLoggedIn();
+  const { data: userProfile } = useGetProfileInfoQuery(undefined, { skip: !login });
+  const subscriptionType = (getUserInfo()?.subscriptionType as string) || "free";
 
-  const playSoundtrack = (genre: string) => {
-
-    const soundtrack = soundtrackMap[genre];
-
-    if (!soundtrack) return;
-
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current.src = soundtrack;
-      audioRef.current.play().catch(() => {
-        /* ignore autoplay restrictions */
-      });
-    }
-  }, []);
-
-  const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
-  const [, setShowRemix] = useState<boolean>(false);
-  const [createPost] = useCreatePostMutation();
-  const [deletePost] = useDeletePostMutation();
-  const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
-  const lastSavedContentRef = useRef<string>("");
-  const isSavingRef = useRef<boolean>(false);
-  const hasSavedSessionRef = useRef<boolean>(false);
-  const savedPostIdRef = useRef<string | null>(null);
-  // Alternate ending state & hooks
-  const [endingsCache, setEndingsCache] = useState<{
-    [uuid: string]: { style: string; ending: string; fullStory: string }[];
-  }>({});
-  const [originalStoryContent, setOriginalStoryContent] = useState<{
-    [uuid: string]: string;
-  }>({});
-  const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
-  const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
-  const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
-  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
-
-  const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
-  const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
-
-  useEffect(() => {
-    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
-      setOriginalStoryContent((prev) => ({
-        ...prev,
-        [selectedStory.uuid]: selectedStory.content,
-      }));
-    }
-  }, [selectedStory, originalStoryContent]);
-
-  useEffect(() => {
-    if (narrationState === "playing") {
-      const activeWordElement = document.querySelector('[data-active-word="true"]');
-      if (activeWordElement) {
-        activeWordElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest"
-        });
-      }
-    }
-  }, [narrationWordIndex, narrationState]);
-
-  const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
-  const isGenerationInProgressRef = useRef(false);
-  
   const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
     parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
   );
-  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
-  const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
-  const [isHighLatency, setIsHighLatency] = useState<boolean>(false);
-  const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
-  
-  const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
-  const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  const [generateModel] = useGenerateModelMutation();
+  const [generateFreeModel] = useGenerateFreeModelMutation();
 
-  const handleGenerateAlternateEndings = async () => {
-    if (!selectedStory) return;
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Generating alternate endings...");
-    try {
-      const payload = {
-        title: selectedStory.title,
-        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
-        tag: selectedStory.tag,
-
-        language: selectedStory.language || "English",
-
-      };
-      
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
-        
-      const res = await generationRequest.unwrap();
-      if (res && res.data) {
-        setEndingsCache((prev) => ({
-          ...prev,
-          [selectedStory.uuid]: res.data,
-        }));
-        toast.success("Alternate endings generated successfully!");
-      } else {
-        toast.error("Failed to generate alternate endings.");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to generate alternate endings. Please try again.");
-    } finally {
-      toast.dismiss(toastId);
-      setIsGeneratingEndings(false);
-    }
-  };
-
-  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
-    if (!selectedStory) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: endingData.fullStory,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success(`${endingData.style} applied to story!`);
-  };
-
-  const handleResetEnding = () => {
-    if (!selectedStory) return;
-    const originalContent = originalStoryContent[selectedStory.uuid];
-    if (!originalContent) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: originalContent,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success("Reverted to original story ending!");
-  };
-
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
-
-  // Draft restore + autosave
-  useEffect(() => {
-    if (!textareaValue.trim()) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      const draftData: StoryDraftData = {
-        prompt: textareaValue,
-        genre: selectedGenre,
-        length: selectedLength,
-        language: selectedLanguage,
-        tone: selectedTone,
-        savedAt: new Date().toISOString(),
-      };
-
+  // Genre Soundtrack Manager
+  const playSoundtrack = (genre: string) => {
+    const soundtrack = soundtrackMap[genre];
+    if (!soundtrack) return;
+    if (audioRef.current) {
       try {
-        saveStoryDraft(draftData);
-        setDraftStatus(`Draft saved ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.src = soundtrack;
+        audioRef.current.play().catch(() => {
+          /* browser autoplay blocking compatibility */
+        });
       } catch (err) {
-        if (err instanceof DOMException && err.name === "QuotaExceededError") {
-
-          toast.error("Couldn't autosave draft â€” storage limit reached.");
-        }
-
+        console.error("Audio error", err);
       }
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, selectedTone]);
-
-
-
-    if (!("speechSynthesis" in window)) {
-      toast.error("Text-to-speech is not supported in this browser.");
-      return;
     }
   };
 
-  document.addEventListener("mousedown", handleClickOutside);
-  document.addEventListener("keydown", handleKeyDown);
+  // Autosave story inputs draft
   useEffect(() => {
-    return () => {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
+    const draftData = {
+      prompt: textareaValue,
+      genre: selectedGenre,
+      length: selectedLength,
+      language: selectedLanguage,
+      tone: selectedTone,
+      characters,
+      stories,
     };
-  }, []);
-
-  useEffect(() => {
-    if (location.state) {
-      if (location.state.prompt) {
-        setTextareaValue(location.state.prompt);
-      }
-
-      if (location.state.genre) {
-        const matchedGenre =
-          GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
-        setSelectedGenre(matchedGenre);
-      }
-
-      navigate(location.pathname, {
-        replace: true,
-        state: {},
-      });
-    }
-  }, [location, navigate, setSelectedGenre, setTextareaValue]);
-
-
-  useEffect(() => {
-    setValue("prompt", debouncedPrompt);
-  }, [debouncedPrompt, setValue]);
-
-  useEffect(() => {
-    setNarrationWordIndex(0);
-    setNarrationState("idle");
-  }, [selectedStory?.uuid]);
-
-  const sentenceSegments = useMemo(() => {
-    return buildSentenceSegments(selectedStory?.content ?? "");
-  }, [selectedStory?.content]);
-
-  // Sync state instantly whenever a new template is submitted or selected
-  useEffect(() => {
-    if (stories && stories.length > 0) {
-      setSelectedStory(stories[0]);
-    } else {
-      setSelectedStory(null);
-    }
-    // Reset auto-save status for new story session
-    lastSavedContentRef.current = "";
-    hasSavedSessionRef.current = false;
-    savedPostIdRef.current = null;
-  }, [stories]);
-
-  useEffect(() => {
-    const autoSaveStory = async () => {
-      // 1. Prevent guest auto-save requests
-      if (!isLogin || !selectedStory) return;
-
-      // 2. Prevent duplicate auto-save requests for unchanged story content
-      if (selectedStory.content === lastSavedContentRef.current) {
-        return;
-      }
-
-      // 3. Only one draft/post is created per story session (prevent variation/topic duplicates)
-      if (hasSavedSessionRef.current) {
-        return;
-      }
-
-      // 4. Prevent duplicate network calls while a save is already running
-      if (isSavingRef.current) return;
-
-      isSavingRef.current = true;
-
-      const post: IPost = {
-        ...selectedStory,
-        topic: selectTopics,
-      };
-
-      try {
-        const result = await createPost(post).unwrap();
-        if (result && result.data && result.data._id) {
-          savedPostIdRef.current = result.data._id;
-        }
-        lastSavedContentRef.current = selectedStory.content;
-        hasSavedSessionRef.current = true;
-        toast.success("Story auto-saved!");
-      } catch (error) {
-        console.error("Auto-save failed", error);
-      } finally {
-        isSavingRef.current = false;
-      }
-    };
-
-    // Debounce to prevent multiple immediate renders/rerenders from triggering save
     const timer = setTimeout(() => {
-      autoSaveStory();
+      localStorage.setItem("story_spark_draft", JSON.stringify(draftData));
     }, 1000);
-
     return () => clearTimeout(timer);
-  }, [selectedStory, selectedStory?.content, isLogin, selectTopics, createPost]);
+  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, selectedTone, characters, stories]);
 
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-    document.removeEventListener("keydown", handleKeyDown);
+  // Sync route context parameters
+  useEffect(() => {
+    if (location.state && location.state.prompt) {
+      setTextareaValue(location.state.prompt);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
+
+  useEffect(() => {
+    setValue("prompt", textareaValue);
+  }, [textareaValue, setValue]);
+
+  // Keyboard accessibility triggers
+  useKeyboardShortcuts({
+    onOpenHelp: () => setShowHelpModal(true),
+    onCloseHelp: () => setShowHelpModal(false),
+    onGenerate: () => {
+      if (inputRef.current) {
+        const form = inputRef.current.closest("form");
+        if (form) form.requestSubmit();
+      }
+    },
+    onPublish: () => {
+      const publishBtn = document.getElementById("publish-story-btn");
+      publishBtn?.click();
+    },
+    focusPrompt: () => {
+      inputRef.current?.focus();
+    },
+    hasStory: stories.length > 0,
+  });
+
+  const generateId = () => Math.random().toString(36).substring(2, 9);
+
+  // Character customizer CRUD
+  const handleAddCharacter = () => {
+    setCharacters((prev) => [
+      ...prev,
+      {
+        id: generateId(),
+        name: "",
+        role: "Protagonist",
+        personality: "",
+      },
+    ]);
   };
-}, []);
 
-useEffect(() => {
-  if (location.state && location.state.prompt) {
-    setTextareaValue(location.state.prompt);
-    navigate(location.pathname, { replace: true, state: {} });
-  }
-}, [location, navigate]);
+  const handleRemoveCharacter = (id: string) => {
+    setCharacters((prev) => prev.filter((char) => char.id !== id));
+  };
 
-useEffect(() => {
-  setValue("prompt", textareaValue);
-}, [textareaValue, setValue]);
+  const handleCharacterChange = (id: string, field: keyof ICharacter, value: string) => {
+    setCharacters((prev) =>
+      prev.map((char) => (char.id === id ? { ...char, [field]: value } : char))
+    );
+  };
+
+  const handleClearPrompt = () => {
+    setTextareaValue("");
+    setValue("prompt", "");
+    if (inputRef.current) inputRef.current.focus();
+  };
 
 const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
     if (isGenerationInProgressRef.current) return;
@@ -1354,1267 +931,557 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
-  
-  useKeyboardShortcuts({
-  onOpenHelp: () => setShowHelpModal(true),
-  onCloseHelp: () => setShowHelpModal(false),
-  onGenerate: () => {
-    if (inputRef.current) {
-      const form = inputRef.current.closest("form");
-      if (form) form.requestSubmit();
-    }
-  },
-  onPublish: () => {
-    const publishBtn = document.getElementById("publish-story-btn");
-    publishBtn?.click();
-  },
-  focusPrompt: () => {
-    inputRef.current?.focus();
-  },
-  hasStory: stories.length > 0,
-});
+  const isDangerLimit = textareaValue.length >= MAX_PROMPT_LENGTH * DANGER_THRESHOLD;
+
+  // Pre-load prompt triggers
+  const handleExampleSelect = (promptText: string) => {
+    setTextareaValue(promptText);
+    setValue("prompt", promptText);
+    setIsDropdownOpen(false);
+  };
+
+  // Close dropdown helpers on outside click
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
+        setIsLanguageDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  const generateId = () => Math.random().toString(36).substring(2, 9);
-      }
+  return (
+    <div className="min-h-screen bg-[#070b13] text-slate-100 relative overflow-hidden font-sans pb-10">
+      <audio ref={audioRef} className="hidden" />
+      <Toaster position="top-right" reverseOrder={false} />
 
-      // Save PDF with sanitized name
-      const safeTitle = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-      doc.save(`${safeTitle}.pdf`);
-      toast.dismiss(toastId);
-      toast.success("Premium PDF downloaded!");
-    } catch (error) {
-      console.error(error);
-      toast.dismiss(toastId);
-      toast.error("Failed to export PDF.");
-    }
-  };
+      {/* Decorative Blur Backgrounds */}
+      <div className="absolute top-[-300px] left-[-100px] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-[-200px] right-[-100px] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[160px] pointer-events-none" />
 
-  const downloadBlob = (blob: Blob, filename: string) => {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-};
+      {/* Main Header / Status Row */}
+      <header className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between border-b border-white/5 relative z-25 bg-[#070b13]/85 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-xs font-semibold tracking-wider text-slate-300"
+          >
+            ← BACK
+          </Link>
+        </div>
 
-const getSafeFileName = (title: string, ext: string) => {
-  const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  return `${cleanTitle || "story"}.${ext}`;
-};
-
-const handleExportMarkdown = () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
-    try {
-      const title = selectedStory.title || "Story";
-      const content = selectedStory.content || "";
-      const tag = selectedStory.tag || "General";
-      const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
-      const isoDate = new Date().toISOString().split("T")[0];
-      const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
-      const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
-      downloadBlob(blob, getSafeFileName(title, "md"));
-      toast.success("Markdown downloaded!");
-    } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
-  };
-
-
-  const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
-  const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
-  const isGenerateDisabled = loading || isOverLimit || !textareaValue.trim();
-
-  useKeyboardShortcuts({
-    onOpenHelp: () => setShowHelpModal(true),
-    onCloseHelp: () => setShowHelpModal(false),
-    onGenerate: () => {
-      if (isGenerateDisabled) {
-        return;
-      }
-      if (inputRef.current) {
-        const form = inputRef.current.closest("form");
-        if (form) form.requestSubmit();
-
-      }
-      const result = await createPost(post).unwrap();
-      if (result) {
-        toast.success("Story published successfully!");
-        setStories([]);
-        setSelectedStory(null);
-        onPublishSuccess?.();
-      }
-    } catch {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateReadingTime = (content: string): number => {
-    const words = getWordCount(content);
-    return Math.max(1, Math.ceil(words / 200));
-  };
-
-  const isNarrationActive = narrationState !== "idle";
-
-
-  const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
-
-  const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
-
-  const filteredStories = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) return uniqueStories;
-    const query = debouncedSearchQuery.toLowerCase();
-    
-    return uniqueStories.filter((story) => {
-      switch (searchFilter) {
-        case "title":
-          return story.title?.toLowerCase().includes(query);
-        case "content":
-          return story.content?.toLowerCase().includes(query);
-        case "genre":
-          return story.tag?.toLowerCase().includes(query);
-        case "all":
-        default:
-          return (
-            story.title?.toLowerCase().includes(query) ||
-            story.content?.toLowerCase().includes(query) ||
-            story.tag?.toLowerCase().includes(query)
-          );
-      }
-    });
-  }, [uniqueStories, debouncedSearchQuery, searchFilter]);
-
-  const indexOfLastStory = currentPage * storiesPerPage;
-  const indexOfFirstStory = indexOfLastStory - storiesPerPage;
-  const currentStories = useMemo(() => {
-    return filteredStories.slice(indexOfFirstStory, indexOfLastStory);
-  }, [filteredStories, indexOfFirstStory, indexOfLastStory]);
-
-  const totalPages = useMemo(() => {
-    return Math.ceil(filteredStories.length / storiesPerPage);
-  }, [filteredStories.length, storiesPerPage]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearchQuery, searchFilter]);
-
-  if (isLoading) {
-    return (
-      <div className="bg-gradient-to-br animate-gradient-slow min-h-screen relative overflow-x-hidden">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
-            <div className="pt-2 w-full md:w-auto flex justify-start">
-              <Link to="/">
-                <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
-                  <i className="fa-solid fa-left-long"></i> BACK
-                </div>
-              </Link>
-            </div>
-
-            {!login && (
-              <div className="pt-2 text-center">
-                <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed">
-                  <span>
-                    Free access for 3 requests — <Link to="/login"><span className="text-indigo-400 underline font-semibold">Login</span></Link> for more!
-                  </span>
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center justify-center py-20">
-              <StoryGeneratingAnimation />
-            </div>
+        {!login && (
+          <div className="hidden md:flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-1.5 rounded-full text-xs text-indigo-300">
+            <span>Free access for 3 requests — <Link to="/login" className="underline font-bold text-indigo-200">Login</Link> for unlimited!</span>
           </div>
-        </div>
-      </div>
-    );
-  }
+        )}
 
-          {!login && (
-            <div className="pt-2 text-center">
-              <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed">
-                <span>
-                  Free access for 3 requests — <Link to="/login"><span className="text-indigo-400 underline font-semibold">Login</span></Link> for more!
-                </span>
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col items-center md:items-end pt-2 w-full md:w-auto">
-            <button className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
-              <span>
-                <span className="text-gray-400 text-xs mr-1">Per Month</span>
-                {getRequestLimit(subscriptionType)}
-              </span>
-              <Link to="/pricing" className="border-1 border-white/20 pl-2 text-gray-300">
-               Upgrade
-              </Link>
-              
-              <i className="fas fa-bolt text-yellow-400"></i>
-            </button>
-            <div className="mt-3 text-gray-500 text-xs text-center md:text-right">
-              <span>
-                This month request:{" "}
-                {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}
-              </span>
-              <br />
-              <span>Total posts: {login ? (data?.postsCount ?? 0) : 0}</span>
-            </div>
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-end text-xs text-slate-400">
+            <span>Requests this month: {login ? (userProfile?.requestsThisMonth ?? 0) : guestRequestCount} / {getRequestLimit(subscriptionType)}</span>
+            <span className="text-[10px] text-slate-500">Total Published Posts: {login ? (userProfile?.postsCount ?? 0) : 0}</span>
           </div>
+          <Link
+            to="/pricing"
+            className="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-full text-xs font-bold transition-all shadow-lg hover:shadow-orange-500/10 flex items-center gap-1 cursor-pointer"
+          >
+            Upgrade Plan ⚡
+          </Link>
+        </div>
+      </header>
+
+      {/* Main Split Screen Area */}
+      <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 relative z-10">
+        
+        {/* Mobile Navigation Tabs */}
+        <div className="flex lg:hidden w-full bg-slate-900/60 border border-white/5 p-1 rounded-xl mb-6">
+          <button
+            onClick={() => setActiveMobileTab("create")}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+              activeMobileTab === "create"
+                ? "bg-indigo-600 text-white shadow-md"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Edit3 className="w-4 h-4" /> Define Settings
+          </button>
+          <button
+            onClick={() => setActiveMobileTab("read")}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+              activeMobileTab === "read"
+                ? "bg-indigo-600 text-white shadow-md"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Eye className="w-4 h-4" /> Workspace Canvas
+          </button>
         </div>
 
-        <div className="mt-11">
-          <h1 className="text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">
-            ✨ Turn Your Ideas Into{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-              Amazing Stories!
-          <h1 className="text-slate-900 dark:text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">
-            âœ¨ {text.titleStart}{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-
-              {text.titleAccent}
-            </span>{" "}
-            âœ¨
-          </h1>
-
-          <div className="max-w-3xl mx-auto px-4 sm:px-0">
-            <div className="bg-blue-500/10 rounded-md p-4 border border-gray-400">
-<div className="relative">
-  <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-    <div className="flex flex-wrap gap-2 mb-3">
-      {[
-        "🎭 Drama",
-        "😂 Comedy",
-        "😱 Horror",
-        "💕 Romance",
-        "🚀 Sci-Fi",
-        "🧙 Fantasy",
-        "🔍 Mystery",
-        "🌟 Adventure",
-      ].map((genre) => (
-        <button
-          key={genre}
-          type="button"
-          onClick={() =>
-            setSelectedGenre(selectedGenre === genre ? "" : genre)
-          }
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-            selectedGenre === genre
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-          }`}
-        >
-          {genre}
-        </button>
-      ))}
-    </div>
-        </div>
-          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Left Panel (AI Input form controls) */}
+          <div className={`lg:col-span-4 flex flex-col gap-6 ${activeMobileTab !== "create" ? "hidden lg:flex" : "flex"}`}>
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <h3 className="text-xl font-bold text-slate-200 relative z-10">
-                Generated Story
-              </h3>
-              <div className="flex flex-wrap items-center gap-2 relative z-10">
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleCopyStory}
-                  disabled={!selectedStory}
-                >
-                  {isCopied ? "Γ£ô Copied" : "≡ƒôï Copy"}
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportPDF}
-                  disabled={!selectedStory}
-                >
-                  ≡ƒôä Export PDF
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportMarkdown}
-                  disabled={!selectedStory}
-                >
-                  Γ¼ç∩╕Å Export as Markdown
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowWorldMap(true)}
-                  disabled={!selectedStory}
-                >
-                  Γëí╞Æ├╣ΓòæΓê⌐Γòò├à World Map
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowRemix(true)}
-                  disabled={!selectedStory}
-                >
-                  Γëí╞Æ├╢├ç Remix
-                </button>
-                <button
-                  type="button"
-                  id="publish-story-btn"
-                  className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
-                  }`}
-                  onClick={handelPublishStory}
-                  disabled={loading || !selectedStory}
-                >
-                  {loading ? "Publishing..." : "Publish"}
-                </button>
-              </div>
-            </div>
+            {/* Main Creative Form Card */}
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+              
+              {/* Settings Card */}
+              <div className="bg-slate-900/40 border border-white/5 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-5">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-bold tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+                    <Gauge className="w-4 h-4 text-indigo-400" /> Story Settings
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setShowHelpModal(true)}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                  </button>
+                </div>
 
-          <div className="max-w-3xl mx-auto px-4 sm:px-0">
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white overflow-hidden">
-              <div className="relative w-full">
-                <form className="space-y-4 w-full" onSubmit={handleSubmit(onSubmit)}>
-
-                  {/* â”€â”€ Genre chips â”€â”€ */}
-                  <div className="flex flex-wrap gap-2 mb-3">
+                {/* Genre chips selection */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Genre Category</label>
+                  <div className="flex flex-wrap gap-2">
                     {GENRES.map((genre) => (
                       <button
                         key={genre.value}
                         type="button"
-                        disabled={loading}
-                        onClick={() => {
-                          if (loading) return;
-                          const newGenre = selectedGenre === genre.value ? "" : genre.value;
-                          setSelectedGenre(newGenre);
-                          if (newGenre) {
-                            playSoundtrack(newGenre);
-                          } else if (audioRef.current) {
-                            audioRef.current.pause();
-                            audioRef.current.currentTime = 0;
-                          }
-                        }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedGenre === genre.value
-                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                            : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                          } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
+                        onClick={() => setSelectedGenre(genre.value)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border cursor-pointer ${
+                          selectedGenre === genre.value
+                            ? "bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20"
+                            : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10 hover:text-slate-200"
+                        }`}
                       >
-                        {genre.icon} {genreLabels[genre.name]}
+                        {genre.icon} {genre.name}
                       </button>
                     ))}
                   </div>
+                </div>
 
-                  {/* â”€â”€ NEW: Tone picker â”€â”€ */}
-                  {/* ── NEW: Tone picker ── */}
-                  <TonePicker selected={selectedTone} onChange={setSelectedTone} />
+                {/* Tone picker pills */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Story Tone</label>
+                  <div className="flex flex-wrap gap-2">
+                    {TONES.map((tone) => (
+                      <button
+                        key={tone.label}
+                        type="button"
+                        onClick={() => setSelectedTone(tone.label)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border cursor-pointer ${
+                          selectedTone === tone.label
+                            ? "bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-600/20"
+                            : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10 hover:text-slate-200"
+                        }`}
+                      >
+                        {tone.emoji} {tone.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-
-                    const rawParts = segment.text.split(/(\s+)/);
-                    let wordOffset = 0;
-
-
-                      {(["short", "medium", "long"] as const).map((length) => (
+                {/* Length & Language row */}
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Length</label>
+                    <div className="flex bg-[#0b0e14] border border-white/5 p-1 rounded-full">
+                      {["short", "medium", "long"].map((len) => (
                         <button
-                          key={length}
+                          key={len}
                           type="button"
-                          disabled={loading}
-                          onClick={() => setSelectedLength(length)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedLength === length
-                              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                            } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
+                          onClick={() => setSelectedLength(len)}
+                          className={`flex-1 py-1 rounded-full text-[10px] font-bold uppercase transition-all cursor-pointer ${
+                            selectedLength === len
+                              ? "bg-indigo-600 text-white"
+                              : "text-slate-400 hover:text-slate-200"
+                          }`}
                         >
-                          {text[length]}
+                          {len}
                         </button>
                       ))}
                     </div>
-
-
-                    <div className="flex items-center gap-2" ref={languageDropdownRef}>
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1">🌐 {text.language}:</span>
-                      <div className="relative">
-            <div className="relative z-10 mt-6">
-              <AudioPlayer
-                ref={audioPlayerRef}
-                text={selectedStory.content}
-                title={selectedStory.title}
-                onWordIndexChange={setNarrationWordIndex}
-                onPlaybackStateChange={setNarrationState}
-              />
-            </div>
-          </div>
-          <div className="mt-7">
-            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
-              <h3 className="text-lg font-bold text-slate-200 mb-4">
-                Select Topics
-              </h3>
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <input
-                  type="text"
-                  value={newTopicTitle}
-                  onChange={(event) => setNewTopicTitle(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      handleAddTopic();
-                    }
-                  }}
-                  placeholder="Add related topic"
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                />
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-500 transition-colors"
-                  onClick={handleAddTopic}
-                >
-                  Add Topic
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedStory ? (
-                  <>
-                    {topics.map((topic, index) => (
-                      <span
-                        key={index}
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
-                      >
-                        <button
-
-                          disabled={loading}
-                          onClick={() => !loading && setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                          className={`flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 ${loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                            }`}
-                        >
-                          <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
-                          <span className="text-gray-400 text-[10px]">â–¼</span>
-
-                        </button>
-
-                        {isLanguageDropdownOpen && (
-                          <ul className="absolute right-0 z-20 mt-1.5 max-h-48 w-40 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-xl focus:outline-none divide-y divide-slate-100 dark:divide-white/5 p-1 box-border list-none m-0">
-                            {LANGUAGES.map((lang) => (
-                              <li key={lang.code} className="p-0 m-0 list-none">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedLanguage(lang.name);
-                                    setIsLanguageDropdownOpen(false);
-                                  }}
-
-                                  className={`w-full text-left px-3 py-2 text-xs transition-colors duration-150 cursor-pointer ${selectedLanguage === lang.name
-                                      ? "bg-indigo-600 text-white font-bold"
-                                      : "text-gray-400 hover:bg-indigo-600/50 hover:text-white"
-                                    }`}
-
-                                >
-                                  {lang.name}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    </div>
                   </div>
 
+                  <div className="flex flex-col gap-2" ref={languageDropdownRef}>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Language</label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                        className="w-full py-2 px-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold flex items-center justify-between text-slate-300 transition-colors cursor-pointer"
+                      >
+                        <span className="flex items-center gap-1.5"><Languages className="w-3.5 h-3.5 text-indigo-400" /> {selectedLanguage}</span>
+                        <span>▼</span>
+                      </button>
 
-                  {/* â”€â”€ Prompt textarea â”€â”€ */}
-                  <div className="relative w-full">
+                      {isLanguageDropdownOpen && (
+                        <ul className="absolute left-0 right-0 z-30 mt-2 bg-slate-900 border border-white/10 rounded-2xl max-h-48 overflow-y-auto shadow-2xl p-1.5 focus:outline-none list-none m-0 divide-y divide-white/5">
+                          {LANGUAGES.map((lang) => (
+                            <li key={lang.code} className="p-0 m-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedLanguage(lang.name);
+                                  setIsLanguageDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer ${
+                                  selectedLanguage === lang.name
+                                    ? "bg-indigo-600 text-white font-bold"
+                                    : "text-slate-400 hover:bg-white/5 hover:text-white"
+                                }`}
+                              >
+                                {lang.name}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
+              </div>
+
+              {/* Characters Accordion */}
+              <div className="bg-slate-900/40 border border-white/5 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+                    👥 Cast of Characters
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={handleAddCharacter}
+                    className="p-1.5 hover:bg-white/5 rounded-full border border-white/10 transition-colors text-xs font-bold flex items-center gap-1 text-slate-300 hover:text-white cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add
+                  </button>
+                </div>
+                
+                {characters.length === 0 ? (
+                  <p className="text-xs text-slate-500 italic text-center py-2">
+                    Define custom character details to guide story generation.
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-4 max-h-64 overflow-y-auto pr-1">
+                    {characters.map((char, index) => (
+                      <div
+                        key={char.id}
+                        className="bg-slate-950/60 p-4 border border-white/5 rounded-2xl flex flex-col gap-3 relative group"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCharacter(char.id)}
+                          className="absolute right-3 top-3 text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">Character #{index + 1}</span>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-semibold text-slate-400 uppercase">Name</label>
+                            <input
+                              type="text"
+                              value={char.name}
+                              onChange={(e) => handleCharacterChange(char.id, "name", e.target.value)}
+                              placeholder="e.g. Merlin"
+                              className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 focus:border-indigo-500/50 outline-none text-xs text-white"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-semibold text-slate-400 uppercase">Role</label>
+                            <select
+                              value={char.role}
+                              onChange={(e) => handleCharacterChange(char.id, "role", e.target.value)}
+                              className="px-2 py-1.5 rounded-xl bg-slate-900 border border-white/10 focus:border-indigo-500/50 outline-none text-xs text-slate-300"
+                            >
+                              <option value="Protagonist">Protagonist</option>
+                              <option value="Companion">Companion</option>
+                              <option value="Rival">Rival</option>
+                              <option value="Antagonist">Antagonist</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-semibold text-slate-400 uppercase">Personality</label>
+                          <textarea
+                            value={char.personality}
+                            onChange={(e) => handleCharacterChange(char.id, "personality", e.target.value)}
+                            placeholder="e.g. Brave, clumsy, afraid of water"
+                            rows={2}
+                            className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 focus:border-indigo-500/50 outline-none text-xs text-white resize-none"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Prompt Input Area */}
+              <div className="bg-slate-900/40 border border-white/5 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Enter Prompt Idea</label>
+                  <div className="relative">
                     <textarea
                       {...register("prompt")}
                       ref={(el) => {
                         register("prompt").ref(el);
                         inputRef.current = el;
                       }}
-
-                      disabled={loading}
-                      aria-busy={loading}
-                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-12 transition-colors duration-200 box-border ${isOverLimit
-                          ? "ring-1 ring-red-500 rounded"
-                          : isNearLimit
-                            ? "ring-1 ring-yellow-400 rounded"
-                            : ""
-                        }`}
-
-                      placeholder={text.promptPlaceholder}
                       value={textareaValue}
-                      maxLength={MAX_PROMPT_LENGTH}
                       onChange={(e) => setTextareaValue(e.target.value)}
-onKeyDown={(e) => {
-                        // Keep existing behavior: Enter -> next step (unless Shift is held)
-                        if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+                      maxLength={MAX_PROMPT_LENGTH}
+                      placeholder="Every great story begins with a single idea. What's yours?"
+                      rows={5}
+                      className={`w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-indigo-500 text-sm leading-relaxed text-white placeholder:text-slate-500 resize-none transition-colors pr-10 ${
+                        isOverLimit
+                          ? "border-red-500 focus:border-red-500"
+                          : isNearLimit
+                          ? "border-yellow-500 focus:border-yellow-500"
+                          : ""
+                      }`}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();
-
-                          if (isGenerateDisabled) {
-                            return;
-                          }
                           const form = e.currentTarget.closest("form");
                           if (form) form.requestSubmit();
-
                         }
                       }}
                     />
-
-                    <div className="absolute right-3.5 top-3.5 flex flex-col gap-2.5">
-                      {textareaValue.length > 0 && (
-                          {topic.selected ? (
-                            <i className="fa-solid fa-check"></i>
-                          ) : (
-                            <i className="fa-solid fa-plus"></i>
-                          )}{" "}
-                          {topic.title}
-                        </button>
-                        <button
-                          type="button"
-                          className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40"
-                          onClick={() => handleRemoveTopic(index)}
-                          disabled={topics.length <= 2}
-                          aria-label={`Remove ${topic.title}`}
-                        >
-                          <i className="fa-solid fa-xmark"></i>
-                        </button>
-
-                      )}
-
+                    {textareaValue.length > 0 && (
                       <button
                         type="button"
-
-                        disabled={loading}
                         onClick={handleClearPrompt}
-                        className={`absolute right-2 top-2 text-gray-400 transition-colors duration-200 ${loading
-                            ? "cursor-not-allowed opacity-50"
-                            : "hover:text-red-500"
-                          }`}
-                        aria-label={text.close}
-                        title={text.close}
-
+                        className="absolute right-3 top-3 text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        ✕
                       </button>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-200/40 dark:border-white/5 select-none w-full box-border">
-                      <div className="flex-1 min-w-0 pr-4">
-                        {isOverLimit ? (
-                          <p className="text-[11px] font-semibold text-red-500 dark:text-red-400 flex items-center gap-1 truncate m-0">
-                            <span>⚠</span> {text.characterLimit}
-                          </p>
-                        ) : isNearLimit ? (
-                          <p className="text-[11px] font-semibold text-amber-500 dark:text-amber-400 flex items-center gap-1 truncate m-0">
-                            <span>⚠</span> {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-                          </p>
-                        ) : null}
-                      </div>
-
-                      <span
-  aria-live="polite"
-  className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
-    isOverLimit || isDangerLimit
-      ? "text-red-500 dark:text-red-400"
-      : isNearLimit
-      ? "text-amber-500"
-      : "text-slate-400"
-  }`}
->
-  {textareaValue.length} / {MAX_PROMPT_LENGTH}
-</span>
-                    </div>
+                    )}
                   </div>
-
-                  <div className="text-[11px] font-medium leading-relaxed text-slate-400 dark:text-slate-500 select-none w-full box-border">
-                    💡 <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">{text.keyboardTip}</span>
-                    {text.press} <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Enter</kbd> to continue &bull;{" "}
-                    Press <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">{typeof navigator !== "undefined" && navigator.platform.toUpperCase().includes("MAC") ? "Cmd" : "Ctrl"} + Enter</kbd> to generate &bull;{" "}
-                    <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Shift + Enter</kbd> {text.forNewLine}
+                  
+                  {/* Character Counter */}
+                  <div className="flex justify-between items-center text-[10px] text-slate-500 font-semibold px-1 mt-1">
+                    {isOverLimit ? (
+                      <span className="text-red-400">⚠️ Character limit reached</span>
+                    ) : isNearLimit ? (
+                      <span className="text-yellow-400">⚠️ {MAX_PROMPT_LENGTH - textareaValue.length} characters left</span>
+                    ) : (
+                      <span />
+                    )}
+                    <span className={isOverLimit ? "text-red-400" : isNearLimit ? "text-yellow-400" : "text-slate-500"}>
+                      {textareaValue.length} / {MAX_PROMPT_LENGTH}
+                    </span>
                   </div>
-
-
-                  <div className="flex justify-end pt-2 w-full box-border">
-                    <button
-                      type="button"
-
-                      disabled={loading}
-                      onClick={() => !loading && setIsRecentPromptsOpen(!isRecentPromptsOpen)}
-                      className={`absolute right-2 top-12 bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2 ${loading
-                          ? "cursor-not-allowed opacity-60"
-                          : "hover:bg-indigo-700"
-                        }`}
-                      aria-label={text.recentPrompts}
-                      title={text.recentPrompts}
-
-                    >
-                      <span>Next: Cast of Characters ➡️</span>
-                    </button>
-            {/* Alternate Endings Section */}
-            {selectedStory && (
-              <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
-                <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-200 flex items-center gap-2">
-                      Alternate Endings
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Explore alternate narrative styles for your story context.
-                    </p>
-                  </div>
-                  {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
-                    <button
-                      type="button"
-                      onClick={handleResetEnding}
-                      className="rounded-lg px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-200 border border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
-                    >
-                      <i className="fa-solid fa-rotate-left"></i> Reset to Original
-                    </button>
-                  )}
                 </div>
 
-                  <div className="space-y-2 select-none">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Cast of Characters</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Define custom characters to ensure Gemini maintains character roles, personality traits, and dynamic relationships consistently throughout the story.
-                    </p>
-                  </div>
+                {/* Predefined prompt dropdown */}
+                <div className="flex flex-col gap-2" ref={dropdownRef}>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">💡 Select Predefined Prompt</label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="w-full p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs text-left text-slate-300 flex items-center justify-between transition-colors cursor-pointer"
+                    >
+                      <span className="truncate pr-4">Select an example idea...</span>
+                      <span>▼</span>
+                    </button>
 
-
-                    <div className="flex items-center justify-between mt-1 px-1">
-                      {isOverLimit ? (
-                        <p className="text-xs text-red-400 flex items-center gap-1">
-                          <span>⚠️</span> {text.characterLimit}
-                        </p>
-                      ) : isNearLimit ? (
-                        <p className="text-xs text-yellow-400 flex items-center gap-1">
-                          <span>⚠️</span>{" "}
-                          {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-                        </p>
-                      ) : (
-                        <span />
-                      )}
-
-                      <span
-                        className={`text-xs tabular-nums ml-auto ${isOverLimit
-                            ? "text-red-400 font-medium"
-                            : isNearLimit
-                              ? "text-yellow-400"
-                              : "text-gray-500"
-                          }`}
-                      >
-                        {textareaValue.length} / {MAX_PROMPT_LENGTH}
-                      </span>
-
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {characters.map((char, index) => (
-                        <div
-                          key={char.id}
-                          className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl space-y-4 relative"
-                        >
-                          <div className="flex items-center justify-between select-none">
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                              👤 Character #{index + 1}
-                            </span>
+                    {isDropdownOpen && (
+                      <ul className="absolute left-0 right-0 z-30 mt-2 bg-slate-900 border border-white/10 rounded-2xl max-h-56 overflow-y-auto shadow-2xl p-1.5 focus:outline-none list-none m-0 divide-y divide-white/5">
+                        {prompts.map((item) => (
+                          <li key={item.id} className="p-0 m-0">
                             <button
                               type="button"
-                              onClick={() => handleRemoveCharacter(char.id)}
-                              className="text-xs font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
+                              onClick={() => handleExampleSelect(item.prompt)}
+                              className="w-full text-left px-3 py-2.5 rounded-xl text-xs text-slate-400 hover:bg-white/5 hover:text-white transition-colors duration-150 break-words leading-relaxed cursor-pointer"
                             >
-                              Remove
+                              {item.prompt}
                             </button>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Name</label>
-                              <input
-                                type="text"
-                                value={char.name}
-                                onChange={(e) => handleCharacterChange(char.id, "name", e.target.value)}
-                                placeholder="e.g. Leo, Sir Cedric, Bella"
-                                className="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl outline-none focus:border-blue-500/40 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 placeholder:italic"
-                              />
-                            </div>
-
-                  <div className="space-y-4">
-                    {characters.map((char, index) => (
-                      <div
-                        key={char.id}
-                        className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl space-y-4 relative"
-                      >
-                        <div className="flex items-center justify-between select-none">
-                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                            👤 Character #{index + 1}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCharacter(char.id)}
-                            className="text-xs font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
-                          >
-                            Remove
-                          </button>
-                        </div>
-
-    <div className="flex flex-wrap items-center gap-2 mb-3">
-      <span className="text-xs text-gray-400 mr-1">📏 Length:</span>
-
-      {lengths.map((length) => (
-        <button
-          key={length}
-          type="button"
-          onClick={() => setSelectedLength(length)}
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-            selectedLength === length
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-          }`}
-        >
-          {length.charAt(0).toUpperCase() + length.slice(1)}
-        </button>
-      ))}
-    </div>
-
-    <div className="relative">
-      <textarea
-  {...register("prompt")}
-  ref={(el) => {
-    register("prompt").ref(el);
-    inputRef.current = el;
-  }}
-        className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 pr-10 transition-colors duration-200 ${
-          isOverLimit
-            ? "ring-1 ring-red-500 rounded"
-            : isNearLimit
-            ? "ring-1 ring-yellow-400 rounded"
-            : ""
-        }`}
-        placeholder="Every great story begins with a single idea. What's yours?"
-        value={textareaValue}
-        maxLength={MAX_PROMPT_LENGTH}
-        onChange={(e) => setTextareaValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            const form = e.currentTarget.closest("form");
-            if (form) form.requestSubmit();
-          }
-        }}      
-        />
-
-      {textareaValue.length > 0 && (
-        <button
-          type="button"
-          onClick={handleClearPrompt}
-          className="absolute right-2 top-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
-          aria-label="Clear prompt"
-          title="Clear prompt"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      )}
-
-      <div className="flex items-center justify-between mt-1 px-1">
-        {isOverLimit ? (
-          <p className="text-xs text-red-400 flex items-center gap-1">
-            <span>⚠</span> Character limit reached — generate is disabled
-          </p>
-        ) : isNearLimit ? (
-          <p className="text-xs text-yellow-400 flex items-center gap-1">
-            <span>⚠</span>{" "}
-            {MAX_PROMPT_LENGTH - textareaValue.length} characters remaining
-          </p>
-        ) : (
-          <span />
-        )}
-
-        <span
-          className={`text-xs tabular-nums ml-auto ${
-            isOverLimit
-              ? "text-red-400 font-medium"
-              : isNearLimit
-              ? "text-yellow-400"
-              : "text-gray-500"
-          }`}
-        >
-          {textareaValue.length} / {MAX_PROMPT_LENGTH}
-        </span>
-      </div>
-    </div>
-
-    <p className="text-xs text-gray-500 mt-1 px-1">
-      💡  <span className="font-medium">Keyboard tip:</span> Press{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-        Enter
-      </kbd>{" "}
-      to generate &bull;{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-        Ctrl + Enter
-      </kbd>{" "}
-      also works &bull;{" "}
-      <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-        Shift + Enter
-      </kbd>{" "}
-      for new line
-    </p>
-
-    <div className="flex justify-end mt-2 w-full">
-      <button
-        type="submit"
-        disabled={loading || isOverLimit}
-        className={`w-full sm:w-auto justify-center rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-          loading || isOverLimit
-            ? "opacity-50 cursor-not-allowed"
-            : "hover:shadow-lg hover:shadow-indigo-500/50"
-        } transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 group cursor-pointer`}
-      >
-        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
-        {loading ? "Generating..." : "Generate"}
-      </button>
-    </div>
-  </form>
-</div>
-            </div>
-
-            <div className="w-full max-w-2xl m-auto mt-4">
-  <h1 className="text-sm text-gray-500 mb-1">
-    Here are some example prompts you can refer to:-
-  </h1>
-
-  <div className="relative" ref={dropdownRef}>
-    <button
-      type="button"
-      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-      className="w-full p-3 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-between text-sm text-left transition-all duration-200"
-    >
-      <span className="truncate pr-4">
-        {selectedPrompt || "Select a prompt"}
-      </span>
-
-      <span
-        className={`text-gray-300 transition-transform duration-200 ${
-          isDropdownOpen ? "rotate-180" : ""
-        }`}
-      >
-        ▼
-      </span>
-    </button>
-
-    {isDropdownOpen && (
-      <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
-        {prompts.map((item) => (
-          <li key={item.id}>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedPrompt(item.prompt);
-                setTextareaValue(item.prompt);
-                setIsDropdownOpen(false);
-              }}
-              className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
-            >
-              {item.prompt}
-            </button>
-          </li>
-        ))}
-      </ul>
-    )}
-  </div>
-</div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Name</label>
-                            <input
-                              type="text"
-                              value={char.name}
-                              onChange={(e) => handleCharacterChange(char.id, "name", e.target.value)}
-                              placeholder="e.g. Leo, Sir Cedric, Bella"
-                              className="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl outline-none focus:border-blue-500/40 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 placeholder:italic"
-                            />
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Role</label>
-                            <select
-                              value={char.role}
-                              onChange={(e) => handleCharacterChange(char.id, "role", e.target.value)}
-                              className="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl outline-none focus:border-blue-500/40 text-slate-800 dark:text-slate-200"
-                            >
-                              <option value="Protagonist">Protagonist (Hero/Main Character)</option>
-                              <option value="Companion">Companion (Sidekick/Friend)</option>
-                              <option value="Rival">Rival (Competitor)</option>
-                              <option value="Antagonist">Antagonist (Villain/Obstacle)</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Personality & Traits</label>
-                          <textarea
-                            value={char.personality}
-                            onChange={(e) => handleCharacterChange(char.id, "personality", e.target.value)}
-                            placeholder="e.g. Brave but clumsy, loves eating carrots, afraid of the dark..."
-                            rows={2}
-                            className="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl outline-none resize-none focus:border-blue-500/40 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 placeholder:italic"
-                          />
-                        </div>
-                      </div>
-                    ))}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
+                </div>
 
-                  <p className="text-xs text-gray-500 mt-1 px-1">
-                    💡 <span className="font-medium">{text.keyboardTip}</span> {text.press}{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Enter
-                    </kbd>{" "}
-                    {text.toGenerate} &bull;{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Ctrl + Enter
-                    </kbd>{" "}
-                    {text.alsoWorks} &bull;{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Shift + Enter
-                    </kbd>{" "}
-                    {text.forNewLine}
-                  </p>
-
-                  {/* â”€â”€ Generate button row â”€â”€ */}
-                  <div className="flex items-center justify-between mt-2 w-full">
-                    {/* Active tone badge */}
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      {selectedTone && (
-                        <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 border border-white/10">
-                          {TONES.find((t) => t.label === selectedTone)?.emoji}{" "}
-                          <span className="font-medium">{selectedTone}</span>
-
-                          <button
-                            key={s.name}
-                            type="button"
-
-                            disabled={loading}
-                            onClick={() => setSelectedTone("")}
-                            className={`ml-1 text-gray-500 transition-colors ${loading
-                                ? "cursor-not-allowed opacity-50"
-                                : "hover:text-red-400"
-                              }`}
-                            aria-label="Remove tone"
-                          >
-                            Ã—
-
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Tab content */}
-                    {(() => {
-                      const currentEndings = endingsCache[selectedStory.uuid] || [];
-                      const currentEndingData = currentEndings.find((e) => e.style === activeEndingTab);
-                      if (!currentEndingData) return null;
-                      
-                      const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
-                      
-                      return (
-                        <div className="bg-slate-900/40 rounded-xl p-6 border border-slate-700/30">
-                          <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-lg font-bold text-slate-200">
-                              {activeEndingTab} Suggestion
-                            </h4>
-                            <div>
-                              {isCurrentlyApplied ? (
-                                <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
-                                  <i className="fa-solid fa-check"></i> Applied to Story
-                                </span>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleApplyEnding(currentEndingData)}
-                                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
-                                >
-                                  Apply to Story
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-4">
-                            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800 leading-relaxed text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap">
-                              <p>{currentEndingData.ending}</p>
-                            </div>
-                            
-                            <div>
-                              <details className="group border border-slate-800 rounded-lg overflow-hidden bg-slate-950/20">
-                                <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none">
-                                  <span>PREVIEW FULL STORY WITH THIS ENDING</span>
-                                  <span className="transition-transform duration-200 group-open:rotate-180">Γû╝</span>
-                                </summary>
-                                <div className="p-4 border-t border-slate-800/80 text-xs text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
-                                  {currentEndingData.fullStory}
-                                </div>
-                              </details>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8 bg-slate-900/20 border border-dashed border-slate-700/40 rounded-xl">
-                    <button
-
-                      type="submit"
-                      disabled={isGenerateDisabled}
-                      aria-busy={loading}
-                      aria-disabled={isGenerateDisabled}
-                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${isGenerateDisabled
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
-                        } transition-all duration-300 transform flex items-center space-x-2 group`}
-                    >
-                      {loading ? (
-                        <i className="fas fa-circle-notch text-xl animate-spin"></i>
-                      ) : (
-                        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
-                      )}
-                      <span>{loading ? text.generating : text.generate}</span>
-
-                    </button>
-                    <p className="text-xs text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
-                      Uses the story context to produce 5 unique ending variations (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.
-                    </p>
-                  </div>
-
-                  {loading && (
-                    <p className="text-sm text-indigo-300 mt-3 text-right" aria-live="polite">
-                      Your story is being generated. You can cancel the request if it takes too long.
-                    </p>
-                  )}
-                </form>
-              </div>
-            </div>
-
-
-                  <span className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
-                    isOverLimit || isDangerLimit ? "text-red-500 dark:text-red-400" : isNearLimit ? "text-amber-500" : "text-slate-400"
-                  }`}>
-                    {textareaValue.length} / {MAX_PROMPT_LENGTH}
-                  </span>
-
-                  <span
-                    className={`text-gray-300 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""
-                      }`}
-                  >
-                    â–¼
-                  </span>
-                </button>
-                {isDropdownOpen && (
-                  <ul className="relative z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
-                    {prompts.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedPrompt(item.prompt);
-                            setTextareaValue(item.prompt);
-                            setIsDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
-                        >
-                          {item.prompt}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-              </div>
-
-              <div className="flex justify-end pt-2 w-full box-border">
+                {/* Submit button */}
                 <button
-                  type="button"
-                  disabled={loading || isOverLimit}
-                  aria-busy={loading}
-                  aria-disabled={loading || isOverLimit}
-                  onClick={handleGenerateClick}
-                  className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
-                    loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-                  } group`}
+                  type="submit"
+                  disabled={loading || isOverLimit || !textareaValue.trim()}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold text-sm tracking-wide transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 cursor-pointer mt-2"
                 >
-                  <i className="fas fa-wand-magic-sparkles text-sm group-hover:scale-110 transition-transform duration-200" />
-                  <span>{loading ? text.generating : text.generate}</span>
+                  <Sparkles className="w-4 h-4 animate-pulse" />
+                  {loading ? "Wielding magic..." : "Generate AI Story"}
                 </button>
               </div>
-                </>
-              )}
+
             </form>
           </div>
 
-          <div className="w-full text-left box-border">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 select-none px-0.5">
-              {text.examples}
-            </h3>
-
-            <div className="relative w-full" ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={handleToggleDropdown}
-                className="w-full p-3.5 bg-white dark:bg-[#111827]/40 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500/30 flex items-center justify-between text-xs sm:text-sm font-medium text-left transition-all duration-150 cursor-pointer select-none shadow-sm"
-              >
-                <span className="truncate pr-4">
-                  {selectedPrompt || text.selectPrompt}
-                </span>
-                <span className={`text-slate-400 dark:text-slate-500 text-[9px] transition-transform duration-150 shrink-0 ${isDropdownOpen ? "rotate-180" : ""}`}>
-                  ▼
-                </span>
-              </button>
-
-              {isDropdownOpen && (
-                <ul className="absolute z-30 w-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-xl focus:outline-none divide-y divide-slate-100 dark:divide-white/5 p-1 box-border list-none m-0">
-                  {prompts.map((item) => (
-                    <li key={item.id} className="p-0 m-0 list-none">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedPrompt(item.prompt);
-                          setTextareaValue(item.prompt);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors duration-150 whitespace-normal break-words leading-relaxed font-medium cursor-pointer"
-                      >
-                        {item.prompt}
-                      </button>
-                    </li>
+          {/* Right Panel (Story Reading area & Workspace) */}
+          <div className={`lg:col-span-8 flex flex-col h-[calc(100vh-170px)] bg-slate-900/20 dark:bg-slate-950/20 border border-slate-200/50 dark:border-white/5 rounded-3xl ${activeMobileTab !== "read" ? "hidden lg:flex" : "flex"}`}>
+            
+            {/* Version Selection Header */}
+            {stories.length > 0 && selectedStory && (
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-white/5 flex items-center justify-between flex-wrap gap-4 z-20">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-pulse" />
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Generated Variations</h3>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {stories.map((story, index) => (
+                    <button
+                      key={story.uuid}
+                      onClick={() => setSelectedStory(story)}
+                      className={`relative w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center text-[10px] font-extrabold cursor-pointer ${
+                        selectedStory.uuid === story.uuid
+                          ? "border-indigo-500 bg-indigo-600/20 text-indigo-300 scale-110 shadow"
+                          : "border-slate-700 hover:border-slate-500 text-slate-400"
+                      }`}
+                    >
+                      v{index + 1}
+                    </button>
                   ))}
-                </ul>
-              )}
-            </div>
-                )}
+                </div>
               </div>
             )}
-          </div>
-        </div>
-      </div>
 
-      {showHelpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full">
-            <h2 className="text-xl font-bold text-white mb-4">
-              Keyboard Shortcuts
-            </h2>
-
-            <div className="space-y-3 text-gray-300 text-sm">
-              <div><kbd>?</kbd> Open help</div>
-              <div><kbd>Esc</kbd> Close help</div>
-              <div><kbd>/</kbd> Focus prompt</div>
-              <div><kbd>Ctrl + Enter</kbd> Generate story</div>
-              <div><kbd>Ctrl + S</kbd> Publish story</div>
+            {/* Content Renders */}
+            <div className="flex-1 min-h-0 relative">
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <SkeletonLoader key="skeleton" />
+                ) : selectedStory ? (
+                  <motion.div
+                    key={selectedStory.uuid}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="h-full"
+                  >
+                    <StoriesViewComponent
+                      stories={stories}
+                      selectedStory={selectedStory}
+                      setSelectedStory={setSelectedStory}
+                      setStories={setStories}
+                      isLogin={login}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-full flex items-center justify-center p-6"
+                  >
+                    <div className="text-center flex flex-col items-center gap-4 max-w-sm">
+                      <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-2xl shadow-inner">
+                        📖
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-200">Your next story starts here</h3>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        Enter a creative prompt or pick one of our reference suggestions on the left, then click Generate to let AI bring your thoughts to life.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setActiveMobileTab("create");
+                          if (inputRef.current) inputRef.current.focus();
+                        }}
+                        className="mt-2 px-5 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 hover:text-white rounded-full text-xs font-bold transition-all cursor-pointer"
+                      >
+                        Enter Prompt
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
+          </div>
+
+        </div>
+
+      </main>
+
+      {/* Auxiliary Shortcut Modals */}
+      {showHelpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-white/10 rounded-3xl max-w-md w-full p-6 relative">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-1.5">
+              ⌨️ Keyboard Shortcuts
+            </h2>
+            <div className="flex flex-col gap-3 text-slate-300 text-xs">
+              <div className="flex justify-between py-1 border-b border-white/5">
+                <span>Focus Prompt Input</span>
+                <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">/</kbd>
+              </div>
+              <div className="flex justify-between py-1 border-b border-white/5">
+                <span>Submit & Generate Story</span>
+                <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">Ctrl + Enter</kbd>
+              </div>
+              <div className="flex justify-between py-1 border-b border-white/5">
+                <span>Publish Selected Story</span>
+                <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">Ctrl + S</kbd>
+              </div>
+              <div className="flex justify-between py-1 border-b border-white/5">
+                <span>Open Keyboard Shortcuts Help</span>
+                <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">?</kbd>
+              </div>
+              <div className="flex justify-between py-1">
+                <span>Close Active Dialogs</span>
+                <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">Esc</kbd>
+              </div>
+            </div>
             <button
               onClick={() => setShowHelpModal(false)}
-              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
-
+              className="mt-6 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-bold text-white transition-colors cursor-pointer"
             >
-              Close
+              Close Help
             </button>
           </div>
         </div>
       )}
 
-      {loading && <StoryGeneratingAnimation />}
-      <StoriesViewComponent
-        stories={stories}
-        isLogin={login}
-        setStories={setStories}
-      />
-      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
-
-      <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
-
-      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
-
+      {/* Guest Limit reached modal */}
       {showLimitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#0f172a] border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.5)] max-w-md w-full p-6 transform transition-all">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="fas fa-lock text-2xl text-blue-400"></i>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-200 mb-2">
-                Free Limit Reached
-              </h3>
-              <p className="text-gray-400 mb-6 leading-relaxed">
-                You've used all 3 free story generations. Login to continue
-                creating more stories.
-              </p>
-              <div className="flex flex-col gap-3">
-                <Link
-                  to="/login"
-                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
-                >
-                  Login
-                </Link>
-                <button
-                  onClick={() => setShowLimitModal(false)}
-                  className="w-full bg-transparent hover:bg-white/5 text-gray-400 hover:text-gray-300 font-medium py-3 px-4 rounded-xl transition-all"
-                >
-                  Continue Browsing
-                </button>
-              </div>
+          <div className="bg-[#0b0e14] border border-white/10 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl relative">
+            <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+              ⚠️
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Free Request Limit Reached</h3>
+            <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+              You have completed 3 free generations. Register or login to your StorySparkAI profile to continue.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Link
+                to="/login"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-xs"
+              >
+                Login to Profile
+              </Link>
+              <button
+                onClick={() => setShowLimitModal(false)}
+                className="w-full py-2.5 rounded-xl bg-transparent hover:bg-white/5 text-slate-400 hover:text-slate-300 text-xs font-semibold"
+              >
+                Continue Browsing
+              </button>
             </div>
           </div>
         </div>
       )}
 
-
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-6">
-          <button
-            onClick={() => setCurrentPage((p) => p - 1)}
-            disabled={currentPage === 1}
-            className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50"
-          >
-            Previous
-          </button>
-
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <button
-            onClick={() => setCurrentPage((p) => p + 1)}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      )}
-
-
-      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };
 
 export default StoriesComponent;
-
-
