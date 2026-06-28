@@ -32,12 +32,8 @@ import ImageFallback from "../ImageFallback";
 
 import { useDispatch } from "react-redux";
 
-import {
-  fetchImageAsBlob,
-  blobToBase64,
-  exportStoryToPDF,
-  exportStoryToEPUB,
-} from "../../services/export.service";
+import { fetchImageAsBlob, exportStoryToEPUB } from "../../services/export.service";
+
 
 export interface IStories {
   uuid: string;
@@ -60,6 +56,7 @@ interface StoriesComponentProps {
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
   onPublishSuccess?: () => void;
+  isLoading?: boolean;
 }
 
 type StorySentenceSegment = {
@@ -113,7 +110,7 @@ function calculateReadingTime(content: string): { minutes: number; label: string
   return { minutes, label: `⏱️ ${minutes} min read` };
 }
 
-const handleDownloadBlob = (blob: Blob, filename: string) => {
+const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -122,7 +119,13 @@ const handleDownloadBlob = (blob: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-export default function StoriesViewComponent({ stories, isLogin, setStories, onPublishSuccess }: StoriesComponentProps) {
+export default function StoriesViewComponent({
+  stories,
+  isLogin,
+  setStories,
+  onPublishSuccess,
+  isLoading: isGlobalLoading,
+}: StoriesComponentProps) {
   const dispatch = useDispatch();
 
   const [selectedStory, setSelectedStory] = useState<IStories | null>(null);
@@ -139,7 +142,6 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
   const [showContinueModal, setShowContinueModal] = useState(false);
   const [showWorldMap, setShowWorldMap] = useState(false);
   const [showRemix, setShowRemix] = useState(false);
-  const [showTranslator, setShowTranslator] = useState(false);
   const [showStoryVisualizer, setShowStoryVisualizer] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
 
@@ -171,21 +173,17 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
   const hasSavedSessionRef = useRef<boolean>(false);
   const savedPostIdRef = useRef<string | null>(null);
 
-  const sentenceSegments = useMemo(() => buildSentenceSegments(selectedStory?.content ?? ""), [selectedStory?.content]);
-
   useEffect(() => {
     setTopicsLoaded(true);
   }, []);
 
   useEffect(() => {
-    if (topicsLoaded) {
-      setSelectTopics(topics.filter((t) => t.selected));
-    }
+    if (!topicsLoaded) return;
+    setSelectTopics(topics.filter((t) => t.selected));
   }, [topics, topicsLoaded]);
 
   useEffect(() => {
     setSelectedStory(stories?.[0] ?? null);
-
     lastSavedContentRef.current = "";
     hasSavedSessionRef.current = false;
     savedPostIdRef.current = null;
@@ -200,6 +198,11 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
       setOriginalStoryContent((prev) => ({ ...prev, [selectedStory.uuid]: selectedStory.content }));
     }
   }, [selectedStory, originalStoryContent]);
+
+  const sentenceSegments = useMemo(
+    () => buildSentenceSegments(selectedStory?.content ?? ""),
+    [selectedStory?.content]
+  );
 
   // Auto-save
   useEffect(() => {
@@ -230,14 +233,6 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
     const t = window.setTimeout(autoSaveStory, 1000);
     return () => window.clearTimeout(t);
   }, [selectedStory, selectedStory?.content, isLogin, selectTopics, createPost]);
-
-  const handleCopyStory = async () => {
-    if (!selectedStory?.content) return;
-    await navigator.clipboard.writeText(selectedStory.content);
-    setIsCopied(true);
-    toast.success("Story copied!");
-    window.setTimeout(() => setIsCopied(false), 2000);
-  };
 
   const handelStorySelection = (story: IStories) => setSelectedStory(story);
 
@@ -270,12 +265,19 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
     setTopics((cur) => cur.filter((_, i) => i !== index));
   };
 
+  const handleCopyStory = async () => {
+    if (!selectedStory?.content) return;
+    await navigator.clipboard.writeText(selectedStory.content);
+    setIsCopied(true);
+    toast.success("Story copied!");
+    window.setTimeout(() => setIsCopied(false), 2000);
+  };
+
   const handleExportPDF = async () => {
     if (!selectedStory) return toast.error("No story available to export.");
     if (!selectedStory.content?.trim()) return toast.error("Story content is empty. Cannot export.");
 
     try {
-      // premium PDF generation (simple version)
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const title = selectedStory.title || "Untitled Story";
       const content = selectedStory.content || "";
@@ -309,9 +311,8 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
       const isoDate = new Date().toISOString().split("T")[0];
 
       const markdownContent = `---\ntitle: "${title.replace(/"/g, "\\\"")}"\ntag: "${tag.replace(/"/g, "\\\"")}"\nauthor: "${authorName.replace(/"/g, "\\\"")}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
-
       const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
-      handleDownloadBlob(blob, getSafeFileName(title, "md"));
+      downloadBlob(blob, getSafeFileName(title, "md"));
       toast.success("Markdown downloaded!");
     } catch (e) {
       console.error(e);
@@ -355,7 +356,7 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
       });
 
       const blob = await Packer.toBlob(doc);
-      handleDownloadBlob(blob, getSafeFileName(title, "docx"));
+      downloadBlob(blob, getSafeFileName(title, "docx"));
       toast.dismiss(toastId);
       toast.success("DOCX downloaded!");
     } catch (e) {
@@ -465,8 +466,7 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
       toast.success("Alternate endings generated successfully!");
     } catch (err: any) {
       console.error(err);
-      const errObj = err as Record<string, any>;
-      setError(errObj?.status || errObj?.data?.status ? String(errObj?.data?.message ?? "Request failed") : String(err));
+      setError(String(err?.data?.message ?? err?.message ?? err));
       toast.error("Failed to generate alternate endings.");
     } finally {
       toast.dismiss(toastId);
@@ -494,7 +494,7 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
     toast.success("Reverted to original story ending!");
   };
 
-  if (loading && stories.length === 0) {
+  if (isGlobalLoading || (loading && stories.length === 0)) {
     return (
       <div className="flex items-center justify-center py-20">
         <StoryGeneratingAnimation />
@@ -517,16 +517,16 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
         <div className="col-span-1 lg:col-span-8 flex flex-col space-y-6 w-full box-border">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 w-full box-border border-b border-slate-200/60 dark:border-white/5 pb-6">
             <div className="text-left">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
-                {selectedStory.title}
-              </h1>
-
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">{selectedStory.title}</h1>
               <div className="flex flex-wrap gap-2 select-none">
                 <span className="inline-flex items-center gap-1.5 rounded-xl bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
                   🎭 {selectedStory.tag}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-xl bg-purple-500/5 text-purple-600 dark:text-purple-400 border border-purple-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
                   🌐 {selectedStory.language || "English"}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-800/5 text-slate-600 dark:text-slate-400 border border-slate-700/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
+                  📖 {calculateReadingTime(selectedStory.content).label}
                 </span>
                 {selectedStory.emotions && selectedStory.emotions.length > 0 && (
                   <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 py-1 px-3 text-xs font-bold uppercase tracking-wider shadow-sm">
@@ -642,7 +642,7 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
             {selectedStory.enhancedPrompt && (
               <div className="mb-6 p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl">
                 <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-2 uppercase tracking-wider flex items-center gap-2 select-none">
-                  <i className="fas fa-wand-magic-sparkles"></i> AI Enhanced Prompt
+                  <i className="fas fa-wand-magic-sparkles" /> AI Enhanced Prompt
                 </h4>
                 <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm italic break-words whitespace-pre-wrap m-0 leading-relaxed font-medium">
                   {selectedStory.enhancedPrompt}
@@ -652,73 +652,49 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
 
             <div id="story-content" className="w-full text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed tracking-wide font-medium">
               <p className="break-words whitespace-pre-wrap m-0">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment) => {
-                    const isActiveSentence =
-                      isNarrationActive &&
-                      narrationWordIndex >= segment.startWordIndex &&
-                      narrationWordIndex <= segment.endWordIndex;
+                {sentenceSegments.length > 0
+                  ? sentenceSegments.map((segment) => {
+                      const isActiveSentence =
+                        isNarrationActive &&
+                        narrationWordIndex >= segment.startWordIndex &&
+                        narrationWordIndex <= segment.endWordIndex;
 
-                    const rawParts = segment.text.split(/(\s+)/);
-                    let wordOffset = 0;
+                      const rawParts = segment.text.split(/(\s+)/);
+                      let wordOffset = 0;
 
-                    return (
-                      <span
-                        key={segment.id}
-                        className={
-                          isActiveSentence
-                            ? "transition-colors duration-300 text-slate-900 dark:text-slate-100 font-semibold"
-                            : undefined
-                        }
-                      >
-                        {rawParts.map((part, partIdx) => {
-                          if (part === "") return null;
-                          if (/^\s+$/.test(part)) return part;
-
-                          const absoluteWordIndex = segment.startWordIndex + wordOffset;
-                          wordOffset++;
-
-                          const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                          return isActiveWord ? (
-                            <span
-                              key={partIdx}
-                              className="bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded px-0.5 transition-all duration-150"
-                            >
-                              {part}
-                            </span>
-                          ) : (
-                            <span key={partIdx}>{part}</span>
-                          );
-                        })}
-                      </span>
-                    );
-                  })
-                ) : (
-                  (() => {
-                    const rawParts = selectedStory.content.split(/(\s+)/);
-                    let wordOffset = 0;
-                    return rawParts.map((part, partIdx) => {
-                      if (part === "") return null;
-                      if (/^\s+$/.test(part)) return part;
-
-                      const absoluteWordIndex = wordOffset;
-                      wordOffset++;
-                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                      return isActiveWord ? (
+                      return (
                         <span
-                          key={partIdx}
-                          className="bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded px-0.5 transition-all duration-150"
+                          key={segment.id}
+                          className={
+                            isActiveSentence
+                              ? "transition-colors duration-300 text-slate-900 dark:text-slate-100 font-semibold"
+                              : undefined
+                          }
                         >
-                          {part}
+                          {rawParts.map((part, partIdx) => {
+                            if (part === "") return null;
+                            if (/^\s+$/.test(part)) return part;
+
+                            const absoluteWordIndex = segment.startWordIndex + wordOffset;
+                            wordOffset++;
+
+                            const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+
+                            return isActiveWord ? (
+                              <span
+                                key={partIdx}
+                                className="bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded px-0.5 transition-all duration-150"
+                              >
+                                {part}
+                              </span>
+                            ) : (
+                              <span key={partIdx}>{part}</span>
+                            );
+                          })}
                         </span>
-                      ) : (
-                        <span key={partIdx}>{part}</span>
                       );
-                    });
-                  })()
-                )}
+                    })
+                  : null}
               </p>
             </div>
 
@@ -796,7 +772,9 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 select-none w-full box-border">
                 <div>
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Narrative Path Modifications</h3>
-                  <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1.5">Branch out into unique storytelling variations.</p>
+                  <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1.5">
+                    Branch out into unique storytelling variations.
+                  </p>
                 </div>
                 {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
                   <button
@@ -812,7 +790,9 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
               {isGeneratingEndings ? (
                 <div className="flex flex-col items-center justify-center py-12 select-none w-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-300 border-t-blue-600 dark:border-white/10 dark:border-t-white mb-4" />
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 animate-pulse">Running variant projection logic...</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 animate-pulse">
+                    Running variant projection logic...
+                  </p>
                 </div>
               ) : endingsCache[selectedStory.uuid]?.length > 0 ? (
                 <div className="w-full box-border">
@@ -942,7 +922,12 @@ export default function StoriesViewComponent({ stories, isLogin, setStories, onP
           </div>
 
           <div className="mt-6">
-            <GeneratedStoryTimeline content={selectedStory.content} title={selectedStory.title} narrationState={narrationState} narrationWordIndex={narrationWordIndex} />
+            <GeneratedStoryTimeline
+              content={selectedStory.content}
+              title={selectedStory.title}
+              narrationState={narrationState}
+              narrationWordIndex={narrationWordIndex}
+            />
           </div>
         </div>
       </div>

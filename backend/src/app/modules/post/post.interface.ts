@@ -38,6 +38,8 @@ export interface IPost extends IPostPayload {
   comments?: Types.ObjectId[];
   reactions?: Types.ObjectId[];
   bookmarks?: Types.ObjectId[];
+  parentStoryId?: Types.ObjectId;
+  rootStoryId?: Types.ObjectId;
 }
 
 export type PostModel = Model<IPost, object>;
