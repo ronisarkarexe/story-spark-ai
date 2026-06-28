@@ -33,6 +33,7 @@
   "packageManager": "pnpm@9.15.9",
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/lodash": "^4.17.24",
     "concurrently": "^9.1.2"
   },
   "overrides": {
@@ -40,11 +41,19 @@
     "@types/express-serve-static-core": "^4.17.33"
   },
   "dependencies": {
+<<<<<<< Updated upstream
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "@react-oauth/google": "^0.13.5",
+=======
+    "20": "^3.1.9",
+    "@react-oauth/google": "^0.13.5",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+>>>>>>> Stashed changes
     "express": "^4.21.1",
     "jspdf": "^4.2.1",
+    "lodash": "^4.18.1",
     "lucide-react": "^1.16.0",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.3"
