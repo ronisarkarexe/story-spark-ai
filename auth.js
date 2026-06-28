@@ -426,10 +426,24 @@ function toggleAuthMode(mode) {
         const navToggle = document.getElementById('nav-toggle');
         const googleBtnText = document.getElementById('google-btn-text');
 
+        // Signup-only fields elements
+        const confirmGroup = document.getElementById('confirm-password-group');
+        const meterGroup = document.getElementById('password-meter-bar')?.closest('.ds-meter');
+        const checklistGroup = document.getElementById('password-checklist');
+        const passwordHelp = document.getElementById('password-help');
+        const capsWarning = document.getElementById('signup-caps-lock-warning');
+        const confirmWarning = document.getElementById('confirm-caps-lock-warning');
+
         if (mode === 'signup') {
             if (signupFields) signupFields.classList.remove('hidden');
             if (nameField) nameField.required = true;
             if (forgotPass) forgotPass.classList.add('invisible');
+            
+            // Show signup-only fields
+            if (confirmGroup) confirmGroup.classList.remove('hidden');
+            if (meterGroup) meterGroup.classList.remove('hidden');
+            if (checklistGroup) checklistGroup.classList.remove('hidden');
+            if (passwordHelp) passwordHelp.classList.remove('hidden');
             
             // Safe Text Target updates to avoid destroying spinner nodes
             if (submitBtnText) submitBtnText.textContent = 'Sign Up Free';
@@ -455,6 +469,14 @@ function toggleAuthMode(mode) {
                 nameField.value = ''; // Clear out stale text data
             }
             if (forgotPass) forgotPass.classList.remove('invisible');
+            
+            // Hide signup-only fields
+            if (confirmGroup) confirmGroup.classList.add('hidden');
+            if (meterGroup) meterGroup.classList.add('hidden');
+            if (checklistGroup) checklistGroup.classList.add('hidden');
+            if (passwordHelp) passwordHelp.classList.add('hidden');
+            if (capsWarning) capsWarning.classList.add('hidden');
+            if (confirmWarning) confirmWarning.classList.add('hidden');
             
             // Safe Text Target updates to avoid destroying spinner nodes
             if (submitBtnText) submitBtnText.textContent = 'Log In to StorySparkAI';
