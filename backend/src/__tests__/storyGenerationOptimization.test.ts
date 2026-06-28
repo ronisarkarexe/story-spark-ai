@@ -292,7 +292,6 @@ describe('Story Generation Optimization', () => {
     });
 
     test('should get metrics since specific timestamp', async () => {
-      const now = Date.now();
       monitor.recordGeneration('task-1', 500, true, false);
 
       await new Promise((resolve) => setTimeout(resolve, 10));
