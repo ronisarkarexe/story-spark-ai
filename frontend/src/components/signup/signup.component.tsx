@@ -13,6 +13,7 @@ import {
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
 import AuthContext from "../auth.context";
 
+
 interface IRegisterInfo {
   name: string;
   email: string;
@@ -118,7 +119,6 @@ const SignUpComponent = () => {
         name: data.name,
         email: data.email,
       };
-
       if (password !== confirmPassword) {
         toast.error("Passwords do not match!");
         return;
@@ -262,8 +262,7 @@ const SignUpComponent = () => {
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-0 min-w-0 box-border mx-auto overflow-hidden">
-
+      <div className="relative z-10 mx-auto flex w-full max-w-md flex-col justify-center px-4 py-6 sm:px-0">
         {/* Title */}
         <div className="mb-6 text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
@@ -272,9 +271,9 @@ const SignUpComponent = () => {
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
+        <div className="w-full max-w-md bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl overflow-hidden">          {/* Back to Home */}
           <button
-            onClick={() => (window.location.href = "/")}
+            onClick={() => navigate("/")}
             className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
           >
             ← Back to Home
@@ -286,7 +285,7 @@ const SignUpComponent = () => {
           {showOtpField && registerInfo && (
             <p className="mt-2 mb-4 text-center text-xs sm:text-sm text-slate-400 px-1">
               We sent a 6-digit code to{" "}
-              <span className="font-semibold text-blue-400">{registerInfo.email}</span>.
+              <span className="font-semibold text-blue-400 break-all">{registerInfo.email}</span>.
               {" "}Not the right address?{" "}
               <button
                 type="button"
@@ -303,17 +302,41 @@ const SignUpComponent = () => {
             </p>
           )}
           {/* Card */}
-          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
-            {!showOtpField && (
-              <div className="relative mb-6 w-full box-border">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
-                    SIGN UP WITH EMAIL
-                  </span>
-                </div>
+          {!showOtpField && (
+            <div className="relative mb-6 w-full box-border">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
+                  SIGN UP WITH EMAIL
+                </span>
+              </div>
+            </div>
+          )}
+
+          {!showOtpField ? (
+            <form className="flex flex-col w-full min-w-0 gap-5 box-border" onSubmit={handleSubmit(onSubmit)}>
+
+              <div className="w-full block">
+                <SSInput
+                  label="Name"
+                  name="name"
+                  placeholder="Enter your name"
+                  required={true}
+                  icon="fi fi-rr-user"
+                  register={register}
+                  autoComplete="name"
+                  validation={{
+                    required: "Name is required",
+                    minLength: { value: 2, message: "Name must be at least 2 characters" },
+                    pattern: {
+                      value: /^[A-Za-z0-9\s._]+$/,
+                      message: "Only letters, numbers, spaces, underscores, and dots are allowed",
+                    },
+                  }}
+                  error={errors.name}
+                />
               </div>
             )}
 
@@ -395,28 +418,19 @@ const SignUpComponent = () => {
                       })}
                     </ul>
                   </div>
-                )}
-
-                <div className="w-full block">
-                  <SSInput
-                    label="Confirm Password"
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="Confirm your password"
-                    required={!showOtpField}
-                    icon="fi fi-rr-lock"
-                    register={register}
-                    autoComplete="new-password"
-                    validation={{
-                      validate: (value) => {
-                        if (showOtpField) return true;
-                        if (!value) return "Confirm password is required";
-                        if (value !== password) return "Passwords do not match!";
-                        return true;
-                      },
-                    }}
-                    error={errors.confirmPassword}
-                  />
+                  <p className={`text-xs font-bold uppercase tracking-wider ${textColor}`}>
+                    {strengthLabel} Password
+                  </p>
+                  <ul className="space-y-1.5 list-none p-0 m-0 w-full break-words text-[11px] font-medium">                    {PASSWORD_REQUIREMENTS.map(({ key, label }) => {
+                    const met = passwordChecks[key];
+                    return (
+                      <li key={key} className={`flex items-center gap-1.5 ${met ? "text-green-500" : "text-slate-400"}`}>
+                        <span>{met ? "✓" : "○"}</span>
+                        <span>{label}</span>
+                      </li>
+                    );
+                  })}
+                  </ul>
                 </div>
 
                 <div className="pt-2 w-full box-border">
@@ -493,12 +507,11 @@ const SignUpComponent = () => {
                   />
                 </div>
 
-                <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
-                  Already have an account?{" "}
-                  <Link to="/login" className="font-semibold text-blue-400 hover:underline transition-colors">
-                    Sign In
-                  </Link>
-                </p>
+              <div className="flex justify-center w-full overflow-x-auto">
+                <GoogleLogin
+                  onSuccess={handleGoogleLoginSuccess}
+                  onError={handleGoogleLoginError}
+                />
               </div>
             )}
           </div>
