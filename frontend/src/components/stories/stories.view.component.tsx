@@ -1,47 +1,28 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import DOMPurify from "dompurify";
-import toast from "react-hot-toast";
 import {
-  Copy,
-  Check,
-  Globe,
-  Sparkles,
-  BookOpen,
-  Clock,
-  Download,
-  Share2,
-  FileText,
-  Bookmark,
-  Users,
-  Compass
-} from "lucide-react";
-
-import { useCreatePostMutation } from "../../redux/apis/post.api";
-import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
-import {
-  useGenerateAlternateEndingsMutation,
-  useGenerateFreeAlternateEndingsMutation,
-} from "../../redux/apis/ai.model.api";
-
+  getShortenedText,
+  ITopicData,
+  topicsData,
+  getWordCount,
+  SELECTED_TOPIC_CLASSES,
+} from "./stories.utils";
+import { calculateReadingTime } from "../../utils/reading-time";
+import { formatReadingStats } from "../../utils/story-utils";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
 import StoryMoodDashboard from "./StoryMoodDashboard";
 import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
-import StoryTranslator from "../translate/StoryTranslator";
-
-import {
-  CharacterProfile,
-  getShortenedText,
-  ITopicData,
-  topicsData,
-  getWordCount,
-} from "./stories.utils";
-
+import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
 import jsPDF from "jspdf";
+import StoryTranslator from "./translate/StoryTranslator";
+import toast, { Toaster } from "react-hot-toast";
+import { useCreatePostMutation } from "../../redux/apis/post.api";
+import jsPDF from "jspdf";
+import StoryTranslator from "../translate/StoryTranslator";
+import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
+import { useLocation } from "react-router-dom";
 
 export interface IStories {
   uuid: string;
@@ -54,6 +35,46 @@ export interface IStories {
   language?: string;
   genre?: string;
 }
+
+export type StorySentenceSegment = {
+  id: string;
+  text: string;
+  startWordIndex: number;
+  endWordIndex: number;
+};
+
+const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+  if (!content.trim()) {
+    return [];
+  }
+
+  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
+  const segments: StorySentenceSegment[] = [];
+  let wordCursor = 0;
+
+  sentenceMatches.forEach((sentence, index) => {
+    const trimmedSentence = sentence.trim();
+    if (!trimmedSentence) {
+      return;
+    }
+
+    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
+    const startWordIndex = wordCursor;
+    const endWordIndex =
+      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
+
+    segments.push({
+      id: `${index}-${startWordIndex}-${endWordIndex}`,
+      text: sentence,
+      startWordIndex,
+      endWordIndex,
+    });
+
+    wordCursor += wordsInSentence;
+  });
+
+  return segments;
+};
 
 interface IPost extends IStories {
   topic: ITopicData[];
@@ -149,6 +170,28 @@ const StoriesViewComponent: React.FC<StoriesViewComponentProps> = ({
   const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
   const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
 
+  const location = useLocation();
+  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
+  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+
+  const sentenceSegments = useMemo(() => {
+    return buildSentenceSegments(selectedStory?.content ?? "");
+  }, [selectedStory?.content]);
+
+  const isNarrationActive = narrationState !== "idle";
+
+  useEffect(() => {
+    return () => {
+      audioPlayerRef.current?.stop();
+    };
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setNarrationWordIndex(0);
+    setNarrationState("idle");
+  }, [selectedStory?.uuid]);
+
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
   }, [topics]);
@@ -160,20 +203,11 @@ const StoriesViewComponent: React.FC<StoriesViewComponentProps> = ({
         [selectedStory.uuid]: selectedStory.content,
       }));
     }
-  }, [selectedStory, originalStoryContent]);
+  }, [stories]);
 
-  // Sync scroll progress inside the story container
-  const handleScroll = () => {
-    const element = storyContainerRef.current;
-    if (!element) return;
-    const totalHeight = element.scrollHeight - element.clientHeight;
-    if (totalHeight === 0) {
-      setScrollProgress(0);
-      return;
-    }
-    const progress = (element.scrollTop / totalHeight) * 100;
-    setScrollProgress(progress);
-  };
+useEffect(() => {
+  const autoSaveStory = async () => {
+    if (!selectedStory || !isLogin) return;
 
   useEffect(() => {
     // Reset reading scroll progress on story changes
@@ -476,72 +510,36 @@ const StoriesViewComponent: React.FC<StoriesViewComponentProps> = ({
     }
   };
 
-  const handleGenerateAlternateEndings = async () => {
-    if (!selectedStory) return;
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Weaving alternate endings...");
-    try {
-      const payload = {
-        title: selectedStory.title,
-        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
-        tag: selectedStory.tag,
-        language: selectedStory.language || "English",
-      };
+const isNarrationActive = narrationState !== "idle";
 
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
+if (isLoading) {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <StoryGeneratingAnimation />
+    </div>
+  );
+}
 
-      const res = await generationRequest.unwrap();
-      if (res && res.data) {
-        setEndingsCache((prev) => ({
-          ...prev,
-          [selectedStory.uuid]: res.data,
-        }));
-        toast.success("Alternate endings ready!");
-      } else {
-        toast.error("Failed to generate alternate endings.");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to generate endings. Please try again.");
-    } finally {
-      toast.dismiss(toastId);
-      setIsGeneratingEndings(false);
-    }
-  };
+if (!selectedStory) {
+  return null;
+}
 
-  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
-    if (!selectedStory) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: endingData.fullStory,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success(`${endingData.style} endings applied to canvas!`);
-  };
-
-  const handleResetEnding = () => {
-    if (!selectedStory) return;
-    const originalContent = originalStoryContent[selectedStory.uuid];
-    if (!originalContent) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: originalContent,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success("Reverted story back to the original ending!");
-  };
-
-  const isNarrationActive = narrationState !== "idle";
-
-  if (!selectedStory) return null;
+if (!stories || stories.length === 0) {
+  return (
+    <div className="mt-16 px-4 sm:px-6 lg:px-8 pb-16 flex justify-center">
+      <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 sm:p-12 text-center text-slate-400 max-w-2xl w-full shadow-lg transition-all duration-500 ease-in-out mx-auto">
+        <div className="text-5xl mb-6 animate-pulse">✨</div>
+        <h3 className="text-2xl font-bold text-slate-200 tracking-wide">
+          Your AI-generated story will appear here
+        </h3>
+        <p className="mt-3 text-base text-slate-400">
+          Enter a creative prompt above and let StorySparkAI craft something magical.
+        </p>
+      </div>
+    </div>
+  );
+}
+  }
 
   return (
     <div className="flex flex-col h-full relative">
@@ -691,7 +689,37 @@ const StoriesViewComponent: React.FC<StoriesViewComponentProps> = ({
                               {part}
                             </span>
                           );
-                        }
+                        })}
+                      </span>
+                    );
+                  })
+                ) : (
+                  (() => {
+                    if (!selectedStory) return null;
+                    const rawParts = selectedStory.content.split(/(\s+)/);
+                    let wordOffset = 0;
+                    return rawParts.map((part, partIdx) => {
+                      if (part === "") return null;
+                      if (/^\s+$/.test(part)) {
+                        return part;
+                      }
+
+                      const absoluteWordIndex = wordOffset;
+                      wordOffset++;
+
+                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
+
+                      if (isActiveWord) {
+                        return (
+                          <span
+                            key={partIdx}
+                            className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
+                            data-active-word="true"
+                          >
+                            {part}
+                          </span>
+                        );
+                      }
 
                         return <span key={partIdx}>{part}</span>;
                       })}
@@ -704,61 +732,76 @@ const StoriesViewComponent: React.FC<StoriesViewComponentProps> = ({
             </p>
           </div>
 
-          {/* Narrator Player Block */}
-          <div className="mt-4 pt-6 border-t border-slate-200 dark:border-white/5">
-            <AudioPlayer
-              ref={audioPlayerRef}
-              text={selectedStory.content}
-              title={selectedStory.title}
-              onWordIndexChange={setNarrationWordIndex}
-              onPlaybackStateChange={setNarrationState}
-            />
+            {selectedStory && (
+              <>
+                <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
+                  <AudioPlayer 
+                    ref={audioPlayerRef} 
+                    text={selectedStory.content} 
+                    title={selectedStory.title} 
+                    onWordIndexChange={setNarrationWordIndex} 
+                    onPlaybackStateChange={setNarrationState} 
+                  />
+                </div>
+                <StoryVersionHistory
+                  story={selectedStory}
+                  onRestore={handleRestoreVersion}
+                />
+              </>
+            )}
           </div>
+          <div className="mt-6">
+  {characterProfiles.length > 0 && (
+    <>
+      <h3 className="text-xl font-bold text-white mb-4">
+        Character Profiles
+      </h3>
 
-          {/* Custom Characters profiles */}
-          {characterProfiles.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-                👤 Extracted Characters
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {characterProfiles.map((profile, index) => (
+          <CharacterProfileCard
+            key={index}
+            profile={profile}
+          />
+        ))}
+      </div>
+    </>
+  )}
+</div>
+          <div className="mt-7">
+            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
+              <h3 className="text-lg font-bold text-slate-200 mb-4">
+                Select Topics
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {characterProfiles.map((profile, index) => (
-                  <CharacterProfileCard key={index} profile={profile} />
-                ))}
+              <div className="flex flex-wrap gap-2">
+                {selectedStory ? (
+                  <>
+                    {topics.map((topic, index) => (
+                      <span
+                        key={index}
+                        className={`px-4 py-1.5 ${topic.color} rounded-full text-sm font-medium transition-transform hover:scale-105 cursor-pointer shadow-sm`}
+                        onClick={() => handleTopicClick(index)}
+                      >
+                        {topic.selected ? (
+                          <i className="fa-solid fa-check"></i>
+                        ) : (
+                          <i className="fa-solid fa-plus"></i>
+                        )}{" "}
+                        {topic.title}
+                      </span>
+                    ))}
+                  </>
+                ) : (
+                  <p className="text-gray-400">
+                    No topics available. Please generate a story first.
+                  </p>
+                )}
               </div>
             </div>
-          )}
+          </div>
+        </div>
 
-          {/* Alternate Endings Section */}
-          <div className="mt-8 bg-slate-100/40 dark:bg-slate-950/20 border border-slate-200 dark:border-white/5 rounded-3xl p-6 relative overflow-hidden">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <div>
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                  🪄 Alternate Endings
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Whip up and apply alternative final acts to your canvas.
-                </p>
-              </div>
-              {selectedStory.content !== originalStoryContent[selectedStory.uuid] ? (
-                <button
-                  type="button"
-                  onClick={handleResetEnding}
-                  className="rounded-full px-4 py-1.5 bg-red-100 dark:bg-red-950/40 hover:bg-red-200 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 font-bold text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
-                >
-                  Reset to Original
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleGenerateAlternateEndings}
-                  disabled={isGeneratingEndings}
-                  className="rounded-full px-4 py-1.5 bg-slate-800 dark:bg-white/10 hover:bg-slate-700 dark:hover:bg-white/20 text-slate-200 dark:text-white font-bold text-xs transition-all cursor-pointer disabled:opacity-50"
-                >
-                  {isGeneratingEndings ? "Weaving..." : "Generate Alternate Endings"}
-                </button>
-              )}
-            </div>
+        
 
             {endingsCache[selectedStory.uuid] && endingsCache[selectedStory.uuid].length > 0 && (
               <div className="mt-4 flex flex-col gap-4">

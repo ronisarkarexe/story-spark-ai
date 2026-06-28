@@ -57,9 +57,10 @@
     "socket.io-client": "^4.8.3",
     "tailwindcss": "^4.0.6",
     "yjs": "^13.6.31",
-    "y-quill": "^1.0.0",
+    "y-quill": "^1.2.0",
     "y-indexeddb": "^9.0.12",
     "y-protocols": "^1.0.6",
+    "quill": "^2.0.0",
     "quill-cursors": "^4.0.2"
   },
   "devDependencies": {
