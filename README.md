@@ -132,6 +132,8 @@ cp frontend/.env.example frontend/.env
 | `VITE_BASE_URL` | Yes | API base URL, e.g. `http://localhost:5000/api/v1` |
 | `VITE_SOCKET_URL` | No | Socket.IO URL for real-time notifications (optional) |
 
+> Source of truth for local setup: keep `backend/.env.example` and `frontend/.env.example` aligned with any docs you add here. The backend uses `OPEN_AI_KEY`, `GEMINI_API_KEY`, `UNSPLASH_KEY_API`, `VERIFY_EMAIL`, and `VERIFY_PASSWORD`; the frontend uses `VITE_BASE_URL` and optionally `VITE_SOCKET_URL`. Socket.IO requires a persistent host, so do not point it at Vercel serverless.
+
 ### Contributing workflow
 
 1. Fork the repository and clone your fork.
