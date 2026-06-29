@@ -1,13 +1,11 @@
 // Dynamically loads the Razorpay checkout script into the DOM
 // Returns true if loaded successfully, false if it fails
 export const loadRazorpayScript = (): Promise<boolean> => {
-  return new Promise((resolve) => {
-    // SSR guard: exit early if not running in a browser
-    if (typeof window === "undefined") {
-      resolve(false);
-      return;
-    }
+  if (typeof window === "undefined") {
+    return Promise.resolve(false);
+  }
 
+  return new Promise((resolve) => {
     if (document.getElementById("razorpay-script")) {
       resolve(true);
       return;
