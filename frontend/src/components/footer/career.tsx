@@ -239,9 +239,9 @@ const Career = () => {
             {opportunities.map(
               ({ title, icon: Icon, type, focus, description, skills }) => (
                 <article
-                  key={title}
-                  className="group rounded-[2rem] border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 p-7 shadow-lg hover:-translate-y-2 hover:shadow-blue-500/10 transition-all duration-300"
-                >
+  key={title}
+  className="group flex h-full flex-col rounded-[2rem] border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 p-7 shadow-lg hover:-translate-y-2 hover:shadow-blue-500/10 transition-all duration-300"
+>
                   <div className="flex items-start justify-between mb-7">
                     <div className="rounded-2xl bg-blue-500/10 p-4 text-blue-600 dark:text-blue-300 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                       <Icon size={30} />
@@ -274,12 +274,12 @@ const Career = () => {
                     ))}
                   </div>
 
-                  <a
-                    href={`mailto:ronichandrasarkar@gmail.com?subject=Application%3A%20${encodeURIComponent(
-                      title
-                    )}`}
-                    className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3.5 text-white font-semibold shadow-lg hover:scale-[1.02] hover:shadow-blue-500/25 transition-all duration-300"
-                  >
+                <a
+  href={`mailto:ronichandrasarkar@gmail.com?subject=Application%3A%20${encodeURIComponent(
+    title
+  )}`}
+  className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3.5 text-white font-semibold shadow-lg hover:scale-[1.02] hover:shadow-blue-500/25 transition-all duration-300"
+>
                     Apply Now
                     <ArrowRight size={17} />
                   </a>
