@@ -19,7 +19,7 @@ bad_block = """  return (
           </div>
           <button 
             onClick={() => setErrorMessage(null)} 
-            className="text-xs uppercase font-bold tracking-wider hover:text-white px-2 py-1 cursor-pointer"
+            className="text-xs uppercase font-bold tracking-wider hover:text-gray-900 text-[var(--text-primary)] px-2 py-1 cursor-pointer"
           >
             Dismiss
           </button>
@@ -38,7 +38,7 @@ bad_block = """  return (
           
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 w-full box-border border-b border-slate-200/60 dark:border-white/5 pb-6">
             <div className="text-left">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 text-gray-900 text-[var(--text-primary)] tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
                 {selectedStory.title}
               </h1>
               <div className="flex flex-wrap gap-2 select-none">

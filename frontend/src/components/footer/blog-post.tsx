@@ -22,7 +22,7 @@ const BlogPost = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-white px-6 py-12">
+    <div className="min-h-screen bg-white text-slate-900 dark:bg-zinc-950 dark:text-zinc-100 px-6 py-12">
       <div className="max-w-2xl mx-auto">
 
         {/* BACK LINK */}
@@ -45,7 +45,7 @@ const BlogPost = () => {
 
         {/* CONTENT CARD */}
         <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-md border border-gray-200 dark:border-zinc-800">
-          <p className="text-lg leading-relaxed text-slate-700 dark:text-gray-300 whitespace-pre-line">
+          <p className="text-lg leading-relaxed text-slate-700 dark:text-zinc-300 whitespace-pre-line">
             {content}
           </p>
           {id !== "1" && id !== "2" && id !== "3" && (

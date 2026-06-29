@@ -83,7 +83,7 @@ const Blog = () => {
   ];
 
   return (
-    <div className="relative min-h-screen bg-white text-slate-900 px-6 py-16 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white overflow-hidden">
+    <div className="relative min-h-screen bg-white text-slate-900 px-6 py-16 transition-colors duration-300 dark:bg-zinc-950 dark:text-zinc-100 overflow-hidden">
       <div className="absolute top-10 left-16 w-3 h-3 rounded-full bg-yellow-400 opacity-70" />
       <div className="absolute top-24 right-24 w-2 h-2 rounded-full bg-pink-400 opacity-60" />
       <div className="absolute bottom-32 right-16 w-3 h-3 rounded-full bg-purple-400 opacity-60" />
@@ -96,15 +96,15 @@ const Blog = () => {
           </span>
         </h1>
 
-        <p className="text-lg text-slate-600 leading-8 dark:text-gray-300">
+        <p className="text-lg text-slate-600 leading-8 dark:text-zinc-300">
           Explore articles, updates, and creative insights from the StorySparkAI community.
         </p>
 
-        <div className="mt-10 bg-gray-50 p-6 rounded-2xl border border-gray-200 dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="mt-10 bg-zinc-900/40 p-6 rounded-2xl border border-zinc-800 dark:bg-zinc-900 dark:border-zinc-800">
           <h2 className="text-2xl font-semibold mb-4 text-blue-600 dark:text-blue-400">
             Latest Topics
           </h2>
-          <ul className="space-y-2 text-slate-600 dark:text-gray-300">
+          <ul className="space-y-2 text-slate-600 dark:text-zinc-300">
             <li>📖 AI-powered storytelling</li>
             <li>✍️ Creative writing tips</li>
             <li>🚀 Open-source updates</li>
@@ -146,7 +146,7 @@ const Blog = () => {
           </Link>
         </div>
       </div>
-    </main>
+    </div>
   );
 };
 

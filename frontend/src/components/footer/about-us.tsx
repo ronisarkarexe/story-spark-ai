@@ -43,7 +43,7 @@ const AboutUs = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#050816] text-gray-900 dark:text-white overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen overflow-hidden bg-white text-slate-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors duration-300">
       
       <section className="relative px-6 py-20">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -74,7 +74,7 @@ const AboutUs = () => {
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="group relative bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 text-center shadow-lg hover:shadow-blue-500/20 hover:-translate-y-2 transition-all duration-300 overflow-hidden"
+              className="group relative bg-[var(--card-bg)] dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 text-center shadow-lg hover:shadow-blue-500/20 hover:-translate-y-2 transition-all duration-300 overflow-hidden"
             >
               <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-500"></div>
               <h3 className="text-3xl font-bold text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300">
@@ -88,7 +88,7 @@ const AboutUs = () => {
         </div>
       </section>
 
-      <section className="px-6 py-16 bg-gray-50/50 dark:bg-zinc-900/30">
+      <section className="px-6 py-16 bg-slate-50 dark:bg-zinc-900/40">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -100,7 +100,7 @@ const AboutUs = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-10 items-stretch">
-            <div className="group relative bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+            <div className="group relative bg-[var(--card-bg)] dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full group-hover:bg-blue-500/20 transition-all duration-500"></div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
                 <span className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">✨</span>
@@ -111,7 +111,7 @@ const AboutUs = () => {
               </p>
             </div>
 
-            <div className="group relative bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+            <div className="group relative bg-[var(--card-bg)] dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
               <div className="absolute top-0 left-0 w-32 h-32 bg-purple-500/10 blur-3xl rounded-full group-hover:bg-purple-500/20 transition-all duration-500"></div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
                 <span className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">🚀</span>
@@ -138,7 +138,7 @@ const AboutUs = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group relative bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-6 shadow-lg hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300"
+                className="group relative bg-[var(--card-bg)] dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-6 shadow-lg hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl pointer-events-none"></div>
                 <div className="text-4xl mb-4 transform group-hover:scale-110 transition-transform duration-300 origin-left">
@@ -159,7 +159,7 @@ const AboutUs = () => {
       <section className="px-6 pb-20">
         <div className="max-w-5xl mx-auto relative group">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-3xl"></div>
-          <div className="relative bg-white dark:bg-zinc-900/90 border border-gray-200 dark:border-zinc-800 rounded-3xl p-10 sm:p-14 shadow-2xl backdrop-blur-sm text-center">
+          <div className="relative bg-[var(--card-bg)] dark:bg-zinc-900/90 border border-gray-200 dark:border-zinc-800 rounded-3xl p-10 sm:p-14 shadow-2xl backdrop-blur-sm text-center">
             <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
               🌍 Driven by Community
             </h2>
@@ -181,7 +181,7 @@ const AboutUs = () => {
           </p>
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-blue-600 font-bold rounded-full hover:bg-gray-50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--card-bg)] text-blue-600 font-bold rounded-full hover:bg-[var(--card-bg)]transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
           >
             ✨ Get Started Now
           </Link>

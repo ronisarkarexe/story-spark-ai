@@ -602,7 +602,19 @@ const ContributorsComponent = () => {
 
   return (
     <div
-      className="min-h-screen text-white relative overflow-hidden"
+      className="min-h-screen
+    relative
+    overflow-hidden
+    text-gray-900
+    dark:text-white
+    bg-gradient-to-b
+    from-white
+    via-slate-100
+    to-white
+    dark:from-slate-950
+    dark:via-slate-900
+    dark:to-slate-950
+  "
       style={{
         background:
           "linear-gradient(180deg, #030712 0%, #0c0a1f 35%, #0f172a 65%, #030712 100%)",

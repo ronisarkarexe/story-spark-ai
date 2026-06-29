@@ -122,12 +122,12 @@ const workflowSteps = [
 
 const Guidelines = () => {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white">
-      <section className="relative overflow-hidden border-b border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 py-16 px-4">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
+      <section className="relative overflow-hidden border-b border-[var(--border-color)] bg-[var(--card-bg)] py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white transition-all duration-300 text-sm font-medium"
+            className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-xl border border-slate-200 border-[var(--border-color)] bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white transition-all duration-300 text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
@@ -155,7 +155,7 @@ const Guidelines = () => {
             return (
               <div
                 key={section.title}
-                className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
+                className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
               >
                 <div className="flex items-start gap-4 mb-4">
                   <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
@@ -172,7 +172,7 @@ const Guidelines = () => {
                 </div>
                 <ul className="space-y-2 pl-1">
                   {section.points.map((point) => (
-                    <li key={point} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <li key={point} className="flex items-start gap-2 text-sm text-slate-700 text-[var(--text-secondary)]">
                       <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
                       {point}
                     </li>
@@ -185,7 +185,7 @@ const Guidelines = () => {
       </section>
 
       <section className="max-w-3xl mx-auto px-4 pb-20">
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-2xl p-8 shadow-sm">
+        <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-8 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <Handshake className="w-5 h-5" />
@@ -200,7 +200,7 @@ const Guidelines = () => {
                 <span className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-sm font-bold flex items-center justify-center">
                   {index + 1}
                 </span>
-                <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed pt-0.5">
+                <p className="text-slate-700 text-[var(--text-secondary)] text-sm leading-relaxed pt-0.5">
                   {step}
                 </p>
               </li>

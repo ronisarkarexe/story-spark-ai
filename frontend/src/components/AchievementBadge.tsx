@@ -44,7 +44,7 @@ const AchievementBadge: React.FC<AchievementBadgeProps> = ({ achievement }) => {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white truncate">
+            <h4 className="text-sm font-bold text-slate-800 text-[var(--text-primary)] truncate">
               {title}
             </h4>
             {isUnlocked && (

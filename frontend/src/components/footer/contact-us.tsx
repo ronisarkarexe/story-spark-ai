@@ -9,7 +9,7 @@ const CONTACT_ITEMS = [
 
 const ContactUs = () => {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-white text-[#020617] dark:bg-[#020617] dark:text-white">
+    <div className="relative min-h-screen overflow-hidden bg-white text-slate-900 dark:bg-[#020617] dark:text-white">
       {/* Ambient glow */}
       <div
         aria-hidden="true"
@@ -26,7 +26,7 @@ const ContactUs = () => {
 
           {/* Heading */}
           <h1
-            className="text-4xl font-black tracking-tight text-[#020617] dark:text-white sm:text-5xl"
+            className="text-4xl font-black tracking-tight text-[#020617] text-[var(--text-primary)] sm:text-5xl"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Contact{" "}
@@ -46,7 +46,7 @@ const ContactUs = () => {
             </h2>
             <ul className="space-y-3 text-left" aria-label="Contact information">
               {CONTACT_ITEMS.map(({ icon: Icon, text }) => (
-                <li key={text} className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 sm:text-base">
+                <li key={text} className="flex items-center gap-3 text-sm text-slate-600 text-[var(--text-secondary)] sm:text-base">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/15 to-purple-500/15 text-purple-400">
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                   </span>
@@ -67,7 +67,7 @@ const ContactUs = () => {
             </Link>
             <Link
               to="/"
-              className="motion-cta inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:border-white/20 sm:text-base"
+              className="motion-cta inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 border-[var(--border-color)] dark:bg-white/[0.04] text-[var(--text-secondary)] dark:hover:border-white/20 sm:text-base"
             >
               ← Back to Home
             </Link>
