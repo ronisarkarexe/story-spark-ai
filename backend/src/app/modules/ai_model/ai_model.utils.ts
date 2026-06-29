@@ -607,10 +607,16 @@ Return only valid JSON with this exact structure:
     }
 
     if (!parsed.continuation || typeof parsed.continuation !== "string") {
-      throw new ApiError(
-        httpStatus.BAD_GATEWAY,
-        "Invalid AI response: Expected a continuation string.",
-      );
+      const continuation = parsed.continuation
+        ? String(parsed.continuation)
+        : (parsed.text || parsed.content || parsed.story || "");
+      if (!continuation) {
+        throw new ApiError(
+          httpStatus.BAD_GATEWAY,
+          "Invalid AI response: Expected a continuation string.",
+        );
+      }
+      parsed.continuation = continuation;
     }
 
     return parsed;
