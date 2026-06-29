@@ -10,7 +10,7 @@ import { USER_STATUS } from "../../../enums/user_status";
 export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
   {
     email: { type: String, required: true, unique: true, lowercase: true },
-    name: { type: String, maxlength: 100, minlength: 5 },
+    name: { type: String, maxlength: 100, minlength: 1 },
     password: { type: String, required: false, default: "" },
     role: {
       type: String,
