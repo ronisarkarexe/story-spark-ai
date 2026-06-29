@@ -43,9 +43,53 @@ describe("scrubPII — phone number redaction", () => {
     expect(result).not.toContain("555-867-5309");
     expect(result).toContain("[REDACTED_PHONE]");
   });
+
+  it("redacts phone numbers with spaces and parentheses", () => {
+    const result = scrubPII("Call +1 (555) 867 5309 tomorrow.");
+    expect(result).not.toContain("(555) 867 5309");
+    expect(result).toContain("[REDACTED_PHONE]");
+  });
 });
 
+describe("scrubPII — SSN redaction", () => {
+  it("redacts a standard US SSN", () => {
+    const result = scrubPII("My SSN is 123-45-6789. Please don't share it.");
+    expect(result).not.toContain("123-45-6789");
+    expect(result).toContain("[REDACTED_SSN]");
+  });
+});
+
+describe("scrubPII — credit card redaction", () => {
+  it("redacts credit-card-like digit sequences", () => {
+    const result = scrubPII("Use card 4111 1111 1111 1111 for payment.");
+    expect(result).not.toContain("4111 1111 1111 1111");
+    expect(result).toContain("[REDACTED_CARD]");
+  });
+});
+
+describe("scrubPII — address redaction", () => {
+  it("redacts a conservative US-style address", () => {
+    const result = scrubPII("Send it to 123 Main St for delivery.");
+    expect(result).not.toContain("123 Main St");
+    expect(result).toContain("[REDACTED_ADDRESS]");
+  });
+
+  it("redacts address with directional prefix", () => {
+    const result = scrubPII("Send it to 123 N Main St for delivery.");
+    expect(result).not.toContain("123 N Main St");
+    expect(result).toContain("[REDACTED_ADDRESS]");
+  });
+
+  it("redacts address with abbreviated street number + street name + suffix", () => {
+    const result = scrubPII("Ship to 456 S. 2nd Ave tomorrow.");
+    expect(result).not.toContain("456 S. 2nd Ave");
+    expect(result).toContain("[REDACTED_ADDRESS]");
+  });
+});
+
+
 describe("scrubPII — ReDoS regression fix", () => {
+
   const TIMEOUT_MS = 100;
 
   it("completes in under 100ms when NLP returns (a+)+", () => {
@@ -94,6 +138,23 @@ describe("scrubPII — edge cases", () => {
     expect(scrubPII(input)).toBe(input);
   });
 });
+
+describe("scrubPII — idempotency", () => {
+  it("is stable when called twice", () => {
+    const input = "Contact alice@example.com or call 555-867-5309. 123 Main St";
+    const once = scrubPII(input);
+    const twice = scrubPII(once);
+    expect(twice).toBe(once);
+  });
+
+  it("does not further change already-redacted tokens", () => {
+    const input = "Already scrubbed: [REDACTED_EMAIL] [REDACTED_PHONE] [REDACTED_NAME]";
+    const once = scrubPII(input);
+    const twice = scrubPII(once);
+    expect(twice).toBe(once);
+  });
+});
+
 
 describe("piiScrubberMiddleware — body fields", () => {
   beforeEach(() => jest.clearAllMocks());
