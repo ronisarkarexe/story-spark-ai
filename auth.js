@@ -436,7 +436,10 @@ function toggleAuthMode(mode) {
 
         if (mode === 'signup') {
             if (signupFields) signupFields.classList.remove('hidden');
-            if (nameField) nameField.required = true;
+            if (nameField) {
+                nameField.required = true;
+                nameField.setAttribute('aria-required', 'true');
+            }
             if (forgotPass) forgotPass.classList.add('invisible');
             
             // Show signup-only fields
@@ -458,7 +461,7 @@ function toggleAuthMode(mode) {
             
             // FIX: Use javascript void anchors to prevent hard page refreshes on interaction links
             if (navToggle) {
-                navToggle.innerHTML = `Already have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signin')">Log In</a>`;
+                navToggle.innerHTML = `Already have an account? <a href="javascript:void(0)" class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signin')">Log In</a>`;
             }
             
             window.history.replaceState(null, '', 'signup.html');
@@ -466,6 +469,7 @@ function toggleAuthMode(mode) {
             if (signupFields) signupFields.classList.add('hidden');
             if (nameField) {
                 nameField.required = false;
+                nameField.setAttribute('aria-required', 'false');
                 nameField.value = ''; // Clear out stale text data
             }
             if (forgotPass) forgotPass.classList.remove('invisible');
@@ -491,7 +495,7 @@ function toggleAuthMode(mode) {
             
             // FIX: Use javascript void anchors to prevent hard page refreshes on interaction links
             if (navToggle) {
-                navToggle.innerHTML = `Don't have an account? <a class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signup')">Sign up free</a>`;
+                navToggle.innerHTML = `Don't have an account? <a href="javascript:void(0)" class="text-primary hover:text-secondary transition-colors font-semibold cursor-pointer" onclick="toggleAuthMode('signup')">Sign up free</a>`;
             }
             
             window.history.replaceState(null, '', 'login.html');

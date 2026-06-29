@@ -275,9 +275,13 @@
                                         id="name-field"
                                         placeholder="Alex Spark"
                                         autocomplete="name"
+                                        aria-invalid="false"
+                                        aria-describedby="name-error"
                                     />
 
                                 </div>
+
+                                <p class="ds-error" id="name-error" role="alert" aria-live="polite" style="margin-top: 6px;"></p>
 
                             </div>
 
@@ -304,9 +308,14 @@
                                         placeholder="name@storyspark.ai"
                                         autocomplete="email"
                                         required
+                                        aria-required="true"
+                                        aria-invalid="false"
+                                        aria-describedby="email-error"
                                     />
 
                                 </div>
+
+                                <p class="ds-error" id="email-error" role="alert" aria-live="polite" style="margin-top: 6px;"></p>
 
                             </div>
 
@@ -333,6 +342,7 @@
 
                                     <a
                                         id="forgot-password-link"
+                                        href="javascript:void(0)"
                                         style="
                                             font-size:12px;
                                             color:#8b5cf6;
@@ -357,6 +367,9 @@
                                         type="password"
                                         autocomplete="current-password"
                                         required
+                                        aria-required="true"
+                                        aria-invalid="false"
+                                        aria-describedby="password-error"
                                     />
 
                                     <button
@@ -423,6 +436,8 @@
                                         placeholder="Confirm your password"
                                         type="password"
                                         autocomplete="new-password"
+                                        aria-invalid="false"
+                                        aria-describedby="confirm-password-error"
                                     />
 
                                     <button
@@ -463,27 +478,32 @@
                         <div class="auth-terms">
 
                             <input
-                                id="terms-checkbox"
-                                type="checkbox"
-                            >
+                                        id="terms-checkbox"
+                                        type="checkbox"
+                                        required
+                                        aria-required="true"
+                                        aria-label="I agree to the Terms of Service and Privacy Policy"
+                                    >
 
-                            <div class="auth-terms-text">
+                                    <label class="auth-terms-text" for="terms-checkbox">
 
-                                I agree to the
+                                        I agree to the
 
-                                <a onclick="openLegalModal('terms')">
-                                    Terms
-                                </a>
+                                        <a href="javascript:void(0)" onclick="openLegalModal('terms')" style="cursor: pointer; text-decoration: underline;">
+                                            Terms
+                                        </a>
 
-                                and
+                                        and
 
-                                <a onclick="openLegalModal('privacy')">
-                                    Privacy Policy
-                                </a>
+                                        <a href="javascript:void(0)" onclick="openLegalModal('privacy')" style="cursor: pointer; text-decoration: underline;">
+                                            Privacy Policy
+                                        </a>
 
-                            </div>
+                                    </label>
 
                         </div>
+
+                        <p class="ds-error" id="terms-error" role="alert" aria-live="polite" style="margin-top: 6px;"></p>
 
                         <!-- BUTTON -->
 

@@ -91,6 +91,9 @@ const SSInput = <T extends FieldValues>({
           placeholder={placeholder}
           autoComplete={autoComplete}
           autoFocus={autoFocus}
+          aria-invalid={error ? "true" : "false"}
+          aria-required={required}
+          aria-describedby={error ? `${name}-error` : undefined}
           {...register(name, validation)}
           className={`w-full min-w-0 max-w-full h-11 block box-border rounded-xl border text-sm transition-all duration-200 focus:outline-none focus:ring-2 ${
             icon ? "pl-11" : "px-4"
@@ -143,6 +146,7 @@ const SSInput = <T extends FieldValues>({
 
       {error && (
         <p
+          id={`${name}-error`}
           className="text-xs font-semibold text-rose-400 mt-1.5 text-left w-full break-words"
           aria-live="polite"
         >
