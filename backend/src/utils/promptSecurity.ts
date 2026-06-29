@@ -46,6 +46,15 @@ const FORBIDDEN_PATTERNS: RegExp[] = [
   /###\s*instructions?/i,
 ];
 
+
+const canonicalizeSecurityText = (input: string): string => {
+  return (input ?? "")
+    .normalize("NFKC")
+    .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
+    .replace(/[\s\u00A0]+/g, " ")
+    .trim();
+};
+
 /**
  * Normalize input to prevent Unicode substitution and obfuscation bypasses.
  */
@@ -54,18 +63,7 @@ const normalizeInput = (input: string): string => {
     .normalize("NFKC") // Unicode normalization
     .replace(/[\u200B-\u200D\uFEFF]/g, "") // Remove zero-width characters
     .replace(/\s+/g, " ") // Collapse whitespace
-    .trim();
-};
-/**
- * Strip markdown code fences (e.g. ```json ... ```) from raw AI text
- * before attempting JSON.parse.
- */
-export const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  return (input ?? "")
-    .normalize("NFKC")
-    .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
-    .replace(/[\s\u00A0]+/g, " ")
+ 
     .trim();
 };
 
@@ -75,10 +73,13 @@ export const validateAndFormatPrompt = (userPrompt: string): string => {
   }
 
   const normalizedPrompt = normalizeInput(userPrompt);
+  const canonical = canonicalizeSecurityText(normalizedPrompt);
 
   for (const pattern of FORBIDDEN_PATTERNS) {
-    if (pattern.test(normalizedPrompt)) {
-      throw new Error("Security Violation: Malicious prompt injection detected.");
+    if (pattern.test(canonical)) {
+      throw new Error(
+        "Security Violation: Malicious prompt injection detected."
+      );
     }
   }
 
@@ -86,13 +87,12 @@ export const validateAndFormatPrompt = (userPrompt: string): string => {
 
   return `"""\n${normalizedPrompt}\n"""`;
 };
-
 export const validateOutput = (aiResponse: string): string => {
   if (!aiResponse || typeof aiResponse !== "string") {
     throw new Error("Security Violation: Invalid AI response.");
   }
 
-  const lowerResponse = aiResponse.toLowerCase();
+  const canonical = canonicalizeSecurityText(aiResponse).toLowerCase();
 
   const leakPatterns = [
     "system prompt:",
@@ -109,8 +109,10 @@ export const validateOutput = (aiResponse: string): string => {
   ];
 
   for (const pattern of leakPatterns) {
-    if (lowerResponse.includes(pattern)) {
-      throw new Error("Security Violation: AI output leaked system instructions.");
+    if (canonical.includes(pattern)) {
+      throw new Error(
+        "Security Violation: AI output leaked system instructions."
+      );
     }
   }
 
@@ -118,3 +120,5 @@ export const validateOutput = (aiResponse: string): string => {
 
   return aiResponse;
 };
+
+ 

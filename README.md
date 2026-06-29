@@ -25,6 +25,7 @@
 
 - [Table of Contents](#table-of-contents)
 - [About 🚀](#about-)
+- [Architecture](#architecture)
 - [AI Story Generation Pipeline](docs/ai-story-generation.md)
 - [Features 💪](#features-)
 - [Local development (monorepo)](#local-development-monorepo)
@@ -35,6 +36,7 @@
 
 ## 📚 Table of Contents
 - [About 🚀](#about-🚀)
+- [Architecture](#architecture)
 - [Features 💪](#features-💪)
 - [Local Development](#local-development-monorepo)
 - [Environment Variables](#environment-variables)
@@ -60,6 +62,62 @@
 - story-spark-ai - [Website](https://storysparkai.vercel.app/)
 - **`StorySparkAI`** is an open-source platform designed to empower creative minds by generating and showcasing AI-crafted stories from user prompts in a simple, engaging way.
 - With **`StorySparkAI`**, users can input an idea, explore multiple story variations, save their favorites, and leverage AI analysis to enhance their creative writing journey.
+
+## Architecture 
+
+The Story Spark AI application follows a simple client-server architecture where the frontend collects user inputs, the backend processes requests and orchestrates AI services, and the generated story is returned to the user.
+
+```text
+                          Story Spark AI
+                                  │
+                                  ▼
+                           +-------------+
+                           |    User     |
+                           +------+------+ 
+                                  │
+                                  ▼
+                    +----------------------------+
+                    |   Frontend (Next.js/React) |
+                    | • Story Creation UI        |
+                    | • Character Selection      |
+                    | • Theme & Prompt Builder   |
+                    +-------------+--------------+
+                                  │
+                            HTTP/API Requests
+                                  │
+                                  ▼
+                    +----------------------------+
+                    |     Backend API Server     |
+                    | • Authentication           |
+                    | • Story Pipeline           |
+                    | • Business Logic           |
+                    +------+------+--------------+
+                           │      │
+                AI Request │      │ Data Storage
+                           │      │
+          +----------------+      +----------------+
+          │                                      │
+          ▼                                      ▼
++--------------------------+          +------------------------+
+| AI Model / LLM Provider  |          | Database / Storage     |
+| • Story Generation       |          | • Users                |
+| • Prompt Processing      |          | • Stories              |
+| • Image Generation       |          | • Metadata             |
++-------------+------------+          +------------+-----------+
+              │                                    │
+              +----------------+-------------------+
+                               │
+                               ▼
+                  +----------------------------+
+                  | Generated Story & Assets   |
+                  +-------------+--------------+
+                                │
+                                ▼
+                             Frontend
+                                │
+                                ▼
+                               User
+```
 
 <a id="features"></a>
 

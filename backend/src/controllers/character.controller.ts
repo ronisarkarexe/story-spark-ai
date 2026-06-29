@@ -1,114 +1,126 @@
 import { Request, Response } from 'express';
-import { Character } from '../models/Character.model';
+
+/**
+ * Character feature is temporarily disabled because the Character model is missing.
+ * These endpoints are kept to avoid breaking routes, but return safe responses.
+ */
 
 export const createCharacter = async (req: Request, res: Response) => {
   try {
-    const { name, age, personality, appearance, background, traits, notes } = req.body;
     const userId = req.user?.id;
 
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized',
+      });
     }
 
-    const character = new Character({
-      userId,
-      name,
-      age,
-      personality,
-      appearance,
-      background,
-      traits,
-      notes,
+    return res.status(501).json({
+      success: false,
+      message: 'Character feature temporarily disabled (missing model)',
     });
-
-    await character.save();
-    res.status(201).json({ success: true, data: character });
   } catch (error) {
     console.error('Create character error:', error);
-    res.status(500).json({ success: false, message: 'Failed to create character' });
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 };
 
 export const getCharacters = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
+
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized',
+      });
     }
 
-    const characters = await Character.find({ userId }).sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: characters });
+    return res.status(501).json({
+      success: false,
+      message: 'Character feature temporarily disabled (missing model)',
+    });
   } catch (error) {
     console.error('Get characters error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch characters' });
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 };
 
 export const getCharacterById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
     const userId = req.user?.id;
 
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized',
+      });
     }
 
-    const character = await Character.findOne({ _id: id, userId });
-    if (!character) {
-      return res.status(404).json({ success: false, message: 'Character not found' });
-    }
-
-    res.status(200).json({ success: true, data: character });
+    return res.status(501).json({
+      success: false,
+      message: 'Character feature temporarily disabled (missing model)',
+    });
   } catch (error) {
     console.error('Get character error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch character' });
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 };
 
 export const updateCharacter = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
     const userId = req.user?.id;
 
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized',
+      });
     }
 
-    const updates = req.body;
-    const character = await Character.findOneAndUpdate(
-      { _id: id, userId },
-      { $set: updates },
-      { new: true, runValidators: true }
-    );
-
-    if (!character) {
-      return res.status(404).json({ success: false, message: 'Character not found' });
-    }
-
-    res.status(200).json({ success: true, data: character });
+    return res.status(501).json({
+      success: false,
+      message: 'Character feature temporarily disabled (missing model)',
+    });
   } catch (error) {
     console.error('Update character error:', error);
-    res.status(500).json({ success: false, message: 'Failed to update character' });
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 };
 
 export const deleteCharacter = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
     const userId = req.user?.id;
 
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized',
+      });
     }
 
-    const character = await Character.findOneAndDelete({ _id: id, userId });
-    if (!character) {
-      return res.status(404).json({ success: false, message: 'Character not found' });
-    }
-
-    res.status(200).json({ success: true, message: 'Character deleted successfully' });
+    return res.status(501).json({
+      success: false,
+      message: 'Character feature temporarily disabled (missing model)',
+    });
   } catch (error) {
     console.error('Delete character error:', error);
-    res.status(500).json({ success: false, message: 'Failed to delete character' });
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 };
