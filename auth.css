@@ -1264,3 +1264,78 @@ input:focus{
         scroll-behavior:auto !important;
     }
 }
+
+/* ── Password Visibility Toggling Styles ── */
+.password-toggle-btn {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5) !important;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.password-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #8b5cf6 !important;
+}
+
+.password-toggle-btn:focus-visible {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+}
+
+.password-toggle-btn i.fi-rr-eye {
+    color: #8b5cf6 !important;
+}
+
+/* Tooltip styles */
+.password-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    padding: 6px 12px;
+    background: #1e1b4b;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    color: #e1e2ea;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 50;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    opacity: 0;
+    transform: translateY(4px);
+    display: block;
+}
+
+.password-tooltip:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.password-tooltip.hidden {
+    display: none;
+    opacity: 0;
+}
+
+.password-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 12px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #1e1b4b transparent transparent transparent;
+}

@@ -275,9 +275,13 @@
                                         id="name-field"
                                         placeholder="Alex Spark"
                                         autocomplete="name"
+                                        aria-invalid="false"
+                                        aria-describedby="name-error"
                                     />
 
                                 </div>
+
+                                <p class="ds-error" id="name-error" role="alert" aria-live="polite" style="margin-top: 6px;"></p>
 
                             </div>
 
@@ -304,9 +308,14 @@
                                         placeholder="name@storyspark.ai"
                                         autocomplete="email"
                                         required
+                                        aria-required="true"
+                                        aria-invalid="false"
+                                        aria-describedby="email-error"
                                     />
 
                                 </div>
+
+                                <p class="ds-error" id="email-error" role="alert" aria-live="polite" style="margin-top: 6px;"></p>
 
                             </div>
 
@@ -333,6 +342,7 @@
 
                                     <a
                                         id="forgot-password-link"
+                                        href="javascript:void(0)"
                                         style="
                                             font-size:12px;
                                             color:#8b5cf6;
@@ -357,32 +367,107 @@
                                         type="password"
                                         autocomplete="current-password"
                                         required
+                                        aria-required="true"
+                                        aria-invalid="false"
+                                        aria-describedby="password-error"
                                     />
 
                                     <button
-                                        onclick="togglePasswordVisibility()"
+                                        class="password-toggle-btn"
+                                        onclick="togglePasswordVisibility(event)"
                                         type="button"
-                                        aria-label="Toggle password visibility"
-                                        style="
-                                            position:absolute;
-                                            right:18px;
-                                            top:50%;
-                                            transform:translateY(-50%);
-                                            background:none;
-                                            border:none;
-                                            color:rgba(255,255,255,.5);
-                                            cursor:pointer;
-                                        "
+                                        aria-label="Show password. Press Space or Enter to toggle."
+                                        aria-pressed="false"
+                                        title="Show password (Space/Enter)"
                                     >
-
                                         <i
-                                            class="fi fi-rr-eye-crossed"
+                                            class="fi fi-rr-eye-crossed text-[16px]"
                                             id="eye-icon"
+                                            aria-hidden="true"
                                         ></i>
-
+                                        <div class="password-tooltip hidden" role="tooltip">
+                                            <span id="tooltip-text">Show password (Space/Enter)</span>
+                                        </div>
                                     </button>
 
                                 </div>
+
+                                <!-- Password Strength Meter -->
+                                <div class="ds-meter hidden" aria-hidden="true" style="margin-top: 10px;">
+                                    <div class="ds-meter-bar" id="password-meter-bar"></div>
+                                </div>
+                                <p class="ds-help hidden" id="password-help" style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 6px;">
+                                    Use 8+ characters with a mix of letters and numbers.
+                                </p>
+                                <div id="password-checklist" class="hidden" style="margin-top: 10px; font-size: 12px; display: flex; flex-direction: column; gap: 4px;">
+                                    <p id="rule-length" class="text-red-400" style="margin: 0;">✗ At least 8 characters</p>
+                                    <p id="rule-upper" class="text-red-400" style="margin: 0;">✗ One uppercase letter</p>
+                                    <p id="rule-lower" class="text-red-400" style="margin: 0;">✗ One lowercase letter</p>
+                                    <p id="rule-number" class="text-red-400" style="margin: 0;">✗ One number</p>
+                                    <p id="rule-special" class="text-red-400" style="margin: 0;">✗ One special character</p>
+                                </div>
+                                <p class="ds-help" id="password-strength" style="margin-top: 6px;"></p>
+                                <p class="ds-error" id="password-error" role="alert" aria-live="polite" style="margin-top: 6px;"></p>
+                                <p id="signup-caps-lock-warning" class="hidden" style="color: #fbbf24; font-size: 12px; margin-top: 6px;">
+                                    Caps Lock is ON
+                                </p>
+
+                            </div>
+
+                            <!-- CONFIRM PASSWORD -->
+
+                            <div class="ds-field hidden" id="confirm-password-group" style="margin-top: 20px;">
+
+                                <label
+                                    class="ds-label"
+                                    for="confirm-password-field"
+                                >
+                                    Confirm Password
+                                </label>
+
+                                <div class="ds-input-group">
+
+                                    <i
+                                        class="fi fi-rr-lock ds-input-icon"
+                                    ></i>
+
+                                    <input
+                                        id="confirm-password-field"
+                                        placeholder="Confirm your password"
+                                        type="password"
+                                        autocomplete="new-password"
+                                        aria-invalid="false"
+                                        aria-describedby="confirm-password-error"
+                                    />
+
+                                    <button
+                                        class="password-toggle-btn"
+                                        onclick="toggleConfirmPasswordVisibility(event)"
+                                        type="button"
+                                        aria-label="Show confirm password. Press Space or Enter to toggle."
+                                        aria-pressed="false"
+                                        title="Show confirm password (Space/Enter)"
+                                    >
+                                        <i
+                                            class="fi fi-rr-eye-crossed text-[16px]"
+                                            id="confirm-eye-icon"
+                                            aria-hidden="true"
+                                        ></i>
+                                        <div class="password-tooltip hidden" role="tooltip">
+                                            <span id="confirm-tooltip-text">Show password (Space/Enter)</span>
+                                        </div>
+                                    </button>
+
+                                </div>
+
+                                <p class="ds-help" id="confirm-password-help" style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 6px;">
+                                    Passwords must match to create your account.
+                                </p>
+                                <p class="ds-feedback password-match-feedback" id="confirm-password-feedback" role="status" aria-live="polite" style="margin-top: 6px;"></p>
+                                <p class="ds-error" id="confirm-password-error" role="alert" aria-live="polite" style="margin-top: 6px;"></p>
+                                <p id="confirm-caps-lock-warning" class="hidden" style="color: #fbbf24; font-size: 12px; margin-top: 6px;">
+                                    Caps Lock is ON
+                                </p>
 
                             </div>
 
@@ -393,27 +478,32 @@
                         <div class="auth-terms">
 
                             <input
-                                id="terms-checkbox"
-                                type="checkbox"
-                            >
+                                        id="terms-checkbox"
+                                        type="checkbox"
+                                        required
+                                        aria-required="true"
+                                        aria-label="I agree to the Terms of Service and Privacy Policy"
+                                    >
 
-                            <div class="auth-terms-text">
+                                    <label class="auth-terms-text" for="terms-checkbox">
 
-                                I agree to the
+                                        I agree to the
 
-                                <a onclick="openLegalModal('terms')">
-                                    Terms
-                                </a>
+                                        <a href="javascript:void(0)" onclick="openLegalModal('terms')" style="cursor: pointer; text-decoration: underline;">
+                                            Terms
+                                        </a>
 
-                                and
+                                        and
 
-                                <a onclick="openLegalModal('privacy')">
-                                    Privacy Policy
-                                </a>
+                                        <a href="javascript:void(0)" onclick="openLegalModal('privacy')" style="cursor: pointer; text-decoration: underline;">
+                                            Privacy Policy
+                                        </a>
 
-                            </div>
+                                    </label>
 
                         </div>
+
+                        <p class="ds-error" id="terms-error" role="alert" aria-live="polite" style="margin-top: 6px;"></p>
 
                         <!-- BUTTON -->
 
