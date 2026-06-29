@@ -77,13 +77,6 @@ const toggleReaction = async (
       likesCount: updatedPost?.likesCount ?? 0,
     };
   }
-
-  const likesCount = await Reaction.countDocuments({ postId });
-
-  return {
-    message: "Reaction updated successfully",
-    likesCount,
-  };
 };
 
 export const ReactionService = {
