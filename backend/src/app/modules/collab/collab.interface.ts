@@ -7,6 +7,7 @@ export interface ICollabRoom {
   expiresAt: Date;
   collabState?: Buffer;
   isAiGenerating: boolean;
+  isPublic: boolean;
 }
 
 export interface IParticipant {

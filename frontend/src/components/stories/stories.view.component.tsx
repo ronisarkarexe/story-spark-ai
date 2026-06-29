@@ -3,6 +3,8 @@ import DOMPurify from "dompurify";
 import { useAntiGravityScroll } from "../../hooks/useAntiGravityScroll";
 import { getShortenedText, ITopicData, topicsData, getWordCount, SELECTED_TOPIC_CLASSES } from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
+import StoryGenreTransformation from "./StoryGenreTransformation";
+import StoryTranslator from "../translate/StoryTranslator";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
@@ -347,6 +349,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [showStoryVisualizer, setShowStoryVisualizer] = useState<boolean>(false);
   const [showTrailer, setShowTrailer] = useState<boolean>(false);
+  const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
   
   // StoryVisualizer states
   const [storyboardScenes, setStoryboardScenes] = useState<StoryboardScene[]>([]);
@@ -1653,7 +1656,24 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           }}
         />
       )}
+      {showGenreTransformation && selectedStory && (
+        <StoryGenreTransformation
+          story={{
+            title: selectedStory.title,
+            content: selectedStory.content,
+          }}
+          onClose={() => setShowGenreTransformation(false)}
+        />
+      )}
       <Toaster position="top-right" reverseOrder={false} />
+
+      {showTranslator && selectedStory && (
+        <StoryTranslator
+          story={selectedStory}
+          isLogin={isLogin}
+          onClose={() => setShowTranslator(false)}
+        />
+      )}
       </div>
     </div>
   );

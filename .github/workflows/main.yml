@@ -17,7 +17,7 @@ jobs:
         id: changes
         shell: bash
         run: |
-          files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD")"
+          files="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
           echo "$files"
 
           if echo "$files" | grep -q '^frontend/'; then
@@ -52,7 +52,7 @@ jobs:
         if: github.event_name == 'pull_request' && steps.changes.outputs.frontend == 'true' && steps.changes.outputs.backend != 'true'
         shell: bash
         run: |
-          files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD" | grep -E '^frontend/.*\.(ts|tsx)$' | sed 's#^frontend/##' || true)"
+          files="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -E '^frontend/.*\.(ts|tsx)$' | sed 's#^frontend/##' || true)"
           if [ -z "$files" ]; then
             echo "No frontend TypeScript files changed."
             exit 0

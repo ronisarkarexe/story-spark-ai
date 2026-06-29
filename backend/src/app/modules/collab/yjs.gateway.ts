@@ -1,6 +1,12 @@
 import { Server, Namespace, Socket } from 'socket.io';
 import * as Y from 'yjs';
-import { debounce } from 'lodash';
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {
+  let timeout: NodeJS.Timeout | null;
+  return function(this: any, ...args: any[]) {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  } as T;
+}
 import { CollabService } from './collab.service';
 
 /**
@@ -78,3 +84,4 @@ export class YjsGateway {
     return color;
   }
 }
+

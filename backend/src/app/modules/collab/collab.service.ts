@@ -1,12 +1,13 @@
+import { ICollabRoom } from './collab.interface';
 import { CollabRoom } from './collab.model';
 
 /**
- * Service for persisting and retrieving the Yjs document state stored in a CollabRoom.
+ * Service to manage collaborative editing sessions.
+ * Interacts with MongoDB.
  */
 export class CollabService {
   /**
-   * Retrieve the persisted collabState (base64 string) for a given roomId.
-   * Returns undefined if no state is stored.
+   * Returns the current collab state of a room as a base64 string, if any.
    */
   static async getCollabState(roomId: string): Promise<string | undefined> {
     const room = await CollabRoom.findOne({ roomId }, { collabState: 1 }).lean();
@@ -16,9 +17,20 @@ export class CollabService {
   }
 
   /**
-   * Persist the base64‑encoded Yjs document update for a room.
+   * Updates the collab state for a room using a base64 string.
    */
   static async updateCollabState(roomId: string, base64: string): Promise<void> {
     await CollabRoom.updateOne({ roomId }, { collabState: Buffer.from(base64, 'base64') });
+  }
+
+  /**
+   * Dynamically update room visibility status parameters
+   */
+  static async updatePrivacyStatus(roomId: string, isPublic: boolean): Promise<ICollabRoom | null> {
+    return await CollabRoom.findOneAndUpdate(
+      { roomId },
+      { isPublic },
+      { new: true }
+    );
   }
 }

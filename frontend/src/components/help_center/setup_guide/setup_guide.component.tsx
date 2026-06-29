@@ -18,7 +18,6 @@ const SetupGuide: FC<SetupGuideProps> = ({ steps }) => {
       aria-labelledby="setup-heading"
     >
       {/* Header Info Block */}
-      <div className="mb-12">
         <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-300">
           <i className="fa-solid fa-code" aria-hidden="true"></i>
           DEVELOPER GUIDE
