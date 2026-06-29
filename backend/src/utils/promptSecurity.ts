@@ -1,8 +1,19 @@
+<<<<<<< HEAD
 /**
  * Prompt security helpers.
  *
  * These utilities normalize user input, block common instruction-injection
  * phrases, and delegate harmful-content checks to the moderation layer.
+=======
+﻿/**
+ * Security middleware to prevent prompt injection and jailbreaks.
+ * Improvements:
+ * - Input normalization before pattern matching
+ * - Expanded forbidden patterns covering rephrased/obfuscated attacks
+ * - Unicode normalization to prevent character substitution bypasses
+ * - Content moderation on both input and output
+ * - Improved output validation
+>>>>>>> origin/main
  */
 import { assertContentSafe } from "./contentModeration";
 
@@ -31,22 +42,58 @@ const FORBIDDEN_PATTERNS: RegExp[] = [
   /###\s*instructions?/i,
 ];
 
+<<<<<<< HEAD
 const normalizeInput = (input: string): string =>
   (input ?? "")
     .normalize("NFKC")
     .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
     .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
     .replace(/\s+/g, " ")
+=======
+/**
+ * Normalize input to prevent Unicode substitution and obfuscation bypasses.
+ */
+const normalizeInput = (input: string): string => {
+  return input
+    .normalize("NFKC") // Unicode normalization
+    .replace(/[\u200B-\u200D\uFEFF]/g, "") // Remove zero-width characters
+    .replace(/\s+/g, " ") // Collapse whitespace
+    .trim();
+};
+/**
+ * Strip markdown code fences (e.g. ```json ... ```) from raw AI text
+ * before attempting JSON.parse.
+ */
+export const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  return (input ?? "")
+    .normalize("NFKC")
+    .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
+    .replace(/[\s\u00A0]+/g, " ")
+>>>>>>> origin/main
     .trim();
 
+<<<<<<< HEAD
 const assertNoPromptInjection = (text: string): void => {
   for (const pattern of FORBIDDEN_PATTERNS) {
     if (pattern.test(text)) {
+=======
+export const validateAndFormatPrompt = (userPrompt: string): string => {
+  if (!userPrompt || typeof userPrompt !== "string") {
+    throw new Error("Security Violation: Invalid prompt input.");
+  }
+
+  const normalizedPrompt = normalizeInput(userPrompt);
+
+  for (const pattern of FORBIDDEN_PATTERNS) {
+    if (pattern.test(normalizedPrompt)) {
+>>>>>>> origin/main
       throw new Error("Security Violation: Malicious prompt injection detected.");
     }
   }
 };
 
+<<<<<<< HEAD
 export const validateAndFormatPrompt = (userPrompt: string): string => {
   if (typeof userPrompt !== "string" || !userPrompt.trim()) {
     throw new Error("Security Violation: Invalid prompt input.");
@@ -54,22 +101,32 @@ export const validateAndFormatPrompt = (userPrompt: string): string => {
 
   const normalizedPrompt = normalizeInput(userPrompt);
   assertNoPromptInjection(normalizedPrompt);
+=======
+>>>>>>> origin/main
   assertContentSafe(normalizedPrompt);
 
   return `"""\n${normalizedPrompt}\n"""`;
 };
 
 export const validateOutput = (aiResponse: string): string => {
+<<<<<<< HEAD
   if (typeof aiResponse !== "string" || !aiResponse.trim()) {
+=======
+  if (!aiResponse || typeof aiResponse !== "string") {
+>>>>>>> origin/main
     throw new Error("Security Violation: Invalid AI response.");
   }
 
   const normalizedOutput = normalizeInput(aiResponse);
   const loweredOutput = normalizedOutput.toLowerCase();
 
+<<<<<<< HEAD
   assertNoPromptInjection(normalizedOutput);
 
   const leakedInstructionPatterns = [
+=======
+  const leakPatterns = [
+>>>>>>> origin/main
     "system prompt:",
     "system prompt",
     "instructions:",
@@ -91,6 +148,13 @@ export const validateOutput = (aiResponse: string): string => {
     }
   }
 
+<<<<<<< HEAD
   assertContentSafe(normalizedOutput);
   return aiResponse;
 };
+=======
+  assertContentSafe(aiResponse);
+
+  return aiResponse;
+};
+>>>>>>> origin/main

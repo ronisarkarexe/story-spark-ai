@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useCallback, useMemo, useState } from "react";
+=======
+import React, { useEffect, useState, useCallback } from "react";
+>>>>>>> origin/main
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
 const STAR_LABELS = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
@@ -12,6 +16,7 @@ type StarRatingProps = {
 
 const StarRating: React.FC<StarRatingProps> = ({ rating, onChange }) => {
   const [hovered, setHovered] = useState(0);
+<<<<<<< HEAD
   const activeRating = hovered || rating;
 
   return (
@@ -42,6 +47,53 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, onChange }) => {
       {activeRating > 0 ? (
         <p className="text-xs font-medium text-yellow-400">{STAR_LABELS[activeRating]}</p>
       ) : null}
+=======
+
+  const handleKey = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "ArrowLeft") setRating(Math.max(0, rating - 1));
+      if (e.key === "ArrowRight") setRating(Math.min(5, rating + 1));
+      const num = parseInt(e.key, 10);
+      if (!Number.isNaN(num) && num >= 1 && num <= 5) setRating(num);
+    },
+    [rating, setRating]
+  );
+
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Star rating"
+      tabIndex={0}
+      onKeyDown={handleKey}
+      className="space-y-2"
+    >
+      <div className="flex gap-2">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            aria-pressed={rating === star}
+            aria-label={`Rate ${star} star`}
+            onClick={() => setRating(star)}
+            onMouseEnter={() => setHovered(star)}
+            onMouseLeave={() => setHovered(0)}
+            className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none ${
+              star <= (hovered || rating)
+                ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]"
+                : "text-gray-600"
+            }`}
+          >
+            ★
+          </button>
+        ))}
+      </div>
+
+      {(hovered || rating) > 0 && (
+        <p className="text-xs font-semibold tracking-wide text-yellow-400">
+          {ratingLabels[hovered || rating]}
+        </p>
+      )}
+>>>>>>> origin/main
     </div>
   );
 };
@@ -55,6 +107,7 @@ const ReviewForm: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
+<<<<<<< HEAD
   const validate = useCallback((): FieldErrors => {
     const nextErrors: FieldErrors = {};
 
@@ -63,6 +116,10 @@ const ReviewForm: React.FC = () => {
     if (!feedback.trim()) nextErrors.feedback = "Review is required.";
     if (feedback.trim().length > 500) nextErrors.feedback = "Maximum 500 characters.";
     if (rating === 0) nextErrors.rating = "Please select a rating.";
+=======
+
+    if (rating === 0) newErrors.rating = "Please select a rating";
+>>>>>>> origin/main
 
     return nextErrors;
   }, [feedback, name, rating, role]);

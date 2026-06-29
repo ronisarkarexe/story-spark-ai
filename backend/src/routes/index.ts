@@ -19,11 +19,7 @@ import { StoryVersionRouter } from "../app/modules/story_version/story_version.r
 import { AnalyticsRouter } from "../app/modules/analytics/analytics.router";
 import { BugReportRouter } from "../app/modules/bug_report/bug_report.router";
 import { RecommendationRouter } from "../app/modules/recommendation/recommendation.router";
-import { WriterApplicationRoutes } from "../app/modules/writer_application/writer_application.route";
-import { StoryVisualizerRouter } from "../app/modules/story_visualizer/story_visualizer.router";
-import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_inspiration.router";
-import { EngagementRouter } from "../app/modules/engagement/engagement.router";
-import { ChatRouter } from "../app/modules/chat/chat.router";
+
 import { PlotHoleRouter } from "../app/modules/plot_hole_detector/plot_hole.router";
 import { StoryRatingRouter } from "../app/modules/story_rating/story_rating.router";
 import PromptAnalysisRouter from "../app/modules/prompt_analysis/prompt_analysis.router";

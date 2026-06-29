@@ -3,8 +3,15 @@ import { getSocketIo } from '../../socket/socket.oi';
 import { removeUserInfo, storeUserInfo } from '../../services/auth.service';
 
 const instance = axios.create({
+<<<<<<< HEAD
   baseURL: '/api',
   withCredentials: true,
+=======
+  // Must match the backend mount point: app.use('/api/v1', Routers)
+  // The Vite dev proxy forwards /api → http://localhost:5000, so
+  // the full path /api/v1/... is required here.
+  baseURL: '/api/v1',
+>>>>>>> origin/main
 });
 
 instance.interceptors.response.use(
@@ -14,9 +21,13 @@ instance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
+<<<<<<< HEAD
         const { data } = await axios.post('/api/auth/refresh-token', {}, {
           withCredentials: true,
         });
+=======
+        const { data } = await axios.post('/api/v1/auth/refresh-token');
+>>>>>>> origin/main
         const newToken = data.data.accessToken;
         storeUserInfo({ accessToken: newToken });
 

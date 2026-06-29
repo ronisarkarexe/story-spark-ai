@@ -3,9 +3,19 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
 
+<<<<<<< HEAD
 const NavListComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
+=======
+import { useNavigate, useLocation } from "react-router-dom";
+
+
+  
+  const NavListComponent = () => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+>>>>>>> origin/main
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
@@ -78,9 +88,14 @@ const NavListComponent = () => {
             <i className="fa-solid fa-bars" />
           </button>
         </div>
+<<<<<<< HEAD
       </div>
 
       {menuOpen ? (
+=======
+
+      {menuOpen && (
+>>>>>>> origin/main
         <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 lg:hidden dark:border-white/10">
           {navItems.map((item) => (
             <NavLink

@@ -121,6 +121,48 @@ const getLanguageLabel = (lang: string): string => {
   }
 };
 
+<<<<<<< HEAD
+=======
+const buildWordRanges = (inputText: string): WordRange[] => {
+  if (!inputText.trim()) {
+    return [];
+  }
+
+  const ranges: WordRange[] = [];
+  const wordPattern = /\S+/g;
+
+  for (const match of inputText.matchAll(wordPattern)) {
+    const start = match.index ?? 0;
+    ranges.push({
+      start,
+      end: start + match[0].length,
+    });
+  }
+
+  return ranges;
+};
+
+const getWordIndexAtCharIndex = (
+  charIndex: number,
+  ranges: WordRange[],
+): number => {
+  if (ranges.length === 0) {
+    return 0;
+  }
+
+  const matchIndex = ranges.findIndex(
+    (range) => charIndex >= range.start && charIndex <= range.end,
+  );
+
+  if (matchIndex >= 0) {
+    return matchIndex;
+  }
+
+  const fallbackIndex = ranges.findIndex((range) => charIndex < range.start);
+  return fallbackIndex >= 0 ? Math.max(0, fallbackIndex - 1) : ranges.length - 1;
+};
+
+>>>>>>> origin/main
 export const useSpeechSynthesis = (
   text: string = "",
   voiceGender?: "female" | "male",
