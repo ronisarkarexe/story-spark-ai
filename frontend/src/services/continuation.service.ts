@@ -1,34 +1,35 @@
-import axios from "../helpers/axios/axiosInstance";
+import instance from "../helpers/axios/axiosInstance";
 import { Chapter } from "../types/story.types";
 
-const API_BASE = "/v1";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const continueStory = async (chapters: Chapter[]) => {
+export const continueStory = async (chapters: Chapter[], tone?: string) => {
   const previousContent = chapters
     .map((chapter) => chapter.content)
     .join("\n\n");
 
+  const toneInstruction = tone && tone !== "Default" ? `- Adopt a ${tone} tone` : "- Keep emotional tone";
+
   try {
-    const response = await axios.post(
-      `${API_BASE}/ai_model/continue-story`,
+    const response = await instance.post(
+      `${BASE_URL}/story-continuation/continue`,
       {
         prompt: `
 Continue this story naturally.
 
 Rules:
 - Maintain character consistency
-- Keep emotional tone
-- Avoid repetition
+${toneInstruction}
+- Resolve ongoing subplots if appropriate
 - Continue the narrative smoothly
 
 Story:
 ${previousContent}
         `,
-      },
-      { withCredentials: true }
+      }
     );
 
-    return response.data.data.continuation;
+    return response.data.text;
   } catch (error) {
     console.error("Story continuation request failed:", error);
     throw new Error("Failed to continue story.");
@@ -46,10 +47,8 @@ export const getContinuations = async (
   count: number = 3
 ): Promise<string[]> => {
   const previousContent = chapters.map((c) => c.content).join("\n\n");
-  const response = await axios.post(
-    `${API_BASE}/ai_model/continue-story`,
-    {
-      prompt: `
+  const response = await instance.post(`${BASE_URL}/story-continuation/continuations`, {
+    prompt: `
 Continue this story naturally.
 
 Rules:
@@ -61,10 +60,8 @@ Rules:
 Story:
 ${previousContent}
     `,
-      count,
-    },
-    { withCredentials: true }
-  );
+    count,
+  });
   const data = response.data.data;
   if (Array.isArray(data)) {
     return data.map((item: any) => item.continuation ?? "");

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, MessageSquare, Trash2, Bot, User, Sparkles, RefreshCw, AlertCircle, HelpCircle, BookOpen, Compass, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { chatWithSparky, ISparkyMessage } from "../../services/ai.service";
+import { chatWithAIFree, IChatMessage } from "../../services/ai.service";
 import toast from "react-hot-toast";
 
 const STARTER_PROMPTS = [
@@ -29,7 +29,7 @@ const STARTER_PROMPTS = [
 
 const ChatPage: React.FC = () => {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<ISparkyMessage[]>(() => {
+  const [messages, setMessages] = useState<IChatMessage[]>(() => {
     const saved = localStorage.getItem("sparky_chat_history");
     return saved ? JSON.parse(saved) : [];
   });
@@ -57,15 +57,15 @@ const ChatPage: React.FC = () => {
     if (!trimmed || isLoading) return;
 
     setErrorState(null);
-    const userMessage: ISparkyMessage = { role: "user", content: trimmed };
+    const userMessage: IChatMessage = { role: "user", parts: trimmed };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setMessage("");
     setIsLoading(true);
 
     try {
-      const response = await chatWithSparky(updatedMessages);
-      const botMessage: ISparkyMessage = { role: "model", content: response.content };
+      const response = await chatWithAIFree(trimmed, messages);
+      const botMessage: IChatMessage = { role: "model", parts: response.parts };
       setMessages((prev) => [...prev, botMessage]);
     } catch (err: any) {
       console.error(err);
@@ -97,7 +97,7 @@ const ChatPage: React.FC = () => {
     if (lastUserMessage.role === "user") {
       // Remove last user message temporarily to prevent duplicates
       setMessages((prev) => prev.slice(0, -1));
-      handleSend(lastUserMessage.content);
+      handleSend(lastUserMessage.parts);
     }
   };
 
@@ -114,8 +114,8 @@ const ChatPage: React.FC = () => {
   };
 
   // Simple Markdown-to-HTML parser for basic bolding, code, list rendering
-  const renderMessageContent = (content: string) => {
-    return content.split("\n").map((line, idx) => {
+  const renderMessageContent = (parts: string) => {
+    return parts.split("\n").map((line: string, idx: number) => {
       let formatted = line;
 
       // Handle simple headers
@@ -327,9 +327,9 @@ const ChatPage: React.FC = () => {
                       : "bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-tl-none text-slate-900 dark:text-slate-100"
                   }`}>
                     {msg.role === "user" ? (
-                      <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                      <p className="leading-relaxed whitespace-pre-wrap">{msg.parts}</p>
                     ) : (
-                      renderMessageContent(msg.content)
+                      renderMessageContent(msg.parts)
                     )}
                   </div>
                 </div>
@@ -415,3 +415,5 @@ const ChatPage: React.FC = () => {
 };
 
 export default ChatPage;
+
+

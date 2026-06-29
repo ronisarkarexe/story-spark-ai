@@ -1,7 +1,5 @@
-import { Server, Socket, Namespace } from 'socket.io';
+import { Server, Namespace, Socket } from 'socket.io';
 import * as Y from 'yjs';
-import { CollabService } from './collab.service';
-
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {
   let timeout: NodeJS.Timeout | null;
   return function(this: any, ...args: any[]) {
@@ -9,6 +7,7 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T 
     timeout = setTimeout(() => func.apply(this, args), wait);
   } as T;
 }
+import { CollabService } from './collab.service';
 
 /**
  * Yjs gateway that syncs a Yjs document over a Socket.io namespace
@@ -85,3 +84,4 @@ export class YjsGateway {
     return color;
   }
 }
+

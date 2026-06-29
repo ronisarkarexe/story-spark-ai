@@ -1,37 +1,12 @@
 import axios from "axios";
-import { API_V1 } from "../helpers/config";
-import { getToken } from "./auth.service";
+import { getBaseUrl } from "../helpers/config";
 
-const API_BASE = API_V1;
+const API_BASE = getBaseUrl();
 
 export interface IChatMessage {
   role: "user" | "model";
   parts: string;
 }
-
-export interface ISparkyMessage {
-  role: "user" | "model";
-  content: string;
-}
-
-export const chatWithSparky = async (messages: ISparkyMessage[]) => {
-  try {
-    const token = getToken();
-    const response = await axios.post(
-      `${API_BASE}/chat`,
-      { messages },
-      {
-        headers: token ? { Authorization: token } : {},
-        withCredentials: true,
-      }
-    );
-
-    return response.data.data;
-  } catch (error) {
-    console.error("Sparky AI chat request failed:", error);
-    throw new Error("Failed to communicate with Sparky AI service.");
-  }
-};
 
 export const chatWithAI = async (
   message: string,

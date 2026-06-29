@@ -3,6 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import CollabEditor from './CollabEditor';
+import { resolveSocketUrl } from '../../helpers/socket-url';
+import { io } from 'socket.io-client';
+
 interface Participant {
   userId: string;
   username: string;

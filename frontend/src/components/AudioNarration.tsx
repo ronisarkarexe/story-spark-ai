@@ -27,7 +27,7 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
     stop,
     setPlaybackRate,
     setSelectedVoice,
-    // detectedLanguage,
+    selectedLanguage,
   } = useSpeechSynthesis(text);
 
   // Stop speech when component unmounts or text changes
@@ -87,13 +87,13 @@ const AudioNarration: React.FC<AudioNarrationProps> = ({
       </h3>
 
       {/* Language Detection Info */}
-      {/* {detectedLanguage && (
-        <div className="mb-3 p-2 bg-blue-950/30 border border-blue-700/30 rounded text-blue-200 text-xs">
-          <span className="font-medium">Detected Language:</span> {detectedLanguage.toUpperCase()}
+      {selectedLanguage && (
+        <div className="mb-4 flex items-center justify-between text-sm text-slate-500">
+          <div>
+            <span className="font-medium">Detected Language:</span> {selectedLanguage.toUpperCase()}
+          </div>
         </div>
-      )} */}
-
-      {/* Error Message */}
+      )}{/* Error Message */}
       {error && (
         <div
           className="mb-4 p-3 bg-red-950/50 border border-red-700/50 rounded text-red-200 text-sm"

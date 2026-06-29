@@ -7,7 +7,7 @@ if (!BASE_URL) {
   );
 }
 
-export const API_BASE = (BASE_URL ?? "").replace(/\/$/, ""); 
+export const API_BASE = (BASE_URL ?? "").replace(/\/$/, "");
 
 export const API_V1 = `${API_BASE}/api/v1`;
 

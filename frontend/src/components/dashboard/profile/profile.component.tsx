@@ -10,7 +10,7 @@ import { ProfileSavedStoriesSection } from "./profile.saved_stories.component";
 import { WriterApplicationForm } from "./writer_application.form";
 import AuthContext from "../../auth.context";
 import { ProfileCompletionIndicator } from "./ProfileCompletionIndicator";
-import { instance } from "../../../helpers/axios/axiosInstance";
+import instance from "../../../helpers/axios/axiosInstance";
 
 const ProfileComponent = () => {
   const { data, isLoading } = useGetProfileInfoQuery();

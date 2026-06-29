@@ -7,25 +7,25 @@ import {
   Pencil,
   Send,
   GitBranch,
-  CheckCircle2,
+  Sparkles,
   AlertCircle,
   ArrowUpRight,
   Zap,
   MapPin,
   Clock,
   Briefcase,
-  // Twitter,
-  // Linkedin,
-  // Github,
   Globe,
   MessageCircle,
+  CheckCircle2,
 } from "lucide-react";
-
-import { instance as axios } from "../../helpers/axios/axiosInstance";
+import { motion, AnimatePresence } from "framer-motion";
+import axios from "../../helpers/axios/axiosInstance";
 import { getBaseUrl } from "../../helpers/config";
 import storybook from "../../assets/storybook.png";
 
 // --- Types ---
+
+// ΓöÇΓöÇΓöÇ Types ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
 type FormData = {
   fullname: string;
@@ -37,6 +37,7 @@ type FormData = {
 type FormField = keyof FormData;
 
 // --- Constants ---
+// ΓöÇΓöÇΓöÇ Constants ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
 const INITIAL_FORM_DATA: FormData = {
   fullname: "",
@@ -51,26 +52,26 @@ const CONTACT_CHANNELS = [
     label: "Email us",
     value: "ronichandrasarkar@gmail.com",
     href: "mailto:ronichandrasarkar@gmail.com",
-    color: "from-blue-500/20 to-cyan-500/20",
-    iconColor: "text-blue-400",
-    hoverBorder: "hover:border-blue-500/40",
+    color: "from-blue-500/10 to-cyan-500/10",
+    iconColor: "text-blue-500 dark:text-blue-400",
+    hoverBorder: "hover:border-blue-500/30",
   },
   {
     icon: GitBranch,
     label: "GitHub",
     value: "ronisarkarexe/story-spark-ai",
     href: "https://github.com/ronisarkarexe/story-spark-ai",
-    color: "from-purple-500/20 to-violet-500/20",
-    iconColor: "text-purple-400",
-    hoverBorder: "hover:border-purple-500/40",
+    color: "from-purple-500/10 to-violet-500/10",
+    iconColor: "text-purple-500 dark:text-purple-400",
+    hoverBorder: "hover:border-purple-500/30",
   },
- ] as const;
+] as const;
 
 const INFO_CARDS = [
   {
     icon: MapPin,
     label: "Location",
-    value: "Remote – Worldwide",
+    value: "Remote — Worldwide",
     color: "from-emerald-500/20 to-teal-500/20",
     iconColor: "text-emerald-400",
   },
@@ -99,25 +100,25 @@ const INFO_CARDS = [
 
 const SOCIAL_LINKS = [
   {
-    icon: GitBranch,
+    icon: "fa-brands fa-github",
     label: "GitHub",
     href: "https://github.com/ronisarkarexe",
     color: "hover:bg-slate-700/50 hover:border-slate-500/40 hover:text-white",
   },
   {
-    icon: Globe,
+    icon: "fa-brands fa-linkedin-in",
     label: "LinkedIn",
     href: "https://linkedin.com/in/ronisarkarexe",
     color: "hover:bg-blue-600/20 hover:border-blue-500/40 hover:text-blue-400",
   },
   {
-    icon: MessageCircle,
+    icon: "fa-brands fa-x-twitter",
     label: "Twitter / X",
     href: "https://twitter.com/ronisarkarexe",
-    color: "hover:bg-sky-500/20 hover:border-sky-500/40 hover:text-sky-400",
+    color: "hover:bg-slate-800/40 hover:border-slate-600/40 hover:text-slate-200",
   },
   {
-    icon: Globe,
+    icon: "fa-solid fa-globe",
     label: "Portfolio",
     href: "https://ronisarkarexe.github.io",
     color: "hover:bg-purple-500/20 hover:border-purple-500/40 hover:text-purple-400",
@@ -166,14 +167,18 @@ const FORM_FIELDS: Array<{
   },
 ];
 
+
+// ΓöÇΓöÇΓöÇ Main Contact component ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
 const STATS = [
   { value: "24h", label: "Response time" },
   { value: "100%", label: "Read rate" },
   { value: "Open", label: "Source project" },
 ] as const;
 
-// --- FloatingLabelInput ---
-
+// ─────────────────────────────────────────────────────────────────────────────
+// FloatingLabelInput
+// ─────────────────────────────────────────────────────────────────────────────
 interface FloatingLabelInputProps {
   id: string;
   name: FormField;
@@ -197,13 +202,12 @@ const FloatingLabelInput = ({
   value,
   onChange,
   error = false,
-  required = false,
 }: FloatingLabelInputProps) => {
   const [focused, setFocused] = useState(false);
   const isFloated = focused || value.length > 0;
 
   return (
-    <div className="contact-float-field group">
+    <div className="contact-float-field group pt-1">
       <div className="relative">
         {/* Icon */}
         <span
@@ -212,7 +216,6 @@ const FloatingLabelInput = ({
         >
           <Icon className="h-4 w-4" />
         </span>
-
         {/* Input */}
         <input
           id={id}
@@ -222,49 +225,37 @@ const FloatingLabelInput = ({
           onChange={onChange}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          required={required}
+          required
           autoComplete={autoComplete}
           placeholder=" "
           aria-label={label}
           aria-invalid={error}
-          aria-required={required}
           className={[
             "contact-float-input",
+            "py-3.5 pl-11 pr-4", // Added padding for better label/icon spacing
             isFloated ? "contact-float-input--active" : "",
             error ? "contact-float-input--error" : "",
           ]
             .filter(Boolean)
             .join(" ")}
         />
-
-        {/* Floating label with required indicator */}
+        {/* Floating label */}
         <label
           htmlFor={id}
           className={`contact-float-label ${isFloated ? "contact-float-label--floated" : ""}`}
         >
           {label}
-          {required && (
-            <span className="contact-required-star" aria-hidden="true"> *</span>
-          )}
         </label>
-
         {/* Animated focus underline */}
         <span className="contact-float-underline" aria-hidden="true" />
       </div>
-
-      {/* Inline validation feedback */}
-      {error && (
-        <p className="contact-field-error-msg" role="alert">
-          <AlertCircle className="inline h-3 w-3 mr-1" aria-hidden="true" />
-          {name === "email" ? "Please enter a valid email address." : `${label} is required.`}
-        </p>
-      )}
     </div>
   );
 };
 
-// --- FloatingLabelTextarea ---
-
+// ─────────────────────────────────────────────────────────────────────────────
+// FloatingLabelTextarea
+// ─────────────────────────────────────────────────────────────────────────────
 interface FloatingLabelTextareaProps {
   value: string;
   onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
@@ -280,7 +271,7 @@ const FloatingLabelTextarea = ({
   const isFloated = focused || value.length > 0;
 
   return (
-    <div className="contact-float-field group">
+    <div className="contact-float-field group pt-1">
       <div className="relative">
         {/* Icon */}
         <span
@@ -291,11 +282,10 @@ const FloatingLabelTextarea = ({
         >
           <Pencil className="h-4 w-4" />
         </span>
-
         {/* Textarea */}
         <textarea
           id="contact-message"
-          rows={5}
+          rows={6} // Slightly increased for better usability
           name="message"
           value={value}
           onChange={onChange}
@@ -305,17 +295,16 @@ const FloatingLabelTextarea = ({
           placeholder=" "
           aria-label="Message"
           aria-invalid={error}
-          aria-required="true"
           className={[
             "contact-float-input contact-float-textarea",
+            "py-3.5 pl-11 pr-4 resize-y min-h-[140px]", // Better padding + minimum height
             isFloated ? "contact-float-input--active" : "",
             error ? "contact-float-input--error" : "",
           ]
             .filter(Boolean)
             .join(" ")}
         />
-
-        {/* Floating label with required indicator */}
+        {/* Floating label */}
         <label
           htmlFor="contact-message"
           className={`contact-float-label contact-float-label--textarea ${
@@ -323,32 +312,24 @@ const FloatingLabelTextarea = ({
           }`}
         >
           Message
-          <span className="contact-required-star" aria-hidden="true"> *</span>
         </label>
-
         {/* Animated focus underline */}
         <span className="contact-float-underline" aria-hidden="true" />
       </div>
-
-      {error && (
-        <p className="contact-field-error-msg" role="alert">
-          <AlertCircle className="inline h-3 w-3 mr-1" aria-hidden="true" />
-          Message is required.
-        </p>
-      )}
     </div>
   );
 };
 
-// --- Main Contact component ---
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Main Contact component
+// ─────────────────────────────────────────────────────────────────────────────
 export default function Contact() {
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
   const [error, setError] = useState<string>("");
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FormField, boolean>>>({});
-  const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FormField, boolean>>>({});
   const isSubmittingRef = useRef(false);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -363,7 +344,7 @@ export default function Contact() {
           obs.disconnect();
         }
       },
-      { threshold: 0.08 }
+      { threshold: 0.08 },
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -371,22 +352,20 @@ export default function Contact() {
 
   const changeHandler = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const field = e.target.name as FormField;
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+  ): void => {
+    const fieldName = e.target.name as FormField;
+    setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }));
     if (error) setError("");
-    if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: false }));
   };
 
   const validateForm = (): boolean => {
-    const t: FormData = {
+    const t = {
       fullname: formData.fullname.trim(),
       email: formData.email.trim(),
       subject: formData.subject.trim(),
       message: formData.message.trim(),
     };
     const newFieldErrors: Partial<Record<FormField, boolean>> = {};
-
     if (!t.fullname) newFieldErrors.fullname = true;
     if (!t.email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t.email))
       newFieldErrors.email = true;
@@ -405,7 +384,9 @@ export default function Contact() {
     return true;
   };
 
-  const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
+  const submitHandler = async (
+    e: FormEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
     if (isSubmittingRef.current) return;
     isSubmittingRef.current = true;
@@ -423,7 +404,6 @@ export default function Contact() {
       if (response?.data?.success) {
         setSuccess(true);
         setFormData(INITIAL_FORM_DATA);
-        setFieldErrors({});
       } else {
         setError("Failed to send message. Please try again.");
       }
@@ -432,7 +412,7 @@ export default function Contact() {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to send message. Please check your connection."
+          : "Failed to send message. Please check your connection.",
       );
     } finally {
       setLoading(false);
@@ -442,12 +422,12 @@ export default function Contact() {
 
   return (
     <section
-      ref={sectionRef}
       id="contact"
       aria-labelledby="contact-heading"
-      className="contact-section relative overflow-hidden bg-[#020617] text-white"
+      className="relative overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 w-full box-border"
     >
       {/* Layered background */}
+      {/* ΓöÇΓöÇ Layered background ΓöÇΓöÇ */}
       <div aria-hidden="true" className="contact-bg-mesh" />
       <div aria-hidden="true" className="contact-orb contact-orb-blue" />
       <div aria-hidden="true" className="contact-orb contact-orb-purple" />
@@ -455,6 +435,7 @@ export default function Contact() {
       <div aria-hidden="true" className="contact-grid-overlay" />
 
       {/* Page content */}
+      {/* ΓöÇΓöÇ Page content ΓöÇΓöÇ */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-18 lg:px-12 lg:py-20 xl:px-16">
 
         {/* Mobile badge */}
@@ -469,7 +450,7 @@ export default function Contact() {
           </span>
         </div>
 
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-14 xl:gap-20">
+        <motion.div className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-12 xl:gap-16 w-full box-border">
 
           {/* LEFT COLUMN */}
           <div
@@ -483,22 +464,17 @@ export default function Contact() {
               Get in Touch
             </span>
 
-            {/* Heading */}
             <h1
               id="contact-heading"
-              className="font-black leading-[0.9] tracking-tight"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              className="font-extrabold tracking-tight text-slate-900 dark:text-white text-3xl sm:text-5xl lg:text-6xl leading-tight"
             >
-              <span className="block text-[clamp(2.75rem,6vw,4.5rem)] text-white">
-                Let's Start a
-              </span>
-              <span className="contact-heading-gradient block text-[clamp(2.75rem,6vw,4.5rem)]">
+              Let's Start a <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400">
                 Conversation
               </span>
             </h1>
 
-            {/* Accent bar */}
-            <div aria-hidden="true" className="contact-accent-bar mt-5" />
+            <div aria-hidden="true" className="h-[2px] w-12 bg-gradient-to-r from-blue-600 to-indigo-600 mt-5 rounded-full select-none" />
 
             {/* Intro description — improved */}
             <p className="mt-6 max-w-[42ch] text-[0.9375rem] leading-[1.8] text-slate-400 sm:text-base">
@@ -590,7 +566,7 @@ export default function Contact() {
                 Find me on
               </p>
               <div className="flex items-center gap-2">
-                {SOCIAL_LINKS.map(({ icon: Icon, label, href, color }) => (
+                {SOCIAL_LINKS.map(({ icon, label, href, color }) => (
                   <a
                     key={label}
                     href={href}
@@ -599,25 +575,124 @@ export default function Contact() {
                     aria-label={label}
                     className={`contact-social-btn flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-500 transition-all duration-200 ${color}`}
                   >
-                    <Icon className="h-4 w-4" aria-hidden="true" />
+                    <i className={`${icon} text-sm`} aria-hidden="true"></i>
                   </a>
                 ))}
               </div>
             </div>
 
-            {/* Illustration */}
-            <div
-              aria-hidden="true"
-              className="contact-illustration relative mt-10 hidden items-end lg:flex"
+            {/* Heading */}
+            <h1
+              id="contact-heading"
+              className="font-black leading-[0.9] tracking-tight"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              <div className="contact-illustration-glow" />
-              <img
-                src={storybook}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className="relative z-10 w-full max-w-[340px] object-contain xl:max-w-[380px]"
-              />
+              <span className="block text-[clamp(2.75rem,6vw,4.5rem)] text-white">
+                Let's Start a
+              </span>
+              <span className="contact-heading-gradient block text-[clamp(2.75rem,6vw,4.5rem)]">
+                Conversation
+              </span>
+            </h1>
+
+            {/* Accent bar */}
+            <div aria-hidden="true" className="contact-accent-bar mt-5" />
+
+            {/* Description */}
+            <p className="mt-6 max-w-[38ch] text-[0.9375rem] leading-[1.8] text-slate-400 sm:text-base">
+              Have a story idea, a feature suggestion, or just want to say hello?
+              We read every message and respond within 24 hours.
+            </p>
+
+            <div className="mt-8 grid grid-cols-3 gap-3 sm:gap-4 select-none w-full box-border">
+              {[
+                { value: "24h",   label: "Response time"  },
+                { value: "100%",  label: "Read rate"      },
+                { value: "Open",  label: "Source project" },
+              ].map(({ value, label }) => (
+                <div
+                  key={label}
+                  className="rounded-xl sm:rounded-2xl border border-slate-200/80 bg-white dark:border-white/5 dark:bg-[#111827]/40 p-3 text-center sm:p-4 shadow-sm"
+                >
+                  <p className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                    {value}
+                  </p>
+                  <p className="mt-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    {label}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <ul
+              className="mt-6 sm:mt-8 space-y-3 list-none p-0 m-0 w-full box-border"
+              aria-label="Contact channels"
+            >
+              {CONTACT_CHANNELS.map(({
+                  icon: Icon,
+                  label,
+                  value,
+                  href,
+                  color,
+                  iconColor,
+                  hoverBorder,
+                }) => (
+                <li key={label} className="w-full">
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${label}: ${value}`}
+                    className={`group flex items-center gap-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111827]/30 p-3 sm:p-4 shadow-sm backdrop-blur-md transition-all duration-200 hover:scale-[1.005] hover:shadow-md ${hoverBorder}`}
+                  >
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-500/10 bg-gradient-to-br ${color} ${iconColor} select-none`}>
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 select-none">
+                        {label}
+                      </span>
+                      <span className="block truncate text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight">
+                        {value}
+                      </span>
+                    </span>
+                    <ArrowUpRight
+                      className="h-4 w-4 shrink-0 text-slate-400 transition-all duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-600 dark:group-hover:text-slate-300 select-none"
+                      aria-hidden="true"
+                    />
+                  </a>
+                </li>
+              ),)}
+            </ul>
+
+            {/* Enhanced illustration + contact info area to utilize space */}
+            <div className="mt-10 lg:mt-auto">
+              <div
+                aria-hidden="true"
+                className="contact-illustration relative hidden items-end lg:flex"
+              >
+                <div className="contact-illustration-glow" />
+                <img
+                  src={storybook}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="relative z-10 w-full max-w-[340px] object-contain xl:max-w-[380px]"
+                />
+              </div>
+
+              {/* Additional contact details to fill space and provide info */}
+              <div className="mt-8 hidden lg:block">
+                <p className="text-xs uppercase tracking-widest text-slate-500 mb-3">
+                  Direct Contact
+                </p>
+                <a
+                  href="mailto:ronichandrasarkar@gmail.com"
+                  className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
+                >
+                  <Mail className="h-4 w-4" /> ronichandrasarkar@gmail.com
+                </a>
+              </div>
             </div>
           </div>
 
@@ -694,6 +769,7 @@ export default function Contact() {
                     disabled={loading}
                     aria-busy={loading}
                     aria-label={loading ? "Sending message…" : "Send message"}
+
                     className="contact-submit-btn group relative mt-1 flex h-12 w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl text-sm font-bold text-white sm:h-[3.125rem] sm:text-base"
                   >
                     <span aria-hidden="true" className="contact-btn-gradient absolute inset-0" />
@@ -710,6 +786,7 @@ export default function Contact() {
                             className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
                           />
                           <span>Sending…</span>
+
                         </>
                       ) : (
                         <>
@@ -748,7 +825,7 @@ export default function Contact() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -42,7 +42,8 @@ const Terms = lazy(() => import("./components/footer/terms.tsx"));
 const HelpCenterComponent = lazy(() => import("./components/help_center/help_center.component"));
 const GuidelinesComponent = lazy(() => import("./components/footer/guidelines.tsx"));
 const ContributorsComponent = lazy(() => import("./components/footer/contributors.tsx"));
-const ReportBug = lazy(() => import("./components/report-bug/ReportBug"));
+const ReportBug = lazy(() => import('./components/report-bug/ReportBug'));
+const SearchPageComponent = lazy(() => import('./pages/analytics/SearchPage'));
 const ExploreComponent = lazy(() => import("./components/post/post.component"));
 const BookmarksComponent = lazy(() => import("./components/post/bookmarks.component"));
 const CommunityComponent = lazy(() => import("./components/community/community.component"));
@@ -128,6 +129,7 @@ const router = createBrowserRouter([
       { path: "leaderboard", element: <Leaderboard /> },
       { path: "community", element: lazyPage(<CommunityComponent />) },
       { path: "report-bug", element: lazyPage(<ReportBug />) },
+          { path: "search", element: lazyPage(<SearchPageComponent />) },
       { path: "chat", element: lazyPage(<ChatPage />) },
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
@@ -196,6 +198,7 @@ const router = createBrowserRouter([
           { path: "contributors", element: lazyPage(<ContributorsComponent />) },
           { path: "community", element: lazyPage(<CommunityComponent />) },
           { path: "report-bug", element: lazyPage(<ReportBug />) },
+          { path: "search", element: lazyPage(<SearchPageComponent />) },
           // Public routes
           { path: "explore", element: lazyPage(<ExploreComponent />) },
           { path: "resources", element: lazyPage(<ResourcesListComponent />) },
@@ -270,3 +273,6 @@ function App() {
 }
 
 export default App;
+
+
+

@@ -302,8 +302,6 @@ const socialLinks = [
           </span>
         </div>
 
-          </div>
-
           <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
             {legalLinks.map(({ label, to }, i) => (
               <React.Fragment key={label}>

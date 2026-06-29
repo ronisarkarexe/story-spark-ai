@@ -16,7 +16,7 @@ const TopHeaderComponent = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const [isLogin, setIsLogin] = useState(false);
-  const [user, setUser] = useState<ReturnType<typeof getUserInfo> & { avatar?: string } | null>(null);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const handleScroll = () => {

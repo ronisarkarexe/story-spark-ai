@@ -32,20 +32,17 @@ const ReviewApprovalComponent = () => {
       console.error(error);
     }
   };
-
   const handleApproveSelected = async () => {
+    if (selectedReviews.length === 0) return;
     try {
       await Promise.all(selectedReviews.map((id) => approveReview(id).unwrap()));
       toast.success(`${selectedReviews.length} reviews approved successfully!`);
       setSelectedReviews([]);
-    } catch (error: unknown) {
-      toast.error("Failed to approve some reviews. Please try again.");
+    } catch (error) {
+      toast.error("Failed to approve some reviews.");
       console.error(error);
     }
   };
-
-
-
   if (isLoading) {
     return (
       <div className="w-full text-center py-16">
