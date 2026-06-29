@@ -16,37 +16,62 @@ export const scrubPII = (text: string): string => {
 
   let scrubbed = text;
 
+  // Idempotency guard — prevents double-scrubbing if middleware runs twice
+  const containsAnyRedactionToken =
+    /\[REDACTED_(?:EMAIL|PHONE|NAME|SSN|CARD|ADDRESS)\]/i.test(scrubbed);
+  if (containsAnyRedactionToken) return scrubbed;
+
   try {
-    // 1. Regex for Emails
+    // 1. Emails
     const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
     scrubbed = scrubbed.replace(emailRegex, "[REDACTED_EMAIL]");
 
-    // 2. Regex for Phone Numbers (various formats)
+    // 2. Phone numbers
     const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
     scrubbed = scrubbed.replace(phoneRegex, "[REDACTED_PHONE]");
+    const phoneFallbackRegex = /\b\d{3}([-.\s])?\d{3}\1?\d{4}\b/g;
+    scrubbed = scrubbed.replace(phoneFallbackRegex, "[REDACTED_PHONE]");
 
-    // 3. NLP for Person Names — wrapped separately so regex scrubbing above
-    //    always runs even if compromise throws
+    // 3. SSN
+    const ssnRegex = /\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g;
+    scrubbed = scrubbed.replace(ssnRegex, "[REDACTED_SSN]");
+
+    // 4. Credit cards
+    const cardRegex = /\b(?:\d[ -]*?){13,19}\b/g;
+    scrubbed = scrubbed.replace(cardRegex, "[REDACTED_CARD]");
+
+    // 5. Addresses
+    const addressRegex =
+      /\b\d{1,5}\s+[A-Za-z0-9][A-Za-z0-9\s.'-]{1,60}\s+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Place|Pl|Parkway|Pkwy)\b/gi;
+    scrubbed = scrubbed.replace(addressRegex, "[REDACTED_ADDRESS]");
+    const addressAltRegex =
+      /\b\d{1,5}\s+(?:N|S|E|W|NE|NW|SE|SW)\.?\s+[A-Za-z0-9][A-Za-z0-9\s.'-]{1,60}\s+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Place|Pl|Parkway|Pkwy)\b/gi;
+    scrubbed = scrubbed.replace(addressAltRegex, "[REDACTED_ADDRESS]");
+
+    // 6. NLP person names — isolated try/catch so failures don't block regex scrubbing above
     try {
       const doc = compromise(scrubbed);
       const people = doc.people().out("array") as string[];
-
-      // Sort by length descending to replace longer names first (prevent partial replacement issues)
       people.sort((a, b) => b.length - a.length);
-
       for (const person of people) {
         if (person.length > 2) {
-          const nameRegex = new RegExp(`\\b${escapeRegex(person)}\\b`, "gi");
-          scrubbed = scrubbed.replace(nameRegex, "[REDACTED_NAME]");
+          const escaped = escapeRegex(person);
+          const nameRegex = new RegExp(`(^|[^\\w])(${escaped})(?=$|[^\\w])`, "gi");
+          scrubbed = scrubbed.replace(nameRegex, "$1[REDACTED_NAME]");
         }
       }
     } catch (nlpError) {
-      // NLP failed — email/phone already scrubbed above, name detection skipped
-      // Log for monitoring but do NOT block the request
+      // Fail-open: email/phone/SSN/card/address already scrubbed above
       console.error("[PII Scrubber] NLP name detection failed, skipping:", nlpError);
     }
 
-    return scrubbed;
+  } catch (err) {
+    // Outer safety net — log but don't surface to caller
+    console.error("[PII Scrubber] Unexpected scrubber error:", err);
+  }
+    }
+
+  return scrubbed;
   } catch (err) {
     // Regex itself failed — extremely unlikely, but fail open rather than crash
     console.error("[PII Scrubber] scrubPII failed entirely, returning original text:", err);

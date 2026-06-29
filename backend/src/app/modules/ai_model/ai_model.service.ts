@@ -5,7 +5,6 @@ import {
   GenerationTimeoutError,
   raceGenerationWithTimeout,
 } from "../../../utils/generation_timeout";
-import { timeoutLimit } from "../../../utils/timeout_limit";
 import {
   IAIModel,
   IAlternateEndingPayload,
@@ -323,17 +322,15 @@ Story:
 ${story}
 `;
 
-    const result = await Promise.race([
-      timeoutLimit(30000),
-      generateWithGeminiStories(characterPrompt, 300, 1),
-    ]);
+    const result = await raceGenerationWithTimeout(
+      (signal) => generateWithGeminiStories(characterPrompt, 300, 1, "English", signal),
+      30000,
+    );
 
     return result;
   } catch (error) {
-    throw new ApiError(
-      httpStatus.GATEWAY_TIMEOUT,
-      "Failed to generate character profiles!"
-    );
+    if (error instanceof GenerationTimeoutError || error instanceof ApiError) throw error;
+    mapGenerationError(error, "Failed to generate character profiles!");
   }
 };
 
