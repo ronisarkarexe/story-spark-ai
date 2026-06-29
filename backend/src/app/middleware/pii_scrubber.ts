@@ -13,28 +13,75 @@ export const scrubPII = (text: string): string => {
 
   let scrubbed = text;
 
-  // 1. Regex for Emails
+  // If this already contains our redaction tokens, we should be idempotent.
+  // (Prevents repeated middleware execution from further mutating placeholders.)
+  const containsAnyRedactionToken =
+    /\[REDACTED_(?:EMAIL|PHONE|NAME|SSN|CARD|ADDRESS)\]/i.test(scrubbed);
+
+  if (containsAnyRedactionToken) return scrubbed;
+
+  // 1. Emails
+
   const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
   scrubbed = scrubbed.replace(emailRegex, "[REDACTED_EMAIL]");
 
-  // 2. Regex for Phone Numbers (various formats)
-  const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
+  // 2. Phone numbers
+  // Cover formats like:
+  //   555-867-5309 | 555 867 5309 | (555) 867-5309 | +1 555.867.5309
+  // plus a fallback for 10-digit sequences with optional separators.
+  const phoneRegex =
+    /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
   scrubbed = scrubbed.replace(phoneRegex, "[REDACTED_PHONE]");
 
-  // 3. NLP for Person Names using compromise
-  const doc = compromise(scrubbed);
-  const people = doc.people().out("array");
-  
-  // Sort by length descending to replace longer names first (prevent partial replacement issues)
-  people.sort((a: string, b: string) => b.length - a.length);
+  // Fallback: 10 digits possibly separated by spaces/dots/dashes, with word boundaries.
+  // (Intentionally conservative; does not try to validate country codes.)
+  const phoneFallbackRegex = /\b\d{3}([-.\s])?\d{3}\1?\d{4}\b/g;
+  scrubbed = scrubbed.replace(phoneFallbackRegex, "[REDACTED_PHONE]");
 
-  for (const person of people) {
-    if (person.length > 2) {
-      // Create a global regex to replace the specific name exactly (case insensitive)
-      const nameRegex = new RegExp(`\\b${escapeRegex(person)}\\b`, "gi");
-      scrubbed = scrubbed.replace(nameRegex, "[REDACTED_NAME]");
+  // 3. SSN (US)
+  // Matches 123-45-6789 or 123 45 6789
+  const ssnRegex = /\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g;
+  scrubbed = scrubbed.replace(ssnRegex, "[REDACTED_SSN]");
+
+  // 4. Credit card-like sequences
+  // Matches 13-19 digits with optional spaces/dashes.
+  // This is heuristic (not Luhn-valid), but generally effective for scrubbing.
+  const cardRegex = /\b(?:\d[ -]*?){13,19}\b/g;
+  scrubbed = scrubbed.replace(cardRegex, "[REDACTED_CARD]");
+
+  // 5. Conservative address pattern
+  // Matches: street number + street name + common suffix (St, Ave, Blvd, Rd, Dr, Ln, Ct, Pl, Pkwy)
+  // Example: "123 Main St". Avoids over-broad matching.
+const addressRegex =
+    /\b\d{1,5}\s+[A-Za-z0-9][A-Za-z0-9\s.'-]{1,60}\s+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Place|Pl|Parkway|Pkwy)\b/gi;
+  scrubbed = scrubbed.replace(addressRegex, "[REDACTED_ADDRESS]");
+
+  // 5b. US address variations with directional prefixes/suffixes (still conservative)
+  // Examples: "123 N Main St", "456 S. 2nd Ave", "789 W Elm Road"
+  const addressAltRegex =
+    /\b\d{1,5}\s+(?:N|S|E|W|NE|NW|SE|SW)\.?\s+[A-Za-z0-9][A-Za-z0-9\s.'-]{1,60}\s+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Place|Pl|Parkway|Pkwy)\b/gi;
+  scrubbed = scrubbed.replace(addressAltRegex, "[REDACTED_ADDRESS]");
+
+
+  // 6. NLP for Person Names using compromise
+  if (!containsAnyRedactionToken) {
+    const doc = compromise(scrubbed);
+    const people = doc.people().out("array");
+
+    // Sort by length descending to replace longer names first (prevent partial replacement issues)
+    people.sort((a: string, b: string) => b.length - a.length);
+
+    for (const person of people) {
+      if (person.length > 2) {
+        // Replace name with punctuation-safe boundaries.
+        // This handles cases like "John," "John." "(John)".
+        const escaped = escapeRegex(person);
+        const nameRegex = new RegExp(`(^|[^\\w])(${escaped})(?=$|[^\\w])`, "gi");
+        scrubbed = scrubbed.replace(nameRegex, "$1[REDACTED_NAME]");
+      }
     }
   }
+
 
   return scrubbed;
 };
