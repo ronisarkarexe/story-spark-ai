@@ -4,7 +4,7 @@ const submitApplicationZodSchema = z.object({
   body: z.object({
     portfolioLink: z.string({
       required_error: "Portfolio link is required",
-    }).url("Must be a valid URL"),
+    }).url("Must be a valid URL").max(500, "Portfolio link must not exceed 500 characters"),
     reason: z.string({
       required_error: "Reason is required",
     }).min(10, "Reason must be at least 10 characters long"),
