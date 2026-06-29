@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaXTwitter } from "react-icons/fa6";
-import type { IconType } from "react-icons";
 import logo from "../../assets/logoNew.png";
 
 const DEFAULT_GITHUB_ISSUES_URL =
@@ -80,12 +78,14 @@ const FooterComponent: React.FC = () => {
     { label: "Guidelines", to: "/guidelines" },
   ];
 
-  const socialLinks = [
-    { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
-    { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X" },
-    { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
-    { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
-  ];
+const socialLinks = [
+  { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
+  { icon: "fa-instagram", url: "https://www.instagram.com", label: "Follow us on Instagram" },
+  { icon: "fa-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
+  { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X" },
+  { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
+  { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
+];
 
   const currentYear = new Date().getFullYear();
 
@@ -295,11 +295,13 @@ const FooterComponent: React.FC = () => {
         />
 
         {/* Bottom bar */}
-        <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-slate-400/80">
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 gap-y-1 text-center md:text-left">
-            <span className="text-slate-400/80">
-              &copy; {currentYear} StorySparkAI. All rights reserved.
-            </span>
+      <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-slate-400/80 dark:text-slate-200">
+        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 gap-y-1 text-center md:text-left">
+          <span className="text-slate-400/80 dark:text-slate-200">
+            &copy; {currentYear} StorySparkAI. All rights reserved.
+          </span>
+        </div>
+
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">

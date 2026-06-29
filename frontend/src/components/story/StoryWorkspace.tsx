@@ -21,28 +21,28 @@ const StoryWorkspace = () => {
   const currentStory = useSelector(
     (state: RootState) => state.story.currentStory
   );
-const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
+  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
   const storyContentRef = useRef<HTMLDivElement>(null);
   const handleCopyStory = async () => {
-  if (!currentStory) {
-    toast.error("No story available to copy.");
-    return;
-  }
+    if (!currentStory) {
+      toast.error("No story available to copy.");
+      return;
+    }
 
-  try {
-    const storyText = (currentStory.chapters || [])
-  .map(
-    (chapter) => `${chapter.title}\n\n${chapter.content}`
-  )
-  .join("\n\n-----------------------------------\n\n");
+    try {
+      const storyText = (currentStory.chapters || [])
+        .map(
+          (chapter) => `${chapter.title}\n\n${chapter.content}`
+        )
+        .join("\n\n-----------------------------------\n\n");
 
-    await navigator.clipboard.writeText(storyText);
-    toast.success("Story copied to clipboard!");
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to copy story.");
-  }
-};
+      await navigator.clipboard.writeText(storyText);
+      toast.success("Story copied to clipboard!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to copy story.");
+    }
+  };
 
   const handleExportMarkdown = () => {
     if (!currentStory) {
@@ -213,8 +213,8 @@ const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor
               chapters={currentStory.chapters}
               storyId={currentStory.id}
               externalRef={storyContentRef}
+              truncated={currentStory.truncated}         
             />
-
             <div className="p-6 border-t border-zinc-800">
               <ContinueStoryButton />
             </div>
