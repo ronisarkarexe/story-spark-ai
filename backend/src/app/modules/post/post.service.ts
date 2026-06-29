@@ -17,6 +17,7 @@ import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 import { WritingStreakService } from "../gamification/writing_streak.service";
 import { escapeRegex } from "../../../utils/regex.util";
+import { verifyPostAccess } from "./post.utils";
 
 const MAX_SEARCH_TERM_LENGTH = 100;
 
@@ -374,10 +375,22 @@ const getSinglePost = async (id: string, token?: ITokenPayload | null) => {
       path: "reactions",
       populate: { path: "userId", select: "email" },
     })
-    .populate("bookmarks", "email");
+    .populate("bookmarks", "email")
+    .populate({
+      path: "parentStoryId",
+      select: "title author",
+      populate: { path: "author", select: "name _id" },
+    });
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
+
+  let user = null;
+  if (token && token.email) {
+    user = await User.findOne({ email: token.email });
+  }
+  verifyPostAccess(postById, user);
+
   return postById;
 };
 
@@ -410,10 +423,12 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
-  if (!postExists) {
+  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
+
+  verifyPostAccess(post, user);
 
   const isBookmarked = await Post.exists({
     _id: postId,
@@ -548,6 +563,8 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
+  verifyPostAccess(originalPost, user);
+
   const remixedContent = `[AI Remixed Version based on prompt: "${safePrompt}"]\n\n${originalPost.content}`;
 
   const res = await Post.create({
@@ -587,6 +604,8 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
+  verifyPostAccess(originalPost, user);
+
   const translatedContent = `[Translated to ${safeLanguage}]\n\n${originalPost.content}`;
 
   const res = await Post.create({
@@ -604,6 +623,41 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
     );
     WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
   }
+
+  return res;
+};
+
+const forkStory = async (postId: string, token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  const originalPost = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!originalPost) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
+  }
+
+  // Ensure the original post is published (can't fork unpublished drafts)
+  if (!originalPost.isPublished) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Cannot fork an unpublished story!");
+  }
+
+  const res = await Post.create({
+    title: originalPost.title,
+    content: originalPost.content,
+    author: user._id,
+    updatedBy: user._id,
+    tag: originalPost.tag,
+    imageURL: originalPost.imageURL,
+    topic: originalPost.topic,
+    language: originalPost.language,
+    emotions: originalPost.emotions,
+    genre: originalPost.genre,
+    isPublished: false, // It's a draft!
+    parentStoryId: originalPost._id,
+    rootStoryId: originalPost.rootStoryId || originalPost._id,
+  });
 
   return res;
 };
@@ -628,6 +682,7 @@ export const PostService = {
   deletePost,
   remixStory,
   translateStory,
+  forkStory,
   getGenres,
 };
 

@@ -5,86 +5,109 @@ import { Secret } from "jsonwebtoken";
 import ApiError from "../../errors/api_error";
 import { JwtHelpers } from "../../utils/jwt.helper";
 import { User } from "../modules/user/user.model";
-import { TokenBlacklist } from "../modules/auth/tokenBlacklist.model";
 import { USER_STATUS } from "../../enums/user_status";
+
+type JwtVerifiedUser = {
+  _id: string;
+  tokenVersion?: number;
+  role?: string;
+};
+
+const extractBearerToken = (authHeader: string): string => {
+  if (!authHeader) return "";
+
+  if (!authHeader.startsWith("Bearer ")) return "";
+
+  return authHeader.slice("Bearer ".length).trim();
+};
+
+const extractTokenFromRequest = (req: Request): string => {
+  const authHeader = Array.isArray(req.headers.authorization)
+    ? req.headers.authorization[0]
+    : req.headers.authorization;
+
+  const bearerToken = extractBearerToken(authHeader ?? "");
+
+  const cookieToken =
+    (req as any).cookies?.accessToken ||
+    (req as any).cookies?.token;
+
+  return bearerToken || cookieToken || "";
+};
 
 const auth =
   (...requiredRole: string[]) =>
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const authHeader = (req.headers.authorization || "") as string;
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const token = extractTokenFromRequest(req);
 
-        // Support both header-based and cookie-based tokens.
-        // Logout() blacklists whatever token string it receives (header or cookie),
-        // so auth middleware must check the same token string source.
-        const bearerToken = authHeader.startsWith("Bearer ")
-          ? authHeader.slice(7).trim()
-          : authHeader.trim();
-
-        const cookieToken = (req as any).cookies?.accessToken || (req as any).cookies?.token;
-
-        const token = bearerToken || cookieToken || "";
-
-        if (!token) {
-          throw new ApiError(
-            httpStatus.UNAUTHORIZED,
-            "You are not authorized to access"
-          );
-        }
-
-        const verifiedUser = JwtHelpers.verifyToken(
-          token,
-          config.jwt.secret as Secret
+      if (!token) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "You are not authorized to access"
         );
+      }
 
-        const isBlacklisted = await TokenBlacklist.findOne({ token });
+      // Verify JWT token
+      const verifiedUser = JwtHelpers.verifyToken(
+        token,
+        config.jwt.secret as Secret
+      ) as unknown as JwtVerifiedUser;
 
-        if (isBlacklisted) {
-          throw new ApiError(
-            httpStatus.UNAUTHORIZED,
-            "Token has been revoked. Please log in again."
-          );
-        }
+      if (!verifiedUser?._id) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Invalid token"
+        );
+      }
 
-        const user = await User.findById((verifiedUser as any)._id);
+      const user = await User.findById(verifiedUser._id);
 
-        if (!user) {
-          throw new ApiError(
-            httpStatus.UNAUTHORIZED,
-            "User not found"
-          );
-        }
+      if (!user) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "User not found"
+        );
+      }
 
-        if (user.tokenVersion !== (verifiedUser as any).tokenVersion) {
-          throw new ApiError(
-            httpStatus.UNAUTHORIZED,
-            "Token is invalid or expired"
-          );
-        }
+      // Token version validation replaces blacklist check
+      if (
+        typeof verifiedUser.tokenVersion === "number" &&
+        user.tokenVersion !== verifiedUser.tokenVersion
+      ) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Token is invalid or expired"
+        );
+      }
 
-        if (user.status !== USER_STATUS.ACTIVE) {
-          throw new ApiError(
-            httpStatus.FORBIDDEN,
-            "Your account is not active"
-          );
-        }
+      // Check user status
+      if (user.status !== USER_STATUS.ACTIVE) {
+        throw new ApiError(
+          httpStatus.FORBIDDEN,
+          "Your account is not active"
+        );
+      }
 
+      // Role authorization
+      if (requiredRole.length) {
         if (
-          requiredRole.length &&
-          !requiredRole.includes((verifiedUser as any).role)
+          !verifiedUser.role ||
+          !requiredRole.includes(verifiedUser.role)
         ) {
           throw new ApiError(
             httpStatus.FORBIDDEN,
             "Forbidden"
           );
         }
-
-        (req as any).user = user;
-
-        next();
-      } catch (err) {
-        next(err);
       }
-    };
+
+      (req as any).user = user;
+
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
 
 export default auth;

@@ -26,6 +26,8 @@ export interface IPost extends IPostPayload {
   commentsCount: number;
   viewsCount: number;
   bookmarksCount: number;  
+  averageRating: number;
+  totalRatings: number;
   isPublished: boolean;
   isFeaturedPost?: boolean;
   isDeleted?: boolean;
@@ -37,6 +39,8 @@ export interface IPost extends IPostPayload {
   comments?: Types.ObjectId[];
   reactions?: Types.ObjectId[];
   bookmarks?: Types.ObjectId[];
+  parentStoryId?: Types.ObjectId;
+  rootStoryId?: Types.ObjectId;
 }
 
 export type PostModel = Model<IPost, object>;

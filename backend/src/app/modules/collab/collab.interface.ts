@@ -5,7 +5,9 @@ export interface ICollabRoom {
   story: IStoryChunk[];
   createdAt: Date;
   expiresAt: Date;
+  collabState?: Buffer;
   isAiGenerating: boolean;
+  isPublic: boolean;
 }
 
 export interface IParticipant {

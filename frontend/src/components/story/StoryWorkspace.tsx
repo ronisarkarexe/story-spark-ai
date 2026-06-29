@@ -265,6 +265,7 @@ const StoryWorkspace = () => {
               storyId={currentStory.id}
               activeChapterIndex={activeChapterIndex}
               activeSegmentIndex={activeSegmentIndex}
+              truncated={currentStory.truncated}
             />
 
             <div className="p-6 border-t border-zinc-800">

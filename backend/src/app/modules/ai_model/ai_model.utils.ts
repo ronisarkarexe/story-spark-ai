@@ -1,4 +1,4 @@
-import {
+﻿import {
   GoogleGenerativeAI,
   HarmCategory,
   HarmBlockThreshold,
@@ -11,10 +11,21 @@ import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
+import { sanitizeJsonText } from "../../../utils/promptSecurity";
 import type {
   IStoryVisualizerPayload,
   IStoryVisualizerResult,
 } from "../story_visualizer/story_visualizer.interface";
+import {
+  safeParseAIResponse,
+  parseAIResponseOrThrow,
+  GeminiStoriesWrapperSchema,
+  AlternateEndingsArraySchema,
+  RemixResponseSchema,
+  ContinuationResponseSchema,
+  TranslationResponseSchema,
+  StoryboardResponseSchema,
+} from "../ai";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -72,7 +83,7 @@ interface Story {
 // NEW: Map each tone label to a precise writing instruction injected into the AI prompt.
 // Keeping these as concrete directives (not vague adjectives) gives Gemini clear stylistic targets.
 const TONE_INSTRUCTIONS: Record<string, string> = {
-  Dark: "Write in a dark, gritty, and emotionally heavy tone. Explore themes of shadow, loss, moral ambiguity, and consequence. Avoid happy resolutions — let tension linger.",
+  Dark: "Write in a dark, gritty, and emotionally heavy tone. Explore themes of shadow, loss, moral ambiguity, and consequence. Avoid happy resolutions â€” let tension linger.",
   Humorous:
     "Write in a light-hearted, witty, and comedic tone. Include clever wordplay, funny observations, and absurd situations. Keep the mood playful throughout.",
   Romantic:
@@ -81,7 +92,7 @@ const TONE_INSTRUCTIONS: Record<string, string> = {
   Mysterious:
     "Write in a suspenseful, atmospheric, and unsettling tone. Leave things deliberately unsaid. Build intrigue through detail and implication rather than exposition.",
   "Children's":
-    "Write in a simple, wholesome, imaginative, and age-appropriate tone. Use short sentences, gentle humour, and a sense of wonder. Suitable for readers aged 5–10.",
+    "Write in a simple, wholesome, imaginative, and age-appropriate tone. Use short sentences, gentle humour, and a sense of wonder. Suitable for readers aged 5â€“10.",
 };
 
 /**
@@ -123,18 +134,6 @@ const throwIfAborted = (signal?: AbortSignal): void => {
   }
 };
 
-const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) {
-    return trimmed;
-  }
-
-  return trimmed
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
-};
-
 const buildCharactersInstruction = (characters?: ICharacter[]): string => {
   if (!characters || characters.length === 0) return "";
   const charsString = characters
@@ -144,6 +143,12 @@ const buildCharactersInstruction = (characters?: ICharacter[]): string => {
     )
     .join("\n");
   return `Cast of Characters (You MUST incorporate these characters into all generated stories and maintain their roles, relationship dynamics, and traits consistently):\n${charsString}\n\n`;
+};
+
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed.replace(/^```(json)?/, "").replace(/```$/, "").trim();
 };
 
 import { GenerativeModel } from "@google/generative-ai";
@@ -245,8 +250,12 @@ export async function generateWithGeminiStories(
     throwIfAborted(signal);
 
     const text = response.response.text();
-    const parsed = JSON.parse(sanitizeJsonText(text));
-    const stories: Story[] = Array.isArray(parsed) ? parsed : parsed?.stories;
+    const stories = safeParseAIResponse(
+      text,
+      GeminiStoriesWrapperSchema,
+      [] as Story[],
+      { label: "Gemini story generation" }
+    );
 
     if (!Array.isArray(stories) || stories.length === 0) {
       throw new ApiError(
@@ -533,7 +542,10 @@ Write the remixed story in ${language}. Return a JSON object with this exact str
       );
     }
 
-    return parsed;
+    return parseAIResponseOrThrow(rawText, RemixResponseSchema, {
+      label: "Gemini story remix",
+      errorMessage: "Invalid remix response from AI",
+    });
   } catch (error: unknown) {
     if (error instanceof ApiError) throw error;
     const errorMsg = error instanceof Error ? error.message : String(error);
@@ -601,7 +613,7 @@ Return only valid JSON with this exact structure:
       );
     }
 
-    return { continuation: parsed.continuation };
+    return parsed;
   } catch (error: unknown) {
     if (error instanceof ApiError || error instanceof GenerationAbortedError) {
       throw error;
@@ -633,7 +645,7 @@ Return a JSON object with this exact structure:
   "content": "translated content in ${targetLanguage}"
 }
 
-Preserve the story's tone, style and meaning. Only translate — do not modify the story.`;
+Preserve the story's tone, style and meaning. Only translate â€” do not modify the story.`;
 
   try {
     const result = await executeWithRetryAndFallback(async (activeModel) => {
@@ -658,7 +670,10 @@ Preserve the story's tone, style and meaning. Only translate — do not modify t
       );
     }
 
-    return parsed;
+    return parseAIResponseOrThrow(rawText, TranslationResponseSchema, {
+      label: "Gemini story translation",
+      errorMessage: "Invalid translation response from AI",
+    });
   } catch (error: unknown) {
     if (error instanceof ApiError) throw error;
     const errorMsg = error instanceof Error ? error.message : String(error);
@@ -743,7 +758,6 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
-
       return {
         sceneNumber: index + 1,
         caption: scene.caption.trim(),

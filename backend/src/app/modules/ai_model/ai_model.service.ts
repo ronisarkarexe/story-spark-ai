@@ -303,9 +303,41 @@ const aiFreeModelChat = async (payload: IChatPayload, signal?: AbortSignal) => {
   }
 };
 
+const generateCharacterProfile = async (story: string) => {
+  try {
+    const characterPrompt = `
+Analyze the following story and extract all important characters.
+
+For each character provide:
+- name
+- role
+- personality
+- strengths
+- weaknesses
+- relationships
+
+Return the response only in JSON array format.
+
+Story:
+${story}
+`;
+
+    const result = await raceGenerationWithTimeout(
+      (signal) => generateWithGeminiStories(characterPrompt, 300, 1, "English", signal),
+      30000,
+    );
+
+    return result;
+  } catch (error) {
+    if (error instanceof GenerationTimeoutError || error instanceof ApiError) throw error;
+    mapGenerationError(error, "Failed to generate character profiles!");
+  }
+};
+
 export const AiModelService = {
   aiModelGenerate,
   aiFreeModelGenerate,
+  generateCharacterProfile,
   aiModelAlternateEndings,
   aiFreeModelAlternateEndings,
   aiModelRemix,
