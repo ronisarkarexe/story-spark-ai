@@ -20,7 +20,9 @@ router.post("/generate-free-model", apiRateLimiter, validateRequest(AIModelValid
 router.post(
   "/generate-model-stream",
   apiRateLimiter,
-  aiGenerationRateLimiter,
+  auth(),
+  storyGenerationRateLimiter,  // ← tier-aware, consistent with other routes
+  ...
   auth(),
   validateRequest(AIModelValidator.aiModel),
   checkRequestLimit(),
