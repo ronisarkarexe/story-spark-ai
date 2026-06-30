@@ -291,4 +291,113 @@ describe("recommendation query indexes", () => {
       ])
     );
   });
+
+  it("throws NOT_FOUND when user does not exist", async () => {
+    mockedUser.findById.mockReturnValueOnce({
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(null),
+    });
+
+    await expect(
+      RecommendationService.getPersonalizedRecommendations(token)
+    ).rejects.toThrow("User not found");
+  });
+
+  it("uses only genres for preferred query when no emotions are set", async () => {
+    const post = createRecommendationPost(
+      new Types.ObjectId("507f1f77bcf86cd799439020")
+    );
+    createUserQuery({
+      readingPreferences: {
+        favoriteGenres: [{ name: "Horror", count: 5 }],
+        favoriteEmotions: [],
+      },
+      readingHistory: [],
+    });
+    const preferredPostQuery = createPostQuery(Array(10).fill(post));
+
+    await RecommendationService.getPersonalizedRecommendations(token);
+
+    expect(preferredPostQuery.limit).toHaveBeenCalledWith(10);
+    expect(mockedPost.find.mock.calls[0][0].$or).toEqual([
+      { genre: { $in: ["Horror"] } },
+    ]);
+  });
+
+  it("uses only emotions for preferred query when no genres are set", async () => {
+    const post = createRecommendationPost(
+      new Types.ObjectId("507f1f77bcf86cd799439021")
+    );
+    createUserQuery({
+      readingPreferences: {
+        favoriteGenres: [],
+        favoriteEmotions: [{ name: "Fear", count: 4 }],
+      },
+      readingHistory: [],
+    });
+    const preferredPostQuery = createPostQuery(Array(10).fill(post));
+
+    await RecommendationService.getPersonalizedRecommendations(token);
+
+    expect(preferredPostQuery.limit).toHaveBeenCalledWith(10);
+    expect(mockedPost.find.mock.calls[0][0].$or).toEqual([
+      { emotions: { $in: ["Fear"] } },
+    ]);
+  });
+
+  it("selects top 3 genres and emotions sorted by count", async () => {
+    const post = createRecommendationPost(
+      new Types.ObjectId("507f1f77bcf86cd799439022")
+    );
+    createUserQuery({
+      readingPreferences: {
+        favoriteGenres: [
+          { name: "Romance", count: 1 },
+          { name: "Sci-Fi", count: 5 },
+          { name: "Fantasy", count: 3 },
+          { name: "Mystery", count: 2 },
+          { name: "Horror", count: 4 },
+        ],
+        favoriteEmotions: [
+          { name: "Joy", count: 1 },
+          { name: "Fear", count: 6 },
+          { name: "Wonder", count: 3 },
+        ],
+      },
+      readingHistory: [],
+    });
+    createPostQuery(Array(10).fill(post));
+
+    await RecommendationService.getPersonalizedRecommendations(token);
+
+    expect(mockedPost.find.mock.calls[0][0].$or).toEqual([
+      { genre: { $in: ["Sci-Fi", "Horror", "Fantasy"] } },
+      { emotions: { $in: ["Fear", "Wonder", "Joy"] } },
+    ]);
+  });
+
+  it("falls back to popular posts when preferred query returns fewer than 10", async () => {
+    const preferredPost = createRecommendationPost(
+      new Types.ObjectId("507f1f77bcf86cd799439023")
+    );
+    const fallbackPost = createRecommendationPost(
+      new Types.ObjectId("507f1f77bcf86cd799439024")
+    );
+    createUserQuery({
+      readingPreferences: {
+        favoriteGenres: [{ name: "Drama", count: 2 }],
+        favoriteEmotions: [],
+      },
+      readingHistory: [],
+    });
+    createPostQuery(Array(3).fill(preferredPost));
+    createPostQuery(Array(7).fill(fallbackPost));
+
+    const result = await RecommendationService.getPersonalizedRecommendations(
+      token
+    );
+
+    expect(result).toHaveLength(10);
+    expect(mockedPost.find).toHaveBeenCalledTimes(2);
+  });
 });
