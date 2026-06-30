@@ -1,11 +1,6 @@
-import { AUTH_KEY } from "../constants/storage-key";
 import { AccessToken } from "../models/login";
 import { decodedToken } from "../utils/jwt";
-import {
-  getFromLocalStorage,
-  removeFromLocalStorage,
-  setToLocalStorage,
-} from "../utils/local-storage";
+import { clearAccessToken, getAccessToken, setAccessToken } from "./auth.token";
 
 const AUTH_CHANGE_EVENT = "story-spark-auth-change";
 
@@ -56,14 +51,14 @@ const buildUserInfo = (decodedData: RawJwtPayload): AuthUserInfo => ({
 });
 
 export const getValidDecodedToken = () => {
-  const authToken = getFromLocalStorage(AUTH_KEY);
+  const authToken = getAccessToken();
 
   if (authToken) {
     try {
       const decodedData = decodedToken(authToken);
 
       if (!decodedData) {
-        removeFromLocalStorage(AUTH_KEY);
+        clearAccessToken();
         return null;
       }
 
@@ -71,7 +66,7 @@ export const getValidDecodedToken = () => {
         typeof decodedData.exp === "number" &&
         decodedData.exp <= Math.floor(Date.now() / 1000)
       ) {
-        removeFromLocalStorage(AUTH_KEY);
+        clearAccessToken();
         return null;
       }
 
@@ -87,7 +82,7 @@ export const getValidDecodedToken = () => {
       });
     } catch (error) {
       console.error("Invalid auth token:", error);
-      removeFromLocalStorage(AUTH_KEY);
+      clearAccessToken();
       return null;
     }
   }
@@ -95,7 +90,7 @@ export const getValidDecodedToken = () => {
 };
 
 export const storeUserInfo = ({ accessToken }: AccessToken) => {
-  const result = setToLocalStorage(AUTH_KEY, accessToken);
+  const result = setAccessToken(accessToken);
   emitAuthChange();
   return result;
 };
@@ -109,11 +104,11 @@ export const isLoggedIn = () => {
 };
 
 export const removeUserInfo = () => {
-  const result = removeFromLocalStorage(AUTH_KEY);
+  const result = clearAccessToken();
   emitAuthChange();
   return result;
 };
 
-export const getToken = () => getFromLocalStorage(AUTH_KEY);
+export const getToken = () => getAccessToken();
 
 export const authChangeEventName = AUTH_CHANGE_EVENT;

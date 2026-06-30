@@ -1,62 +1,54 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
+<<<<<<< HEAD
+import { useState } from "react";
+import { storeUserInfo } from "../../services/auth.service";
+=======
 import { useState, useEffect, useContext } from "react";
+>>>>>>> origin/main
 import toast, { Toaster } from "react-hot-toast";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { Link, useNavigate } from "react-router-dom";
-import { useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import {
   useEmailVerifyMutation,
   useVerifyOtpMutation,
 } from "../../redux/apis/otp.verify.api";
 import { useRegisterUserMutation } from "../../redux/apis/auth.api";
+<<<<<<< HEAD
+import { useNavigate } from "react-router-dom";
+=======
 import AuthContext from "../auth.context";
+>>>>>>> origin/main
 
 interface IRegisterInfo {
   name: string;
   email: string;
   password: string;
-  confirmPassword: string;
 }
 
 interface Inputs extends IRegisterInfo {
+  confirmPassword: string;
   otp: string;
 }
 
 const getPasswordError = (password: string) => {
-  if (password.length < 8) return "Password must be at least 8 characters long";
-  if (!/[A-Z]/.test(password)) return "Password must contain at least one uppercase letter";
-  if (!/[a-z]/.test(password)) return "Password must contain at least one lowercase letter";
-  if (!/[0-9]/.test(password)) return "Password must contain at least one number";
-  if (!/[^A-Za-z0-9]/.test(password)) return "Password must contain at least one special character";
+  if (password.length < 8) {
+    return "Password must be at least 8 characters long";
+  }
+  if (!/[A-Z]/.test(password)) {
+    return "Password must contain at least one uppercase letter";
+  }
+  if (!/[a-z]/.test(password)) {
+    return "Password must contain at least one lowercase letter";
+  }
+  if (!/[0-9]/.test(password)) {
+    return "Password must contain at least one number";
+  }
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return "Password must contain at least one special character";
+  }
+
   return "";
 };
-
-type StrengthLevel = "weak" | "medium" | "strong";
-
-const PASSWORD_STRENGTH_CONFIG: Record<
-  StrengthLevel,
-  { label: string; barColor: string; barWidth: string; textColor: string }
-> = {
-  weak: { label: "Weak", barColor: "bg-red-500", barWidth: "w-1/3", textColor: "text-red-400" },
-  medium: { label: "Medium", barColor: "bg-yellow-400", barWidth: "w-2/3", textColor: "text-yellow-300" },
-  strong: { label: "Strong", barColor: "bg-green-500", barWidth: "w-full", textColor: "text-green-400" },
-};
-
-const getStrengthLevel = (passedChecks: number): StrengthLevel => {
-  if (passedChecks <= 2) return "weak";
-  if (passedChecks <= 4) return "medium";
-  return "strong";
-};
-
-const PASSWORD_REQUIREMENTS = [
-  { key: "length" as const, label: "Minimum 8 characters" },
-  { key: "uppercase" as const, label: "One uppercase letter" },
-  { key: "lowercase" as const, label: "One lowercase letter" },
-  { key: "number" as const, label: "One number" },
-  { key: "special" as const, label: "One special character" },
-];
 
 const SignUpComponent = () => {
   const navigate = useNavigate();
@@ -64,46 +56,16 @@ const SignUpComponent = () => {
   const [emailVerify] = useEmailVerifyMutation();
   const [verifyOtp] = useVerifyOtpMutation();
   const [registerUser] = useRegisterUserMutation();
-  const [googleLogin] = useGoogleLoginMutation();
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    unregister,
-    setValue,
-    formState: { errors },
-  } = useForm<Inputs>({ mode: "onChange" });
-
+  const { register, handleSubmit, watch } = useForm<Inputs>();
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [showOtpField, setShowOtpField] = useState<boolean>(false);
   const [registerInfo, setRegisterInfo] = useState<IRegisterInfo>();
   const [expiredAt, setExpiredAt] = useState(0);
-  const [cooldown, setCooldown] = useState(0);
+  const [verificationToken, setVerificationToken] = useState<string>("");
 
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setInterval(() => {
-      setCooldown((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [cooldown]);
-
-  const password = watch("password") || "";
-  const confirmPassword = watch("confirmPassword") || "";
-  const otp = watch("otp") || "";
-
-  const passwordChecks = {
-    length: password.length >= 8,
-    uppercase: /[A-Z]/.test(password),
-    lowercase: /[a-z]/.test(password),
-    number: /[0-9]/.test(password),
-    special: /[^A-Za-z0-9]/.test(password),
-  };
-
-  const passedChecks = Object.values(passwordChecks).filter(Boolean).length;
-  const strengthLevel = getStrengthLevel(passedChecks);
-  const { label: strengthLabel, barColor, barWidth, textColor } = PASSWORD_STRENGTH_CONFIG[strengthLevel];
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
+  const otp = watch("otp");
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (data) {
@@ -111,14 +73,21 @@ const SignUpComponent = () => {
         name: data.name,
         email: data.email,
         password: data.password,
+<<<<<<< HEAD
+      };
+=======
         confirmPassword: data.confirmPassword,
       };
 
+>>>>>>> origin/main
       const otpPayload = {
         name: data.name,
         email: data.email,
       };
+<<<<<<< HEAD
+=======
 
+>>>>>>> origin/main
       if (password !== confirmPassword) {
         toast.error("Passwords do not match!");
         return;
@@ -136,17 +105,14 @@ const SignUpComponent = () => {
           setExpiredAt(new Date(expiresAt).getTime());
           toast.success("OTP sent to your email");
           setRegisterInfo(user);
-          unregister("confirmPassword");
-          unregister("password");
-          unregister("name");
-          unregister("email");
           setShowOtpField(true);
-          setCooldown(60);
         }
       } catch (error) {
-        const err = error as { data?: Array<{ message?: string }>; message?: string };
-        const message = err?.data?.[0]?.message || err?.message || "Something went wrong. Please try again.";
+        const message =
+          (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
+          "Failed to send OTP. Check backend .env email credentials.";
         toast.error(message);
+        console.log("error: ", error);
       } finally {
         setIsBusy(false);
       }
@@ -154,19 +120,36 @@ const SignUpComponent = () => {
   };
 
   const handleOtpValidation = async () => {
-    const enteredOtp = otp.trim();
-    if (!enteredOtp) { toast.error("Please enter OTP"); return; }
-    if (!registerInfo) { toast.error("Something went wrong. Please restart the process."); return; }
-    if (Date.now() > expiredAt) { toast.error("OTP expired. Please request a new one."); return; }
-
+    const enteredOtp = otp?.trim();
+    if (!enteredOtp) {
+      toast.error("Please enter OTP");
+      return;
+    }
+    if (!registerInfo) {
+      toast.error("Something went wrong. Please restart the process.");
+      return;
+    }
+    if (Date.now() > expiredAt) {
+      toast.error("OTP expired. Please request a new one.");
+      return;
+    }
     setIsBusy(true);
     try {
-      const otpResponse = await verifyOtp({ email: registerInfo.email, otp: enteredOtp }).unwrap();
+      const otpResponse = await verifyOtp({
+        email: registerInfo.email,
+        otp: enteredOtp,
+      }).unwrap();
+
+      // Store the verification token returned from OTP verification
       if (otpResponse?.data?.verificationToken) {
+        setVerificationToken(otpResponse.data.verificationToken);
+
+        // Now register user with verification token
         const res = await registerUser({
           ...registerInfo,
           verificationToken: otpResponse.data.verificationToken,
         }).unwrap();
+
         if (res.data.accessToken) {
           toast.success("Registration successful! Welcome to StorySparkAI!");
           // Use AuthContext.login() so React auth state updates synchronously
@@ -178,6 +161,8 @@ const SignUpComponent = () => {
         throw new Error("No verification token received");
       }
     } catch (err: unknown) {
+<<<<<<< HEAD
+=======
       const e = err as { data?: Array<{ message?: string }>; message?: string };
       const message = e?.data?.[0]?.message || e?.message || "OTP verification failed.";
       toast.error(message);
@@ -207,15 +192,24 @@ const SignUpComponent = () => {
         setCooldown(60);
       }
     } catch (error) {
+>>>>>>> origin/main
       const message =
-        (error as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
-        "Failed to resend OTP. Please try again.";
+        (err as { data?: Array<{ message?: string }> })?.data?.[0]?.message ||
+        "OTP verification failed. Please check the code and try again.";
       toast.error(message);
+      console.log("error: ", err);
     } finally {
       setIsBusy(false);
     }
   };
 
+<<<<<<< HEAD
+  return (
+    <div className="bg-slate-700 text-white min-h-screen">
+      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-10 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+          <h2 className="text-center text-5xl text-indigo-300 font-bold">
+=======
   const handleGoogleLoginSuccess = async (
     credentialResponse: CredentialResponse
   ) => {
@@ -267,9 +261,88 @@ const SignUpComponent = () => {
         {/* Title */}
         <div className="mb-6 text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-sm">
+>>>>>>> origin/main
             STORY SPARK AI
           </h2>
+          <h2 className="mt-4 text-center text-2xl/9 font-bold tracking-tight text-gray-400">
+            Sign up to your account
+          </h2>
         </div>
+<<<<<<< HEAD
+        <div className="mt-5 sm:mx-auto sm:w-full sm:max-w-sm">
+          {!showOtpField ? (
+            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+              <SSInput
+                label="Name"
+                name="name"
+                placeholder="Enter your name"
+                required={true}
+                icon="fas fa-user"
+                register={register}
+              />
+              <SSInput
+                label="Email address"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                required={true}
+                icon="fas fa-envelope"
+                register={register}
+              />
+              <SSInput
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required={true}
+                icon="fas fa-lock"
+                register={register}
+              />
+              <p className="text-xs text-gray-500 -mt-2">
+                Use at least 8 characters with uppercase, lowercase, number,
+                and special character.
+              </p>
+              <SSInput
+                label="Confirm Password"
+                name="confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                required={true}
+                icon="fas fa-eye"
+                register={register}
+              />
+              <SSButton text="Sign Up" type="submit" isLoading={isBusy} />
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <SSInput
+                label="OTP"
+                name="otp"
+                placeholder="Enter your OTP"
+                required={true}
+                icon="fas fa-key"
+                register={register}
+              />
+              <SSButton
+                text="Verify OTP"
+                type="button"
+                onClick={handleOtpValidation}
+                isLoading={isBusy}
+              />
+            </div>
+          )}
+          {!showOtpField && (
+            <p className="mt-4 text-center text-sm/6 text-gray-500">
+              Already have an account?{" "}
+              <a
+                href="/login"
+                className="font-semibold text-indigo-400 hover:text-indigo-300"
+              >
+                Sign in
+              </a>
+            </p>
+          )}
+=======
 
         {/* Card */}
         <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
@@ -502,9 +575,9 @@ const SignUpComponent = () => {
               </div>
             )}
           </div>
+>>>>>>> origin/main
         </div>
       </div>
-
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

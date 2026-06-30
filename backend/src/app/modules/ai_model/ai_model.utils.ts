@@ -145,11 +145,20 @@ const buildCharactersInstruction = (characters?: ICharacter[]): string => {
   return `Cast of Characters (You MUST incorporate these characters into all generated stories and maintain their roles, relationship dynamics, and traits consistently):\n${charsString}\n\n`;
 };
 
+<<<<<<< HEAD
+const sanitizeJsonText = (text: string): string =>
+  text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+=======
 const sanitizeJsonText = (rawText: string): string => {
   const trimmed = rawText.trim();
   if (!trimmed.startsWith("```")) return trimmed;
   return trimmed.replace(/^```(json)?/, "").replace(/```$/, "").trim();
 };
+>>>>>>> origin/main
 
 import { GenerativeModel } from "@google/generative-ai";
 
@@ -758,6 +767,10 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/main
       return {
         sceneNumber: index + 1,
         caption: scene.caption.trim(),

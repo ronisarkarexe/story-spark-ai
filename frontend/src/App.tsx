@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+import { lazy, Suspense, type ReactElement } from "react";
+import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
+import { USER_ROLE } from "./constants/role";
+=======
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
 import { USER_ROLE } from "./constants/role";
@@ -9,20 +14,23 @@ import NotFoundComponent from "./components/not-found.component";
 import Leaderboard from "./pages/Leaderboard";
 import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
+>>>>>>> origin/main
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import PageTitleUpdater from "./components/PageTitleUpdater";
+import LoadingAnimation from "./components/loading/loading.component";
+import ProtectedRoute from "./components/ProtectedRoute";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import ThemeSwitcher from "./components/theme-switcher/ThemeSwitcher";
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
+<<<<<<< HEAD
+import HeroSectionComponent from "./components/hero/hero_section.component";
+import HomeComponent from "./components/home/home.component";
+import ScrollToTopButton from "./components/ScrollToTopButton";
+=======
+>>>>>>> origin/main
 
-type ProtectedRouteProps = {
-  allowedRoles: string[];
-  element?: React.ReactElement;
-};
-
-// Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
 const WritingAssistantComponent = lazy(() => import("./components/writing-assistant/writing_assistant.component"));
 const StoryInspirationWrapper = lazy(() => import("./components/StoryInspirationWrapper"));
@@ -65,12 +73,14 @@ const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
+const NotFoundComponent = lazy(() => import("./components/not-found.component"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
 const WRITER_PLUS_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER];
 
-const lazyPage = (element: React.ReactElement) => (
+const lazyPage = (element: ReactElement) => (
   <Suspense fallback={<LoadingAnimation />}>{element}</Suspense>
 );
 

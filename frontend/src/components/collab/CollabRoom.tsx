@@ -295,9 +295,15 @@ export default function CollabRoom() {
 
               <div className="flex gap-2 items-start">
                 <CollabEditor
+<<<<<<< HEAD
+                  storyId={roomId ?? ""}
+                  userId={user?.userId ?? ""}
+                  username={user?.name ?? "Anonymous"}
+=======
                   storyId={roomId || ''}
                   userId={user?.userId || ''}
                   username={user?.name || 'Anonymous'}
+>>>>>>> origin/main
                   userColor="#FF6B6B"
                 />
                 <button

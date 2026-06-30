@@ -1,3 +1,17 @@
+<<<<<<< HEAD
+import { Namespace, Server, Socket } from 'socket.io';
+import * as Y from 'yjs';
+import { CollabService } from './collab.service';
+
+const debounce = <T extends (...args: never[]) => void>(fn: T, waitMs: number): T => {
+  let timer: NodeJS.Timeout | undefined;
+
+  return ((...args: never[]) => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), waitMs);
+  }) as T;
+};
+=======
 import { Server, Socket, Namespace } from 'socket.io';
 import * as Y from 'yjs';
 import { CollabService } from './collab.service';
@@ -9,6 +23,7 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T 
     timeout = setTimeout(() => func.apply(this, args), wait);
   } as T;
 }
+>>>>>>> origin/main
 
 /**
  * Yjs gateway that syncs a Yjs document over a Socket.io namespace
