@@ -14,6 +14,10 @@ import globalErrorHandler from "./app/middleware/global.error.handler";
 import leaderboardRoute from "./routes/leaderboard.route";
 import globalRateLimiter from "./app/middleware/global.rate-limiter";
 
+interface ApiError extends Error {
+  statusCode: number;
+  errorMessages: { path: string; message: string }[];
+}
 const app: Application = express();
 app.set("trust proxy", 1);
 app.use(helmet());
@@ -91,7 +95,7 @@ app.use("/api/v1", Routers);
 // ─── 2. FIXED: REFUSED TO SHORT-CIRCUIT, DELEGATING 404 TO NEXT() ───
 app.use((req: Request, res: Response, next: NextFunction) => {
   // Constructing a standardized operational error structure
-  const error: any = new Error("API Not Found");
+  const error = new Error("API Not Found") as ApiError;
   error.statusCode = httpStatus.NOT_FOUND;
   error.errorMessages = [
     {
