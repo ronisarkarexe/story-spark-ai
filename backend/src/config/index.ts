@@ -69,6 +69,7 @@ export default {
   unsplash_key_api: process.env.UNSPLASH_KEY_API,
   unsplash_secret_key_api: process.env.UNSPLASH_KEY_API_SECRET,
   gemini_api_key: process.env.GEMINI_API_KEY,
+  gemini_image_model: process.env.GEMINI_IMAGE_MODEL || "imagen-3.0-generate-002",
   anthropic_api_key: process.env.ANTHROPIC_API_KEY,
   verify_email: process.env.VERIFY_EMAIL,
   verify_password: process.env.VERIFY_PASSWORD,
