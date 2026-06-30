@@ -503,6 +503,8 @@ If you get an error instead of a response, see [Troubleshooting](#troubleshootin
 - **Possible cause:** `VITE_SOCKET_URL` is incorrect, missing, or the backend/socket service is not running.
 - **Suggested solution:** Check `frontend/.env` and verify `VITE_SOCKET_URL` points to the active socket service. Make sure the backend/socket service is running, then check the browser console for connection errors.
 
+> Source of truth for local setup: keep `backend/.env.example` and `frontend/.env.example` aligned with any docs you add here. The backend uses `OPEN_AI_KEY`, `GEMINI_API_KEY`, `UNSPLASH_KEY_API`, `VERIFY_EMAIL`, and `VERIFY_PASSWORD`; the frontend uses `VITE_BASE_URL` and optionally `VITE_SOCKET_URL`. Socket.IO requires a persistent host, so do not point it at Vercel serverless.
+
 ### Contributing workflow
 
 1. Fork the repository and clone your fork.
