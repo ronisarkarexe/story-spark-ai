@@ -65,7 +65,11 @@ const LoginComponent = () => {
         toast.success("User logged in successfully with Google!");
         login(res.data.accessToken);
         const from = location.state?.from || "/dashboard";
-        navigate(from, { replace: true });
+        try {
+          navigate(from, { replace: true });
+        } catch {
+          window.location.href = from;
+        }
       }
     } catch {
       toast.error("Failed to login with Google. Please try again.");
