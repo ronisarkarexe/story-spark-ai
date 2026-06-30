@@ -57,6 +57,11 @@ const globalErrorHandler: ErrorRequestHandler = (
           },
         ]
       : [];
+    if (err.headers) {
+      for (const [key, value] of Object.entries(err.headers)) {
+        res.setHeader(key, value);
+      }
+    }
   } else if (err instanceof Error) {
     message = err.message;
     errorMessages = err?.message 

@@ -60,6 +60,9 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     isApplyForWriter: { type: Boolean, default: false },
     tokenVersion: { type: Number, default: 0 },
+    pendingEmail: { type: String, default: null },
+    pendingEmailToken: { type: String, default: null },
+    pendingEmailTokenExpires: { type: Date, default: null },
     gamification: {
       xp: { type: Number, default: 0 },
       level: { type: Number, default: 1 },

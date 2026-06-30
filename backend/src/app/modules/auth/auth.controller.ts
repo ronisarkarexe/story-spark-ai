@@ -106,13 +106,15 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   const user = (req as any).user;
   const { oldPassword, newPassword } = req.body;
 
-  await AuthService.changePassword(user, { oldPassword, newPassword });
+  const { accessToken, refreshToken } = await AuthService.changePassword(user, { oldPassword, newPassword });
 
-   sendResponse(res, {
+  setRefreshTokenCookie(res, refreshToken);
+
+  sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Password changed successfully. All previous sessions have been invalidated.",
-    data: null,
+    data: { accessToken },
   });
 });
 
@@ -158,6 +160,18 @@ const sendOtp = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const verifyEmailChange = catchAsync(async (req: Request, res: Response) => {
+  const { token, email } = req.body;
+  const result = await AuthService.verifyEmailChange({ token, email });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Email changed successfully!",
+    data: result,
+  });
+});
+
 export const AuthController = {
   login,
   register,
@@ -168,4 +182,5 @@ export const AuthController = {
   forgotPassword,
   resetPassword,
   sendOtp,
+  verifyEmailChange,
 };
