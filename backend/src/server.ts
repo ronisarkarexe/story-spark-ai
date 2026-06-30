@@ -8,6 +8,8 @@ import { Server } from "socket.io";
 import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
+import { setNotificationSocket } from "./socket/notification.socket";
+import { setupCollabSocket } from "./socket/collab.socket";
 
 // Override DNS resolvers only when explicitly configured, default to the platform environment
 if (config.dns_servers?.length) {
@@ -76,6 +78,17 @@ async function main() {
     config.cors_origins && config.cors_origins.length > 0
       ? config.cors_origins
       : defaultCorsOrigins;
+
+  const io = new Server(httpServer, {
+    cors: {
+      origin: socketCorsOrigins,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      credentials: true,
+    },
+  });
+
+  setNotificationSocket(io);
+  setupCollabSocket(io);
 
   // Start the server listener
   const PORT = config.port || 4000;
