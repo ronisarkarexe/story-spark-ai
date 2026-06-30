@@ -2,6 +2,11 @@
 // Returns true if loaded successfully, false if it fails
 export const loadRazorpayScript = (): Promise<boolean> => {
   return new Promise((resolve) => {
+    // Guard against SSR environments (Next.js, Remix, etc.)
+    if (typeof window === "undefined") {
+      resolve(false);
+      return;
+    }
     // Avoid loading the script twice if it already exists
     if (document.getElementById("razorpay-script")) {
       resolve(true);
