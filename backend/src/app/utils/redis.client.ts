@@ -58,12 +58,13 @@ if (redisUrl) {
     // Redis is available and ready to serve commands.
   });
 
-  redis.on("error", (err: Error) => {
-    if (err && (err as any).code === "ECONNREFUSED") {
+  redis.on("error", (...args: unknown[]) => {
+    const err = args[0] as { code?: string; message?: string } | undefined;
+    if (err && err.code === "ECONNREFUSED") {
       // Redis is not running. Caching will be skipped until the connection recovers.
       return;
     }
-    console.error("Redis Error:", err);
+    console.error("Redis Error:", err ?? args);
   });
 }
 

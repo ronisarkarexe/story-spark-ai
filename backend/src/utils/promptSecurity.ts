@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Security middleware to prevent prompt injection and jailbreaks.
  * Improvements:
  * - Input normalization before pattern matching
@@ -51,23 +51,33 @@ const FORBIDDEN_PATTERNS: RegExp[] = [
  */
 const normalizeInput = (input: string): string => {
   return input
-    .normalize("NFKC") // Unicode normalization
-    .replace(/[\u200B-\u200D\uFEFF]/g, "") // Remove zero-width characters
-    .replace(/\s+/g, " ") // Collapse whitespace
+    .normalize("NFKC")
+    .replace(/[\u200B-\u200D\uFEFF\u2060\u180E]/g, "")
+    .replace(/\s+/g, " ")
     .trim();
 };
+
 /**
  * Strip markdown code fences (e.g. ```json ... ```) from raw AI text
  * before attempting JSON.parse.
  */
 export const sanitizeJsonText = (rawText: string): string => {
+  if (typeof rawText !== "string") {
+    throw new Error("Security Violation: Invalid prompt input.");
+  }
+
   const trimmed = rawText.trim();
-  return (input ?? "")
+  const withoutFence = trimmed.replace(/^```(?:json|txt)?\s*/i, "").replace(/\s*```$/i, "");
+
+  return withoutFence
     .normalize("NFKC")
     .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
     .replace(/[\s\u00A0]+/g, " ")
     .trim();
 };
+
+const canonicalizeSecurityText = (input: string): string =>
+  normalizeInput(input).toLowerCase();
 
 export const validateAndFormatPrompt = (userPrompt: string): string => {
   if (!userPrompt || typeof userPrompt !== "string") {
@@ -75,9 +85,10 @@ export const validateAndFormatPrompt = (userPrompt: string): string => {
   }
 
   const normalizedPrompt = normalizeInput(userPrompt);
+  const canonicalPrompt = canonicalizeSecurityText(normalizedPrompt);
 
   for (const pattern of FORBIDDEN_PATTERNS) {
-    if (pattern.test(normalizedPrompt)) {
+    if (pattern.test(canonicalPrompt)) {
       throw new Error("Security Violation: Malicious prompt injection detected.");
     }
   }
@@ -92,8 +103,17 @@ export const validateOutput = (aiResponse: string): string => {
     throw new Error("Security Violation: Invalid AI response.");
   }
 
-  const lowerResponse = aiResponse.toLowerCase();
+  const canonical = canonicalizeSecurityText(aiResponse);
+  if (
+    canonical.includes("system prompt:") ||
+    canonical.includes("instructions:") ||
+    canonical.includes("system prompt") ||
+    canonical.includes("developer instructions")
+  ) {
+    throw new Error("Security Violation: AI output leaked system instructions.");
+  }
 
+  const lowerResponse = aiResponse.toLowerCase();
   const leakPatterns = [
     "system prompt:",
     "instructions:",

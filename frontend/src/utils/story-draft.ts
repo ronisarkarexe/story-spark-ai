@@ -1,6 +1,7 @@
 import { getFromLocalStorage, removeFromLocalStorage, setToLocalStorage } from "./local-storage";
 
 const STORY_DRAFT_KEY = "storyspark_story_draft_v1";
+const MAX_DRAFT_SIZE_BYTES = 1024 * 200;
 
 export interface StoryDraftData {
   prompt: string;
@@ -16,7 +17,14 @@ export const saveStoryDraft = (draft: StoryDraftData): void => {
     return;
   }
 
-  setToLocalStorage(STORY_DRAFT_KEY, JSON.stringify(draft));
+  const serialized = JSON.stringify(draft);
+  if (new Blob([serialized]).size > MAX_DRAFT_SIZE_BYTES) {
+    console.warn("Draft too large, clearing previous draft");
+    clearStoryDraft();
+    return;
+  }
+
+  setToLocalStorage(STORY_DRAFT_KEY, serialized);
 };
 
 export const loadStoryDraft = (): StoryDraftData | null => {
