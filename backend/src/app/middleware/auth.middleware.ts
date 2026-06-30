@@ -28,9 +28,13 @@ const extractTokenFromRequest = (req: Request): string => {
 
   const bearerToken = extractBearerToken(authHeader ?? "");
 
+  // Support both header-based and cookie-based tokens.
+  const cookieToken = req.cookies?.accessToken || req.cookies?.token;
+=======
   const cookieToken =
     (req as any).cookies?.accessToken ||
     (req as any).cookies?.token;
+>>>>>>> origin/main
 
   return bearerToken || cookieToken || "";
 };
@@ -102,9 +106,13 @@ const auth =
         }
       }
 
+      req.user = user;
+      return next();
+=======
       (req as any).user = user;
 
       next();
+>>>>>>> origin/main
     } catch (err) {
       next(err);
     }
