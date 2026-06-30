@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export const useScrollDirection = () => {
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up');
   const [isAtTop, setIsAtTop] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -11,18 +11,18 @@ export const useScrollDirection = () => {
 
       setIsAtTop(currentScrollY < 10);
 
-      if (currentScrollY > lastScrollY) {
+      if (currentScrollY > lastScrollYRef.current) {
         setScrollDirection('down');
       } else {
         setScrollDirection('up');
       }
 
-      setLastScrollY(currentScrollY);
+      lastScrollYRef.current = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, []);
 
   return { scrollDirection, isAtTop };
 };
