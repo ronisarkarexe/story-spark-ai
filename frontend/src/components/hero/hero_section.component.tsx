@@ -144,53 +144,55 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
 };
 
 const PARTICLE_CONFIG = [
-  { color: "#60a5fa", size: 14, left: "8%", top: "18%", xMove: 40, yMove: -60, dur: 5 },
-  { color: "#a78bfa", size: 10, left: "22%", top: "55%", xMove: -30, yMove: -70, dur: 6 },
-  { color: "#f472b6", size: 12, left: "68%", top: "12%", xMove: 50, yMove: -40, dur: 4.5 },
-  { color: "#34d399", size: 8, left: "82%", top: "42%", xMove: -40, yMove: -50, dur: 7 },
-  { color: "#fb923c", size: 11, left: "48%", top: "72%", xMove: 35, yMove: -55, dur: 5.5 },
-  { color: "#38bdf8", size: 10, left: "12%", top: "78%", xMove: -25, yMove: -65, dur: 6.5 },
-  { color: "#818cf8", size: 16, left: "58%", top: "50%", xMove: 45, yMove: -35, dur: 4 },
-  { color: "#c084fc", size: 9, left: "38%", top: "28%", xMove: -35, yMove: -45, dur: 7.5 },
-  { color: "#67e8f9", size: 12, left: "88%", top: "68%", xMove: 30, yMove: -50, dur: 5.8 },
-  { color: "#fbbf24", size: 13, left: "32%", top: "8%", xMove: -20, yMove: -70, dur: 6.2 },
-  { color: "#86efac", size: 8, left: "76%", top: "82%", xMove: 50, yMove: -30, dur: 5 },
-  { color: "#f9a8d4", size: 10, left: "4%", top: "48%", xMove: -45, yMove: -55, dur: 8 },
-  { color: "#93c5fd", size: 18, left: "52%", top: "38%", xMove: 0, yMove: -25, dur: 9 },
-  { color: "#c4b5fd", size: 15, left: "18%", top: "32%", xMove: 0, yMove: -30, dur: 10 },
-  { color: "#fda4af", size: 12, left: "72%", top: "22%", xMove: 0, yMove: -20, dur: 8 },
+  { color: "#60a5fa", size: 14, left: "8%",  top: "18%", animClass: "particle-anim-1" },
+  { color: "#a78bfa", size: 10, left: "22%", top: "55%", animClass: "particle-anim-2" },
+  { color: "#f472b6", size: 12, left: "68%", top: "12%", animClass: "particle-anim-3" },
+  { color: "#34d399", size: 8,  left: "82%", top: "42%", animClass: "particle-anim-4" },
+  { color: "#fb923c", size: 11, left: "48%", top: "72%", animClass: "particle-anim-1" },
+  { color: "#38bdf8", size: 10, left: "12%", top: "78%", animClass: "particle-anim-2" },
+  { color: "#818cf8", size: 16, left: "58%", top: "50%", animClass: "particle-anim-3" },
+  { color: "#c084fc", size: 9,  left: "38%", top: "28%", animClass: "particle-anim-4" },
 ];
 
-const HeroParticles = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useGSAP(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const particles = container.querySelectorAll(".gsap-particle");
-    particles.forEach((particle, i) => {
-      const config = PARTICLE_CONFIG[i];
-      gsap.to(particle, {
-        x: config.xMove,
-        y: config.yMove,
-        scale: 1.4,
-        opacity: 0.9,
-        duration: config.dur / 2,
-        ease: "sine.inOut",
-        yoyo: true,
-        repeat: -1,
-        delay: i * 0.3,
-      });
-    });
-  }, { scope: containerRef });
-
-  return (
-    <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden select-none" style={{ zIndex: 1 }} aria-hidden="true">
+const HeroParticles = () => (
+  <>
+    <style>{`
+      @keyframes p-float-1 {
+        0%,100%{opacity:.2;transform:translate(0,0) scale(1);}
+        25%{opacity:.85;transform:translate(30px,-50px) scale(1.3);}
+        50%{opacity:.55;transform:translate(55px,-85px) scale(1);}
+        75%{opacity:.75;transform:translate(35px,-38px) scale(1.2);}
+      }
+      @keyframes p-float-2 {
+        0%,100%{opacity:.3;transform:translate(0,0) scale(1);}
+        25%{opacity:.8;transform:translate(-25px,-55px) scale(1.35);}
+        50%{opacity:.5;transform:translate(-48px,-95px) scale(1);}
+        75%{opacity:.65;transform:translate(-18px,-45px) scale(1.25);}
+      }
+      @keyframes p-float-3 {
+        0%,100%{opacity:.25;transform:translate(0,0) scale(1);}
+        30%{opacity:.85;transform:translate(38px,-28px) scale(1.45);}
+        65%{opacity:.45;transform:translate(65px,-58px) scale(1);}
+      }
+      @keyframes p-float-4 {
+        0%,100%{opacity:.2;transform:translate(0,0) scale(1);}
+        20%{opacity:.9;transform:translate(-28px,-38px) scale(1.55);}
+        55%{opacity:.4;transform:translate(-55px,-75px) scale(1);}
+        80%{opacity:.65;transform:translate(-22px,-32px) scale(1.28);}
+      }
+      .particle-anim-1{animation:p-float-1 5s ease-in-out infinite;}
+      .particle-anim-2{animation:p-float-2 6s ease-in-out infinite;}
+      .particle-anim-3{animation:p-float-3 4.5s ease-in-out infinite;}
+      .particle-anim-4{animation:p-float-4 7s ease-in-out infinite;}
+      @media(prefers-reduced-motion:reduce){
+        .particle-anim-1,.particle-anim-2,.particle-anim-3,.particle-anim-4{animation:none;}
+      }
+    `}</style>
+    <div className="absolute inset-0 pointer-events-none overflow-hidden select-none" style={{ zIndex: 1 }} aria-hidden="true">
       {PARTICLE_CONFIG.map((p, i) => (
         <span
           key={i}
-          className="gsap-particle"
+          className={p.animClass}
           style={{
             position: "absolute",
             borderRadius: "9999px",
@@ -199,14 +201,15 @@ const HeroParticles = () => {
             width: p.size,
             height: p.size,
             opacity: 0.3,
+            animationDelay: `${i * 0.4}s`,
             background: `radial-gradient(circle, ${p.color}, ${p.color}88, transparent)`,
             boxShadow: `0 0 ${p.size * 4}px ${p.color}, 0 0 ${p.size * 8}px ${p.color}44`,
           }}
         />
       ))}
     </div>
-  );
-};
+  </>
+);
 
 const HeroSectionComponent = () => {
   const [stars, setStars] = useState<Array<{ id: number; x: number; y: number; size: number }>>([]);

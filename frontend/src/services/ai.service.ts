@@ -1,8 +1,8 @@
 import axios from "axios";
-import { API_V1 } from "../helpers/config";
+import { API_BASE as _API_BASE } from "../helpers/config";
 import { getToken } from "./auth.service";
 
-const API_BASE = API_V1;
+const API_BASE = _API_BASE;
 
 export interface IChatMessage {
   role: "user" | "model";
