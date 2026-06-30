@@ -3,6 +3,11 @@
   "private": true,
   "version": "1.0.0",
   "description": "Story Spark AI",
+  "pnpm": {
+    "overrides": {
+      "y-quill@^1.2.0": "1.0.0"
+    }
+  },
   "license": "MIT",
   "contributors": [
     {
