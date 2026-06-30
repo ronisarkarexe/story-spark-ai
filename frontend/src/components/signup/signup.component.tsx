@@ -303,7 +303,7 @@ const SignUpComponent = () => {
             </p>
           )}
           {/* Card */}
-          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
+          <div className="w-full min-w-0 box-border">
             {!showOtpField && (
               <div className="relative mb-6 w-full box-border">
                 <div className="absolute inset-0 flex items-center">
