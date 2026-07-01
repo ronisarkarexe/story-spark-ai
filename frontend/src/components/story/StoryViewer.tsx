@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Chapter } from "../../types/story.types";
 import ReadingTimeBadge from "../ReadingTimeBadge";
+import { NarrationControls } from "./NarrationControls";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import { AudioPlayer } from "../AudioPlayer";
@@ -190,7 +191,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
       {showResumeBanner && (
         <div className="sticky top-0 z-20 bg-indigo-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
           <span className="text-sm text-indigo-200">
-            You left off at {progress}% � continue where you stopped?
+            You left off at {progress}% – continue where you stopped?
           </span>
           <div className="flex gap-2">
             <button
@@ -217,6 +218,21 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
           />
         </div>
         <div className="flex justify-between items-center mt-2">
+          <span className="text-sm text-zinc-400">Reading Progress</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleShare}
+              className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1 cursor-pointer"
+              title="Share this story"
+            >
+              Share
+            </button>
+            <span className="text-sm font-medium text-indigo-400">
+              {progress === 100 ? "Completed! 🎉" : `${progress}%`}
+            </span>
+          </div>
+        </div>
+      </div>
   <span className="text-sm text-zinc-400">
     Reading Progress
   </span>
@@ -238,7 +254,12 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
             <h1 className="text-4xl font-extrabold tracking-tight text-white mb-6">
               {chapter.title}
             </h1>
-            <ReadingTimeBadge text={chapter.content} />
+            
+            <div className="flex gap-4 items-center mb-4">
+              <ReadingTimeBadge text={chapter.content} />
+              <NarrationControls text={chapter.content} />
+            </div>
+
             <p className="text-lg text-zinc-300 whitespace-pre-line leading-9">
               {chapter.content}
             </p>
