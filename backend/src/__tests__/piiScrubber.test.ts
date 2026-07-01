@@ -209,3 +209,105 @@ describe("piiScrubberMiddleware — body fields", () => {
     expect(err.message).toBe("NLP crashed");
   });
 });
+
+describe("scrubPII — expanded test matrix", () => {
+  it("verifies idempotency invariant on clean and redacted inputs", () => {
+    const inputs = [
+      "No PII here, just a story about a wizard.",
+      "Already scrubbed: [REDACTED_EMAIL] [REDACTED_PHONE] [REDACTED_NAME]",
+      "Hello [REDACTED_NAME], contact me at [REDACTED_EMAIL] or call [REDACTED_PHONE]"
+    ];
+    for (const input of inputs) {
+      const once = scrubPII(input);
+      const twice = scrubPII(once);
+      expect(twice).toBe(once);
+    }
+  });
+
+  it("scrubs mixed redacted and raw PII correctly", () => {
+    const input = "Hello [REDACTED_NAME], contact me at alice@example.com and phone 555-867-5309";
+    const result = scrubPII(input);
+    expect(result).toBe("Hello [REDACTED_NAME], contact me at [REDACTED_EMAIL] and phone [REDACTED_PHONE]");
+  });
+
+  it("scrubs UK and international mobile phone formats", () => {
+    const input = "UK number is +44 7911 123456 and local is 07911123456";
+    const result = scrubPII(input);
+    expect(result).toBe("UK number is [REDACTED_PHONE] and local is [REDACTED_PHONE]");
+  });
+
+  it("scrubs local US 7-digit phone numbers with separators", () => {
+    const input = "Call me at 867-5309 or 867.5309 or 867 5309";
+    const result = scrubPII(input);
+    expect(result).toBe("Call me at [REDACTED_PHONE] or [REDACTED_PHONE] or [REDACTED_PHONE]");
+  });
+
+  it("scrubs credit cards adjacent to phone-like numbers", () => {
+    const input = "Card: 4111 1111 1111 1111 Phone: 555-867-5309";
+    const result = scrubPII(input);
+    expect(result).toBe("Card: [REDACTED_CARD] Phone: [REDACTED_PHONE]");
+  });
+
+  it("does not match random numeric strings (false positives)", () => {
+    const input = "I have 12, 34, 56, 78 items in year 2026";
+    expect(scrubPII(input)).toBe(input);
+  });
+
+  it("does not match IP addresses (false positives)", () => {
+    const input = "Server is at 192.168.1.1";
+    expect(scrubPII(input)).toBe(input);
+  });
+
+  it("does not match UUIDs (false positives)", () => {
+    const input = "Transaction ID: 123e4567-e89b-12d3-a456-426614174000";
+    expect(scrubPII(input)).toBe(input);
+  });
+
+  it("does not match URLs (false positives)", () => {
+    const input = "Link: https://example.com/phone/5558675309";
+    expect(scrubPII(input)).toBe(input);
+  });
+
+  it("does not match partial or invalid addresses", () => {
+    const input = "I visited Empire State Building on 123 Main";
+    expect(scrubPII(input)).toBe(input);
+  });
+
+  it("handles repeated placeholder sequences", () => {
+    const input = "[REDACTED_NAME] [REDACTED_NAME]";
+    expect(scrubPII(input)).toBe(input);
+  });
+
+  it("handles placeholder immediately followed by raw PII", () => {
+    const input = "[REDACTED_NAME]bob@example.com";
+    expect(scrubPII(input)).toBe("[REDACTED_NAME][REDACTED_EMAIL]");
+  });
+
+  it("scrubs multiline input correctly", () => {
+    const input = "Line 1: bob@example.com\nLine 2: 555-867-5309";
+    const result = scrubPII(input);
+    expect(result).toBe("Line 1: [REDACTED_EMAIL]\nLine 2: [REDACTED_PHONE]");
+  });
+
+  it("does not match malformed phone numbers", () => {
+    const input = "Phone: 555-867-530";
+    expect(scrubPII(input)).toBe(input);
+  });
+
+  it("does not match malformed email addresses", () => {
+    const input = "Email: alice@example";
+    expect(scrubPII(input)).toBe(input);
+  });
+
+  it("handles mixed punctuation surrounding phone numbers", () => {
+    const input = "Is it 555-867-5309? Yes! Or (555) 867-5309.";
+    const result = scrubPII(input);
+    expect(result).toBe("Is it [REDACTED_PHONE]? Yes! Or [REDACTED_PHONE].");
+  });
+
+  it("scrubs complete addresses with unit, city, state, zip", () => {
+    const input = "My address is 123 Main St Apt 4B, New York, NY 10001 or 456 S. 2nd Ave Suite 100, San Jose, CA 95112";
+    const result = scrubPII(input);
+    expect(result).toBe("My address is [REDACTED_ADDRESS] or [REDACTED_ADDRESS]");
+  });
+});
