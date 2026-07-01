@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 
 export const getSavedWorkspacePreferences = () => {
+  if (typeof window === "undefined") {
+    return {
+      aiProvider: "gemini",
+      defaultGenre: "🎭 Drama",
+      targetLength: "Medium (~600)",
+      autoSave: true,
+    };
+  }
   return {
     aiProvider: localStorage.getItem("pref_aiProvider") || "gemini",
     defaultGenre: localStorage.getItem("pref_defaultGenre") || "🎭 Drama",
@@ -16,8 +24,11 @@ const useWorkspacePreferences = () => {
     const handleStorageChange = () => {
       setPreferences(getSavedWorkspacePreferences());
     };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handleStorageChange);
+      return () => window.removeEventListener("storage", handleStorageChange);
+    }
+    return undefined;
   }, []);
 
   return preferences;
