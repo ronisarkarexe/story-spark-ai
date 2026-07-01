@@ -3,7 +3,7 @@ import jsPDF from "jspdf";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
-import { getRequestLimit, getWordCount, prompts } from "./stories.utils";
+import { getRequestLimit, getWordCount, prompts, STORY_TEMPLATES } from "./stories.utils";
 import {
   useGenerateFreeModelMutation,
   useGenerateModelMutation,
@@ -604,6 +604,38 @@ interface ICharacter {
   personality: string;
 }
 
+const TemplateSelectionScreen: React.FC<{
+  onSelectTemplate: (template: any) => void;
+  onStartBlank: () => void;
+}> = ({ onSelectTemplate, onStartBlank }) => {
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl font-extrabold text-slate-100 mb-4">Start from Template</h2>
+        <p className="text-slate-400 max-w-2xl mx-auto">Choose a genre-specific template to kickstart your story, or start with a blank canvas.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {STORY_TEMPLATES.map((template) => (
+          <div key={template.id} className="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-indigo-500 transition-colors cursor-pointer" onClick={() => onSelectTemplate(template)}>
+            <div className="text-sm text-indigo-400 font-semibold mb-2">{template.genre}</div>
+            <h3 className="text-xl font-bold text-slate-200 mb-3">{template.templateName}</h3>
+            <p className="text-slate-400 text-sm mb-4">{template.openingHook}</p>
+            <div className="text-xs text-slate-500">
+              Length: <span className="capitalize">{template.length}</span> &bull; {template.characters.length} characters
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="text-center">
+        <button onClick={onStartBlank} className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg font-semibold transition-colors">
+          Start with Blank Canvas
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
@@ -665,6 +697,23 @@ useEffect(() => {
   const [textareaValue, setTextareaValue] = useState<string>(() => {
     return location.state?.prompt || draft?.prompt || "";
   });
+
+  const [showTemplateScreen, setShowTemplateScreen] = useState<boolean>(() => {
+    return !location.state?.prompt && !draft?.prompt;
+  });
+
+  const handleSelectTemplate = (template: any) => {
+    const fullPremise = `${template.premise}\n\nSuggested Plot Points:\n- ${template.plotPoints.join('\n- ')}`;
+    setTextareaValue(fullPremise);
+    setSelectedGenre(template.genre);
+    setSelectedLength(template.length);
+    setCharacters(template.characters);
+    setShowTemplateScreen(false);
+  };
+
+  const handleStartBlank = () => {
+    setShowTemplateScreen(false);
+  };
 
 
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
@@ -1579,6 +1628,9 @@ const handleExportMarkdown = () => {
             âœ¨
           </h1>
 
+          {showTemplateScreen ? (
+            <TemplateSelectionScreen onSelectTemplate={handleSelectTemplate} onStartBlank={handleStartBlank} />
+          ) : (
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
             <div className="bg-blue-500/10 rounded-md p-4 border border-gray-400">
 <div className="relative">
@@ -2512,6 +2564,7 @@ onKeyDown={(e) => {
           </div>
         </div>
       </div>
+      )}
 
       {showHelpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
