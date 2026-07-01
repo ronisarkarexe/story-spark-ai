@@ -1,4 +1,5 @@
 import React, { lazy, Suspense } from "react";
+import NotFound from "./src/NotFound";
 import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
 import { USER_ROLE } from "./constants/role";
 
