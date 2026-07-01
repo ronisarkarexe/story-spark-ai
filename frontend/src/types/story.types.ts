@@ -10,6 +10,7 @@ export interface Story {
   title: string;
   chapters: Chapter[];
   userId?: string;
+  truncated?: boolean;
 }
 
 export interface StoryVersion {

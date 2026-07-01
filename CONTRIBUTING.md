@@ -160,7 +160,35 @@ git push origin feat/your-feature-name
 
 ---
 
-## 7. Common Troubleshooting
+## 7. CI / Continuous Integration
+
+This project uses **GitHub Actions** to automatically run quality checks on every push and pull request targeting `main`.
+
+> ⚠️ **CI must pass before a PR can be reviewed or merged.**
+
+The CI pipeline (`.github/workflows/ci.yml`) verifies:
+
+| Check | Command |
+|-------|---------|
+| TypeScript compilation – backend | `tsc --noEmit --project tsconfig.json` |
+| TypeScript compilation – frontend | `tsc --noEmit --project tsconfig.json` |
+| Backend production build | `npm run build:backend` |
+| Frontend Vite build | `npm run build:frontend` |
+
+You can run these checks locally before pushing:
+
+```bash
+# From the repo root
+npm run typecheck        # TypeScript --noEmit for both workspaces
+npm run build:backend    # Compile backend to dist/
+npm run build:frontend   # Vite production build
+```
+
+If CI is failing on your PR, fix the reported errors before requesting a review.
+
+
+
+## 8. Common Troubleshooting
 
 ### `npm install` fails
 - Make sure you are using Node.js v18+: `node -v`
