@@ -5,6 +5,7 @@ import {
   topicsData,
   getWordCount,
   SELECTED_TOPIC_CLASSES,
+  CharacterProfile,
 } from "./stories.utils";
 import { calculateReadingTime } from "../../utils/reading-time";
 import { formatReadingStats } from "../../utils/story-utils";
@@ -13,16 +14,11 @@ import StoryGenreTransformation from "./StoryGenreTransformation";
 import StoryMoodDashboard from "./StoryMoodDashboard";
 import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
-import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
-import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
-import jsPDF from "jspdf";
-import StoryTranslator from "./translate/StoryTranslator";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
 import StoryTranslator from "../translate/StoryTranslator";
+import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
 
@@ -85,12 +81,16 @@ interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
+  isLoading?: boolean;
+  onPublishSuccess?: () => void;
 }
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
   setStories,
+  isLoading,
+  onPublishSuccess,
 }) => {
   const [selectedStory, setSelectedStory] = useState<IStories | null>(
     stories && stories[0]
@@ -236,7 +236,7 @@ const handleGenerateCharacterProfile = async () => {
   try {
     // Replace with your backend API endpoint
     const response = await fetch(
-      "/api/generate-character-profile",
+      "/api/v1/ai_model/generate-character-profile",
       {
         method: "POST",
         headers: {
@@ -289,7 +289,7 @@ const handleGenerateCharacterProfile = async () => {
     }
   };
 
-const isNarrationActive = narrationState !== "idle";
+
 
 if (isLoading) {
   return (
@@ -318,7 +318,7 @@ if (!stories || stories.length === 0) {
     </div>
   );
 }
-  }
+
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">

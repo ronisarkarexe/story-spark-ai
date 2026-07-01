@@ -370,7 +370,10 @@ const generateCharacterProfile = catchAsync(
   async (req: Request, res: Response) => {
     const { story } = req.body;
 
-    const result = await AiModelService.generateCharacterProfile(story);
+    const controller = new AbortController();
+    req.on("close", () => controller.abort());
+
+    const result = await AiModelService.generateCharacterProfile(story, controller.signal);
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -380,6 +383,7 @@ const generateCharacterProfile = catchAsync(
     });
   }
 );
+
 
 export const AiModelController = {
   aiModelGenerate,

@@ -52,4 +52,14 @@ router.post("/chat", apiRateLimiter, auth(), storyGenerationRateLimiter, validat
 
 router.post("/chat-free", apiRateLimiter, validateRequest(AIModelValidator.aiChat), freeAiRateLimiter, AiModelController.aiFreeModelChat);
 
+// CHARACTER PROFILE GENERATION
+router.post(
+  "/generate-character-profile",
+  apiRateLimiter,
+  auth(),
+  validateRequest(AIModelValidator.generateCharacterProfile),
+  AiModelController.generateCharacterProfile
+);
+
 export const AIModelRouter = router;
+
