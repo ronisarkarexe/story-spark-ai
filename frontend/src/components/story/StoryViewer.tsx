@@ -234,7 +234,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
       </div>
       <div className="max-w-4xl mx-auto">
         {chapters.map((chapter) => (
-          <div key={chapter.id} className="mb-16">
+          <div key={chapter.id} id={`chapter-${chapter.id}`} className="mb-16">
             <h1 className="text-4xl font-extrabold tracking-tight text-white mb-6">
               {chapter.title}
             </h1>
