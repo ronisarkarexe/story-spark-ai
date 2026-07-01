@@ -1179,6 +1179,7 @@ input:focus{
     box-sizing: border-box;
 }
 
+<<<<<<< Updated upstream
 @media(max-width:1100px){
     .auth-container{
         grid-template-columns:minmax(0, 0.95fr) minmax(360px, 1fr);
@@ -1263,4 +1264,18 @@ input:focus{
         transition:none !important;
         scroll-behavior:auto !important;
     }
+=======
+/* Ensure submit and Google buttons fill the card width */
+.ds-btn-submit,
+.ds-btn-google {
+    width: 100%;
+}
+
+/* Fix for inputs breaking out of the container */
+.auth-container input {
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+
 }
