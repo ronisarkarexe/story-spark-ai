@@ -23,13 +23,13 @@ if (!container) {
 }
 
 createRoot(container).render(
-  <StrictMode>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || "dummy-client-id"}>
-      <Provider store={store}>
-        <ThemeProvider>
+  <Provider store={store}>
+    <ThemeProvider>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || "dummy-client-id"}>
+        <StrictMode>
           <App />
-        </ThemeProvider>
-      </Provider>
-    </GoogleOAuthProvider>
-  </StrictMode>
+        </StrictMode>
+      </GoogleOAuthProvider>
+    </ThemeProvider>
+  </Provider>
 );

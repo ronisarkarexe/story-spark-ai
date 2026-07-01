@@ -262,7 +262,7 @@ const SignUpComponent = () => {
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-0 min-w-0 box-border mx-auto overflow-hidden">
+      <div className="flex w-full max-w-xl flex-col justify-center py-6 relative z-10 px-2 sm:px-6 min-w-0 box-border mx-auto overflow-x-hidden">
 
         {/* Title */}
         <div className="mb-6 text-center">
@@ -272,7 +272,7 @@ const SignUpComponent = () => {
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
+        <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-[28px] p-5 sm:p-8 shadow-2xl w-full max-w-full min-w-0 overflow-hidden box-border">
           <button
             onClick={() => (window.location.href = "/")}
             className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
@@ -316,7 +316,7 @@ const SignUpComponent = () => {
             )}
 
             {!showOtpField ? (
-              <form className="flex flex-col w-full min-w-0 gap-5 box-border" onSubmit={handleSubmit(onSubmit)}>
+              <form className="flex flex-col w-full max-w-full min-w-0 gap-5 box-border" onSubmit={handleSubmit(onSubmit)}>
 
                 <div className="w-full block">
                   <SSInput
@@ -484,7 +484,7 @@ const SignUpComponent = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-center w-full box-border overflow-hidden">
+                <div className="flex justify-center w-full max-w-full box-border overflow-x-hidden">
                   <GoogleLogin
                     onSuccess={handleGoogleLoginSuccess}
                     onError={handleGoogleLoginError}

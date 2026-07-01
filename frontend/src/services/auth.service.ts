@@ -32,6 +32,7 @@ interface RawJwtPayload {
   email?: string;
   userId?: string;
   _id?: string;
+  sub?: string;
   name?: string;
   postsCount?: number;
   role?: string;
@@ -45,7 +46,7 @@ interface RawJwtPayload {
 // Uses optional chaining + fallbacks to safely handle any missing fields
 const buildUserInfo = (decodedData: RawJwtPayload): AuthUserInfo => ({
   email: decodedData?.email || "",
-  userId: decodedData?.userId || decodedData?._id || "",
+  userId: decodedData?.userId || decodedData?._id || decodedData?.sub || "",
   name: decodedData?.name || "",
   postsCount: decodedData?.postsCount || 0,
   role: decodedData?.role || "guest",
@@ -78,7 +79,8 @@ export const getValidDecodedToken = () => {
       return buildUserInfo({
         email: decodedData.email ?? "",
         role: decodedData.role ?? "",
-        userId: decodedData.userId ?? decodedData._id ?? "",
+        userId: decodedData.userId ?? decodedData._id ?? decodedData.sub ?? "",
+        sub: decodedData.sub,
         name: decodedData.name ?? "",
         postsCount: decodedData.postsCount ?? 0,
         subscriptionType: decodedData.subscriptionType ?? "free",
