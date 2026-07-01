@@ -92,7 +92,7 @@ const applicationSteps = [
 
 const Career = () => {
   return (
-    <div className="relative overflow-hidden bg-white text-slate-900 transition-colors duration-300 dark:bg-[#050816] dark:text-white">
+    <div className="relative overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
 
       {/* BACKGROUND BLURS */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
@@ -116,7 +116,7 @@ const Career = () => {
               </span>
             </h1>
 
-            <p className="mt-8 max-w-2xl text-lg sm:text-xl leading-8 text-slate-600 dark:text-slate-300">
+            <p className="mt-8 max-w-2xl text-lg sm:text-xl leading-8 text-slate-600 text-[var(--text-secondary)]">
               Join a passionate team building modern tools that empower creators,
               storytellers, and dreamers worldwide.
             </p>
@@ -132,7 +132,7 @@ const Career = () => {
 
               <a
                 href="mailto:ronichandrasarkar@gmail.com?subject=Joining%20StorySparkAI"
-                className="inline-flex items-center rounded-2xl border border-slate-300 dark:border-white/10 bg-white/60 dark:bg-white/[0.04] px-7 py-4 font-semibold backdrop-blur-md hover:border-blue-500/40 hover:text-blue-600 transition-all duration-300"
+                className="inline-flex items-center rounded-2xl border border-slate-300 border-[var(--border-color)] bg-white/60 dark:bg-white/[0.04] px-7 py-4 font-semibold backdrop-blur-md hover:border-blue-500/40 hover:text-blue-600 transition-all duration-300"
               >
                 Introduce Yourself
               </a>
@@ -143,7 +143,7 @@ const Career = () => {
           <div className="relative mx-auto w-full max-w-lg">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl rounded-full"></div>
 
-            <div className="relative rounded-[2rem] border border-white/10 bg-white/70 dark:bg-slate-900/70 p-8 shadow-2xl backdrop-blur-xl">
+            <div className="relative rounded-[2rem] border border-white/10 bg-white/70 bg-[var(--bg-primary)] p-8 shadow-2xl backdrop-blur-xl">
 
               <div className="flex items-center justify-between mb-8">
                 <div className="rounded-2xl bg-blue-500/10 p-4 text-blue-600 dark:text-blue-300">
@@ -160,7 +160,7 @@ const Career = () => {
                 Find your place to create
               </h2>
 
-              <p className="mt-4 text-slate-600 dark:text-slate-300 leading-7">
+              <p className="mt-4 text-slate-600 text-[var(--text-secondary)] leading-7">
                 Technology, storytelling, and creativity come together here.
                 Build products that inspire millions of creators.
               </p>
@@ -173,14 +173,14 @@ const Career = () => {
                 ].map(({ icon: Icon, label }) => (
                   <div
                     key={label}
-                    className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-white/[0.03] p-4 text-center hover:-translate-y-1 transition-all duration-300"
+                    className="rounded-2xl border border-slate-200 border-[var(--border-color)] bg-slate-50/70 bg-[var(--bg-primary)] p-4 text-center hover:-translate-y-1 transition-all duration-300"
                   >
                     <Icon
                       size={22}
                       className="mx-auto mb-3 text-blue-600 dark:text-blue-300"
                     />
 
-                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    <p className="text-xs font-semibold text-slate-600 text-[var(--text-secondary)]">
                       {label}
                     </p>
                   </div>
@@ -197,7 +197,7 @@ const Career = () => {
           {stats.map(({ icon: Icon, title, value }) => (
             <div
               key={title}
-              className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/60 p-8 text-center shadow-lg backdrop-blur-xl hover:-translate-y-2 hover:shadow-blue-500/10 transition-all duration-300"
+              className="rounded-3xl border border-slate-200 border-[var(--border-color)] bg-white/70 bg-[var(--bg-primary)]/60 p-8 text-center shadow-lg backdrop-blur-xl hover:-translate-y-2 hover:shadow-blue-500/10 transition-all duration-300"
             >
               <Icon
                 size={30}
@@ -206,7 +206,7 @@ const Career = () => {
 
               <h3 className="text-4xl font-bold">{value}</h3>
 
-              <p className="mt-2 text-slate-600 dark:text-slate-300">
+              <p className="mt-2 text-slate-600 text-[var(--text-secondary)]">
                 {title}
               </p>
             </div>
@@ -230,7 +230,7 @@ const Career = () => {
               Find the role where your ideas thrive
             </h2>
 
-            <p className="mt-5 max-w-2xl mx-auto text-lg text-slate-600 dark:text-slate-300 leading-8">
+            <p className="mt-5 max-w-2xl mx-auto text-lg text-slate-600 text-[var(--text-secondary)] leading-8">
               Work on meaningful products with creators, developers, and storytellers.
             </p>
           </div>
@@ -240,7 +240,7 @@ const Career = () => {
               ({ title, icon: Icon, type, focus, description, skills }) => (
                 <article
   key={title}
-  className="group flex h-full flex-col rounded-[2rem] border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 p-7 shadow-lg hover:-translate-y-2 hover:shadow-blue-500/10 transition-all duration-300"
+  className="group flex h-full flex-col rounded-[2rem] border border-slate-200 border-[var(--border-color)] bg-white bg-[var(--bg-primary)]/60 p-7 shadow-lg hover:-translate-y-2 hover:shadow-blue-500/10 transition-all duration-300"
 >
                   <div className="flex items-start justify-between mb-7">
                     <div className="rounded-2xl bg-blue-500/10 p-4 text-blue-600 dark:text-blue-300 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
@@ -259,7 +259,7 @@ const Career = () => {
                     {focus}
                   </div>
 
-                  <p className="mt-5 leading-7 text-slate-600 dark:text-slate-300">
+                  <p className="mt-5 leading-7 text-slate-600 text-[var(--text-secondary)]">
                     {description}
                   </p>
 
@@ -267,7 +267,7 @@ const Career = () => {
                     {skills.map((skill) => (
                       <span
                         key={skill}
-                        className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04] px-3 py-1.5 text-xs font-semibold"
+                        className="rounded-full border border-slate-200 border-[var(--border-color)] bg-slate-50 dark:bg-white/[0.04] px-3 py-1.5 text-xs font-semibold"
                       >
                         {skill}
                       </span>
@@ -308,7 +308,7 @@ const Career = () => {
             {values.map(({ icon: Icon, title, description }) => (
               <div
                 key={title}
-                className="rounded-3xl border border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-white/[0.03] p-8 hover:-translate-y-2 hover:shadow-blue-500/10 transition-all duration-300"
+                className="rounded-3xl border border-slate-200 border-[var(--border-color)] bg-slate-50/70 bg-[var(--bg-primary)] p-8 hover:-translate-y-2 hover:shadow-blue-500/10 transition-all duration-300"
               >
                 <Icon
                   size={30}
@@ -319,7 +319,7 @@ const Career = () => {
                   {title}
                 </h3>
 
-                <p className="mt-4 leading-7 text-slate-600 dark:text-slate-300">
+                <p className="mt-4 leading-7 text-slate-600 text-[var(--text-secondary)]">
                   {description}
                 </p>
               </div>

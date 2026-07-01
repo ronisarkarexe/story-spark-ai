@@ -159,7 +159,7 @@ const AchievementsGrid: React.FC<AchievementsGridProps> = ({
               onClick={() => setActiveTab(tab.value)}
               className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
                 activeTab === tab.value
-                  ? "bg-white text-slate-900 shadow-sm dark:bg-white/[0.1] dark:text-white"
+                  ? "bg-white text-slate-900 shadow-sm dark:bg-white/[0.1] text-[var(--text-primary)]"
                   : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               }`}
             >

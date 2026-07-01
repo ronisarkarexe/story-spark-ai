@@ -2,7 +2,7 @@ import React from "react";
 
 const PrivacyPolicy: React.FC = () => {
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white px-6 py-24 pt-28 sm:pt-32">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] px-6 py-24 pt-28 sm:pt-32 transition-colors duration-300">
       <div className="max-w-5xl mx-auto">
         
         <div className="text-center mb-14">
@@ -19,7 +19,7 @@ const PrivacyPolicy: React.FC = () => {
 
         <div className="space-y-10">
 
-          <section className="bg-[#1e293b] rounded-2xl p-8 shadow-lg">
+          <section className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg">
             <h2 className="text-2xl font-semibold mb-4">
               1. Introduction
             </h2>
@@ -31,7 +31,7 @@ const PrivacyPolicy: React.FC = () => {
             </p>
           </section>
 
-          <section className="bg-[#1e293b] rounded-2xl p-8 shadow-lg">
+          <section className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg">
             <h2 className="text-2xl font-semibold mb-4">
               2. Information We Collect
             </h2>
@@ -45,13 +45,13 @@ const PrivacyPolicy: React.FC = () => {
             </ul>
           </section>
 
-          <section className="bg-[#1e293b] rounded-2xl p-8 shadow-lg">
+          <section className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg">
             <h2 className="text-2xl font-semibold mb-4">
               3. How We Use Your Information
             </h2>
 
             <div className="grid md:grid-cols-2 gap-5">
-              <div className="bg-[#334155] p-5 rounded-xl">
+              <div className="bg-[var(--bg-secondary)] p-5 rounded-xl">
                 <h3 className="font-semibold mb-2 text-lg">
                   Platform Improvement
                 </h3>
@@ -61,7 +61,7 @@ const PrivacyPolicy: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-[#334155] p-5 rounded-xl">
+              <div className="bg-[var(--bg-secondary)] p-5 rounded-xl">
                 <h3 className="font-semibold mb-2 text-lg">
                   Personalization
                 </h3>
@@ -71,7 +71,7 @@ const PrivacyPolicy: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-[#334155] p-5 rounded-xl">
+              <div className="bg-[var(--bg-secondary)] p-5 rounded-xl">
                 <h3 className="font-semibold mb-2 text-lg">
                   Security
                 </h3>
@@ -81,7 +81,7 @@ const PrivacyPolicy: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-[#334155] p-5 rounded-xl">
+              <div className="bg-[var(--bg-secondary)] p-5 rounded-xl">
                 <h3 className="font-semibold mb-2 text-lg">
                   Communication
                 </h3>
@@ -93,7 +93,7 @@ const PrivacyPolicy: React.FC = () => {
             </div>
           </section>
 
-          <section className="bg-[#1e293b] rounded-2xl p-8 shadow-lg">
+          <section className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg">
             <h2 className="text-2xl font-semibold mb-4">
               4. Cookies & Tracking Technologies
             </h2>
@@ -105,7 +105,7 @@ const PrivacyPolicy: React.FC = () => {
             </p>
           </section>
 
-          <section className="bg-[#1e293b] rounded-2xl p-8 shadow-lg">
+          <section className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg">
             <h2 className="text-2xl font-semibold mb-4">
               5. Data Protection
             </h2>
@@ -117,7 +117,7 @@ const PrivacyPolicy: React.FC = () => {
             </p>
           </section>
 
-          <section className="bg-[#1e293b] rounded-2xl p-8 shadow-lg">
+          <section className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg">
             <h2 className="text-2xl font-semibold mb-4">
               6. Third-Party Services
             </h2>
@@ -129,7 +129,7 @@ const PrivacyPolicy: React.FC = () => {
             </p>
           </section>
 
-          <section className="bg-[#1e293b] rounded-2xl p-8 shadow-lg">
+          <section className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg">
             <h2 className="text-2xl font-semibold mb-4">
               7. Your Rights
             </h2>
