@@ -14,14 +14,46 @@ const LatestPostsComponent = () => {
 
   const posts = (data?.posts ?? []) as Post[];
 
+
   useEffect(() => {
     setShowAllPosts(false);
-  }, [posts.length]);
+  }, [data?.posts]);
+
+
+
+  if (isLoading) return <LoadingAnimation />;
+
+  if (isError) {
+    return (
+      <section className="mb-12 text-slate-100">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-200 mb-6">
+  Latest Posts
+</h2>
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-5 text-center text-red-200">
+          <p className="mb-3 font-semibold">Failed to load latest posts.</p>
+          <button
+            onClick={() => refetch()}
+            className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  const seenIds = new Set<string>();
+  const uniquePosts = (data?.posts ?? []).filter((post: Post) => {
+    if (!post?._id || seenIds.has(post._id)) return false;
+    seenIds.add(post._id);
+    return true;
+  });
 
   // Remove duplicate posts based on _id
   const uniquePosts = Array.from(
     new Map((data?.posts ?? []).map((post) => [post._id, post])).values(),
   );
+
 
   const shouldShowLoadMore = uniquePosts.length > INITIAL_VISIBLE_COUNT;
   const visiblePosts =
