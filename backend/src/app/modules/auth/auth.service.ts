@@ -54,6 +54,7 @@ const normalizeString = (value: unknown, fieldName: string) => {
 // Token claims; tokenVersion enables global session revocation.
 const buildClaims = (user: any) => ({
   _id: user._id,
+  userId: user._id,
   email: user.email,
   role: user.role,
   subscriptionType: user.subscriptionType,

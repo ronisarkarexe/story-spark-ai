@@ -45,6 +45,7 @@ const plans: Plan[] = [
     ],
   },
 ];
+import PricingComponent from "./pricing.component";
 
 const PricingMainComponent = () => {
   const navigate = useNavigate();

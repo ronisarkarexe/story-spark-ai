@@ -372,6 +372,36 @@ export const setupCollabSocket = (io: Server) => {
       }
     });
 
+    // 👇 NEW PIPELINE: PRIVACY SETTING TOGGLE LISTENER
+    socket.on("collab:update_privacy", async ({ roomId, isPublic }: { roomId: string; isPublic: boolean }) => {
+      try {
+        const userId = socket.data.userId;
+        const room = await CollabRoom.findOne({ roomId });
+
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found." });
+          return;
+        }
+
+        // Only allow the original creator of the room to alter visibility status
+        if (room.createdBy !== userId) {
+          socket.emit("collab:error", { message: "Only the room creator can modify visibility settings." });
+          return;
+        }
+
+        // Apply changes and update database record
+        room.isPublic = isPublic;
+        await room.save();
+
+        // Sync visibility updates to all active connection handlers
+        collabNamespace.to(roomId).emit("collab:room_updated", { room });
+        logger.info(`Collab Room visibility changed successfully: ID ${roomId} is now public=${isPublic}`);
+      } catch (error) {
+        logger.error("Failed to update privacy status:", error);
+        socket.emit("collab:error", { message: "Failed to update room settings." });
+      }
+    });
+
     // Typing indicator — broadcast to other participants in the room
     socket.on("collab:typing", ({ roomId }: { roomId: string }) => {
       if (!roomId || !socket.rooms.has(roomId)) return;
