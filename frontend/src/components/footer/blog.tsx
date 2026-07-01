@@ -146,7 +146,7 @@ const Blog = () => {
           </Link>
         </div>
       </div>
-    </main>
+    </div>
   );
 };
 
