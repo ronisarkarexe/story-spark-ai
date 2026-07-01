@@ -295,14 +295,12 @@ const socialLinks = [
         />
 
         {/* Bottom bar */}
-      <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-slate-400/80 dark:text-slate-200">
-        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 gap-y-1 text-center md:text-left">
-          <span className="text-slate-400/80 dark:text-slate-200">
-            &copy; {currentYear} StorySparkAI. All rights reserved.
-          </span>
-        </div>
-
-
+        <div className="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-slate-400/80 dark:text-slate-200">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2.5 gap-y-1 text-center md:text-left">
+            <span className="text-slate-400/80 dark:text-slate-200">
+              &copy; {currentYear} StorySparkAI. All rights reserved.
+            </span>
+          </div>
           <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
             {legalLinks.map(({ label, to }, i) => (
               <React.Fragment key={label}>
@@ -316,7 +314,6 @@ const socialLinks = [
                   <span className="text-white/12">|</span>
                 )}
               </React.Fragment>
-
             ))}
           </div>
         </div>
