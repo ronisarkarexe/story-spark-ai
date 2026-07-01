@@ -5,8 +5,10 @@ import * as Y from 'yjs';
 import { QuillBinding } from 'y-quill';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { io, Socket } from 'socket.io-client';
+import { Awareness } from 'y-protocols/awareness';
 import { resolveSocketUrl } from '../../helpers/socket-url';
 import { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate } from 'y-protocols/awareness';
+import { Awareness } from 'y-protocols/awareness';
 
 interface CollabEditorProps {
   storyId: string;
@@ -92,14 +94,22 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     };
     awareness.on('update', renderRemoteCursors);
 
-    // Connect to backend socket.io namespace for Yjs sync
+    // Connect to backend socket.io namespace for Yjs sync.
+    // If VITE_SOCKET_URL is unconfigured, resolveSocketUrl() returns "".
+    // Skip the socket entirely so we don't attempt a doomed connection to
+    // the app's own origin (which has no Socket.IO server) and retry forever.
+    // The editor still works locally via Yjs + IndexedDB persistence.
     const socketUrl = resolveSocketUrl();
-    const socket = io(`${socketUrl}/yjs`, {
-      transports: ['websocket', 'polling'],
-      query: { storyId },
-      withCredentials: true,
-    });
-    socketRef.current = socket;
+    let socket: Socket | null = null;
+    let sendUpdate: ((update: Uint8Array) => void) | null = null;
+
+    if (socketUrl) {
+      socket = io(`${socketUrl}/yjs`, {
+        transports: ['websocket', 'polling'],
+        query: { storyId },
+        withCredentials: true,
+      });
+      socketRef.current = socket;
 
     // Receive initial sync from server
     socket.on('sync', (update: Uint8Array) => {
@@ -118,12 +128,19 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
         console.error('YJS UPDATE ERROR:', err);
       }
     });
+      socket.on('connect_error', (err: Error) => {
+        console.warn('[Story Spark] Collab editor socket connection error:', err.message);
+      });
 
-    // Broadcast local updates
-    const sendUpdate = (update: Uint8Array) => {
-      socket.emit('update', update);
-    };
-    ydoc.on('update', sendUpdate);
+      // Receive initial sync from server
+      socket.on('sync', (update: Uint8Array) => {
+        Y.applyUpdate(ydoc, update);
+      });
+
+      // Receive remote updates
+      socket.on('update', (update: Uint8Array) => {
+        Y.applyUpdate(ydoc, update);
+      });
 
     // Awareness updates
     const sendAwareness = (awarenessUpdate: Uint8Array) => {
@@ -142,11 +159,39 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
       color: userColor,
       userId,
     });
+      // Broadcast local updates
+      sendUpdate = (update: Uint8Array) => {
+        socket!.emit('update', update);
+      };
+      ydoc.on('update', sendUpdate);
+
+      // Awareness updates
+      const sendAwareness = (awarenessUpdate: Uint8Array) => {
+        socket!.emit('awareness', awarenessUpdate);
+      };
+      awareness.on('update', ({ added, updated, removed }: any) => {
+        const awUpdate = awareness.encodeUpdate(added.concat(updated).concat(removed));
+        sendAwareness(awUpdate);
+      });
+      socket.on('awareness', (aw: Uint8Array) => {
+        awareness.applyUpdate(aw);
+      });
+    } else {
+      console.warn(
+        '[Story Spark] Real-time sync disabled: VITE_SOCKET_URL is not configured. ' +
+        'The collaborative editor will work locally only (no live sync between users).'
+      );
+    }
 
     return () => {
       ydoc.off('update', sendUpdate);
       binding.destroy();
       socket.disconnect();
+      awareness.off('update', renderRemoteCursors);
+      awareness.destroy();
+      binding.destroy();
+      persistence.destroy();
+      ydoc.destroy();
     };
   }, [storyId, userId, username, userColor]);
 

@@ -4,7 +4,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
 
-const NavListComponent = () => {
+import { useNavigate, useLocation } from "react-router-dom";
+
+
+  
+  const NavListComponent = () => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
 
@@ -104,6 +110,25 @@ const NavListComponent = () => {
           </motion.div>
         )}
       </AnimatePresence>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {loggedIn ? (
+            <button onClick={handleLogout} className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Logout</button>
+          ) : (
+            <Link to="/login" className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Login</Link>
+          )}
+          <button className="rounded-md px-2 py-1 text-slate-700 lg:hidden dark:text-slate-200" onClick={() => setMenuOpen((v) => !v)}>
+            <i className="fa-solid fa-bars" />
+          </button>
+        </div>
+
+      {menuOpen && (
+        <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 lg:hidden dark:border-white/10">
+          <NavLink to="/" end className={linkClass}>Home</NavLink>
+          <NavLink to="/explore" className={linkClass}>Explore</NavLink>
+          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
+        </div>
+      )}
     </header>
   );
 };

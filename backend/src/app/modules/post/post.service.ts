@@ -1,5 +1,6 @@
 import ApiError from "../../../errors/api_error";
 import { ITokenPayload } from "../../../interfaces/token";
+import logger from "../../../utils/logger.util";
 import { User } from "../user/user.model";
 import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
@@ -375,7 +376,12 @@ const getSinglePost = async (id: string, token?: ITokenPayload | null) => {
       path: "reactions",
       populate: { path: "userId", select: "email" },
     })
-    .populate("bookmarks", "email");
+    .populate("bookmarks", "email")
+    .populate({
+      path: "parentStoryId",
+      select: "title author",
+      populate: { path: "author", select: "name _id" },
+    });
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
@@ -622,11 +628,113 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
   return res;
 };
 
+const forkStory = async (postId: string, token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  const originalPost = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!originalPost) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
+  }
+
+  // Ensure the original post is published (can't fork unpublished drafts)
+  if (!originalPost.isPublished) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Cannot fork an unpublished story!");
+  }
+
+  const res = await Post.create({
+    title: originalPost.title,
+    content: originalPost.content,
+    author: user._id,
+    updatedBy: user._id,
+    tag: originalPost.tag,
+    imageURL: originalPost.imageURL,
+    topic: originalPost.topic,
+    language: originalPost.language,
+    emotions: originalPost.emotions,
+    genre: originalPost.genre,
+    isPublished: false, // It's a draft!
+    parentStoryId: originalPost._id,
+    rootStoryId: originalPost.rootStoryId || originalPost._id,
+  });
+
+  return res;
+};
+
 const getGenres = async (): Promise<string[]> => {
   const genres = await Post.distinct("tag", { isDeleted: { $ne: true }, tag: { $nin: [null, ""] } });
   return genres.sort();
 };
 
+const bulkDeletePosts = async (ids: string[], token: ITokenPayload) => {
+  const user = await User.findOne({ email: token.email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+
+  if (ids.length > 50) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Maximum 50 story IDs allowed.");
+  }
+
+  const validIds: string[] = [];
+  const failedIds: string[] = [];
+
+  for (const id of ids) {
+    if (Types.ObjectId.isValid(id)) {
+      validIds.push(id);
+    } else {
+      failedIds.push(id);
+    }
+  }
+
+  const existingPosts = await Post.find({
+    _id: { $in: validIds },
+    isDeleted: { $ne: true },
+  });
+
+  const existingPostIds = existingPosts.map((p) => p._id.toString());
+  for (const id of validIds) {
+    if (!existingPostIds.includes(id)) {
+      failedIds.push(id);
+    }
+  }
+
+  const existingIds = existingPosts.map((p) => p._id);
+  const adminId = user._id;
+
+  if (existingIds.length > 0) {
+    await Post.updateMany(
+      { _id: { $in: existingIds } },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: adminId,
+        },
+      }
+    );
+
+    for (const post of existingPosts) {
+      if (post.isPublished) {
+        await User.findByIdAndUpdate(
+          post.author,
+          { $inc: { postsCount: -1 } }
+        );
+      }
+      await Bookmark.deleteMany({ storyId: post._id });
+      await Comment.deleteMany({ postId: post._id });
+    }
+  }
+
+  logger.info(`Admin #${adminId} deleted ${existingIds.length} stories.`);
+
+  return {
+    deleted: existingIds.length,
+    failed: failedIds,
+  };
+};
 
 export const PostService = {
   createPost,
@@ -642,6 +750,8 @@ export const PostService = {
   deletePost,
   remixStory,
   translateStory,
+  forkStory,
   getGenres,
+  bulkDeletePosts,
 };
 

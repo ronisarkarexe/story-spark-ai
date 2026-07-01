@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
@@ -11,7 +12,6 @@ type StarRatingProps = {
 const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
   const [hovered, setHovered] = useState(0);
 
-  // keyboard support: left/right arrows to change rating, 1-5 keys to set directly
   const handleKey = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "ArrowLeft") setRating(Math.max(0, rating - 1));
@@ -53,6 +53,32 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
             </button>
           );
         })}
+    <div
+      role="radiogroup"
+      aria-label="Star rating"
+      tabIndex={0}
+      onKeyDown={handleKey}
+      className="space-y-2"
+    >
+      <div className="flex gap-2">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            aria-pressed={rating === star}
+            aria-label={`Rate ${star} star`}
+            onClick={() => setRating(star)}
+            onMouseEnter={() => setHovered(star)}
+            onMouseLeave={() => setHovered(0)}
+            className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none ${
+              star <= (hovered || rating)
+                ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]"
+                : "text-gray-600"
+            }`}
+          >
+            ★
+          </button>
+        ))}
       </div>
 
       {(hovered || rating) > 0 && (
@@ -73,6 +99,9 @@ const ReviewForm: React.FC = () => {
   const [success, setSuccess] = useState(false);
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
+
+
+    if (rating === 0) newErrors.rating = "Please select a rating";
 
   const validate = useCallback(() => {
     const newErrors: Record<string, string> = {};
