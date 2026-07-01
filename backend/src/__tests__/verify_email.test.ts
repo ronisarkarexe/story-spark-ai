@@ -8,12 +8,16 @@ jest.mock("../config", () => ({
   verify_email: "test@example.com",
   verify_password: "testpassword",
 }));
-
-jest.mock("nodemailer", () => ({
-  createTransport: jest.fn(() => ({
-    sendMail: jest.fn().mockResolvedValue({ messageId: "test-id" }),
-  })),
-}));
+jest.mock("nodemailer", () => {
+  const mSendMail = jest.fn().mockResolvedValue({ messageId: "test-id" });
+  return {
+    createTransport: jest.fn(() => ({
+      sendMail: mSendMail,
+    })),
+    _mockSendMail: mSendMail,
+  };
+});
+const mockSendMail = (nodemailer as any)._mockSendMail;
 
 jest.mock("../app/modules/verify_email/otp.model", () => {
   const mockDeleteOne = jest.fn();
@@ -40,7 +44,7 @@ describe("VerifyEmailService.VerifyEmail", () => {
     // OTP should be stored via OTPModel.create
     expect(require("../app/modules/verify_email/otp.model").OTPModel.create).toHaveBeenCalled();
     // Email should be sent via nodemailer
-    expect(nodemailer.createTransport().sendMail).toHaveBeenCalled();
+    expect(mockSendMail).toHaveBeenCalled();
     expect(result).toHaveProperty("expiresAt");
   });
 });
@@ -74,7 +78,7 @@ describe("VerifyEmailService.VerifyOtp", () => {
       VerifyEmailService.VerifyOtp({ email: "user@example.com", otp: "000000" })
     ).rejects.toThrow(ApiError);
     // ensure failed attempts incremented
-    const savedRecord = require("../app/modules/verify_email/otp.model").OTPModel.findOne.mock.results[0].value;
+    const savedRecord = await require("../app/modules/verify_email/otp.model").OTPModel.findOne.mock.results[0].value;
     expect(savedRecord.failedAttempts).toBe(mockOtpRecord.failedAttempts + 1);
   });
 
@@ -83,7 +87,7 @@ describe("VerifyEmailService.VerifyOtp", () => {
     require("../app/modules/verify_email/otp.model").OTPModel.findOne.mockResolvedValue(expiredRecord);
     await expect(
       VerifyEmailService.VerifyOtp({ email: "user@example.com", otp: "123456" })
-    ).rejects.toMatchObject({ status: httpStatus.BAD_REQUEST, message: "OTP expired. Please request a new one." });
+    ).rejects.toMatchObject({ statusCode: httpStatus.BAD_REQUEST, message: "OTP expired. Please request a new one." });
   });
 
   it("should enforce max failed attempts", async () => {
@@ -91,6 +95,6 @@ describe("VerifyEmailService.VerifyOtp", () => {
     require("../app/modules/verify_email/otp.model").OTPModel.findOne.mockResolvedValue(limitRecord);
     await expect(
       VerifyEmailService.VerifyOtp({ email: "user@example.com", otp: "123456" })
-    ).rejects.toMatchObject({ status: httpStatus.TOO_MANY_REQUESTS });
+    ).rejects.toMatchObject({ statusCode: httpStatus.TOO_MANY_REQUESTS });
   });
 });

@@ -14,12 +14,15 @@ export interface IAIModel {
   characters?: ICharacter[];
 }
 
+import { ScientificWarning } from "./scientific_validator";
+
 export interface IStory {
   title: string;
   content: string;
   tag: string;
   imageURL?: string;
   language?: string;
+  scientificWarnings?: ScientificWarning[];
 }
 
 export interface IAlternateEnding {
