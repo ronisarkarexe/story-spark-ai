@@ -388,7 +388,7 @@ const SignUpComponent = () => {
                         const met = passwordChecks[key];
                         return (
                           <li key={key} className={`flex items-center gap-1.5 ${met ? "text-green-500" : "text-slate-400"}`}>
-                            <span>{met ? "✓" : "○"}</span>
+                            <span>{met ? "✅" : "❌"}</span>
                             <span>{label}</span>
                           </li>
                         );
@@ -408,7 +408,7 @@ const SignUpComponent = () => {
                     register={register}
                     autoComplete="new-password"
                     validation={{
-                      validate: (value) => {
+                      validate: (value: any) => {
                         if (showOtpField) return true;
                         if (!value) return "Confirm password is required";
                         if (value !== password) return "Passwords do not match!";

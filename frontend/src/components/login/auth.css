@@ -142,19 +142,34 @@ body {
     transform: translateY(16px) scale(0.95);
 }
 
-.auth-field,
+.auth-field {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding-left: 44px !important;
+    padding-right: 44px !important; /* Increased from 16px to accommodate icon */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .input-icon-wrapper,
 .ds-input-group {
     width: 100%;
     max-width: 100%;
-    min-width: 0;
     box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
 }
 
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ── Legal Modal Styles ── */
@@ -373,16 +388,19 @@ input:focus {
 .auth-form-card {
     max-width: var(--ds-card-max-width);
     width: 100%;
+    overflow: hidden;
+    position: relative;
 }
+
 
 /* ── Mobile Layout Media Queries ── */
 @media (max-width: 767px) {
-    .auth-container {
-        max-width: 100%;
-    }
-    .left-pane-mobile {
-        height: 260px;
-        min-height: 260px;
+    .auth-field,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        padding-left: 40px !important;
+        padding-right: 40px !important;
     }
 }
 

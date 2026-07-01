@@ -28,6 +28,9 @@ export interface IStories {
   content: string;
   tag: string;
   imageURL: string;
+
+  genre?: string;
+  language?: string;
 }
 
 export type StorySentenceSegment = {
