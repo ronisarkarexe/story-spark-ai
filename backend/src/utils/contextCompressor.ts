@@ -1,5 +1,6 @@
  fix/audio-word-count-1214
  fix/audio-word-count-1214
+ fix/audio-word-count-1214
 
  fix/story-parser-locations-1035
  main
@@ -72,6 +73,8 @@ Settings: ${Array.from(setting).join(" | ")}
 
  main
  main
+
+main
 import { get_encoding } from "tiktoken";
 
 export interface LorePayload {
@@ -211,6 +214,7 @@ export function compressContext(
     droppedNodeCount: nodes.length - window.length,
  fix/audio-word-count-1214
  fix/audio-word-count-1214
+ fix/audio-word-count-1214
  main
 
 
@@ -219,5 +223,7 @@ export function compressContext(
     
  main
  main
+
+main
   };
 }

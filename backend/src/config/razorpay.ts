@@ -1,5 +1,6 @@
  fix/audio-word-count-1214
  fix/audio-word-count-1214
+ fix/audio-word-count-1214
 // backend/src/config/razorpay.ts
 
 import Razorpay from "razorpay";
@@ -20,6 +21,11 @@ fix/audio-word-count-1214
 
  fix/story-parser-locations-1035
  main
+
+import Razorpay from 'razorpay';
+
+export const getRazorpay = (): InstanceType<typeof Razorpay> => {
+ main
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
     throw new Error('Razorpay credentials not configured');
   }
@@ -28,19 +34,6 @@ fix/audio-word-count-1214
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET,
   });
-}; 
-
-  if (!razorpayInstance) {
-    razorpayInstance = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID!,
-      key_secret: process.env.RAZORPAY_KEY_SECRET!,
-    });
-  }
-
-  // At this point the instance must be initialized.
-  return razorpayInstance as InstanceType<typeof Razorpay>;
 };
 
 export default getRazorpay;
-
- main
