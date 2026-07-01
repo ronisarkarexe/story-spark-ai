@@ -5,9 +5,8 @@ import * as Y from 'yjs';
 import { QuillBinding } from 'y-quill';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { io, Socket } from 'socket.io-client';
-import { Awareness } from 'y-protocols/awareness';
+import { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate } from 'y-protocols/awareness';
 import { resolveSocketUrl } from '../../helpers/socket-url';
-import { Awareness } from 'y-protocols/awareness';
 
 interface CollabEditorProps {
   storyId: string;
@@ -113,17 +112,17 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
       });
       socketRef.current = socket;
 
-      socket.on('connect_error', (err: Error) => {
+      socket!.on('connect_error', (err: Error) => {
         console.warn('[Story Spark] Collab editor socket connection error:', err.message);
       });
 
       // Receive initial sync from server
-      socket.on('sync', (update: Uint8Array) => {
+      socket!.on('sync', (update: Uint8Array) => {
         Y.applyUpdate(ydoc, update);
       });
 
       // Receive remote updates
-      socket.on('update', (update: Uint8Array) => {
+      socket!.on('update', (update: Uint8Array) => {
         Y.applyUpdate(ydoc, update);
       });
 
@@ -138,11 +137,11 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
         socket!.emit('awareness', awarenessUpdate);
       };
       awareness.on('update', ({ added, updated, removed }: any) => {
-        const awUpdate = awareness.encodeUpdate(added.concat(updated).concat(removed));
+        const awUpdate = encodeAwarenessUpdate(awareness, added.concat(updated).concat(removed));
         sendAwareness(awUpdate);
       });
-      socket.on('awareness', (aw: Uint8Array) => {
-        awareness.applyUpdate(aw);
+      socket!.on('awareness', (aw: Uint8Array) => {
+        applyAwarenessUpdate(awareness, aw, 'remote');
       });
     } else {
       console.warn(
@@ -152,8 +151,8 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     }
 
     return () => {
-      ydoc.off('update', sendUpdate);
-      socket.disconnect();
+      if (sendUpdate) ydoc.off('update', sendUpdate);
+      if (socketRef.current) socketRef.current.disconnect();
       awareness.off('update', renderRemoteCursors);
       awareness.destroy();
       binding.destroy();

@@ -209,7 +209,6 @@ const StoryWorkspace = () => {
             <StoryViewer
               chapters={currentStory.chapters}
               storyId={currentStory.id}
-              truncated={currentStory.truncated}
             />
 
             <div className="p-6 border-t border-zinc-800">

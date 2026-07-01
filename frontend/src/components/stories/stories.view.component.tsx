@@ -229,6 +229,7 @@ export interface IStories {
   title: string;
   content: string;
   tag: string;
+  genre?: string;
   emotions?: string[];
   enhancedPrompt?: string;
   imageURL: string;
