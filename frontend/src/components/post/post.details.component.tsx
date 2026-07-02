@@ -28,6 +28,7 @@ import { formatReadingStats } from "../../utils/story-utils";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
+import SimilarStories from "../recommendations/SimilarStories";
 
 import {
   useToggleFollowMutation,
@@ -625,6 +626,15 @@ const PostDetailsComponent = () => {
       <p>No related stories found.</p>
     </div>
   )}
+</div>
+<div className="mt-12">
+  <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
+    Similar Stories
+  </h3>
+
+  <SimilarStories
+    stories={relatedPost || []}
+  />
 </div>
           </div>
         </div>
