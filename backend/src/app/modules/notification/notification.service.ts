@@ -16,6 +16,10 @@ const createNotification = async (payload: INotification) => {
 };
 
 const resolveUserId = async (token: ITokenPayload) => {
+  if (token._id) {
+    return token._id;
+  }
+
   if (token.userId) {
     return token.userId;
   }
