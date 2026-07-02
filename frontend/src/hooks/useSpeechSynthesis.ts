@@ -194,7 +194,7 @@ export const useSpeechSynthesis = (
     [voiceGender],
   );
 
-  const stop = useCallback(() => {
+  const stop = () => {
     if (synthRef.current) {
       synthRef.current.cancel();
     }
@@ -203,7 +203,7 @@ export const useSpeechSynthesis = (
     setIsSpeaking(false);
     setIsPaused(false);
     setCurrentWordIndex(0);
-  }, []);
+  };
 
   useEffect(() => {
     if (!hasSpeechSupport()) {

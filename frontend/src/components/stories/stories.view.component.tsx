@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
+  CharacterProfile,
   getShortenedText,
   ITopicData,
   topicsData,
@@ -13,12 +14,6 @@ import StoryGenreTransformation from "./StoryGenreTransformation";
 import StoryMoodDashboard from "./StoryMoodDashboard";
 import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
-import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
-import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
-import jsPDF from "jspdf";
-import StoryTranslator from "./translate/StoryTranslator";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
@@ -289,16 +284,6 @@ const handleGenerateCharacterProfile = async () => {
     }
   };
 
-const isNarrationActive = narrationState !== "idle";
-
-if (isLoading) {
-  return (
-    <div className="flex items-center justify-center py-20">
-      <StoryGeneratingAnimation />
-    </div>
-  );
-}
-
 if (!selectedStory) {
   return null;
 }
@@ -318,7 +303,6 @@ if (!stories || stories.length === 0) {
     </div>
   );
 }
-  }
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
