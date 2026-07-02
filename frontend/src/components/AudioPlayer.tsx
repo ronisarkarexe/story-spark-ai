@@ -8,8 +8,6 @@ import React, {
 } from "react";
 import {
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
   LoaderCircle,
   Pause,
   Play,
@@ -17,11 +15,9 @@ import {
   Square,
   Star,
   Volume2,
-  Volume,
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
-import { useVoicePreview } from "../hooks/useVoicePreview";
 import { useVoiceFavorites } from "../hooks/useVoiceFavorites";
 
 export type NarrationPlaybackState = "idle" | "playing" | "paused";
@@ -78,7 +74,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     }, [voiceGender]);
 
     const speech = useSpeechSynthesis(text, voiceGender);
-    const preview = useVoicePreview();
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
@@ -132,7 +127,12 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
-    }, [showFavoritesOnly, displayedVoices, speech]);
+    }, [
+      showFavoritesOnly,
+      displayedVoices,
+      speech.selectedVoiceId,
+      speech.setSelectedVoiceId,
+    ]);
 
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
