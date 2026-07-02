@@ -87,13 +87,13 @@ const TopHeaderComponent = () => {
             <ThemeToggle />
             
             <div className="hidden sm:flex items-center gap-3">
-              <button
-                type="button"
+              <Link
+                to="/search"
                 className="p-2 rounded-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 aria-label="Search"
               >
                 <Search size={20} />
-              </button>
+              </Link>
 
               {isLogin ? (
                 <>
