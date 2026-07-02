@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { io } from 'socket.io-client';
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
+import { resolveSocketUrl } from '../../helpers/socket-url';
 import CollabEditor from './CollabEditor';
+import CollabChatPanel from './CollabChatPanel';
 interface Participant {
   userId: string;
   username: string;
@@ -342,6 +345,16 @@ export default function CollabRoom() {
                   <p className="text-slate-400 text-sm">No writers present</p>
                 )}
               </div>
+            </div>
+
+            {/* Chat Panel */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden flex flex-col" style={{ minHeight: "360px", maxHeight: "480px" }}>
+              <CollabChatPanel
+                socket={collabSocket}
+                roomId={roomId || ""}
+                currentUserId={user?.userId || ""}
+                currentUsername={user?.name || "Anonymous"}
+              />
             </div>
 
             {/* Room Settings Card */}

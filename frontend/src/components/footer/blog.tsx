@@ -1,67 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-
-interface DevToArticle {
-  id: number;
-  title: string;
-  description: string;
-  url: string;
-  tag_list: string[];
-  published_at: string;
-  reading_time_minutes: number;
-  user: { name: string };
-  cover_image: string | null;
-}
-
-interface BlogPost {
-  id: number;
-  title: string;
-  description: string;
-  url: string;
-  category: "AI" | "Writing" | "OSS";
-  date: string;
-  readMin: number;
-  author: string;
-  cover: string | null;
-}
-
-type Category = "All" | "AI" | "Writing" | "OSS";
-type SortOption = "newest" | "oldest" | "shortest";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  All: "All",
-  AI: "AI Storytelling",
-  Writing: "Writing Tips",
-  OSS: "Open Source",
-};
-
-const CATEGORY_STYLES: Record<string, string> = {
-  AI: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  Writing: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-  OSS: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-};
-
-const TAG_QUERIES: Record<Category, string> = {
-  All: "ai",
-  AI: "ai",
-  Writing: "writing",
-  OSS: "opensource",
-};
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function mapCategory(tags: string[]): "AI" | "Writing" | "OSS" {
-  const t = tags.join(" ").toLowerCase();
-  if (t.includes("writing") || t.includes("tutorial") || t.includes("beginners")) return "Writing";
-  if (t.includes("opensource") || t.includes("github") || t.includes("hacktoberfest")) return "OSS";
-  return "AI";
-}
 
 const Blog = () => {
   const blogPosts = [
@@ -146,7 +83,7 @@ const Blog = () => {
           </Link>
         </div>
       </div>
-    </main>
+    </div>
   );
 };
 

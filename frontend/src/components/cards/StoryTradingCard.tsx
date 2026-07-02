@@ -1,5 +1,4 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
-import html2canvas from "html2canvas";
 import toast from "react-hot-toast";
 import type { IStories } from "../stories/stories.view.component";
 import { getWordCount } from "../stories/stories.utils";
@@ -104,7 +103,7 @@ const getKeyQuote = (content: string) => {
 };
 
 const getGenreLabel = (story: IStories) =>
-  cleanText((story as any).genre || story.tag || "Story").replace(/^[^\w]+/, "") ||
+  cleanText(story.genre || story.tag || "Story").replace(/^[^\w]+/, "") ||
   "Story";
 
 interface StoryTradingCardProps {
@@ -291,7 +290,7 @@ const StoryTradingCard: React.FC<StoryTradingCardProps> = ({
                 {genre}
               </span>
               <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold text-white">
-                {(story as any).language || "English"}
+                {story.language || "English"}
               </span>
             </div>
           </div>
