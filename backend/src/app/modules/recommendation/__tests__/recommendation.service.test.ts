@@ -1,3 +1,4 @@
+import ApiError from "../../../../errors/api_error";
 import { Types } from "mongoose";
 import { Post, PostSchema } from "../../post/post.model";
 import { User } from "../../user/user.model";
@@ -325,6 +326,118 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
 });
 
 describe("recommendation query indexes", () => {
+  it("throws ApiError when user does not exist", async () => {
+    createUserQuery(null);
+
+    await expect(
+      RecommendationService.getPersonalizedRecommendations(token)
+    ).rejects.toMatchObject({
+      statusCode: 404,
+      message: "User not found",
+    });
+  });
+
+  it("builds recommendation query when only favorite emotions exist", async () => {
+  const post = createRecommendationPost(
+    new Types.ObjectId("507f1f77bcf86cd799439020")
+  );
+
+  createUserQuery({
+    readingPreferences: {
+      favoriteGenres: [],
+      favoriteEmotions: [
+        { name: "Joy", count: 5 },
+        { name: "Wonder", count: 2 },
+      ],
+    },
+    readingHistory: [readPostId],
+  });
+
+  createPostQuery(Array(10).fill(post));
+
+  await RecommendationService.getPersonalizedRecommendations(token);
+
+  expect(mockedPost.find).toHaveBeenCalledWith({
+    isDeleted: false,
+    isPublished: true,
+    _id: { $nin: [readPostId] },
+    $or: [
+      {
+        emotions: {
+          $in: ["Joy", "Wonder"],
+        },
+      },
+    ],
+  });
+});
+
+it("builds recommendation query when only favorite genres exist", async () => {
+  const post = createRecommendationPost(
+    new Types.ObjectId("507f1f77bcf86cd799439021")
+  );
+
+  createUserQuery({
+    readingPreferences: {
+      favoriteGenres: [
+        { name: "Fantasy", count: 5 },
+        { name: "Mystery", count: 2 },
+      ],
+      favoriteEmotions: [],
+    },
+    readingHistory: [readPostId],
+  });
+
+  createPostQuery(Array(10).fill(post));
+
+  await RecommendationService.getPersonalizedRecommendations(token);
+
+  expect(mockedPost.find).toHaveBeenCalledWith({
+    isDeleted: false,
+    isPublished: true,
+    _id: { $nin: [readPostId] },
+    $or: [
+      {
+        genre: {
+          $in: ["Fantasy", "Mystery"],
+        },
+      },
+    ],
+  });
+});
+
+it("handles empty reading history without adding exclusion filters", async () => {
+  const post = createRecommendationPost(
+    new Types.ObjectId("507f1f77bcf86cd799439022")
+  );
+
+  createUserQuery({
+    readingPreferences: {
+      favoriteGenres: [{ name: "Fantasy", count: 1 }],
+      favoriteEmotions: [],
+    },
+    readingHistory: [],
+  });
+
+  createPostQuery(Array(10).fill(post));
+
+  await RecommendationService.getPersonalizedRecommendations(token);
+
+  expect(mockedPost.find).toHaveBeenCalledWith({
+    isDeleted: false,
+    isPublished: true,
+    $or: [
+      {
+        genre: {
+          $in: ["Fantasy"],
+        },
+      },
+    ],
+  });
+});
+
+
+
+
   it("registers indexes for published popularity and preference recommendation queries", () => {
     const indexKeys = PostSchema.indexes().map(([keys]) => keys);
 
