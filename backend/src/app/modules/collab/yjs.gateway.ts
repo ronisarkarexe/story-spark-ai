@@ -1,4 +1,4 @@
-import { Server, Socket } from 'socket.io';
+import { Server, Socket, Namespace } from 'socket.io';
 import * as Y from 'yjs';
 import { CollabService } from './collab.service';
 

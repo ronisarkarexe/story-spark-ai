@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Security middleware to prevent prompt injection and jailbreaks.
  * Improvements:
  * - Input normalization before pattern matching
@@ -62,7 +62,6 @@ export const validateAndFormatPrompt = (userPrompt: string): string => {
 
   const canonical = canonicalizeSecurityText(userPrompt);
 
-  // Semantic filtering against expanded pattern set
   for (const pattern of FORBIDDEN_PATTERNS) {
     if (pattern.test(canonical)) {
       throw new Error("Security Violation: Malicious prompt injection detected.");
@@ -84,7 +83,6 @@ export const validateOutput = (aiResponse: string): string => {
   const canonical = canonicalizeSecurityText(aiResponse);
   const lowerResponse = canonical.toLowerCase();
 
-  // Expanded output validation — check for leaked system instructions
   const leakPatterns = [
     "system prompt:",
     "instructions:",
@@ -107,7 +105,6 @@ export const validateOutput = (aiResponse: string): string => {
     }
   }
 
-  // Content moderation — block harmful/inappropriate output
   assertContentSafe(aiResponse);
 
   return aiResponse;

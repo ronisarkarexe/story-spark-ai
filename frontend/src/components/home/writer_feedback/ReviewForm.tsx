@@ -11,7 +11,6 @@ type StarRatingProps = {
 const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
   const [hovered, setHovered] = useState(0);
 
-  // keyboard support: left/right arrows to change rating, 1-5 keys to set directly
   const handleKey = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "ArrowLeft") setRating(Math.max(0, rating - 1));
