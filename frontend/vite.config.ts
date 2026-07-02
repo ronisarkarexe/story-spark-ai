@@ -1,9 +1,40 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'android-chrome-192x192.png', 'android-chrome-512x512.png'],
+      manifest: {
+        name: 'Story Spark AI',
+        short_name: 'StorySpark',
+        description: 'Story Spark AI Application',
+        theme_color: '#ffffff',
+        display: 'standalone',
+        icons: [
+          {
+            src: 'android-chrome-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      },
+      workbox: {
+        // Caches all static assets, ensuring index.css and tokens.css are reliably stored offline
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+      }
+    })
+  ],
   server: {
     port: 4001,
     headers: {
