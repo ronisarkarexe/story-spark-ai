@@ -41,8 +41,7 @@ const jwtSecret = requiredEnv("JWT_SECRET");
 
 if (jwtSecret.length < 32) {
   throw new Error(
-    "JWT_SECRET must be at least 32 characters long" +
-    "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+    "JWT_SECRET must be at least 32 characters long" + "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
   );
 }
 
