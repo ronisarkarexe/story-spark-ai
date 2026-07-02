@@ -206,6 +206,16 @@ const getGenres = catchAsync(async (_req: Request, res: Response) => {
   });
 });
 
+const bulkDelete = catchAsync(async (req: Request, res: Response) => {
+  const { ids } = req.body;
+  const token = await getToken(req);
+  const result = await PostService.bulkDeletePosts(ids, token);
+  res.status(httpStatus.OK).json({
+    deleted: result.deleted,
+    failed: result.failed,
+  });
+});
+
 export const PostController = {
   createPost,
   getPosts,
@@ -222,4 +232,5 @@ export const PostController = {
   translateStory,
   forkStory,
   getGenres,
+  bulkDelete,
 };

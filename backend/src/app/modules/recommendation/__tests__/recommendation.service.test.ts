@@ -226,6 +226,68 @@ describe("RecommendationService.getPersonalizedRecommendations", () => {
     expect(fallbackPostQuery.limit).toHaveBeenCalledWith(10);
   });
 
+  it("throws ApiError NOT_FOUND when user does not exist", async () => {
+    mockedUser.findById.mockReturnValueOnce({
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(null),
+    });
+
+    await expect(
+      RecommendationService.getPersonalizedRecommendations(token)
+    ).rejects.toThrow("User not found");
+
+    expect(mockedUser.findById).toHaveBeenCalledWith(token._id);
+  });
+
+  it("falls back to popular posts when readingPreferences is undefined", async () => {
+    const fallbackPost = createRecommendationPost(
+      new Types.ObjectId("507f1f77bcf86cd799439017")
+    );
+
+    createUserQuery({
+      readingPreferences: undefined,
+      readingHistory: [],
+    });
+    const fallbackPostQuery = createPostQuery([fallbackPost]);
+
+    const result = await RecommendationService.getPersonalizedRecommendations(
+      token
+    );
+
+    expect(result).toEqual([fallbackPost]);
+    expect(mockedPost.find).toHaveBeenCalledTimes(1);
+    expect(mockedPost.find.mock.calls[0][0]).toEqual({
+      isDeleted: false,
+      isPublished: true,
+      _id: { $nin: [] },
+    });
+    expect(fallbackPostQuery.limit).toHaveBeenCalledWith(10);
+  });
+
+  it("falls back to popular posts when favoriteGenres and favoriteEmotions are empty", async () => {
+    const fallbackPost = createRecommendationPost(
+      new Types.ObjectId("507f1f77bcf86cd799439018")
+    );
+
+    createUserQuery({
+      readingPreferences: {
+        favoriteGenres: [],
+        favoriteEmotions: [],
+      },
+      readingHistory: [],
+    });
+    const fallbackPostQuery = createPostQuery([fallbackPost]);
+
+    const result = await RecommendationService.getPersonalizedRecommendations(
+      token
+    );
+
+    expect(result).toEqual([fallbackPost]);
+    expect(mockedPost.find).toHaveBeenCalledTimes(1);
+    expect(mockedPost.find.mock.calls[0][0].$or).toBeUndefined();
+    expect(fallbackPostQuery.limit).toHaveBeenCalledWith(10);
+  });
+
   it("does not mutate reading preference arrays while ranking preferences", async () => {
     const favoriteGenres = [
       { name: "Mystery", count: 1 },
