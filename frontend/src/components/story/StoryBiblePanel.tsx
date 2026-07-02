@@ -118,9 +118,8 @@ const StoryBiblePanel: React.FC<StoryBiblePanelProps> = ({ storyId }) => {
 
         {bible && activeTab === "objects" && (
           <div className="space-y-4">
-            {bible.objects?.map((o: IObject, i: number) => (
-              <div key={i} className="bg-zinc-800 p-3 rounded-lg border border-zinc-700">
-                <div className="font-bold text-white mb-1">{o.name}</div>
+            {bible.objects?.map((o: IObject) => (
+              <div key={o.id ?? o.name} className="bg-zinc-800 p-3 rounded-lg border border-zinc-700">
                 <div className="text-xs text-slate-300"><strong>Description:</strong> {o.description}</div>
                 <div className="text-xs text-slate-300"><strong>Significance:</strong> {o.significance}</div>
               </div>
