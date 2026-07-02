@@ -20,7 +20,8 @@ const requiredEnv = (key: string): string => {
   }
   return value;
 };
-const validateAIProviderKeys = (): void => {
+
+export const assertAIProviderConfigured = (): void => {
   const hasOpenAI = !!(process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY)?.trim();
   const hasGemini = !!process.env.GEMINI_API_KEY?.trim();
   const hasAnthropic = !!process.env.ANTHROPIC_API_KEY?.trim();
@@ -35,8 +36,6 @@ const validateAIProviderKeys = (): void => {
   if (!hasGemini) console.warn("[Config] GEMINI_API_KEY not set — Gemini provider unavailable.");
   if (!hasAnthropic) console.warn("[Config] ANTHROPIC_API_KEY not set — Anthropic provider unavailable.");
 };
-
-validateAIProviderKeys();
 
 export default {
   env: process.env.NODE_ENV,
