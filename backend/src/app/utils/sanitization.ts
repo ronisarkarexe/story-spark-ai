@@ -43,3 +43,33 @@ export const normalizeWhitespace = (input: string): string => {
   if (!input) return '';
   return input.replace(/\s+/g, ' ').trim();
 };
+
+/**
+ * Verifies if a URL protocol is safe (http, https, or mailto/tel if needed).
+ * Rejects javascript:, data:, vbscript:, file:, about:, jar:, mocha:, livescript:, apt:, etc.
+ */
+export const isAllowedUrlProtocol = (url: string): boolean => {
+  if (!url) return false;
+  
+  const trimmed = url.trim().toLowerCase();
+  
+  try {
+    const parsed = new URL(trimmed);
+    const allowed = ['http:', 'https:', 'mailto:', 'tel:'];
+    return allowed.includes(parsed.protocol);
+  } catch (e) {
+    const dangerousPattern = /^(javascript|data|vbscript|file|about|jar|mocha|livescript|apt):/i;
+    if (dangerousPattern.test(trimmed)) {
+      return false;
+    }
+    return !trimmed.includes(':') || trimmed.startsWith('/') || trimmed.startsWith('./') || trimmed.startsWith('../');
+  }
+};
+
+/**
+ * Returns a sanitized URL if protocol is allowed, or the fallback string if dangerous.
+ */
+export const sanitizeUrl = (url: string, fallback = ''): string => {
+  if (!url) return fallback;
+  return isAllowedUrlProtocol(url) ? url.trim() : fallback;
+};
