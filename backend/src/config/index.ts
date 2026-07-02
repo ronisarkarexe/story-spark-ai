@@ -37,6 +37,14 @@ const validateAIProviderKeys = (): void => {
 };
 
 validateAIProviderKeys();
+const jwtSecret = requiredEnv("JWT_SECRET");
+
+if (jwtSecret.length < 32) {
+  throw new Error(
+    "JWT_SECRET must be at least 32 characters long" +
+    "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+  );
+}
 
 export default {
   env: process.env.NODE_ENV,
@@ -57,7 +65,7 @@ export default {
     return Number.isInteger(parsed) && parsed > 0 ? parsed : 10;
   })(),
   jwt: {
-    secret: requiredEnv("JWT_SECRET"),
+    secret: jwtSecret,
     refresh_secret: requiredEnv("JWT_REFRESH_SECRET"),
     expires_in: process.env.JWT_EXPIRES_IN,
     refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
