@@ -72,7 +72,7 @@
 
 ## Known Behavior & UX Notes 📋
 
-### Issue [#4238](https://github.com/ronisarkarexe/story-spark-ai/issues/4238) — Loading State During Story Generation
+### UI Optimization — Loading State During Story Generation
 
 **Current behavior:** Clicking "Generate Story" multiple times while waiting for AI output creates duplicate requests, wastes API credits, and leaves users uncertain whether the app is working.
 
@@ -300,7 +300,7 @@ curl -X POST http://localhost:5000/api/v1/story/generate \
 }
 ```
 
-> ⚠️ **Note (Issue #4238):** The API does not deduplicate in-flight requests. If a user clicks Generate multiple times before a response arrives, each click triggers a separate AI call. Implement a loading/disabled state in your UI to prevent this — see [Known Behavior & UX Notes](#known-behavior--ux-notes-).
+> ⚠️ **Note (UX Optimization):** The API does not deduplicate in-flight requests. If a user clicks Generate multiple times before a response arrives, each click triggers a separate AI call. Implement a loading/disabled state in your UI to prevent this — see [Known Behavior & UX Notes](#known-behavior--ux-notes-).
 
 ---
 
@@ -310,10 +310,10 @@ curl -X POST http://localhost:5000/api/v1/story/generate \
 → Set at least one of `OPEN_AI_KEY`, `GEMINI_API_KEY`, or `AI_API_KEYS`.
 
 **Generate button fires multiple times / duplicate stories appear?**
-→ This is issue [#4238](https://github.com/ronisarkarexe/story-spark-ai/issues/4238). Add a loading state that disables the button during the request. See [Known Behavior & UX Notes](#known-behavior--ux-notes-) for a code example.
+→ This is a known UX optimization. Add a loading state that disables the button during the request. See [Known Behavior & UX Notes](#known-behavior--ux-notes-) for a code example.
 
 **Stories lost after browser refresh?**
-→ Story results are held in component state and are cleared on refresh. To persist them, save to `localStorage` or call the backend history endpoint after generation. Persistent storage support is tracked in [#4238](https://github.com/ronisarkarexe/story-spark-ai/issues/4238).
+→ Story results are held in component state and are cleared on refresh. To persist them, save to `localStorage` or call the backend history endpoint after generation. Persistent storage support is tracked in [open issues](https://github.com/ronisarkarexe/story-spark-ai/issues).
 
 **Google Login not working?**
 → `GOOGLE_CLIENT_ID` is missing. Get it from [Google Cloud Console](https://console.cloud.google.com/).
