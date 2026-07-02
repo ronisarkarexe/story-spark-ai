@@ -15,9 +15,6 @@ import {
   MapPin,
   Clock,
   Briefcase,
-  // Twitter,
-  // Linkedin,
-  // Github,
   Globe,
   MessageCircle,
 } from "lucide-react";
@@ -208,7 +205,7 @@ const FloatingLabelInput = ({
       <div className="relative">
         {/* Icon */}
         <span
-          className={`contact-float-icon ${isFloated ? "contact-float-icon--active" : ""}`}
+          className={`contact-float-icon ${isFloated ? "contact-float-icon--active" : ""} text-slate-400 dark:text-slate-500`}
           aria-hidden="true"
         >
           <Icon className="h-4 w-4" />
@@ -231,6 +228,7 @@ const FloatingLabelInput = ({
           aria-required={required}
           className={[
             "contact-float-input",
+            "bg-slate-100 border-slate-300 text-slate-900 dark:bg-transparent dark:border-white/[0.07] dark:text-white",
             isFloated ? "contact-float-input--active" : "",
             error ? "contact-float-input--error" : "",
           ]
@@ -241,7 +239,7 @@ const FloatingLabelInput = ({
         {/* Floating label with required indicator */}
         <label
           htmlFor={id}
-          className={`contact-float-label ${isFloated ? "contact-float-label--floated" : ""}`}
+          className={`contact-float-label ${isFloated ? "contact-float-label--floated" : ""} text-slate-500 dark:text-slate-400`}
         >
           {label}
           {required && (
@@ -287,7 +285,7 @@ const FloatingLabelTextarea = ({
         <span
           className={`contact-float-icon contact-float-icon--textarea ${
             isFloated ? "contact-float-icon--active" : ""
-          }`}
+          } text-slate-400 dark:text-slate-500`}
           aria-hidden="true"
         >
           <Pencil className="h-4 w-4" />
@@ -309,6 +307,7 @@ const FloatingLabelTextarea = ({
           aria-required="true"
           className={[
             "contact-float-input contact-float-textarea",
+            "bg-slate-100 border-slate-300 text-slate-900 dark:bg-transparent dark:border-white/[0.07] dark:text-white",
             isFloated ? "contact-float-input--active" : "",
             error ? "contact-float-input--error" : "",
           ]
@@ -321,7 +320,7 @@ const FloatingLabelTextarea = ({
           htmlFor="contact-message"
           className={`contact-float-label contact-float-label--textarea ${
             isFloated ? "contact-float-label--floated" : ""
-          }`}
+          } text-slate-500 dark:text-slate-400`}
         >
           Message
           <span className="contact-required-star" aria-hidden="true"> *</span>
@@ -446,7 +445,7 @@ export default function Contact() {
       ref={sectionRef}
       id="contact"
       aria-labelledby="contact-heading"
-      className="contact-section relative overflow-hidden bg-[#020617] text-white"
+      className="contact-section relative overflow-hidden bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-white"
     >
       {/* Layered background */}
       <div aria-hidden="true" className="contact-bg-mesh" />
@@ -461,7 +460,7 @@ export default function Contact() {
         {/* Mobile badge */}
         <div className="mb-10 flex flex-col items-center text-center lg:hidden">
           <span
-            className={`contact-badge inline-flex items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-300 transition-all duration-700 ${
+            className={`contact-badge inline-flex items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-500 dark:text-blue-300 transition-all duration-700 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
@@ -479,7 +478,7 @@ export default function Contact() {
             }`}
           >
             {/* Desktop badge */}
-            <span className="contact-badge mb-6 hidden w-fit items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-300 lg:inline-flex">
+            <span className="contact-badge mb-6 hidden w-fit items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-300 lg:inline-flex">
               <Zap className="h-3 w-3" aria-hidden="true" />
               Get in Touch
             </span>
@@ -490,7 +489,7 @@ export default function Contact() {
               className="font-black leading-[0.9] tracking-tight"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              <span className="block text-[clamp(2.75rem,6vw,4.5rem)] text-white">
+              <span className="block text-[clamp(2.75rem,6vw,4.5rem)] text-slate-900 dark:text-white">
                 Let's Start a
               </span>
               <span className="contact-heading-gradient block text-[clamp(2.75rem,6vw,4.5rem)]">
@@ -502,7 +501,7 @@ export default function Contact() {
             <div aria-hidden="true" className="contact-accent-bar mt-5" />
 
             {/* Intro description — improved */}
-            <p className="mt-6 max-w-[42ch] text-[0.9375rem] leading-[1.8] text-slate-400 sm:text-base">
+            <p className="mt-6 max-w-[42ch] text-[0.9375rem] leading-[1.8] text-slate-600 dark:text-slate-400 sm:text-base">
               I'm always open to discussing new ideas, collaborations, freelance
               work, or creative projects. Have a story idea or feature suggestion?
               Drop me a message — I read everything and reply within 24 hours.
@@ -513,13 +512,13 @@ export default function Contact() {
               {STATS.map(({ value, label }, i) => (
                 <div
                   key={label}
-                  className="contact-stat-card rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3 text-center sm:p-4"
+                  className="contact-stat-card rounded-2xl border border-slate-200 bg-white dark:border-white/[0.07] dark:bg-white/[0.03] shadow-sm dark:shadow-none p-3 text-center sm:p-4"
                   style={{
                     transitionDelay: isVisible ? `${i * 80}ms` : "0ms",
                   }}
                 >
-                  <p className="text-lg font-black text-white sm:text-xl">{value}</p>
-                  <p className="mt-0.5 text-[0.65rem] font-medium uppercase tracking-wider text-slate-500 sm:text-xs">
+                  <p className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">{value}</p>
+                  <p className="mt-0.5 text-[0.65rem] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-500 sm:text-xs">
                     {label}
                   </p>
                 </div>
@@ -531,7 +530,7 @@ export default function Contact() {
               {INFO_CARDS.map(({ icon: Icon, label, value, color, iconColor }) => (
                 <div
                   key={label}
-                  className="contact-info-card flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-3.5 py-3 backdrop-blur-sm"
+                  className="contact-info-card flex items-center gap-3 rounded-2xl border border-slate-200 bg-white dark:border-white/[0.07] dark:bg-white/[0.03] shadow-sm dark:shadow-none px-3.5 py-3 backdrop-blur-sm"
                 >
                   <span
                     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${color} ${iconColor}`}
@@ -542,7 +541,7 @@ export default function Contact() {
                     <span className="block text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">
                       {label}
                     </span>
-                    <span className="block truncate text-xs font-semibold text-slate-300">
+                    <span className="block truncate text-xs font-semibold text-slate-700 dark:text-slate-300">
                       {value}
                     </span>
                   </span>
@@ -560,7 +559,7 @@ export default function Contact() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${label}: ${value}`}
-                      className={`contact-channel-link group flex items-center gap-3.5 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3.5 backdrop-blur-sm ${hoverBorder}`}
+                      className={`contact-channel-link group flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white dark:border-white/[0.07] dark:bg-white/[0.03] shadow-sm dark:shadow-none px-4 py-3.5 backdrop-blur-sm ${hoverBorder}`}
                     >
                       <span
                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${color} ${iconColor}`}
@@ -571,12 +570,12 @@ export default function Contact() {
                         <span className="block text-[0.65rem] font-bold uppercase tracking-widest text-slate-500">
                           {label}
                         </span>
-                        <span className="block truncate text-sm font-medium text-slate-300 group-hover:text-white transition-colors duration-200">
+                        <span className="block truncate text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors duration-200">
                           {value}
                         </span>
                       </span>
                       <ArrowUpRight
-                        className="h-3.5 w-3.5 shrink-0 text-slate-600 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-400"
+                        className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-600 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-600 dark:group-hover:text-slate-400"
                         aria-hidden="true"
                       />
                     </a>
@@ -598,7 +597,7 @@ export default function Contact() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}
-                    className={`contact-social-btn flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-500 transition-all duration-200 ${color}`}
+                    className={`contact-social-btn flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white dark:border-white/[0.08] dark:bg-white/[0.03] shadow-sm dark:shadow-none text-slate-500 transition-all duration-200 ${color}`}
                   >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </a>
@@ -636,11 +635,11 @@ export default function Contact() {
 
                 {/* Form header */}
                 <div className="mb-8">
-                  <h2 className="text-xl font-bold text-white sm:text-2xl">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
                     Send a Message
                   </h2>
-                  <p className="mt-1.5 text-sm text-slate-400">
-                    All fields marked <span className="text-violet-400 font-semibold">*</span> are required. We'll reply within 24 hours.
+                  <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+                    All fields marked <span className="text-violet-500 dark:text-violet-400 font-semibold">*</span> are required. We'll reply within 24 hours.
                   </p>
                 </div>
 
