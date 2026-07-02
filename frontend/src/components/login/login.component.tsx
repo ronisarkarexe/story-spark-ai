@@ -152,12 +152,7 @@ const LoginComponent = () => {
 
                 <div className="flex justify-center w-full box-border">
           <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
-            <button
-              onClick={() => (window.location.href = "/")}
-              className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-            >
-              ← Back to Home
-            </button>
+            
 
             <div className="mb-6 text-center">
               <h2 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
@@ -241,6 +236,14 @@ const LoginComponent = () => {
                 Sign up for free
               </Link>
             </p>
+            <div className="mt-3 text-center">
+              <button
+                onClick={() => (window.location.href = "/")}
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 inline-flex items-center gap-2 cursor-pointer"
+              >
+                ← Back to Home
+              </button>
+            </div>
           </div>
         </div>
       </div>
