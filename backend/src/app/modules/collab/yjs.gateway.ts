@@ -1,4 +1,4 @@
-import { Server, Socket, Namespace } from 'socket.io';
+import { Server as IOServer, Socket } from 'socket.io';
 import * as Y from 'yjs';
 import { CollabService } from './collab.service';
 
@@ -15,12 +15,12 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T 
  * and persists the document state to MongoDB.
  */
 export class YjsGateway {
-  private readonly io: Namespace;
+  private readonly io: ReturnType<IOServer['of']>;
   private readonly docs: Map<string, Y.Doc> = new Map();
-  private readonly debouncedSaves: Map<string, () => void> = new Map();
+  private readonly debouncedSaves: Map<string, NodeJS.Timeout> = new Map();
   private readonly saveDelay = 2000; // ms
 
-  constructor(io: Server) {
+  constructor(io: IOServer) {
     this.io = io.of('/yjs');
     this.setup();
   }
@@ -65,15 +65,21 @@ export class YjsGateway {
   }
 
   private scheduleSave(storyId: string, doc: Y.Doc) {
-    if (!this.debouncedSaves.has(storyId)) {
-      const fn = debounce(() => {
-        const update = Y.encodeStateAsUpdate(doc);
-        const base64 = Buffer.from(update).toString('base64');
-        CollabService.updateCollabState(storyId, base64);
-      }, this.saveDelay);
-      this.debouncedSaves.set(storyId, fn);
+    // Clear existing timeout if any
+    const existingTimeout = this.debouncedSaves.get(storyId);
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
     }
-    this.debouncedSaves.get(storyId)!();
+
+    // Set new timeout
+    const timeout = setTimeout(() => {
+      const update = Y.encodeStateAsUpdate(doc);
+      const base64 = Buffer.from(update).toString('base64');
+      CollabService.updateCollabState(storyId, base64);
+      this.debouncedSaves.delete(storyId);
+    }, this.saveDelay);
+
+    this.debouncedSaves.set(storyId, timeout);
   }
 
   private randomColor(): string {

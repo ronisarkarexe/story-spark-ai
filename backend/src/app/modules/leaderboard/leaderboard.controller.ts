@@ -89,7 +89,7 @@ export const getWeeklyLeaderboard = async (_req: Request, res: Response): Promis
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || "Failed to compile leaderboard metrics",
+      message: "Failed to fetch leaderboard",
     });
   }
 };

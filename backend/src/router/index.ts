@@ -26,6 +26,7 @@ import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_i
 import { EngagementRouter } from "../app/modules/engagement/engagement.router";
 import { ChatRouter } from "../app/modules/chat/chat.router";
 import { SearchRouter } from "../app/modules/search/search.router";
+import { LeaderboardRoutes } from "../app/modules/leaderboard/leaderboard.router";
 
 import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
 import { StoryRatingRouter } from "../app/modules/story_rating/story_rating.router";
@@ -152,6 +153,10 @@ const modules = [
   {
     path: "/story-rating",
     router: StoryRatingRouter,
+  },
+  {
+    path: "/leaderboard",
+    router: LeaderboardRoutes,
   },
   {
     path: "/collections",

@@ -26,9 +26,11 @@ import {
   TranslationResponseSchema,
   StoryboardResponseSchema,
 } from "../ai";
+import { GenerativeModel } from "@google/generative-ai";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
+
 const MISSING_GEMINI_API_KEY_MESSAGE =
   "Gemini API key is not configured. Set GEMINI_API_KEY before using Gemini generation features.";
 
@@ -144,14 +146,6 @@ const buildCharactersInstruction = (characters?: ICharacter[]): string => {
     .join("\n");
   return `Cast of Characters (You MUST incorporate these characters into all generated stories and maintain their roles, relationship dynamics, and traits consistently):\n${charsString}\n\n`;
 };
-
-const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) return trimmed;
-  return trimmed.replace(/^```(json)?/, "").replace(/```$/, "").trim();
-};
-
-import { GenerativeModel } from "@google/generative-ai";
 
 const executeWithRetryAndFallback = async <T>(
   operation: (activeModel: GenerativeModel) => Promise<T>,

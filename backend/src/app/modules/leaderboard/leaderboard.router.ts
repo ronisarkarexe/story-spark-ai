@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { getWeeklyLeaderboard } from "./leaderboard.controller";
+import { getWeeklyLeaderboardController } from "./leaderboard.controller";
 
 const router = Router();
 
-router.get("/", getWeeklyLeaderboard);
+router.get("/", getWeeklyLeaderboardController);
 
 export const LeaderboardRoutes = router;
