@@ -82,7 +82,7 @@ const LoginComponent = () => {
     <div className="min-h-screen w-full bg-[#e0e5ec] dark:bg-[#1a1f2e] text-slate-900 dark:text-slate-100 flex items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6 lg:px-8 box-border">
 
 
-      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 box-border">
+      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center justify-items-center lg:justify-items-stretch relative z-10 box-border">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -141,7 +141,7 @@ const LoginComponent = () => {
                 <div className="flex justify-center w-full box-border">
           <div className="w-full max-w-md bg-[#e0e5ec] dark:bg-[#1a1f2e] shadow-neumorphic rounded-2xl p-6 sm:p-8 lg:p-10 box-border overflow-hidden relative mx-auto">
             <button
-              onClick={() => (window.location.href = "/")}
+              onClick={() => navigate("/")}
               className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
             >
               ← Back to Home
@@ -213,7 +213,7 @@ const LoginComponent = () => {
               </div>
             </div>
 
-            <div className="flex justify-center w-full  max-w-full overflow-x-hidden">
+            <div className="flex justify-center w-full max-w-full overflow-x-hidden">
               <GoogleLogin
                 onSuccess={handleGoogleLoginSuccess}
                 onError={handleGoogleLoginError}

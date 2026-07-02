@@ -23,6 +23,7 @@ import ReaderPreferencesPanel from "../reader-preferences/ReaderPreferences";
 import { useReaderPreferences } from "../reader-preferences/useReaderPreferences";
 
 import { formatDateShort } from "../../utils/time-formate";
+import { calculateReadingTime } from "../../utils/reading-time";
 import { formatReadingStats } from "../../utils/story-utils";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
@@ -477,20 +478,31 @@ const PostDetailsComponent = () => {
                 <h1 className={`text-4xl font-bold text-slate-900 dark:text-gray-300 leading-tight ${post?.language ? "mb-2" : "mb-4"}`}>
                   {post?.title}
                 </h1>
-                
-                <div className="flex items-center gap-4 mb-6 flex-wrap">
-                  <StarRatingDisplay rating={post?.averageRating || 0} totalRatings={post?.totalRatings || 0} size="md" />
-                  {post?.language && (
-                    <div className="flex gap-2">
-                      <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
-                        🌐 {post.language}
-                      </span>
-                      <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
-                        📖 {formatReadingStats(post.content)}
-                      </span>
-                    </div>
-                  )}
-                </div>
+<div className="flex items-center gap-4 mb-6 flex-wrap">
+  <StarRatingDisplay
+    rating={post?.averageRating || 0}
+    totalRatings={post?.totalRatings || 0}
+    size="md"
+  />
+
+  {post?.language && (
+    <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
+      🌐 {post.language}
+    </span>
+  )}
+
+  {post?.content && (
+    <>
+      <span className="inline-flex items-center rounded-full bg-slate-700/60 text-slate-300 border border-slate-600/50 py-1 px-3 text-xs font-semibold gap-1 select-none">
+        ⏱️ {calculateReadingTime(post.content)} min read
+      </span>
+
+      <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
+        📖 {formatReadingStats(post.content)}
+      </span>
+    </>
+  )}
+</div>
 
                 <div className="mb-12">
                   <ImageFallback

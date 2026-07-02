@@ -1,6 +1,5 @@
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
-
 import { USER_ROLE } from "./constants/role";
 
 
@@ -53,6 +52,7 @@ const ResourceDetailComponent = lazy(() => import("./components/community/resour
 const StoriesComponent = lazy(() => import("./components/stories/stories.component"));
 const BranchingStory = lazy(() => import("./components/stories/BranchingStory"));
 const StoryWorkspace = lazy(() => import("./components/story/StoryWorkspace"));
+const CollectionPage = lazy(() => import("./components/collections/CollectionPage"));
 const CollabHome = lazy(() => import("./components/collab/CollabHome"));
 const CollabRoom = lazy(() => import("./components/collab/CollabRoom"));
 const DashboardComponent = lazy(() => import("./components/dashboard/dashboard.component"));
@@ -65,7 +65,6 @@ const AnalyticsPage = lazy(() => import("./components/dashboard/analytics/analyt
 const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_lists.component"));
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
-const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
@@ -87,7 +86,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
-      { path: "templates", element: <TemplatesComponent /> },
+      { path: "templates", element: lazyPage(<TemplatesComponent />) },
       { path: "create", element: <Navigate to="/stories" replace /> },
       { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES}><WritingAssistantComponent /></ProtectedRoute>, },
       { path: "story-inspiration", element: <StoryInspirationWrapper /> },
@@ -97,6 +96,7 @@ const router = createBrowserRouter([
       { path: "pricing", element: <PricingComponent /> },
       { path: "post/:id", element: <PostDetailsComponent /> },
       { path: "profile/:id", element: <PublicProfileComponent /> },
+      { path: "collections/:id", element: lazyPage(<CollectionPage />) },
       { path: "contact-us", element: <Contact /> },
       { path: "about-us", element: <AboutUsComponent /> },
       { path: "career", element: <CareerComponent /> },
@@ -108,20 +108,39 @@ const router = createBrowserRouter([
       { path: "guidelines", element: <GuidelinesComponent /> },
       
       { path: "contributors", element: <ContributorsComponent /> },
+      { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES}>{lazyPage(<WritingAssistantComponent />)}</ProtectedRoute> },
+      { path: "story-inspiration", element: lazyPage(<StoryInspirationWrapper />) },
+      { path: "login", element: lazyPage(<LoginComponent />) },
+      { path: "signup", element: lazyPage(<SignUpComponent />) },
+      { path: "forgot-password", element: lazyPage(<ForgotPasswordComponent />) },
+      { path: "pricing", element: lazyPage(<PricingComponent />) },
+      { path: "post/:id", element: lazyPage(<PostDetailsComponent />) },
+      { path: "profile/:id", element: lazyPage(<PublicProfileComponent />) },
+      { path: "contact-us", element: lazyPage(<Contact />) },
+      { path: "about-us", element: lazyPage(<AboutUsComponent />) },
+      { path: "career", element: lazyPage(<CareerComponent />) },
+      { path: "blog", element: lazyPage(<BlogComponent />) },
+      { path: "privacy-policy", element: lazyPage(<PrivacyPolicy />) },
+      { path: "cookie-policy", element: lazyPage(<CookiePolicy />) },
+      { path: "terms", element: lazyPage(<Terms />) },
+      { path: "help-center", element: lazyPage(<HelpCenterComponent />) },
+      { path: "guidelines", element: lazyPage(<GuidelinesComponent />) },
+      { path: "contributors", element: lazyPage(<ContributorsComponent />) },
       { path: "leaderboard", element: <Leaderboard /> },
-      { path: "community", element: <CommunityComponent /> },
-      { path: "report-bug", element: <ReportBug /> },
-      { path: "chat", element: <ChatPage /> },
+      { path: "community", element: lazyPage(<CommunityComponent />) },
+      { path: "report-bug", element: lazyPage(<ReportBug />) },
+      { path: "chat", element: lazyPage(<ChatPage />) },
+      { path: "search", element: lazyPage(<SearchPageComponent />) },
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
-          { path: "explore", element: <ExploreComponent /> },
-          { path: "bookmarks", element: <BookmarksComponent /> },
-          { path: "resources", element: <ResourcesListComponent /> },
-          { path: "resources/:resourceName", element: <ResourceDetailComponent /> },
-          { path: "stories", element: <StoriesComponent /> },
-          { path: "branching-story", element: <BranchingStory /> },
-          { path: "story-workspace", element: <StoryWorkspace /> },
+          { path: "explore", element: lazyPage(<ExploreComponent />) },
+          { path: "bookmarks", element: lazyPage(<BookmarksComponent />) },
+          { path: "resources", element: lazyPage(<ResourcesListComponent />) },
+          { path: "resources/:resourceName", element: lazyPage(<ResourceDetailComponent />) },
+          { path: "stories", element: lazyPage(<StoriesComponent />) },
+          { path: "branching-story", element: lazyPage(<BranchingStory />) },
+          { path: "story-workspace", element: lazyPage(<StoryWorkspace />) },
         ],
       },
       { path: "*", element: <NotFoundComponent /> },

@@ -3,6 +3,7 @@ import type {
   UseFormRegister,
   FieldValues,
   Path,
+  UseFormRegister,
   RegisterOptions,
   FieldError,
 } from "react-hook-form";
@@ -14,7 +15,7 @@ interface SSInputProps<T extends FieldValues> {
   placeholder?: string;
   required?: boolean;
   icon?: string;
-  register: UseFormRegister<T>;
+  register: UseFormRegister<T>;   // <-- fixed, properly typed instead of `any`
   validation?: RegisterOptions<T>;
   error?: FieldError;
   autoComplete?: string;
@@ -51,10 +52,10 @@ const SSInput = <T extends FieldValues>({
       >
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
+      
       <div className="relative mt-2 flex items-center">
         {icon && (
-          //<span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
-            <span className="absolute left-3 text-gray-500 flex items-center pointer-events-none">
+          <span className="absolute left-3 text-gray-500 flex items-center pointer-events-none">
             <i className={icon}></i>
           </span>
         )}
@@ -83,11 +84,7 @@ const SSInput = <T extends FieldValues>({
             aria-label={showLocalPassword ? "Hide password" : "Show password"}
             title={showLocalPassword ? "Hide password" : "Show password"}
           >
-            <i
-              className={
-                showLocalPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"
-              }
-            ></i>
+            <i className={showLocalPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"} />
           </button>
         )}
       </div>

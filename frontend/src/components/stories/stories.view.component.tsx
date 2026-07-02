@@ -1,4 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import {
+  getShortenedText,
+  ITopicData,
+  topicsData,
+  getWordCount,
+  SELECTED_TOPIC_CLASSES,
+} from "./stories.utils";
+import { calculateReadingTime } from "../../utils/reading-time";
+import { formatReadingStats } from "../../utils/story-utils";
 import CharacterProfileCard from "./CharacterProfileCard";
 import { CharacterProfile } from "./stories.utils";
 import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
@@ -12,7 +21,50 @@ export interface IStories {
   content: string;
   tag: string;
   imageURL: string;
+
+  genre?: string;
+  language?: string;
 }
+
+export type StorySentenceSegment = {
+  id: string;
+  text: string;
+  startWordIndex: number;
+  endWordIndex: number;
+};
+
+const buildSentenceSegments = (content: string): StorySentenceSegment[] => {
+  if (!content.trim()) {
+    return [];
+  }
+
+  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
+  const segments: StorySentenceSegment[] = [];
+  let wordCursor = 0;
+
+  sentenceMatches.forEach((sentence, index) => {
+    const trimmedSentence = sentence.trim();
+    if (!trimmedSentence) {
+      return;
+    }
+
+    const wordsInSentence = sentence.match(/\S+/g)?.length ?? 0;
+    const startWordIndex = wordCursor;
+    const endWordIndex =
+      wordsInSentence > 0 ? wordCursor + wordsInSentence - 1 : wordCursor;
+
+    segments.push({
+      id: `${index}-${startWordIndex}-${endWordIndex}`,
+      text: sentence,
+      startWordIndex,
+      endWordIndex,
+    });
+
+    wordCursor += wordsInSentence;
+  });
+
+  return segments;
+};
 
 interface IPost extends IStories {
   topic: ITopicData[];
@@ -40,6 +92,28 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
 
+  const location = useLocation();
+  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
+  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+
+  const sentenceSegments = useMemo(() => {
+    return buildSentenceSegments(selectedStory?.content ?? "");
+  }, [selectedStory?.content]);
+
+  const isNarrationActive = narrationState !== "idle";
+
+  useEffect(() => {
+    return () => {
+      audioPlayerRef.current?.stop();
+    };
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setNarrationWordIndex(0);
+    setNarrationState("idle");
+  }, [selectedStory?.uuid]);
+
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
   }, [topics]);
@@ -52,7 +126,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
 useEffect(() => {
   const autoSaveStory = async () => {
-    if (!selectedStory) return;
+    if (!selectedStory || !isLogin) return;
 
     const post: IPost = {
       ...selectedStory,
@@ -181,20 +255,35 @@ const handleGenerateCharacterProfile = async () => {
     }
   };
 
-  if (!stories || stories.length === 0) {
-    return (
-      <div className="mt-16 px-4 sm:px-6 lg:px-8 pb-16 flex justify-center">
-        <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 sm:p-12 text-center text-slate-400 max-w-2xl w-full shadow-lg transition-all duration-500 ease-in-out mx-auto">
-          <div className="text-5xl mb-6 animate-pulse">✨</div>
-          <h3 className="text-2xl font-bold text-slate-200 tracking-wide">
-            Your AI-generated story will appear here
-          </h3>
-          <p className="mt-3 text-base text-slate-400">
-            Enter a creative prompt above and let StorySparkAI craft something magical.
-          </p>
-        </div>
+const isNarrationActive = narrationState !== "idle";
+
+if (isLoading) {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <StoryGeneratingAnimation />
+    </div>
+  );
+}
+
+if (!selectedStory) {
+  return null;
+}
+
+if (!stories || stories.length === 0) {
+  return (
+    <div className="mt-16 px-4 sm:px-6 lg:px-8 pb-16 flex justify-center">
+      <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 sm:p-12 text-center text-slate-400 max-w-2xl w-full shadow-lg transition-all duration-500 ease-in-out mx-auto">
+        <div className="text-5xl mb-6 animate-pulse">✨</div>
+        <h3 className="text-2xl font-bold text-slate-200 tracking-wide">
+          Your AI-generated story will appear here
+        </h3>
+        <p className="mt-3 text-base text-slate-400">
+          Enter a creative prompt above and let StorySparkAI craft something magical.
+        </p>
       </div>
-    );
+    </div>
+  );
+}
   }
 
   return (

@@ -5,7 +5,6 @@ import { Secret } from "jsonwebtoken";
 import ApiError from "../../errors/api_error";
 import { JwtHelpers } from "../../utils/jwt.helper";
 import { User } from "../modules/user/user.model";
-import { TokenBlacklist } from "../modules/auth/tokenBlacklist.model";
 import { USER_STATUS } from "../../enums/user_status";
 
 type JwtVerifiedUser = {
@@ -44,7 +43,8 @@ const extractTokenFromRequest = (req: Request): string => {
   return bearerToken || cookieToken || "";
 };
 
-const auth = (...requiredRole: string[]) =>
+const auth =
+  (...requiredRole: string[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const token = extractTokenFromRequest(req);
@@ -81,17 +81,20 @@ const auth = (...requiredRole: string[]) =>
       if (blacklisted) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
-          "Token has been revoked. Please log in again."
+          "Invalid token"
         );
       }
 
-      const user = await User.findById(verified._id);
+      const user = await User.findById(verifiedUser._id);
+
       if (!user) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "User not found"
+        );
       }
 
-      // Token invalidation check (e.g., on refresh/logout via tokenVersion).
-      // If the JWT includes tokenVersion, enforce it strictly.
+      // Token version validation replaces blacklist check
       if (
         verified.tokenVersion !== undefined &&
         user.tokenVersion !== verified.tokenVersion
@@ -102,7 +105,7 @@ const auth = (...requiredRole: string[]) =>
         );
       }
 
-      // Status check
+      // Check user status
       if (user.status !== USER_STATUS.ACTIVE) {
         throw new ApiError(
           httpStatus.FORBIDDEN,
@@ -110,18 +113,23 @@ const auth = (...requiredRole: string[]) =>
         );
       }
 
-      // Role check (if roles are required)
+      // Role authorization
       if (requiredRole.length) {
-        const tokenRole = verified.role;
-        if (!tokenRole || !requiredRole.includes(tokenRole)) {
-          throw new ApiError(httpStatus.FORBIDDEN, "Forbidden");
+        if (
+          !verifiedUser.role ||
+          !requiredRole.includes(verifiedUser.role)
+        ) {
+          throw new ApiError(
+            httpStatus.FORBIDDEN,
+            "Forbidden"
+          );
         }
       }
 
       req.user = user as any;
       return next();
     } catch (err) {
-      return next(err);
+      next(err);
     }
   };
 
