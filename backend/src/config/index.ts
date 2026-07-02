@@ -59,8 +59,8 @@ export default {
   jwt: {
     secret: requiredEnv("JWT_SECRET"),
     refresh_secret: requiredEnv("JWT_REFRESH_SECRET"),
-    expires_in: process.env.JWT_EXPIRES_IN,
-    refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
+    expires_in: requiredEnv("JWT_EXPIRES_IN"),
+    refresh_expires_in: requiredEnv("JWT_REFRESH_EXPIRES_IN"),
   },
   default_admin_password: process.env.DEFAULT_ADMIN_PASSWORD,
   openai_key: process.env.OPEN_AI_KEY,
