@@ -27,6 +27,7 @@
 ---
 
 ## 📚 Table of Contents
+
 - [About 🚀](#about-)
 - [Features 💪](#features-)
 - [Known Behavior & UX Notes](#known-behavior--ux-notes-)
@@ -70,68 +71,24 @@
 
 ---
 
-## Known Behavior & UX Notes 📋
-
-### Issue [#4238](https://github.com/ronisarkarexe/story-spark-ai/issues/4238) — Loading State During Story Generation
-
-**Current behavior:** Clicking "Generate Story" multiple times while waiting for AI output creates duplicate requests, wastes API credits, and leaves users uncertain whether the app is working.
-
-**Recommended fix for contributors:**
-
-Disable the Generate button and show a loading spinner while a request is in flight. Here is a minimal React example:
-
-```jsx
-const [isLoading, setIsLoading] = useState(false);
-
-const handleGenerate = async () => {
-  if (isLoading) return;           // guard against duplicate clicks
-  setIsLoading(true);
-  try {
-    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/story/generate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ prompt }),
-    });
-    const data = await res.json();
-    setStories(data.stories);
-  } finally {
-    setIsLoading(false);           // always re-enable the button
-  }
-};
-
-// In JSX:
-<button onClick={handleGenerate} disabled={isLoading}>
-  {isLoading ? "Generating…" : "Generate Story"}
-</button>
-```
-
-**Why this matters:**
-- Prevents duplicate API calls that increase operational costs.
-- Gives users clear feedback that the app is working, especially on slow connections.
-- Generated stories are held in component state; a browser refresh clears them — consider persisting results to `localStorage` or the backend history endpoint as a follow-up improvement.
-
-**Status:** Open — contributions welcome! See [Contributing](#contributing-) to get started.
-
----
-
 ## Local Development (Monorepo)
 
 **Prerequisites:** Node.js **18.18+**, pnpm **8+**, MongoDB URI for the API.
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/<your-github-username>/story-spark-ai.git
    ```
 
 2. **Navigate to the project directory**
+
    ```bash
    cd story-spark-ai
    ```
 
 3. **Install dependencies** (single install at the repo root — pnpm workspaces)
+
    ```bash
    pnpm install
    ```
@@ -145,13 +102,16 @@ const handleGenerate = async () => {
 5. **First-Time Setup (Admin Seeding)**
 
    Before starting the server for the first time, create an admin user:
+
    ```bash
    cd backend
    npx ts-node scripts/seed-admin.ts
    ```
+
    Make sure `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in `backend/.env`.
 
 6. **Run apps**
+
    ```bash
    pnpm dev                  # Both frontend & backend
    pnpm dev:backend          # API only (default port 5000)
@@ -169,12 +129,13 @@ const handleGenerate = async () => {
 
 Use **two** Vercel projects from this monorepo:
 
-| Project | Root directory | Example domain |
-|---------|----------------|----------------|
-| Frontend | `frontend` | `storysparkai.vercel.app` |
-| Backend API | `backend` | `apistorysparkai.vercel.app` |
+| Project     | Root directory | Example domain               |
+| ----------- | -------------- | ---------------------------- |
+| Frontend    | `frontend`     | `storysparkai.vercel.app`    |
+| Backend API | `backend`      | `apistorysparkai.vercel.app` |
 
 **Frontend environment variables:**
+
 - `VITE_BASE_URL` = `https://<your-api>.vercel.app/api/v1`
 - `VITE_SOCKET_URL` = `https://notification-socket-io.onrender.com` (do **not** point this at your Vercel API URL — Vercel serverless cannot run Socket.IO)
 
@@ -194,66 +155,75 @@ cp frontend/.env.example frontend/.env
 ### Backend (`backend/.env`)
 
 #### 🖥️ Server Configuration
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `NODE_ENV` | `development` | ✅ Yes | Environment mode |
-| `PORT` | `5000` | ✅ Yes | Backend server port |
-| `CORS_ORIGINS` | `http://localhost:4001` | ✅ Yes | Allowed frontend origin |
+
+| Variable       | Example                 | Required | Description             |
+| -------------- | ----------------------- | -------- | ----------------------- |
+| `NODE_ENV`     | `development`           | ✅ Yes   | Environment mode        |
+| `PORT`         | `5000`                  | ✅ Yes   | Backend server port     |
+| `CORS_ORIGINS` | `http://localhost:4001` | ✅ Yes   | Allowed frontend origin |
 
 #### 🗄️ Database
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `DATABASE_URL` | `mongodb://127.0.0.1:27017/story_spark_ai` | ✅ Yes | MongoDB connection string |
+
+| Variable       | Example                                    | Required | Description               |
+| -------------- | ------------------------------------------ | -------- | ------------------------- |
+| `DATABASE_URL` | `mongodb://127.0.0.1:27017/story_spark_ai` | ✅ Yes   | MongoDB connection string |
 
 #### 🔐 Authentication
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `SALT_ROUNDS` | `10` | ✅ Yes | bcrypt hashing rounds |
-| `JWT_SECRET` | `any_random_string` | ✅ Yes | Access token signing secret |
-| `JWT_REFRESH_SECRET` | `another_random_string` | ✅ Yes | Refresh token signing secret |
-| `JWT_EXPIRES_IN` | `60d` | ✅ Yes | Access token expiry |
-| `JWT_REFRESH_EXPIRES_IN` | `120d` | ✅ Yes | Refresh token expiry |
-| `ADMIN_EMAIL` | `admin@example.com` | ✅ Yes | Admin account email |
-| `ADMIN_PASSWORD` | `secure-password` | ✅ Yes | Admin account password |
-| `DEFAULT_ADMIN_PASSWORD` | `admin123` | ✅ Yes | Initial admin password for seeding |
+
+| Variable                 | Example                 | Required | Description                        |
+| ------------------------ | ----------------------- | -------- | ---------------------------------- |
+| `SALT_ROUNDS`            | `10`                    | ✅ Yes   | bcrypt hashing rounds              |
+| `JWT_SECRET`             | `any_random_string`     | ✅ Yes   | Access token signing secret        |
+| `JWT_REFRESH_SECRET`     | `another_random_string` | ✅ Yes   | Refresh token signing secret       |
+| `JWT_EXPIRES_IN`         | `60d`                   | ✅ Yes   | Access token expiry                |
+| `JWT_REFRESH_EXPIRES_IN` | `120d`                  | ✅ Yes   | Refresh token expiry               |
+| `ADMIN_EMAIL`            | `admin@example.com`     | ✅ Yes   | Admin account email                |
+| `ADMIN_PASSWORD`         | `secure-password`       | ✅ Yes   | Admin account password             |
+| `DEFAULT_ADMIN_PASSWORD` | `admin123`              | ✅ Yes   | Initial admin password for seeding |
 
 #### 🤖 AI Providers
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `OPEN_AI_KEY` | `sk-...` | ⚠️ Optional | Required for OpenAI story generation |
-| `GEMINI_API_KEY` | `AIza...` | ⚠️ Optional | Required for Gemini story generation |
-| `AI_API_KEYS` | `key1,key2,key3` | ⚠️ Optional | Comma-separated keys for round-robin rotation |
-| `AI_CONCURRENCY` | `3` | ⚠️ Optional | Max simultaneous AI calls (default: 3) |
+
+| Variable         | Example          | Required    | Description                                   |
+| ---------------- | ---------------- | ----------- | --------------------------------------------- |
+| `OPEN_AI_KEY`    | `sk-...`         | ⚠️ Optional | Required for OpenAI story generation          |
+| `GEMINI_API_KEY` | `AIza...`        | ⚠️ Optional | Required for Gemini story generation          |
+| `AI_API_KEYS`    | `key1,key2,key3` | ⚠️ Optional | Comma-separated keys for round-robin rotation |
+| `AI_CONCURRENCY` | `3`              | ⚠️ Optional | Max simultaneous AI calls (default: 3)        |
 
 > ℹ️ You need **at least one** of `OPEN_AI_KEY`, `GEMINI_API_KEY`, or `AI_API_KEYS` for story generation to work.
 
 #### 🖼️ Image Provider (Unsplash)
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `UNSPLASH_KEY_API` | `your_access_key` | ⚠️ Optional | Required for story cover images |
-| `UNSPLASH_KEY_API_SECRET` | `your_secret` | ⚠️ Optional | Unsplash API secret |
+
+| Variable                  | Example           | Required    | Description                     |
+| ------------------------- | ----------------- | ----------- | ------------------------------- |
+| `UNSPLASH_KEY_API`        | `your_access_key` | ⚠️ Optional | Required for story cover images |
+| `UNSPLASH_KEY_API_SECRET` | `your_secret`     | ⚠️ Optional | Unsplash API secret             |
 
 #### 📧 Email Verification
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `VERIFY_EMAIL` | `noreply@example.com` | ⚠️ Optional | Sender email for verification emails |
-| `VERIFY_PASSWORD` | `app_password` | ⚠️ Optional | Email app password |
+
+| Variable          | Example               | Required    | Description                          |
+| ----------------- | --------------------- | ----------- | ------------------------------------ |
+| `VERIFY_EMAIL`    | `noreply@example.com` | ⚠️ Optional | Sender email for verification emails |
+| `VERIFY_PASSWORD` | `app_password`        | ⚠️ Optional | Email app password                   |
 
 #### 🔑 Google OAuth
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
+
+| Variable           | Example                           | Required    | Description               |
+| ------------------ | --------------------------------- | ----------- | ------------------------- |
 | `GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | ⚠️ Optional | Required for Google Login |
 
 ### Frontend (`frontend/.env`)
-| Variable | Example | Required | Description |
-|----------|---------|----------|-------------|
-| `VITE_BASE_URL` | `http://localhost:5000/api/v1` | ✅ Yes | Backend API base URL |
-| `VITE_SOCKET_URL` | `http://localhost:5000` | ⚠️ Optional | WebSocket server URL |
-| `VITE_GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | ✅ Yes | Google OAuth Client ID |
+
+| Variable                | Example                           | Required    | Description            |
+| ----------------------- | --------------------------------- | ----------- | ---------------------- |
+| `VITE_BASE_URL`         | `http://localhost:5000/api/v1`    | ✅ Yes      | Backend API base URL   |
+| `VITE_SOCKET_URL`       | `http://localhost:5000`           | ⚠️ Optional | WebSocket server URL   |
+| `VITE_GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | ✅ Yes      | Google OAuth Client ID |
 
 ### ⚡ Minimum Setup for Local Development
 
 **`backend/.env`**
+
 ```env
 NODE_ENV=development
 PORT=5000
@@ -270,6 +240,7 @@ DEFAULT_ADMIN_PASSWORD=admin123
 ```
 
 **`frontend/.env`**
+
 ```env
 VITE_BASE_URL=http://localhost:5000/api/v1
 VITE_SOCKET_URL=http://localhost:5000
@@ -289,13 +260,22 @@ curl -X POST http://localhost:5000/api/v1/story/generate \
 ```
 
 **Example response:**
+
 ```json
 {
   "success": true,
   "storyId": "64fabc1234...",
   "stories": [
-    { "title": "Echoes of Memory", "content": "Far beyond the Orion belt...", "variation": 1 },
-    { "title": "The Memory Planet", "content": "In the silence of space...", "variation": 2 }
+    {
+      "title": "Echoes of Memory",
+      "content": "Far beyond the Orion belt...",
+      "variation": 1
+    },
+    {
+      "title": "The Memory Planet",
+      "content": "In the silence of space...",
+      "variation": 2
+    }
   ]
 }
 ```
@@ -338,10 +318,12 @@ curl -X POST http://localhost:5000/api/v1/story/generate \
 
 **Port conflicts?**
 → Frontend uses **4001**, backend uses **5000**. Find and stop conflicting processes:
+
 - Linux/macOS: `lsof -i :5000` then `kill -9 <PID>`
 - Windows: `netstat -ano | findstr :5000` then `taskkill /PID <PID> /F`
 
 **`pnpm install` failures after switching branches?**
+
 ```bash
 rm -rf node_modules   # Linux/macOS
 pnpm install
@@ -363,6 +345,7 @@ Contributions make the open source community such an amazing place to learn, ins
 **Any contributions you make are truly appreciated!**
 
 **Contributing workflow:**
+
 1. Fork the repository and clone your fork.
 2. Create a branch: `git checkout -b your-feature-branch`
 3. Install with `pnpm install` at the repo root and configure `.env` files.
