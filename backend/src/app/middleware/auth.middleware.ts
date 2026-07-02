@@ -39,7 +39,7 @@ const extractTokenFromRequest = (req: Request): string => {
 
   // Support both header-based and cookie-based tokens safely.
   const cookies = req.cookies as Record<string, string> | undefined;
-  const cookieToken = cookies?.accessToken || cookies?.token;
+  const cookieToken = cookies?.accessToken; // strictly use expected cookie key
 
   return bearerToken || cookieToken || "";
 };
@@ -58,10 +58,16 @@ const auth = (...requiredRole: string[]) =>
 
       let verified: JwtVerifiedUser;
       try {
-        verified = JwtHelpers.verifyToken(
+        const decoded = JwtHelpers.verifyToken(
           token,
           config.jwt.secret as Secret
-        ) as unknown as JwtVerifiedUser;
+        );
+        
+        if (typeof decoded === "string" || !decoded || !("_id" in (decoded as Record<string, unknown>))) {
+          throw new Error("Invalid token payload");
+        }
+        
+        verified = decoded as unknown as JwtVerifiedUser;
       } catch (err) {
         throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid or expired token");
       }
@@ -87,7 +93,7 @@ const auth = (...requiredRole: string[]) =>
       // Token invalidation check (e.g., on refresh/logout via tokenVersion).
       // If the JWT includes tokenVersion, enforce it strictly.
       if (
-        typeof verified.tokenVersion === "number" &&
+        verified.tokenVersion !== undefined &&
         user.tokenVersion !== verified.tokenVersion
       ) {
         throw new ApiError(
