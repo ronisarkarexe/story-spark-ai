@@ -1,0 +1,594 @@
+/* ═══════════════════════════════════════════════
+   STORY SPARK AI — PREMIUM AUTH UI
+   COMPLETE PROFESSIONAL AUTH CSS (CENTERED)
+   ═══════════════════════════════════════════════ */
+
+/* ── Design System & Layout Tokens ── */
+:root {
+    --primary: #8b5cf6;
+    --secondary: #3b82f6;
+    --accent: #06b6d4;
+
+    --bg: #070b14;
+    --card-bg: #151821;
+    --input-bg: #1c1f2e;
+    
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+
+    --ds-input-height: 54px;
+    --ds-btn-height: 54px;
+    --ds-card-max-width: 460px;
+
+    --transition: all .3s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ──────────────────────────────────────────────
+   RESET
+────────────────────────────────────────────── */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--text);
+    overflow-x: hidden;
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(139, 92, 246, 0.12), transparent 25%),
+        radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 25%),
+        linear-gradient(180deg, #060816 0%, #0b1020 100%);
+    position: relative;
+    touch-action: pan-x pan-y;
+}
+
+button, a, input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 3px solid rgba(208, 188, 255, 0.35);
+    outline-offset: 3px;
+}
+
+/* ──────────────────────────────────────────────
+   FLOATING ORBS ANIMATION (Background)
+────────────────────────────────────────────── */
+@keyframes float {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    50% { transform: translateY(-20px) translateX(15px); }
+}
+
+body::before, body::after {
+    content: "";
+    position: fixed;
+    border-radius: 999px;
+    filter: blur(120px);
+    opacity: 0.3;
+    z-index: -1;
+    animation: float 12s ease-in-out infinite;
+}
+
+body::before {
+    width: 280px;
+    height: 280px;
+    background: var(--primary);
+    top: -100px;
+    left: -100px;
+}
+
+body::after {
+    width: 220px;
+    height: 220px;
+    background: var(--accent);
+    bottom: -60px;
+    right: -40px;
+    animation-delay: 2s;
+}
+
+/* ──────────────────────────────────────────────
+   PARTICLE CANVAS (Full Page Background)
+────────────────────────────────────────────── */
+#particle-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ──────────────────────────────────────────────
+   MAIN WRAPPER & CONTAINER
+────────────────────────────────────────────── */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: var(--ds-card-max-width);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.left-pane {
+    display: none !important; /* Completely hide left hero pane */
+}
+
+.right-pane {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ──────────────────────────────────────────────
+   SOLID FORM CARD (Centered)
+────────────────────────────────────────────── */
+@keyframes cardEnter {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-form-card {
+    width: 100%;
+    border-radius: 28px;
+    padding: clamp(24px, 5vw, 36px);
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    animation: cardEnter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-sizing: border-box;
+}
+
+/* ── Brand Header inside Card ── */
+.auth-card-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    text-align: center;
+}
+
+.auth-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
+}
+
+.auth-card-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    background: linear-gradient(135deg, #f8fafc, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ──────────────────────────────────────────────
+   AUTH TABS
+────────────────────────────────────────────── */
+.auth-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 24px;
+}
+
+.auth-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding-bottom: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    transition: var(--transition);
+}
+
+.auth-tab:hover {
+    color: var(--text);
+}
+
+.auth-tab-active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+/* ──────────────────────────────────────────────
+   FORM FIELDS & INPUTS
+────────────────────────────────────────────── */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auth-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auth-fields > div {
+    width: 100%;
+}
+
+.ds-label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--text);
+    font-weight: 500;
+}
+
+.ds-input-group {
+    position: relative;
+    width: 100%;
+}
+
+.ds-input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 16px;
+    transition: var(--transition);
+    pointer-events: none;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    height: var(--ds-input-height);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 14px;
+    padding: 0 16px 0 46px;
+    box-sizing: border-box;
+    transition: var(--transition);
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.ds-input-group:focus-within .ds-input-icon {
+    color: var(--primary);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text);
+    box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+    transition: background-color 9999s ease-in-out 0s;
+}
+
+/* ──────────────────────────────────────────────
+   UTILITIES (ALERTS & ERRORS)
+────────────────────────────────────────────── */
+.ds-help, .ds-error, .ds-feedback {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.ds-help {
+    color: var(--text-muted);
+}
+
+.ds-error {
+    color: #ef4444;
+    display: none;
+}
+
+.ds-error.is-visible {
+    display: block;
+}
+
+.ds-feedback {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ds-feedback.is-visible {
+    display: flex;
+}
+
+.ds-feedback.match::before { content: "✓"; font-weight: 700; }
+.ds-feedback.mismatch::before { content: "✕"; font-weight: 700; }
+
+/* ── Utility Helper Classes (JS-toggled) ── */
+.text-red-400 {
+    color: #ef4444 !important;
+}
+
+.text-green-400 {
+    color: #22c55e !important;
+}
+
+.text-yellow-400 {
+    color: #eab308 !important;
+}
+
+.opacity-70 {
+    opacity: 0.7;
+}
+
+.cursor-not-allowed {
+    cursor: not-allowed;
+}
+
+.ds-alert {
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ──────────────────────────────────────────────
+   TERMS BOX
+────────────────────────────────────────────── */
+.auth-terms {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.auth-terms input {
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.auth-terms-text {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text-muted);
+}
+
+.auth-terms-text a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.auth-terms-text a:hover {
+    color: var(--secondary);
+}
+
+/* ──────────────────────────────────────────────
+   BUTTONS
+────────────────────────────────────────────── */
+.auth-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.ds-btn-submit {
+    position: relative;
+    width: 100%;
+    height: var(--ds-btn-height);
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.ds-btn-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+}
+
+.ds-btn-submit:active {
+    transform: scale(0.99);
+}
+
+.ds-btn-google {
+    width: 100%;
+    height: var(--ds-btn-height);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 0 16px;
+    margin-bottom: 16px;
+}
+
+.ds-btn-google:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ──────────────────────────────────────────────
+   DIVIDER
+────────────────────────────────────────────── */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.auth-divider-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.auth-divider-text {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* ──────────────────────────────────────────────
+   FOOTER
+────────────────────────────────────────────── */
+.auth-footer {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 20px;
+}
+
+.auth-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.auth-footer a:hover {
+    color: var(--secondary);
+}
+
+/* ──────────────────────────────────────────────
+   LEGAL MODAL
+────────────────────────────────────────────── */
+.legal-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition);
+}
+
+.legal-modal.active,
+.legal-modal.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.legal-modal-content {
+    width: 100%;
+    max-width: 500px;
+    padding: 28px;
+    border-radius: 24px;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    transform: translateY(20px);
+    transition: var(--transition);
+}
+
+.legal-modal.active .legal-modal-content,
+.legal-modal.show .legal-modal-content {
+    transform: translateY(0);
+}
+
+/* ──────────────────────────────────────────────
+   RESPONSIVE DESIGN
+────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .auth-wrapper {
+        padding: 16px 12px;
+    }
+    
+    .auth-form-card {
+        padding: 24px 20px;
+        border-radius: 20px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    .ds-btn-submit,
+    .ds-btn-google {
+        height: 50px;
+        border-radius: 12px;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}

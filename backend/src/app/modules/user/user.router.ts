@@ -32,12 +32,6 @@ router.get(
 // Get Single User
 router.get(
   "/:id",
-  auth(
-    ENUM_USER_ROLE.USER,
-    ENUM_USER_ROLE.WRITER,
-    ENUM_USER_ROLE.ADMIN,
-    ENUM_USER_ROLE.SUPER_ADMIN
-  ),
   UserController.getUser
 );
 
@@ -57,7 +51,12 @@ router.patch(
 // Delete Single User
 router.delete(
   "/:id",
-  auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
   UserController.deleteUser
 );
 
@@ -98,5 +97,34 @@ router.get(
   ),
   UserController.getFollowStatus
 );
+
+// Streaks and Achievements routes
+router.get(
+  "/me/streak",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  UserController.getWritingStreak
+);
+
+router.get(
+  "/me/achievements",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  UserController.getAchievements
+);
+
+
+// Note: the standalone "/me/streak/update" endpoint has been removed.
+// Writing streak updates now happen server-side as a side effect of
+// publishing a post (see PostService.createPost), so it cannot be
+// triggered/fabricated directly by a client.
 
 export const UserRouter = router;

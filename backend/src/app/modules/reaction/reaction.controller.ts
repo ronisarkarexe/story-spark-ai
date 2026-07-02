@@ -12,7 +12,7 @@ const toggleReaction = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Reaction added successfully",
+     message: "Reaction added successfully",
     data: result,
   });
 });

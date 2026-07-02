@@ -5,15 +5,42 @@ import { Secret } from "jsonwebtoken";
 import ApiError from "../../errors/api_error";
 import { JwtHelpers } from "../../utils/jwt.helper";
 import { User } from "../modules/user/user.model";
+import { USER_STATUS } from "../../enums/user_status";
+
+type JwtVerifiedUser = {
+  _id: string;
+  tokenVersion?: number;
+  role?: string;
+};
+
+const extractBearerToken = (authHeader: string): string => {
+  if (!authHeader) return "";
+
+  if (!authHeader.startsWith("Bearer ")) return "";
+
+  return authHeader.slice("Bearer ".length).trim();
+};
+
+const extractTokenFromRequest = (req: Request): string => {
+  const authHeader = Array.isArray(req.headers.authorization)
+    ? req.headers.authorization[0]
+    : req.headers.authorization;
+
+  const bearerToken = extractBearerToken(authHeader ?? "");
+
+  const cookieToken =
+    (req).cookies?.accessToken ||
+    (req).cookies?.token;
+
+  return bearerToken || cookieToken || "";
+};
 
 const auth =
   (...requiredRole: string[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const authHeader = (req.headers.authorization || '') as string;
-      const token = authHeader.startsWith('Bearer ')
-        ? authHeader.slice(7).trim()
-        : authHeader.trim();
+      const token = extractTokenFromRequest(req);
+
       if (!token) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
@@ -21,31 +48,66 @@ const auth =
         );
       }
 
-      // verify token
+      // Verify JWT token
       const verifiedUser = JwtHelpers.verifyToken(
         token,
         config.jwt.secret as Secret
-      );
+      ) as unknown as JwtVerifiedUser;
 
-      const user = await User.findById((verifiedUser as any)._id);
-      if (!user) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+      if (!verifiedUser?._id) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Invalid token"
+        );
       }
 
-      if (user.tokenVersion !== (verifiedUser as any).tokenVersion) {
+      const user = await User.findById(verifiedUser._id);
+
+      if (!user) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "User not found"
+        );
+      }
+
+      // Token version validation replaces blacklist check
+      if (
+        typeof verifiedUser.tokenVersion === "number" &&
+        user.tokenVersion !== verifiedUser.tokenVersion
+      ) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
           "Token is invalid or expired"
         );
       }
 
-      if (requiredRole.length && !requiredRole.includes(verifiedUser.role)) {
-        throw new ApiError(httpStatus.FORBIDDEN, "Forbidden");
+      // Check user status
+      if (user.status !== USER_STATUS.ACTIVE) {
+        throw new ApiError(
+          httpStatus.FORBIDDEN,
+          "Your account is not active"
+        );
       }
-      req.user = verifiedUser;
+
+      // Role authorization
+      if (requiredRole.length) {
+        if (
+          !verifiedUser.role ||
+          !requiredRole.includes(verifiedUser.role)
+        ) {
+          throw new ApiError(
+            httpStatus.FORBIDDEN,
+            "Forbidden"
+          );
+        }
+      }
+
+      (req).user = user;
+
       next();
     } catch (err) {
       next(err);
     }
   };
+
 export default auth;

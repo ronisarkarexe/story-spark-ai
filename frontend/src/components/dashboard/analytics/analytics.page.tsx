@@ -4,8 +4,9 @@ import {
   PieChart, Pie, Cell, CartesianGrid,
 } from "recharts";
 import { getToken } from "../../../services/auth.service";
+import { getBaseUrl } from "../../../helpers/config";
 
-const API_BASE = import.meta.env.VITE_BASE_URL || "http://localhost:5000/api/v1";
+const API_BASE = getBaseUrl();
 
 const COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#14b8a6"];
 
@@ -43,7 +44,7 @@ const AnalyticsPage = () => {
     const res = await fetch(
       `${API_BASE}/analytics/${endpoint}`,
       {
-        headers: { Authorization: token },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         signal,
       }
     );
