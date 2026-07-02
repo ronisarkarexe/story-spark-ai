@@ -16,7 +16,11 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
   const [stories, setStories] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const abortContollerRef = useRef<AbortController | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const trimmedPrompt = prompt.trim();
+  const promptLength = trimmedPrompt.length;
+  const isPromptInvalid = promptLength > 0 && promptLength < MIN_PROMPT_LENGTH;
+
   const handleGenerate = async () => {
     if (!trimmedPrompt) {
       setError('Please enter a story prompt.');
@@ -36,19 +40,20 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
     setError(null);
     setIsLoading(true);
 
-    abortControllerRef.current = new AbortController();
-    const timeoutld = setTimeout(() => {
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const timeoutId = window.setTimeout(() => {
       abortControllerRef.current?.abort();
-      }, 15000);                                             //timeout after 15 seconds
+    }, 15000);
 
     try {
       const response = await api.post('/ai/generate', {
         prompt: trimmedPrompt,
         variations: variationCount,
       }, {
-        signal: abortControlerRef.current.signal,
+        signal: controller.signal,
       });
-      clearTimeout(timeoutld);
+      window.clearTimeout(timeoutId);
 
       if (response?.data?.variations) {
         setStories(response.data.variations);
@@ -79,6 +84,7 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
 
       setError(errorMessage);
     } finally {
+      window.clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };

@@ -315,7 +315,7 @@ export async function generateWithGeminiStories(
     return stories.map((story, index) => ({
       ...story,
       language,
-      imageURL: imageUrls[index],
+      imageURL: coverImages[index],
       coverImage: coverImages[index],
       uuid: uuidv4(),
     }));
