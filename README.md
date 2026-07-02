@@ -19,6 +19,9 @@
    <a href="https://github.com/ronisarkarexe/story-spark-ai/pulls" target="blank">
    <img src="https://img.shields.io/github/issues-pr/ronisarkarexe/story-spark-ai.svg?style=for-the-badge&logo=appveyor" alt="Pull Requests"/>
    </a>
+   <a href="https://github.com/ronisarkarexe/story-spark-ai/actions/workflows/ci.yml" target="blank">
+   <img src="https://github.com/ronisarkarexe/story-spark-ai/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"/>
+   </a>
 </p>
 
 ---
