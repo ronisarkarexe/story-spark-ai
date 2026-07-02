@@ -1,125 +1,67 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { motion } from "framer-motion";
 
-type BillingCycle = "monthly" | "yearly";
-
-interface Plan {
-  title: string;
-  price: {
-    monthly: number;
-    yearly: number;
-  };
-  features: string[];
-  linkTo: string;
-  buttonLabel: string;
-  highlight?: boolean;
-  badge?: string;
-  savings?: string;
-}
-
-interface FAQ {
-  question: string;
-  answer: string;
-}
-
-const plans: Plan[] = [
-  {
-    title: "Free",
-    price: {
-      monthly: 0,
-      yearly: 0,
+const PricingComponent = () => {
+  const plans = [
+    {
+      name: "Starter",
+      price: "$9",
+      features: ["5 stories/month", "Basic AI assistance", "Community access"],
     },
-    features: [
-      "5 AI stories per month",
-      "Basic AI model access",
-      "Community support",
-      "Plain text export",
-      "Basic templates",
-      "Single-user workspace",
-    ],
-    linkTo: "/signup",
-    buttonLabel: "Start Free",
-  },
-  {
-    title: "Pro",
-    highlight: true,
-    badge: "Most Popular",
-    savings: "Save 17%",
-    price: {
-      monthly: 19,
-      yearly: 190,
+    {
+      name: "Pro",
+      price: "$29",
+      features: ["Unlimited stories", "Advanced AI features", "Priority support", "Analytics"],
+      highlighted: true,
     },
-    features: [
-      "Unlimited story generation",
-      "GPT-4 & Claude access",
-      "Priority email support",
-      "Advanced Markdown & PDF export",
-      "Commercial usage rights",
-      "Custom writing styles",
-      "Version history",
-      "Advanced prompt controls",
-    ],
-    linkTo: "/payment?plan=Pro&price=19",
-    buttonLabel: "Start Pro Trial",
-  },
-  {
-    title: "Enterprise",
-    savings: "Save 17%",
-    price: {
-      monthly: 49,
-      yearly: 490,
+    {
+      name: "Enterprise",
+      price: "Custom",
+      features: ["Custom features", "Dedicated support", "API access", "Team collaboration"],
     },
-    features: [
-      "Everything in Pro",
-      "Real-time team collaboration",
-      "Dedicated account manager",
-      "Full API access",
-      "Custom model fine-tuning",
-      "SSO & advanced security",
-      "Usage analytics",
-      "Priority SLA support",
-    ],
-    linkTo: "/contact-us",
-    buttonLabel: "Contact Sales",
-  },
-];
-
-const faqs: FAQ[] = [
-  {
-    question: "Can I cancel anytime?",
-    answer:
-      "Yes. You can cancel your subscription at any time without penalties.",
-  },
-  {
-    question: "Do you offer a free trial?",
-    answer:
-      "Yes. The Pro plan includes a 14-day free trial so you can explore all premium features before subscribing.",
-  },
-  {
-    question: "Can I upgrade later?",
-    answer:
-      "Absolutely. You can upgrade or downgrade your subscription whenever your needs change.",
-  },
-  {
-    question: "Do you offer team plans?",
-    answer:
-      "Yes. Enterprise includes collaboration tools, advanced permissions, API access, and dedicated support.",
-  },
-];
-
-const PricingComponent: React.FC = () => {
-  const navigate = useNavigate();
-
-  const [billing, setBilling] = useState<BillingCycle>("monthly");
+  ];
 
   return (
-    <section
-      id="pricing-section"
-      className="relative overflow-hidden bg-slate-50 dark:bg-slate-950 py-16 sm:py-24 transition-colors duration-300"
-    >
-      {/* Background Effects */}
-      <div className="absolute top-[-10%] left-[-10%] h-96 w-96 rounded-full bg-blue-600/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] h-96 w-96 rounded-full bg-purple-600/10 blur-[120px] pointer-events-none" />
+    <section className="py-16 px-4">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-4xl font-bold text-center mb-12">Simple, Transparent Pricing</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {plans.map((plan, index) => (
+            <motion.div
+              key={index}
+              className={`rounded-lg p-8 ${
+                plan.highlighted
+                  ? "bg-indigo-600 text-white scale-105"
+                  : "bg-white border border-slate-200 text-slate-900"
+              }`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+              <p className="text-3xl font-bold mb-6">{plan.price}</p>
+              <ul className="space-y-3">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-center">
+                    <span className="mr-2">✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <button
+                className={`w-full mt-8 py-2 px-4 rounded-lg font-semibold transition ${
+                  plan.highlighted
+                    ? "bg-white text-indigo-600 hover:bg-slate-100"
+                    : "bg-indigo-600 text-white hover:bg-indigo-700"
+                }`}
+              >
+                Get Started
+              </button>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
