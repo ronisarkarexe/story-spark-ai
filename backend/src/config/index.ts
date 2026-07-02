@@ -37,18 +37,27 @@ const validateAIProviderKeys = (): void => {
 };
 
 validateAIProviderKeys();
+const jwtSecret = requiredEnv("JWT_SECRET");
+
+if (jwtSecret.length < 32) {
+  throw new Error(
+    "JWT_SECRET must be at least 32 characters long. " + "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+  );
+}
 
 export default {
   env: process.env.NODE_ENV,
   port: process.env.PORT || "5000",
   disable_logs: process.env.DISABLE_LOGS === "true" || process.env.VERCEL === "1",
   database_url: (() => {
-    const url = process.env.DATABASE_URL?.trim();
-    if (!url) {
-      return "mongodb://127.0.0.1:27017/story_spark_ai";
-    }
-    return url;
-  })(),
+  const url = (process.env.DATABASE_URL || process.env.MONGODB_URI)?.trim();
+  if (!url) {
+    console.warn("[Config] DATABASE_URL/MONGODB_URI not set - falling back to local mongoDB.");
+    return "mongodb://127.0.0.1:27017/story_spark_ai";
+  }
+  return url;
+})(),
+
   cors_origins: parseList(process.env.CORS_ORIGINS),
   dns_servers: parseList(process.env.DNS_SERVERS),
   bcrypt_salt_rounds: (() => {
@@ -57,7 +66,7 @@ export default {
     return Number.isInteger(parsed) && parsed > 0 ? parsed : 10;
   })(),
   jwt: {
-    secret: requiredEnv("JWT_SECRET"),
+    secret: jwtSecret,
     refresh_secret: requiredEnv("JWT_REFRESH_SECRET"),
     expires_in: process.env.JWT_EXPIRES_IN,
     refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
