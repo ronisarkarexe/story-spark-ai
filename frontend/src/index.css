@@ -33,6 +33,24 @@
   filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
 }
 
+@utility shadow-neumorphic {
+  box-shadow: 8px 8px 16px #caced1, -8px -8px 16px #ffffff;
+}
+
+@utility shadow-neumorphic-inset {
+  box-shadow: inset 6px 6px 12px #caced1, inset -6px -6px 12px #ffffff;
+}
+
+.dark .shadow-neumorphic,
+.dark.shadow-neumorphic {
+  box-shadow: 8px 8px 16px #10141d, -8px -8px 16px #242c41;
+}
+
+.dark .shadow-neumorphic-inset,
+.dark.shadow-neumorphic-inset {
+  box-shadow: inset 6px 6px 12px #10141d, inset -6px -6px 12px #242c41;
+}
+
 /* ==========================================================================
    Global Base & Scrollbar Adjustments
    ========================================================================== */

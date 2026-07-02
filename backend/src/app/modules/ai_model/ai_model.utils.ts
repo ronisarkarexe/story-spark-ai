@@ -134,6 +134,15 @@ const throwIfAborted = (signal?: AbortSignal): void => {
   }
 };
 
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
+
 const buildCharactersInstruction = (characters?: ICharacter[]): string => {
   if (!characters || characters.length === 0) return "";
   const charsString = characters
@@ -758,6 +767,7 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
+
       return {
         sceneNumber: index + 1,
         caption: scene.caption.trim(),

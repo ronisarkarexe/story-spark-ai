@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Chapter } from "../../types/story.types";
 import ReadingTimeBadge from "../ReadingTimeBadge";
 import toast from "react-hot-toast";
-import jsPDF from "jspdf";
-import { AudioPlayer } from "../AudioPlayer";
+import AudioPlayer from "../AudioPlayer";
 
 interface Props {
   chapters: Chapter[];

@@ -13,7 +13,7 @@ export const searchRateLimiter = rateLimit({
   message: "Too many search requests. Please wait a moment and try again.",
   keyGenerator: (req: Request, _res: Response): string => {
     const forwarded = (req.headers["x-forwarded-for"] as string) ?? "";
-    return forwarded.split(",")[0]?.trim() || req.ip || "unknown";
+    return forwarded.split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
   },
 });
 
@@ -29,6 +29,6 @@ export const apiRateLimiter = rateLimit({
   message: "Too many requests from this IP. Please try again after 15 minutes.",
   keyGenerator: (req: Request, _res: Response): string => {
     const forwarded = (req.headers["x-forwarded-for"] as string) ?? "";
-    return forwarded.split(",")[0]?.trim() || req.ip || "unknown";
+    return forwarded.split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
   },
 });

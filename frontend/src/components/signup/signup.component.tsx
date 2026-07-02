@@ -1,9 +1,9 @@
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { useState, useEffect, useContext } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { Link, useNavigate } from "react-router-dom";
 import { useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import {
@@ -256,11 +256,9 @@ const SignUpComponent = () => {
   }, [showOtpField, registerInfo, setValue]);
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-900 dark:text-slate-100 box-border">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#e0e5ec] dark:bg-[#1a1f2e] px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-900 dark:text-slate-100 box-border">
 
-      {/* Background Glow */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
+
 
       <div className="flex w-full max-w-md flex-col justify-center py-6 relative z-10 px-2 sm:px-0 min-w-0 box-border mx-auto overflow-hidden">
 
@@ -272,7 +270,8 @@ const SignUpComponent = () => {
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
+        <div className="bg-[#e0e5ec] dark:bg-[#1a1f2e] shadow-neumorphic rounded-2xl p-5 sm:p-8 w-full min-w-0 overflow-hidden box-border">
+          {/* Back to Home */}
           <button
             onClick={() => (window.location.href = "/")}
             className="mb-4 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2 cursor-pointer"
@@ -302,16 +301,43 @@ const SignUpComponent = () => {
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
-            {!showOtpField && (
-              <div className="relative mb-6 w-full box-border">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
-                    SIGN UP WITH EMAIL
-                  </span>
-                </div>
+          {/* Card */}
+          <div className="bg-[#e0e5ec] dark:bg-[#1a1f2e] rounded-2xl pt-2 sm:pt-4 w-full min-w-0 overflow-hidden box-border">
+          {!showOtpField && (
+            <div className="relative mb-6 w-full box-border">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-300 dark:border-slate-700" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-4 bg-[#e0e5ec] dark:bg-[#1a1f2e] text-slate-400 font-semibold tracking-wide rounded-md">
+                  SIGN UP WITH EMAIL
+                </span>
+              </div>
+            </div>
+          )}
+
+          {!showOtpField ? (
+            <form className="flex flex-col w-full min-w-0 gap-5 box-border" onSubmit={handleSubmit(onSubmit)}>
+              
+              <div className="w-full block">
+                <SSInput
+                  label="Name"
+                  name="name"
+                  placeholder="Enter your name"
+                  required={true}
+                  icon="fi fi-rr-user"
+                  register={register}
+                  autoComplete="name"
+                  validation={{
+                    required: "Name is required",
+                    minLength: { value: 2, message: "Name must be at least 2 characters" },
+                    pattern: {
+                      value: /^[A-Za-z0-9\s._]+$/,
+                      message: "Only letters, numbers, spaces, underscores, and dots are allowed",
+                    },
+                  }}
+                  error={errors.name}
+                />
               </div>
             )}
 
@@ -471,24 +497,16 @@ const SignUpComponent = () => {
               </div>
             )}
 
-            {!showOtpField && (
-              <div className="w-full min-w-0 box-border">
-                <div className="relative my-6 w-full box-border">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-slate-800 px-4 text-slate-400 font-medium rounded-md">
-                      Or
-                    </span>
-                  </div>
+          {!showOtpField && (
+            <div className="w-full min-w-0 box-border">
+              <div className="relative my-6 w-full box-border">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-300 dark:border-slate-700" />
                 </div>
-
-                <div className="flex justify-center w-full box-border overflow-hidden">
-                  <GoogleLogin
-                    onSuccess={handleGoogleLoginSuccess}
-                    onError={handleGoogleLoginError}
-                  />
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-[#e0e5ec] dark:bg-[#1a1f2e] px-4 text-slate-400 font-medium rounded-md">
+                    Or
+                  </span>
                 </div>
 
                 <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -501,10 +519,11 @@ const SignUpComponent = () => {
             )}
         </div>
       </div>
-
-      <Toaster position="top-right" reverseOrder={false} />
     </div>
-  );
+
+    <Toaster position="top-right" reverseOrder={false} />
+  </div>
+);
 };
 
 export default SignUpComponent;

@@ -46,7 +46,7 @@ export const enhancePromptWithGemini = async (
   const resultPromise = model.generateContent(metaPrompt);
 
   const result = signal
-    ? await Promise.race([
+    ? await Promise.race<Awaited<typeof resultPromise>>([
         resultPromise,
         new Promise<never>((_, reject) =>
           signal.addEventListener(
@@ -58,7 +58,7 @@ export const enhancePromptWithGemini = async (
       ])
     : await resultPromise;
 
-  const text = (result as Awaited<typeof resultPromise>).response.text().trim();
+  const text = result.response.text().trim();
 
   return text;
 };

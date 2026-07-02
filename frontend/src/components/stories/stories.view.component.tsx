@@ -9,22 +9,11 @@ import {
 import { calculateReadingTime } from "../../utils/reading-time";
 import { formatReadingStats } from "../../utils/story-utils";
 import CharacterProfileCard from "./CharacterProfileCard";
-import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
-import StoryVersionHistory from "./StoryVersionHistory";
-import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
+import { CharacterProfile } from "./stories.utils";
+import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
-import StoryTranslator from "./translate/StoryTranslator";
-import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
-import jsPDF from "jspdf";
-import StoryTranslator from "../translate/StoryTranslator";
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
-import { useLocation } from "react-router-dom";
 
 export interface IStories {
   uuid: string;
@@ -101,9 +90,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
-  const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
-  const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
 
   const location = useLocation();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
@@ -160,27 +147,6 @@ useEffect(() => {
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
   };
-
-  const handleRestoreVersion = (restoredContent: string) => {
-  if (!selectedStory) return;
-
-  const updatedStory = {
-    ...selectedStory,
-    content: restoredContent,
-  };
-
-  setSelectedStory(updatedStory);
-
-  setStories(
-    stories.map((story) =>
-      story.uuid === selectedStory.uuid
-        ? updatedStory
-        : story
-    )
-  );
-
-  toast.success("Story version restored successfully!");
-};
 
   const handleTopicClick = (index: number) => {
     const updatedTopics = [...topics];
@@ -403,13 +369,6 @@ if (!stories || stories.length === 0) {
                     >
                       📄 Export PDF
                     </button>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-emerald-700 text-white font-semibold cursor-pointer hover:bg-emerald-600 transition-colors"
-                      onClick={() => setShowTranslator(true)}
-                    >
-                      🌍 Translate
-                    </button>
                   </>
                 )}
                 <button
@@ -427,110 +386,12 @@ if (!stories || stories.length === 0) {
               </div>
             </div>
             <div id="story-content" className="prose prose-invert max-w-none text-slate-300 leading-relaxed tracking-wide relative z-10">
-              <p className="break-words whitespace-pre-wrap">
-                {sentenceSegments.length > 0 ? (
-                  sentenceSegments.map((segment: StorySentenceSegment) => {
-                    const isActiveSentence =
-                      isNarrationActive &&
-                      narrationWordIndex >= segment.startWordIndex &&
-                      narrationWordIndex <= segment.endWordIndex;
-
-                    const rawParts = segment.text.split(/(\s+)/);
-                    let wordOffset = 0;
-
-                    return (
-                      <span
-                        key={segment.id}
-                        className={isActiveSentence ? "text-slate-100 font-medium transition-colors duration-300" : undefined}
-                      >
-                        {rawParts.map((part, partIdx) => {
-                          if (part === "") return null;
-                          if (/^\s+$/.test(part)) {
-                            return part;
-                          }
-
-                          const absoluteWordIndex = segment.startWordIndex + wordOffset;
-                          wordOffset++;
-
-                          const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                          if (isActiveWord) {
-                            return (
-                              <span
-                                key={partIdx}
-                                className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
-                                data-active-word="true"
-                              >
-                                {part}
-                              </span>
-                            );
-                          }
-
-                          return (
-                            <span key={partIdx}>
-                              {part}
-                            </span>
-                          );
-                        })}
-                      </span>
-                    );
-                  })
-                ) : (
-                  (() => {
-                    if (!selectedStory) return null;
-                    const rawParts = selectedStory.content.split(/(\s+)/);
-                    let wordOffset = 0;
-                    return rawParts.map((part, partIdx) => {
-                      if (part === "") return null;
-                      if (/^\s+$/.test(part)) {
-                        return part;
-                      }
-
-                      const absoluteWordIndex = wordOffset;
-                      wordOffset++;
-
-                      const isActiveWord = isNarrationActive && narrationWordIndex === absoluteWordIndex;
-
-                      if (isActiveWord) {
-                        return (
-                          <span
-                            key={partIdx}
-                            className="bg-indigo-500/30 text-indigo-300 rounded px-1 transition-all duration-150 active-narrated-word"
-                            data-active-word="true"
-                          >
-                            {part}
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <span key={partIdx}>
-                          {part}
-                        </span>
-                      );
-                    });
-                  })()
-                )}
-              </p>
+              {selectedStory ? (
+                <p className="break-words">{selectedStory.content}</p>
+              ) : (
+                <p>No story available. Please generate a story first.</p>
+              )}
             </div>
-
-            {selectedStory && (
-              <>
-                <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
-                  <AudioPlayer 
-                    ref={audioPlayerRef} 
-                    text={selectedStory.content} 
-                    title={selectedStory.title} 
-                    onWordIndexChange={setNarrationWordIndex} 
-                    onPlaybackStateChange={setNarrationState} 
-                  />
-                </div>
-                <StoryVersionHistory
-                  story={selectedStory}
-                  onRestore={handleRestoreVersion}
-                />
-              </>
-            )}
           </div>
           <div className="mt-6">
   {characterProfiles.length > 0 && (
@@ -622,24 +483,7 @@ if (!stories || stories.length === 0) {
           </div>
         </div>
       </div>
-      {showGenreTransformation && selectedStory && (
-        <StoryGenreTransformation
-          story={{
-            title: selectedStory.title,
-            content: selectedStory.content,
-          }}
-          onClose={() => setShowGenreTransformation(false)}
-        />
-      )}
       <Toaster position="top-right" reverseOrder={false} />
-
-      {showTranslator && selectedStory && (
-        <StoryTranslator
-          story={selectedStory}
-          isLogin={isLogin}
-          onClose={() => setShowTranslator(false)}
-        />
-      )}
     </div>
   );
 };

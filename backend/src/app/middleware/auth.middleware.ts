@@ -15,22 +15,30 @@ type JwtVerifiedUser = {
 
 const extractBearerToken = (authHeader: string): string => {
   if (!authHeader) return "";
-
-  if (!authHeader.startsWith("Bearer ")) return "";
-
+  if (!authHeader.startsWith("Bearer ")) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Authorization header must use Bearer scheme"
+    );
+  }
   return authHeader.slice("Bearer ".length).trim();
 };
 
 const extractTokenFromRequest = (req: Request): string => {
-  const authHeader = Array.isArray(req.headers.authorization)
-    ? req.headers.authorization[0]
-    : req.headers.authorization;
+  const authHeader = req.headers.authorization;
+
+  if (Array.isArray(authHeader)) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Invalid authorization header format"
+    );
+  }
 
   const bearerToken = extractBearerToken(authHeader ?? "");
 
-  const cookieToken =
-    (req).cookies?.accessToken ||
-    (req).cookies?.token;
+  // Support both header-based and cookie-based tokens safely.
+  const cookies = req.cookies as Record<string, string> | undefined;
+  const cookieToken = cookies?.accessToken; // strictly use expected cookie key
 
   return bearerToken || cookieToken || "";
 };
@@ -48,13 +56,29 @@ const auth =
         );
       }
 
-      // Verify JWT token
-      const verifiedUser = JwtHelpers.verifyToken(
-        token,
-        config.jwt.secret as Secret
-      ) as unknown as JwtVerifiedUser;
+      let verified: JwtVerifiedUser;
+      try {
+        const decoded = JwtHelpers.verifyToken(
+          token,
+          config.jwt.secret as Secret
+        );
+        
+        if (typeof decoded === "string" || !decoded || !("_id" in (decoded as Record<string, unknown>))) {
+          throw new Error("Invalid token payload");
+        }
+        
+        verified = decoded as unknown as JwtVerifiedUser;
+      } catch (err) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid or expired token");
+      }
 
-      if (!verifiedUser?._id) {
+      if (!verified?._id) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found in token");
+      }
+
+      // Ensure this exact token string is not blacklisted.
+      const blacklisted = await TokenBlacklist.findOne({ token }).lean();
+      if (blacklisted) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
           "Invalid token"
@@ -72,8 +96,8 @@ const auth =
 
       // Token version validation replaces blacklist check
       if (
-        typeof verifiedUser.tokenVersion === "number" &&
-        user.tokenVersion !== verifiedUser.tokenVersion
+        verified.tokenVersion !== undefined &&
+        user.tokenVersion !== verified.tokenVersion
       ) {
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
@@ -102,12 +126,12 @@ const auth =
         }
       }
 
-      (req).user = user;
-
-      next();
+      req.user = user as any;
+      return next();
     } catch (err) {
       next(err);
     }
   };
 
 export default auth;
+
