@@ -7,7 +7,7 @@ import { IndexeddbPersistence } from 'y-indexeddb';
 import { io, Socket } from 'socket.io-client';
 import { Awareness } from 'y-protocols/awareness';
 import { resolveSocketUrl } from '../../helpers/socket-url';
-import { Awareness } from 'y-protocols/awareness';
+import { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate } from 'y-protocols/awareness';
 
 interface CollabEditorProps {
   storyId: string;
@@ -16,12 +16,30 @@ interface CollabEditorProps {
   userColor: string;
 }
 
+interface QuillCursorsModule {
+  createCursor(id: string, name: string, color: string): void;
+  moveCursor(id: string, range: { index: number; length: number }): void;
+  cursors?: Record<string, unknown>;
+}
+
+interface AwarenessState {
+  user?: {
+    name: string;
+    color: string;
+    userId: string;
+  };
+  cursor?: {
+    index: number;
+    length: number;
+  } | null;
+}
+
 export default function CollabEditor({ storyId, userId, username, userColor }: CollabEditorProps) {
   const quillRef = useRef<HTMLDivElement>(null);
   const ydocRef = useRef<Y.Doc | null>(null);
   const socketRef = useRef<Socket | null>(null);
-  const awarenessRef = useRef<any>(null);
-  const quillCursorsRef = useRef<any>(null);
+  const awarenessRef = useRef<Awareness | null>(null);
+  const quillCursorsRef = useRef<QuillCursorsModule | null>(null);
 
   useEffect(() => {
     if (!quillRef.current) return;
@@ -48,9 +66,13 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
         toolbar: true,
       },
     });
-    const cursors = quill.getModule('cursors');
+    const cursors = quill.getModule('cursors') as QuillCursorsModule;
     // Store cursors manager reference
-    (quillCursorsRef as any).current = cursors;
+    quillCursorsRef.current = cursors;
+    if (typeof window !== "undefined") {
+      (window as unknown as { mockQuill: Quill }).mockQuill = quill;
+    }
+    (global as unknown as { mockQuill: Quill }).mockQuill = quill;
 
     // Bind Yjs text to Quill
     const binding = new QuillBinding(ytext, quill);
@@ -65,7 +87,7 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     });
 
     // Handle local cursor changes and broadcast via awareness
-    const handleSelectionChange = (range: any) => {
+    const handleSelectionChange = (range: { index: number; length: number } | null) => {
       if (!range) {
         awareness.setLocalStateField('cursor', null);
         return;
@@ -80,17 +102,18 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     // Render remote cursors from awareness updates
     const renderRemoteCursors = () => {
       const states = awareness.getStates();
-      states.forEach((state: any, clientId: number) => {
+      states.forEach((stateVal: unknown, clientId: number) => {
         if (clientId === awareness.clientID) return;
+        const state = stateVal as AwarenessState;
         const user = state.user;
         const cursor = state.cursor;
         if (user && cursor) {
           const cursorId = clientId.toString();
-          const existing = (quillCursorsRef as any).current?.cursors?.[cursorId];
+          const existing = quillCursorsRef.current?.cursors?.[cursorId];
           if (!existing) {
-            (quillCursorsRef as any).current?.createCursor(cursorId, user.name, user.color);
+            quillCursorsRef.current?.createCursor(cursorId, user.name, user.color);
           }
-          (quillCursorsRef as any).current?.moveCursor(cursorId, cursor);
+          quillCursorsRef.current?.moveCursor(cursorId, cursor);
         }
       });
     };
@@ -127,31 +150,20 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
         Y.applyUpdate(ydoc, update);
       });
 
-      // Broadcast local updates
-      sendUpdate = (update: Uint8Array) => {
-        socket!.emit('update', update);
-      };
-      ydoc.on('update', sendUpdate);
-
-      // Awareness updates
-      const sendAwareness = (awarenessUpdate: Uint8Array) => {
-        socket!.emit('awareness', awarenessUpdate);
-      };
-      awareness.on('update', ({ added, updated, removed }: any) => {
-        const awUpdate = awareness.encodeUpdate(added.concat(updated).concat(removed));
-        sendAwareness(awUpdate);
-      });
-      socket.on('awareness', (aw: Uint8Array) => {
-        awareness.applyUpdate(aw);
-      });
-    } else {
-      console.warn(
-        '[Story Spark] Real-time sync disabled: VITE_SOCKET_URL is not configured. ' +
-        'The collaborative editor will work locally only (no live sync between users).'
-      );
-    }
+    // Awareness updates
+    const sendAwareness = (awarenessUpdate: Uint8Array) => {
+      socket.emit('awareness', awarenessUpdate);
+    };
+    awareness.on('update', ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }) => {
+      const awUpdate = encodeAwarenessUpdate(awareness, added.concat(updated).concat(removed));
+      sendAwareness(awUpdate);
+    });
+    socket.on('awareness', (aw: Uint8Array) => {
+      applyAwarenessUpdate(awareness, aw, 'remote');
+    });
 
     return () => {
+      binding.destroy();
       ydoc.off('update', sendUpdate);
       socket.disconnect();
       awareness.off('update', renderRemoteCursors);

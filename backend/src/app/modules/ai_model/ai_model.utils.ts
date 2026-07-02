@@ -9,6 +9,7 @@ import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
+import { ChildSafetyService } from "../child_safety/child_safety.service";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { sanitizeJsonText } from "../../../utils/promptSecurity";
@@ -25,6 +26,8 @@ import {
   ContinuationResponseSchema,
   TranslationResponseSchema,
   StoryboardResponseSchema,
+  BiasDetectionResponseSchema,
+  BiasDetectionResponse,
 } from "../ai";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
@@ -78,6 +81,15 @@ interface Story {
   emotions?: string[];
   genre?: string;
   enhancedPrompt?: string;
+  childSafety?: {
+    isSafeForChildren: boolean;
+    recommendedAgeGroup: string;
+    reasoning: string;
+    severity: string;
+    sentenceLevel: any[];
+    discourseLevel: any[];
+  };
+  contentWarnings?: string[];
 }
 
 // NEW: Map each tone label to a precise writing instruction injected into the AI prompt.
@@ -116,7 +128,8 @@ const GENRE_MODIFIER_INSTRUCTIONS: Record<string, string> = {
 
 const buildGenreInstruction = (genre?: string): string => {
   if (!genre) return "";
-  const instruction = GENRE_MODIFIER_INSTRUCTIONS[genre];
+  const cleanGenre = genre.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji}/gu, "").trim().toLowerCase().replace(/[^a-z]/g, "");
+  const instruction = GENRE_MODIFIER_INSTRUCTIONS[cleanGenre];
   if (!instruction) return "";
   return `Genre & Style Directive: ${instruction}\n\n`;
 };
@@ -132,6 +145,15 @@ const throwIfAborted = (signal?: AbortSignal): void => {
   if (signal?.aborted) {
     throw new GenerationAbortedError();
   }
+};
+
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
 };
 
 const buildCharactersInstruction = (characters?: ICharacter[]): string => {
@@ -222,6 +244,17 @@ export async function generateWithGeminiStories(
     const genreInstruction = buildGenreInstruction(genre);
     const toneInstruction = buildToneInstruction(tone);
     const charactersInstruction = buildCharactersInstruction(characters);
+    const cleanGenre = genre ? genre.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji}/gu, "").trim().toLowerCase().replace(/[^a-z]/g, "") : "";
+    const childSafetyPromptMod = (tone === "Children's" || cleanGenre === "childrens")
+      ? `\n\nCONTROLLABLE GENERATION COMPLIANCE:
+Because this story is targeted for children, you MUST strictly adhere to the following PG-STORY safety principles:
+- NO violence, danger, scary scenarios, weapons, self-harm, or nightmarish themes.
+- NO profanity, swearing, bad language, or insults.
+- NO sexual topics, implicit references, or nudity.
+- NO substance consumption references (alcohol, tobacco, drugs).
+- NO biases or discriminatory remarks/gender stereotypes.
+- The story must be gentle, warm, imaginative, and safe.`
+      : "";
 
     const response = await executeWithRetryAndFallback(async (activeModel) => {
       const chatSession = activeModel.startChat({
@@ -230,12 +263,8 @@ export async function generateWithGeminiStories(
         history: [],
       });
 
-      const toneInstruction = buildToneInstruction(tone);
-      const genreInstruction = buildGenreInstruction(genre);
-      const charactersInstruction = buildCharactersInstruction(characters);
-
       return chatSession.sendMessage(
-        `${buildGenreInstruction(genre)}${buildToneInstruction(tone)}${buildCharactersInstruction(characters)}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+        `${genreInstruction}${toneInstruction}${charactersInstruction}${childSafetyPromptMod}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
         First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
         Then, generate ${numStories} different short stories based on this ENHANCED prompt.
         The stories MUST be written entirely in the ${language} language.
@@ -264,8 +293,58 @@ export async function generateWithGeminiStories(
       );
     }
 
+    // Process stories to check safety, self-diagnose and correct
+    const processedStories: Story[] = [];
+    for (const story of stories) {
+      let finalStory: Story = { ...story };
+      let safetyReport: any = null;
+
+      try {
+        const cleanGenre = genre ? genre.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji}/gu, "").trim().toLowerCase().replace(/[^a-z]/g, "") : "";
+        if (tone === "Children's" || cleanGenre === "childrens") {
+          const corrected = await ChildSafetyService.runSelfDiagnosisAndCorrection(
+            prompt,
+            story.title || "Untitled",
+            story.content || "",
+            story.tag || "General",
+            tone,
+            genre,
+            signal
+          );
+          finalStory.title = corrected.title;
+          finalStory.content = corrected.content;
+          finalStory.tag = corrected.tag;
+          safetyReport = corrected.safetyReport;
+        } else {
+          safetyReport = await ChildSafetyService.performSafetyAnalysis(story.content || "", signal);
+        }
+      } catch (safetyErr) {
+        console.error("[Child Safety] Safety analysis failed during generation, fallback used:", safetyErr);
+        safetyReport = {
+          isSafeForChildren: true,
+          recommendedAgeGroup: "All Ages",
+          reasoning: "Safety auditor analysis was bypassed due to an error.",
+          severity: "Safe",
+          sentenceLevel: [],
+          discourseLevel: [],
+          contentWarnings: []
+        };
+      }
+
+      finalStory.childSafety = {
+        isSafeForChildren: safetyReport.isSafeForChildren,
+        recommendedAgeGroup: safetyReport.recommendedAgeGroup,
+        reasoning: safetyReport.reasoning,
+        severity: safetyReport.severity,
+        sentenceLevel: safetyReport.sentenceLevel,
+        discourseLevel: safetyReport.discourseLevel,
+      };
+      finalStory.contentWarnings = safetyReport.contentWarnings || [];
+      processedStories.push(finalStory);
+    }
+
     // Fetch images for stories concurrently
-    const imagePromises = stories.map(async (story) => {
+    const imagePromises = processedStories.map(async (story) => {
       try {
         const imageResponse = await fetchImageURL(
           String(story?.tag ?? story?.title ?? ""),
@@ -279,7 +358,7 @@ export async function generateWithGeminiStories(
 
     // Fetch cover images for stories sequentially
     const coverImages: string[] = [];
-    for (const story of stories) {
+    for (const story of processedStories) {
       try {
         const promptTitle = story?.title
           ? story.title
@@ -312,7 +391,7 @@ export async function generateWithGeminiStories(
 
     const imageUrls = await Promise.all(imagePromises);
 
-    return stories.map((story, index) => ({
+    return processedStories.map((story, index) => ({
       ...story,
       language,
       imageURL: imageUrls[index],
@@ -758,6 +837,7 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
+
       return {
         sceneNumber: index + 1,
         caption: scene.caption.trim(),
@@ -896,6 +976,76 @@ Return only valid JSON with this exact structure:
     throw new ApiError(
       httpStatus.BAD_GATEWAY,
       `AI story continuation generation failed: ${errorMsg}`,
+    );
+  }
+}
+
+export async function detectGenderBiasWithGemini(
+  content: string,
+  signal?: AbortSignal
+): Promise<BiasDetectionResponse> {
+  throwIfAborted(signal);
+  assertGeminiApiKeyConfigured();
+
+  const systemInstruction = `You are an expert children's literature critic, safety evaluator, and bias detection agent.
+Your task is to analyze the provided story text for gender stereotypes, gender role assignments, and subtle gender biases.
+
+Specifically, evaluate:
+1. Gender role assignments: Are male characters portrayed as the active explorers/discoverers, leaders, or problem-solvers while female characters are passive, limited to recording notes, helper tasks, or domestic roles (or vice-versa)?
+2. Exchange of activities: Is there a lack of gender exchange in activities (e.g., characters of only one gender perform active, physical, or academic activities, while others do not)?
+3. Gender representation in clothing & colors: Are gender representations reinforced through stereotypical clothing descriptions (e.g., girls in delicate dresses, boys in sturdy boots) or color associations (e.g., pink vs blue)?
+
+Analyze the story and structure your analysis. Flag any stereotypical role assignments and suggest more balanced, inclusive alternatives.
+You MUST return the output strictly as a valid JSON object. Do not include markdown formatting blocks (e.g., \`\`\`json). Just return the raw JSON.`;
+
+  const userPrompt = `Story Content:
+"${content}"
+
+Based on the rules, analyze this story and return a JSON object matching the schema below:
+{
+  "detectedBiases": [
+    {
+      "characterName": "Character Name",
+      "gender": "Male | Female | Non-binary | Other | Unknown",
+      "stereotypicalRole": "Brief description of the stereotypical role/behavior/clothing/color association flagged",
+      "reasoning": "Explain why this assignment/representation is stereotypical or biased",
+      "suggestedAlternative": "Provide a concrete, balanced, and creative alternative suggestion to improve the story's inclusivity (e.g., 'Have Ana take the lead in climbing the rock wall while Max records the observations, or describe them sharing both roles.')"
+    }
+  ],
+  "overallAnalysis": "A brief summary of the gender representations, balance, and inclusivity found in the story.",
+  "biasSeverity": "Low | Medium | High"
+}
+
+If no gender stereotypes or biases are detected, return the detectedBiases array as empty, biasSeverity as "Low", and overallAnalysis as a positive confirmation of balanced gender representations.`;
+
+  try {
+    const response = await executeWithRetryAndFallback(async (activeModel) => {
+      const chatSession = activeModel.startChat({
+        generationConfig: {
+          ...generationConfig,
+          maxOutputTokens: 4096,
+        },
+        safetySettings,
+        history: [],
+      });
+      return chatSession.sendMessage(`${systemInstruction}\n\n${userPrompt}`, { signal });
+    }, signal);
+
+    throwIfAborted(signal);
+    const text = response.response.text();
+    
+    return parseAIResponseOrThrow(text, BiasDetectionResponseSchema, {
+      label: "Gemini story bias detection",
+      errorMessage: "Invalid bias detection response from AI",
+    });
+  } catch (error: unknown) {
+    if (error instanceof ApiError || error instanceof GenerationAbortedError) {
+      throw error;
+    }
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.BAD_GATEWAY,
+      `AI gender bias detection failed: ${errorMsg}`
     );
   }
 }

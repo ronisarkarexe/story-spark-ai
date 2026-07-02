@@ -26,5 +26,12 @@ router.post(
   AnalysisController.analyzeStory
 );
 
+// Route to analyze generated story content for gender bias
+router.post(
+  "/bias-detection",
+  validateRequest(AnalysisValidator.biasDetectionSchema),
+  AnalysisController.detectGenderBias
+);
+
 export const AnalysisRouter = router;
 

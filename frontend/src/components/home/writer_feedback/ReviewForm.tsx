@@ -22,38 +22,40 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
   );
 
   return (
-    <div
-      role="radiogroup"
-      aria-label="Star rating"
-      tabIndex={0}
-      onKeyDown={handleKey}
-      className="space-y-2"
-    >
-      <div className="flex gap-2">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            aria-pressed={rating === star}
-            aria-label={`Rate ${star} star`}
-            onClick={() => setRating(star)}
-            onMouseEnter={() => setHovered(star)}
-            onMouseLeave={() => setHovered(0)}
-            className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none ${
-              star <= (hovered || rating)
-                ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]"
-                : "text-gray-600"
-            }`}
-          >
-            ★
-          </button>
-        ))}
+    <div>
+      <div
+        role="radiogroup"
+        aria-label="Star rating"
+        tabIndex={0}
+        onKeyDown={handleKey}
+        className="flex items-center gap-2 focus:outline-none"
+      >
+        {[1, 2, 3, 4, 5].map((star) => {
+          const filled = star <= (hovered || rating);
+          return (
+            <button
+              key={star}
+              type="button"
+              role="radio"
+              aria-checked={rating === star}
+              aria-label={`${star} star${star > 1 ? "s" : ""}`}
+              onClick={() => setRating(star)}
+              onMouseEnter={() => setHovered(star)}
+              onMouseLeave={() => setHovered(0)}
+              className={`text-2xl transition-all duration-150 focus-visible:outline-none rounded-md px-1 cursor-pointer ${
+                filled
+                  ? "text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.7)] scale-110"
+                  : "text-gray-300 dark:text-gray-600 hover:text-yellow-300"
+              }`}
+            >
+              ★
+            </button>
+          );
+        })}
       </div>
 
       {(hovered || rating) > 0 && (
-        <p className="text-xs font-semibold tracking-wide text-yellow-400">
-          {ratingLabels[hovered || rating]}
-        </p>
+        <p className="mt-1 text-xs font-medium text-yellow-400">{ratingLabels[hovered || rating]}</p>
       )}
     </div>
   );
@@ -66,21 +68,22 @@ const ReviewForm: React.FC = () => {
   const [rating, setRating] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
-  const [isDark, setIsDark] = useState(false);
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
-  const validate = useCallback(() => {
+  const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!name.trim()) newErrors.name = "Name is required.";
-    if (!role.trim()) newErrors.role = "Role is required.";
-    if (!feedback.trim()) newErrors.feedback = "Review is required.";
-    if (feedback.length > 500) newErrors.feedback = "Maximum 500 characters.";
-    if (rating === 0) newErrors.rating = "Please select a rating.";
-    return newErrors;
-  }, [name, role, feedback, rating]);
 
-  const handleSubmit = useCallback(async () => {
+    if (!name.trim()) newErrors.name = "Name is required";
+    if (!role.trim()) newErrors.role = "Role is required";
+    if (!feedback.trim()) newErrors.feedback = "Review is required";
+    if (feedback.length > 500) newErrors.feedback = "Max 500 characters";
+    if (rating === 0) newErrors.rating = "Please select a rating";
+
+    return newErrors;
+  };
+
+  const handleSubmit = async () => {
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -89,22 +92,21 @@ const ReviewForm: React.FC = () => {
     }
 
     try {
-      await createReview({ name, role, feedback, rating, imgSrc: "" });
+      await createReview({ name, role, feedback, rating, imgSrc: "" }).unwrap();
       setSuccess(true);
       setName("");
       setRole("");
       setFeedback("");
       setRating(0);
       setErrors({});
-    } catch (err) {
-      // keep error message generic
+    } catch {
       setErrors({ submit: "Failed to submit review. Please try again." });
       setSuccess(false);
     }
-  }, [createReview, name, role, feedback, rating, validate]);
+  };
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#0f172a]/90 to-[#111827]/90 p-6 sm:p-8 md:p-10 shadow-2xl shadow-blue-500/10 backdrop-blur-md">
         {/* Background Glow */}
         <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-blue-500/10 blur-3xl" />
@@ -125,6 +127,30 @@ const ReviewForm: React.FC = () => {
               Your feedback helps us improve StorySparkAI for everyone.
             </p>
           </div>
+
+          {/* Success */}
+          {success && (
+            <div
+              aria-live="polite"
+              className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400 transition-all duration-300"
+            >
+              <span className="text-lg">🎉</span>
+              <span>
+                Thank you! Your review has been submitted for approval.
+              </span>
+            </div>
+          )}
+
+          {/* Error */}
+          {errors.submit && (
+            <div
+              aria-live="polite"
+              className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
+            >
+              <span className="text-lg">⚠️</span>
+              <span>{errors.submit}</span>
+            </div>
+          )}
 
           <div className="space-y-6">
             {/* Name */}
@@ -254,7 +280,7 @@ const ReviewForm: React.FC = () => {
                 type="button"
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="w-auto rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/25 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-auto rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/25 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">

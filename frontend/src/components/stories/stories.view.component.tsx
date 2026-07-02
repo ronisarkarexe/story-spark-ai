@@ -1,30 +1,20 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import {
-  getShortenedText,
-  ITopicData,
-  topicsData,
-  getWordCount,
-  SELECTED_TOPIC_CLASSES,
-} from "./stories.utils";
-import { calculateReadingTime } from "../../utils/reading-time";
-import { formatReadingStats } from "../../utils/story-utils";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
+
 import StoryVersionHistory from "./StoryVersionHistory";
-import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
+import { CharacterProfile } from "./stories.utils";
+import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
-import StoryTranslator from "./translate/StoryTranslator";
-import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
-import jsPDF from "jspdf";
+import { useBiasDetectionMutation, IBiasDetectionResponse } from "../../redux/apis/analysis.api";
 import StoryTranslator from "../translate/StoryTranslator";
-import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
-import { useLocation } from "react-router-dom";
+import { ChildSafetyPanel } from "./ChildSafetyPanel";
+import DOMPurify from "dompurify";
+import AudioPlayer, { AudioPlayerHandle, NarrationPlaybackState } from "../AudioPlayer";
+import { StorySentenceSegment, buildSentenceSegments } from "./stories.helpers";
+import { useGenerateAlternateEndingsMutation, useGenerateFreeAlternateEndingsMutation } from "../../redux/apis/ai.model.api";
 
 export interface IStories {
   uuid: string;
@@ -32,9 +22,29 @@ export interface IStories {
   content: string;
   tag: string;
   imageURL: string;
-
-  genre?: string;
   language?: string;
+  genre?: string;
+  emotions?: string[];
+  enhancedPrompt?: string;
+  childSafety?: {
+    isSafeForChildren: boolean;
+    recommendedAgeGroup: string;
+    reasoning: string;
+    severity: string;
+    sentenceLevel: {
+      sentence: string;
+      category: string;
+      detail: string;
+      severity: string;
+    }[];
+    discourseLevel: {
+      aspect: string;
+      category: string;
+      detail: string;
+      severity: string;
+    }[];
+  };
+  contentWarnings?: string[];
 }
 
 export type StorySentenceSegment = {
@@ -101,31 +111,108 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
-  const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [biasAnalysis, setBiasAnalysis] = useState<IBiasDetectionResponse | null>(null);
   const [createPost] = useCreatePostMutation();
+  const [biasDetection, { isLoading: biasLoading }] = useBiasDetectionMutation();
+  const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
 
-  const location = useLocation();
-  const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+  // Alternate ending state & hooks
+  const [endingsCache, setEndingsCache] = useState<{
+    [uuid: string]: { style: string; ending: string; fullStory: string }[];
+  }>({});
+  const [originalStoryContent, setOriginalStoryContent] = useState<{
+    [uuid: string]: string;
+  }>({});
+  const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
+  const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
+
+  const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
+  const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
+
+  const audioPlayerRef = useRef<AudioPlayerHandle | null>(null);
   const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
   const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
+  const isNarrationActive = narrationState === "playing";
 
   const sentenceSegments = useMemo(() => {
-    return buildSentenceSegments(selectedStory?.content ?? "");
-  }, [selectedStory?.content]);
-
-  const isNarrationActive = narrationState !== "idle";
+    return selectedStory ? buildSentenceSegments(selectedStory.content) : [];
+  }, [selectedStory]);
 
   useEffect(() => {
-    return () => {
-      audioPlayerRef.current?.stop();
+    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
+      setOriginalStoryContent((prev) => ({
+        ...prev,
+        [selectedStory.uuid]: selectedStory.content,
+      }));
+    }
+  }, [selectedStory, originalStoryContent]);
+
+  const handleGenerateAlternateEndings = async () => {
+    if (!selectedStory) return;
+    setIsGeneratingEndings(true);
+    const toastId = toast.loading("Generating alternate endings...");
+    try {
+      const payload = {
+        title: selectedStory.title,
+        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
+        tag: selectedStory.tag,
+        language: selectedStory.language || "English",
+      };
+      
+      const generationRequest = isLogin
+        ? generateAlternateEndings(payload)
+        : generateFreeAlternateEndings(payload);
+        
+      const res = await generationRequest.unwrap();
+      if (res && res.data) {
+        setEndingsCache((prev) => ({
+          ...prev,
+          [selectedStory.uuid]: res.data,
+        }));
+        if (res.data.length > 0) {
+          setActiveEndingTab(res.data[0].style);
+        }
+        toast.success("Alternate endings generated successfully!");
+      } else {
+        toast.error("Failed to generate alternate endings.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate alternate endings. Please try again.");
+    } finally {
+      toast.dismiss(toastId);
+      setIsGeneratingEndings(false);
+    }
+  };
+
+  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
+    if (!selectedStory) return;
+    const updatedStory = {
+      ...selectedStory,
+      content: endingData.fullStory,
     };
-  }, [location.pathname]);
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success(`${endingData.style} applied to story!`);
+  };
 
-  useEffect(() => {
-    setNarrationWordIndex(0);
-    setNarrationState("idle");
-  }, [selectedStory?.uuid]);
+  const handleResetEnding = () => {
+    if (!selectedStory) return;
+    const originalContent = originalStoryContent[selectedStory.uuid];
+    if (!originalContent) return;
+    const updatedStory = {
+      ...selectedStory,
+      content: originalContent,
+    };
+    setSelectedStory(updatedStory);
+    setStories(
+      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
+    );
+    toast.success("Reverted to original story ending!");
+  };
 
   useEffect(() => {
     setSelectTopics(topics.filter((topic) => topic.selected));
@@ -135,6 +222,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     if (stories && stories.length > 0) {
       setSelectedStory(stories[0]);
     }
+    setBiasAnalysis(null);
   }, [stories]);
 
 useEffect(() => {
@@ -155,10 +243,11 @@ useEffect(() => {
   };
 
   autoSaveStory();
-}, [selectedStory, isLogin, selectTopics]);
+}, [selectedStory, isLogin, selectTopics, createPost]);
 
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
+    setBiasAnalysis(null);
   };
 
   const handleRestoreVersion = (restoredContent: string) => {
@@ -222,6 +311,22 @@ const handleExportPDF = () => {
   } catch (error) {
     console.error(error);
     toast.error("Failed to export PDF.");
+  }
+};
+
+const handleBiasCheck = async () => {
+  if (!selectedStory) {
+    toast.error("No story selected!");
+    return;
+  }
+
+  try {
+    const result = await biasDetection({ content: selectedStory.content }).unwrap();
+    setBiasAnalysis(result);
+    toast.success("Gender bias analysis completed!");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to run gender bias analysis.");
   }
 };
 
@@ -320,6 +425,8 @@ if (!stories || stories.length === 0) {
 }
   }
 
+  if (!selectedStory) return null;
+
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
       <style>
@@ -398,6 +505,23 @@ if (!stories || stories.length === 0) {
                     </button>
                     <button
                       type="button"
+                      className="rounded-lg px-4 py-2 bg-pink-700 text-white font-semibold hover:bg-pink-600 transition-colors flex items-center gap-1.5"
+                      onClick={handleBiasCheck}
+                      disabled={biasLoading}
+                    >
+                      {biasLoading ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin" />
+                          Checking...
+                        </>
+                      ) : (
+                        <>
+                          ⚖️ Bias Check
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
                       className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors"
                       onClick={handleExportPDF}
                     >
@@ -443,7 +567,7 @@ if (!stories || stories.length === 0) {
                         key={segment.id}
                         className={isActiveSentence ? "text-slate-100 font-medium transition-colors duration-300" : undefined}
                       >
-                        {rawParts.map((part, partIdx) => {
+                        {rawParts.map((part: string, partIdx: number) => {
                           if (part === "") return null;
                           if (/^\s+$/.test(part)) {
                             return part;
@@ -477,10 +601,9 @@ if (!stories || stories.length === 0) {
                   })
                 ) : (
                   (() => {
-                    if (!selectedStory) return null;
-                    const rawParts = selectedStory.content.split(/(\s+)/);
+                    const rawParts = DOMPurify.sanitize(selectedStory.content).split(/(\s+)/);
                     let wordOffset = 0;
-                    return rawParts.map((part, partIdx) => {
+                    return rawParts.map((part: string, partIdx: number) => {
                       if (part === "") return null;
                       if (/^\s+$/.test(part)) {
                         return part;
@@ -514,22 +637,103 @@ if (!stories || stories.length === 0) {
               </p>
             </div>
 
-            {selectedStory && (
-              <>
-                <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
-                  <AudioPlayer 
-                    ref={audioPlayerRef} 
-                    text={selectedStory.content} 
-                    title={selectedStory.title} 
-                    onWordIndexChange={setNarrationWordIndex} 
-                    onPlaybackStateChange={setNarrationState} 
-                  />
+            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-white/5 w-full box-border relative z-10">
+              <AudioPlayer 
+                ref={audioPlayerRef} 
+                text={selectedStory.content} 
+                title={selectedStory.title} 
+                onWordIndexChange={setNarrationWordIndex} 
+                onPlaybackStateChange={setNarrationState} 
+              />
+            </div>
+            <StoryVersionHistory
+              story={selectedStory}
+              onRestore={handleRestoreVersion}
+            />
+          </div>
+
+          {/* Alternate Endings Section */}
+          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl sm:rounded-3xl shadow-xl p-6 mt-2 relative overflow-hidden">
+            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-200 dark:border-slate-700/40">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                  Alternate Endings
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Explore alternate narrative styles for your story context.
+                </p>
+              </div>
+              {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
+                <button
+                  type="button"
+                  onClick={handleResetEnding}
+                  className="rounded-lg px-4 py-2 bg-red-100 dark:bg-red-950/40 hover:bg-red-200 dark:hover:bg-red-900/60 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                >
+                  <i className="fa-solid fa-rotate-left"></i> Reset to Original
+                </button>
+              )}
+            </div>
+
+            {!endingsCache[selectedStory.uuid] ? (
+              <div className="flex flex-col items-center justify-center p-6 bg-slate-950/20 rounded-xl border border-dashed border-slate-700/50">
+                <p className="text-sm text-slate-400 mb-4 text-center">
+                  Need a different ending? Generate alternate endings tailored to your story.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleGenerateAlternateEndings}
+                  disabled={isGeneratingEndings}
+                  className="rounded-lg px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isGeneratingEndings ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin" />
+                      <span>Generating Endings...</span>
+                    </>
+                  ) : (
+                    <span>Generate Alternate Endings</span>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-700 mb-4 pb-2">
+                  {endingsCache[selectedStory.uuid].map((ending) => (
+                    <button
+                      key={ending.style}
+                      type="button"
+                      onClick={() => setActiveEndingTab(ending.style)}
+                      className={`pb-2 px-4 text-sm font-semibold transition-all border-b-2 ${
+                        activeEndingTab === ending.style
+                          ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
+                          : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                      }`}
+                    >
+                      {ending.style} Ending
+                    </button>
+                  ))}
                 </div>
-                <StoryVersionHistory
-                  story={selectedStory}
-                  onRestore={handleRestoreVersion}
-                />
-              </>
+                {endingsCache[selectedStory.uuid]
+                  .filter((ending) => activeEndingTab === ending.style)
+                  .map((ending) => (
+                    <div key={ending.style} className="space-y-4">
+                      <div className="p-4 bg-slate-900/40 border border-slate-700/30 rounded-xl">
+                        <p className="text-sm text-slate-300 leading-relaxed italic">
+                          "{ending.ending}"
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleApplyEnding(ending)}
+                        className="rounded-lg px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                      >
+                        Apply Ending
+                      </button>
+                    </div>
+                  ))}
+              </div>
             )}
           </div>
           <div className="mt-6">
@@ -550,6 +754,65 @@ if (!stories || stories.length === 0) {
     </>
   )}
 </div>
+
+{/* Bias Analysis Panel */}
+{biasAnalysis && (
+  <div className="mt-6 p-6 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl transition-all duration-300">
+    <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-700/50">
+      <h3 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+        ⚖️ Gender Bias Analysis
+      </h3>
+      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+        biasAnalysis.biasSeverity === 'High' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+        biasAnalysis.biasSeverity === 'Medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+        'bg-green-500/20 text-green-400 border border-green-500/30'
+      }`}>
+        Severity: {biasAnalysis.biasSeverity}
+      </span>
+    </div>
+    
+    <p className="text-slate-300 mb-6 text-sm leading-relaxed">
+      {biasAnalysis.overallAnalysis}
+    </p>
+    
+    {biasAnalysis.detectedBiases.length > 0 ? (
+      <div className="space-y-4">
+        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Flagged Stereotypes & Alternatives</h4>
+        {biasAnalysis.detectedBiases.map((bias, idx) => (
+          <div key={idx} className="p-4 bg-slate-900/60 border border-slate-700/40 rounded-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-bold text-purple-300">
+                👤 {bias.characterName} ({bias.gender})
+              </span>
+              <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                Flagged: {bias.stereotypicalRole}
+              </span>
+            </div>
+            
+            <div className="text-xs text-slate-400 leading-relaxed">
+              <span className="font-semibold text-slate-300">Reasoning:</span> {bias.reasoning}
+            </div>
+            
+            <div className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg text-xs text-slate-300 space-y-1">
+              <div className="font-bold text-emerald-400 flex items-center gap-1">
+                💡 Suggested Alternative:
+              </div>
+              <p className="italic leading-relaxed">{bias.suggestedAlternative}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-xl flex items-center gap-3 text-sm text-green-400">
+        <i className="fa-solid fa-circle-check text-lg"></i>
+        <span>No gender stereotypes or biases were detected! The story portrays balanced representations.</span>
+      </div>
+    )}
+  </div>
+)}
+
+{/* Child Safety & PG-STORY safety check report */}
+<ChildSafetyPanel story={selectedStory} />
           <div className="mt-7">
             <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
               <h3 className="text-lg font-bold text-slate-200 mb-4">

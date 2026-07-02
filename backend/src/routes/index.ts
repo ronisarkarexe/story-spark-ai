@@ -25,6 +25,7 @@ import { StoryRatingRouter } from "../app/modules/story_rating/story_rating.rout
 import PromptAnalysisRouter from "../app/modules/prompt_analysis/prompt_analysis.router";
 import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
 import characterRouter from "./character.routes";
+import { ChildSafetyRouter } from "../app/modules/child_safety/child_safety.router";
 
 const router = express.Router();
 
@@ -100,6 +101,10 @@ const modules = [
   {
     path: "/characters",
     router: characterRouter,
+  },
+  {
+    path: "/child-safety",
+    router: ChildSafetyRouter,
   },
 ];
 

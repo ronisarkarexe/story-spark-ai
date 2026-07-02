@@ -29,9 +29,9 @@ const FORBIDDEN_PATTERNS: RegExp[] = [
   /do\s+anything\s+now/i,
   /dan\s+mode/i,
   /developer\s+mode/i,
-  /pretend\s+(you\s+are|to\s+be)\s+(a\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
-  /act\s+as\s+(if\s+you\s+are\s+)?(a\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
-  /you\s+are\s+now\s+(a\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
+  /pretend\s+(you\s+are|to\s+be)\s+(?:an?|the\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
+  /act\s+as\s+(if\s+you\s+are\s+)?(?:an?|the\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
+  /you\s+are\s+now\s+(?:an?|the\s+)?(?:different|unrestricted|unfiltered|evil|bad|another|developer|system)/i,
 
   // Roleplay-style attacks
   /in\s+this\s+(scenario|story|roleplay|game|simulation)\s+.{0,50}(no\s+rules?|no\s+restrictions?|anything\s+goes)/i,
@@ -46,25 +46,11 @@ const FORBIDDEN_PATTERNS: RegExp[] = [
   /###\s*instructions?/i,
 ];
 
-/**
- * Normalize input to prevent Unicode substitution and obfuscation bypasses.
- */
-const normalizeInput = (input: string): string => {
+const canonicalizeSecurityText = (input: string): string => {
+  if (!input) return "";
   return input
-    .normalize("NFKC") // Unicode normalization
-    .replace(/[\u200B-\u200D\uFEFF]/g, "") // Remove zero-width characters
-    .replace(/\s+/g, " ") // Collapse whitespace
-    .trim();
-};
-/**
- * Strip markdown code fences (e.g. ```json ... ```) from raw AI text
- * before attempting JSON.parse.
- */
-export const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  return (input ?? "")
     .normalize("NFKC")
-    .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
+    .replace(/[\u200B-\u200D\uFEFF\u2060\u180E\u0013\u001f\u001e\f\x00-\x1F]/g, "")
     .replace(/[\s\u00A0]+/g, " ")
     .trim();
 };
@@ -74,17 +60,19 @@ export const validateAndFormatPrompt = (userPrompt: string): string => {
     throw new Error("Security Violation: Invalid prompt input.");
   }
 
-  const normalizedPrompt = normalizeInput(userPrompt);
+  const canonical = canonicalizeSecurityText(userPrompt);
 
   for (const pattern of FORBIDDEN_PATTERNS) {
-    if (pattern.test(normalizedPrompt)) {
+    if (pattern.test(canonical)) {
       throw new Error("Security Violation: Malicious prompt injection detected.");
     }
   }
 
-  assertContentSafe(normalizedPrompt);
+  // Content moderation — block harmful/inappropriate input
+  assertContentSafe(canonical);
 
-  return `"""\n${normalizedPrompt}\n"""`;
+  // Strict delimiters to isolate user input
+  return `"""\n${canonical}\n"""`;
 };
 
 export const validateOutput = (aiResponse: string): string => {
@@ -92,7 +80,8 @@ export const validateOutput = (aiResponse: string): string => {
     throw new Error("Security Violation: Invalid AI response.");
   }
 
-  const lowerResponse = aiResponse.toLowerCase();
+  const canonical = canonicalizeSecurityText(aiResponse);
+  const lowerResponse = canonical.toLowerCase();
 
   const leakPatterns = [
     "system prompt:",
@@ -106,6 +95,8 @@ export const validateOutput = (aiResponse: string): string => {
     "confidential instructions",
     "ignore the rules",
     "comply with your instructions",
+    "system prompt",
+    "developer instructions",
   ];
 
   for (const pattern of leakPatterns) {
