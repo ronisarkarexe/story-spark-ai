@@ -212,15 +212,15 @@ const aiFreeModelTranslate = async (payload: ITranslatePayload, signal?: AbortSi
 };
 
 const aiModelStoryContinuation = async (
-  payload: { prompt: string; language?: string },
+  payload: { prompt: string; language?: string; storyId?: string; useStoryBible?: boolean },
   _token?: ITokenPayload,
   signal?: AbortSignal
 ) => {
-  const { prompt, language = "English" } = payload;
+  const { prompt, language = "English", storyId, useStoryBible } = payload;
 
   try {
     const result = await raceGenerationWithTimeout(
-      (s) => generateStoryContinuationWithGemini(prompt, language, s),
+      (s) => generateStoryContinuationWithGemini(prompt, language, s, storyId, useStoryBible),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
       signal
     );
@@ -230,12 +230,15 @@ const aiModelStoryContinuation = async (
   }
 };
 
-const aiFreeStoryContinuation = async (payload: { prompt: string; language?: string }, signal?: AbortSignal) => {
-  const { prompt, language = "English" } = payload;
+const aiFreeStoryContinuation = async (
+  payload: { prompt: string; language?: string; storyId?: string; useStoryBible?: boolean },
+  signal?: AbortSignal
+) => {
+  const { prompt, language = "English", storyId, useStoryBible } = payload;
 
   try {
     const result = await raceGenerationWithTimeout(
-      (s) => generateStoryContinuationWithGemini(prompt, language, s),
+      (s) => generateStoryContinuationWithGemini(prompt, language, s, storyId, useStoryBible),
       FREE_GENERATION_TIMEOUT_MS,
       signal
     );

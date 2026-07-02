@@ -64,6 +64,8 @@ const aiStoryContinuation = z.object({
       .min(10, "Prompt must be at least 10 characters long.")
       .max(5000, "Prompt must not exceed 5000 characters."),
     language: z.string().optional(),
+    storyId: z.string().optional(),
+    useStoryBible: z.boolean().optional(),
   }),
 });
 

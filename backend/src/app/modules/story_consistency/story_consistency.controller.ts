@@ -5,8 +5,8 @@ import sendResponse from "../../../shared/send_response";
 import { analyzeConsistency, trackStoryFacts } from "./story_consistency.service";
 
 const analyze = catchAsync(async (req: Request, res: Response) => {
-  const { storyText } = req.body as { storyText: string };
-  const result = await analyzeConsistency(storyText);
+  const { storyText, storyId } = req.body as { storyText: string; storyId?: string };
+  const result = await analyzeConsistency(storyText, storyId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -26,4 +26,4 @@ const trackFacts = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const StoryConsistencyController = { analyze, trackFacts };
+export const StoryConsistencyController = { analyze, trackFacts };
