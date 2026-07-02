@@ -46,6 +46,19 @@ const FORBIDDEN_PATTERNS: RegExp[] = [
   /###\s*instructions?/i,
 ];
 
+ fix/ai-model-map-closure
+const canonicalizeSecurityText = (input: string): string => {
+  // Normalize & harden against common normalization-evasion techniques.
+  // - NFKC collapses compatibility variants
+  // - Remove common zero-width characters and BOM
+  // - Normalize whitespace (including NBSP) to single spaces
+  return (input ?? "")
+    .normalize("NFKC")
+    .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
+    .replace(/[\s\u00A0]+/g, " ");
+};
+
+ main
 /**
  * Normalize input to prevent Unicode substitution and obfuscation bypasses.
  */
@@ -54,6 +67,8 @@ const normalizeInput = (input: string): string => {
     .normalize("NFKC") // Unicode normalization
     .replace(/[\u200B-\u200D\uFEFF]/g, "") // Remove zero-width characters
     .replace(/\s+/g, " ") // Collapse whitespace
+ fix/ai-model-map-closure
+
     .trim();
 };
 /**
@@ -66,6 +81,7 @@ export const sanitizeJsonText = (rawText: string): string => {
     .normalize("NFKC")
     .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
     .replace(/[\s\u00A0]+/g, " ")
+ main
     .trim();
 };
 
@@ -92,7 +108,8 @@ export const validateOutput = (aiResponse: string): string => {
     throw new Error("Security Violation: Invalid AI response.");
   }
 
-  const lowerResponse = aiResponse.toLowerCase();
+  // 4. Post-generation validation — check for leaked system instructions
+  const canonical = canonicalizeSecurityText(aiResponse).toLowerCase();
 
   const leakPatterns = [
     "system prompt:",
@@ -109,7 +126,7 @@ export const validateOutput = (aiResponse: string): string => {
   ];
 
   for (const pattern of leakPatterns) {
-    if (lowerResponse.includes(pattern)) {
+    if (canonical.includes(pattern)) {
       throw new Error("Security Violation: AI output leaked system instructions.");
     }
   }
