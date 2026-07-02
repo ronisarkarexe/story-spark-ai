@@ -3,18 +3,20 @@ import { Chapter } from "../../types/story.types";
 import ReadingTimeBadge from "../ReadingTimeBadge";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
-import { AudioPlayer } from "../AudioPlayer";
+import AudioPlayer from "../AudioPlayer";
 
 interface Props {
   chapters: Chapter[];
   storyId: string;
+  externalRef?: React.RefObject<HTMLDivElement>;
   truncated?: boolean;
 }
 
-const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
+const StoryViewer: React.FC<Props> = ({ chapters, storyId, externalRef, truncated }) => {
   const [progress, setProgress] = useState(0);
   const [showResumeBanner, setShowResumeBanner] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const internalRef = useRef<HTMLDivElement>(null);
+  const containerRef = externalRef ?? internalRef;
   const storageKey = `story-progress-${storyId}`;
 
   useEffect(() => {
@@ -190,7 +192,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
       {showResumeBanner && (
         <div className="sticky top-0 z-20 bg-indigo-900/90 backdrop-blur-md rounded-lg p-3 mb-4 flex justify-between items-center">
           <span className="text-sm text-indigo-200">
-            You left off at {progress}% � continue where you stopped?
+            You left off at {progress}%   continue where you stopped?
           </span>
           <div className="flex gap-2">
             <button
