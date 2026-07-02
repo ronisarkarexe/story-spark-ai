@@ -13,6 +13,7 @@ export const scrubPII = (text: string): string => {
 
   let scrubbed = text;
 
+  // Idempotency check removed due to security bypass vulnerability (Issue #4461)
 
 
 
