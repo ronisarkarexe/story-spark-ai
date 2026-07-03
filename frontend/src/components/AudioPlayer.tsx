@@ -18,11 +18,8 @@ import {
   Star,
   Volume2,
   Volume,
- feat/collaboration-1122
   ChevronUp,
   ChevronDown,
-
- main
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
@@ -140,12 +137,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
         if (!isCurrentVoiceStillAvailable) {
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
-      }
- feat/collaboration-1122
-    }, [showFavoritesOnly, displayedVoices, speech]);
-
-    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
- main
+      }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
 
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -192,11 +184,9 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
       };
-    }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
+     }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
 
- feat/collaboration-1122
-
-    const scrollToTop = () => {
+     const scrollToTop = () => {
       const container = document.querySelector('[role="region"]');
       if (container) {
         container.scrollTo({ top: 0, behavior: 'smooth' });
@@ -209,8 +199,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
         container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
       }
     };
-
- main
     const isLoading = speech.isSupported && !speech.isReady;
     const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
 
