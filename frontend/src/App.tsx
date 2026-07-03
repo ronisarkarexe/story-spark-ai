@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
 import { USER_ROLE } from "./constants/role";
 
@@ -16,11 +16,6 @@ import MagicCursorComponent from "./components/magic-cursor/magic_cursor.compone
 import ThemeSwitcher from "./components/theme-switcher/ThemeSwitcher";
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
-
-type ProtectedRouteProps = {
-  allowedRoles: string[];
-  element?: React.ReactElement;
-};
 
 // Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
@@ -65,6 +60,7 @@ const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
+const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
@@ -105,26 +101,7 @@ const router = createBrowserRouter([
       { path: "terms", element: <Terms /> },
       { path: "help-center", element: <HelpCenterComponent /> },
       { path: "guidelines", element: <GuidelinesComponent /> },
-      
       { path: "contributors", element: <ContributorsComponent /> },
-      { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES}>{lazyPage(<WritingAssistantComponent />)}</ProtectedRoute> },
-      { path: "story-inspiration", element: lazyPage(<StoryInspirationWrapper />) },
-      { path: "login", element: lazyPage(<LoginComponent />) },
-      { path: "signup", element: lazyPage(<SignUpComponent />) },
-      { path: "forgot-password", element: lazyPage(<ForgotPasswordComponent />) },
-      { path: "pricing", element: lazyPage(<PricingComponent />) },
-      { path: "post/:id", element: lazyPage(<PostDetailsComponent />) },
-      { path: "profile/:id", element: lazyPage(<PublicProfileComponent />) },
-      { path: "contact-us", element: lazyPage(<Contact />) },
-      { path: "about-us", element: lazyPage(<AboutUsComponent />) },
-      { path: "career", element: lazyPage(<CareerComponent />) },
-      { path: "blog", element: lazyPage(<BlogComponent />) },
-      { path: "privacy-policy", element: lazyPage(<PrivacyPolicy />) },
-      { path: "cookie-policy", element: lazyPage(<CookiePolicy />) },
-      { path: "terms", element: lazyPage(<Terms />) },
-      { path: "help-center", element: lazyPage(<HelpCenterComponent />) },
-      { path: "guidelines", element: lazyPage(<GuidelinesComponent />) },
-      { path: "contributors", element: lazyPage(<ContributorsComponent />) },
       { path: "leaderboard", element: <Leaderboard /> },
       { path: "community", element: lazyPage(<CommunityComponent />) },
       { path: "report-bug", element: lazyPage(<ReportBug />) },
@@ -197,14 +174,11 @@ const router = createBrowserRouter([
           { path: "contributors", element: lazyPage(<ContributorsComponent />) },
           { path: "community", element: lazyPage(<CommunityComponent />) },
           { path: "report-bug", element: lazyPage(<ReportBug />) },
-          // Public routes
           { path: "explore", element: lazyPage(<ExploreComponent />) },
           { path: "resources", element: lazyPage(<ResourcesListComponent />) },
           { path: "resources/:resourceName", element: lazyPage(<ResourceDetailComponent />) },
           { path: "chat", element: lazyPage(<ChatPage />) },
           { path: "search", element: lazyPage(<SearchPageComponent />) },
-
-          // Protected routes
           {
             element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
             children: [
@@ -267,8 +241,22 @@ const router = createBrowserRouter([
   },
 ]);
 
+// ✅ NEW: AppWrapper component to add semantic HTML and language attribute
+function AppWrapper() {
+  // Set language attribute on the html element
+  useEffect(() => {
+    document.documentElement.lang = "en";
+  }, []);
+
+  return (
+    <main role="main" id="main-content" className="app-container">
+      <RouterProvider router={router} />
+    </main>
+  );
+}
+
 function App() {
-  return <RouterProvider router={router} />;
+  return <AppWrapper />;
 }
 
 export default App;

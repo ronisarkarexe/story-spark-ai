@@ -78,19 +78,25 @@ const FooterComponent: React.FC = () => {
     { label: "Guidelines", to: "/guidelines" },
   ];
 
-const socialLinks = [
-  { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
-  { icon: "fa-instagram", url: "https://www.instagram.com", label: "Follow us on Instagram" },
-  { icon: "fa-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
-  { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X" },
-  { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
-  { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
-];
+  const socialLinks = [
+    { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
+    { icon: "fa-instagram", url: "https://www.instagram.com", label: "Follow us on Instagram" },
+    { icon: "fa-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
+    { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X" },
+    { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
+    { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
+  ];
 
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative w-full bg-gradient-to-b from-[#090F24] via-[#080E22] to-[#060A18] overflow-hidden">
+    // ✅ Already using <footer> - good!
+    <footer 
+      role="contentinfo"
+      aria-label="Site footer"
+      className="relative w-full bg-gradient-to-b from-[#090F24] via-[#080E22] to-[#060A18] overflow-hidden"
+    >
+      {/* Background decorations - unchanged */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0"
@@ -128,16 +134,20 @@ const socialLinks = [
         <div className="grid grid-cols-12 gap-x-6 gap-y-10 items-start">
           {/* Brand column */}
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-5">
-            <Link to="/" className="group inline-block w-fit">
+            <Link 
+              to="/" 
+              className="group inline-block w-fit"
+              aria-label="Story Spark AI - Home"
+            >
               <img
                 src={logo}
-                alt="StorySparkAI"
+                alt="StorySparkAI logo"
                 className="h-[38px] w-auto object-contain brightness-100 transition-all duration-300 group-hover:brightness-110"
               />
             </Link>
 
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-blue-500/20 bg-blue-600/[0.10] px-3.5 py-1 text-[11.5px] font-medium tracking-[0.12em] text-blue-300/90 uppercase shadow-[0_0_14px_rgba(59,130,246,0.06)]">
-              <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-blue-400 animate-pulse" />
+              <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-blue-400 animate-pulse" aria-hidden="true" />
               AI-powered storytelling ecosystem
             </div>
 
@@ -147,11 +157,14 @@ const socialLinks = [
             </p>
           </div>
 
-          {/* Platform links */}
-          <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
-            <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
+          {/* ✅ Semantic improvement: Platform navigation with <nav> */}
+          <nav 
+            className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4"
+            aria-label="Platform navigation"
+          >
+            <h2 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
               Platform
-            </h3>
+            </h2>
             <ul className="flex flex-col gap-[12.5px]">
               {platformLinks.map(({ label, to }) => (
                 <li key={to}>
@@ -160,18 +173,21 @@ const socialLinks = [
                     className="group relative inline-flex text-[14px] leading-none text-slate-300/85 transition-colors duration-200 hover:text-blue-300"
                   >
                     {label}
-                    <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" />
+                    <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" aria-hidden="true" />
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Resource links */}
-          <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
-            <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
+          {/* ✅ Semantic improvement: Resources navigation with <nav> */}
+          <nav 
+            className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4"
+            aria-label="Resources navigation"
+          >
+            <h2 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
               Resources
-            </h3>
+            </h2>
             <ul className="flex flex-col gap-[12.5px]">
               {resourceLinks.map(({ label, to }) => (
                 <li key={to}>
@@ -183,7 +199,7 @@ const socialLinks = [
                       className="group relative inline-flex text-[14px] leading-none text-slate-300/85 transition-colors duration-200 hover:text-blue-300"
                     >
                       {label}
-                      <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" />
+                      <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" aria-hidden="true" />
                     </a>
                   ) : (
                     <Link
@@ -191,19 +207,22 @@ const socialLinks = [
                       className="group relative inline-flex text-[14px] leading-none text-slate-300/85 transition-colors duration-200 hover:text-blue-300"
                     >
                       {label}
-                      <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" />
+                      <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-blue-400/40 transition-all duration-300 ease-out group-hover:w-full" aria-hidden="true" />
                     </Link>
                   )}
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Social links */}
-          <div className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4">
-            <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
+          {/* ✅ Semantic improvement: Social links with <nav> */}
+          <nav 
+            className="col-span-6 sm:col-span-4 lg:col-span-2 flex flex-col gap-4"
+            aria-label="Social media links"
+          >
+            <h2 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
               Follow Us
-            </h3>
+            </h2>
             <ul className="flex flex-col gap-[12.5px]">
               {socialLinks.map((item) => (
                 <li key={item.label}>
@@ -216,6 +235,7 @@ const socialLinks = [
                   >
                     <i
                       className={`fa-brands ${item.icon} text-[15px] text-slate-400 group-hover:text-blue-300 transition-colors`}
+                      aria-hidden="true"
                     />
                     <span className="capitalize">
                       {item.icon === "fa-x-twitter"
@@ -226,13 +246,19 @@ const socialLinks = [
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Newsletter */}
-          <div className="col-span-12 sm:col-span-8 lg:col-span-2 flex flex-col gap-4">
-            <h3 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70">
+          {/* Newsletter section */}
+          <div 
+            className="col-span-12 sm:col-span-8 lg:col-span-2 flex flex-col gap-4"
+            aria-labelledby="newsletter-title"
+          >
+            <h2 
+              id="newsletter-title"
+              className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-white/70"
+            >
               Stay Updated
-            </h3>
+            </h2>
             <p className="text-[13.5px] leading-[1.65] text-slate-300/80 max-w-sm">
               Writing tips, product updates, and stories straight to your inbox.
             </p>
@@ -241,12 +267,16 @@ const socialLinks = [
               onSubmit={handleSubscribe}
               noValidate
               className="mt-1 flex flex-col gap-2"
+              aria-labelledby="newsletter-title"
             >
               <div className="flex items-center gap-2 h-11 rounded-lg bg-[#0B1228]/60 px-3 border border-white/[0.06]">
                 <i
                   className="fa-solid fa-envelope text-slate-500 text-[13px]"
                   aria-hidden="true"
                 />
+                <label htmlFor="newsletter-email-footer" className="sr-only">
+                  Email address
+                </label>
                 <input
                   id="newsletter-email-footer"
                   name="email"
@@ -257,12 +287,14 @@ const socialLinks = [
                   placeholder="you@storyspark.ai"
                   disabled={status === "loading"}
                   className="w-full h-full bg-transparent text-[13px] text-white placeholder-slate-500 focus:outline-none"
+                  aria-required="true"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={status === "loading"}
+                aria-label="Subscribe to newsletter"
                 className="self-start h-8 px-3 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 text-[11px] font-medium text-white hover:from-blue-400 hover:to-indigo-400 active:scale-95 transition-all duration-200 disabled:opacity-60 cursor-pointer"
               >
                 {status === "loading" ? "..." : "Subscribe"}
@@ -287,6 +319,7 @@ const socialLinks = [
 
         <div
           className="my-8"
+          aria-hidden="true"
           style={{
             height: "1px",
             background:
@@ -302,19 +335,22 @@ const socialLinks = [
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+          {/* ✅ Semantic improvement: Legal links as <nav> */}
+          <nav 
+            className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1"
+            aria-label="Legal navigation"
+          >
             {legalLinks.map(({ label, to }, i) => (
               <React.Fragment key={label}>
                 <Link to={to} className="hover:text-blue-300 transition-colors">
                   {label}
                 </Link>
-
                 {i < legalLinks.length - 1 && (
-                  <span className="text-white/12">|</span>
+                  <span className="text-white/12" aria-hidden="true">|</span>
                 )}
               </React.Fragment>
             ))}
-          </div>
+          </nav>
         </div>
       </div>
     </footer>
