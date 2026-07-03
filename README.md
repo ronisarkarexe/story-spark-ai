@@ -1,5 +1,6 @@
 <div align="center">
-<h1>👩‍💻 StorySparkAI is an open-source platform designed for creative minds to generate and share multiple story variations from a single prompt. Perfect for writers, creators, and enthusiasts exploring AI-powered storytelling!</h1>
+<h1>👩‍💻 StorySparkAI</h1>
+<p>An open-source platform designed for creative minds to generate and share multiple story variations from a single prompt. Perfect for writers, creators, and enthusiasts exploring AI-powered storytelling!</p>
 </div>
 
 <p align="center">
@@ -10,101 +11,158 @@
    <img src="https://img.shields.io/github/forks/ronisarkarexe/story-spark-ai?style=for-the-badge&logo=appveyor" alt="Forks"/>
    </a>
    <a href="https://github.com/ronisarkarexe/story-spark-ai/stargazers" target="blank">
-   <img src="https://img.shields.io/github/stars/ronisarkarexe/story-spark-ai?style=for-the-badge&logo=appveyor" alt="Star"/>
+   <img src="https://img.shields.io/github/stars/ronisarkarexe/story-spark-ai?style=for-the-badge&logo=appveyor" alt="Stars"/>
    </a>
    <a href="https://github.com/ronisarkarexe/story-spark-ai/issues" target="blank">
-   <img src="https://img.shields.io/github/issues/ronisarkarexe/story-spark-ai.svg?style=for-the-badge&logo=appveyor" alt="Click Vote Issue"/>
+   <img src="https://img.shields.io/github/issues/ronisarkarexe/story-spark-ai.svg?style=for-the-badge&logo=appveyor" alt="Issues"/>
    </a>
    <a href="https://github.com/ronisarkarexe/story-spark-ai/pulls" target="blank">
-   <img src="https://img.shields.io/github/issues-pr/ronisarkarexe/story-spark-ai.svg?style=for-the-badge&logo=appveyor" alt="Click Vote Open Pull Request"/>
+   <img src="https://img.shields.io/github/issues-pr/ronisarkarexe/story-spark-ai.svg?style=for-the-badge&logo=appveyor" alt="Pull Requests"/>
+   </a>
+   <a href="https://github.com/ronisarkarexe/story-spark-ai/actions/workflows/ci.yml" target="blank">
+   <img src="https://github.com/ronisarkarexe/story-spark-ai/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"/>
    </a>
 </p>
 
-## Table of Contents
+---
 
-- [Table of Contents](#table-of-contents)
+## 📚 Table of Contents
 - [About 🚀](#about-)
 - [Features 💪](#features-)
-- [Local development (monorepo)](#local-development-monorepo)
-- [Environment variables](#environment-variables)
-- [Troubleshooting](#troubleshooting)
+- [Known Behavior & UX Notes](#known-behavior--ux-notes-)
+- [Local Development](#local-development-monorepo)
+- [Environment Variables](#environment-variables)
+- [Minimal Working Example (Story Generation API)](#minimal-working-example-story-generation-api)
+- [Troubleshooting 🛠️](#troubleshooting-️)
 - [Contributing 👨‍💻](#contributing-)
 - [Contributors 🤝](#contributors-)
 - [Maintainers](#maintainers)
-- [License](#license)
+- [License 📜](#license-)
 - [Support 🙏](#support-)
 
-<a id="about"></a>
+---
 
 ## About 🚀
 
-- story-spark-ai - [Website](https://storysparkai.vercel.app/)
-- **`StorySparkAi`** is an open-source platform designed to empower creative minds by generating and showcasing AI-crafted stories from user prompts in a simple, engaging way.
-- With **`StorySparkAi`**, users can input an idea, explore multiple story variations, save their favorites, and leverage AI analysis to enhance their creative writing journey.
+- Website: [StorySparkAI](https://storysparkai.vercel.app/)
+- **StorySparkAI** empowers creative minds by generating and showcasing AI-crafted stories from user prompts in a simple, engaging way.
+- Users can:
+  - Input an idea or prompt
+  - Explore multiple story variations
+  - Save favorites
+  - Leverage AI analysis to enhance their creative writing journey
 
-<a id="features"></a>
+---
 
 ## Features 💪
 
 - **AI-Powered Story Generation**: Create unique stories instantly using advanced AI models.
-- **Prompt-Based Storytelling**: Simply provide a prompt or idea and watch it come to life.
-- **Story Bookmarks/History**: Save your favorite generated stories and revisit your past creations.
-- **AI Analysis Capabilities**: Get AI insights, summaries, and critiques of your stories.
-- **Creative Writing Assistance**: Overcome writer's block with intelligent suggestions and variations.
-- **Responsive User Experience**: Enjoy a seamless and beautiful interface across all devices.
+- **Prompt-Based Storytelling**: Provide a prompt and watch it come to life.
+- **Story Bookmarks & History**: Save and revisit your favorite creations.
+- **AI Analysis**: Get summaries, critiques, and insights on your stories.
+- **Creative Writing Assistance**: Overcome writer's block with intelligent suggestions.
+- **Responsive UI**: Seamless experience across devices.
+- **Dark Mode**: Toggle between light and dark themes for a comfortable reading experience.
+- **Google Login**: Sign in quickly and securely using your Google account.
+- **User Reviews**: Share your experience and explore reviews from the community.
+- **Subscription Plans**: Access unlimited story generation and team collaboration with paid plans.
+- **Featured Posts**: Discover featured posts curated from the community.
 
-### Local development (monorepo)
+---
 
-**Prerequisites:** Node.js **18.18+**, npm **9+**, MongoDB URI for the API.
+## Known Behavior & UX Notes 📋
+
+### Issue [#4238](https://github.com/ronisarkarexe/story-spark-ai/issues/4238) — Loading State During Story Generation
+
+**Current behavior:** Clicking "Generate Story" multiple times while waiting for AI output creates duplicate requests, wastes API credits, and leaves users uncertain whether the app is working.
+
+**Recommended fix for contributors:**
+
+Disable the Generate button and show a loading spinner while a request is in flight. Here is a minimal React example:
+
+```jsx
+const [isLoading, setIsLoading] = useState(false);
+
+const handleGenerate = async () => {
+  if (isLoading) return;           // guard against duplicate clicks
+  setIsLoading(true);
+  try {
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/story/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ prompt }),
+    });
+    const data = await res.json();
+    setStories(data.stories);
+  } finally {
+    setIsLoading(false);           // always re-enable the button
+  }
+};
+
+// In JSX:
+<button onClick={handleGenerate} disabled={isLoading}>
+  {isLoading ? "Generating…" : "Generate Story"}
+</button>
+```
+
+**Why this matters:**
+- Prevents duplicate API calls that increase operational costs.
+- Gives users clear feedback that the app is working, especially on slow connections.
+- Generated stories are held in component state; a browser refresh clears them — consider persisting results to `localStorage` or the backend history endpoint as a follow-up improvement.
+
+**Status:** Open — contributions welcome! See [Contributing](#contributing-) to get started.
+
+---
+
+## Local Development (Monorepo)
+
+**Prerequisites:** Node.js **18.18+**, pnpm **8+**, MongoDB URI for the API.
 
 1. **Clone the repository**
-
    ```bash
    git clone https://github.com/<your-github-username>/story-spark-ai.git
+   ```
+
+2. **Navigate to the project directory**
+   ```bash
    cd story-spark-ai
    ```
 
-2. **Install dependencies** (single install at the repo root — npm workspaces)
-
+3. **Install dependencies** (single install at the repo root — pnpm workspaces)
    ```bash
    pnpm install
    ```
 
-3. **Environment files**
-
-   - Copy `backend/.env.example` → `backend/.env` and fill in all values (see [Environment variables](#environment-variables)).
-  - Copy `frontend/.env.example` → `frontend/.env` and set `VITE_BASE_URL` to your API base URL (e.g. `http://localhost:5000/api/v1` when the backend runs on port 5000). Optionally set `VITE_SOCKET_URL` for real-time notifications; the frontend uses your logged-in access token to join the notification room.
+4. **Environment files**
+   - Copy `backend/.env.example` → `backend/.env` and fill in all values (see [Environment Variables](#environment-variables)).
+   - Copy `frontend/.env.example` → `frontend/.env` and set `VITE_BASE_URL` to your API base URL (e.g., `http://localhost:5000/api/v1`). Optionally set `VITE_SOCKET_URL` for real-time notifications.
 
    > Never commit `backend/.env` or `frontend/.env`. Only `.env.example` files belong in git.
 
-4. **First-Time Setup (Admin Seeding)**
+5. **First-Time Setup (Admin Seeding)**
 
-   Before starting the server for the first time, you must create an admin user:
-   
+   Before starting the server for the first time, create an admin user:
    ```bash
    cd backend
    npx ts-node scripts/seed-admin.ts
    ```
-   
-   Make sure `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in your `backend/.env` file.
+   Make sure `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in `backend/.env`.
 
-5. **Run apps**
-
-   - **Both** (two terminals or one combined process):
-
-     ```bash
-     pnpm dev
-     ```
-
-   - **Backend only:** `pnpm dev:backend` — API (default port **5000** if `PORT` is unset).
-   - **Frontend only:** `pnpm dev:frontend` — Vite dev server on **http://localhost:4001**
-
-6. **Production builds**
-
+6. **Run apps**
    ```bash
-   npm run build
-   npm run start:backend    # requires `npm run build:backend` first
-   npm run start:frontend   # serves built static app (preview)
+   pnpm dev                  # Both frontend & backend
+   pnpm dev:backend          # API only (default port 5000)
+   pnpm dev:frontend         # Vite dev server on http://localhost:4001
+   ```
+
+7. **Production builds**
+   ```bash
+   pnpm run build
+   pnpm run start:backend    # requires build:backend first
+   pnpm run start:frontend   # serves built static app
    ```
 
 ### Deploying on Vercel
@@ -116,216 +174,211 @@ Use **two** Vercel projects from this monorepo:
 | Frontend | `frontend` | `storysparkai.vercel.app` |
 | Backend API | `backend` | `apistorysparkai.vercel.app` |
 
-**Frontend environment variables** (redeploy after changing):
-
+**Frontend environment variables:**
 - `VITE_BASE_URL` = `https://<your-api>.vercel.app/api/v1`
-- `VITE_SOCKET_URL` = `https://notification-socket-io.onrender.com` (or your own persistent Node host)
-- Do **not** point `VITE_SOCKET_URL` at your Vercel API URL — Vercel serverless cannot run Socket.IO, which causes endless `/socket.io/` **404** logs.
+- `VITE_SOCKET_URL` = `https://notification-socket-io.onrender.com` (do **not** point this at your Vercel API URL — Vercel serverless cannot run Socket.IO)
 
 **Backend environment variables:** set `DATABASE_URL`, JWT secrets, AI keys, and `CORS_ORIGINS` including `https://storysparkai.vercel.app`.
 
-**Git:** Use a **single** repository root (one `.git` folder). Do not nest another `.git` inside `frontend/` or `backend/`.
+---
 
-<a id="environment-variables"></a>
+## Environment Variables
 
-### Environment variables
-
-After cloning, create your env files from the examples in the repo:
+After cloning, create your env files from the examples:
 
 ```bash
-cp backend/.env.example backend/.env
+cp backend/.env.example  backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-#### Backend (`backend/.env`)
+### Backend (`backend/.env`)
 
-Variables marked **Yes** are required for local development. Variables marked **No** are optional and can usually use the default value. Variables marked for a feature are only required when you use that feature.
+#### 🖥️ Server Configuration
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `NODE_ENV` | `development` | ✅ Yes | Environment mode |
+| `PORT` | `5000` | ✅ Yes | Backend server port |
+| `CORS_ORIGINS` | `http://localhost:4001` | ✅ Yes | Allowed frontend origin |
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | MongoDB connection string. Use a local URI such as `mongodb://localhost:27017/storysparkai` or an Atlas URI. |
-| `PORT` | No | API port number. Defaults to `5000` if unset. |
-| `NODE_ENV` | No | Runtime mode, usually `development` locally or `production` in deploys. |
-| `CORS_ORIGINS` | No | Comma-separated frontend URLs allowed for CORS requests, e.g. `http://localhost:4001`. |
-| `SALT_ROUNDS` | Yes | Bcrypt cost factor as a number, e.g. `10`. |
-| `JWT_SECRET` | Yes | Access token signing secret, e.g. `your-jwt-secret`. Use a strong random value outside local testing. |
-| `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret, e.g. `your-refresh-secret`. Use a different strong value from `JWT_SECRET`. |
-| `JWT_EXPIRES_IN` | Yes | Access token lifetime, e.g. `60d`, `24h`, or another valid duration string. |
-| `JWT_REFRESH_EXPIRES_IN` | Yes | Refresh token lifetime, e.g. `120d`, `30d`, or another valid duration string. |
-| `DEFAULT_ADMIN_PASSWORD` | Yes | Initial admin password used during seeding, e.g. `admin123` for local development only. |
-| `OPEN_AI_KEY` | For OpenAI | [OpenAI API key](https://platform.openai.com/api-keys), required only when using OpenAI-backed features. |
-| `GEMINI_API_KEY` | For Gemini | [Google AI Studio key](https://aistudio.google.com/apikey), required only when using Gemini-backed features. |
-| `UNSPLASH_KEY_API` | For images | [Unsplash Access Key](https://unsplash.com/developers), required only for Unsplash image features. |
-| `UNSPLASH_KEY_API_SECRET` | For images | Unsplash secret, required only for Unsplash image features that need it. |
-| `VERIFY_EMAIL` | For email | SMTP sender address, required only for email verification or email notifications. |
-| `VERIFY_PASSWORD` | For email | SMTP password or app password, required only for email verification or email notifications. |
-| `GOOGLE_CLIENT_ID` | For login with google | Google OAuth client ID from https://console.cloud.google.com, required only for Google login. |
+#### 🗄️ Database
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `DATABASE_URL` | `mongodb://127.0.0.1:27017/story_spark_ai` | ✅ Yes | MongoDB connection string |
 
-Example backend `.env`:
+#### 🔐 Authentication
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `SALT_ROUNDS` | `10` | ✅ Yes | bcrypt hashing rounds |
+| `JWT_SECRET` | `any_random_string` | ✅ Yes | Access token signing secret |
+| `JWT_REFRESH_SECRET` | `another_random_string` | ✅ Yes | Refresh token signing secret |
+| `JWT_EXPIRES_IN` | `60d` | ✅ Yes | Access token expiry |
+| `JWT_REFRESH_EXPIRES_IN` | `120d` | ✅ Yes | Refresh token expiry |
+| `ADMIN_EMAIL` | `admin@example.com` | ✅ Yes | Admin account email |
+| `ADMIN_PASSWORD` | `secure-password` | ✅ Yes | Admin account password |
+| `DEFAULT_ADMIN_PASSWORD` | `admin123` | ✅ Yes | Initial admin password for seeding |
 
+#### 🤖 AI Providers
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `OPEN_AI_KEY` | `sk-...` | ⚠️ Optional | Required for OpenAI story generation |
+| `GEMINI_API_KEY` | `AIza...` | ⚠️ Optional | Required for Gemini story generation |
+| `AI_API_KEYS` | `key1,key2,key3` | ⚠️ Optional | Comma-separated keys for round-robin rotation |
+| `AI_CONCURRENCY` | `3` | ⚠️ Optional | Max simultaneous AI calls (default: 3) |
+
+> ℹ️ You need **at least one** of `OPEN_AI_KEY`, `GEMINI_API_KEY`, or `AI_API_KEYS` for story generation to work.
+
+#### 🖼️ Image Provider (Unsplash)
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `UNSPLASH_KEY_API` | `your_access_key` | ⚠️ Optional | Required for story cover images |
+| `UNSPLASH_KEY_API_SECRET` | `your_secret` | ⚠️ Optional | Unsplash API secret |
+
+#### 📧 Email Verification
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `VERIFY_EMAIL` | `noreply@example.com` | ⚠️ Optional | Sender email for verification emails |
+| `VERIFY_PASSWORD` | `app_password` | ⚠️ Optional | Email app password |
+
+#### 🔑 Google OAuth
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | ⚠️ Optional | Required for Google Login |
+
+### Frontend (`frontend/.env`)
+| Variable | Example | Required | Description |
+|----------|---------|----------|-------------|
+| `VITE_BASE_URL` | `http://localhost:5000/api/v1` | ✅ Yes | Backend API base URL |
+| `VITE_SOCKET_URL` | `http://localhost:5000` | ⚠️ Optional | WebSocket server URL |
+| `VITE_GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | ✅ Yes | Google OAuth Client ID |
+
+### ⚡ Minimum Setup for Local Development
+
+**`backend/.env`**
 ```env
-DATABASE_URL=mongodb://localhost:27017/storysparkai
-PORT=5000
 NODE_ENV=development
+PORT=5000
 CORS_ORIGINS=http://localhost:4001
+DATABASE_URL=mongodb://127.0.0.1:27017/story_spark_ai
 SALT_ROUNDS=10
-JWT_SECRET=your-jwt-secret
-JWT_REFRESH_SECRET=your-refresh-secret
+JWT_SECRET=any_random_string
+JWT_REFRESH_SECRET=another_random_string
 JWT_EXPIRES_IN=60d
 JWT_REFRESH_EXPIRES_IN=120d
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
 DEFAULT_ADMIN_PASSWORD=admin123
 ```
 
-#### Frontend (`frontend/.env`)
-
-Variables prefixed with `VITE_` are exposed to the frontend by Vite. `VITE_SOCKET_URL` is optional if you are not testing real-time notifications locally.
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_BASE_URL` | Yes | Backend API base URL, e.g. `http://localhost:5000/api/v1` for local development. |
-| `VITE_SOCKET_URL` | No | Socket.IO server URL, e.g. `http://localhost:5000`. Optional unless you are using real-time notifications. |
-| `VITE_GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID from https://console.cloud.google.com. |
-
-Example frontend `.env`:
-
+**`frontend/.env`**
 ```env
 VITE_BASE_URL=http://localhost:5000/api/v1
 VITE_SOCKET_URL=http://localhost:5000
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
 ```
-
-### Troubleshooting
-
-#### MongoDB connection errors
-
-- **Problem:** The backend starts with database connection errors or cannot load API data.
-- **Possible cause:** `DATABASE_URL` is missing, incorrect, points to the wrong database, or MongoDB is not running.
-- **Suggested solution:** Check `backend/.env` and verify `DATABASE_URL` matches your local MongoDB or Atlas URI. If you use local MongoDB, make sure the MongoDB service is running before starting the backend.
-
-#### Missing environment variables
-
-- **Problem:** The backend or frontend fails to start, or features break during development.
-- **Possible cause:** Required values are missing from `backend/.env` or `frontend/.env`.
-- **Suggested solution:** Compare your local `.env` files with `backend/.env.example` and `frontend/.env.example`, then add any missing variables.
-
-#### Port conflicts
-
-- **Problem:** The frontend or backend cannot start because a port is already in use.
-- **Possible cause:** Another process is already using port **4001** for the frontend or **5000** for the backend.
-- **Suggested solution:** Find and stop the conflicting process, then restart the app. On Windows, run `netstat -ano | findstr :5000` or `netstat -ano | findstr :4001`, then stop the process with `taskkill /PID <PID> /F`. If needed, change the backend `PORT` in `backend/.env` or update the frontend dev server port in the frontend configuration.
-
-#### Dependency installation issues
-
-- **Problem:** `pnpm install` fails or installed packages behave unexpectedly.
-- **Possible cause:** Cached dependencies, a stale lock file, or an incomplete install.
-- **Suggested solution:** Delete `node_modules` and the lock file, then reinstall dependencies from the repository root with `pnpm install`.
-
-#### Admin seeding issues
-
-- **Problem:** Admin user creation fails when running `npx ts-node scripts/seed-admin.ts`.
-- **Possible cause:** Admin credentials are missing or the backend cannot connect to MongoDB.
-- **Suggested solution:** Verify `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in `backend/.env`, then confirm `DATABASE_URL` is valid and MongoDB is running.
-
-#### Socket connection issues
-
-- **Problem:** Real-time notifications do not connect or the browser shows Socket.IO errors.
-- **Possible cause:** `VITE_SOCKET_URL` is incorrect, missing, or the backend/socket service is not running.
-- **Suggested solution:** Check `frontend/.env` and verify `VITE_SOCKET_URL` points to the active socket service. Make sure the backend/socket service is running, then check the browser console for connection errors.
-
-### Contributing workflow
-
-1. Fork the repository and clone your fork.
-2. Create a branch: `git checkout -b your-feature-branch`
-3. Install with `pnpm install` at the repo root, configure `.env` files, then `git add`, `git commit`, `git push`, and open a pull request.
-
-
-
-<a id="contributing"></a>
-## Troubleshooting 🛠️
-
-Running into issues during setup? Here are the most common errors and how to fix them.
 
 ---
 
-### 1. `npm error Override for @types/express conflicts with direct dependency`
+## 🧪 Minimal Working Example (Story Generation API)
 
-**Cause:** There's a version mismatch in the root `package.json` — `@types/express` is set to `^5.0.6` in `devDependencies`, which conflicts with what the project expects.
+Once your backend is running and you have a valid auth token:
 
-**Fix:** Open your root `package.json` and change the `@types/express` version under `devDependencies`:
+```bash
+curl -X POST http://localhost:5000/api/v1/story/generate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>" \
+  -d '{"prompt": "A lost astronaut discovers a planet made of memories"}'
+```
 
+**Example response:**
 ```json
-// ❌ Before
-"@types/express": "^5.0.6"
-
-// ✅ After
-"@types/express": "^4.17.21"
+{
+  "success": true,
+  "storyId": "64fabc1234...",
+  "stories": [
+    { "title": "Echoes of Memory", "content": "Far beyond the Orion belt...", "variation": 1 },
+    { "title": "The Memory Planet", "content": "In the silence of space...", "variation": 2 }
+  ]
+}
 ```
 
-Then re-run:
+> ⚠️ **Note (Issue #4238):** The API does not deduplicate in-flight requests. If a user clicks Generate multiple times before a response arrives, each click triggers a separate AI call. Implement a loading/disabled state in your UI to prevent this — see [Known Behavior & UX Notes](#known-behavior--ux-notes-).
+
+---
+
+## 🔧 Troubleshooting 🛠️
+
+**Stories not generating?**
+→ Set at least one of `OPEN_AI_KEY`, `GEMINI_API_KEY`, or `AI_API_KEYS`.
+
+**Generate button fires multiple times / duplicate stories appear?**
+→ This is issue [#4238](https://github.com/ronisarkarexe/story-spark-ai/issues/4238). Add a loading state that disables the button during the request. See [Known Behavior & UX Notes](#known-behavior--ux-notes-) for a code example.
+
+**Stories lost after browser refresh?**
+→ Story results are held in component state and are cleared on refresh. To persist them, save to `localStorage` or call the backend history endpoint after generation. Persistent storage support is tracked in [#4238](https://github.com/ronisarkarexe/story-spark-ai/issues/4238).
+
+**Google Login not working?**
+→ `GOOGLE_CLIENT_ID` is missing. Get it from [Google Cloud Console](https://console.cloud.google.com/).
+
+**Story cover images not loading?**
+→ `UNSPLASH_KEY_API` is not set. Register at [Unsplash Developers](https://unsplash.com/developers).
+
+**Verification email not sent?**
+→ For Gmail, use an [App Password](https://myaccount.google.com/apppasswords), not your account password.
+
+**MongoDB connection failed?**
+→ Ensure MongoDB is running locally (`mongod`) or use an Atlas URI: `mongodb+srv://user:pass@cluster.mongodb.net/story_spark_ai`
+
+**CORS error in browser?**
+→ `CORS_ORIGINS` must exactly match your frontend URL including port. No trailing slash.
+
+**`pnpm` command not found?**
+→ Install globally: `npm install -g pnpm`, then verify with `pnpm --version`.
+
+**Node.js version incompatibility?**
+→ The project requires Node.js **18.18+**. Check with `node -v` and upgrade if needed.
+
+**Port conflicts?**
+→ Frontend uses **4001**, backend uses **5000**. Find and stop conflicting processes:
+- Linux/macOS: `lsof -i :5000` then `kill -9 <PID>`
+- Windows: `netstat -ano | findstr :5000` then `taskkill /PID <PID> /F`
+
+**`pnpm install` failures after switching branches?**
 ```bash
+rm -rf node_modules   # Linux/macOS
 pnpm install
 ```
 
----
+**Admin seeding issues?**
+→ Verify `ADMIN_EMAIL` and `ADMIN_PASSWORD` are in `backend/.env`, then confirm MongoDB is running.
 
-### 2. `docker: The term 'docker' is not recognized`
+**Socket connection issues?**
+→ Verify `VITE_SOCKET_URL` in `frontend/.env` points to the active socket service. Do not use your Vercel API URL for this.
 
-**Cause:** Docker Desktop is not installed or not added to your system PATH.
-
-**Fix:** Download and install Docker Desktop from the official site:
-👉 https://www.docker.com/products/docker-desktop/
-
-After installation, restart your terminal and verify with:
-```bash
-docker --version
-```
+> 💡 **Still stuck?** Open an issue or check existing ones — your problem may already have a solution!
 
 ---
-
-### 3. `WSL needs updating` error in Docker Desktop
-
-**Cause:** Your Windows Subsystem for Linux (WSL) version is outdated and incompatible with the current Docker Desktop.
-
-**Fix:** Run the following command in your terminal (as Administrator if needed):
-```bash
-wsl --update
-```
-Once the update completes, click **Try Again** in Docker Desktop. If the issue persists, restart your machine.
-
----
-
-### 4. `npm ci` fails inside Docker with missing or out-of-sync `package-lock.json`
-
-**Cause:** The `package-lock.json` is either missing or out of sync with `package.json`, causing `npm ci` to fail.
-
-**Fix:** At the **repo root**, regenerate the lockfile:
-```bash
-pnpm install
-```
-Then commit the updated `package-lock.json` before rebuilding your Docker image:
-```bash
-git add package-lock.json
-git commit -m "chore: regenerate package-lock.json"
-```
-
----
-
-> > 💡 **Still stuck?** Open an issue or check existing ones — your problem may already have a solution!
 
 ## Contributing 👨‍💻
 
-Contributions make the open source community such an amazing place to learn, inspire, and create. <br>
+Contributions make the open source community such an amazing place to learn, inspire, and create.
 **Any contributions you make are truly appreciated!**
 
-<a id="contributors"></a>
+**Contributing workflow:**
+1. Fork the repository and clone your fork.
+2. Create a branch: `git checkout -b your-feature-branch`
+3. Install with `pnpm install` at the repo root and configure `.env` files.
+4. `git add`, `git commit`, `git push`, then open a pull request.
+
+---
 
 ## Contributors 🤝
 
-Thanks to everyone who has helped build **Story Spark AI**. This grid updates automatically from [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
+Thanks to everyone who has helped build **StorySparkAI**. This grid updates automatically from [GitHub contributors](https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors).
 
 <a href="https://github.com/ronisarkarexe/story-spark-ai/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&max=500&columns=12" alt="Contributors" />
+  <img src="https://contrib.rocks/image?repo=ronisarkarexe/story-spark-ai&max=1000&columns=16" alt="Contributors" />
 </a>
+
+---
 
 ## Maintainers
 
@@ -339,41 +392,19 @@ Thanks to everyone who has helped build **Story Spark AI**. This grid updates au
       <strong>Roni Sarkar</strong>
       <br />
       <sub>Project Maintainer · <a href="https://github.com/ronisarkarexe">@ronisarkarexe</a></sub>
-      <br /><br />
-      <a href="https://github.com/ronisarkarexe" title="GitHub">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="28" height="28" alt="GitHub" />
-      </a>
-      &nbsp;
-      <a href="https://www.linkedin.com/in/ronisarkarexe" title="LinkedIn">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" width="28" height="28" alt="LinkedIn" />
-      </a>
-      &nbsp;
-      <a href="https://x.com/ronisarkar_exe" title="X (Twitter)">
-        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/x.svg" width="28" height="28" alt="X" />
-      </a>
     </td>
   </tr>
 </table>
 
-<a id="license"></a>
+---
 
-## License
+## License 📜
 
-<table>
-  <tr>
-     <td>
-       <p align="center"> <img src="https://github.com/malivinayak/malivinayak/blob/main/LICENSE-Logo/MIT.png?raw=true" width="80%"></img>
-    </td>
-    <td> 
-      <img src="https://img.shields.io/badge/License-MIT-yellow.svg"/> <br> 
-         This project is licensed under <a href="./LICENSE">MIT</a>. <img width=2300/>
-    </td>
-  </tr>
-</table>
+This project is licensed under [MIT](./LICENSE).
 
-<a id="support"></a>
+---
 
 ## Support 🙏
 
-Thank you for contributing to our open-source project! We appreciate your support 🚀 <br>
+Thank you for contributing to our open-source project! We appreciate your support 🚀
 Don't forget to leave a star ⭐

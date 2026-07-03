@@ -49,7 +49,7 @@ const RecommendedWritersComponent = () => {
   };
 
   return (
-    <>
+    <div className="w-full block">
       <section className="bg-blue-500/10 rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-gray-300 mb-4">
           Recommended Writers
@@ -59,23 +59,26 @@ const RecommendedWritersComponent = () => {
           {recommendedWriters.map((writer, index) => (
             <div key={writer.id} className="flex items-center justify-between">
               <div className="flex items-center">
-                <img
-                  className="h-10 w-10 rounded-full"
-                  src={writer.image}
-                  alt={writer.name}
-                />
+                <Link to={`/profile/${writer.id}`} className="flex items-center hover:opacity-85 transition">
+                  <img
+                    className="h-10 w-10 rounded-full object-cover border dark:border-gray-800"
+                    src={writer.image}
+                    alt={writer.name}
+                  />
 
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-slate-700 dark:text-gray-400">
-                    {writer.name}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-gray-500">
-                    {writer.role}
-                  </p>
-                </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                      {writer.name}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-gray-500">
+                      {writer.role}
+                    </p>
+                  </div>
+                </Link>
               </div>
 
               <button
+                type="button"
                 onClick={() => toggleFollow(index, writer.id)}
                 disabled={isLoading}
                 className="!rounded-button text-indigo-600 text-sm font-medium hover:text-indigo-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -89,7 +92,7 @@ const RecommendedWritersComponent = () => {
 
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#0f172a] border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.5)] max-w-md w-full p-6 transform transition-all">
+          <div className="bg-[#0f172a] border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.5)] max-w-md w-full p-6 overflow-hidden transform transition-all">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i className="fas fa-user-lock text-2xl text-blue-400"></i>
@@ -106,19 +109,20 @@ const RecommendedWritersComponent = () => {
               <div className="flex flex-col gap-3">
                 <Link
                   to="/login"
-                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
+                  className="w-full block text-center bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
                 >
                   Log In
                 </Link>
 
                 <Link
                   to="/signup"
-                  className="w-full bg-white/5 hover:bg-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all border border-white/10"
+                  className="w-full block text-center bg-white/5 hover:bg-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all border border-white/10"
                 >
                   Sign Up
                 </Link>
 
                 <button
+                  type="button"
                   onClick={() => setShowLoginModal(false)}
                   className="w-full bg-transparent hover:bg-white/5 text-gray-400 hover:text-gray-300 font-medium py-3 px-4 rounded-xl transition-all mt-1"
                 >
@@ -129,7 +133,7 @@ const RecommendedWritersComponent = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { Link, NavLink } from "react-router-dom";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
-import { ArrowRight, Menu, Sparkles, X } from "lucide-react";
-import { useTheme } from "../theme/theme.context";
+import { ArrowRight, Sparkles } from "lucide-react";
 
-const NavListComponent = () => {
+
+
+
+  const NavListComponent = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
+
   const { pathname } = useLocation();
-  const { glowEnabled, toggleGlow } = useTheme();
+
 
   const handleLogout = () => {
     removeUserInfo();
@@ -50,10 +52,10 @@ const NavListComponent = () => {
     }),
   };
 
-  return (
+
+
     <header className="sticky top-0 z-50 w-full">
-      {/* Visual background wrapper layers */}
-      <div className="absolute inset-0 border-b border-white/50 bg-white/70 shadow-sm shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-black/20" />
+      <div className="absolute inset-0 border-b border-slate-200/70 bg-white/70 shadow-sm shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-black/20" />
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-500/35 to-transparent" />
 
       <div className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -342,6 +344,25 @@ const NavListComponent = () => {
           </motion.div>
         )}
       </AnimatePresence>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {loggedIn ? (
+            <button onClick={handleLogout} className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Logout</button>
+          ) : (
+            <Link to="/login" className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Login</Link>
+          )}
+          <button className="rounded-md px-2 py-1 text-slate-700 lg:hidden dark:text-slate-200" onClick={() => setMenuOpen((v) => !v)}>
+            <i className="fa-solid fa-bars" />
+          </button>
+        </div>
+
+      {menuOpen && (
+        <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 lg:hidden dark:border-white/10">
+          <NavLink to="/" end className={linkClass}>Home</NavLink>
+          <NavLink to="/explore" className={linkClass}>Explore</NavLink>
+          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
+        </div>
+      )}
     </header>
   );
 };

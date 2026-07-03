@@ -23,6 +23,27 @@ const StoryWorkspace = () => {
   );
   const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
 
+  const handleCopyStory = async () => {
+  if (!currentStory) {
+    toast.error("No story available to copy.");
+    return;
+  }
+
+  try {
+    const storyText = (currentStory.chapters || [])
+  .map(
+    (chapter) => `${chapter.title}\n\n${chapter.content}`
+  )
+  .join("\n\n-----------------------------------\n\n");
+
+    await navigator.clipboard.writeText(storyText);
+    toast.success("Story copied to clipboard!");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to copy story.");
+  }
+};
+
   const handleExportMarkdown = () => {
     if (!currentStory) {
       toast.error("No story available to export.");
@@ -157,6 +178,12 @@ const StoryWorkspace = () => {
               </button>
             </div>
             <button
+              onClick={handleCopyStory}
+              className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
+              >
+                📋 Copy Story
+            </button>
+            <button
               onClick={handleExportMarkdown}
               className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
             >
@@ -182,6 +209,7 @@ const StoryWorkspace = () => {
             <StoryViewer
               chapters={currentStory.chapters}
               storyId={currentStory.id}
+              truncated={currentStory.truncated}
             />
 
             <div className="p-6 border-t border-zinc-800">

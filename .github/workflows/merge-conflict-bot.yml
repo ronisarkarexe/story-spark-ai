@@ -25,24 +25,25 @@ jobs:
 
             if (context.payload.pull_request.user.type === 'Bot') return;
 
-            // Retrieve PR details to get mergeable status (GitHub calculates this asynchronously)
             let pr;
-            let retries = 5;
-            while (retries > 0) {
-              const res = await github.rest.pulls.get({
-                owner,
-                repo,
-                pull_number: number,
-              });
-              pr = res.data;
-              
-              if (pr.mergeable !== null) {
-                break;
+            try {
+              let retries = 5;
+              while (retries > 0) {
+                const res = await github.rest.pulls.get({ owner, repo, pull_number: number });
+                pr = res.data;
+                if (pr.mergeable !== null) break;
+                core.info('Mergeability status is null, waiting 5 seconds...');
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                retries--;
               }
-              
-              core.info('Mergeability status is null, waiting 5 seconds...');
-              await new Promise(resolve => setTimeout(resolve, 5000));
-              retries--;
+            } catch (err) {
+              core.setFailed(`Failed to fetch PR mergeable status: ${err.message}`);
+              return;
+            }
+
+            if (!pr || pr.mergeable === null) {
+              core.info('Mergeability status still unknown after retries, skipping.');
+              return;
             }
 
             core.info(`PR #${number} Mergeable Status: ${pr.mergeable}`);
@@ -50,28 +51,26 @@ jobs:
             const CONFLICT_LABEL = 'conflicts';
             const COMMENT_MARKER = '<!-- merge-conflict-bot-marker -->';
 
-            // Retrieve comments to check for existing bot comments
-            const { data: comments } = await github.rest.issues.listComments({
-              owner,
-              repo,
-              issue_number: number,
-              per_page: 100
-            });
+            let comments;
+            try {
+              const res = await github.rest.issues.listComments({ owner, repo, issue_number: number, per_page: 100 });
+              comments = res.data;
+            } catch (err) {
+              core.setFailed(`Failed to list comments: ${err.message}`);
+              return;
+            }
             const existingComment = comments.find(c => c.body.includes(COMMENT_MARKER));
 
             if (pr.mergeable === false) {
               core.info('Merge conflict detected. Applying label and posting comment...');
 
-              // 1. Ensure the conflicts label exists in the repo, then add it to the PR
               try {
                 await github.rest.issues.getLabel({ owner, repo, name: CONFLICT_LABEL });
               } catch (e) {
                 core.info(`Label '${CONFLICT_LABEL}' does not exist, creating it...`);
                 try {
                   await github.rest.issues.createLabel({
-                    owner,
-                    repo,
-                    name: CONFLICT_LABEL,
+                    owner, repo, name: CONFLICT_LABEL,
                     color: 'd73a4a',
                     description: 'This pull request has merge conflicts that must be resolved.'
                   });
@@ -81,17 +80,11 @@ jobs:
               }
 
               try {
-                await github.rest.issues.addLabels({
-                  owner,
-                  repo,
-                  issue_number: number,
-                  labels: [CONFLICT_LABEL]
-                });
+                await github.rest.issues.addLabels({ owner, repo, issue_number: number, labels: [CONFLICT_LABEL] });
               } catch (e) {
                 core.warning(`Could not add label: ${e.message}`);
               }
 
-              // 2. Post or update the conflict comment
               const commentBody = [
                 COMMENT_MARKER,
                 `## 🔀 Merge Conflict Detected — @${username}`,
@@ -118,40 +111,27 @@ jobs:
                 `Once you push the resolved commits, this check will automatically run again and update this status.`,
               ].join('\n');
 
-              if (existingComment) {
-                await github.rest.issues.updateComment({
-                  owner,
-                  repo,
-                  comment_id: existingComment.id,
-                  body: commentBody
-                });
-              } else {
-                await github.rest.issues.createComment({
-                  owner,
-                  repo,
-                  issue_number: number,
-                  body: commentBody
-                });
+              try {
+                if (existingComment) {
+                  await github.rest.issues.updateComment({ owner, repo, comment_id: existingComment.id, body: commentBody });
+                } else {
+                  await github.rest.issues.createComment({ owner, repo, issue_number: number, body: commentBody });
+                }
+              } catch (err) {
+                core.warning(`Could not post/update comment: ${err.message}`);
               }
+
             } else if (pr.mergeable === true) {
               core.info('PR is mergeable. Cleaning up conflict labels and comments if present...');
 
-              // 1. Remove the conflicts label if it exists on the PR
               try {
-                await github.rest.issues.removeLabel({
-                  owner,
-                  repo,
-                  issue_number: number,
-                  name: CONFLICT_LABEL
-                });
+                await github.rest.issues.removeLabel({ owner, repo, issue_number: number, name: CONFLICT_LABEL });
                 core.info(`Removed '${CONFLICT_LABEL}' label.`);
               } catch (e) {
-                // Ignore if the label wasn't there
                 core.info(`Label '${CONFLICT_LABEL}' was not present or could not be removed.`);
               }
 
-              // 2. Update the existing comment to success, or do nothing if no comment exists
-              if (existingComment && !existingComment.body.includes('Passed')) {
+              if (existingComment) {
                 const commentBody = [
                   COMMENT_MARKER,
                   `## ✅ Merge Conflicts Resolved — @${username}`,
@@ -159,11 +139,10 @@ jobs:
                   `All conflicts have been successfully resolved! Thank you. This pull request is now ready for a maintainer review.`,
                 ].join('\n');
 
-                await github.rest.issues.updateComment({
-                  owner,
-                  repo,
-                  comment_id: existingComment.id,
-                  body: commentBody
-                });
+                try {
+                  await github.rest.issues.updateComment({ owner, repo, comment_id: existingComment.id, body: commentBody });
+                } catch (err) {
+                  core.warning(`Could not update comment: ${err.message}`);
+                }
               }
             }
