@@ -394,10 +394,33 @@ input:focus {
 
 
 /* ── Mobile Layout Media Queries ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .auth-form-card {
+        max-width: 480px;
+    }
+}
+
 @media (max-width: 767px) {
     .auth-field {
         padding-left: 40px !important;
         padding-right: 40px !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .auth-form-card {
+        max-width: 100%;
+        border-radius: 16px;
+    }
+    .auth-container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .auth-container {
+        max-width: 1200px;
     }
 }
 
@@ -479,6 +502,12 @@ input:focus {
 .ds-alert[data-variant="success"] {
     border-color: rgba(110, 231, 183, 0.26);
     background: rgba(16, 185, 129, 0.12);
+}
+
+/* ── Focus-visible for keyboard users ── */
+*:focus-visible {
+    outline: 2px solid #7c3aed;
+    outline-offset: 2px;
 }
 
 /* ── Input State Styling (used by JS via aria-invalid/disabled) ── */
