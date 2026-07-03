@@ -42,6 +42,9 @@
 </head>
 <body>
 
+    <!-- PARTICLE CANVAS BACKGROUND -->
+    <canvas id="particle-canvas"></canvas>
+
     <!-- MAIN WRAPPER -->
 
     <div class="auth-wrapper">
@@ -53,44 +56,8 @@
 
             <!-- LEFT PANEL -->
 
-            <section class="left-pane">
-
-                <canvas id="particle-canvas"></canvas>
-
-                <div class="hero-content">
-
-    <div class="hero-badge">
-
-        <span
-            class="fi fi-rr-sparkles"
-            style="margin-right:8px;"
-        ></span>
-
-        Story Spark AI
-
-    </div>
-
-    <h1 class="hero-title">
-
-        One Spark.<br>
-
-        <span class="hero-gradient">
-            Infinite Worlds.
-        </span>
-
-    </h1>
-
-    <p class="hero-description">
-
-        Create immersive AI-generated stories with
-        visuals, branching paths, and limitless
-        imagination.
-
-    </p>
-
-</div>
-
-            </section>
+            <!-- LEFT PANEL (HIDDEN IN CSS) -->
+            <section class="left-pane"></section>
 
             <!-- RIGHT PANEL -->
 
@@ -98,87 +65,34 @@
 
                 <div class="auth-form-card">
 
-                    <!-- MOBILE LOGO -->
-
-                    <div class="flex justify-center md:hidden">
-
-                        <div
-                            style="
-                                font-size:18px;
-                                font-weight:800;
-                            "
-                            class="hero-gradient"
-                        >
-                            Story Spark AI
+                    <!-- CARD BRANDING -->
+                    <div class="auth-card-brand">
+                        <div class="auth-card-icon">
+                            <i class="fi fi-rr-sparkles" style="color: white; font-size: 18px;"></i>
                         </div>
-
+                        <div class="auth-card-title">Story Spark AI</div>
                     </div>
 
-                    <!-- HEADER -->
-
-                    <div class="auth-header">
-
-                        <h2
-                            class="auth-title"
-                            id="form-title"
-                        >
-                            Welcome back
-                        </h2>
-
-                        <p
-                            class="auth-subtitle"
-                            id="form-subtitle"
-                        >
-                            Continue your storytelling journey.
-                        </p>
-
-                    </div>
+                    <!-- HEADER MOVED TO LEFT PANE -->
 
                     <!-- TABS -->
 
-                    <div
-    style="
-        display:flex;
-        border-bottom:1px solid rgba(255,255,255,.08);
-    "
->
+                    <div class="auth-tabs">
 
     <button
         id="tab-signin"
+        class="auth-tab auth-tab-active"
         onclick="window.location.href='login.html'"
-        style="
-            flex:1;
-            padding-bottom:16px;
-            background:none;
-            border:none;
-            border-bottom:2px solid #8b5cf6;
-            color:#8b5cf6;
-            font-size:12px;
-            font-weight:700;
-            letter-spacing:2px;
-            cursor:pointer;
-        "
     >
-        LOG IN
+        Log In
     </button>
 
     <button
         id="tab-signup"
+        class="auth-tab"
         onclick="window.location.href='signup.html'"
-        style="
-            flex:1;
-            padding-bottom:16px;
-            background:none;
-            border:none;
-            border-bottom:2px solid transparent;
-            color:rgba(255,255,255,.5);
-            font-size:12px;
-            font-weight:700;
-            letter-spacing:2px;
-            cursor:pointer;
-        "
     >
-        SIGN UP
+        Sign Up
     </button>
 
 </div>
@@ -227,21 +141,15 @@
                     </button>
 
                     <!-- DIVIDER -->
-
                     <div class="auth-divider">
-
                         <div class="auth-divider-line"></div>
-
-                        <span class="auth-divider-text">
-                            OR
-                        </span>
-
+                        <span class="auth-divider-text">OR</span>
                         <div class="auth-divider-line"></div>
-
                     </div>
 
-                    <!-- FORM -->
+                    <div id="form-alert" class="ds-alert hidden" role="status" aria-live="polite"></div>
 
+                    <!-- FORM -->
                     <form
                         class="auth-form"
                         id="auth-form"
@@ -292,21 +200,18 @@
                                     Email Address
                                 </label>
 
-                                <div class="ds-input-group">
-
-                                    <i
-                                        class="fi fi-rr-envelope ds-input-icon"
-                                    ></i>
-
-                                    <input
-                                        type="email"
-                                        id="email-field"
-                                        placeholder="name@storyspark.ai"
-                                        autocomplete="email"
-                                        required
-                                    />
-
-                                </div>
+                                 <div class="ds-input-group">
+                                     <i class="fi fi-rr-envelope ds-input-icon"></i>
+                                     <input
+                                         type="email"
+                                         id="email-field"
+                                         placeholder="name@storyspark.ai"
+                                         autocomplete="email"
+                                         required
+                                         aria-describedby="email-error"
+                                     />
+                                 </div>
+                                 <p class="ds-error" id="email-error" role="alert" aria-live="polite"></p>
 
                             </div>
 
@@ -346,43 +251,35 @@
                                 </div>
 
                                 <div class="ds-input-group">
-
-                                    <i
-                                        class="fi fi-rr-lock ds-input-icon"
-                                    ></i>
-
-                                    <input
-                                        id="password-field"
-                                        placeholder="••••••••"
-                                        type="password"
-                                        autocomplete="current-password"
-                                        required
-                                    />
-
-                                    <button
-                                        onclick="togglePasswordVisibility()"
-                                        type="button"
-                                        aria-label="Toggle password visibility"
-                                        style="
-                                            position:absolute;
-                                            right:18px;
-                                            top:50%;
-                                            transform:translateY(-50%);
-                                            background:none;
-                                            border:none;
-                                            color:rgba(255,255,255,.5);
-                                            cursor:pointer;
-                                        "
-                                    >
-
-                                        <i
-                                            class="fi fi-rr-eye-crossed"
-                                            id="eye-icon"
-                                        ></i>
-
-                                    </button>
-
-                                </div>
+                                     <i class="fi fi-rr-lock ds-input-icon"></i>
+                                     <input
+                                         id="password-field"
+                                         placeholder="••••••••"
+                                         type="password"
+                                         autocomplete="current-password"
+                                         required
+                                         aria-describedby="password-error"
+                                     />
+                                     <button
+                                         onclick="togglePasswordVisibility()"
+                                         type="button"
+                                         aria-label="Toggle password visibility"
+                                         style="
+                                             position:absolute;
+                                             right:18px;
+                                             top:50%;
+                                             transform:translateY(-50%);
+                                             background:none;
+                                             border:none;
+                                             color:rgba(255,255,255,.5);
+                                             cursor:pointer;
+                                         "
+                                     >
+                                         <i class="fi fi-rr-eye-crossed" id="eye-icon"></i>
+                                     </button>
+                                 </div>
+                                 <p class="ds-error" id="password-error" role="alert" aria-live="polite"></p>
+                                 <p id="login-caps-lock-warning" class="hidden text-yellow-400 text-sm mt-2">Caps Lock is ON</p>
 
                             </div>
 
@@ -467,46 +364,14 @@
     </div>
 
     <!-- LEGAL MODAL -->
-
-    <div
-        id="legal-modal"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300"
-    >
-
-        <div
-            id="legal-modal-content"
-            class="glass-panel"
-            style="
-                width:100%;
-                max-width:560px;
-                padding:32px;
-                border-radius:28px;
-                position:relative;
-            "
-        >
-
-            <button
-                onclick="closeLegalModal()"
-                aria-label="Close modal"
-                style="
-                    position:absolute;
-                    right:24px;
-                    top:24px;
-                    background:none;
-                    border:none;
-                    color:rgba(255,255,255,.6);
-                    cursor:pointer;
-                "
-            >
-
-                <i class="fi fi-rr-cross-small"></i>
-
+    <div id="legal-modal" class="legal-modal">
+        <div id="legal-modal-content" class="legal-modal-content">
+            <button onclick="closeLegalModal()" aria-label="Close modal" style="position:absolute; right:24px; top:24px; background:none; border:none; color:var(--text-muted); cursor:pointer;">
+                <i class="fi fi-rr-cross-small" style="font-size: 20px;"></i>
             </button>
-
-            
-
+            <h3 id="legal-modal-title" style="margin-bottom:16px; font-size:24px; font-weight:700; color:var(--text);"></h3>
+            <div id="legal-modal-text" style="font-size:14px; line-height:1.6; color:var(--text-muted); max-height:60vh; overflow-y:auto;"></div>
         </div>
-
     </div>
 
     <!-- SCRIPT -->
