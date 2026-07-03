@@ -4,8 +4,17 @@ const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      setIsVisible(window.scrollY > 200);
+      // Only execute if a frame isn't already waiting to be painted
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsVisible(window.scrollY > 200);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -23,9 +32,12 @@ const ScrollToTopButton = () => {
     <button
       onClick={scrollToTop}
       aria-label="Scroll to top"
+ fix/merge-conflicts
  fix/scroll-to-top-inline-styles-3146
+
+ main
       className={`
-        fixed bottom-24 right-6
+        fixed bottom-28 right-6 lg:bottom-6
         w-14 h-14 rounded-full
         border-none cursor-pointer
         bg-gradient-to-br from-blue-500 to-indigo-500
@@ -40,6 +52,7 @@ const ScrollToTopButton = () => {
         }
       `}
 
+ fix/merge-conflicts
       style={{
         position: "fixed",
         bottom: "12rem",
@@ -63,8 +76,9 @@ const ScrollToTopButton = () => {
         zIndex: 40,
       }}
 main
+
+main
     >
-      ↑
     </button>
   );
 };

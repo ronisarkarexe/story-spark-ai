@@ -8,6 +8,8 @@ import React, {
 } from "react";
 import {
   AlertCircle,
+  ChevronDown,
+  ChevronUp,
   LoaderCircle,
   Pause,
   Play,
@@ -16,8 +18,11 @@ import {
   Star,
   Volume2,
   Volume,
+ feat/collaboration-1122
   ChevronUp,
   ChevronDown,
+
+ main
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
@@ -82,9 +87,12 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
+ feat/collaboration-1122
     // ✅ FIX: Calculate actual word count from story text
     const actualTotalWords = useMemo(() => getWordCount(text), [text]);
 
+
+ main
     const speedSelectId = useId();
     const voiceGenderSelectId = useId();
     const languageSelectId = useId();
@@ -133,7 +141,11 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
+ feat/collaboration-1122
     }, [showFavoritesOnly, displayedVoices, speech]);
+
+    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
+ main
 
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -159,7 +171,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           }
         } else if (event.key === "ArrowUp" || event.key === "ArrowRight") {
           event.preventDefault();
-          const currentIndex = SPEED_OPTIONS.indexOf(speech.rate as any);
+          const currentIndex = SPEED_OPTIONS.indexOf(speech.rate as unknown as typeof SPEED_OPTIONS[number]);
           if (currentIndex !== -1 && currentIndex < SPEED_OPTIONS.length - 1) {
             speech.setRate(SPEED_OPTIONS[currentIndex + 1]);
           } else if (speech.rate < 2) {
@@ -167,7 +179,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           }
         } else if (event.key === "ArrowDown" || event.key === "ArrowLeft") {
           event.preventDefault();
-          const currentIndex = SPEED_OPTIONS.indexOf(speech.rate as any);
+          const currentIndex = SPEED_OPTIONS.indexOf(speech.rate as unknown as typeof SPEED_OPTIONS[number]);
           if (currentIndex !== -1 && currentIndex > 0) {
             speech.setRate(SPEED_OPTIONS[currentIndex - 1]);
           } else if (speech.rate > 0.5) {
@@ -180,8 +192,25 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
       };
-    }, [speech]);
+    }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
 
+ feat/collaboration-1122
+
+    const scrollToTop = () => {
+      const container = document.querySelector('[role="region"]');
+      if (container) {
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    const scrollToBottom = () => {
+      const container = document.querySelector('[role="region"]');
+      if (container) {
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      }
+    };
+
+ main
     const isLoading = speech.isSupported && !speech.isReady;
     const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
 

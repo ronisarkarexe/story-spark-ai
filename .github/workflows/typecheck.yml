@@ -19,16 +19,20 @@ jobs:
         id: changes
         shell: bash
         run: |
-          files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD")"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            files="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          else
+            files="$(git diff --name-only HEAD~1 HEAD || true)"
+          fi
           echo "$files"
 
-          if echo "$files" | grep -q '^frontend/'; then
+          if [ "${{ github.event_name }}" != "pull_request" ] || echo "$files" | grep -Eq '^frontend/(src|package\.json|tsconfig|vite\.config|tailwind\.config|postcss\.config|eslint\.config)'; then
             echo "frontend=true" >> "$GITHUB_OUTPUT"
           else
             echo "frontend=false" >> "$GITHUB_OUTPUT"
           fi
 
-          if echo "$files" | grep -q '^backend/'; then
+          if [ "${{ github.event_name }}" != "pull_request" ] || echo "$files" | grep -q '^backend/'; then
             echo "backend=true" >> "$GITHUB_OUTPUT"
           else
             echo "backend=false" >> "$GITHUB_OUTPUT"
@@ -42,22 +46,22 @@ jobs:
           fi
 
       - uses: pnpm/action-setup@v2
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true' || steps.changes.outputs.recommendation_only == 'true'
         with:
           version: 9.15.9
 
       - uses: actions/setup-node@v4
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true' || steps.changes.outputs.recommendation_only == 'true'
         with:
           node-version: '20'
           cache: pnpm
 
       - name: Install dependencies
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true' || steps.changes.outputs.recommendation_only == 'true'
         run: pnpm install --no-frozen-lockfile
 
       - name: Rebuild native bindings for current platform
-        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true' || steps.changes.outputs.recommendation_only == 'true'
         run: pnpm rebuild
 
       - name: Validate recommendation backend changes
@@ -72,7 +76,7 @@ jobs:
         if: steps.changes.outputs.frontend == 'true'
         shell: bash
         run: |
-          files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD" | grep -E '^frontend/.*\.(ts|tsx)$' | sed 's#^frontend/##' || true)"
+          files="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -E '^frontend/.*\.(ts|tsx)$' | sed 's#^frontend/##' || true)"
           if [ -z "$files" ]; then
             echo "No TypeScript frontend files changed."
             exit 0

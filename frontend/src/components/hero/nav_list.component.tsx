@@ -1,17 +1,22 @@
 import { useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { Link, NavLink } from "react-router-dom";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
-import { ArrowRight, Menu, Sparkles, X } from "lucide-react";
-import { useTheme } from "../theme/theme.context";
+import { ArrowRight, Sparkles } from "lucide-react";
 
-const NavListComponent = () => {
+
+
+import { useNavigate, useLocation } from "react-router-dom";
+
+
+
+  const NavListComponent = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
+
   const { pathname } = useLocation();
-  const { glowEnabled, toggleGlow } = useTheme();
+
 
   const handleLogout = () => {
     removeUserInfo();
@@ -28,6 +33,7 @@ const NavListComponent = () => {
     return pathname === path || (path === "/" && pathname === "/");
   };
 
+ fix/merge-conflicts
   // ✅ FIXED: Only one mobileLinkClass definition
   const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
     `block rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
@@ -35,7 +41,8 @@ const NavListComponent = () => {
         ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white"
         : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10"
     }`;
-  
+
+main
   const navItems = [
     { to: "/", label: "Home" },
     { to: "/explore", label: "Explore" },
@@ -58,6 +65,7 @@ const NavListComponent = () => {
     }),
   };
 
+fix/merge-conflicts
   // ✅ FIXED: Only one linkClass definition
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `relative flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-all duration-300 ${
@@ -67,6 +75,9 @@ const NavListComponent = () => {
     }`;
 
   return (
+
+
+ main
     <header className="sticky top-0 z-50 w-full">
       <div className="absolute inset-0 border-b border-slate-200/70 bg-white/70 shadow-sm shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-black/20" />
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-500/35 to-transparent" />
@@ -197,6 +208,7 @@ const NavListComponent = () => {
         </div>
       </div>
 
+ fix/merge-conflicts
       {menuOpen && (
         <div className="lg:hidden border-t border-slate-200/70 dark:border-white/10 bg-white dark:bg-[#0B1120]/95 px-4 py-3">
           <NavLink to="/" end className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
@@ -218,6 +230,11 @@ const NavListComponent = () => {
           )}
         </div>
       )}
+
+      {/* Mobile menu is rendered via AnimatePresence below */}
+
+
+ main
 
       <AnimatePresence>
         {menuOpen && (
@@ -315,6 +332,25 @@ const NavListComponent = () => {
           </motion.div>
         )}
       </AnimatePresence>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {loggedIn ? (
+            <button onClick={handleLogout} className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Logout</button>
+          ) : (
+            <Link to="/login" className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Login</Link>
+          )}
+          <button className="rounded-md px-2 py-1 text-slate-700 lg:hidden dark:text-slate-200" onClick={() => setMenuOpen((v) => !v)}>
+            <i className="fa-solid fa-bars" />
+          </button>
+        </div>
+
+      {menuOpen && (
+        <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 lg:hidden dark:border-white/10">
+          <NavLink to="/" end className={linkClass}>Home</NavLink>
+          <NavLink to="/explore" className={linkClass}>Explore</NavLink>
+          <NavLink to="/stories" className={linkClass}>Stories</NavLink>
+        </div>
+      )}
     </header>
   );
 };

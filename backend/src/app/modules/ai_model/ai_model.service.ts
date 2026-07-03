@@ -17,6 +17,7 @@ import {
   generateWithGeminiStories,
   generateRemixWithGemini,
   generateStoryContinuationWithGemini,
+  generateStoryContinuationMultipleWithGemini,
   translateStoryWithGemini,
   chatWithGemini,
 } from "./ai_model.utils";
@@ -244,6 +245,24 @@ const aiFreeStoryContinuation = async (payload: { prompt: string; language?: str
   }
 };
 
+const aiFreeStoryContinuationMultiple = async (
+  payload: { prompt: string; language?: string; count?: number },
+  signal?: AbortSignal
+) => {
+  const { prompt, language = "English", count = 3 } = payload;
+
+  try {
+    const result = await raceGenerationWithTimeout(
+      (s) => generateStoryContinuationMultipleWithGemini(prompt, count, language, s),
+      FREE_GENERATION_TIMEOUT_MS,
+      signal
+    );
+    return result;
+  } catch (error) {
+    mapGenerationError(error, "Story continuation generation failed.");
+  }
+};
+
 const aiModelChat = async (payload: IChatPayload, _token?: ITokenPayload, signal?: AbortSignal) => {
   const { message, history = [] } = payload;
 
@@ -284,9 +303,41 @@ const aiFreeModelChat = async (payload: IChatPayload, signal?: AbortSignal) => {
   }
 };
 
+const generateCharacterProfile = async (story: string) => {
+  try {
+    const characterPrompt = `
+Analyze the following story and extract all important characters.
+
+For each character provide:
+- name
+- role
+- personality
+- strengths
+- weaknesses
+- relationships
+
+Return the response only in JSON array format.
+
+Story:
+${story}
+`;
+
+    const result = await raceGenerationWithTimeout(
+      (signal) => generateWithGeminiStories(characterPrompt, 300, 1, "English", signal),
+      30000,
+    );
+
+    return result;
+  } catch (error) {
+    if (error instanceof GenerationTimeoutError || error instanceof ApiError) throw error;
+    mapGenerationError(error, "Failed to generate character profiles!");
+  }
+};
+
 export const AiModelService = {
   aiModelGenerate,
   aiFreeModelGenerate,
+  generateCharacterProfile,
   aiModelAlternateEndings,
   aiFreeModelAlternateEndings,
   aiModelRemix,
@@ -295,6 +346,7 @@ export const AiModelService = {
   aiFreeModelTranslate,
   aiModelStoryContinuation,
   aiFreeStoryContinuation,
+  aiFreeStoryContinuationMultiple,
   aiModelChat,
   aiFreeModelChat,
 };

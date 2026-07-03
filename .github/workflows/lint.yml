@@ -19,9 +19,13 @@ jobs:
         id: changes
         shell: bash
         run: |
-          files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD")"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            files="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          else
+            files="$(git diff --name-only HEAD~1 HEAD || true)"
+          fi
           echo "$files"
-          if echo "$files" | grep -q '^frontend/'; then
+          if [ "${{ github.event_name }}" != "pull_request" ] || echo "$files" | grep -Eq '^frontend/(src|package\.json|tsconfig|vite\.config|tailwind\.config|postcss\.config|eslint\.config)'; then
             echo "frontend=true" >> "$GITHUB_OUTPUT"
           else
             echo "frontend=false" >> "$GITHUB_OUTPUT"

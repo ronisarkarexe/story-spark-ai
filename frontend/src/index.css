@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @plugin "@tailwindcss/forms"; 
 
@@ -45,6 +45,12 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+.multilingual-title {
+  font-family:
+    "Noto Sans",
+    "Noto Sans Devanagari",
+    sans-serif;
 }
 
 *,
@@ -235,12 +241,7 @@ html, body {
   padding-block: clamp(3rem, 7vw, 5.5rem);
 }
 
-.story-section-heading {
-  color: #f8fafc;
-  font-size: clamp(1.875rem, 4vw, 2.75rem);
-  font-weight: 800;
-  line-height: 1.08;
-}
+
 
 .story-section-copy {
   color: #94a3b8;
@@ -788,7 +789,7 @@ body {
 *,
 *::before,
 *::after {
-  box-sizing: inherit;
+  box-sizing: border-box;
 }
 
 button,
@@ -1302,7 +1303,7 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
    ========================================================================== */
 .scroll-to-top-btn {
   position: fixed;
-  bottom: 2rem;
+  bottom: 5.5rem;
   right: 2rem;
   width: 48px;
   height: 48px;
@@ -1334,7 +1335,7 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
    ========================================================================== */
 @media (max-width: 640px) {
   .scroll-to-top-btn {
-    bottom: 1.25rem;
+    bottom: 5.25rem;
     right: 1.25rem;
     width: 42px;
     height: 42px;
@@ -1575,7 +1576,27 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
   cursor: not-allowed;
   transform: none;
 }
+/* Fix: Prevent Flash of Unstyled Text (FOUT) on Dynamic Generated Text Canvas */
+@layer utilities {
+  .story-canvas-content, 
+  [class*="story-text"], 
+  [class*="generated-content"] {
+    font-display: swap;
+    animation: fontHydrationLock 0.3s ease-in-out forwards;
+  }
 
+
+  @keyframes fontHydrationLock {
+    from {
+      opacity: 0.85;
+      filter: blur(0.5px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0px);
+    }
+  }
+}
 /* Hide browser-native password reveal button (Edge/IE/Chrome/Safari) */
 input::-ms-reveal,
 input::-ms-clear {
@@ -1584,8 +1605,14 @@ input::-ms-clear {
 
 input::-webkit-contacts-auto-fill-button,
 input::-webkit-credentials-auto-fill-button {
-  visibility: hidden;
+  visibility: hidden !important;
   display: none !important;
-  pointer-events: none;
+  pointer-events: none !important;
+}
+
+::-webkit-credentials-auto-fill-button {
+  visibility: hidden !important;
+  display: none !important;
+  pointer-events: none !important;
 }
 

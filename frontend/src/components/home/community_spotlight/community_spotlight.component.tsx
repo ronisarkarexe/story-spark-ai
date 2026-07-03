@@ -190,7 +190,7 @@ const CommunitySpotlightComponent = () => {
                       <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-gray-500">
                         Top story
                       </p>
-                      <h4 className="line-clamp-2 text-base font-semibold leading-6 text-slate-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-300">
+                      <h4 className="line-clamp-2 break-words text-base font-semibold leading-6 text-slate-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-300 overflow-hidden text-ellipsis">
                         {writer.topPost.title}
                       </h4>
                     </div>
@@ -255,7 +255,7 @@ const CommunitySpotlightComponent = () => {
                           </p>
                         </div>
                       </div>
-                      <h4 className="mb-2 text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight line-clamp-1">
+                      <h4 className="mb-2 line-clamp-2 break-words text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight overflow-hidden text-ellipsis">
                         {post.title}
                       </h4>
                       <p className="line-clamp-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">

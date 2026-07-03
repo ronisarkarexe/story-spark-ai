@@ -11,6 +11,8 @@ import {
 import RelatedStoriesComponent from "./related.stories.view.component";
 import PostCommentComponent from "./post.comment.component";
 import { ComparisonMode } from "../story-comparison";
+import StarRatingDisplay from "../story-rating/StarRatingDisplay";
+import StoryRatingInput from "../story-rating/StoryRatingInput";
 
 import LoadingAnimation from "../loading/loading.component";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
@@ -21,8 +23,9 @@ import ReaderPreferencesPanel from "../reader-preferences/ReaderPreferences";
 import { useReaderPreferences } from "../reader-preferences/useReaderPreferences";
 
 import { formatDateShort } from "../../utils/time-formate";
+import { calculateReadingTime } from "../../utils/reading-time";
 import { formatReadingStats } from "../../utils/story-utils";
-import { getUserInfo } from "../../services/auth.service";
+import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
 
@@ -39,6 +42,8 @@ import {
 } from "../../redux/apis/storyVersion.api";
 
 import { toast } from "react-hot-toast";
+import StoryTranslator from "../translate/StoryTranslator";
+import { IStories } from "../stories/stories.view.component";
 
 
 
@@ -71,10 +76,7 @@ const PostDetailsComponent = () => {
     {
       skip: !tag,
     }
-  );
-  
-
- 
+);
   
   const [toggleReaction] = useToggleReactionMutation();
   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
@@ -117,6 +119,8 @@ const PostDetailsComponent = () => {
   const [showTree, setShowTree] = useState(false);
   const [selectedVersionForBranch, setSelectedVersionForBranch] = useState<string | null>(null);
   const [showComparison, setShowComparison] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showTranslator, setShowTranslator] = useState(false);
 
   const [updatePost, { isLoading: isUpdating }] = useUpdatePostMutation();
   const readerPreferences = useReaderPreferences();
@@ -242,6 +246,7 @@ const PostDetailsComponent = () => {
       currentUrl
     )}&text=${encodeURIComponent(currentTitle)}`;
     window.open(url, "_blank", "noopener,noreferrer");
+    setShowShareMenu(false);
   };
 
   const handleLinkedInShare = () => {
@@ -250,6 +255,7 @@ const PostDetailsComponent = () => {
       currentUrl
     )}`;
     window.open(url, "_blank", "noopener,noreferrer");
+    setShowShareMenu(false);
   };
 
   const handleEmailShare = () => {
@@ -261,7 +267,30 @@ const PostDetailsComponent = () => {
       subject
     )}&body=${encodeURIComponent(body)}`;
     window.location.href = url;
+    setShowShareMenu(false);
   };
+
+  const handleCopyLink = async () => {
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+    toast.success("Link copied to clipboard!");
+    setShowShareMenu(false);
+  } catch {
+    toast.error("Failed to copy link.");
+  }
+};
+
+  const handleWhatsAppShare = () => {
+  const currentUrl = window.location.href;
+  const currentTitle = post?.title || "Check out this story!";
+
+  const url = `https://wa.me/?text=${encodeURIComponent(
+    `${currentTitle} ${currentUrl}`
+  )}`;
+
+  window.open(url, "_blank", "noopener,noreferrer");
+  setShowShareMenu(false);
+};
 
   const handleDelete = async () => {
     if (
@@ -446,19 +475,34 @@ const PostDetailsComponent = () => {
               </div>
             ) : (
               <>
-                <h1 className={`text-4xl font-bold text-slate-900 dark:text-gray-300 leading-tight ${post?.language ? "mb-2" : "mb-6"}`}>
+                <h1 className={`text-4xl font-bold text-slate-900 dark:text-gray-300 leading-tight ${post?.language ? "mb-2" : "mb-4"}`}>
                   {post?.title}
                 </h1>
-                {post?.language && (
-                  <div className="flex gap-2 mb-6">
-                    <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
-                      🌐 {post.language}
-                    </span>
-                    <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
-                      📖 {formatReadingStats(post.content)}
-                    </span>
-                  </div>
-                )}
+<div className="flex items-center gap-4 mb-6 flex-wrap">
+  <StarRatingDisplay
+    rating={post?.averageRating || 0}
+    totalRatings={post?.totalRatings || 0}
+    size="md"
+  />
+
+  {post?.language && (
+    <span className="inline-flex items-center rounded-full bg-blue-950/60 text-blue-300 border border-blue-700/50 py-1 px-3 text-xs font-semibold">
+      🌐 {post.language}
+    </span>
+  )}
+
+  {post?.content && (
+    <>
+      <span className="inline-flex items-center rounded-full bg-slate-700/60 text-slate-300 border border-slate-600/50 py-1 px-3 text-xs font-semibold gap-1 select-none">
+        ⏱️ {calculateReadingTime(post.content)} min read
+      </span>
+
+      <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
+        📖 {formatReadingStats(post.content)}
+      </span>
+    </>
+  )}
+</div>
 
                 <div className="mb-12">
                   <ImageFallback
@@ -508,18 +552,57 @@ const PostDetailsComponent = () => {
                   />
                 )}
               </div>
-              <div className="flex items-center space-x-4">
-                <button className="text-gray-600 hover:text-custom">
-                  <i className="fab fa-twitter"></i>
-                </button>
-                <button className="text-gray-600 hover:text-custom">
-                  <i className="fab fa-linkedin"></i>
-                </button>
-                <button className="text-gray-600 hover:text-custom">
-                  <i className="far fa-envelope"></i>
-                </button>
-              </div>
+              <div className="relative">
+  <button
+    onClick={() => setShowShareMenu(!showShareMenu)}
+    className="px-3 py-2 rounded bg-slate-700 text-white hover:bg-slate-600 transition"
+  >
+    🔗 Share
+  </button>
+  <button
+    onClick={() => setShowTranslator(true)}
+    className="px-3 py-2 rounded bg-emerald-700 text-white hover:bg-emerald-600 transition ml-2"
+  >
+    🌍 Translate
+  </button>
+
+  {showShareMenu && (
+    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
+      <button
+        onClick={handleCopyLink}
+        className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700"
+      >
+        📋 Copy Link
+      </button>
+
+      <button
+        onClick={handleTwitterShare}
+        className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700"
+      >
+        🐦 Share on X
+      </button>
+
+      <button
+        onClick={handleWhatsAppShare}
+        className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700"
+      >
+        💬 WhatsApp
+      </button>
+
+      <button
+        onClick={handleEmailShare}
+        className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700"
+      >
+        ✉️ Email
+      </button>
+    </div>
+  )}
+</div>
             </div>
+
+            {id && currentUser && !isOwner && (
+              <StoryRatingInput storyId={id} />
+            )}
 
             {id && (
               <div className="mb-12">
@@ -658,6 +741,17 @@ const PostDetailsComponent = () => {
         </div>
       )}
 
+      {/* Comparison Drawer */}
+      {showComparison && (
+        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-white dark:bg-[#0f172a]/95 backdrop-blur-xl border-l border-slate-200 dark:border-slate-700/60 shadow-2xl p-6 overflow-y-auto animate-slide-in flex flex-col">
+          <ComparisonMode
+            versions={versions || []}
+            isLoadingVersions={isLoadingVersions}
+            onClose={() => setShowComparison(false)}
+          />
+        </div>
+      )}
+
       {showTree && (
         <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-6">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-auto p-6">
@@ -717,6 +811,20 @@ const PostDetailsComponent = () => {
       )}
 
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+
+      {showTranslator && post && (
+        <StoryTranslator
+          story={{
+            uuid: post._id || "",
+            title: post.title || "",
+            content: post.content || "",
+            tag: post.tag || "",
+            imageURL: post.imageURL || "",
+          } as IStories}
+          isLogin={isLoggedIn()}
+          onClose={() => setShowTranslator(false)}
+        />
+      )}
     </div>
   );
 };

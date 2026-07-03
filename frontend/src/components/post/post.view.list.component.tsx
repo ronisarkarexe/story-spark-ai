@@ -6,49 +6,22 @@ import SSProfile from "../ui-component/ss-profile/ss-profile";
 import { formatReadingStats } from "../../utils/story-utils";
 import ImageFallback from "../ImageFallback";
 import { SkeletonGrid } from "../cards/SkeletonCard";
+import StarRatingDisplay from "../story-rating/StarRatingDisplay";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
   isLoading: boolean;
+  searchQuery?: string;
 }
 
 const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
   posts,
   isLoading,
+  searchQuery,
 }) => {
+
   const navigate = useNavigate();
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
-  const [readStories, setReadStories] = useState<Record<string, boolean>>(() => {
-    const readMap: Record<string, boolean> = {};
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith("story-read-")) {
-          const storyId = key.replace("story-read-", "");
-          readMap[storyId] = localStorage.getItem(key) === "true";
-        }
-      }
-    } catch (e) {
-      console.error("Error reading localStorage", e);
-    }
-    return readMap;
-  });
-
-  const handleToggleRead = (storyId: string) => {
-    setReadStories((prev) => {
-      const newValue = !prev[storyId];
-      try {
-        if (newValue) {
-          localStorage.setItem(`story-read-${storyId}`, "true");
-        } else {
-          localStorage.removeItem(`story-read-${storyId}`);
-        }
-      } catch (e) {
-        console.error("Error updating localStorage", e);
-      }
-      return { ...prev, [storyId]: newValue };
-    });
-  };
 
   const handleImageError = (storyId: string) => {
     setImageErrors((prev) => ({ ...prev, [storyId]: true }));
@@ -95,32 +68,14 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
 
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-transparent to-transparent opacity-100 pointer-events-none dark:from-slate-900/90 dark:via-transparent dark:to-transparent"></div>
 
-                <div className="absolute top-4 right-4 z-10 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  <label className="flex items-center gap-1.5 backdrop-blur-md bg-white/10 dark:bg-black/25 border border-white/20 hover:bg-white/25 px-2.5 py-1.5 rounded-full shadow-lg cursor-pointer select-none transition-all duration-300">
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={!!readStories[story._id]}
-                      onChange={() => handleToggleRead(story._id)}
-                    />
-                    <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-all ${
-                      readStories[story._id]
-                        ? "bg-indigo-600 border-indigo-500 text-white"
-                        : "border-white/40 bg-transparent text-transparent"
-                    }`}>
-                      <i className="fas fa-check text-[8px]"></i>
-                    </div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-white">
-                      Read
-                    </span>
-                  </label>
+                <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
                   <BookmarkButton
                     storyId={story._id}
                     className="backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 hover:bg-white/30 p-2 !rounded-full shadow-lg hover:scale-110 transition-all duration-300"
                   />
                 </div>
 
-                <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap max-w-[55%]">
+                <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap max-w-[80%]">
                   <span className="inline-flex items-center px-2 py-0.5 bg-indigo-600 border border-indigo-500/50 text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-lg max-w-[120px] truncate">
                     {story.tag}
                   </span>
@@ -165,6 +120,12 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                     </div>
                   </div>
 
+                  {story.averageRating > 0 && (
+                    <div className="mb-3 flex items-center justify-between">
+                      <StarRatingDisplay rating={story.averageRating} totalRatings={story.totalRatings} size="sm" />
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                     <div className="flex gap-4">
                       <span className="flex items-center gap-1.5 hover:text-red-500 transition-colors">
@@ -184,13 +145,17 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
           ))
         ) : (
           <div className="col-span-full py-16 flex flex-col items-center justify-center text-center">
-             <div className="w-24 h-24 mb-6 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
-               <i className="fas fa-book-open text-4xl text-slate-300 dark:text-slate-600"></i>
-             </div>
-             <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">No posts available</h3>
-             <p className="text-slate-500 dark:text-slate-400 max-w-sm">
-               Check back later for new stories, or try adjusting your search filters.
-             </p>
+            <div className="w-24 h-24 mb-6 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800">
+              <i className="fas fa-book-open text-4xl text-slate-300 dark:text-slate-600"></i>
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+              {searchQuery ? `No stories found for "${searchQuery}"` : "No posts available"}
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 max-w-sm">
+              {searchQuery
+                ? "Try searching with different keywords."
+                : "Check back later for new stories, or try adjusting your search filters."}
+            </p>
           </div>
         )}
       </div>

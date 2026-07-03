@@ -25,7 +25,7 @@
     "build": "npm run build -w story-spark-ai-backend && npm run build -w story-spark-ai-frontend",
     "build:backend": "npm run build -w story-spark-ai-backend",
     "build:frontend": "npm run build -w story-spark-ai-frontend",
-    "typecheck": "npm run build",
+    "typecheck": "npm run typecheck -w story-spark-ai-backend && npm run typecheck -w story-spark-ai-frontend",
     "start:backend": "npm run start -w story-spark-ai-backend",
     "start:frontend": "npm run start -w story-spark-ai-frontend",
     "lint": "npm run lint -w story-spark-ai-frontend"
@@ -40,8 +40,9 @@
     "@types/express-serve-static-core": "^4.17.33"
   },
   "dependencies": {
-    "@react-oauth/google": "^0.13.5",
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "@react-oauth/google": "^0.13.5",
     "express": "^4.21.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.16.0",
