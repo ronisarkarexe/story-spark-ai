@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import logger from "../../utils/logger.util";
+import redis from "../utils/redis.client";
 
 // Shared, serverless safe rate limit store backed by MongoDB. The previous
 // in-memory Map could not work across Vercel function instances or cold starts,
@@ -40,6 +41,10 @@ export interface ConsumeOptions {
 export interface ConsumeResult {
   allowed: boolean;
   retryAfterSec: number;
+  /** Requests left in the current window (never negative). */
+  remaining: number;
+  /** Epoch ms when the window resets (or the block clears, if blocked). */
+  resetAt: number;
 }
 
 const STORE_ERROR_RETRY_AFTER_SEC = 60;
@@ -112,18 +117,80 @@ export const consumeRateLimit = async (
     );
 
     const blockedUntil = updated?.blockedUntil ?? null;
+    const firstRequestAt = updated?.firstRequestAt ?? now;
+    const windowResetAt = firstRequestAt.getTime() + windowMs;
+
     if (blockedUntil && blockedUntil.getTime() > now.getTime()) {
       return {
         allowed: false,
         retryAfterSec: Math.ceil(
           (blockedUntil.getTime() - now.getTime()) / 1000
         ),
+        remaining: 0,
+        resetAt: blockedUntil.getTime(),
       };
     }
-    return { allowed: true, retryAfterSec: 0 };
+
+    const count = updated?.count ?? 0;
+    const remaining = Math.max(maxRequests - count, 0);
+
+    return {
+      allowed: true,
+      retryAfterSec: 0,
+      remaining,
+      resetAt: windowResetAt,
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`Rate limit store error for ${key}: ${message}`);
-    return { allowed: false, retryAfterSec: STORE_ERROR_RETRY_AFTER_SEC };
+    return {
+      allowed: false,
+      retryAfterSec: STORE_ERROR_RETRY_AFTER_SEC,
+      remaining: 0,
+      resetAt: Date.now() + STORE_ERROR_RETRY_AFTER_SEC * 1000,
+    };
+  }
+};
+
+export const consumeTokenQuota = async (
+  userIdOrIp: string,
+  tokensRequired: number,
+  dailyQuotaLimit: number
+): Promise<{ allowed: boolean; remainingTokens: number; retryAfterSec: number }> => {
+  const dateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const key = `token_quota:${userIdOrIp}:${dateStr}`;
+
+  if (redis.status !== "ready") {
+    return {
+      allowed: true,
+      remainingTokens: dailyQuotaLimit,
+      retryAfterSec: 0,
+    };
+  }
+
+  try {
+    const currentTokens = await redis.get(key);
+    const usedTokens = currentTokens ? parseInt(currentTokens, 10) : 0;
+
+    if (usedTokens + tokensRequired > dailyQuotaLimit) {
+      // Calculate seconds until midnight UTC
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+      tomorrow.setUTCHours(0, 0, 0, 0);
+      const retryAfterSec = Math.ceil((tomorrow.getTime() - now.getTime()) / 1000);
+
+      return { allowed: false, remainingTokens: dailyQuotaLimit - usedTokens, retryAfterSec };
+    }
+
+    // Atomically increment and set expiry to 48 hours (to be safe)
+    await redis.incrby(key, tokensRequired);
+    await redis.expire(key, 48 * 60 * 60);
+
+    return { allowed: true, remainingTokens: dailyQuotaLimit - (usedTokens + tokensRequired), retryAfterSec: 0 };
+  } catch (error) {
+    logger.error(`Redis token quota error: ${error}`);
+    // Fail open or closed? Typically fail closed for financial limits.
+    return { allowed: false, remainingTokens: 0, retryAfterSec: 60 };
   }
 };

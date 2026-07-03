@@ -1,7 +1,7 @@
 import { Post } from "../../models/post";
 import { IMeta } from "../../types";
 import baseApi from "../base_api/base.api";
-import { POST_URL } from "../base_api/base.endpoints";
+import { POST_URL, STORIES_URL } from "../base_api/base.endpoints";
 import { tagTypes } from "../tag-types";
 
 interface QueryErrorResponse {
@@ -29,6 +29,14 @@ const postApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.post],
     }),
 
+    forkStory: build.mutation({
+      query: (id: string) => ({
+        url: `/${STORIES_URL}/${id}/fork`,
+        method: "POST",
+      }),
+      invalidatesTags: [tagTypes.post, tagTypes.user],
+    }),
+
 
     getPostLists: build.query({
       query: (arg: Record<string, string | number>) => ({
@@ -36,6 +44,24 @@ const postApi = baseApi.injectEndpoints({
         method: "GET",
         params: arg,
       }),
+
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        const newArgs = { ...queryArgs };
+        delete newArgs.page;
+        return { endpointName, ...newArgs };
+      },
+      
+      merge: (currentCache, newItems) => {
+        if (!newItems.meta || newItems.meta.page === 1) {
+          return newItems;
+        }
+        currentCache.posts.push(...newItems.posts);
+        currentCache.meta = newItems.meta;
+      },
+      
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.page !== previousArg?.page;
+      },
 
       transformResponse: (response: {
         data: Post[];
@@ -65,6 +91,24 @@ const postApi = baseApi.injectEndpoints({
         method: "GET",
         params: arg,
       }),
+
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        const newArgs = { ...queryArgs };
+        delete newArgs.page;
+        return { endpointName, ...newArgs };
+      },
+      
+      merge: (currentCache, newItems) => {
+        if (!newItems.meta || newItems.meta.page === 1) {
+          return newItems;
+        }
+        currentCache.posts.push(...newItems.posts);
+        currentCache.meta = newItems.meta;
+      },
+      
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.page !== previousArg?.page;
+      },
 
       transformResponse: (response: {
         data: Post[];
@@ -213,6 +257,7 @@ const postApi = baseApi.injectEndpoints({
 export const {
   useCreatePostMutation,
   useUpdatePostMutation,
+  useForkStoryMutation,
   useGetPostListsQuery,
   useGetMyPublishedStoriesQuery,
   useGetLatestListsQuery,

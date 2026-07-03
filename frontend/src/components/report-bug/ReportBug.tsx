@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useSubmitBugReportMutation } from "../../redux/apis/bugReport.api";
-import { ..., Image as ImageIcon, X } from "lucide-react";
+
 import { 
   Bug, 
   Send, 
@@ -15,7 +15,7 @@ import {
   MessageSquare,
   ClipboardList,
   Target,
-  FileWarning
+  FileWarning,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -28,7 +28,7 @@ interface ReportBugFormData {
   expected: string;
   actual: string;
   email?: string;
-  screenshot?: FileList;
+  screenshot?: File;
 }
 
 const CATEGORIES = [
@@ -50,55 +50,36 @@ const SEVERITIES = [
 const ReportBug = () => {
   const [submitBugReport, { isLoading: isSubmitting }] = useSubmitBugReportMutation();
   const [isSuccess, setIsSuccess] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null); 
-  const [fileError, setFileError] = useState<string | null>(null);   
-  const fileInputRef = useRef<HTMLInputElement>(null);    
+
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors }
   } = useForm<ReportBugFormData>();
+  const { ref: screenshotRef, ...screenshotRegister } = register("screenshot");
 
-  const handleFileSelect = (file: File) => {
-  setFileError(null);
-  const allowed = ["image/png", "image/jpeg", "image/webp", "image/gif"];
-  if (!allowed.includes(file.type)) {
-    setFileError("Only PNG, JPG, WEBP, or GIF allowed.");
-    return;
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    setFileError("File size must be under 5MB.");
-    return;
-  }
-  const reader = new FileReader();
-  reader.onloadend = () => setPreviewUrl(reader.result as string);
-  reader.readAsDataURL(file);
-};
-
- const onSubmit = async (data: ReportBugFormData) => {
-  try {
-    const formData = new FormData();
-    formData.append("title", data.title);
-    formData.append("category", data.category);
-    formData.append("severity", data.severity);
-    formData.append("description", data.description);
-    formData.append("steps", data.steps);
-    formData.append("expected", data.expected);
-    formData.append("actual", data.actual);
-    if (data.email) formData.append("email", data.email);
-    if (data.screenshot?.[0]) formData.append("screenshot", data.screenshot[0]);
-
-    await submitBugReport(formData).unwrap();
-    setIsSuccess(true);
-    setPreviewUrl(null);
-    toast.success("Bug report submitted successfully!");
-    reset();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  } catch {
-    toast.error("Failed to submit report. Please try again.");
-  }
-};
+  const onSubmit = async (data: ReportBugFormData) => {
+    try {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, val]) => {
+        if (val !== undefined) {
+          formData.append(key, val);
+        }
+      });
+      await submitBugReport(formData).unwrap();
+      
+      setIsSuccess(true);
+      toast.success("Bug report submitted successfully!");
+      reset();
+      
+      // Scroll to top of form or success message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      console.error("Bug report submission failed:", err);
+      toast.error("Failed to submit report. Please try again.");
+    }
+  };
 
   return (
     <section className="min-h-screen px-4 py-16 relative flex flex-col items-center overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300 sm:px-6 md:px-10 lg:px-20">
@@ -182,7 +163,12 @@ const ReportBug = () => {
                         </div>
                         <input
                           id="title"
-                          {...register("title", { required: "Bug title is required" })}
+                          {...register("title", {
+                            required: "Bug title is required",
+                            maxLength: { value: 150, message: "Title must be under 150 characters" }
+                          })}
+                          maxLength={150}
+                          aria-required="true"
                           placeholder="Summarize the issue in a few words"
                           className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.title ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 font-medium`}
                         />
@@ -205,6 +191,7 @@ const ReportBug = () => {
                         <select
                           id="category"
                           {...register("category", { required: "Please select a category" })}
+                          aria-required="true"
                           className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.category ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-10 py-4 text-slate-900 dark:text-white appearance-none outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 font-medium cursor-pointer`}
                         >
                           <option value="" className="dark:bg-slate-900">Select category</option>
@@ -234,6 +221,7 @@ const ReportBug = () => {
                         <select
                           id="severity"
                           {...register("severity", { required: "Please select severity" })}
+                          aria-required="true"
                           className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.severity ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-10 py-4 text-slate-900 dark:text-white appearance-none outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 font-medium cursor-pointer`}
                         >
                           <option value="" className="dark:bg-slate-900">Select severity</option>
@@ -265,7 +253,12 @@ const ReportBug = () => {
                         </div>
                         <textarea
                           id="description"
-                          {...register("description", { required: "Description is required" })}
+                          {...register("description", {
+                            required: "Description is required",
+                            maxLength: { value: 2000, message: "Description must be under 2000 characters" }
+                          })}
+                          maxLength={2000}
+                          aria-required="true"
                           rows={4}
                           placeholder="Briefly describe what's happening"
                           className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.description ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 resize-none font-medium`}
@@ -288,7 +281,12 @@ const ReportBug = () => {
                         </div>
                         <textarea
                           id="steps"
-                          {...register("steps", { required: "Steps to reproduce are required" })}
+                          {...register("steps", {
+                            required: "Steps to reproduce are required",
+                            maxLength: { value: 2000, message: "Steps must be under 2000 characters" }
+                          })}
+                          maxLength={2000}
+                          aria-required="true"
                           rows={4}
                           placeholder="1. Go to... &#10;2. Click on... &#10;3. See error..."
                           className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.steps ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 resize-none font-medium`}
@@ -312,7 +310,12 @@ const ReportBug = () => {
                           </div>
                           <textarea
                             id="expected"
-                            {...register("expected", { required: "Expected behavior is required" })}
+                            {...register("expected", {
+                              required: "Expected behavior is required",
+                              maxLength: { value: 1000, message: "Must be under 1000 characters" }
+                            })}
+                            maxLength={1000}
+                            aria-required="true"
                             rows={3}
                             placeholder="What should have happened?"
                             className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.expected ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 resize-none font-medium`}
@@ -335,7 +338,12 @@ const ReportBug = () => {
                           </div>
                           <textarea
                             id="actual"
-                            {...register("actual", { required: "Actual behavior is required" })}
+                            {...register("actual", {
+                              required: "Actual behavior is required",
+                              maxLength: { value: 1000, message: "Must be under 1000 characters" }
+                            })}
+                            maxLength={1000}
+                            aria-required="true"
                             rows={3}
                             placeholder="What actually happened?"
                             className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.actual ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 resize-none font-medium`}
@@ -352,56 +360,6 @@ const ReportBug = () => {
 
                   {/* Section 3: Optional Info */}
                   <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
-                  {/* Screenshot Upload */}
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">
-                        Screenshot (Optional)
-                      </label>
-
-                      {!previewUrl ? (
-                        <div
-                          className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-8 text-center cursor-pointer hover:border-blue-500 transition-colors"
-                          onClick={() => fileInputRef.current?.click()}
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            const file = e.dataTransfer.files[0];
-                            if (file) handleFileSelect(file);
-                          }}
-                        >
-                          <ImageIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                          <p className="text-slate-500 dark:text-slate-400 text-sm">
-                            Click or drag & drop a screenshot
-                          </p>
-                          <p className="text-xs text-slate-400 mt-1">PNG, JPG, WEBP · Max 5MB</p>
-                        </div>
-                      ) : (
-                        <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                          <img src={previewUrl} alt="Screenshot preview" className="w-full max-h-64 object-contain bg-slate-100 dark:bg-slate-800" />
-                          <button
-                            type="button"
-                            onClick={() => { setPreviewUrl(null); setFileError(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp,image/gif"
-                        className="hidden"
-                        {...register("screenshot")}
-                        onChange={(e) => {
-                          register("screenshot").onChange(e);
-                          const file = e.target.files?.[0];
-                          if (file) handleFileSelect(file);
-                        }}
-                      />
-                      {fileError && <p className="mt-2 text-sm text-red-500 ml-1">{fileError}</p>}
-                    </div>
                     <label htmlFor="email" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">
                       Contact Email (Optional)
                     </label>
@@ -415,8 +373,10 @@ const ReportBug = () => {
                           pattern: {
                             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                             message: "Invalid email address"
-                          }
+                          },
+                          maxLength: { value: 254, message: "Email is too long" }
                         })}
+                        maxLength={254}
                         type="email"
                         placeholder="your@email.com"
                         className={`w-full bg-slate-100/50 dark:bg-slate-800/50 border ${errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-2xl pl-12 pr-5 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 outline-none transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 font-medium`}

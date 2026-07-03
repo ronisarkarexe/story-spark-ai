@@ -11,4 +11,6 @@ export const NOTIFICATION_URL = "notifications";
 export const BOOKMARK_URL = "bookmarks";
 export const BUG_REPORT_URL = "bug-reports";
 export const STORY_VISUALIZER_URL = "story-visualizer";
-
+export const STORY_RATING_URL = "story-rating";
+export const STORIES_URL = "stories";
+export const COLLECTIONS_URL = "collections";

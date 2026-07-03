@@ -4,6 +4,8 @@ import {
   useCreateCommentMutation,
   useGetCommentsListQuery,
   useToggleCommentLikeMutation,
+  useDeleteCommentMutation,
+  useReportCommentMutation,
 } from "../../redux/apis/comment";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
@@ -29,9 +31,41 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
   const isLogin = isLoggedIn();
   const currentUser = getUserInfo();
 
+  // Reporting state
+  const [reportingCommentId, setReportingCommentId] = useState<string | null>(null);
+  const [reportReason, setReportReason] = useState<string>("SPAM");
+  const [reportDescription, setReportDescription] = useState<string>("");
+
   const { data: commentList } = useGetCommentsListQuery(postId);
   const [createComment] = useCreateCommentMutation();
   const [toggleCommentLike] = useToggleCommentLikeMutation();
+  const [toggleCommentHelpful] = useToggleCommentHelpfulMutation();
+  const [deleteComment] = useDeleteCommentMutation();
+  const [reportComment, { isLoading: isReporting }] = useReportCommentMutation();
+
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLogin) {
+      toast.error("Please login to report a comment.");
+      return;
+    }
+    if (!reportingCommentId) return;
+
+    try {
+      await reportComment({
+        targetId: reportingCommentId,
+        targetType: "COMMENT",
+        reason: reportReason,
+        description: reportDescription.trim() || undefined,
+      }).unwrap();
+      toast.success("Comment reported successfully!");
+      setReportingCommentId(null);
+      setReportReason("SPAM");
+      setReportDescription("");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
+    }
+  };
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     if (!isLogin) {
@@ -39,7 +73,18 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
       return;
     }
     if (data.comment.trim() === "") {
-      toast.error("Please enter a comment.");
+      toast.custom((t) => (
+  <div className="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+    <span>Please enter a comment.</span>
+
+    <button
+      onClick={() => toast.dismiss(t.id)}
+      className="ml-2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition"
+    >
+      ×
+    </button>
+  </div>
+));
       return;
     }
     const createPostComment = {
@@ -108,6 +153,38 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
     }
   };
 
+  const isCommentHelpful = (helpful: string[] | undefined) =>
+    (helpful as unknown[])?.some((u) =>
+      typeof u === "string"
+        ? u === currentUser?.userId
+        : (u as { email?: string })?.email === currentUser?.email
+    ) ?? false;
+
+  const handleHelpful = async (commentId: string) => {
+    if (!isLogin) {
+      toast.error("Please login to react to a comment.");
+      return;
+    }
+    try {
+      await toggleCommentHelpful(commentId).unwrap();
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
+    }
+  };
+  const handleDeleteComment = async (commentId: string) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this comment?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await deleteComment(commentId).unwrap();
+    toast.success("Comment deleted successfully!");
+  } catch (err: unknown) {
+    toast.error(getErrorMessage(err));
+  }
+};
   return (
     <div>
       <form className="mb-8" onSubmit={handleSubmit(onSubmit)}>
@@ -158,11 +235,41 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                     {comment.likes?.length || 0}
                   </button>
                   <button
+                    onClick={() => handleHelpful(comment._id)}
+                    className={`hover:text-amber-500 transition-colors flex items-center gap-1 ${isCommentHelpful(comment.helpful) ? "text-amber-500" : ""}`}
+                  >
+                    <i className={`${isCommentHelpful(comment.helpful) ? "fas" : "far"} fa-lightbulb mr-1`}></i>
+                    Helpful ({comment.helpful?.length || 0})
+                  </button>
+                  <button
                     onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
                     className="hover:text-blue-400 transition-colors"
                   >
+                  
                     <i className="far fa-comment mr-1"></i> Reply
                   </button>
+                  {currentUser?.userId === comment?.userId?._id && (
+                    <button
+                      onClick={() => handleDeleteComment(comment._id)}
+                      className="hover:text-red-500 transition-colors"
+                    >
+                      <i className="far fa-trash-alt mr-1"></i> Delete
+                    </button>
+                  )}
+                  {currentUser?.userId !== comment?.userId?._id && (
+                    <button
+                      onClick={() => {
+                        if (!isLogin) {
+                          toast.error("Please login to report a comment.");
+                          return;
+                        }
+                        setReportingCommentId(comment._id);
+                      }}
+                      className="hover:text-amber-500 transition-colors flex items-center gap-1"
+                    >
+                      <i className="far fa-flag mr-1"></i> Report
+                    </button>
+                  )}
                 </div>
 
                 {replyingTo === comment._id && (
@@ -205,6 +312,20 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
                               <i className={`${isCommentLiked(reply.likes) ? "fas" : "far"} fa-heart mr-1`}></i>
                               {reply.likes?.length || 0}
                             </button>
+                            {currentUser?.userId !== reply?.userId?._id && (
+                              <button
+                                onClick={() => {
+                                  if (!isLogin) {
+                                    toast.error("Please login to report a comment.");
+                                    return;
+                                  }
+                                  setReportingCommentId(reply._id);
+                                }}
+                                className="hover:text-amber-500 transition-colors flex items-center gap-1"
+                              >
+                                <i className="far fa-flag mr-1"></i> Report
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -216,6 +337,97 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
           </div>
         ))}
       </div>
+      {reportingCommentId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100 dark:border-slate-800">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <i className="fas fa-flag text-amber-500"></i> Report Comment
+              </h3>
+              <button
+                onClick={() => {
+                  setReportingCommentId(null);
+                  setReportReason("SPAM");
+                  setReportDescription("");
+                }}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors text-2xl font-bold"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <form onSubmit={handleReportSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  Why are you reporting this comment?
+                </label>
+                <div className="space-y-2">
+                  {[
+                    { value: "SPAM", label: "Spam or misleading" },
+                    { value: "HATE_SPEECH", label: "Hate speech or harassment" },
+                    { value: "INAPPROPRIATE", label: "Inappropriate or explicit content" },
+                    { value: "MISINFORMATION", label: "Misinformation" },
+                    { value: "OTHER", label: "Other issue" },
+                  ].map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-all"
+                    >
+                      <input
+                        type="radio"
+                        name="reportReason"
+                        value={option.value}
+                        checked={reportReason === option.value}
+                        onChange={(e) => setReportReason(e.target.value)}
+                        className="text-blue-600 focus:ring-blue-500 h-4 w-4 border-gray-300"
+                      />
+                      <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                        {option.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Additional Details (Optional)
+                </label>
+                <textarea
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  placeholder="Provide more context (max 1000 characters)..."
+                  maxLength={1000}
+                  rows={3}
+                  className="w-full border border-gray-200 dark:border-slate-800 rounded-lg p-3 text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                ></textarea>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReportingCommentId(null);
+                    setReportReason("SPAM");
+                    setReportDescription("");
+                  }}
+                  className="px-4 py-2 border border-gray-200 dark:border-slate-800 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                  disabled={isReporting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
+                  disabled={isReporting}
+                >
+                  {isReporting ? "Submitting..." : "Submit Report"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

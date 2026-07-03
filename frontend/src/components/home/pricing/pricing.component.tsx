@@ -61,7 +61,6 @@ const plans: Plan[] = [
     ],
     linkTo: "/payment?plan=Pro&price=19",
     buttonLabel: "Start Pro Trial",
-    highlight: true,
   },
   {
     title: "Enterprise",
@@ -269,7 +268,7 @@ const PricingComponent: React.FC = () => {
                 className={`mt-10 w-full rounded-xl px-4 py-4 font-bold uppercase tracking-wide transition-all active:scale-[0.98] ${
                   plan.highlight
                     ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-500 hover:to-indigo-500"
-                    : "border-2 border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700 hover:border-indigo-700 dark:border-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:hover:border-indigo-500 shadow-lg"
+                    :  "bg-blue-600 text-white shadow-lg hover:bg-blue-700"
                 }`}
               >
                 {plan.buttonLabel}

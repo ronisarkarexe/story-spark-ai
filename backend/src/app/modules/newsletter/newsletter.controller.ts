@@ -5,13 +5,11 @@ import * as newsletterService from "./newsletter.service";
 export const subscribe = async (req: Request, res: Response) => {
   try {
     const { email, name, source } = req.body;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!email || !emailRegex.test(String(email).trim())) {
+    if (!email || !email.includes("@")) {
       return res.status(400).json({ message: "Valid email is required." });
     }
 
-    // Extract logged-in user id from JWT token if available
     const userId = (req as any).user?.id;
 
     // Origin of the API request, used to build the unsubscribe link in the email.
@@ -57,11 +55,19 @@ export const verify = async (req: Request, res: Response) => {
 export const unsubscribeByToken = async (req: Request, res: Response) => {
   try {
     const { token } = req.params;
+    // Handle edge cases where token might be an array
     const safeToken = Array.isArray(token) ? token[0] : token;
 
-    const result = await newsletterService.unsubscribeByToken(safeToken);
-    res.status(200).json(result);
+    const result = await newsletterService.unsubscribeByToken(safeToken as string);
+
+    res.status(200).json({
+      success: true,
+      message: "Successfully unsubscribed",
+      data: result,
+    });
   } catch (err: any) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      message: err.message,
+    });
   }
 };

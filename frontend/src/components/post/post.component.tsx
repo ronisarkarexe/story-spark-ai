@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useState, useMemo } from "react";
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
 import { Link } from "react-router-dom";
@@ -6,138 +6,66 @@ import { useGetPostListsQuery, useGetGenresQuery } from "../../redux/apis/post.a
 import type { Post } from "../../models/post";
 import { useDebounced } from "../../hooks/global";
 
-const ExploreComponent = () => {
+
+export const ExploreComponent = () => {
   const [sortBy, setSortBy] = useState<string>("createdAt");
   const [sortOrder, setSortOrder] = useState<string>("desc");
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [size, setSize] = useState<number>(10);
-  const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const size = 12;
+  const [page, setPage] = useState<number>(1);
   const [featuredPost, setFeaturedPost] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+
+  const query: Record<string, string | number> = {
+    page,
+    limit: size,
+    sortBy,
+    sortOrder,
+  };
 
   const debounceTerm = useDebounced({
     searchQuery: searchTerm,
     delay: 600,
   });
 
-  const normalizedSearchTerm = debounceTerm?.trim() ?? "";
-  const genresParam = selectedTags.length > 0 ? selectedTags.join(",") : undefined;
+  if (debounceTerm) {
+    query["searchTerm"] = debounceTerm;
+  }
 
-  const queryArgs = useMemo<Record<string, string | number>>(() => {
-    const args: Record<string, string | number> = {
-      limit: size,
-      sortBy,
-      sortOrder,
-    };
+  if (selectedTags.length > 0) {
+    query["genres"] = selectedTags.join(",");
+  }
 
-    if (normalizedSearchTerm) {
-      args.searchTerm = normalizedSearchTerm;
-    }
-
-    if (genresParam) {
-      args.genres = genresParam;
-    }
-
-    if (cursor) {
-      args.cursor = cursor;
-    }
-
-    return args;
-  }, [size, sortBy, sortOrder, normalizedSearchTerm, genresParam, cursor]);
-
-  const { data, isLoading, isFetching } = useGetPostListsQuery(queryArgs);
+  const { data, isLoading } = useGetPostListsQuery({ ...query });
   const { data: genres } = useGetGenresQuery();
 
-  const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
-  const querySignature = useMemo(
-    () =>
-      JSON.stringify({
-        size,
-        sortBy,
-        sortOrder,
-        normalizedSearchTerm,
-        genresParam,
-      }),
-    [size, sortBy, sortOrder, normalizedSearchTerm, genresParam],
-  );
-  const previousQuerySignature = useRef<string>(querySignature);
-
-  useEffect(() => {
-    if (previousQuerySignature.current !== querySignature) {
-      previousQuerySignature.current = querySignature;
-      setCursor(undefined);
-      setPosts([]);
-    }
-  }, [querySignature]);
-
-  useEffect(() => {
-    if (!data?.posts) {
-      return;
-    }
-
-    if (!cursor) {
-      setPosts(data.posts);
-      return;
-    }
-
-    if (data.posts.length > 0) {
-      setPosts((prevPosts) => [...prevPosts, ...data.posts]);
-    }
-  }, [data?.posts, cursor]);
-
-  useEffect(() => {
-    const trigger = loadMoreTriggerRef.current;
-    if (!trigger) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (
-          entry?.isIntersecting &&
-          data?.meta?.hasMore &&
-          data.meta.nextCursor &&
-          !isLoading &&
-          !isFetching &&
-          data.meta.nextCursor !== cursor
-        ) {
-          setCursor(data.meta.nextCursor);
-        }
-      },
-      {
-        rootMargin: "200px",
-      },
-    );
-
-    observer.observe(trigger);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [cursor, data?.meta?.hasMore, data?.meta?.nextCursor, isFetching, isLoading]);
-
-  const filteredPosts = posts;
+  const filteredPosts = data?.posts || [];
 
   const resetAllStates = () => {
     setSortBy("createdAt");
     setSortOrder("desc");
     setSearchTerm("");
     setSelectedTags([]);
-    setCursor(undefined);
-    setPosts([]);
+    setPage(1);
+  };
+
+  const loadMore = () => {
+    if (data?.meta && filteredPosts.length < data.meta.total) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   const handleTagClick = (tag: string) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     );
+    setPage(1);
   };
 
   const availableTags = Array.from(
     new Set(
-      posts
+      (data?.posts || [])
         .map((post: Post) => post.tag)
         .filter(Boolean)
         .map((tag: string) => `#${tag.toLowerCase().trim()}`),
@@ -145,6 +73,14 @@ const ExploreComponent = () => {
   ).slice(0, 8);
 
   const availableGenres = genres ?? [];
+
+  const filteredSuggestions = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+    const term = searchTerm.toLowerCase();
+    const tagSuggestions = availableTags.filter(tag => tag.toLowerCase().includes(term));
+    const genreSuggestions = (availableGenres ?? []).filter(g => g.toLowerCase().includes(term)).map(g => `#${g.toLowerCase()}`);
+    return [...new Set([...tagSuggestions, ...genreSuggestions])].slice(0, 8);
+  }, [searchTerm, availableTags, availableGenres]);
 
   return (
     <div className="pt-0 min-h-screen bg-white text-slate-900 relative overflow-hidden transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
@@ -169,27 +105,68 @@ const ExploreComponent = () => {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
+                  setPage(1);
+                  setIsDropdownOpen(true);
+                }}
+                onFocus={() => setIsDropdownOpen(true)}
+                onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+              />
 
+              <i className="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+
+              {isDropdownOpen && searchTerm && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-2xl z-50 max-h-64 overflow-y-auto">
+                  {filteredSuggestions.length > 0 ? (
+                    filteredSuggestions.map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        onMouseDown={() => {
+                          setSearchTerm(suggestion);
+                          setIsDropdownOpen(false);
+                          setPage(1);
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"
+                      >
+                        <i className="fas fa-search text-slate-400 text-xs"></i>
+                        <span>{suggestion}</span>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                      <i className="fas fa-info-circle text-slate-400"></i>
+                      No suggestions found
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Main Layout */}
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar */}
-          <div className="w-full md:w-64 flex-shrink-0">
+          <div className="w-full md:w-64 md:min-w-64 flex-shrink-0">
             <div className="sticky top-4 bg-gray-50 border border-gray-200 text-slate-900 backdrop-blur-xl rounded-2xl p-6 shadow-xl z-10 transition-colors duration-300 dark:bg-slate-900/50 dark:border-none dark:text-white">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   Filters
                 </h3>
 
-                <button
-                  onClick={resetAllStates}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  Reset
-                </button>
+                {(searchTerm ||
+                  selectedTags.length > 0 ||
+                  sortBy !== "createdAt" ||
+                  sortOrder !== "desc") && (
+                  <button
+                    onClick={resetAllStates}
+                    className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Reset
+                  </button>
+                )}
               </div>
 
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {/* Genres */}
                 <div>
                   <h4 className="font-semibold mb-3 text-slate-700 dark:text-slate-300">
@@ -244,11 +221,12 @@ const ExploreComponent = () => {
                     value={sortBy}
                     onChange={(e) => {
                       setSortBy(e.target.value);
+                      setPage(1);
                     }}
                     className="w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 text-slate-900 p-2.5 outline-none transition-all cursor-pointer appearance-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200"
                   >
                     <option value="createdAt">Latest</option>
-                    <option value="viewsCount">Most Popular</option>
+                    <option value="views">Most Popular</option>
                     <option value="commentsCount">Most Discussed</option>
                     <option value="likesCount">Most Liked</option>
                   </select>
@@ -262,6 +240,7 @@ const ExploreComponent = () => {
                     value={sortOrder}
                     onChange={(e) => {
                       setSortOrder(e.target.value);
+                      setPage(1);
                     }}
                     className="w-full border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 text-slate-900 p-2.5 outline-none transition-all cursor-pointer appearance-none dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200"
                   >
@@ -276,13 +255,13 @@ const ExploreComponent = () => {
           {/* Content */}
           <div className="flex-1 flex flex-col min-h-[70vh]">
             <div className={`${featuredPost ? "mb-6" : ""}`}>
-              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-                <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-wrap gap-4 items-center">
                   <h2
                     onClick={() => setFeaturedPost(false)}
                     className={`text-3xl font-extrabold mb-6 cursor-pointer transition-all duration-300 ${
                       !featuredPost
-                        ? "text-blue-600 dark:text-blue-400"
+                        ? "bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-500 drop-shadow-sm"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-500 dark:hover:text-slate-300"
                     }`}
                   >
@@ -303,25 +282,66 @@ const ExploreComponent = () => {
                 </div>
 
                 <div className="flex items-center space-x-4">
-                  <select
-                    className="!rounded-button border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-gray-100 text-slate-900 py-1.5 px-3 outline-none transition-all appearance-none cursor-pointer dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                    value={size}
-                    onChange={(e) => {
-                      setSize(Number(e.target.value));
-                    }}
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
+                  {/* Entries dropdown removed for infinite scroll */}
                 </div>
               </div>
 
               {featuredPost && <ExploreFeatureComponent />}
             </div>
 
-            <div className="flex-grow pb-24">
+            {/* Active Filters Summary */}
+            {(searchTerm.trim() !== "" || selectedTags.length > 0) && (
+              <div className="mb-6 flex flex-wrap items-center gap-3 animate-fade-in">
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  Active Filters:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {searchTerm.trim() !== "" && (
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 text-xs font-medium dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50 shadow-sm transition-all hover:bg-blue-100 dark:hover:bg-blue-900/50">
+                      <i className="fas fa-search text-[10px] opacity-70"></i>
+                      Search: "{searchTerm}"
+                      <button
+                        onClick={() => {
+                          setSearchTerm("");
+                          setPage(1);
+                        }}
+                        className="ml-1 hover:text-blue-900 dark:hover:text-blue-100 transition-colors cursor-pointer"
+                        aria-label="Remove search filter"
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </span>
+                  )}
+
+                  {selectedTags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs font-medium dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800/50 shadow-sm transition-all hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                    >
+                      <i className="fas fa-tag text-[10px] opacity-70"></i>
+                      {tag.startsWith("#") ? tag : `#${tag}`}
+                      <button
+                        onClick={() => handleTagClick(tag)}
+                        className="ml-1 hover:text-indigo-900 dark:hover:text-indigo-100 transition-colors cursor-pointer"
+                        aria-label={`Remove ${tag} filter`}
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </span>
+                  ))}
+
+                  <button
+                    onClick={resetAllStates}
+                    className="ml-2 text-xs font-bold text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 group cursor-pointer"
+                  >
+                    Clear All
+                    <i className="fas fa-trash-can text-[10px] group-hover:rotate-12 transition-transform"></i>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex-grow">
               {!isLoading && filteredPosts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] text-center">
                   <div className="text-6xl mb-4">📚</div>
@@ -356,21 +376,21 @@ const ExploreComponent = () => {
               )}
             </div>
 
-            {!featuredPost && (
-              <div className="mt-8">
-                <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-center">
-                  {isFetching && !isLoading && (
-                    <p className="text-sm text-slate-600 dark:text-slate-300">
-                      Loading more stories...
-                    </p>
+            {!featuredPost && data?.meta && filteredPosts.length > 0 && filteredPosts.length < data.meta.total && (
+              <div className="flex justify-center mt-8 mb-8 z-20 relative">
+                <button
+                  onClick={loadMore}
+                  disabled={isLoading}
+                  className="cursor-pointer !rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 shadow-lg shadow-blue-500/30 transition-all duration-300 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <i className="fas fa-spinner fa-spin"></i> Loading...
+                    </span>
+                  ) : (
+                    "Load More"
                   )}
-                  {!isFetching && !data?.meta?.hasMore && posts.length > 0 && (
-                    <p className="text-sm text-slate-600 dark:text-slate-300">
-                      You have reached the end of the feed.
-                    </p>
-                  )}
-                </div>
-                <div ref={loadMoreTriggerRef} className="h-6" />
+                </button>
               </div>
             )}
           </div>

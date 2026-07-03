@@ -10,12 +10,11 @@ interface State {
   error?: Error;
   errorInfo?: ErrorInfo;
   retryCount: number;
+  retryLimitReached: boolean;
 }
 
 const MAX_ERROR_LOGS = 10;
-
 const LOG_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
-
 const ERROR_LOG_KEY = "app_error_log";
 
 class ErrorBoundary extends Component<Props, State> {
@@ -24,9 +23,11 @@ class ErrorBoundary extends Component<Props, State> {
     this.state = {
       hasError: false,
       retryCount: 0,
+      retryLimitReached: false,
     };
     this.clearExpiredLogs();
   }
+
   private clearExpiredLogs(): void {
     try {
       const existing = JSON.parse(
@@ -42,6 +43,7 @@ class ErrorBoundary extends Component<Props, State> {
     } catch {
     }
   }
+
   static clearAllLogs(): void {
     try {
       localStorage.removeItem(ERROR_LOG_KEY);
@@ -49,16 +51,20 @@ class ErrorBoundary extends Component<Props, State> {
     }
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return {
       hasError: true,
       error,
-      retryCount: 0,
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.setState((prev) => ({
+      retryCount: prev.retryCount + 1,
+    }));
+
     console.error("Error caught by ErrorBoundary:", error, errorInfo);
+
     try {
       const errorLog = {
         timestamp: new Date().toISOString(),
@@ -82,22 +88,28 @@ class ErrorBoundary extends Component<Props, State> {
       );
     } catch {
     }
+
     this.setState({ errorInfo });
   }
+
   handleRetry = () => {
     const { retryCount } = this.state;
+
     if (retryCount >= 3) {
       ErrorBoundary.clearAllLogs();
+      this.setState({ retryLimitReached: true });
       window.location.reload();
       return;
     }
+
     this.setState((prev) => ({
       hasError: false,
       error: undefined,
       errorInfo: undefined,
-      retryCount: prev.retryCount + 1,
+      retryCount: prev.retryCount,
     }));
   };
+
   render() {
     if (this.state.hasError) {
       return <ErrorPage />;
@@ -105,4 +117,5 @@ class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
 export default ErrorBoundary;
