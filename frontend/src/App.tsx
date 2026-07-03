@@ -76,8 +76,8 @@ const router = createBrowserRouter([
       </>
     ),
     children: [
-<<<<<<< fix/dynamic-page-titles
-=======
+ fix/dynamic-page-titles
+
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
       { path: "templates", element: <TemplatesComponent /> },
       { path: "writing-assistant", element: <WritingAssistantComponent /> },
@@ -135,7 +135,7 @@ const router = createBrowserRouter([
     path: "/dashboard",
     element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
     children: [
->>>>>>> main
+ main
       {
         path: "/",
         element: (
