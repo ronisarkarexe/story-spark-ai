@@ -977,4 +977,3 @@ export default function StoriesViewComponent({
     </div>
   );
 }
-
