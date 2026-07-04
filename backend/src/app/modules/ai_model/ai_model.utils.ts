@@ -1,4 +1,4 @@
-﻿import {
+import {
   GoogleGenerativeAI,
   HarmCategory,
   HarmBlockThreshold,
@@ -11,7 +11,6 @@ import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
-import { sanitizeJsonText } from "../../../utils/promptSecurity";
 import type {
   IStoryVisualizerPayload,
   IStoryVisualizerResult,
@@ -428,10 +427,14 @@ export async function generateWithGeminiStoriesStream(
   numStories: number = 2,
   onChunk: (chunk: string) => void,
   signal?: AbortSignal,
-): Promise<void> {
+  language: string = "English",
+  tone?: string,
+  genre?: string,
+): Promise<Story[] | void> {
   if (signal?.aborted) {
     throw new GenerationAbortedError();
   }
+  assertGeminiApiKeyConfigured();
 
   const streamingConfig = {
     temperature: 1,
@@ -441,6 +444,10 @@ export async function generateWithGeminiStoriesStream(
   };
 
   try {
+    const toneInstruction = buildToneInstruction(tone);
+    const genreInstruction = buildGenreInstruction(genre);
+    let rawText = "";
+
     const result = await executeWithRetryAndFallback(async (activeModel) => {
       return activeModel.generateContentStream(
         {
@@ -449,10 +456,14 @@ export async function generateWithGeminiStoriesStream(
               role: "user",
               parts: [
                 {
-                  text: `Generate ${numStories} different short stories based on the following prompt: "${prompt}".
-                Each story should be in JSON format with fields: "title", "content", and "tag".
+                  text: `${genreInstruction}${toneInstruction}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+                First, enhance this prompt to be more emotionally engaging and context-sensitive.
+                Then, generate ${numStories} different short stories based on this enhanced prompt.
+                The stories MUST be written entirely in the ${language} language.
+                For each story, also analyze and detect the primary emotional tones and the specific genre.
+                Each story should be in JSON format with fields: "title", "content", "tag", "emotions", "genre", and "enhancedPrompt".
                 Ensure each story is approximately ${wordLength} words long.
-                Return the output as a JSON array.`,
+                Return only valid JSON array output.`,
                 },
               ],
             },
@@ -470,9 +481,47 @@ export async function generateWithGeminiStoriesStream(
       }
       const chunkText = chunk.text();
       if (chunkText) {
+        rawText += chunkText;
         onChunk(chunkText);
       }
     }
+
+    if (signal?.aborted) {
+      throw new GenerationAbortedError();
+    }
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(sanitizeJsonText(rawText));
+    } catch {
+      return;
+    }
+
+    const stories: Story[] = Array.isArray(parsed) ? parsed : parsed?.stories;
+
+    if (!Array.isArray(stories) || stories.length === 0) {
+      return;
+    }
+
+    const imageUrls = await Promise.all(
+      stories.map(async (story) => {
+        try {
+          const imageResponse = await fetchImageURL(
+            String(story?.tag ?? story?.title ?? "")
+          );
+          return imageResponse?.imageUrl || "";
+        } catch {
+          return "";
+        }
+      })
+    );
+
+    return stories.map((story, index) => ({
+      ...story,
+      language,
+      imageURL: imageUrls[index],
+      uuid: uuidv4(),
+    }));
   } catch (error: unknown) {
     if (error instanceof ApiError || error instanceof GenerationAbortedError) {
       throw error;
