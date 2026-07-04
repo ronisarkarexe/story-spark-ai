@@ -4,8 +4,17 @@ const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      setIsVisible(window.scrollY > 200);
+      // Only execute if a frame isn't already waiting to be painted
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsVisible(window.scrollY > 200);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -24,7 +33,7 @@ const ScrollToTopButton = () => {
       onClick={scrollToTop}
       aria-label="Scroll to top"
       className={`
-        fixed bottom-24 right-6
+        fixed bottom-28 right-6 lg:bottom-6
         w-14 h-14 rounded-full
         border-none cursor-pointer
         bg-gradient-to-br from-blue-500 to-indigo-500
@@ -38,28 +47,7 @@ const ScrollToTopButton = () => {
           : "opacity-0 translate-y-3 pointer-events-none"
         }
       `}
-      style={{
-        position: "fixed",
-        bottom: "12rem",
-        right: "1.5rem",
-        width: "56px",
-        height: "56px",
-        borderRadius: "50%",
-        border: "none",
-        cursor: "pointer",
-        background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-        color: "#ffffff",
-        fontSize: "1rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        boxShadow: "0 6px 18px rgba(59, 130, 246, 0.25)",
-        opacity: isVisible ? 1 : 0,
-        pointerEvents: isVisible ? "auto" : "none",
-        transform: isVisible ? "translateY(0)" : "translateY(12px)",
-        transition: "opacity 0.3s ease, transform 0.3s ease",
-        zIndex: 9980,
-      }}
+
     >
     </button>
   );

@@ -12,23 +12,113 @@ interface DraftData {
   savedAt: string;
 }
 
+export const offlineQueue: Array<{ content: string; timestamp: number }> = [];
+let globalIsOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+
+export async function flushOfflineQueue(queue: Array<{ content: string; timestamp: number }>) {
+  for (const item of queue) {
+    await fetch("/api/stories/save", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content: item.content }),
+    });
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("offline", () => {
+    globalIsOnline = false;
+  });
+
+  window.addEventListener("online", async () => {
+    globalIsOnline = true;
+    if (offlineQueue.length > 0) {
+      try {
+        await flushOfflineQueue(offlineQueue);
+        offlineQueue.length = 0;
+      } catch (error) {
+        console.error("Failed to flush offline queue:", error);
+      }
+    }
+  });
+}
+
 export function useAutoSave(draftId: string, title: string, content: string) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== "undefined" ? navigator.onLine : true);
+  const [pendingCount, setPendingCount] = useState<number>(offlineQueue.length);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const intervalTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const save = useCallback(() => {
+  const save = useCallback(async () => {
     try {
       setSaveStatus("saving");
       const draft: DraftData = { title, content, savedAt: new Date().toISOString() };
       localStorage.setItem(DRAFT_KEY_PREFIX + draftId, JSON.stringify(draft));
+
+      const currentOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+      if (!currentOnline) {
+        offlineQueue.push({ content, timestamp: Date.now() });
+        setPendingCount(offlineQueue.length);
+        setLastSaved(new Date());
+        setSaveStatus("saved");
+        return;
+      }
+
+      const response = await fetch("/api/stories/save", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save to server");
+      }
+
       setLastSaved(new Date());
       setSaveStatus("saved");
     } catch {
       setSaveStatus("error");
     }
   }, [draftId, title, content]);
+
+  useEffect(() => {
+    const handleOnline = async () => {
+      setIsOnline(true);
+      globalIsOnline = true;
+      if (offlineQueue.length > 0) {
+        try {
+          setSaveStatus("saving");
+          await flushOfflineQueue(offlineQueue);
+          offlineQueue.length = 0;
+          setPendingCount(0);
+          setLastSaved(new Date());
+          setSaveStatus("saved");
+        } catch (error) {
+          setSaveStatus("error");
+          console.error("Failed to flush offline queue:", error);
+        }
+      }
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      globalIsOnline = false;
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -41,7 +131,7 @@ export function useAutoSave(draftId: string, title: string, content: string) {
     return () => { if (intervalTimer.current) clearInterval(intervalTimer.current); };
   }, [save]);
 
-  return { saveStatus, lastSaved };
+  return { saveStatus, lastSaved, isOnline, pendingCount, save };
 }
 
 export function loadDraft(draftId: string) {
