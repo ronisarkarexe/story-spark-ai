@@ -302,8 +302,6 @@ const SignUpComponent = () => {
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
-          {/* Card */}
-          <div className="bg-white dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 sm:p-8 shadow-2xl w-full min-w-0 overflow-hidden box-border">
             {!showOtpField && (
               <div className="relative mb-6 w-full box-border">
                 <div className="absolute inset-0 flex items-center">
@@ -388,7 +386,7 @@ const SignUpComponent = () => {
                         const met = passwordChecks[key];
                         return (
                           <li key={key} className={`flex items-center gap-1.5 ${met ? "text-green-500" : "text-slate-400"}`}>
-                            <span>{met ? "✓" : "○"}</span>
+                            <span>{met ? "✅" : "❌"}</span>
                             <span>{label}</span>
                           </li>
                         );
@@ -408,7 +406,7 @@ const SignUpComponent = () => {
                     register={register}
                     autoComplete="new-password"
                     validation={{
-                      validate: (value) => {
+                      validate: (value: any) => {
                         if (showOtpField) return true;
                         if (!value) return "Confirm password is required";
                         if (value !== password) return "Passwords do not match!";
@@ -501,7 +499,6 @@ const SignUpComponent = () => {
                 </p>
               </div>
             )}
-          </div>
         </div>
       </div>
 
