@@ -16,53 +16,59 @@ export const scrubPII = (text: string): string => {
 
   let scrubbed = text;
 
-  // Idempotency guard — prevents double-scrubbing if middleware runs twice
   const containsAnyRedactionToken =
-    /\[REDACTED_(?:EMAIL|PHONE|NAME|SSN|CARD|ADDRESS)\]/i.test(scrubbed);
-  if (containsAnyRedactionToken) return scrubbed;
+      /\[REDACTED_(?:EMAIL|PHONE|NAME|SSN|CARD|ADDRESS)\]/i.test(scrubbed);
+    if (containsAnyRedactionToken) return scrubbed;
 
-  try {
-    // 1. Emails
-    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-    scrubbed = scrubbed.replace(emailRegex, "[REDACTED_EMAIL]");
-
-    // 2. Phone numbers
-    const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
-    scrubbed = scrubbed.replace(phoneRegex, "[REDACTED_PHONE]");
-    const phoneFallbackRegex = /\b\d{3}([-.\s])?\d{3}\1?\d{4}\b/g;
-    scrubbed = scrubbed.replace(phoneFallbackRegex, "[REDACTED_PHONE]");
-
-    // 3. SSN
-    const ssnRegex = /\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g;
-    scrubbed = scrubbed.replace(ssnRegex, "[REDACTED_SSN]");
-
-    // 4. Credit cards
-    const cardRegex = /\b(?:\d[ -]*?){13,19}\b/g;
-    scrubbed = scrubbed.replace(cardRegex, "[REDACTED_CARD]");
-
-    // 5. Addresses
-    const addressRegex =
-      /\b\d{1,5}\s+[A-Za-z0-9][A-Za-z0-9\s.'-]{1,60}\s+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Place|Pl|Parkway|Pkwy)\b/gi;
-    scrubbed = scrubbed.replace(addressRegex, "[REDACTED_ADDRESS]");
-    const addressAltRegex =
-      /\b\d{1,5}\s+(?:N|S|E|W|NE|NW|SE|SW)\.?\s+[A-Za-z0-9][A-Za-z0-9\s.'-]{1,60}\s+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Place|Pl|Parkway|Pkwy)\b/gi;
-    scrubbed = scrubbed.replace(addressAltRegex, "[REDACTED_ADDRESS]");
-
-    // 6. NLP person names — isolated try/catch so failures don't block regex scrubbing above
     try {
-      const doc = compromise(scrubbed);
-      const people = doc.people().out("array") as string[];
-      people.sort((a, b) => b.length - a.length);
-      for (const person of people) {
-        if (person.length > 2) {
-          const escaped = escapeRegex(person);
-          const nameRegex = new RegExp(`(^|[^\\w])(${escaped})(?=$|[^\\w])`, "gi");
-          scrubbed = scrubbed.replace(nameRegex, "$1[REDACTED_NAME]");
-        }
-      }
-    } catch (nlpError) {
-      // Fail-open: email/phone/SSN/card/address already scrubbed above
-      console.error("[PII Scrubber] NLP name detection failed, skipping:", nlpError);
+      // 1. Emails
+      const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+      scrubbed = scrubbed.replace(emailRegex, "[REDACTED_EMAIL]");
+
+      // 2. Phone numbers
+      // UK/International Mobile formats
+      const phoneIntRegex = /(?<![\w/])(?:\+44\s?|0)7\d{3}[-.\s]?\d{6}\b/g;
+      scrubbed = scrubbed.replace(phoneIntRegex, "[REDACTED_PHONE]");
+
+      const phoneRegex =
+        /(?<![\w/])(?:\+\d{1,3}[-.\s]?|1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g;
+      scrubbed = scrubbed.replace(phoneRegex, "[REDACTED_PHONE]");
+
+      const phoneFallbackRegex = /(?<![\w/])\d{3}([-.\s])?\d{3}\1?\d{4}\b/g;
+      scrubbed = scrubbed.replace(phoneFallbackRegex, "[REDACTED_PHONE]");
+
+      // Local US 7-digit formats
+      const phoneLocalRegex = /(?<![\w/])\d{3}[-.\s]\d{4}\b/g;
+      scrubbed = scrubbed.replace(phoneLocalRegex, "[REDACTED_PHONE]");
+
+      // 3. SSN
+      const ssnRegex = /\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g;
+      scrubbed = scrubbed.replace(ssnRegex, "[REDACTED_SSN]");
+
+      // 4. Credit cards
+      const cardRegex = /\b(?:\d[ -]*?){13,19}\b/g;
+      scrubbed = scrubbed.replace(cardRegex, "[REDACTED_CARD]");
+
+      // 5a. Addresses with directional prefixes
+      const addressAltRegex =
+        /\b\d{1,5}\s+(?:N|S|E|W|NE|NW|SE|SW)\.?\s+[A-Za-z0-9][A-Za-z0-9\s.'-]{1,60}\s+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Place|Pl|Parkway|Pkwy)(?:\s+(?:Apt|Apartment|Suite|Ste|Unit|Room)\s+[A-Za-z0-9#-]+)?(?:\s*,\s*[A-Za-z\s]+)?(?:\s*,\s*[A-Z]{2})?(?:\s+\d{5})?\b/gi;
+      scrubbed = scrubbed.replace(addressAltRegex, "[REDACTED_ADDRESS]");
+
+      // 5b. Standard addresses
+      const addressRegex =
+        /\b\d{1,5}\s+[A-Za-z0-9][A-Za-z0-9\s.'-]{1,60}\s+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Place|Pl|Parkway|Pkwy)(?:\s+(?:Apt|Apartment|Suite|Ste|Unit|Room)\s+[A-Za-z0-9#-]+)?(?:\s*,\s*[A-Za-z\s]+)?(?:\s*,\s*[A-Z]{2})?(?:\s+\d{5})?\b/gi;
+      scrubbed = scrubbed.replace(addressRegex, "[REDACTED_ADDRESS]");
+
+      // 6. NLP person names — isolated try/catch so failures don't block regex scrubbing above
+      try {
+        const doc = compromise(scrubbed);
+        const people = doc.people().out("array") as string[];
+        people.sort((a, b) => b.length - a.length);
+        for (const person of people) {
+          if (person.length > 2) {
+            const escaped = escapeRegex(person);
+            const nameRegex = new RegExp(`(^|[^\\w])(${escaped})(?=$|[^\\w])`, "gi");
+            scrubbed = scrubbed.replace(nameRegex, "$1[REDACTED_NAME]");
     }
 
   } catch (err) {
