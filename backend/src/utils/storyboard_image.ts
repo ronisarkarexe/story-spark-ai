@@ -1,6 +1,4 @@
 import config from "../config";
-import httpStatus from "http-status";
-import ApiError from "../errors/api_error";
 
 /**
  * Generate storyboard image using configured AI provider

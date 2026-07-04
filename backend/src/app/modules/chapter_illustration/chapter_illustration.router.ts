@@ -49,9 +49,18 @@ router.post(
 );
 
 // Clear expired cache (admin only)
+const adminCacheLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // 10 requests per hour for admin
+  keyGenerator: (req: any) => req.user?.id ?? req.ip ?? "unknown",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 router.delete(
   "/cache",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN),
+  adminCacheLimiter,
   ChapterIllustrationController.clearCache
 );
 
