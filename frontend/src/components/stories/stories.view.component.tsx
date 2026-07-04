@@ -1,30 +1,16 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
-import {
-  getShortenedText,
-  ITopicData,
-  topicsData,
-  getWordCount,
-  SELECTED_TOPIC_CLASSES,
-} from "./stories.utils";
-import { calculateReadingTime } from "../../utils/reading-time";
-import { formatReadingStats } from "../../utils/story-utils";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
-import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
-import StoryTranslator from "./translate/StoryTranslator";
-import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
-import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import StoryTranslator from "../translate/StoryTranslator";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
+
 
 export interface IStories {
   uuid: string;
@@ -99,7 +85,9 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
+  const [characterProfiles, setCharacterProfiles] = useState<any[]>([]);
+
+
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
@@ -196,34 +184,101 @@ const handleCopyStory = async () => {
        }
     };
 
-const handleExportPDF = () => {
-  if (!selectedStory) {
-    toast.error("No story available to export.");
-    return;
-  }
+  const handleExportPDF = async () => {
+    if (!selectedStory) {
+      toast.error("No story available to export.");
+      return;
+    }
 
-  try {
-    const doc = new jsPDF();
+    try {
+      const title = selectedStory.title || "Story";
+      const storyEl = document.getElementById("story-content");
+      if (!storyEl) {
+        toast.error("Story content not found for export.");
+        return;
+      }
 
-    const title = selectedStory.title || "Story";
-    const content = selectedStory.content || "";
+      // Render the story DOM to a canvas (keeps formatting/styles)
+      const canvas = await html2canvas(storyEl as HTMLElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "transparent",
+        logging: false,
+        // If the prose styling depends on fonts, html2canvas may still capture well.
+      });
 
-    doc.setFontSize(18);
-    doc.text(title, 15, 20);
+      const imgData = canvas.toDataURL("image/png");
 
-    doc.setFontSize(12);
+      // A4 PDF, portrait
+      const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
 
-    const splitText = doc.splitTextToSize(content, 180);
-    doc.text(splitText, 15, 35);
+      const marginX = 40;
+      const marginTop = 60;
+      const availableWidth = pageWidth - marginX * 2;
 
-    doc.save(`${title}.pdf`);
+      // Title
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(18);
+      pdf.text(title, marginX, 35);
 
-    toast.success("PDF downloaded!");
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to export PDF.");
-  }
-};
+      // Compute image size in PDF coords
+      const imgWidthPx = canvas.width;
+      const imgHeightPx = canvas.height;
+      const imgRatio = imgHeightPx / imgWidthPx;
+
+      const renderWidth = availableWidth;
+      const renderHeight = renderWidth * imgRatio;
+
+      // Fit the image vertically across multiple pages
+      let remainingHeight = renderHeight;
+      let y = marginTop;
+
+      // The amount of image height that fits on one page (from marginTop to bottom)
+      const pageUsableHeight = pageHeight - marginTop - 30;
+
+      // Draw by shifting the Y offset through the same image
+      // jsPDF doesn't support cropping from the dataURL directly, so we redraw the image each page using
+      // the total render height and adjust y position.
+      let pageIndex = 0;
+      while (remainingHeight > 0) {
+        if (pageIndex > 0) {
+          pdf.addPage();
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(14);
+          pdf.text(title, marginX, 30);
+        }
+
+        // Determine how much of the image is visible on this page.
+        // We use a negative y offset to effectively move the image up for subsequent pages.
+        const visibleHeight = Math.min(pageUsableHeight, remainingHeight);
+
+        // y offset in PDF coords
+        const drawY = y - pageIndex * pageUsableHeight;
+
+        // Draw the full image, but only the portion within the page will be visible.
+        pdf.addImage(
+          imgData,
+          "PNG",
+          marginX,
+          drawY,
+          renderWidth,
+          renderHeight
+        );
+
+        remainingHeight -= pageUsableHeight;
+        pageIndex += 1;
+      }
+
+      pdf.save(`${title}.pdf`);
+      toast.success("PDF downloaded!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export PDF.");
+    }
+  };
+
 
 const handleGenerateCharacterProfile = async () => {
   if (!selectedStory) {
@@ -289,9 +344,9 @@ const handleGenerateCharacterProfile = async () => {
     }
   };
 
-const isNarrationActive = narrationState !== "idle";
+// isLoading is not used in this component after refactor; preserve existing `loading` state
+if (loading) {
 
-if (isLoading) {
   return (
     <div className="flex items-center justify-center py-20">
       <StoryGeneratingAnimation />
@@ -320,8 +375,12 @@ if (!stories || stories.length === 0) {
 }
   }
 
+  // Render
+  // eslint-disable-next-line react/no-unknown-property
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
+
+
       <style>
         {`
           @keyframes fadeInUp {
@@ -642,6 +701,6 @@ if (!stories || stories.length === 0) {
       )}
     </div>
   );
-};
+
 
 export default StoriesViewComponent;

@@ -10,7 +10,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 
 
-  const NavListComponent = () => {
+const NavListComponent: React.FC = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
@@ -307,7 +307,7 @@ import { useNavigate, useLocation } from "react-router-dom";
         </div>
       )}
     </header>
-  );
+  
 };
 
 export default NavListComponent;

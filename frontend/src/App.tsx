@@ -65,6 +65,7 @@ const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
+const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
@@ -162,7 +163,7 @@ const router = createBrowserRouter([
     element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
     children: [
       {
-        path: "/",
+        path: "",
         element: (
           <>
             <ScrollToTopButton />
@@ -230,7 +231,7 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "/dashboard",
+        path: "",
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
           {

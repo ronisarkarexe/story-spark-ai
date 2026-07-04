@@ -358,9 +358,9 @@ const HeroSectionComponent = () => {
           {features.map((feature, index) => (
             <FeatureCard feature={feature} key={index} />
           ))}
-        </div>
-      </motion.div>
-    </motion.div>
+        </motion.div>
+      
+    
   );
 };
 
