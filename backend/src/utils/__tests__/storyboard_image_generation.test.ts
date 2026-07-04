@@ -1,7 +1,7 @@
-import { generateStoryboardImage } from "../storyboard_image_generation";
+import { generateStoryboardImage } from "../storyboard_image";
 
 // Mock the config module
-jest.mock("../../config", () => ({
+jest.mock("../../../config", () => ({
   default: {
     image_generation_provider: "",
     image_generation_api_key: "",
@@ -14,7 +14,7 @@ const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 // Get reference to mocked config
-import config from "../../config";
+import config from "../../../config";
 const mockConfig = config as jest.Mocked<typeof config>;
 
 beforeEach(() => {
