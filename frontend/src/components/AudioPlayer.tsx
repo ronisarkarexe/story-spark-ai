@@ -8,8 +8,6 @@ import React, {
 } from "react";
 import {
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
   LoaderCircle,
   Pause,
   Play,
@@ -17,17 +15,11 @@ import {
   Square,
   Star,
   Volume2,
-  Volume,
- feat/collaboration-1122
-  ChevronUp,
-  ChevronDown,
-
- main
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
-import { useVoicePreview } from "../hooks/useVoicePreview";
 import { useVoiceFavorites } from "../hooks/useVoiceFavorites";
+import { useVoicePreview } from "../hooks/useVoicePreview";
 
 export type NarrationPlaybackState = "idle" | "playing" | "paused";
 
@@ -57,18 +49,20 @@ const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 const controlButtonBaseClass =
   "inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-slate-950";
 
-// ✅ Helper function to calculate word count
 const getWordCount = (text: string): number => {
-  if (!text || typeof text !== 'string') return 0;
+  if (!text || typeof text !== "string") return 0;
   return text.trim().split(/\s+/).filter(Boolean).length;
 };
 
 const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
-  ({ text, title = "Story narration", onWordIndexChange, onPlaybackStateChange }, ref) => {
+  (
+    { text, title = "Story narration", onWordIndexChange, onPlaybackStateChange },
+    ref
+  ) => {
     const [voiceGender, setVoiceGender] = useState<"female" | "male">(() => {
       try {
         const saved = localStorage.getItem("story-spark-narration-gender");
-        return (saved === "female" || saved === "male") ? saved : "female";
+        return saved === "female" || saved === "male" ? saved : "female";
       } catch {
         return "female";
       }
@@ -83,28 +77,28 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     }, [voiceGender]);
 
     const speech = useSpeechSynthesis(text, voiceGender);
-    const preview = useVoicePreview();
+    // Keep the hooks referenced (they may have side-effects / warmups)
+    useVoicePreview();
     const favorites = useVoiceFavorites();
+
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
- feat/collaboration-1122
     // ✅ FIX: Calculate actual word count from story text
     const actualTotalWords = useMemo(() => getWordCount(text), [text]);
 
-
- main
     const speedSelectId = useId();
     const voiceGenderSelectId = useId();
     const languageSelectId = useId();
     const voiceSelectId = useId();
 
-    const filteredVoices = speech.voices.filter((voice) => voice.lang === speech.selectedLanguage);
-    const voiceOptions = filteredVoices.length > 0 ? filteredVoices : speech.voices;
+    const filteredVoices = speech.voices.filter(
+      (voice) => voice.lang === speech.selectedLanguage
+    );
+    const voiceOptions =
+      filteredVoices.length > 0 ? filteredVoices : speech.voices;
 
     const displayedVoices = useMemo(() => {
-      if (!showFavoritesOnly) {
-        return voiceOptions;
-      }
+      if (!showFavoritesOnly) return voiceOptions;
       return voiceOptions.filter((voice) => favorites.isFavorite(voice.id));
     }, [voiceOptions, showFavoritesOnly, favorites]);
 
@@ -114,7 +108,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
         stop: speech.stop,
         currentWordIndex: speech.currentWordIndex,
       }),
-      [speech.currentWordIndex, speech.stop],
+      [speech.currentWordIndex, speech.stop]
     );
 
     useEffect(() => {
@@ -141,11 +135,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
- feat/collaboration-1122
     }, [showFavoritesOnly, displayedVoices, speech]);
-
-    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
- main
 
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -162,24 +152,30 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
 
         if (event.key === " ") {
           event.preventDefault();
-          if (speech.isPlaying) {
-            speech.pause();
-          } else if (speech.isPaused) {
-            speech.resume();
-          } else {
-            speech.play();
-          }
+          if (speech.isPlaying) speech.pause();
+          else if (speech.isPaused) speech.resume();
+          else speech.play();
         } else if (event.key === "ArrowUp" || event.key === "ArrowRight") {
           event.preventDefault();
-          const currentIndex = SPEED_OPTIONS.indexOf(speech.rate as unknown as typeof SPEED_OPTIONS[number]);
-          if (currentIndex !== -1 && currentIndex < SPEED_OPTIONS.length - 1) {
+          const currentIndex = SPEED_OPTIONS.indexOf(
+            speech.rate as unknown as (typeof SPEED_OPTIONS)[number]
+          );
+          if (
+            currentIndex !== -1 &&
+            currentIndex < SPEED_OPTIONS.length - 1
+          ) {
             speech.setRate(SPEED_OPTIONS[currentIndex + 1]);
           } else if (speech.rate < 2) {
             speech.setRate(Math.min(2, speech.rate + 0.25));
           }
-        } else if (event.key === "ArrowDown" || event.key === "ArrowLeft") {
+        } else if (
+          event.key === "ArrowDown" ||
+          event.key === "ArrowLeft"
+        ) {
           event.preventDefault();
-          const currentIndex = SPEED_OPTIONS.indexOf(speech.rate as unknown as typeof SPEED_OPTIONS[number]);
+          const currentIndex = SPEED_OPTIONS.indexOf(
+            speech.rate as unknown as (typeof SPEED_OPTIONS)[number]
+          );
           if (currentIndex !== -1 && currentIndex > 0) {
             speech.setRate(SPEED_OPTIONS[currentIndex - 1]);
           } else if (speech.rate > 0.5) {
@@ -189,28 +185,17 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       };
 
       window.addEventListener("keydown", handleKeyDown);
-      return () => {
-        window.removeEventListener("keydown", handleKeyDown);
-      };
-    }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [
+      speech.isPlaying,
+      speech.isPaused,
+      speech.rate,
+      speech.pause,
+      speech.resume,
+      speech.play,
+      speech.setRate,
+    ]);
 
- feat/collaboration-1122
-
-    const scrollToTop = () => {
-      const container = document.querySelector('[role="region"]');
-      if (container) {
-        container.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
-    const scrollToBottom = () => {
-      const container = document.querySelector('[role="region"]');
-      if (container) {
-        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-      }
-    };
-
- main
     const isLoading = speech.isSupported && !speech.isReady;
     const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
 
@@ -222,13 +207,13 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           ? Math.min(speech.currentWordIndex + 1, actualTotalWords)
           : 0;
 
-    // ✅ FIX: Calculate percentage based on actual word count
-    const progressPercentage = actualTotalWords > 0
-      ? Math.round((spokenWordCount / actualTotalWords) * 100)
-      : 0;
+    const progressPercentage =
+      actualTotalWords > 0
+        ? Math.round((spokenWordCount / actualTotalWords) * 100)
+        : 0;
 
-    // ✅ FIX: Use actual total words in progress display
-    const displayTotalWords = actualTotalWords > 0 ? actualTotalWords : speech.progress.totalWords || 0;
+    const displayTotalWords =
+      actualTotalWords > 0 ? actualTotalWords : speech.progress.totalWords || 0;
 
     if (!speech.isSupported) {
       return (
@@ -345,7 +330,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>Progress</span>
-                  {/* ✅ FIX: Display actual word count instead of hardcoded 50 */}
                   <span aria-live="polite">
                     {speech.isPlaying || speech.isPaused ? spokenWordCount : 0} / {displayTotalWords} words
                   </span>
@@ -365,7 +349,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 </div>
               </div>
 
-              {/* Speed Selector */}
               <div className="space-y-2">
                 <label
                   htmlFor={speedSelectId}
@@ -391,7 +374,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 </div>
               </div>
 
-              {/* Voice Gender Selector */}
               <div className="space-y-2">
                 <label
                   htmlFor={voiceGenderSelectId}
@@ -405,7 +387,9 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     aria-label="Voice gender"
                     role="combobox"
                     value={voiceGender}
-                    onChange={(event) => setVoiceGender(event.target.value as "female" | "male")}
+                    onChange={(event) =>
+                      setVoiceGender(event.target.value as "female" | "male")
+                    }
                     className="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                   >
                     <option value="female">Female voice</option>
@@ -414,7 +398,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 </div>
               </div>
 
-              {/* Language Selector */}
               <div className="space-y-2">
                 <label
                   htmlFor={languageSelectId}
@@ -440,7 +423,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                 </div>
               </div>
 
-              {/* Voice Selector */}
               <div className="space-y-2">
                 <label
                   htmlFor={voiceSelectId}
@@ -453,11 +435,14 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                     type="button"
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                     title={showFavoritesOnly ? "Show all voices" : "Show favorites only"}
-                    className={`rounded-xl border px-2.5 py-2.5 text-sm font-semibold transition-all duration-200 ${showFavoritesOnly
+                    className={`rounded-xl border px-2.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
+                      showFavoritesOnly
                         ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
                         : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
-                      }`}
-                    aria-label={showFavoritesOnly ? "Show all voices" : "Show favorites only"}
+                    }`}
+                    aria-label={
+                      showFavoritesOnly ? "Show all voices" : "Show favorites only"
+                    }
                   >
                     <Star className="h-4 w-4" fill={showFavoritesOnly ? "currentColor" : "none"} />
                   </button>
@@ -467,7 +452,9 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                       aria-label="Narration voice"
                       role="combobox"
                       value={speech.selectedVoiceId}
-                      onChange={(event) => speech.setSelectedVoiceId(event.target.value)}
+                      onChange={(event) =>
+                        speech.setSelectedVoiceId(event.target.value)
+                      }
                       className="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20"
                     >
                       {displayedVoices.length === 0 ? (
