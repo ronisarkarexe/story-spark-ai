@@ -16,15 +16,23 @@ router.post("/generate-model", apiRateLimiter, auth(), storyGenerationRateLimite
 
 router.post("/generate-free-model", apiRateLimiter, validateRequest(AIModelValidator.aiModel), freeAiRateLimiter, AiModelController.aiFreeModelGenerate);
 
-// Generate Model Stream - PROTECTED
+// Generate Model Stream - PROTECTED (SSE streaming, token-by-token)
 router.post(
   "/generate-model-stream",
-  apiRateLimiter,
+  aiGenerationRateLimiter,
   auth(),
   storyGenerationRateLimiter,
   validateRequest(AIModelValidator.aiModel),
   checkRequestLimit(),
   AiModelController.aiModelGenerateStream
+);
+
+// Generate Free Model Stream - PUBLIC (guests allowed)
+router.post(
+  "/generate-free-model-stream",
+  validateRequest(AIModelValidator.aiModel),
+  freeAiRateLimiter,
+  AiModelController.aiFreeModelGenerateStream
 );
 
 // ALTERNATE ENDINGS

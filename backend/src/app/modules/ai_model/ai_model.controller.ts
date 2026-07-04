@@ -166,6 +166,67 @@ await runWithQuotaCleanup(guard, async () => {
   }
 });
 });
+
+const aiFreeModelGenerateStream = async (req: Request, res: Response) => {
+  let userId = req.cookies.userId as string | undefined;
+
+  if (!userId) {
+    userId = randomUUID();
+    setGuestUserIdCookie(res, userId);
+  }
+
+  const guard = createGuestQuotaGuard(userId);
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  const controller = new AbortController();
+  let completed = false;
+
+  req.on("close", () => {
+    if (!completed) {
+      controller.abort();
+    }
+  });
+
+  try {
+    await reserveGuestQuota(userId);
+    const { prompt, wordLength = 250, numStories = 2, language = "English", tone, genre } = req.body;
+
+    const stories = await runWithQuotaCleanup(guard, () =>
+      generateWithGeminiStoriesStream(
+        prompt,
+        wordLength,
+        numStories,
+        (chunk: string) => {
+          if (!res.writableEnded) res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+        },
+        controller.signal,
+        language,
+        tone,
+        genre
+      )
+    );
+
+    if (!res.writableEnded) {
+      res.write(`data: ${JSON.stringify({ stories })}\n\n`);
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      completed = true;
+      res.end();
+    }
+  } catch (error: unknown) {
+    await guard.refundOnce();
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (!res.writableEnded) {
+      res.write(`data: ${JSON.stringify({ error: errorMsg })}\n\n`);
+      completed = true;
+      res.end();
+    }
+  }
+};
+
 const aiModelRemix = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body as IRemixPayload;
   const guard = res.locals.quotaRefundGuard;
@@ -388,6 +449,7 @@ export const AiModelController = {
   aiModelAlternateEndings,
   aiFreeModelAlternateEndings,
   aiModelGenerateStream,
+  aiFreeModelGenerateStream,
   aiModelRemix,
   aiFreeModelRemix,
   aiModelTranslate,
