@@ -43,7 +43,7 @@
 <body>
 
     <!-- PARTICLE CANVAS BACKGROUND -->
-    <canvas id="particle-canvas"></canvas>
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
     <!-- MAIN WRAPPER -->
 
@@ -191,7 +191,7 @@
                         <div class="auth-terms">
                             <input id="terms-checkbox" type="checkbox" required>
                             <div class="auth-terms-text">
-                                I agree to the <a onclick="openLegalModal('terms')">Terms</a> and <a onclick="openLegalModal('privacy')">Privacy Policy</a>
+                                I agree to the <a href="javascript:void(0)" onclick="openLegalModal('terms')">Terms</a> and <a href="javascript:void(0)" onclick="openLegalModal('privacy')">Privacy Policy</a>
                             </div>
                         </div>
 
