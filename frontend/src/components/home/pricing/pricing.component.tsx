@@ -268,7 +268,7 @@ const PricingComponent: React.FC = () => {
                 className={`mt-10 w-full rounded-xl px-4 py-4 font-bold uppercase tracking-wide transition-all active:scale-[0.98] ${
                   plan.highlight
                     ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-500 hover:to-indigo-500"
-                    : "bg-blue-600 text-white shadow-lg hover:bg-blue-700"
+                    :  "bg-blue-600 text-white shadow-lg hover:bg-blue-700"
                 }`}
               >
                 {plan.buttonLabel}
@@ -283,8 +283,8 @@ const PricingComponent: React.FC = () => {
             <i className="fa-solid fa-quote-left mb-5 text-4xl text-blue-500" />
 
             <p className="text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-              "This platform reduced our content production time by over 70%.
-              The Pro plan paid for itself within the first week."
+              “This platform reduced our content production time by over 70%.
+              The Pro plan paid for itself within the first week.”
             </p>
 
             <div className="mt-6">
