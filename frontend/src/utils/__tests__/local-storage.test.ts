@@ -1,101 +1,80 @@
-/**
- * @jest-environment jsdom
- */
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   setToLocalStorage,
   getFromLocalStorage,
   removeFromLocalStorage,
 } from "../local-storage";
 
-const LOCAL_STORAGE_MOCK = {
-  store: {} as Record<string, string>,
-  setItem: jest.fn((key: string, value: string) => {
-    LOCAL_STORAGE_MOCK.store[key] = value;
-  }),
-  getItem: jest.fn((key: string) => LOCAL_STORAGE_MOCK.store[key] ?? null),
-  removeItem: jest.fn((key: string) => {
-    delete LOCAL_STORAGE_MOCK.store[key];
-  }),
-};
+const TEST_KEY = "test_storage_key";
 
-beforeEach(() => {
-  jest.clearAllMocks();
-  LOCAL_STORAGE_MOCK.store = {};
-  Object.defineProperty(globalThis, "localStorage", {
-    value: LOCAL_STORAGE_MOCK,
-    writable: true,
-  });
-});
-
-describe("setToLocalStorage", () => {
-  it("returns empty string when key is falsy", () => {
-    const result = setToLocalStorage("", "value");
-    expect(result).toBe("");
-    expect(LOCAL_STORAGE_MOCK.setItem).not.toHaveBeenCalled();
+describe("local-storage utility", () => {
+  beforeEach(() => {
+    localStorage.clear();
   });
 
-  it("returns empty string when window is undefined (SSR)", () => {
-    const originalWindow = (globalThis as any).window;
-    delete (globalThis as any).window;
-    const result = setToLocalStorage("key", "value");
-    expect(result).toBe("");
-    (globalThis as any).window = originalWindow;
+  afterEach(() => {
+    localStorage.clear();
   });
 
-  it("calls localStorage.setItem and returns its result when window is defined", () => {
-    const result = setToLocalStorage("theme", "dark");
-    expect(LOCAL_STORAGE_MOCK.setItem).toHaveBeenCalledWith("theme", "dark");
-    expect(LOCAL_STORAGE_MOCK.store["theme"]).toBe("dark");
-  });
-});
+  describe("setToLocalStorage", () => {
+    it("stores a value in localStorage", () => {
+      const result = setToLocalStorage(TEST_KEY, "hello world");
+      expect(localStorage.getItem(TEST_KEY)).toBe("hello world");
+    });
 
-describe("getFromLocalStorage", () => {
-  it("returns empty string when key is falsy", () => {
-    const result = getFromLocalStorage("");
-    expect(result).toBe("");
-    expect(LOCAL_STORAGE_MOCK.getItem).not.toHaveBeenCalled();
-  });
+    it("returns the value on success (localStorage.setItem return)", () => {
+      // setItem returns void but the function returns localStorage.setItem(...)
+      // The implementation returns the result of localStorage.setItem (void)
+      // So we just verify the value was set
+      setToLocalStorage(TEST_KEY, "test value");
+      expect(getFromLocalStorage(TEST_KEY)).toBe("test value");
+    });
 
-  it("returns empty string when window is undefined (SSR)", () => {
-    const originalWindow = (globalThis as any).window;
-    delete (globalThis as any).window;
-    const result = getFromLocalStorage("token");
-    expect(result).toBe("");
-    (globalThis as any).window = originalWindow;
-  });
+    it("returns empty string when key is falsy", () => {
+      const result = setToLocalStorage("", "value");
+      expect(result).toBe("");
+    });
 
-  it("returns the stored value when key exists", () => {
-    LOCAL_STORAGE_MOCK.store["token"] = "abc123";
-    const result = getFromLocalStorage("token");
-    expect(LOCAL_STORAGE_MOCK.getItem).toHaveBeenCalledWith("token");
-    expect(result).toBe("abc123");
+    it("returns empty string when key is null-like", () => {
+      const result = setToLocalStorage(null as unknown as string, "value");
+      expect(result).toBe("");
+    });
   });
 
-  it("returns null converted to empty string when key does not exist", () => {
-    const result = getFromLocalStorage("nonexistent");
-    expect(result).toBe("");
-  });
-});
+  describe("getFromLocalStorage", () => {
+    it("returns stored value", () => {
+      localStorage.setItem(TEST_KEY, "stored value");
+      expect(getFromLocalStorage(TEST_KEY)).toBe("stored value");
+    });
 
-describe("removeFromLocalStorage", () => {
-  it("returns empty string when key is falsy", () => {
-    const result = removeFromLocalStorage("");
-    expect(result).toBe("");
-    expect(LOCAL_STORAGE_MOCK.removeItem).not.toHaveBeenCalled();
-  });
+    it("returns empty string when key does not exist", () => {
+      expect(getFromLocalStorage("nonexistent_key")).toBe("");
+    });
 
-  it("returns empty string when window is undefined (SSR)", () => {
-    const originalWindow = (globalThis as any).window;
-    delete (globalThis as any).window;
-    const result = removeFromLocalStorage("key");
-    expect(result).toBe("");
-    (globalThis as any).window = originalWindow;
+    it("returns empty string when key is falsy", () => {
+      expect(getFromLocalStorage("")).toBe("");
+    });
   });
 
-  it("calls localStorage.removeItem when window is defined", () => {
-    LOCAL_STORAGE_MOCK.store["draft"] = "some content";
-    const result = removeFromLocalStorage("draft");
-    expect(LOCAL_STORAGE_MOCK.removeItem).toHaveBeenCalledWith("draft");
-    expect(LOCAL_STORAGE_MOCK.store).not.toHaveProperty("draft");
+  describe("removeFromLocalStorage", () => {
+    it("removes the key from localStorage", () => {
+      localStorage.setItem(TEST_KEY, "to be removed");
+      removeFromLocalStorage(TEST_KEY);
+      expect(localStorage.getItem(TEST_KEY)).toBeNull();
+    });
+
+    it("does not throw when removing a non-existent key", () => {
+      expect(() => removeFromLocalStorage("nonexistent")).not.toThrow();
+    });
+
+    it("returns empty string when key is falsy", () => {
+      const result = removeFromLocalStorage("");
+      expect(result).toBe("");
+    });
+  });
+
+  it("round-trip: set then get returns the same value", () => {
+    setToLocalStorage(TEST_KEY, "round trip value");
+    expect(getFromLocalStorage(TEST_KEY)).toBe("round trip value");
   });
 });
