@@ -46,12 +46,20 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
       } else {
         throw new Error("Invalid response format received from backend.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Plot hole analysis error:", err);
-      const errMsg = err.response?.data?.message || err.message || "Failed to analyze story.";
+
+      const errMsg =
+        axios.isAxiosError(err)
+          ? err.response?.data?.message || err.message || "Failed to analyze story."
+          : err instanceof Error
+            ? err.message
+            : "Failed to analyze story.";
+
       setError(errMsg);
       toast.error(errMsg, { id: toastId });
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -76,11 +84,10 @@ export default function PlotHoleAnalyzer({ storyText }: PlotHoleAnalyzerProps) {
           type="button"
           onClick={handleAnalyze}
           disabled={loading || !storyText}
-          className={`rounded-lg px-5 py-2.5 font-semibold text-sm flex items-center gap-2 border transition-all active:scale-95 cursor-pointer ${
-            loading || !storyText
+          className={`rounded-lg px-5 py-2.5 font-semibold text-sm flex items-center gap-2 border transition-all active:scale-95 cursor-pointer ${loading || !storyText
               ? "bg-slate-800 text-slate-500 border-slate-700/50 cursor-not-allowed opacity-50"
               : "bg-purple-700 hover:bg-purple-600 text-white border-purple-600/50 hover:shadow-lg hover:shadow-purple-500/25"
-          }`}
+            }`}
         >
           {loading ? (
             <>
