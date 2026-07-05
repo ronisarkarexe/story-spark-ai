@@ -241,6 +241,9 @@ body::after {
 
 .auth-fields > div {
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .ds-label {
@@ -254,6 +257,9 @@ body::after {
 .ds-input-group {
     position: relative;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .ds-input-icon {
@@ -271,13 +277,15 @@ input[type="text"],
 input[type="email"],
 input[type="password"] {
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     height: var(--ds-input-height);
     border-radius: 14px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: var(--input-bg);
     color: var(--text);
     font-size: 14px;
-    padding: 0 16px 0 46px;
+    padding: 0 46px 0 46px; /* Symmetrical padding prevents text from overlapping icons */
     box-sizing: border-box;
     transition: var(--transition);
 }
