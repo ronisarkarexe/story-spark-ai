@@ -30,6 +30,7 @@
 - [Local Development](#local-development-monorepo)
 - [Environment Variables](#environment-variables)
 - [Minimal Working Example (Story Generation API)](#minimal-working-example-story-generation-api)
+- [API Endpoint Reference](#api-endpoint-reference-)
 - [Troubleshooting 🛠️](#troubleshooting-️)
 - [Contributing 👨‍💻](#contributing-)
 - [Contributors 🤝](#contributors-)
@@ -298,6 +299,81 @@ curl -X POST http://localhost:5000/api/v1/story/generate \
 ```
 
 > ⚠️ **Note (Issue #4238):** The API does not deduplicate in-flight requests. If a user clicks Generate multiple times before a response arrives, each click triggers a separate AI call. Implement a loading/disabled state in your UI to prevent this — see [Known Behavior & UX Notes](#known-behavior--ux-notes-).
+
+---
+
+## API Endpoint Reference 📖
+
+> Resolves Issue [#4832](https://github.com/ronisarkarexe/story-spark-ai/issues/4832). This table gives contributors a single place to see available backend routes, their HTTP methods, and whether a valid `Authorization: Bearer <token>` header is required, so you don't have to dig through `backend/src` to find this out.
+>
+> ⚠️ **Draft reference:** This list was compiled from the features and endpoints already documented above in this README (auth, story generation, bookmarks, reviews, subscriptions, admin). It is a starting point, not a guarantee — please cross-check against the actual route files under `backend/src/**/*.routes.ts` before relying on it, and open a PR to correct/extend this table if you spot a mismatch.
+
+All paths are relative to your API base URL, e.g. `http://localhost:5000/api/v1`.
+
+### 🔐 Auth
+
+| Endpoint | Method | Auth Required | Description |
+|----------|--------|:--------------:|-------------|
+| `/auth/register` | POST | No | Create a new user account with email & password |
+| `/auth/login` | POST | No | Log in with email & password, returns access + refresh tokens |
+| `/auth/google` | POST | No | Log in / sign up via Google OAuth (`GOOGLE_CLIENT_ID`) |
+| `/auth/refresh-token` | POST | No (requires valid refresh token in body/cookie) | Issue a new access token |
+| `/auth/logout` | POST | Yes | Invalidate the current session/refresh token |
+| `/auth/verify-email` | POST | No | Confirm email using the verification link/code sent via `VERIFY_EMAIL` |
+
+### 👤 User
+
+| Endpoint | Method | Auth Required | Description |
+|----------|--------|:--------------:|-------------|
+| `/user/me` | GET | Yes | Get the current logged-in user's profile |
+| `/user/me` | PATCH | Yes | Update profile fields (name, avatar, preferences) |
+| `/user/me` | DELETE | Yes | Delete the current user's account |
+
+### 📝 Story
+
+| Endpoint | Method | Auth Required | Description |
+|----------|--------|:--------------:|-------------|
+| `/story/generate` | POST | Yes | Generate AI story variations from a prompt (see [Minimal Working Example](#-minimal-working-example-story-generation-api)) |
+| `/story/history` | GET | Yes | List the current user's previously generated stories |
+| `/story/:id` | GET | Yes | Get a single story by ID |
+| `/story/:id` | DELETE | Yes | Delete a story from history |
+| `/story/:id/bookmark` | POST | Yes | Bookmark a story |
+| `/story/:id/bookmark` | DELETE | Yes | Remove a bookmark |
+| `/story/bookmarks` | GET | Yes | List all bookmarked stories for the current user |
+| `/story/:id/analysis` | GET | Yes | Get AI-generated summary/critique for a story |
+
+### 🌟 Featured Posts
+
+| Endpoint | Method | Auth Required | Description |
+|----------|--------|:--------------:|-------------|
+| `/featured-posts` | GET | No | List community-curated featured posts |
+| `/featured-posts/:id` | GET | No | Get a single featured post by ID |
+
+### 💬 Reviews
+
+| Endpoint | Method | Auth Required | Description |
+|----------|--------|:--------------:|-------------|
+| `/review` | GET | No | List public user reviews |
+| `/review` | POST | Yes | Submit a new review |
+| `/review/:id` | DELETE | Yes (owner or admin) | Delete a review |
+
+### 💳 Subscription
+
+| Endpoint | Method | Auth Required | Description |
+|----------|--------|:--------------:|-------------|
+| `/subscription/plans` | GET | No | List available subscription plans and pricing |
+| `/subscription/checkout` | POST | Yes | Start a checkout session for a chosen plan |
+| `/subscription/status` | GET | Yes | Get the current user's subscription status |
+| `/subscription/cancel` | POST | Yes | Cancel the current user's active subscription |
+
+### 🛠️ Admin
+
+| Endpoint | Method | Auth Required | Description |
+|----------|--------|:--------------:|-------------|
+| `/admin/users` | GET | Yes (Admin) | List all registered users |
+| `/admin/users/:id` | DELETE | Yes (Admin) | Delete a user account |
+| `/admin/reviews/:id` | DELETE | Yes (Admin) | Moderate/delete a review |
+| `/admin/stats` | GET | Yes (Admin) | Get platform usage statistics |
 
 ---
 
