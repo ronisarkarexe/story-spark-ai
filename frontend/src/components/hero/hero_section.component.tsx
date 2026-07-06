@@ -4,6 +4,10 @@ import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+fix/merge-conflicts
+import AnimatedBook from "../hero/AnimatedBook";
+
+ main
 import Typewriter from "./typewriter.component";
 
 gsap.registerPlugin(useGSAP);
@@ -19,10 +23,16 @@ const containerVariants = {
   },
 };
 
+fix/merge-conflicts
+// ✅ FIXED: Removed duplicate visible property
+const itemVariants: any = {
+  hidden: { opacity: 0, y: 20 },
+
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
 
 
+ main
   visible: {
     opacity: 1,
     y: 0,
@@ -31,7 +41,10 @@ const itemVariants = {
 };
 
 const features = [
+ fix/merge-conflicts
+
 // ... (rest of the features array remains the same)
+ main
   {
     title: "Infinite Variations",
     description: "Generate multiple unique branches of your story from a single starting prompt. Explore every creative possibility.",
@@ -132,7 +145,6 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
         className={`motion-card relative overflow-hidden backdrop-blur-xl border border-slate-200/50 dark:border-white/10 rounded-3xl p-6 sm:p-8 transition-shadow duration-500 shadow-sm group cursor-pointer ${feature.bgClass} hover:shadow-[0_0_40px_rgba(255,255,255,0.12)] h-full w-full box-border`}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-
         <div ref={contentRef} className="relative z-10 pointer-events-none w-full box-border">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-5 sm:mb-6 bg-white/10 shadow-md group-hover:scale-105 transition-transform duration-300 shrink-0">
             {feature.icon}
@@ -288,6 +300,85 @@ const HeroSectionComponent = () => {
 
       <HeroParticles />
 
+ fix/merge-conflicts
+      <div className="relative overflow-hidden" onMouseMove={handleMouseMove}>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">
+          <div className="text-center lg:text-left">
+            <div
+              ref={badgeRef}
+              className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 dark:bg-slate-800/60 border border-blue-400/30 dark:border-blue-500/30 backdrop-blur-md mb-8 shadow-sm cursor-pointer transition-all duration-300"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">StorySparkAI v2.0 is live</span>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none">
+                  Ignite Your Imagination With <br className="hidden sm:block" />
+                  <span className="hero-gradient-text pb-2">
+                    <Typewriter
+                      phrases={[
+                        "AI-Driven Storytelling",
+                        "Creative Story Generation",
+                        "Smart Writing Assistant",
+                      ]}
+                    />
+                  </span>
+                </motion.h1>
+
+                <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
+                  Create, edit, and generate engaging multiple story variations from a single prompt.
+                  Perfect for writers, creators, and enthusiasts exploring the future of fiction.
+                </p>
+
+                <div className="flex-grow flex flex-col items-center justify-center">
+                  <div className="relative max-w-3xl w-full">
+                    <div className="flex flex-wrap items-center justify-center gap-4">
+                      <button
+                        onClick={() => {
+                          setIsNavigating(true);
+                          setTimeout(() => { window.location.href = "/stories"; }, 400);
+                        }}
+                        disabled={isNavigating}
+                        className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/10 transition-all duration-150 flex items-center justify-center gap-2.5 uppercase tracking-wider ${
+                          isNavigating
+                            ? "opacity-75 cursor-not-allowed"
+                            : "hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                        }`}
+                      >
+                        {isNavigating ? (
+                          <>
+                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                            </svg>
+                            <span>Loading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <i className="fa fa-wand-magic-sparkles text-sm"></i>
+                            <span>Get Started</span>
+                          </>
+                        )}
+                      </button>
+                      <Link to="/collab" className="w-full sm:w-auto">
+                        <button className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-white/80 dark:bg-[#111827]/40 backdrop-blur-md border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer uppercase tracking-wider">
+                          <span>✍️</span>
+                          <span>Collab Mode</span>
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-center lg:justify-end">
+                <AnimatedBook />
+
 
       <div className="relative overflow-hidden w-full box-border" onMouseMove={handleMouseMove}>
         <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border">
@@ -336,10 +427,11 @@ const HeroSectionComponent = () => {
                   </button>
                 </Link>
 
+ main
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
           <div className="hero-cursor-stars absolute inset-0" aria-hidden="true">
@@ -355,11 +447,25 @@ const HeroSectionComponent = () => {
       </div>
 
 
+ fix/merge-conflicts
+        <motion.div
+          variants={itemVariants}
+          className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-28 w-full box-border"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full box-border">
+            {features.map((feature, index) => (
+              <FeatureCard feature={feature} key={index} />
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
           {features.map((feature, index) => (
             <FeatureCard feature={feature} key={index} />
           ))}
         </div>
       </motion.div>
+ main
     </motion.div>
   );
 };

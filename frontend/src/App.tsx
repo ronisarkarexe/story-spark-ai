@@ -86,6 +86,11 @@ const router = createBrowserRouter([
       </>
     ),
     children: [
+ fix/merge-conflicts
+ fix/dynamic-page-titles
+
+
+ main
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
       { path: "templates", element: lazyPage(<TemplatesComponent />) },
       { path: "create", element: <Navigate to="/stories" replace /> },
@@ -163,6 +168,10 @@ const router = createBrowserRouter([
     path: "/dashboard",
     element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
     children: [
+ fix/merge-conflicts
+ main
+
+ main
       {
         path: "/",
         element: (
