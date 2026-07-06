@@ -1,4 +1,4 @@
-﻿import {
+import {
   GoogleGenerativeAI,
   HarmCategory,
   HarmBlockThreshold,
@@ -8,10 +8,11 @@ import { generateStoryboardImage } from "../../../utils/storyboard_image_generat
 import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
-import { IAlternateEnding, ICharacter } from "./ai_model.interface";
+import { IAlternateEnding, ICharacter, ICharacterProfile } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
 import { sanitizeJsonText } from "../../../utils/promptSecurity";
+export { sanitizeJsonText };
 import type {
   IStoryVisualizerPayload,
   IStoryVisualizerResult,
@@ -25,6 +26,7 @@ import {
   ContinuationResponseSchema,
   TranslationResponseSchema,
   StoryboardResponseSchema,
+  CharacterProfilesArraySchema,
 } from "../ai";
 
 const geminiApiKey = config.gemini_api_key?.trim() ?? "";
@@ -145,11 +147,6 @@ const buildCharactersInstruction = (characters?: ICharacter[]): string => {
   return `Cast of Characters (You MUST incorporate these characters into all generated stories and maintain their roles, relationship dynamics, and traits consistently):\n${charsString}\n\n`;
 };
 
-const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) return trimmed;
-  return trimmed.replace(/^```(json)?/, "").replace(/```$/, "").trim();
-};
 
 import { GenerativeModel } from "@google/generative-ai";
 
@@ -899,3 +896,61 @@ Return only valid JSON with this exact structure:
     );
   }
 }
+
+export async function generateCharacterProfilesWithGemini(
+  story: string,
+  signal?: AbortSignal,
+): Promise<ICharacterProfile[]> {
+  throwIfAborted(signal);
+  assertGeminiApiKeyConfigured();
+
+  try {
+    const response = await executeWithRetryAndFallback(async (activeModel) => {
+      const chatSession = activeModel.startChat({
+        generationConfig,
+        safetySettings,
+        history: [],
+      });
+      return chatSession.sendMessage(
+        `You are a professional narrative editor and character analyst. Analyze the following story and extract profiles for all characters in it.
+        
+        Story Content:
+        "${story}"
+        
+        For each character, extract and provide:
+        - "name": The character's name.
+        - "role": The character's role in the story (e.g., Protagonist, Antagonist, Supporting, Mentor).
+        - "personality": A brief description of the character's personality and traits.
+        - "strengths": An array of strings describing the character's key strengths.
+        - "weaknesses": An array of strings describing the character's main weaknesses.
+        - "relationships": A brief description of the character's relationships with other characters in the story.
+        
+        Return the output as a JSON array of objects with the fields: "name", "role", "personality", "strengths", "weaknesses", and "relationships".`,
+        { signal },
+      );
+    }, signal);
+
+    throwIfAborted(signal);
+    const text = response.response.text();
+
+    const profiles = safeParseAIResponse(
+      text,
+      CharacterProfilesArraySchema,
+      [] as ICharacterProfile[],
+      { label: "Gemini character profile generation" }
+    );
+
+    return profiles;
+  } catch (error: unknown) {
+    if (error instanceof ApiError || error instanceof GenerationAbortedError) {
+      throw error;
+    }
+
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.BAD_GATEWAY,
+      `AI character profile generation failed: ${errorMsg}`,
+    );
+  }
+}
+

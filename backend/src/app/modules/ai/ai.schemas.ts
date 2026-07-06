@@ -159,3 +159,19 @@ export const EngagementAnalysisResponseSchema = z.object({
 });
 
 export type EngagementAnalysisResponse = z.infer<typeof EngagementAnalysisResponseSchema>;
+
+// ─── Character Profiles ──────────────────────────────────────────────────────
+
+export const CharacterProfileSchema = z.object({
+  name: z.string().min(1),
+  role: z.string().min(1),
+  personality: z.string().min(1),
+  strengths: z.array(z.string().min(1)),
+  weaknesses: z.array(z.string().min(1)),
+  relationships: z.string().min(1),
+});
+
+export type CharacterProfileResponse = z.infer<typeof CharacterProfileSchema>;
+
+export const CharacterProfilesArraySchema = z.array(CharacterProfileSchema);
+

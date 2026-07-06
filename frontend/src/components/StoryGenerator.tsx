@@ -1,5 +1,5 @@
 // frontend/src/components/StoryGenerator.tsx
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import api from '../services/api';
 
 interface StoryGeneratorProps {
@@ -16,13 +16,14 @@ export const StoryGenerator: React.FC<StoryGeneratorProps> = ({ onStoryGenerated
   const [stories, setStories] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   // Derived values used both in JSX and inside handleGenerate
   const trimmedPrompt = prompt.trim();
   const promptLength = trimmedPrompt.length;
   const isPromptInvalid =
     promptLength < MIN_PROMPT_LENGTH || promptLength > MAX_PROMPT_LENGTH;
 
-  const abortControllerRef = useRef<AbortController | null>(null);
   const handleGenerate = async () => {
 
     // trimmedPrompt and promptLength are already derived at component scope above

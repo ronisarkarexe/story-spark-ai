@@ -4,6 +4,15 @@ export interface ICharacter {
   personality: string;
 }
 
+export interface ICharacterProfile {
+  name: string;
+  role: string;
+  personality: string;
+  strengths: string[];
+  weaknesses: string[];
+  relationships: string;
+}
+
 export interface IAIModel {
   prompt: string;
   wordLength: number;
