@@ -46,39 +46,42 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
             </button>
           );
         })}
-    <div
-      role="radiogroup"
-      aria-label="Star rating"
-      tabIndex={0}
-      onKeyDown={handleKey}
-      className="space-y-2"
-    >
-      <div className="flex gap-2">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            aria-pressed={rating === star}
-            aria-label={`Rate ${star} star`}
-            onClick={() => setRating(star)}
-            onMouseEnter={() => setHovered(star)}
-            onMouseLeave={() => setHovered(0)}
-            className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none ${
-              star <= (hovered || rating)
-                ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]"
-                : "text-gray-600"
-            }`}
-          >
-            ★
-          </button>
-        ))}
       </div>
 
-      {(hovered || rating) > 0 && (
-        <p className="text-sm font-semibold tracking-[0.2em] text-amber-300">
-          {ratingLabels[hovered || rating]}
-        </p>
-      )}
+      <div
+        role="radiogroup"
+        aria-label="Star rating"
+        tabIndex={0}
+        onKeyDown={handleKey}
+        className="space-y-2"
+      >
+        <div className="flex gap-2">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              aria-pressed={rating === star}
+              aria-label={`Rate ${star} star`}
+              onClick={() => setRating(star)}
+              onMouseEnter={() => setHovered(star)}
+              onMouseLeave={() => setHovered(0)}
+              className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none ${
+                star <= (hovered || rating)
+                  ? "text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]"
+                  : "text-gray-600"
+              }`}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+
+        {(hovered || rating) > 0 && (
+          <p className="text-sm font-semibold tracking-[0.2em] text-amber-300">
+            {ratingLabels[hovered || rating]}
+          </p>
+        )}
+      </div>
     </div>
   );
 };
@@ -280,8 +283,6 @@ const ReviewForm: React.FC = () => {
             {/* Rating */}
             <div>
               <label className="mb-2 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-200">
-            <div className="pb-8">
-              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                 <span className="text-blue-400">⭐</span>
                 Your Rating
                 <span className="text-rose-400">*</span>
@@ -303,8 +304,7 @@ const ReviewForm: React.FC = () => {
               )}
             </div>
 
-            <div className="mt-6 flex justify-center">
-            <div className="flex justify-center mt-8 pb-2 sm:pb-0">
+            <div className="mt-8 flex justify-center pb-2 sm:pb-0">
               <button
                 type="button"
                 onClick={handleSubmit}
