@@ -6,7 +6,7 @@ const NotificationSchema: Schema<INotification> = new Schema<
   NotificationModel
 >(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     type: { type: String, required: true },
     title: { type: String, required: true },
     body: { type: String, required: true },
