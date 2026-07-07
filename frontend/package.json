@@ -69,10 +69,6 @@
     "@tailwindcss/forms": "^0.5.11",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
- feat/collaboration-1122
-
-    "@tailwindcss/container-queries": "^0.1.1",
- main
     "@types/canvas-confetti": "^1.9.0",
     "@types/d3": "^7.4.3",
     "@types/dompurify": "^3.0.5",
