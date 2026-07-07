@@ -6,6 +6,16 @@
 import { fetchImageURL } from "../../../utils/image_generation";
 import { generateStoryboardImage } from "../../../utils/storyboard_image_generation";
 import { GenerationAbortedError } from "../../../utils/generation_timeout";
+
+
+const sanitizeJsonText = (text: string): string => {
+  if (!text) return "";
+  let clean = text.replace(/```(?:json)?/g, "").trim();
+  if (clean.startsWith("{") || clean.startsWith("[")) return clean;
+  const match = clean.match(/(\{.*\}|\[.*\])/s);
+  return match ? match[0] : clean;
+};
+
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";

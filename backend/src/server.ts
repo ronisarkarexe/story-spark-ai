@@ -26,7 +26,9 @@ async function connectDB() {
   if (mongoose.connection.readyState === 1) return;
   // config.database_url is guaranteed non-empty by config/index.ts – if it throws at
   // module load time if DATABASE_URL is missing, so no runtime guard is needed here
-  await mongoose.connect(config.database_url as string);
+  await mongoose.connect(config.database_url as string, {
+    serverSelectionTimeoutMS: 5000,
+  });
 }
 
 async function main() {
@@ -61,9 +63,10 @@ async function main() {
 
   try {
     await connectDB();
+    logger.info('✅ Successfully connected to MongoDB.');
   } catch (startupError) {
-    logger.error("Critical error during application startup:", startupError);
-    process.exit(1);
+    logger.warn('⚠️ WARNING: Failed to connect to MongoDB. Server will start in degraded mode. Some features may fail.');
+    logger.error(startupError);
   }
 
   const httpServer = http.createServer(app);

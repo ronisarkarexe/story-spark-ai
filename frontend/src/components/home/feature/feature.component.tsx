@@ -150,7 +150,8 @@ const FeatureComponent = () => {
                       >
                         <BookmarkButton
                           storyId={post._id}
-                          className="p-1.5 rounded-full hover:bg-slate-700/40 text-slate-400 hover:text-purple-400 transition-colors"
+                          story={post}
+                          className="w-12 h-12 !rounded-full border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shadow-sm bg-white dark:bg-gray-900"
                         />
                       </div>
                     </div>
