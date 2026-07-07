@@ -16,7 +16,10 @@ import StoryVersionHistory from "./StoryVersionHistory";
 import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
 import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
+import { useAntiGravityScroll } from "../../hooks/useAntiGravityScroll";
+import { useCreatePostMutation, useDeletePostMutation } from "../../redux/apis/post.api";
+import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
+import { getServerDateString } from "../../utils/getServerDate";
 import jsPDF from "jspdf";
 import StoryTranslator from "./translate/StoryTranslator";
 import toast, { Toaster } from "react-hot-toast";
@@ -135,7 +138,44 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     if (stories && stories.length > 0) {
       setSelectedStory(stories[0]);
     }
-  }, [stories]);
+    lastSavedContentRef.current = "";
+    hasSavedSessionRef.current = false;
+    savedPostIdRef.current = null;
+  }, [stories, dispatch]);
+
+  useEffect(() => {
+    if(!selectedStory) return;
+
+    const updateStreak = async () => {
+      const today = await getServerDateString();
+      const lastReadDate = localStorage.getItem("lastReadDate");
+      const streak = Number(localStorage.getItem("readingStreak") || "0");
+
+      if (lastReadDate !== today) {
+        const servernow = new Date(today);
+        const yesterday = new Date(servernow);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const newStreak = lastReadDate === yesterday.toDateString()
+        ? streak + 1
+        : 1;
+      
+        localStorage.setItem("readingStreak", String(newStreak));
+        localStorage.setItem("lastReadDate", today);
+        setReadingStreak(newStreak);
+      } else {
+      setReadingStreak(streak);
+    }
+  };
+  updateStreak();
+},  [selectedStory]);
+
+  useEffect(() => {
+    const autoSaveStory = async () => {
+      if (!isLogin || !selectedStory) return;
+      if (selectedStory.content === lastSavedContentRef.current) return;
+      if (hasSavedSessionRef.current) return;
+      if (isSavingRef.current) return;
 
 useEffect(() => {
   const autoSaveStory = async () => {
