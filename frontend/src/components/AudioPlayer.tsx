@@ -18,7 +18,11 @@ import {
   Star,
   Volume2,
   Volume,
+ fix/audio-word-count-1214
+ fix/audio-word-count-1214
+
  feat/collaboration-1122
+ main
   ChevronUp,
   ChevronDown,
 
@@ -87,7 +91,11 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
+ fix/audio-word-count-1214
+fix/audio-word-count-1214
+
  feat/collaboration-1122
+ main
     // ✅ FIX: Calculate actual word count from story text
     const actualTotalWords = useMemo(() => getWordCount(text), [text]);
 
@@ -141,7 +149,11 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
+ fix/audio-word-count-1214
+ fix/audio-word-count-1214
+
  feat/collaboration-1122
+ main
     }, [showFavoritesOnly, displayedVoices, speech]);
 
     }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
@@ -194,8 +206,12 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       };
     }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
 
- feat/collaboration-1122
+ fix/audio-word-count-1214
+ fix/audio-word-count-1214
+        
 
+ feat/collaboration-1122
+main
     const scrollToTop = () => {
       const container = document.querySelector('[role="region"]');
       if (container) {
@@ -210,6 +226,10 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       }
     };
 
+ fix/audio-word-count-1214
+main
+
+ main
  main
     const isLoading = speech.isSupported && !speech.isReady;
     const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
