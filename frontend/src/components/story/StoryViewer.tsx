@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Chapter } from "../../types/story.types";
 import ReadingTimeBadge from "../ReadingTimeBadge";
-import toast from "react-hot-toast";
-import jsPDF from "jspdf";
-import { AudioPlayer } from "../AudioPlayer";
+
 
 interface Props {
   chapters: Chapter[];
@@ -65,21 +63,7 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
     setShowResumeBanner(false);
   };
 
-  const handleShare = async () => {
-    const url = window.location.href;
-    const title = document.title || "StorySparkAI Story";
 
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, url });
-      } catch {
-        // user cancelled share dialog
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard!");
-    }
-  };
 
   const handleExportPDF = () => {
     if (!chapters || chapters.length === 0) {

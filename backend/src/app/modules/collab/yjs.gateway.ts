@@ -2,12 +2,14 @@ import { Server, Socket, Namespace } from 'socket.io';
 import * as Y from 'yjs';
 import { CollabService } from './collab.service';
 
-function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {
-  let timeout: NodeJS.Timeout | null;
-  return function(this: any, ...args: any[]) {
+function debounce(func: (...args: any[]) => void, wait: number) {
+  let timeout: NodeJS.Timeout | null = null;
+  return (...args: any[]) => {
     if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  } as T;
+    timeout = setTimeout(() => {
+      func(...args);
+    }, wait);
+  };
 }
 
 /**
@@ -15,7 +17,7 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T 
  * and persists the document state to MongoDB.
  */
 export class YjsGateway {
-  private readonly io: Namespace;
+  private readonly io: any;
   private readonly docs: Map<string, Y.Doc> = new Map();
   private readonly debouncedSaves: Map<string, () => void> = new Map();
   private readonly saveDelay = 2000; // ms

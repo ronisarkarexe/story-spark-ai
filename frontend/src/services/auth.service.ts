@@ -67,10 +67,23 @@ export const getValidDecodedToken = () => {
         return null;
       }
 
-      if (
-        typeof decodedData.exp === "number" &&
-        decodedData.exp <= Math.floor(Date.now() / 1000)
-      ) {
+      const userId = decodedData.userId || decodedData._id;
+      if (!userId) {
+        removeFromLocalStorage(AUTH_KEY);
+        return null;
+      }
+
+      if (!decodedData.role || (decodedData.role !== "user" && decodedData.role !== "admin")) {
+        removeFromLocalStorage(AUTH_KEY);
+        return null;
+      }
+
+      if (typeof decodedData.exp !== "number" || typeof decodedData.iat !== "number") {
+        removeFromLocalStorage(AUTH_KEY);
+        return null;
+      }
+
+      if (decodedData.exp <= Math.floor(Date.now() / 1000)) {
         removeFromLocalStorage(AUTH_KEY);
         return null;
       }
@@ -78,12 +91,12 @@ export const getValidDecodedToken = () => {
       return buildUserInfo({
         email: decodedData.email ?? "",
         role: decodedData.role ?? "",
-        userId: decodedData.userId ?? decodedData._id ?? "",
+        userId: userId,
         name: decodedData.name ?? "",
         postsCount: decodedData.postsCount ?? 0,
         subscriptionType: decodedData.subscriptionType ?? "free",
-        exp: decodedData.exp ?? 0,
-        iat: decodedData.iat ?? 0,
+        exp: decodedData.exp,
+        iat: decodedData.iat,
       });
     } catch (error) {
       console.error("Invalid auth token:", error);

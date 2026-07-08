@@ -23,7 +23,7 @@ export function getErrorMessage(error: unknown): string {
   return "An unexpected error occurred. Please try again.";
 }
 
-export const getGenreTheme = (tag: string) => {
+export const getGenreTheme = () => {
   return { gradient: "45deg, #1e1b4b, #311042", accent: "#a855f7", icon: "✨" };
 };
 

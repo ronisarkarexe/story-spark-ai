@@ -30,8 +30,20 @@ const analyzeStory = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const detectGenderBias = catchAsync(async (req: Request, res: Response) => {
+  const { content } = req.body;
+  const result = await AnalysisService.detectGenderBias(content);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Gender bias analysis completed successfully!",
+    data: result,
+  });
+});
+
 export const AnalysisController = {
   getDashboardAnalysis,
   analyzeStory,
+  detectGenderBias,
 };
 

@@ -1,9 +1,24 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import path from "path";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      yjs: path.resolve(__dirname, "../node_modules/yjs"),
+    },
+  },
   plugins: [react(), tailwindcss()],
+  test: {
+    globals: true,
+    environment: "jsdom",
+    server: {
+      deps: {
+        inline: ["yjs"],
+      },
+    },
+  },
   server: {
     port: 4001,
     headers: {
