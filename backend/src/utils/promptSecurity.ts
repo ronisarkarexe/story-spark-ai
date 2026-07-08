@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Security middleware to prevent prompt injection and jailbreaks.
  * Improvements:
  * - Input normalization before pattern matching
@@ -62,11 +62,8 @@ const normalizeInput = (input: string): string => {
  */
 export const sanitizeJsonText = (rawText: string): string => {
   const trimmed = rawText.trim();
-  return (input ?? "")
-    .normalize("NFKC")
-    .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
-    .replace(/[\s\u00A0]+/g, " ")
-    .trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed.replace(/^```(json)?/, "").replace(/```$/, "").trim();
 };
 
 export const validateAndFormatPrompt = (userPrompt: string): string => {
