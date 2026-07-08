@@ -6,6 +6,7 @@ import ApiError from "../../errors/api_error";
 import { JwtHelpers } from "../../utils/jwt.helper";
 import { User } from "../modules/user/user.model";
 import { USER_STATUS } from "../../enums/user_status";
+import { TokenBlacklist } from "../modules/auth/tokenBlacklist.model";
 
 type JwtVerifiedUser = {
   _id: string;
@@ -58,6 +59,15 @@ const auth =
         throw new ApiError(
           httpStatus.UNAUTHORIZED,
           "Invalid token"
+        );
+      }
+
+      // Ensure this exact token string is not blacklisted
+      const blacklisted = await TokenBlacklist.findOne({ token }).lean();
+      if (blacklisted) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Token has been revoked. Please log in again."
         );
       }
 
