@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { getToken } from "../../services/auth.service";
@@ -50,9 +50,6 @@ export default function CollabRoom() {
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
-  
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isTypingRef = useRef(false);
   const user = getUserInfo();
 
   useEffect(() => {

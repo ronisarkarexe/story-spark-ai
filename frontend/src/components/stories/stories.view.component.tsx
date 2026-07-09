@@ -4,18 +4,10 @@ import {
   getShortenedText,
   ITopicData,
   topicsData,
-  getWordCount,
-  SELECTED_TOPIC_CLASSES,
 } from "./stories.utils";
-import { calculateReadingTime } from "../../utils/reading-time";
-import { formatReadingStats } from "../../utils/story-utils";
 import CharacterProfileCard from "./CharacterProfileCard";
 import { CharacterProfile } from "./stories.utils";
-import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
-import StoryTranslator from "../translate/StoryTranslator";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
@@ -277,6 +269,7 @@ const handleGenerateCharacterProfile = async () => {
         toast.success("Story published successfully!");
         setStories([]);
         setSelectedStory(null);
+        onPublishSuccess?.();
       }
     } catch {
       toast.error("Something went wrong. Please try again.");

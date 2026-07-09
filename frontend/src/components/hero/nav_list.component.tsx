@@ -3,15 +3,13 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
-import { ArrowRight, Menu, Sparkles, X } from "lucide-react";
-import { useTheme } from "../theme/theme.context";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 const NavListComponent = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
-  const { glowEnabled, toggleGlow } = useTheme();
 
 
   const handleLogout = () => {

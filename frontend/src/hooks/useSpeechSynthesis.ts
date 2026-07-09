@@ -318,7 +318,7 @@ export const useSpeechSynthesis = (
       synthRef.current.speak(utterance);
       setCurrentWordIndex(0);
     },
-    [browserVoices, isSupported, rateState, pitchState, volumeState, selectedVoiceId, selectedLanguage, stop, resolveBrowserVoice],
+    [isSupported, rateState, pitchState, volumeState, selectedVoiceId, selectedLanguage, stop, resolveBrowserVoice],
   );
 
   const pause = useCallback(() => {
