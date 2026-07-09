@@ -26,7 +26,7 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }
   }
 };
 
@@ -350,11 +350,11 @@ const HeroSectionComponent = () => {
                 style={{ left: star.x, top: star.y, width: star.size, height: star.size }}
               />
             ))}
-          </div>
         </div>
       </div>
-
-
+    </div>
+    <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <FeatureCard feature={feature} key={index} />
           ))}

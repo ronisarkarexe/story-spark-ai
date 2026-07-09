@@ -5,6 +5,7 @@ import {
   useGetCommentsListQuery,
   useToggleCommentLikeMutation,
   useDeleteCommentMutation,
+  useToggleCommentHelpfulMutation,
   useReportCommentMutation,
 } from "../../redux/apis/comment";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";

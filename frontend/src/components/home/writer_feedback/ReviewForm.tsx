@@ -3,12 +3,13 @@ import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
 
-type StarRatingProps = {
+const StarRating = ({
+  rating,
+  setRating,
+}: {
   rating: number;
   setRating: (n: number) => void;
-};
-
-const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
+}) => {
   const [hovered, setHovered] = useState(0);
 
   const handleKey = useCallback(
@@ -59,14 +60,13 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
   );
 };
 
-const ReviewForm: React.FC = () => {
+const ReviewForm = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
-  const [isDark, setIsDark] = useState(false);
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
@@ -80,28 +80,35 @@ const ReviewForm: React.FC = () => {
     return newErrors;
   }, [name, role, feedback, rating]);
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = async () => {
     const newErrors = validate();
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      setSuccess(false);
       return;
     }
 
     try {
-      await createReview({ name, role, feedback, rating, imgSrc: "" });
+      await createReview({
+        name,
+        role,
+        feedback,
+        rating,
+        imgSrc: "",
+      });
+
       setSuccess(true);
       setName("");
       setRole("");
       setFeedback("");
       setRating(0);
       setErrors({});
-    } catch (err) {
-      // keep error message generic
-      setErrors({ submit: "Failed to submit review. Please try again." });
-      setSuccess(false);
+    } catch {
+      setErrors({
+        submit: "Failed to submit review. Please try again.",
+      });
     }
-  }, [createReview, name, role, feedback, rating, validate]);
+  };
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -125,6 +132,29 @@ const ReviewForm: React.FC = () => {
               Your feedback helps us improve StorySparkAI for everyone.
             </p>
           </div>
+          {/* Success */}
+          {success && (
+            <div
+              aria-live="polite"
+              className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400 transition-all duration-300"
+            >
+              <span className="text-lg">🎉</span>
+              <span>
+                Thank you! Your review has been submitted for approval.
+              </span>
+            </div>
+          )}
+
+          {/* Error */}
+          {errors.submit && (
+            <div
+              aria-live="polite"
+              className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
+            >
+              <span className="text-lg">⚠️</span>
+              <span>{errors.submit}</span>
+            </div>
+          )}
 
           <div className="space-y-6">
             {/* Name */}

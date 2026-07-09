@@ -302,42 +302,42 @@ const SignUpComponent = () => {
               Join StorySparkAI and begin your creative journey.
             </p>
           )}
-            {!showOtpField && (
-              <div className="relative mb-6 w-full box-border">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
-                    SIGN UP WITH EMAIL
-                  </span>
-                </div>
+          {!showOtpField && (
+            <div className="relative mb-6 w-full box-border">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-700/50" />
               </div>
-            )}
+              <div className="relative flex justify-center text-xs">
+                <span className="px-4 bg-white dark:bg-slate-800 text-slate-400 font-semibold tracking-wide rounded-md">
+                  SIGN UP WITH EMAIL
+                </span>
+              </div>
+            </div>
+          )}
 
-            {!showOtpField ? (
-              <form className="flex flex-col w-full min-w-0 gap-5 box-border" onSubmit={handleSubmit(onSubmit)}>
+          {!showOtpField ? (
+            <form className="flex flex-col w-full min-w-0 gap-5 box-border" onSubmit={handleSubmit(onSubmit)}>
 
-                <div className="w-full block">
-                  <SSInput
-                    label="Name"
-                    name="name"
-                    placeholder="Enter your name"
-                    required={true}
-                    icon="fi fi-rr-user"
-                    register={register}
-                    autoComplete="name"
-                    validation={{
-                      required: "Name is required",
-                      minLength: { value: 2, message: "Name must be at least 2 characters" },
-                      pattern: {
-                        value: /^[A-Za-z0-9\s._]+$/,
-                        message: "Only letters, numbers, spaces, underscores, and dots are allowed",
-                      },
-                    }}
-                    error={errors.name}
-                  />
-                </div>
+              <div className="w-full block">
+                <SSInput
+                  label="Name"
+                  name="name"
+                  placeholder="Enter your name"
+                  required={true}
+                  icon="fi fi-rr-user"
+                  register={register}
+                  autoComplete="name"
+                  validation={{
+                    required: "Name is required",
+                    minLength: { value: 2, message: "Name must be at least 2 characters" },
+                    pattern: {
+                      value: /^[A-Za-z0-9\s._]+$/,
+                      message: "Only letters, numbers, spaces, underscores, and dots are allowed",
+                    },
+                  }}
+                  error={errors.name}
+                />
+              </div>
 
                 <div className="w-full block">
                   <SSInput
@@ -406,7 +406,7 @@ const SignUpComponent = () => {
                     register={register}
                     autoComplete="new-password"
                     validation={{
-                      validate: (value: any) => {
+                      validate: (value: string) => {
                         if (showOtpField) return true;
                         if (!value) return "Confirm password is required";
                         if (value !== password) return "Passwords do not match!";

@@ -2,7 +2,8 @@ import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
 import { USER_ROLE } from "./constants/role";
 
-// Eagerly loaded layouts, utilities, and components
+import RootLayout from "./components/layout/root_layout.component";
+import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import LoadingAnimation from "./components/loading/loading.component";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFoundComponent from "./components/not-found.component";
@@ -14,13 +15,9 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import PageTitleUpdater from "./components/PageTitleUpdater";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import ThemeSwitcher from "./components/theme-switcher/ThemeSwitcher";
-import RootLayout from "./components/layout/root_layout.component";
-import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 
-type ProtectedRouteProps = {
-  allowedRoles: string[];
-  element?: React.ReactElement;
-};
+
+
 
 // Lazy-loaded page components
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
@@ -33,15 +30,15 @@ const PricingComponent = lazy(() => import("./components/pricing/pricing.compone
 const PostDetailsComponent = lazy(() => import("./components/post/post.details.component"));
 const PublicProfileComponent = lazy(() => import("./components/profile/public_profile.component"));
 const Contact = lazy(() => import("./components/contactus/contactus"));
-const AboutUsComponent = lazy(() => import("./components/footer/about-us.tsx"));
-const CareerComponent = lazy(() => import("./components/footer/career.tsx"));
-const BlogComponent = lazy(() => import("./components/footer/blog.tsx"));
-const PrivacyPolicy = lazy(() => import("./components/footer/Privacy.tsx"));
-const CookiePolicy = lazy(() => import("./components/footer/cookie-policy.tsx"));
-const Terms = lazy(() => import("./components/footer/terms.tsx"));
+const AboutUsComponent = lazy(() => import("./components/footer/about-us"));
+const CareerComponent = lazy(() => import("./components/footer/career"));
+const BlogComponent = lazy(() => import("./components/footer/blog"));
+const PrivacyPolicy = lazy(() => import("./components/footer/Privacy"));
+const CookiePolicy = lazy(() => import("./components/footer/cookie-policy"));
+const Terms = lazy(() => import("./components/footer/terms"));
 const HelpCenterComponent = lazy(() => import("./components/help_center/help_center.component"));
-const GuidelinesComponent = lazy(() => import("./components/footer/guidelines.tsx"));
-const ContributorsComponent = lazy(() => import("./components/footer/contributors.tsx"));
+const GuidelinesComponent = lazy(() => import("./components/footer/guidelines"));
+const ContributorsComponent = lazy(() => import("./components/footer/contributors"));
 const ReportBug = lazy(() => import("./components/report-bug/ReportBug"));
 const ExploreComponent = lazy(() => import("./components/post/post.component"));
 const BookmarksComponent = lazy(() => import("./components/post/bookmarks.component"));
@@ -65,6 +62,7 @@ const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
+const SearchPageComponent = lazy(() => import("./pages/analytics/SearchPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
@@ -89,26 +87,6 @@ const router = createBrowserRouter([
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
       { path: "templates", element: lazyPage(<TemplatesComponent />) },
       { path: "create", element: <Navigate to="/stories" replace /> },
-      { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES}><WritingAssistantComponent /></ProtectedRoute>, },
-      { path: "story-inspiration", element: <StoryInspirationWrapper /> },
-      { path: "login", element: <LoginComponent /> },
-      { path: "signup", element: <SignUpComponent /> },
-      { path: "forgot-password", element: <ForgotPasswordComponent /> },
-      { path: "pricing", element: <PricingComponent /> },
-      { path: "post/:id", element: <PostDetailsComponent /> },
-      { path: "profile/:id", element: <PublicProfileComponent /> },
-      { path: "collections/:id", element: lazyPage(<CollectionPage />) },
-      { path: "contact-us", element: <Contact /> },
-      { path: "about-us", element: <AboutUsComponent /> },
-      { path: "career", element: <CareerComponent /> },
-      { path: "blog", element: <BlogComponent /> },
-      { path: "privacy-policy", element: <PrivacyPolicy /> },
-      { path: "cookie-policy", element: <CookiePolicy /> },
-      { path: "terms", element: <Terms /> },
-      { path: "help-center", element: <HelpCenterComponent /> },
-      { path: "guidelines", element: <GuidelinesComponent /> },
-      
-      { path: "contributors", element: <ContributorsComponent /> },
       { path: "writing-assistant", element: <ProtectedRoute allowedRoles={ALL_ROLES}>{lazyPage(<WritingAssistantComponent />)}</ProtectedRoute> },
       { path: "story-inspiration", element: lazyPage(<StoryInspirationWrapper />) },
       { path: "login", element: lazyPage(<LoginComponent />) },
@@ -117,6 +95,7 @@ const router = createBrowserRouter([
       { path: "pricing", element: lazyPage(<PricingComponent />) },
       { path: "post/:id", element: lazyPage(<PostDetailsComponent />) },
       { path: "profile/:id", element: lazyPage(<PublicProfileComponent />) },
+      { path: "collections/:id", element: lazyPage(<CollectionPage />) },
       { path: "contact-us", element: lazyPage(<Contact />) },
       { path: "about-us", element: lazyPage(<AboutUsComponent />) },
       { path: "career", element: lazyPage(<CareerComponent />) },

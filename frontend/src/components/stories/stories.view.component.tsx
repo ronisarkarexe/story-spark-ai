@@ -1,30 +1,18 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
+import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
 import {
   getShortenedText,
   ITopicData,
   topicsData,
-  getWordCount,
-  SELECTED_TOPIC_CLASSES,
 } from "./stories.utils";
-import { calculateReadingTime } from "../../utils/reading-time";
-import { formatReadingStats } from "../../utils/story-utils";
 import CharacterProfileCard from "./CharacterProfileCard";
-import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
+import { CharacterProfile } from "./stories.utils";
 import StoryVersionHistory from "./StoryVersionHistory";
-import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
-import { formatReadingStats } from "../../utils/story-utils";
-import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
-import jsPDF from "jspdf";
-import StoryTranslator from "./translate/StoryTranslator";
-import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
-import jsPDF from "jspdf";
-import StoryTranslator from "../translate/StoryTranslator";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
+import { useCreatePostMutation } from "../../redux/apis/post.api";
+import jsPDF from "jspdf";
 
 export interface IStories {
   uuid: string;
@@ -85,12 +73,16 @@ interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
+  isLoading?: boolean;
+  onPublishSuccess?: () => void;
 }
 
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
   setStories,
+  isLoading,
+  onPublishSuccess,
 }) => {
   const [selectedStory, setSelectedStory] = useState<IStories | null>(
     stories && stories[0]
@@ -101,9 +93,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
-  const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
-  const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
 
   const location = useLocation();
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
@@ -155,32 +145,30 @@ useEffect(() => {
   };
 
   autoSaveStory();
-}, [selectedStory, isLogin, selectTopics]);
+}, [selectedStory, isLogin, selectTopics, createPost]);
 
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
   };
 
   const handleRestoreVersion = (restoredContent: string) => {
-  if (!selectedStory) return;
+    if (!selectedStory) return;
 
-  const updatedStory = {
-    ...selectedStory,
-    content: restoredContent,
+    const updatedStory = {
+      ...selectedStory,
+      content: restoredContent,
+    };
+
+    setSelectedStory(updatedStory);
+
+    setStories(
+      stories.map((story) =>
+        story.uuid === selectedStory.uuid
+          ? updatedStory
+          : story
+      )
+    );
   };
-
-  setSelectedStory(updatedStory);
-
-  setStories(
-    stories.map((story) =>
-      story.uuid === selectedStory.uuid
-        ? updatedStory
-        : story
-    )
-  );
-
-  toast.success("Story version restored successfully!");
-};
 
   const handleTopicClick = (index: number) => {
     const updatedTopics = [...topics];
@@ -281,6 +269,7 @@ const handleGenerateCharacterProfile = async () => {
         toast.success("Story published successfully!");
         setStories([]);
         setSelectedStory(null);
+        onPublishSuccess?.();
       }
     } catch {
       toast.error("Something went wrong. Please try again.");
@@ -288,8 +277,6 @@ const handleGenerateCharacterProfile = async () => {
       setLoading(false);
     }
   };
-
-const isNarrationActive = narrationState !== "idle";
 
 if (isLoading) {
   return (
@@ -318,7 +305,6 @@ if (!stories || stories.length === 0) {
     </div>
   );
 }
-  }
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
@@ -402,13 +388,6 @@ if (!stories || stories.length === 0) {
                       onClick={handleExportPDF}
                     >
                       📄 Export PDF
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-lg px-4 py-2 bg-emerald-700 text-white font-semibold cursor-pointer hover:bg-emerald-600 transition-colors"
-                      onClick={() => setShowTranslator(true)}
-                    >
-                      🌍 Translate
                     </button>
                   </>
                 )}
@@ -622,24 +601,7 @@ if (!stories || stories.length === 0) {
           </div>
         </div>
       </div>
-      {showGenreTransformation && selectedStory && (
-        <StoryGenreTransformation
-          story={{
-            title: selectedStory.title,
-            content: selectedStory.content,
-          }}
-          onClose={() => setShowGenreTransformation(false)}
-        />
-      )}
       <Toaster position="top-right" reverseOrder={false} />
-
-      {showTranslator && selectedStory && (
-        <StoryTranslator
-          story={selectedStory}
-          isLogin={isLogin}
-          onClose={() => setShowTranslator(false)}
-        />
-      )}
     </div>
   );
 };

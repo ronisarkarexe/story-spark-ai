@@ -25,7 +25,7 @@ interface AddStoryBody {
 }
 
 // --- Helper Utility (Can be moved to your token middleware file) ---
-const getOptionalToken = async (req: Request): Promise<string | null> => {
+const getOptionalToken = async (req: Request): Promise<any | null> => {
   try {
     return await getToken(req);
   } catch {
