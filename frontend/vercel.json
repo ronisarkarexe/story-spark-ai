@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/post/:id",
+      "source": "/story/:id",
       "has": [
         {
           "type": "header",
@@ -9,7 +9,7 @@
           "value": ".*(Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|facebookexternalhit).*"
         }
       ],
-      "destination": "https://your-backend-url.com/api/post/meta/:id"
+      "destination": "/api/og-injector?id=:id"
     },
     {
       "source": "/(.*)",
