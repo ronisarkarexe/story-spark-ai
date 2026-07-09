@@ -175,6 +175,9 @@ export interface IStories {
     suggestedCorrection: string;
   }[];
   enhancedPrompt?: string;
+
+  genre?: string;
+  language?: string;
 }
 
 export type StorySentenceSegment = {

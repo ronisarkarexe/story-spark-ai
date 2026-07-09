@@ -41,6 +41,10 @@ export interface ConsumeOptions {
 export interface ConsumeResult {
   allowed: boolean;
   retryAfterSec: number;
+  /** Requests left in the current window (never negative). */
+  remaining: number;
+  /** Epoch ms when the window resets (or the block clears, if blocked). */
+  resetAt: number;
 }
 
 const STORE_ERROR_RETRY_AFTER_SEC = 60;
@@ -113,19 +117,38 @@ export const consumeRateLimit = async (
     );
 
     const blockedUntil = updated?.blockedUntil ?? null;
+    const firstRequestAt = updated?.firstRequestAt ?? now;
+    const windowResetAt = firstRequestAt.getTime() + windowMs;
+
     if (blockedUntil && blockedUntil.getTime() > now.getTime()) {
       return {
         allowed: false,
         retryAfterSec: Math.ceil(
           (blockedUntil.getTime() - now.getTime()) / 1000
         ),
+        remaining: 0,
+        resetAt: blockedUntil.getTime(),
       };
     }
-    return { allowed: true, retryAfterSec: 0 };
+
+    const count = updated?.count ?? 0;
+    const remaining = Math.max(maxRequests - count, 0);
+
+    return {
+      allowed: true,
+      retryAfterSec: 0,
+      remaining,
+      resetAt: windowResetAt,
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`Rate limit store error for ${key}: ${message}`);
-    return { allowed: false, retryAfterSec: STORE_ERROR_RETRY_AFTER_SEC };
+    return {
+      allowed: false,
+      retryAfterSec: STORE_ERROR_RETRY_AFTER_SEC,
+      remaining: 0,
+      resetAt: Date.now() + STORE_ERROR_RETRY_AFTER_SEC * 1000,
+    };
   }
 };
 

@@ -100,9 +100,6 @@ const ReviewForm: React.FC = () => {
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
-
-    if (rating === 0) newErrors.rating = "Please select a rating";
-
   const validate = useCallback(() => {
     const newErrors: Record<string, string> = {};
     if (!name.trim()) newErrors.name = "Name is required.";
@@ -347,6 +344,7 @@ const ReviewForm: React.FC = () => {
               </button>
             </div>
           </form>
+          </div>
         </div>
       </div>
     </div>

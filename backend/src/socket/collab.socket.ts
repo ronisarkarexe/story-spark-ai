@@ -136,6 +136,17 @@ export const setupCollabSocket = (io: Server) => {
         socket.join(roomId);
         collabNamespace.to(roomId).emit("collab:room_updated", { room });
         socket.emit("collab:joined", { room });
+
+        // Broadcast join system notification to chat
+        const joinMsg = {
+          senderId: "system",
+          senderName: "System",
+          senderColor: "#6b7280",
+          content: `${socket.data.username ?? "A user"} joined the room`,
+          type: "system" as const,
+          timestamp: new Date(),
+        };
+        collabNamespace.to(roomId).emit("collab:chat_message", { message: joinMsg });
       } catch (error) {
         logger.error("Failed to join collab room", error);
         socket.emit("collab:error", { message: "Failed to join collaboration room." });
@@ -438,18 +449,88 @@ export const setupCollabSocket = (io: Server) => {
       }
     });
 
+    // ── Chat: send message ────────────────────────────────────────────────
+    socket.on("collab:chat_send", async ({ roomId, content }: { roomId: string; content: string }) => {
+      try {
+        const userId = socket.data.userId as string;
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found" });
+          return;
+        }
+        const participant = room.participants.find((p) => p.userId === userId);
+        if (!participant) {
+          socket.emit("collab:error", { message: "You are not a participant of this room" });
+          return;
+        }
+        if (!content?.trim()) return;
+
+        const chatMsg = {
+          senderId: userId,
+          senderName: participant.username,
+          senderColor: participant.color,
+          content: content.trim(),
+          type: "message" as const,
+          timestamp: new Date(),
+        };
+
+        room.chatMessages.push(chatMsg);
+        await room.save();
+
+        collabNamespace.to(roomId).emit("collab:chat_message", { message: chatMsg });
+      } catch (error) {
+        logger.error("collab:chat_send error", error);
+        socket.emit("collab:error", { message: "Failed to send message" });
+      }
+    });
+
+    // ── Chat: load history ────────────────────────────────────────────────
+    socket.on("collab:chat_history", async ({ roomId }: { roomId: string }) => {
+      try {
+        const room = await CollabRoom.findOne({ roomId });
+        if (!room) {
+          socket.emit("collab:error", { message: "Room not found" });
+          return;
+        }
+        const userId = socket.data.userId as string;
+        const isParticipant = room.participants.some((p) => p.userId === userId);
+        if (!isParticipant) {
+          socket.emit("collab:error", { message: "You are not a participant of this room" });
+          return;
+        }
+        socket.emit("collab:chat_history", { messages: room.chatMessages });
+      } catch (error) {
+        logger.error("collab:chat_history error", error);
+        socket.emit("collab:error", { message: "Failed to load chat history" });
+      }
+    });
+
     // Disconnect
     socket.on("disconnect", async () => {
       try {
         const userId = socket.data.userId;
         const rooms = await CollabRoom.find({ "participants.socketId": socket.id });
         for (const room of rooms) {
+          const leavingParticipant = room.participants.find((p) => p.socketId === socket.id);
           collabNamespace.to(room.roomId).emit("collab:user_stop_typing", { userId });
           room.participants = room.participants.filter(
             (p) => p.socketId !== socket.id,
           );
           await room.save();
           collabNamespace.to(room.roomId).emit("collab:room_updated", { room });
+
+          // Broadcast leave system notification to chat
+          if (leavingParticipant) {
+            const leaveMsg = {
+              senderId: "system",
+              senderName: "System",
+              senderColor: "#6b7280",
+              content: `${leavingParticipant.username} left the room`,
+              type: "system" as const,
+              timestamp: new Date(),
+            };
+            collabNamespace.to(room.roomId).emit("collab:chat_message", { message: leaveMsg });
+          }
         }
       } catch (error) {
         logger.error("Error during socket disconnect cleanup", error);

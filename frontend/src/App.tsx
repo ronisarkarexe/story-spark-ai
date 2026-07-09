@@ -92,7 +92,9 @@ const router = createBrowserRouter([
       <>
         <ScrollToTop />
         <PageTitleUpdater />
-        <Outlet />
+        <RootLayout>
+          <Outlet />
+        </RootLayout>
       </>
     ),
     children: [
@@ -141,6 +143,7 @@ const router = createBrowserRouter([
       { path: "community", element: lazyPage(<CommunityComponent />) },
       { path: "report-bug", element: lazyPage(<ReportBug />) },
       { path: "chat", element: lazyPage(<ChatPage />) },
+      { path: "search", element: lazyPage(<SearchPageComponent />) },
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
@@ -213,6 +216,7 @@ const router = createBrowserRouter([
           { path: "resources", element: lazyPage(<ResourcesListComponent />) },
           { path: "resources/:resourceName", element: lazyPage(<ResourceDetailComponent />) },
           { path: "chat", element: lazyPage(<ChatPage />) },
+          { path: "search", element: lazyPage(<SearchPageComponent />) },
 
           // Protected routes
           {
