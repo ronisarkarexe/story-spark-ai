@@ -33,7 +33,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
       <div className="flex-grow min-h-0">{children}</div>
 
       <FooterComponent />
-<ChatComponent />
+      {pathname !== "/login" && pathname !== "/signup" && pathname !== "/forgot-password" && <ChatComponent />}
     </div>
   );
 };
