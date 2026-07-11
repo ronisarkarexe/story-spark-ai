@@ -13,16 +13,17 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
+const AUTH_PATHS = ["/login", "/signup", "/forgot-password"];
+
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
+  const isAuthPage = AUTH_PATHS.includes(pathname);
 
   const [cookieBannerHeight, setCookieBannerHeight] = useState(0);
 
   const handleCookieLayoutChange = useCallback((height: number) => {
     setCookieBannerHeight(height);
   }, []);
-
-  const isAuthPage = pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password';
 
   return (
     <div
