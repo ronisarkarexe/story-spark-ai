@@ -64,14 +64,20 @@ const StoryInspirationPage: React.FC = () => {
   return (
     <div className="max-w-xl mx-auto p-6 bg-white rounded shadow mt-10">
       <h2 className="text-2xl font-bold mb-4">Get Story Inspiration</h2>
-      <textarea
-        className="w-full border rounded p-2 mb-4"
-        rows={4}
-        placeholder="Enter your story intro..."
-        value={intro}
-        onChange={e => setIntro(e.target.value)}
-        disabled={loading}
-      />
+      <div className="relative">
+        <textarea
+          className="w-full border rounded p-2 mb-1"
+          rows={4}
+          placeholder="Enter your story intro..."
+          value={intro}
+          onChange={e => setIntro(e.target.value)}
+          disabled={loading}
+          maxLength={500}
+        />
+        <span className="text-xs text-gray-400 block text-right">
+          {intro.length}/500
+        </span>
+      </div>
 
     <div className="flex gap-2">
   <button
