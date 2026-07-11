@@ -38,6 +38,7 @@ const toggleReaction = async (
     type: type,
   });
 
+
   if (existingReaction) {
     // Remove reaction atomically
     await Reaction.findByIdAndDelete(existingReaction._id);
@@ -81,4 +82,5 @@ const toggleReaction = async (
 
 export const ReactionService = {
   toggleReaction,
+}
 };

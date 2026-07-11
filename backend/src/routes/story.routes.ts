@@ -136,6 +136,7 @@ router.post(
   ),
   generateLimiter,
   checkRequestLimit(),
+  validateRequest(AIModelValidator.aiStoryGenerate),
   catchAsync(async (req: Request, res: Response) => {
     const { prompt, provider, options } = req.body;
     const guard = res.locals.quotaRefundGuard;

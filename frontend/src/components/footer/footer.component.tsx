@@ -65,7 +65,7 @@ const FooterComponent: React.FC = () => {
   const resourceLinks = [
     { label: "Blog", to: "/blog" },
     { label: "Help Center", to: "/help-center" },
-    { label: "Community", to: "/dashboard/community" },
+    { label: "Community", to: "/community" },
     { label: "Contributors", to: "/contributors" },
     { label: "Support / Feedback", to: "/contact-us" },
     { label: "GitHub Issues", to: githubIssuesUrl },
@@ -80,9 +80,7 @@ const FooterComponent: React.FC = () => {
 
 const socialLinks = [
   { icon: "fa-linkedin", url: "https://www.linkedin.com/in/ronisarkar76/", label: "Connect with us on LinkedIn" },
-  { icon: "fa-instagram", url: "https://www.instagram.com", label: "Follow us on Instagram" },
-  { icon: "fa-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
-  { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X" },
+  { icon: "fa-x-twitter", url: "https://x.com/ronisarkar_exe", label: "Follow us on X (Twitter)" },
   { icon: "fa-github", url: "https://github.com/ronisarkarexe", label: "Check out GitHub" },
   { icon: "fa-envelope", url: "mailto:ronichandrasarkar@gmail.com", label: "Email us" },
 ];

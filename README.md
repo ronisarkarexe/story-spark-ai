@@ -29,6 +29,7 @@
 ## 📚 Table of Contents
 - [About 🚀](#about-)
 - [Features 💪](#features-)
+- [Feature Documentation 📄](#feature-documentation-)
 - [Known Behavior & UX Notes](#known-behavior--ux-notes-)
 - [Local Development](#local-development-monorepo)
 - [Environment Variables](#environment-variables)
@@ -39,6 +40,17 @@
 - [Maintainers](#maintainers)
 - [License 📜](#license-)
 - [Support 🙏](#support-)
+
+---
+
+## 🧭 Quick Navigation
+
+Jump straight to the most commonly needed setup and deployment sections:
+
+- [Local Development](#local-development-monorepo)
+- [Environment Variables](#environment-variables)
+- [Deployment (Vercel)](#deploying-on-vercel)
+- [Troubleshooting](#troubleshooting-️)
 
 ---
 
@@ -58,6 +70,8 @@
 
 - **AI-Powered Story Generation**: Create unique stories instantly using advanced AI models.
 - **Prompt-Based Storytelling**: Provide a prompt and watch it come to life.
+- **AI Prompt Enhancement & Creativity Score System**: Automatically refines user prompts and scores generated stories for creativity — see [Feature Documentation](#feature-documentation-) for details.
+- **Story Comparison & Diff Visualization**: Compare story variations side-by-side and see exactly how they differ — see [Feature Documentation](#feature-documentation-) for details.
 - **Story Bookmarks & History**: Save and revisit your favorite creations.
 - **AI Analysis**: Get summaries, critiques, and insights on your stories.
 - **Creative Writing Assistance**: Overcome writer's block with intelligent suggestions.
@@ -67,6 +81,24 @@
 - **User Reviews**: Share your experience and explore reviews from the community.
 - **Subscription Plans**: Access unlimited story generation and team collaboration with paid plans.
 - **Featured Posts**: Discover featured posts curated from the community.
+
+---
+
+## Feature Documentation 📄
+
+Some features have dedicated, deeper-dive documentation beyond this README. Start here if you want implementation details, checklists, or a quick-start for a specific system:
+
+| Feature | Docs |
+|---------|------|
+| AI Prompt Enhancement & Creativity Score System | [AI_PROMPT_ENHANCEMENT_COMPLETE.md](./AI_PROMPT_ENHANCEMENT_COMPLETE.md) · [QUICK_START.md](./QUICK_START.md) · [FEATURE_IMPLEMENTATION_CHECKLIST.md](./FEATURE_IMPLEMENTATION_CHECKLIST.md) · [FILE_MANIFEST.md](./FILE_MANIFEST.md) |
+| Story Comparison & Diff Visualization | [STORY_COMPARISON_IMPLEMENTATION.md](./STORY_COMPARISON_IMPLEMENTATION.md) · [COMPARISON_QUICK_REFERENCE.md](./COMPARISON_QUICK_REFERENCE.md) |
+| System Architecture | [ARCHITECTURE.md](./ARCHITECTURE.md) |
+| Local Setup & Onboarding | [DEVELOPMENT.md](./DEVELOPMENT.md) · [SETUP.md](./SETUP.md) |
+| Password Visibility & Accessibility | [PASSWORD_VISIBILITY_ACCESSIBILITY.md](./PASSWORD_VISIBILITY_ACCESSIBILITY.md) · [PASSWORD_VISIBILITY_CODE_REFERENCE.md](./PASSWORD_VISIBILITY_CODE_REFERENCE.md) |
+| Security Policy | [SECURITY.md](./SECURITY.md) |
+| Version History | [CHANGELOG.md](./CHANGELOG.md) |
+
+> 💡 If you add a new standalone doc file to the repo root, please add a row here so it stays discoverable.
 
 ---
 
