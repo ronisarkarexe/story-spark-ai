@@ -3,25 +3,20 @@ import {
   getShortenedText,
   ITopicData,
   topicsData,
+  CharacterProfile,
   getWordCount,
   SELECTED_TOPIC_CLASSES,
 } from "./stories.utils";
 import { calculateReadingTime } from "../../utils/reading-time";
-import { formatReadingStats } from "../../utils/story-utils";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
 import StoryMoodDashboard from "./StoryMoodDashboard";
 import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
-import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
-import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
-import StoryTranslator from "./translate/StoryTranslator";
 import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
-import jsPDF from "jspdf";
 import StoryTranslator from "../translate/StoryTranslator";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
@@ -32,6 +27,9 @@ export interface IStories {
   content: string;
   tag: string;
   imageURL: string;
+
+  genre?: string;
+  language?: string;
 }
 
 export type StorySentenceSegment = {
@@ -286,16 +284,6 @@ const handleGenerateCharacterProfile = async () => {
     }
   };
 
-const isNarrationActive = narrationState !== "idle";
-
-if (isLoading) {
-  return (
-    <div className="flex items-center justify-center py-20">
-      <StoryGeneratingAnimation />
-    </div>
-  );
-}
-
 if (!selectedStory) {
   return null;
 }
@@ -315,7 +303,6 @@ if (!stories || stories.length === 0) {
     </div>
   );
 }
-  }
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">

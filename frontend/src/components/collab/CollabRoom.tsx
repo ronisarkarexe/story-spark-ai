@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
+import { resolveSocketUrl } from '../../helpers/socket-url';
 import CollabEditor from './CollabEditor';
+import { io, type Socket } from "socket.io-client";
+import CollabChatPanel from './CollabChatPanel';
+
 interface Participant {
   userId: string;
   username: string;
@@ -43,7 +47,7 @@ export default function CollabRoom() {
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [collabSocket, setCollabSocket] = useState<any>(null);
+  const [collabSocket, setCollabSocket] = useState<Socket | null>(null);
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
@@ -68,7 +72,7 @@ export default function CollabRoom() {
       return;
     }
 
-    let socketInstance: any;
+    let socketInstance: Socket;
 
     try {
       socketInstance = io(`${socketUrl}/collab`, {
@@ -342,6 +346,16 @@ export default function CollabRoom() {
                   <p className="text-slate-400 text-sm">No writers present</p>
                 )}
               </div>
+            </div>
+
+            {/* Chat Panel */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden flex flex-col" style={{ minHeight: "360px", maxHeight: "480px" }}>
+              <CollabChatPanel
+                socket={collabSocket}
+                roomId={roomId || ""}
+                currentUserId={user?.userId || ""}
+                currentUsername={user?.name || "Anonymous"}
+              />
             </div>
 
             {/* Room Settings Card */}

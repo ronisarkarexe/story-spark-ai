@@ -6,6 +6,7 @@ import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Anthropic from "@anthropic-ai/sdk";
 import { StoryCache } from "../models/storyCache.model"; // Added Cache Model Import
+import { assertAIProviderConfigured } from "../config";
 
 let openai: OpenAI | null = null;
 let genAI: GoogleGenerativeAI | null = null;
@@ -150,6 +151,9 @@ export async function generateStory(
   provider?: string, 
   options?: PromptOptions
 ): Promise<AIResponse> {
+
+  assertAIProviderConfigured(); 
+
   // ── Security layer: validate and wrap input ─────────────────────────
   const securePrompt = validateAndFormatPrompt(prompt);
 
