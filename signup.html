@@ -43,7 +43,7 @@
 <body>
 
     <!-- PARTICLE CANVAS BACKGROUND -->
-    <canvas id="particle-canvas"></canvas>
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
     <!-- MAIN WRAPPER -->
 
@@ -153,7 +153,7 @@
                                 <div class="ds-input-group">
                                     <i class="fi fi-rr-lock ds-input-icon"></i>
                                     <input id="password-field" placeholder="••••••••" type="password" autocomplete="new-password" required />
-                                    <button onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); background:none; border:none; color:rgba(255,255,255,.5); cursor:pointer;">
+                                    <button onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); display:flex; align-items:center; justify-content:center; padding:0; margin:0; background:none; border:none; color:rgba(255,255,255,.5); cursor:pointer;">
                                         <i class="fi fi-rr-eye-crossed" id="eye-icon"></i>
                                     </button>
                                 </div>
@@ -191,7 +191,7 @@
                         <div class="auth-terms">
                             <input id="terms-checkbox" type="checkbox" required>
                             <div class="auth-terms-text">
-                                I agree to the <a onclick="openLegalModal('terms')">Terms</a> and <a onclick="openLegalModal('privacy')">Privacy Policy</a>
+                                I agree to the <a href="javascript:void(0)" onclick="openLegalModal('terms')">Terms</a> and <a href="javascript:void(0)" onclick="openLegalModal('privacy')">Privacy Policy</a>
                             </div>
                         </div>
 

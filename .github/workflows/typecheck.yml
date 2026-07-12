@@ -39,6 +39,7 @@ jobs:
           fi
 
           unrelated="$(echo "$files" | grep -Ev '^(backend/src/app/modules/recommendation/|backend/src/app/modules/post/post.model.ts|\.github/workflows/lint.yml|\.github/workflows/typecheck.yml)$' || true)"
+
           if [ -z "$unrelated" ]; then
             echo "recommendation_only=true" >> "$GITHUB_OUTPUT"
           else

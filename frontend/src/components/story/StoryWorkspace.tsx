@@ -9,6 +9,10 @@ import ChapterSidebar from "./ChapterSidebar";
 import StoryViewer from "./StoryViewer";
 import ContinueStoryButton from "./ContinueStoryButton";
 import CharacterNetwork from "../CharacterNetwork";
+import StoryCoverGenerator from "../cover-generator/StoryCoverGenerator";
+import StoryChecklist from "../checklist/StoryChecklist";
+import StoryRewritePanel from "../rewrite/StoryRewritePanel";
+import StoryBranchingEditor from "../branching/StoryBranchingEditor";
 
 import {
   getSafeFileName,
@@ -22,6 +26,10 @@ const StoryWorkspace = () => {
     (state: RootState) => state.story.currentStory
   );
   const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
+
+  const [selectedTheme, setSelectedTheme] = useState<
+  "Classic" | "Novel" | "Minimal" | "Dark"
+>("Classic");
 
   const handleCopyStory = async () => {
   if (!currentStory) {
@@ -91,11 +99,12 @@ const StoryWorkspace = () => {
       });
 
       exportWorkspacePDF({
-        title,
-        authorName,
-        dateStr: formattedDate,
-        chapters: currentStory.chapters || [],
-      });
+  title,
+  authorName,
+  dateStr: formattedDate,
+  chapters: currentStory.chapters || [],
+  theme: selectedTheme,
+});
 
       toast.success("PDF downloaded!");
     } catch (error) {
@@ -122,11 +131,12 @@ const StoryWorkspace = () => {
       });
 
       const blob = createWorkspaceDocxBlob({
-        title,
-        authorName,
-        dateStr: formattedDate,
-        chapters: currentStory.chapters || [],
-      });
+  title,
+  authorName,
+  dateStr: formattedDate,
+  chapters: currentStory.chapters || [],
+  theme: selectedTheme,
+});
 
       downloadBlob(blob, getSafeFileName(title, "docx"));
       toast.success("DOCX downloaded!");
@@ -177,6 +187,20 @@ const StoryWorkspace = () => {
                 🕸️ Character Network
               </button>
             </div>
+            <select
+  value={selectedTheme}
+  onChange={(e) =>
+    setSelectedTheme(
+      e.target.value as "Classic" | "Novel" | "Minimal" | "Dark"
+    )
+  }
+  className="bg-zinc-800 text-white rounded px-3 py-2 border border-zinc-700 text-sm"
+>
+  <option value="Classic">📖 Classic</option>
+  <option value="Novel">📚 Novel</option>
+  <option value="Minimal">✨ Minimal</option>
+  <option value="Dark">🌙 Dark</option>
+</select>
             <button
               onClick={handleCopyStory}
               className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
@@ -205,17 +229,47 @@ const StoryWorkspace = () => {
         </div>
 
         {workspaceMode === "editor" ? (
-          <>
-            <StoryViewer
-              chapters={currentStory.chapters}
-              storyId={currentStory.id}
-              truncated={currentStory.truncated}
-            />
+  <>
+  <div className="p-4 border-b border-zinc-800">
+    <StoryChecklist
+      title={currentStory.title}
+      content={
+        currentStory.chapters
+          ?.map((chapter) => chapter.content)
+          .join("\n\n") || ""
+      }
+    />
+  </div>
 
-            <div className="p-6 border-t border-zinc-800">
-              <ContinueStoryButton />
-            </div>
-          </>
+  <StoryCoverGenerator
+  title={currentStory.title}
+  genre="Fantasy"
+  theme="Adventure"
+  characters={["Hero", "Villain"]}
+/>
+
+<StoryRewritePanel
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+
+<StoryBranchingEditor
+  storyTitle={currentStory.title}
+/>
+
+  <StoryViewer
+    chapters={currentStory.chapters}
+    storyId={currentStory.id}
+    truncated={currentStory.truncated}
+  />
+
+  <div className="p-6 border-t border-zinc-800">
+    <ContinueStoryButton />
+  </div>
+</>
         ) : (
           <CharacterNetwork storyId={currentStory.id} />
         )}
