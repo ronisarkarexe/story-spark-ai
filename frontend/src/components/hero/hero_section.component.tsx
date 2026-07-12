@@ -1,14 +1,15 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import Typewriter from "./typewriter.component";
 
 gsap.registerPlugin(useGSAP);
 
-const containerVariants = {
+// Explicitly type as Variants
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -19,19 +20,21 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+// Explicitly type as Variants
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-
-
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+    transition: { 
+      duration: 0.6,
+      // Use a valid easing type
+      ease: [0.22, 1, 0.36, 1] as const
+    }
   }
 };
 
 const features = [
-// ... (rest of the features array remains the same)
   {
     title: "Infinite Variations",
     description: "Generate multiple unique branches of your story from a single starting prompt. Explore every creative possibility.",
@@ -137,8 +140,12 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-5 sm:mb-6 bg-white/10 shadow-md group-hover:scale-105 transition-transform duration-300 shrink-0">
             {feature.icon}
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-white mb-2.5 sm:mb-3 tracking-tight group-hover:text-blue-100 transition-colors duration-300 break-words max-w-full"></h3>
-          <p className="text-xs sm:text-sm text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300 font-medium">{feature.description}</p>
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-2.5 sm:mb-3 tracking-tight group-hover:text-blue-100 transition-colors duration-300 break-words max-w-full">
+            {feature.title}
+          </h3>
+          <p className="text-xs sm:text-sm text-white/80 leading-relaxed group-hover:text-white transition-colors duration-300 font-medium">
+            {feature.description}
+          </p>
         </div>
       </div>
     </div>
@@ -253,7 +260,7 @@ const HeroSectionComponent = () => {
         "100%": { borderColor: "rgba(59, 130, 246, 0.4)" }
       }
     });
-  });
+  }, []);
 
   const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -282,15 +289,22 @@ const HeroSectionComponent = () => {
   }, []);
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden transition-colors duration-300 w-full box-border">
+    <motion.div 
+      variants={containerVariants} 
+      initial="hidden" 
+      animate="visible" 
+      className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden transition-colors duration-300 w-full box-border"
+    >
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-sky-200/40 dark:bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-10 select-none transition-colors duration-300" />
       <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-fuchsia-200/30 dark:bg-purple-600/10 rounded-full blur-[120px] pointer-events-none -z-10 select-none transition-colors duration-300" />
 
       <HeroParticles />
 
-
       <div className="relative overflow-hidden w-full box-border" onMouseMove={handleMouseMove}>
-        <motion.div variants={itemVariants} className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border">
+        <motion.div 
+          variants={itemVariants}
+          className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 sm:pt-20 sm:pb-20 text-center w-full box-border"
+        >
           <div
             ref={badgeRef}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 backdrop-blur-md mb-8 shadow-sm cursor-pointer select-none"
@@ -302,7 +316,10 @@ const HeroSectionComponent = () => {
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">StorySparkAI v2.0 is live</span>
           </div>
 
-          <motion.h1 variants={itemVariants} className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none tracking-tight">
+          <motion.h1 
+            variants={itemVariants} 
+            className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 sm:mb-8 leading-tight select-none"
+          >
             Ignite Your Imagination With <br className="hidden sm:block" />
             <span className="hero-gradient-text pb-2">
               <Typewriter
@@ -315,12 +332,18 @@ const HeroSectionComponent = () => {
             </span>
           </motion.h1>
 
-          <p className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium">
+          <motion.p 
+            variants={itemVariants}
+            className="max-w-2xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8 sm:mb-10 font-medium"
+          >
             Create, edit, and generate engaging multiple story variations from a single prompt.
             Perfect for writers, creators, and enthusiasts exploring the future of fiction.
-          </p>
+          </motion.p>
 
-          <div className="w-full box-border flex flex-col items-center justify-center">
+          <motion.div 
+            variants={itemVariants}
+            className="w-full box-border flex flex-col items-center justify-center"
+          >
             <div className="relative max-w-3xl w-full box-border">
               <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
                 <Link to="/stories" className="w-full sm:w-auto">
@@ -335,10 +358,9 @@ const HeroSectionComponent = () => {
                     <span>Collab Mode</span>
                   </button>
                 </Link>
-
               </div>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
 
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden select-none">
@@ -354,9 +376,16 @@ const HeroSectionComponent = () => {
         </div>
       </div>
 
-
+      {/* Features Grid */}
+      <motion.div 
+        variants={containerVariants}
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20 w-full box-border"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {features.map((feature, index) => (
-            <FeatureCard feature={feature} key={index} />
+            <motion.div key={index} variants={itemVariants}>
+              <FeatureCard feature={feature} />
+            </motion.div>
           ))}
         </div>
       </motion.div>

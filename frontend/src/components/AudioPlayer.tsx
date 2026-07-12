@@ -8,8 +8,8 @@ import React, {
 } from "react";
 import {
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
+  // ChevronDown,
+  // ChevronUp,
   LoaderCircle,
   Pause,
   Play,
@@ -17,16 +17,11 @@ import {
   Square,
   Star,
   Volume2,
-  Volume,
- feat/collaboration-1122
-  ChevronUp,
-  ChevronDown,
-
- main
+  // Volume,
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
-import { useVoicePreview } from "../hooks/useVoicePreview";
+// import { useVoicePreview } from "../hooks/useVoicePreview";
 import { useVoiceFavorites } from "../hooks/useVoiceFavorites";
 
 export type NarrationPlaybackState = "idle" | "playing" | "paused";
@@ -83,16 +78,13 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     }, [voiceGender]);
 
     const speech = useSpeechSynthesis(text, voiceGender);
-    const preview = useVoicePreview();
+    // const preview = useVoicePreview();
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
- feat/collaboration-1122
     // ✅ FIX: Calculate actual word count from story text
     const actualTotalWords = useMemo(() => getWordCount(text), [text]);
 
-
- main
     const speedSelectId = useId();
     const voiceGenderSelectId = useId();
     const languageSelectId = useId();
@@ -141,11 +133,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
- feat/collaboration-1122
-    }, [showFavoritesOnly, displayedVoices, speech]);
-
-    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
- main
+    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId, speech.setSelectedVoiceId]);
 
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -194,23 +182,20 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       };
     }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
 
- feat/collaboration-1122
+    // const scrollToTop = () => {
+    //   const container = document.querySelector('[role="region"]');
+    //   if (container) {
+    //     container.scrollTo({ top: 0, behavior: 'smooth' });
+    //   }
+    // };
 
-    const scrollToTop = () => {
-      const container = document.querySelector('[role="region"]');
-      if (container) {
-        container.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
+    // const scrollToBottom = () => {
+    //   const container = document.querySelector('[role="region"]');
+    //   if (container) {
+    //     container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    //   }
+    // };
 
-    const scrollToBottom = () => {
-      const container = document.querySelector('[role="region"]');
-      if (container) {
-        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-      }
-    };
-
- main
     const isLoading = speech.isSupported && !speech.isReady;
     const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
 
