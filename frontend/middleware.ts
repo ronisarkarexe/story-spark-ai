@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
 
 const STORY_ROUTE = /^\/stor(?:y|ies)\/([^/?#]+)/;

@@ -147,9 +147,6 @@ describe("AiModelService", () => {
       "Dark",   // tone
       undefined, // genre
       undefined  // characters
-
-      undefined,
-      undefined
     );
   });
 

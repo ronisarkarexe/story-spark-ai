@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { isLoggedIn, removeUserInfo } from "../../services/auth.service";
 import ThemeToggle from "../theme/theme_toggle.component";
 import { ArrowRight, Sparkles } from "lucide-react";
@@ -17,40 +18,81 @@ import { useNavigate, useLocation } from "react-router-dom";
   const handleLogout = () => {
     removeUserInfo();
     setLoggedIn(false);
-    navigate("/");
-    setMenuOpen(false);
   };
 
-  const handleNavClick = () => {
-    setMenuOpen(false);
-  };
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `rounded-md px-3 py-2 text-sm font-semibold transition ${
+      isActive
+        ? "text-white bg-slate-800/70"
+        : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-white/10"
+    }`;
 
-  const isActive = (path: string) => {
-    return pathname === path || (path === "/" && pathname === "/");
-  };
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/90 backdrop-blur-md dark:border-white/10 dark:bg-[#0B1120]/80">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <Link
+          to="/"
+          className="text-lg font-bold text-slate-800 dark:text-white"
+          onClick={(e) => {
+            if (window.location.pathname === "/") {
+              e.preventDefault();
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              });
+            }
+          }}
+        >
+          Spark-Story-AI
+        </Link>
 
-  const navItems = [
-    { to: "/", label: "Home" },
-    { to: "/explore", label: "Explore" },
-    { to: "/story-inspiration", label: "Stories" },
-    { to: "/community", label: "Community" },
-  ];
+        <nav className="hidden items-center gap-2 lg:flex">
+          <NavLink to="/" end className={linkClass}>
+            Home
+          </NavLink>
+          <NavLink to="/explore" className={linkClass}>
+            Explore
+          </NavLink>
+          <NavLink to="/story-inspiration" className={linkClass}>
+            Stories
+          </NavLink>
+          <NavLink to="/community" className={linkClass}>
+            Community
+          </NavLink>
+          {loggedIn && (
+            <NavLink to="/dashboard" className={linkClass}>
+              Dashboard
+            </NavLink>
+          )}
+        </nav>
 
-  const mobileMenuVariants = {
-    hidden: { opacity: 0, height: 0, y: -8 },
-    visible: { opacity: 1, height: "auto", y: 0, transition: { duration: 0.28 } },
-    exit: { opacity: 0, height: 0, y: -8, transition: { duration: 0.22 } },
-  };
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
 
-  const mobileItemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      x: 0,
-      transition: { delay: i * 0.05 },
-    }),
-  };
+          {loggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200"
+            >
+              Login
+            </Link>
+          )}
 
+          <button
+            className="rounded-md px-2 py-1 text-slate-700 lg:hidden dark:text-slate-200"
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <i className="fa-solid fa-bars" />
+          </button>
+        </div>
+      </div>
 return (
   <header className="sticky top-0 z-50 w-full">
     <div className="absolute inset-0 border-b border-slate-200/70 bg-white/70 shadow-sm shadow-slate-900/5 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-black/20" />
@@ -187,6 +229,35 @@ return (
       </div>
     </div>
 
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
+            className="overflow-hidden lg:hidden"
+          >
+            <div className="space-y-1 border-t border-slate-200/70 px-4 py-3 dark:border-white/10">
+              <NavLink to="/" end className={linkClass}>Home</NavLink>
+              <NavLink to="/explore" className={linkClass}>Explore</NavLink>
+              <NavLink to="/story-inspiration" className={linkClass}>Stories</NavLink>
+              <NavLink to="/community" className={linkClass}>Community</NavLink>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {loggedIn ? (
+            <button onClick={handleLogout} className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Logout</button>
+          ) : (
+            <Link to="/login" className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Login</Link>
+          )}
+          <button className="rounded-md px-2 py-1 text-slate-700 lg:hidden dark:text-slate-200" onClick={() => setMenuOpen((v) => !v)}>
+            <i className="fa-solid fa-bars" />
+          </button>
+        </div>
     {/* Mobile menu is rendered via AnimatePresence below */}
 
     <AnimatePresence>

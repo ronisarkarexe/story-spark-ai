@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
@@ -47,6 +47,11 @@ export default function CollabRoom() {
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [collabSocket, setCollabSocket] = useState<any>(null);
+  const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
+  const [isAiThinking, setIsAiThinking] = useState(false);
+  const [collabSocket, setCollabSocket] = useState<any>(null);
   const [collabSocket, setCollabSocket] = useState<Socket | null>(null);
   const [typingUsers, setTypingUsers] = useState<{ [userId: string]: string }>({});
   const [isAiThinking, setIsAiThinking] = useState(false);
@@ -72,6 +77,8 @@ export default function CollabRoom() {
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let socketInstance: any;
     let socketInstance: Socket;
 
     try {
@@ -139,11 +146,6 @@ export default function CollabRoom() {
       socketInstance.on("collab:error", handleError);
 
       return () => {
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-          typingTimeoutRef.current = null;
-        }
-        isTypingRef.current = false;
         socketInstance.off("collab:room_updated", handleRoomUpdated);
         socketInstance.off("collab:story_updated", handleStoryUpdated);
         socketInstance.off("collab:user_typing", handleUserTyping);
@@ -158,6 +160,9 @@ export default function CollabRoom() {
       setLoading(false);
     }
   }, [roomId, navigate]);
+
+
+
 
   const handleAIContinue = () => {
     if (!roomId || !collabSocket) return;
@@ -299,6 +304,7 @@ export default function CollabRoom() {
 
               <div className="flex gap-2 items-start">
                 <CollabEditor
+                  storyId={roomId ?? ""}
                   storyId={roomId || ''}
                   userId={user?.userId || ''}
                   username={user?.name || 'Anonymous'}

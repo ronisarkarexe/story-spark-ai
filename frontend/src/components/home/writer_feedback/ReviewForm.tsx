@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
@@ -22,6 +23,36 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
   );
 
   return (
+    <div className="space-y-2">
+      <div
+        role="radiogroup"
+        aria-label="Star rating"
+        tabIndex={0}
+        onKeyDown={handleKey}
+        className="flex items-center gap-2 focus:outline-none"
+      >
+        {[1, 2, 3, 4, 5].map((star) => {
+          const filled = star <= (hovered || rating);
+          return (
+            <button
+              key={star}
+              type="button"
+              role="radio"
+              aria-checked={rating === star}
+              aria-label={`${star} star${star > 1 ? "s" : ""}`}
+              onClick={() => setRating(star)}
+              onMouseEnter={() => setHovered(star)}
+              onMouseLeave={() => setHovered(0)}
+              className={`text-3xl transition-all duration-200 hover:scale-125 hover:-translate-y-1 focus:outline-none rounded-md px-1 ${
+                filled
+                  ? "text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.7)] scale-110"
+                  : "text-gray-300 dark:text-gray-600 hover:text-yellow-300"
+              }`}
+            >
+              ★
+            </button>
+          );
+        })}
     <div
       role="radiogroup"
       aria-label="Star rating"
@@ -66,7 +97,6 @@ const ReviewForm: React.FC = () => {
   const [rating, setRating] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
-  const [isDark, setIsDark] = useState(false);
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
@@ -89,15 +119,14 @@ const ReviewForm: React.FC = () => {
     }
 
     try {
-      await createReview({ name, role, feedback, rating, imgSrc: "" });
+      await createReview({ name, role, feedback, rating, imgSrc: "" }).unwrap();
       setSuccess(true);
       setName("");
       setRole("");
       setFeedback("");
       setRating(0);
       setErrors({});
-    } catch (err) {
-      // keep error message generic
+    } catch {
       setErrors({ submit: "Failed to submit review. Please try again." });
       setSuccess(false);
     }
@@ -130,6 +159,10 @@ const ReviewForm: React.FC = () => {
           {success && (
             <div
               aria-live="polite"
+              className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400 transition-all duration-300"
+            >
+              <span className="text-lg">🎉</span>
+              <span>
               className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/30 bg-green-500/20 p-4 text-base text-green-300 transition-all duration-300"
             >
               <span className="text-xl">🎉</span>
@@ -143,6 +176,21 @@ const ReviewForm: React.FC = () => {
           {errors.submit && (
             <div
               aria-live="polite"
+              className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
+            >
+              <span className="text-lg">⚠️</span>
+              <span>{errors.submit}</span>
+            </div>
+          )}
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+            className="space-y-6"
+            noValidate
+          >
               className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/20 p-4 text-base text-red-300"
             >
               <span className="text-xl">⚠️</span>
@@ -169,6 +217,7 @@ const ReviewForm: React.FC = () => {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your full name"
                 aria-invalid={!!errors.name}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-gray-400 transition-all duration-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
               />
 
@@ -198,6 +247,7 @@ const ReviewForm: React.FC = () => {
                 onChange={(e) => setRole(e.target.value)}
                 placeholder="e.g. Fantasy Writer, Student, Blogger"
                 aria-invalid={!!errors.role}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-gray-400 transition-all duration-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
               />
 
@@ -228,6 +278,10 @@ const ReviewForm: React.FC = () => {
                 onChange={(e) => setFeedback(e.target.value)}
                 placeholder="Tell us about your experience with StorySparkAI..."
                 aria-invalid={!!errors.feedback}
+                className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+
+              <div className="mt-1 flex items-center justify-between">
                 className="w-full resize-y rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-gray-400 transition-all duration-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
               />
 
@@ -277,8 +331,7 @@ const ReviewForm: React.FC = () => {
 
             <div className="mt-8 pt-2">
               <button
-                type="button"
-                onClick={handleSubmit}
+                type="submit"
                 disabled={isLoading}
                 className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3.5 text-lg font-bold tracking-wide text-white transition-all duration-200 hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
               >
@@ -337,6 +390,7 @@ const ReviewForm: React.FC = () => {
                 )}
               </button>
             </div>
+          </form>
           </div>
         </div>
       </div>

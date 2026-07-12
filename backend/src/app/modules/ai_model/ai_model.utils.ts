@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
+import { validateScientificContent, ScientificWarning } from "./scientific_validator";
 import { sanitizeJsonText } from "../../../utils/promptSecurity";
 import type {
   IStoryVisualizerPayload,
@@ -59,6 +60,15 @@ const safetySettings = [
   },
 ];
 
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
+
 const assertGeminiApiKeyConfigured = (): void => {
   if (!geminiApiKey) {
     throw new ApiError(
@@ -78,6 +88,7 @@ interface Story {
   emotions?: string[];
   genre?: string;
   enhancedPrompt?: string;
+  scientificWarnings?: ScientificWarning[];
 }
 
 // NEW: Map each tone label to a precise writing instruction injected into the AI prompt.
@@ -312,13 +323,18 @@ export async function generateWithGeminiStories(
 
     const imageUrls = await Promise.all(imagePromises);
 
-    return stories.map((story, index) => ({
-      ...story,
-      language,
-      imageURL: imageUrls[index],
-      coverImage: coverImages[index],
-      uuid: uuidv4(),
-    }));
+    const storiesWithWarnings = await Promise.all(
+      stories.map(async (story, index) => ({
+        ...story,
+        language,
+        imageURL: imageUrls[index],
+        coverImage: coverImages[index],
+        uuid: uuidv4(),
+        scientificWarnings: await validateScientificContent(story.content || ""),
+      }))
+    );
+
+    return storiesWithWarnings;
   } catch (error: unknown) {
     if (error instanceof ApiError || error instanceof GenerationAbortedError) {
       throw error;
@@ -758,6 +774,7 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
+
       return {
         sceneNumber: index + 1,
         caption: scene.caption.trim(),
