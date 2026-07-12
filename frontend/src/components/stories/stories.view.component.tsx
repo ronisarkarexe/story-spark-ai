@@ -4,18 +4,17 @@ import {
   getShortenedText,
   ITopicData,
   topicsData,
+  CharacterProfile,
   getWordCount,
   SELECTED_TOPIC_CLASSES,
 } from "./stories.utils";
 import { calculateReadingTime } from "../../utils/reading-time";
-import { formatReadingStats } from "../../utils/story-utils";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
 import StoryVersionHistory from "./StoryVersionHistory";
 import { CharacterProfile, getShortenedText, ITopicData, topicsData, getWordCount } from "./stories.utils";
 import { CharacterProfile, getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import { formatReadingStats } from "../../utils/story-utils";
-import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
 import jsPDF from "jspdf";
@@ -155,8 +154,6 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
 
 import StoryTranslator from "./translate/StoryTranslator";
 import toast, { Toaster } from "react-hot-toast";
-import { useCreatePostMutation } from "../../redux/apis/post.api";
-import jsPDF from "jspdf";
 import StoryTranslator from "../translate/StoryTranslator";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
@@ -808,7 +805,6 @@ if (!stories || stories.length === 0) {
     </div>
   );
 }
-  }
 
   if (!selectedStory) {
     return (

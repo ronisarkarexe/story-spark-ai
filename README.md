@@ -43,6 +43,17 @@
 
 ---
 
+## 🧭 Quick Navigation
+
+Jump straight to the most commonly needed setup and deployment sections:
+
+- [Local Development](#local-development-monorepo)
+- [Environment Variables](#environment-variables)
+- [Deployment (Vercel)](#deploying-on-vercel)
+- [Troubleshooting](#troubleshooting-️)
+
+---
+
 ## About 🚀
 
 - Website: [StorySparkAI](https://storysparkai.vercel.app/)

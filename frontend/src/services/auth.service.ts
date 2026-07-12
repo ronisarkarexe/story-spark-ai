@@ -7,6 +7,7 @@ import {
   setToLocalStorage,
 } from "../utils/local-storage";
 import { USER_ROLE } from "../constants/role";
+import { validateTokenPayload } from "../utils/auth-validator";
 
 const AUTH_CHANGE_EVENT = "story-spark-auth-change";
 
@@ -81,6 +82,7 @@ export const getValidDecodedToken = () => {
         removeFromLocalStorage(AUTH_KEY);
         return null;
       }
+      validateTokenPayload(decodedData as Record<string, unknown>);
 
       if (decodedData.exp <= Math.floor(Date.now() / 1000)) {
         removeFromLocalStorage(AUTH_KEY);
