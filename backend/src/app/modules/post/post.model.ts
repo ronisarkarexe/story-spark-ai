@@ -1,7 +1,7 @@
-import { model, Schema } from "mongoose";
-import { IPost, PostModel } from "./post.interface";
+import { model, Schema, Types } from "mongoose";
+import { IPost, IPostEngagementStats, PostModel } from "./post.interface";
 
-export const PostSchema: Schema<IPost> = new Schema<IPost, PostModel>(
+export const PostSchema: Schema<IPost, PostModel> = new Schema<IPost, PostModel>(
   {
     title: { type: String, required: true, maxlength: 200 },
     content: { type: String, required: true, maxlength: 50000 },
@@ -77,5 +77,36 @@ PostSchema.index(
   }
 );
 PostSchema.index({ createdAt: -1 });
+
+/**
+ * Reads every dashboard engagement metric from the denormalized post document
+ * in one query, rather than issuing an individual query per metric.
+ */
+PostSchema.static(
+  "getEngagementStats",
+  async function getEngagementStats(
+    this: PostModel,
+    postId: string | Types.ObjectId,
+  ): Promise<IPostEngagementStats | null> {
+    const post = await this.findById(postId)
+      .select(
+        "likesCount commentsCount bookmarksCount viewsCount averageRating totalRatings",
+      )
+      .lean();
+
+    if (!post) {
+      return null;
+    }
+
+    return {
+      likesCount: post.likesCount ?? 0,
+      commentsCount: post.commentsCount ?? 0,
+      bookmarksCount: post.bookmarksCount ?? 0,
+      viewsCount: post.viewsCount ?? 0,
+      averageRating: post.averageRating ?? 0,
+      totalRatings: post.totalRatings ?? 0,
+    };
+  },
+);
 
 export const Post = model<IPost, PostModel>("Post", PostSchema);

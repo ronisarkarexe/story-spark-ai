@@ -42,7 +42,21 @@ export interface IPost extends IPostPayload {
   rootStoryId?: Types.ObjectId;
 }
 
-export type PostModel = Model<IPost, object>;
+/** The engagement counters stored with a post for dashboard use. */
+export interface IPostEngagementStats {
+  likesCount: number;
+  commentsCount: number;
+  bookmarksCount: number;
+  viewsCount: number;
+  averageRating: number;
+  totalRatings: number;
+}
+
+export interface PostModel extends Model<IPost> {
+  getEngagementStats(
+    postId: string | Types.ObjectId,
+  ): Promise<IPostEngagementStats | null>;
+}
 
 export interface IPostSearchFields {
   searchTerm?: string;
