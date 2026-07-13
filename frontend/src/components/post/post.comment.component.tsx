@@ -4,8 +4,9 @@ import {
   useCreateCommentMutation,
   useGetCommentsListQuery,
   useToggleCommentLikeMutation,
+  useToggleCommentHelpfulMutation,
   useDeleteCommentMutation,
-  useReportCommentMutation,
+  useReportCommentMutation, // Added this import
 } from "../../redux/apis/comment";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import toast, { Toaster } from "react-hot-toast";
@@ -171,6 +172,7 @@ const PostCommentComponent: React.FC<IPostCommentComponentProps> = ({
       toast.error(getErrorMessage(err));
     }
   };
+  
   const handleDeleteComment = async (commentId: string) => {
   const confirmed = window.confirm(
     "Are you sure you want to delete this comment?"
