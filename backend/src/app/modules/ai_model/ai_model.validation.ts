@@ -119,8 +119,18 @@ const aiTranslate = z.object({
   body: z.object({
     title: z.string({ required_error: "Title is required!" }),
     content: z.string().min(10).max(10000),
-    language: z.string({ required_error: "Language is required!" }),
+    targetLanguage: z.string({ required_error: "Target language is required!" }).min(1).max(50),
   }),
+});
+
+const aiStoryGenerate = z.object({
+  body: z.object({
+    prompt: z
+      .string({ required_error: "Prompt is required!" })
+      .trim()
+      .min(1, "Prompt is required!")
+      .max(2000, "Prompt must not exceed 2000 characters"),
+  }).passthrough(),
 });
 
 export const AIModelValidator = {
@@ -130,4 +140,5 @@ export const AIModelValidator = {
   aiChat,
   aiRemix,
   aiTranslate,
+  aiStoryGenerate,
 };

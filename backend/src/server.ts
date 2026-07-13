@@ -1,7 +1,7 @@
 import { Application, Request, Response } from "express";
 import mongoose from "mongoose";
 import config from "./config";
-import app from "./app";
+import app, { defaultCorsOrigins } from "./app";
 import dns from "node:dns";
 import http from "http";
 import { Server } from "socket.io";
@@ -67,10 +67,7 @@ async function main() {
   }
 
   const httpServer = http.createServer(app);
-  const defaultCorsOrigins = 
-    process.env.NODE_ENV === "development"
-      ? ["http://localhost:4001", "http://localhost:4002"]
-      : [];
+  // defaultCorsOrigins is imported from app.ts for consistency
 
   const socketCorsOrigins =
     config.cors_origins && config.cors_origins.length > 0

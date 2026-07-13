@@ -184,6 +184,18 @@ const translateStory = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const forkStory = catchAsync(async (req: Request, res: Response) => {
+  const id = routeParam(req.params.id);
+  const token = await getToken(req);
+  const result = await PostService.forkStory(id, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Story forked successfully!",
+    data: result,
+  });
+});
+
 const getGenres = catchAsync(async (_req: Request, res: Response) => {
   const result = await PostService.getGenres();
   sendResponse(res, {
@@ -191,6 +203,16 @@ const getGenres = catchAsync(async (_req: Request, res: Response) => {
     success: true,
     message: "Genres fetched successfully!",
     data: result,
+  });
+});
+
+const bulkDelete = catchAsync(async (req: Request, res: Response) => {
+  const { ids } = req.body;
+  const token = await getToken(req);
+  const result = await PostService.bulkDeletePosts(ids, token);
+  res.status(httpStatus.OK).json({
+    deleted: result.deleted,
+    failed: result.failed,
   });
 });
 
@@ -208,5 +230,7 @@ export const PostController = {
   deletePost,
   remixStory,
   translateStory,
+  forkStory,
   getGenres,
+  bulkDelete,
 };

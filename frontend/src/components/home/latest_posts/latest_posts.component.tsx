@@ -36,7 +36,7 @@ const LatestPostsComponent = () => {
   return (
 
     <section className="w-full min-w-0 max-w-full">
-      <h2 className="mb-6 text-2xl font-bold !text-slate-900 dark:!text-gray-200">Latest Posts</h2>
+      <h2 className="mb-6 text-2xl font-bold text-slate-900 dark:text-white">Latest Posts</h2>
 
       <div className="max-w-full space-y-3">
         {visiblePosts.length > 0 ? (
@@ -55,7 +55,9 @@ const LatestPostsComponent = () => {
                   onClick={() => toggleAccordion(post._id)}
                   className="flex w-full min-w-0 items-center justify-between p-4 text-left font-bold text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700/20 transition-colors"
                 >
-                  <span className="min-w-0 pr-4 text-lg break-words md:text-xl">{post.title}</span>
+                  <span className="multilingual-title min-w-0 pr-4 text-lg break-words md:text-xl">
+  {post.title}
+</span>
                   <span className="shrink-0 text-slate-500 dark:text-slate-400 font-mono text-sm transition-transform duration-200 select-none">
                     {isExpanded ? "▼" : "▶"}
                   </span>

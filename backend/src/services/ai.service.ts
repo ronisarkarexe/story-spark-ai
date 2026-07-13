@@ -5,6 +5,8 @@ import { buildStoryPrompt, PromptOptions } from "../utils/promptBuilder";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Anthropic from "@anthropic-ai/sdk";
+import { StoryCache } from "../models/storyCache.model"; // Added Cache Model Import
+import { assertAIProviderConfigured } from "../config";
 
 let openai: OpenAI | null = null;
 let genAI: GoogleGenerativeAI | null = null;
@@ -149,14 +151,37 @@ export async function generateStory(
   provider?: string, 
   options?: PromptOptions
 ): Promise<AIResponse> {
+
+  assertAIProviderConfigured(); 
+
   // ── Security layer: validate and wrap input ─────────────────────────
   const securePrompt = validateAndFormatPrompt(prompt);
 
   // ── Prompt builder: morph into structured AI instructions ───────
   const { systemPrompt, userPrompt } = buildStoryPrompt(securePrompt, options);
 
+  // ── Cache Lookup Step ───────────────────────────────────────────────
+  // Combine prompt and key options to build a unique cache signature
+  const cacheKey = `${securePrompt.trim()}_${options?.genre || "default"}_${options?.length || "medium"}`;
+  
+  try {
+    const existingCache = await StoryCache.findOne({ promptKey: cacheKey });
+    if (existingCache) {
+      console.log("[CACHE HIT] Serving story instantly from MongoDB cache");
+      return {
+        story: existingCache.storyData,
+        provider: existingCache.provider as "openai" | "gemini" | "anthropic",
+        fallbackUsed: false
+      };
+    }
+  } catch (cacheError) {
+    // If the database cache check fails for any strange reason, log it but don't crash the generation flow
+    console.warn("[CACHE ERROR] Failed to query cache:", cacheError);
+  }
+
   const chosenProvider = provider?.toLowerCase();
   let didFallbackToGemini = false;
+  let finalResult: AIResponse | null = null;
 
   if (chosenProvider === "anthropic" || chosenProvider === "claude") {
     // ── Try Anthropic first ──────────────────────────────────────────────────
@@ -164,7 +189,7 @@ export async function generateStory(
       let story = await generateWithAnthropic(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
       console.log("[AI] Story generated successfully via Anthropic");
-      return { story, provider: "anthropic", fallbackUsed: false };
+      finalResult = { story, provider: "anthropic", fallbackUsed: false };
     } catch (anthropicError) {
       console.warn(
         "[AI] Anthropic failed:",
@@ -185,8 +210,7 @@ export async function generateStory(
       let story = await generateWithOpenAI(systemPrompt, userPrompt);
       story = validateOutput(story); // Security layer: validate output
       console.log("[AI] Story generated successfully via OpenAI");
-
-      return { story, provider: "openai", fallbackUsed: false };
+      finalResult = { story, provider: "openai", fallbackUsed: false };
 
     } catch (openAIError) {
       console.warn(
@@ -212,22 +236,37 @@ export async function generateStory(
   }
 
   // ── Try Gemini as fallback / direct ───────────────────────────────────────
-  try {
-    let story = await generateWithGemini(systemPrompt, userPrompt);
-    story = validateOutput(story); // Security layer: validate output
-    console.log(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
+  if (!finalResult) {
+    try {
+      let story = await generateWithGemini(systemPrompt, userPrompt);
+      story = validateOutput(story); // Security layer: validate output
+      console.log(`[AI] Story generated successfully via Gemini (${didFallbackToGemini ? "fallback" : "direct"})`);
+      finalResult = { story, provider: "gemini", fallbackUsed: didFallbackToGemini };
 
-    return { story, provider: "gemini", fallbackUsed: didFallbackToGemini };
+    } catch (geminiError) {
+      console.error(
+        "[AI] Gemini also failed.",
+        geminiError instanceof Error ? geminiError.message : geminiError
+      );
 
-  } catch (geminiError) {
-    console.error(
-      "[AI] Gemini also failed.",
-      geminiError instanceof Error ? geminiError.message : geminiError
-    );
-
-    // All failed — throw a clean user-facing error
-    throw new Error(
-      "Story generation failed. All AI providers are currently unavailable. Please try again later."
-    );
+      // All failed — throw a clean user-facing error
+      throw new Error(
+        "Story generation failed. All AI providers are currently unavailable. Please try again later."
+      );
+    }
   }
+
+  // ── Populate Cache Before Returning ────────────────────────────────
+  try {
+    await StoryCache.create({
+      promptKey: cacheKey,
+      provider: finalResult.provider,
+      storyData: finalResult.story
+    });
+    console.log("[CACHE STORED] New AI story cached to MongoDB successfully");
+  } catch (saveCacheError) {
+    console.warn("[CACHE ERROR] Failed to save story generation to cache:", saveCacheError);
+  }
+
+  return finalResult;
 }

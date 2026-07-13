@@ -21,6 +21,22 @@ const requiredEnv = (key: string): string => {
   return value;
 };
 
+export const assertAIProviderConfigured = (): void => {
+  const hasOpenAI = !!(process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY)?.trim();
+  const hasGemini = !!process.env.GEMINI_API_KEY?.trim();
+  const hasAnthropic = !!process.env.ANTHROPIC_API_KEY?.trim();
+
+  if (!hasOpenAI && !hasGemini && !hasAnthropic) {
+    throw new Error(
+      "No AI provider API key configured. Set at least one of OPEN_AI_KEY, GEMINI_API_KEY, or ANTHROPIC_API_KEY in your environment. See backend/.env.example for setup instructions."
+    );
+  }
+
+  if (!hasOpenAI) console.warn("[Config] OPEN_AI_KEY not set — OpenAI provider unavailable.");
+  if (!hasGemini) console.warn("[Config] GEMINI_API_KEY not set — Gemini provider unavailable.");
+  if (!hasAnthropic) console.warn("[Config] ANTHROPIC_API_KEY not set — Anthropic provider unavailable.");
+};
+
 export default {
   env: process.env.NODE_ENV,
   port: process.env.PORT || "5000",
@@ -42,8 +58,8 @@ export default {
   jwt: {
     secret: requiredEnv("JWT_SECRET"),
     refresh_secret: requiredEnv("JWT_REFRESH_SECRET"),
-    expires_in: process.env.JWT_EXPIRES_IN,
-    refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
+    expires_in: requiredEnv("JWT_EXPIRES_IN"),
+    refresh_expires_in: requiredEnv("JWT_REFRESH_EXPIRES_IN"),
   },
   default_admin_password: process.env.DEFAULT_ADMIN_PASSWORD,
   openai_key: process.env.OPEN_AI_KEY,
