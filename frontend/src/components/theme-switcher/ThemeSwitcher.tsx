@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTheme } from "../theme/theme.context";
 
 const themes = [
   {
@@ -8,6 +9,7 @@ const themes = [
     text: "#ffffff",
     accent: "#6c63ff",
     card: "#1a1a2e",
+    isDark: true,
   },
   {
     id: 2,
@@ -16,6 +18,7 @@ const themes = [
     text: "#1a1a1a",
     accent: "#6c63ff",
     card: "#f5f5f5",
+    isDark: false,
   },
   {
     id: 3,
@@ -24,6 +27,7 @@ const themes = [
     text: "#ffd4a3",
     accent: "#ff6b35",
     card: "#2d1200",
+    isDark: true,
   },
   {
     id: 4,
@@ -32,6 +36,7 @@ const themes = [
     text: "#d4ffd4",
     accent: "#4caf50",
     card: "#122012",
+    isDark: true,
   },
   {
     id: 5,
@@ -40,11 +45,15 @@ const themes = [
     text: "#e0e0ff",
     accent: "#00ffcc",
     card: "#0a0a20",
+    isDark: true,
   },
 ];
 
+const THEME_STORAGE_KEY = "selectedTheme";
+
 const ThemeSwitcher = () => {
-  const saved = localStorage.getItem("selectedTheme");
+  const { isDark, toggleTheme } = useTheme();
+  const saved = localStorage.getItem(THEME_STORAGE_KEY);
   const [activeTheme, setActiveTheme] = useState(
     saved ? JSON.parse(saved) : themes[0]
   );
@@ -55,8 +64,32 @@ const ThemeSwitcher = () => {
     root.style.setProperty("--text-color", activeTheme.text);
     root.style.setProperty("--accent-color", activeTheme.accent);
     root.style.setProperty("--card-color", activeTheme.card);
-    localStorage.setItem("selectedTheme", JSON.stringify(activeTheme));
-  }, [activeTheme]);
+    localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(activeTheme));
+
+    // Sync the dark class with the ThemeContext so Tailwind dark: utilities
+    // and the ThemeProvider state stay consistent across sessions.
+    const shouldBeDark = activeTheme.isDark;
+    if (shouldBeDark !== isDark) {
+      toggleTheme();
+    }
+  }, [activeTheme, isDark, toggleTheme]);
+
+  // On mount, restore the saved theme and sync dark mode
+  useEffect(() => {
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const matched = themes.find((t) => t.id === parsed?.id);
+        if (matched && matched.isDark !== isDark) {
+          toggleTheme();
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
