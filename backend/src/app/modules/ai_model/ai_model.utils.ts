@@ -558,13 +558,33 @@ Write the remixed story in ${language}. Return a JSON object with this exact str
   }
 }
 
+import { StoryBible } from "../story_bible/story_bible.model";
+
 export async function generateStoryContinuationWithGemini(
   storyContext: string,
   language: string = "English",
   signal?: AbortSignal,
+  storyId?: string,
+  useStoryBible?: boolean
 ): Promise<{ continuation: string }> {
   throwIfAborted(signal);
   assertGeminiApiKeyConfigured();
+
+  let storyBibleContext = "";
+  if (useStoryBible && storyId) {
+    const storyBible = await StoryBible.findOne({ storyId: String(storyId) });
+    if (storyBible) {
+      storyBibleContext = `
+STORY BIBLE (Source of Truth):
+Use the following Story Bible to constrain the continuation. Ensure that you do not contradict these established facts, character traits, or timelines.
+Characters: ${JSON.stringify(storyBible.characters, null, 2)}
+Locations: ${JSON.stringify(storyBible.locations, null, 2)}
+Objects: ${JSON.stringify(storyBible.objects, null, 2)}
+Relationships: ${JSON.stringify(storyBible.relationships, null, 2)}
+Timeline: ${JSON.stringify(storyBible.timelineEvents, null, 2)}
+`;
+    }
+  }
 
   try {
     const response = await executeWithRetryAndFallback(async (activeModel) => {
@@ -581,6 +601,8 @@ export async function generateStoryContinuationWithGemini(
         `You are an expert storyteller. The user has written the following story so far:
 
 "${storyContext}"
+
+${storyBibleContext}
 
 Continue this story naturally with 2-4 paragraphs that maintain the same tone, style, and narrative direction. The continuation MUST be written entirely in ${language}.
 

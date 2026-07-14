@@ -9,10 +9,8 @@ import ChapterSidebar from "./ChapterSidebar";
 import StoryViewer from "./StoryViewer";
 import ContinueStoryButton from "./ContinueStoryButton";
 import CharacterNetwork from "../CharacterNetwork";
-import StoryCoverGenerator from "../cover-generator/StoryCoverGenerator";
-import StoryChecklist from "../checklist/StoryChecklist";
-import StoryRewritePanel from "../rewrite/StoryRewritePanel";
-import StoryBranchingEditor from "../branching/StoryBranchingEditor";
+import StoryBiblePanel from "./StoryBiblePanel";
+import ContinuityCheckerPanel from "./ContinuityCheckerPanel";
 
 import {
   getSafeFileName,
@@ -25,7 +23,7 @@ const StoryWorkspace = () => {
   const currentStory = useSelector(
     (state: RootState) => state.story.currentStory
   );
-  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network">("editor");
+  const [workspaceMode, setWorkspaceMode] = useState<"editor" | "network" | "bible" | "continuity">("editor");
 
   const [selectedTheme, setSelectedTheme] = useState<
   "Classic" | "Novel" | "Minimal" | "Dark"
@@ -154,6 +152,10 @@ const StoryWorkspace = () => {
     );
   }
 
+  const getFullStoryText = () => {
+    return currentStory.chapters?.map((c) => c.content).join("\n\n") || "";
+  };
+
   return (
     <div className="flex bg-black h-screen">
       <Toaster position="top-right" reverseOrder={false} />
@@ -184,7 +186,27 @@ const StoryWorkspace = () => {
                     : "text-slate-400 hover:text-slate-255"
                 }`}
               >
-                🕸️ Character Network
+                🕸️ Network
+              </button>
+              <button
+                onClick={() => setWorkspaceMode("bible")}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  workspaceMode === "bible"
+                    ? "bg-indigo-600 text-white shadow"
+                    : "text-slate-400 hover:text-slate-255"
+                }`}
+              >
+                📚 Story Bible
+              </button>
+              <button
+                onClick={() => setWorkspaceMode("continuity")}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  workspaceMode === "continuity"
+                    ? "bg-purple-600 text-white shadow"
+                    : "text-slate-400 hover:text-slate-255"
+                }`}
+              >
+                🔍 Continuity
               </button>
             </div>
             <select
@@ -217,7 +239,7 @@ const StoryWorkspace = () => {
               onClick={handleExportDOCX}
               className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded shadow transition flex items-center gap-2 font-semibold cursor-pointer text-sm"
             >
-              ⬇️ Word (DOCX)
+              ⬇️ Word
             </button>
             <button
               onClick={handleExportPDF}
@@ -228,51 +250,42 @@ const StoryWorkspace = () => {
           </div>
         </div>
 
-        {workspaceMode === "editor" ? (
-  <>
-  <div className="p-4 border-b border-zinc-800">
-    <StoryChecklist
-      title={currentStory.title}
-      content={
-        currentStory.chapters
-          ?.map((chapter) => chapter.content)
-          .join("\n\n") || ""
-      }
-    />
-  </div>
+        <div className="flex-1 flex overflow-hidden">
+          {workspaceMode === "editor" && (
+            <div className="flex-1 flex flex-col">
+              <StoryViewer
+                chapters={currentStory.chapters}
+                storyId={currentStory.id}
+              />
+              <div className="p-6 border-t border-zinc-800">
+                <ContinueStoryButton />
+              </div>
+            </div>
+          )}
 
-  <StoryCoverGenerator
-  title={currentStory.title}
-  genre="Fantasy"
-  theme="Adventure"
-  characters={["Hero", "Villain"]}
-/>
+          {workspaceMode === "network" && (
+            <div className="flex-1">
+              <CharacterNetwork storyId={currentStory.id} />
+            </div>
+          )}
 
-<StoryRewritePanel
-  story={
-    currentStory.chapters
-      ?.map((chapter) => chapter.content)
-      .join("\n\n") || ""
-  }
-/>
+          {(workspaceMode === "bible" || workspaceMode === "continuity") && (
+            <div className="flex-1 flex flex-col">
+              <StoryViewer
+                chapters={currentStory.chapters}
+                storyId={currentStory.id}
+              />
+            </div>
+          )}
 
-<StoryBranchingEditor
-  storyTitle={currentStory.title}
-/>
+          {workspaceMode === "bible" && (
+            <StoryBiblePanel storyId={currentStory.id} />
+          )}
 
-  <StoryViewer
-    chapters={currentStory.chapters}
-    storyId={currentStory.id}
-    truncated={currentStory.truncated}
-  />
-
-  <div className="p-6 border-t border-zinc-800">
-    <ContinueStoryButton />
-  </div>
-</>
-        ) : (
-          <CharacterNetwork storyId={currentStory.id} />
-        )}
+          {workspaceMode === "continuity" && (
+            <ContinuityCheckerPanel storyText={getFullStoryText()} storyId={currentStory.id} />
+          )}
+        </div>
       </div>
     </div>
   );

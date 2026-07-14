@@ -26,7 +26,7 @@ import { StoryInspirationRouter } from "../app/modules/story_inspiration/story_i
 import { EngagementRouter } from "../app/modules/engagement/engagement.router";
 import { ChatRouter } from "../app/modules/chat/chat.router";
 import { SearchRouter } from "../app/modules/search/search.router";
-
+import { StoryBibleRoutes } from "../app/modules/story_bible/story_bible.router";
 import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
 import { StoryRatingRouter } from "../app/modules/story_rating/story_rating.router";
 import { CollectionRouter } from "../app/modules/collection/collection.router";
@@ -141,6 +141,10 @@ const modules = [
   {
     path: "/story-visualizer",
     router: StoryVisualizerRouter,
+  },
+  {
+    path: "/story-bible",
+    router: StoryBibleRoutes,
   },
   {
     path: "/story-consistency",

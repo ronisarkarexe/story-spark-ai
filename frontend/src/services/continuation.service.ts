@@ -3,7 +3,12 @@ import { Chapter } from "../types/story.types";
 
 const API_BASE = "/v1";
 
-export const continueStory = async (chapters: Chapter[]) => {
+export const continueStory = async (
+  chapters: Chapter[],
+  storyId?: string,
+  useStoryBible?: boolean,
+  tone?: string
+) => {
   const previousContent = chapters
     .map((chapter) => chapter.content)
     .join("\n\n");
@@ -23,12 +28,15 @@ Rules:
 
 Story:
 ${previousContent}
-        `,
+      `,
+        storyId,
+        useStoryBible,
+        tone,
       },
       { withCredentials: true }
     );
 
-    return response.data.data.continuation;
+    return response.data.data.continuation || response.data.text;
   } catch (error) {
     console.error("Story continuation request failed:", error);
     throw new Error("Failed to continue story.");
