@@ -29,7 +29,7 @@ const inputType =
       : "password"
     : type;
   return (
-    <div>
+    <div className="w-full min-w-0">
       <label htmlFor={name} className="block text-sm font-medium text-gray-400">
         {label}
       </label>
@@ -42,7 +42,7 @@ const inputType =
         <input
           type={inputType}
           id={name}
-          className="w-full pl-8 pr-10 py-1.5 text-base text-gray-200 border outline-1 -outline-offset-1 outline-gray-300 border-gray-300 rounded-md focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+          className="box-border w-full max-w-full pl-8 pr-10 py-1.5 text-base text-gray-200 border outline-1 -outline-offset-1 outline-gray-300 border-gray-300 rounded-md focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
           placeholder={placeholder}
           {...register(name, { required })}
         />
