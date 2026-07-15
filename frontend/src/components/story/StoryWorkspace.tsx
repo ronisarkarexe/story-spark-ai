@@ -18,6 +18,7 @@ import PacingAnalyzer from "../pacing/PacingAnalyzer";
 import OutlineQualityAnalyzer from "../outline-quality/OutlineQualityAnalyzer";
 import DialogueEnhancer from "../dialogue/DialogueEnhancer";
 import TimelineConsistencyChecker from "../timeline/TimelineConsistencyChecker";
+import GenreBlendGenerator from "../genre/GenreBlendGenerator";
 
 import {
   getSafeFileName,
@@ -294,6 +295,13 @@ const StoryWorkspace = () => {
 />
 <TimelineConsistencyChecker
   story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+<GenreBlendGenerator
+  prompt={
     currentStory.chapters
       ?.map((chapter) => chapter.content)
       .join("\n\n") || ""
