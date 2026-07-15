@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-// import jsPDF from "jspdf";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
@@ -48,6 +47,7 @@ const soundtrackMap: Record<string, string> = {
   "🤖 Tech / Sci-Fi": "/audio/sci-fi.mp3",
   "💖 Romance / Love": "/audio/romance.mp3",
 };
+
 
 const LANGUAGES = [
   { code: "en", name: "English" },
@@ -310,6 +310,7 @@ const StoriesComponent: React.FC = () => {
       audioRef.current.src = soundtrack;
       audioRef.current.play().catch(() => {});
     }
+
   }, []);
 
   // Clear prompt
@@ -396,6 +397,7 @@ const StoriesComponent: React.FC = () => {
     onOpenHelp: () => setShowHelpModal(true),
     onCloseHelp: () => setShowHelpModal(false),
     onGenerate: () => {
+      if (isGenerateDisabled) return;
       if (inputRef.current) {
         const form = inputRef.current.closest("form");
         if (form) form.requestSubmit();

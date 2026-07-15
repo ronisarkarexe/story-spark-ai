@@ -66,7 +66,7 @@ const ReviewForm: React.FC = () => {
   const [rating, setRating] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
-  // const [isDark, setIsDark] = useState(false);
+
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
@@ -265,7 +265,6 @@ const ReviewForm: React.FC = () => {
                 <p className="mt-3 text-sm text-gray-400">
                   Select a rating based on your overall experience.
                 </p>
-
                 {errors.rating && (
                   <p className="mt-2 flex items-center gap-1 text-sm font-medium text-red-400">
                     <span>⚠</span>

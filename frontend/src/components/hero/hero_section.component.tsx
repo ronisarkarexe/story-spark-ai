@@ -148,6 +148,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
           </p>
         </div>
       </div>
+
     </div>
   );
 };
@@ -379,9 +380,9 @@ const HeroSectionComponent = () => {
       {/* Features Grid */}
       <motion.div 
         variants={containerVariants}
-        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20 w-full box-border"
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20 w-full box-border mt-16"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => (
             <motion.div key={index} variants={itemVariants}>
               <FeatureCard feature={feature} />

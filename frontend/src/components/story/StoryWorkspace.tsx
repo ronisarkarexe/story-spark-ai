@@ -256,9 +256,7 @@ const StoryWorkspace = () => {
   }
 />
 
-<StoryBranchingEditor
-  storyTitle={currentStory.title}
-/>
+<StoryBranchingEditor />
 
   <StoryViewer
     chapters={currentStory.chapters}

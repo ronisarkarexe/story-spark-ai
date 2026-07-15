@@ -17,7 +17,7 @@ import {
   Square,
   Star,
   Volume2,
-  // Volume,
+  Volume,
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
@@ -182,20 +182,19 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       };
     }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
 
-    // const scrollToTop = () => {
-    //   const container = document.querySelector('[role="region"]');
-    //   if (container) {
-    //     container.scrollTo({ top: 0, behavior: 'smooth' });
-    //   }
-    // };
+    const scrollToTop = () => {
+      const container = document.querySelector('[role="region"]');
+      if (container) {
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
 
-    // const scrollToBottom = () => {
-    //   const container = document.querySelector('[role="region"]');
-    //   if (container) {
-    //     container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-    //   }
-    // };
-
+    const scrollToBottom = () => {
+      const container = document.querySelector('[role="region"]');
+      if (container) {
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      }
+    };
     const isLoading = speech.isSupported && !speech.isReady;
     const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
 
