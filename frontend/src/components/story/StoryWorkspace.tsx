@@ -15,6 +15,7 @@ import StoryRewritePanel from "../rewrite/StoryRewritePanel";
 import StoryBranchingEditor from "../branching/StoryBranchingEditor";
 import PlotHoleDetector from "../plot-hole/PlotHoleDetector";
 import PacingAnalyzer from "../pacing/PacingAnalyzer";
+import OutlineQualityAnalyzer from "../outline-quality/OutlineQualityAnalyzer";
 
 import {
   getSafeFileName,
@@ -270,6 +271,13 @@ const StoryWorkspace = () => {
 />
 <PacingAnalyzer
   story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+<OutlineQualityAnalyzer
+  outline={
     currentStory.chapters
       ?.map((chapter) => chapter.content)
       .join("\n\n") || ""
