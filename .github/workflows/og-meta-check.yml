@@ -1,12 +1,12 @@
 name: Verify OG Meta Tags
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   workflow_dispatch:
-  schedule:
-    - cron: "0 6 * * *"
+  # schedule:
+  #   - cron: "0 6 * * *"
 
 jobs:
   check-og-meta:
