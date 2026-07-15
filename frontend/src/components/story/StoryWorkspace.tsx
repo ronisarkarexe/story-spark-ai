@@ -16,6 +16,7 @@ import StoryBranchingEditor from "../branching/StoryBranchingEditor";
 import PlotHoleDetector from "../plot-hole/PlotHoleDetector";
 import PacingAnalyzer from "../pacing/PacingAnalyzer";
 import OutlineQualityAnalyzer from "../outline-quality/OutlineQualityAnalyzer";
+import DialogueEnhancer from "../dialogue/DialogueEnhancer";
 
 import {
   getSafeFileName,
@@ -278,6 +279,13 @@ const StoryWorkspace = () => {
 />
 <OutlineQualityAnalyzer
   outline={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
+<DialogueEnhancer
+  story={
     currentStory.chapters
       ?.map((chapter) => chapter.content)
       .join("\n\n") || ""
