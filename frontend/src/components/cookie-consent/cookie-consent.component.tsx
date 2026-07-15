@@ -38,9 +38,6 @@ const saveCookiePreferences = (preferences: CookiePreferences) => {
 };
 
 type CookieConsentBannerProps = {
-  // Kept for backward compatibility with RootLayout, which previously reserved
-  // bottom padding for the old fixed banner. The modal no longer pushes layout,
-  // so this is always called with 0.
   onLayoutChange?: (height: number) => void;
 };
 
@@ -199,6 +196,7 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
           >
             Accept all cookies
           </button>
+
           <button
             type="button"
             onClick={handleEssentialOnly}
@@ -210,13 +208,26 @@ const CookieConsentBanner: FC<CookieConsentBannerProps> = ({ onLayoutChange }) =
           >
             Essential cookies only
           </button>
+
+          <button
+            type="button"
+            onClick={handleEssentialOnly} // Pointed to handleEssentialOnly to resolve reference error
+            className={
+              isDark
+                ? "w-full rounded-xl border border-slate-200/10 bg-slate-950 px-5 py-3 text-xs font-bold text-slate-400 transition-all duration-150 hover:text-white hover:bg-slate-900 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider"
+                : "w-full rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-xs font-bold text-slate-600 transition-all duration-150 hover:text-slate-900 hover:bg-slate-100 active:scale-[0.98] cursor-pointer text-center uppercase tracking-wider"
+            }
+          >
+            Reject non-essential cookies
+          </button>
+
           <button
             type="button"
             onClick={handleSavePreferences}
             className={`mt-0.5 cursor-pointer text-center text-xs font-semibold underline-offset-2 transition-colors hover:underline ${mutedText}`}
           >
             Save preferences
-          </button>
+          </button>     
         </div>
       </div>
     </div>
