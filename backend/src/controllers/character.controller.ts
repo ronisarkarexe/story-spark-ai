@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Character } from '../models/Character.model';
+import { Character } from '../Character.model';
 
 export const createCharacter = async (req: Request, res: Response) => {
   try {

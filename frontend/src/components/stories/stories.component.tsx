@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import jsPDF from "jspdf";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
@@ -310,6 +311,7 @@ const StoriesComponent: React.FC = () => {
       audioRef.current.src = soundtrack;
       audioRef.current.play().catch(() => {});
     }
+
 
   }, []);
 

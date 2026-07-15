@@ -67,7 +67,6 @@ const ReviewForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
 
-
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
   const validate = useCallback(() => {

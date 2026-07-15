@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const themes = [
   {
@@ -43,11 +43,21 @@ const themes = [
   },
 ];
 
+function getStoredTheme() {
+  try {
+    const saved = localStorage.getItem("selectedTheme");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return themes.find((t) => t.id === parsed.id) || themes[0];
+    }
+  } catch {
+    // ignore parse errors, fall through to default
+  }
+  return themes[0];
+}
+
 const ThemeSwitcher = () => {
-  const saved = localStorage.getItem("selectedTheme");
-  const [activeTheme, setActiveTheme] = useState(
-    saved ? JSON.parse(saved) : themes[0]
-  );
+  const [activeTheme, setActiveTheme] = useState(getStoredTheme);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -56,7 +66,18 @@ const ThemeSwitcher = () => {
     root.style.setProperty("--accent-color", activeTheme.accent);
     root.style.setProperty("--card-color", activeTheme.card);
     localStorage.setItem("selectedTheme", JSON.stringify(activeTheme));
+    if (activeTheme.name === "Light") {
+      localStorage.setItem("theme", "light");
+      root.classList.remove("dark");
+    } else {
+      localStorage.setItem("theme", "dark");
+      root.classList.add("dark");
+    }
   }, [activeTheme]);
+
+  const handleSelect = useCallback((theme: typeof themes[number]) => {
+    setActiveTheme(theme);
+  }, []);
 
   return (
     <div
@@ -74,7 +95,7 @@ const ThemeSwitcher = () => {
       {themes.map((theme) => (
         <button
           key={theme.id}
-          onClick={() => setActiveTheme(theme)}
+          onClick={() => handleSelect(theme)}
           title={theme.name}
           style={{
             width: "36px",

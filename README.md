@@ -34,6 +34,7 @@
 - [Local Development](#local-development-monorepo)
 - [Environment Variables](#environment-variables)
 - [Minimal Working Example (Story Generation API)](#minimal-working-example-story-generation-api)
+- [API Reference 📡](#api-reference-)
 - [Troubleshooting 🛠️](#troubleshooting-️)
 - [Contributing 👨‍💻](#contributing-)
 - [Contributors 🤝](#contributors-)
@@ -336,6 +337,91 @@ curl -X POST http://localhost:5000/api/v1/story/generate \
 
 ---
 
+## 📡 API Reference
+
+The backend exposes RESTful API endpoints under the `/api` prefix. Below is a summary of the available endpoints.
+
+### Authentication
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:------------:|
+| POST | `/api/auth/register` | Register a new user account | No |
+| POST | `/api/auth/login` | Login and receive access/refresh tokens | No |
+| POST | `/api/auth/refresh` | Refresh an expired access token | No |
+| POST | `/api/auth/logout` | Invalidate the current session | Yes |
+| POST | `/api/otp_validation/verify` | Verify email with OTP code | No |
+
+### Users
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:------------:|
+| GET | `/api/user/profile` | Get current user profile | Yes |
+| PATCH | `/api/user/profile` | Update user profile | Yes |
+| GET | `/api/users/:id` | Get a user's public profile | No |
+
+### Stories
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:------------:|
+| POST | `/api/stories/generate` | Generate a story from a prompt | Yes |
+| GET | `/api/stories` | List stories (with pagination) | No |
+| GET | `/api/stories/:id` | Get a single story | No |
+| PATCH | `/api/stories/:id` | Update a story | Yes |
+| DELETE | `/api/stories/:id` | Delete a story | Yes |
+
+### AI Features
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:------------:|
+| POST | `/api/ai_model/generate` | Generate story with AI model | Yes |
+| POST | `/api/analysis` | Analyze a story (summary, critique) | Yes |
+| POST | `/api/ai-editor/suggest` | Get AI editing suggestions | Yes |
+| POST | `/api/prompt-analysis` | Analyze and enhance a prompt | Yes |
+
+### Social Features
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:------------:|
+| GET | `/api/post` | List community posts | No |
+| POST | `/api/post` | Create a new post | Yes |
+| POST | `/api/review` | Submit a review | Yes |
+| GET | `/api/review` | List reviews | No |
+| POST | `/api/comment` | Add a comment | Yes |
+| POST | `/api/reaction` | React to a story/post | Yes |
+
+### Bookmarks and Collections
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:------------:|
+| POST | `/api/bookmarks` | Bookmark a story | Yes |
+| GET | `/api/bookmarks` | List user bookmarks | Yes |
+| DELETE | `/api/bookmarks/:id` | Remove a bookmark | Yes |
+| GET | `/api/collections` | List user collections | Yes |
+| POST | `/api/collections` | Create a collection | Yes |
+
+### Search and Discovery
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:------------:|
+| GET | `/api/search` | Search stories and users | No |
+| GET | `/api/recommendations` | Get personalized recommendations | Yes |
+| GET | `/api/story-inspiration` | Get writing inspiration prompts | No |
+
+### Story Tools
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:------------:|
+| POST | `/api/story-consistency` | Check story consistency | Yes |
+| POST | `/api/story-rating` | Rate a story | Yes |
+| POST | `/api/plot-holes` | Detect plot holes | Yes |
+| GET | `/api/characters` | List characters in a story | No |
+| GET | `/api/story-visualizer` | Visualize story structure | Yes |
+
+### Other Endpoints
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:------------:|
+| POST | `/api/newsletter` | Subscribe to newsletter | No |
+| POST | `/api/contact` | Send a contact message | No |
+| POST | `/api/bug-reports` | Submit a bug report | Yes |
+| GET | `/api/notifications` | Get user notifications | Yes |
+| POST | `/api/writer-applications` | Apply as a writer | Yes |
+
+> **Note:** All authenticated endpoints require a valid `Authorization: Bearer <token>` header. Some endpoints may require specific subscription plans (e.g., AI features on paid plans).
+
+---
+
 ## 🔧 Troubleshooting 🛠️
 
 **Stories not generating?**
@@ -388,7 +474,31 @@ pnpm install
 > 💡 **Still stuck?** Open an issue or check existing ones — your problem may already have a solution!
 
 ---
+## Architecture
 
+```mermaid
+flowchart TB
+    Client["Client<br/>React + Vite SPA"]
+
+    subgraph Backend["Backend API — Node.js + Express (/api/v1)"]
+        Auth["Auth & Users<br/>JWT, profiles"]
+        StoryEngine["Story Engine<br/>AI generation & continuation"]
+        Payments["Payments<br/>Razorpay checkout"]
+    end
+
+    MongoDB[("MongoDB<br/>Data storage")]
+    AIModel["AI Model<br/>Text generation"]
+    Notify["Notifications<br/>Email + Socket.io"]
+    Razorpay["Razorpay<br/>Payment gateway"]
+
+    Client -- "REST /api/v1 + Socket.io" --> Backend
+    Auth --> MongoDB
+    StoryEngine --> MongoDB
+    StoryEngine --> AIModel
+    Payments --> MongoDB
+    Payments --> Razorpay
+    Backend --> Notify
+```
 ## Contributing 👨‍💻
 
 Contributions make the open source community such an amazing place to learn, inspire, and create.

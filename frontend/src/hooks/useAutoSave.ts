@@ -27,24 +27,6 @@ export async function flushOfflineQueue(queue: Array<{ content: string; timestam
   }
 }
 
-if (typeof window !== "undefined") {
-  window.addEventListener("offline", () => {
-    globalIsOnline = false;
-  });
-
-  window.addEventListener("online", async () => {
-    globalIsOnline = true;
-    if (offlineQueue.length > 0) {
-      try {
-        await flushOfflineQueue(offlineQueue);
-        offlineQueue.length = 0;
-      } catch (error) {
-        console.error("Failed to flush offline queue:", error);
-      }
-    }
-  });
-}
-
 export function useAutoSave(draftId: string, title: string, content: string) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -126,10 +108,13 @@ export function useAutoSave(draftId: string, title: string, content: string) {
     return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
   }, [title, content, save]);
 
+  const saveRef = useRef(save);
+  saveRef.current = save;
+
   useEffect(() => {
-    intervalTimer.current = setInterval(save, AUTOSAVE_INTERVAL_MS);
+    intervalTimer.current = setInterval(() => saveRef.current(), AUTOSAVE_INTERVAL_MS);
     return () => { if (intervalTimer.current) clearInterval(intervalTimer.current); };
-  }, [save]);
+  }, []);
 
   return { saveStatus, lastSaved, isOnline, pendingCount, save };
 }

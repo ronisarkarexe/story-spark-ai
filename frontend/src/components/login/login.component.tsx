@@ -199,7 +199,7 @@ const LoginComponent = () => {
                   label="Password"
                   name="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder="Enter you password"
                   required
                   icon="fi fi-rr-lock"
                   register={register}
@@ -217,7 +217,7 @@ const LoginComponent = () => {
                 <div className="flex justify-end pt-2">
                   <Link
                     to="/forgot-password"
-                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors focus:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm"
                   >
                     Forgot Password?
                   </Link>
@@ -231,7 +231,7 @@ const LoginComponent = () => {
                     isLoading={isBusy}
                     disabled={isBusy}
                 />
-              </div>
+              </div>a
             </form>
 
             <div className="relative my-8 w-full">

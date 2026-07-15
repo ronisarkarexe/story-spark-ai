@@ -84,7 +84,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
 
     // ✅ FIX: Calculate actual word count from story text
     const actualTotalWords = useMemo(() => getWordCount(text), [text]);
-
     const speedSelectId = useId();
     const voiceGenderSelectId = useId();
     const languageSelectId = useId();
