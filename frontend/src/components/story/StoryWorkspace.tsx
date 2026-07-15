@@ -20,6 +20,7 @@ import DialogueEnhancer from "../dialogue/DialogueEnhancer";
 import TimelineConsistencyChecker from "../timeline/TimelineConsistencyChecker";
 import GenreBlendGenerator from "../genre/GenreBlendGenerator";
 import RelationshipGraph from "../relationship/RelationshipGraph";
+import GenreWeightControls from "../genre/GenreWeightControls";
 
 
 import {
@@ -324,6 +325,8 @@ const StoryWorkspace = () => {
       .join("\n\n") || ""
   }
 />
+
+<GenreWeightControls />
 
   <StoryViewer
     chapters={currentStory.chapters}
