@@ -22,6 +22,7 @@ import GenreBlendGenerator from "../genre/GenreBlendGenerator";
 import RelationshipGraph from "../relationship/RelationshipGraph";
 import GenreWeightControls from "../genre/GenreWeightControls";
 import StoryStylePresets from "../style/StoryStylePresets";
+import StoryPerspectiveSwitcher from "../perspective/StoryPerspectiveSwitcher";
 
 
 import {
@@ -329,6 +330,14 @@ const StoryWorkspace = () => {
 
 <GenreWeightControls />
 <StoryStylePresets />
+
+<StoryPerspectiveSwitcher
+  story={
+    currentStory.chapters
+      ?.map((chapter) => chapter.content)
+      .join("\n\n") || ""
+  }
+/>
 
   <StoryViewer
     chapters={currentStory.chapters}
