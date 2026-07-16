@@ -5,8 +5,13 @@
 
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Create Account | Story Spark AI</title>
-    <meta name="description" content="Sign in or create an account for Story Spark AI — turn your imagination into fully illustrated multi-variation AI stories."/>
+
+    <title>Sign Up | Story Spark AI</title>
+
+    <meta
+        name="description"
+        content="Create an account for Story Spark AI."
+    />
 
     <!-- FONTS -->
 
@@ -35,108 +40,10 @@
     <link href="auth.css" rel="stylesheet"/>
 
 </head>
-<body class="bg-background text-on-surface font-body-md min-h-screen selection:bg-primary/30">
-<noscript>
-  <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#101319;color:#e1e2ea;font-family:sans-serif;text-align:center;padding:2rem;">
-    <div>
-      <h1 style="font-size:1.5rem;margin-bottom:1rem;">JavaScript is required</h1>
-      <p>Story Spark AI requires JavaScript to run. Please enable JavaScript in your browser settings and reload the page.</p>
-    </div>
-  </div>
-</noscript>
-<div class="min-h-screen flex items-center justify-center p-4 md:p-0">
-<main class="auth-container flex flex-col md:flex-row overflow-hidden md:rounded-2xl">
+<body>
 
-    <!-- Left Pane: Concept Showcase -->
-    <section class="relative w-full md:w-1/2 flex items-center justify-center p-6 md:p-8 overflow-hidden bg-surface-container-lowest left-pane-mobile">
-        <!-- Animated Particle Canvas -->
-        <canvas id="particle-canvas"></canvas>
-        <div class="left-pane-overlay"></div>
-        <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-tertiary/5 z-0"></div>
-
-        <div class="relative z-10 max-w-lg">
-            <div class="mb-8">
-                <h1 class="font-display-lg mb-4 leading-tight text-display-lg-mobile md:text-display-lg">
-                    One Spark.<br/>
-                    <span class="text-transparent bg-clip-text hero-gradient">Infinite Worlds.</span>
-                </h1>
-                <p class="text-on-surface-variant max-w-md text-[15px] leading-relaxed">
-                    Turn your imagination into fully illustrated multi-variation AI stories. Experience storytelling where every choice ignites a new visual path.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Right Pane: Auth Form -->
-    <section class="w-full md:w-1/2 flex items-center justify-center p-4 md:p-10 bg-surface z-10">
-        <div class="auth-form-card glass-panel p-6 md:p-8 rounded-2xl relative">
-            <!-- Brand Anchor -->
-            <div class="flex justify-center mb-5">
-                <div class="font-display-lg text-[18px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary">
-                    Story Spark AI
-                </div>
-            </div>
-
-            <!-- Header -->
-            <div class="mb-5">
-                <h2 class="text-[20px] font-bold text-on-surface leading-tight">Create your account</h2>
-                <p class="text-[13px] text-on-surface-variant mt-1">Start generating illustrated stories in minutes.</p>
-            </div>
-
-            <!-- Tab Switcher -->
-            <div class="flex border-b border-white/10 mb-5 overflow-hidden">
-                <a href="login.html" class="flex-1 pb-3 font-label-caps text-label-caps text-on-surface-variant border-b-2 border-transparent hover:text-on-surface transition-all duration-300" id="tab-signin">SIGN IN</a>
-                <button class="flex-1 pb-3 font-label-caps text-label-caps text-primary border-b-2 border-primary transition-all duration-300" id="tab-signup" onclick="toggleAuthMode('signup')">CREATE ACCOUNT</button>
-            </div>
-
-            <!-- Social Auth -->
-            <div class="flex gap-3 mb-4">
-                <button onclick="handleGoogleSignIn()" type="button" class="flex-1 flex items-center justify-center gap-2 ds-btn-google glass-panel hover:bg-white/5 hover:-translate-y-0.5 transition-all duration-300 border border-white/10 group" id="google-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.07 5.07 0 01-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09a6.97 6.97 0 010-4.18V7.07H2.18A11 11 0 001 12c0 1.78.43 3.45 1.18 4.93l3.85-2.84z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    <span class="text-[13px] font-semibold text-on-surface-variant group-hover:text-on-surface" id="google-btn-text">sign in with Google</span>
-                </button>
-            </div>
-
-            <!-- Google Auth Status Banner -->
-            <div id="google-auth-status" class="hidden mb-3 p-3 rounded-xl border border-primary/20 bg-primary/5 flex items-center gap-3">
-                <img loading="lazy" id="google-user-avatar" class="w-8 h-8 rounded-full border border-white/10" src="" alt=""/>
-                <div class="flex-1 min-w-0">
-                    <div class="text-sm font-semibold text-on-surface truncate" id="google-user-name"></div>
-                    <div class="text-xs text-on-surface-variant truncate" id="google-user-email"></div>
-                </div>
-                <i class="fi fi-rr-check-circle text-green-400 text-lg"></i>
-            </div>
-
-            <div class="flex items-center gap-3 mb-4">
-                <div class="h-[1px] flex-1 bg-white/[0.08]"></div>
-                <span class="text-[11px] text-outline uppercase tracking-widest font-bold">Or use email</span>
-                <div class="h-[1px] flex-1 bg-white/[0.08]"></div>
-            </div>
-
-            <!-- Auth Forms -->
-            <div id="form-alert" class="ds-alert hidden" role="status" aria-live="polite"></div>
-
-            <form class="space-y-4" id="auth-form" novalidate>
-                <div class="animate-in fade-in duration-500 ds-field" id="signup-fields">
-                    <label class="block text-label-caps text-on-surface-variant mb-2" for="name-field">FULL NAME</label>
-                    <div class="ds-input-group">
-                        <i class="fi fi-rr-user ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="auth-field w-full ds-input with-icon pl-11" placeholder="Alex Spark" type="text" id="name-field" name="name" autocomplete="name" required aria-describedby="name-help name-error" aria-invalid="false"/>
-                    </div>
-                    <p class="ds-help" id="name-help">This will be shown on your profile.</p>
-                    <p class="ds-error" id="name-error" role="alert" aria-live="polite"></p>
-                </div>
-                <div class="ds-field">
-                    <label class="block text-label-caps text-on-surface-variant mb-2" for="email-field">EMAIL ADDRESS</label>
-                    <div class="ds-input-group">
-                        <i class="fi fi-rr-envelope ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="auth-field w-full ds-input with-icon pl-11" placeholder="name@storyspark.ai" type="email" id="email-field" name="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required aria-describedby="email-help email-error" aria-invalid="false"/>
-
+    <!-- PARTICLE CANVAS BACKGROUND -->
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
     <!-- MAIN WRAPPER -->
 
@@ -146,44 +53,8 @@
 
         <main class="auth-container">
 
-            <!-- LEFT PANEL -->
-
-            <section class="left-pane">
-
-                <div class="hero-content">
-
-    <div class="hero-badge">
-
-        <span
-            class="fi fi-rr-sparkles"
-            style="margin-right:8px;"
-        ></span>
-
-        Story Spark AI
-
-    </div>
-
-    <h1 class="hero-title">
-
-        One Spark.<br>
-
-        <span class="hero-gradient">
-            Infinite Worlds.
-        </span>
-
-    </h1>
-
-    <p class="hero-description">
-
-        Create immersive AI-generated stories with
-        visuals, branching paths, and limitless
-        imagination.
-
-    </p>
-
-</div>
-
-            </section>
+            <!-- LEFT PANEL (HIDDEN IN CSS) -->
+            <section class="left-pane"></section>
 
             <!-- RIGHT PANEL -->
 
@@ -191,89 +62,35 @@
 
                 <div class="auth-form-card">
 
-                    <!-- MOBILE LOGO -->
-
-                    <div class="flex justify-center md:hidden">
-
-                        <div
-                            style="
-                                font-size:18px;
-                                font-weight:800;
-                            "
-                            class="hero-gradient"
-                        >
-                            Story Spark AI
+                    <!-- CARD BRANDING -->
+                    <div class="auth-card-brand">
+                        <div class="auth-card-icon">
+                            <i class="fi fi-rr-sparkles" style="color: white; font-size: 18px;"></i>
                         </div>
-
-                    </div>
-
-                    <!-- HEADER -->
-
-                    <div class="auth-header">
-
-                        <h2
-                            class="auth-title"
-                            id="form-title"
-                        >
-                            Create account
-                        </h2>
-
-                        <p
-                            class="auth-subtitle"
-                            id="form-subtitle"
-                        >
-                            Start creating AI-powered stories today.
-                        </p>
-
+                        <div class="auth-card-title">Story Spark AI</div>
                     </div>
 
                     <!-- TABS -->
-<div
-    style="
-        display:flex;
-        border-bottom:1px solid rgba(255,255,255,.08);
-    "
->
 
-    <button
-        id="tab-signin"
-        onclick="window.location.href='login.html'"
-        style="
-            flex:1;
-            padding-bottom:16px;
-            background:none;
-            border:none;
-            border-bottom:2px solid transparent;
-            color:rgba(255,255,255,.5);
-            font-size:12px;
-            font-weight:700;
-            letter-spacing:2px;
-            cursor:pointer;
-        "
-    >
-        LOG IN
-    </button>
+                    <div class="auth-tabs">
 
-    <button
-        id="tab-signup"
-        onclick="window.location.href='signup.html'"
-        style="
-            flex:1;
-            padding-bottom:16px;
-            background:none;
-            border:none;
-            border-bottom:2px solid #8b5cf6;
-            color:#8b5cf6;
-            font-size:12px;
-            font-weight:700;
-            letter-spacing:2px;
-            cursor:pointer;
-        "
-    >
-        SIGN UP
-    </button>
+                        <button
+                            id="tab-signin"
+                            class="auth-tab"
+                            onclick="window.location.href='login.html'"
+                        >
+                            Log In
+                        </button>
 
-</div>
+                        <button
+                            id="tab-signup"
+                            class="auth-tab auth-tab-active"
+                            onclick="window.location.href='signup.html'"
+                        >
+                            Sign Up
+                        </button>
+
+                    </div>
 
                     <!-- GOOGLE BUTTON -->
 
@@ -282,82 +99,115 @@
                         type="button"
                         class="ds-btn-google"
                     >
-
-                        <div
-                            style="
-                                display:flex;
-                                align-items:center;
-                                justify-content:center;
-                                gap:12px;
-                            "
-                        >
-
-                            <svg
-                                width="18"
-                                height="18"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                            >
-
-                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.07 5.07 0 01-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                                <path d="M5.84 14.09a6.97 6.97 0 010-4.18V7.07H2.18A11 11 0 001 12c0 1.78.43 3.45 1.18 4.93l3.85-2.84z" fill="#FBBC05"/>
-                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-
-                            </svg>
-
-                            <span
-                                style="
-                                    font-size:14px;
-                                    font-weight:600;
-                                "
-                            >
-                                Continue with Google
-                            </span>
-
-                        </div>
-
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.07 5.07 0 01-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09a6.97 6.97 0 010-4.18V7.07H2.18A11 11 0 001 12c0 1.78.43 3.45 1.18 4.93l3.85-2.84z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        <span>Continue with Google</span>
                     </button>
 
                     <!-- DIVIDER -->
-
                     <div class="auth-divider">
-
                         <div class="auth-divider-line"></div>
-
-                        <span class="auth-divider-text">
-                            OR
-                        </span>
-
+                        <span class="auth-divider-text">OR</span>
                         <div class="auth-divider-line"></div>
+                    </div>
 
-                    </div>
-                    <div class="ds-meter" aria-hidden="true"><div class="ds-meter-bar" id="password-meter-bar"></div></div>
-                    <p class="ds-help" id="password-help">Use 8+ characters with a mix of letters and numbers.</p>
-                    <div id="password-checklist" class="mt-3 space-y-1 text-sm">
-                        <p id="rule-length" class="text-red-400">✗ At least 8 characters</p>
-                        <p id="rule-upper" class="text-red-400">✗ One uppercase letter</p>
-                        <p id="rule-lower" class="text-red-400">✗ One lowercase letter</p>
-                        <p id="rule-number" class="text-red-400">✗ One number</p>
-                        <p id="rule-special" class="text-red-400">✗ One special character</p>
-                    </div>
-                    <p class="ds-help" id="password-strength"></p>
-                    <p class="ds-error" id="password-error" role="alert" aria-live="polite"></p>
-                    <p 
-                 id="signup-caps-lock-warning" 
-                 class="hidden text-yellow-400 text-sm mt-2"
-                 >
-                 Caps Lock is ON
-                </p>
-                </div>
-                <div class="ds-field">
-                    <label class="block text-label-caps text-on-surface-variant mb-2" for="confirm-password-field">CONFIRM PASSWORD</label>
-                    <div class="ds-input-group has-action">
-                        <i class="fi fi-rr-lock ds-input-icon text-[16px] absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/80"></i>
-                        <input class="w-full ds-input with-icon pl-11 pr-11" id="confirm-password-field" name="confirmPassword" autocomplete="new-password" placeholder="Re-enter your password" type="password" required aria-describedby="confirm-password-help confirm-password-error confirm-password-feedback" aria-invalid="false"/>
-                        <button class="ds-input-action flex items-center justify-center" onclick="toggleConfirmPasswordVisibility()" type="button" aria-label="Toggle confirm password visibility">
-                            <i class="fi fi-rr-eye-crossed text-[16px]" id="confirm-eye-icon"></i>
-                        </button>
+                    <div id="form-alert" class="ds-alert hidden" role="status" aria-live="polite"></div>
+
+                    <!-- FORM -->
+                    <form
+                        class="auth-form"
+                        id="auth-form"
+                        novalidate
+                    >
+
+                        <div class="auth-fields">
+
+                            <!-- NAME -->
+                            <div id="signup-fields">
+                                <label class="ds-label" for="name-field">Full Name</label>
+                                <div class="ds-input-group">
+                                    <i class="fi fi-rr-user ds-input-icon"></i>
+                                    <input type="text" id="name-field" placeholder="Alex Spark" autocomplete="name" required />
+                                </div>
+                                <p class="ds-help" id="name-help">This will be shown on your profile.</p>
+                                <p class="ds-error" id="name-error" role="alert" aria-live="polite"></p>
+                            </div>
+
+                            <!-- EMAIL -->
+                            <div>
+                                <label class="ds-label" for="email-field">Email Address</label>
+                                <div class="ds-input-group">
+                                    <i class="fi fi-rr-envelope ds-input-icon"></i>
+                                    <input type="email" id="email-field" placeholder="name@storyspark.ai" autocomplete="email" required aria-describedby="email-error" />
+                                </div>
+                                <p class="ds-error" id="email-error" role="alert" aria-live="polite"></p>
+                            </div>
+
+                            <!-- PASSWORD -->
+                            <div>
+                                <label class="ds-label" for="password-field">Password</label>
+                                <div class="ds-input-group">
+                                    <i class="fi fi-rr-lock ds-input-icon"></i>
+                                    <input id="password-field" placeholder="••••••••" type="password" autocomplete="new-password" required />
+                                    <button onclick="togglePasswordVisibility()" type="button" aria-label="Toggle password visibility" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); display:flex; align-items:center; justify-content:center; padding:0; margin:0; background:none; border:none; color:rgba(255,255,255,.5); cursor:pointer;">
+                                        <i class="fi fi-rr-eye-crossed" id="eye-icon"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="ds-meter" aria-hidden="true" style="margin-top: 8px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                                    <div class="ds-meter-bar" id="password-meter-bar" style="height: 100%; width: 0%; background: #8b5cf6; transition: 0.3s;"></div>
+                                </div>
+                                <p class="ds-help" id="password-help">Use 8+ characters with a mix of letters and numbers.</p>
+                                <div id="password-checklist" style="display:flex; flex-direction:column; gap:4px; margin-top:8px; font-size:12px;">
+                                    <p id="rule-length" class="text-red-400">✗ At least 8 characters</p>
+                                    <p id="rule-upper" class="text-red-400">✗ One uppercase letter</p>
+                                    <p id="rule-lower" class="text-red-400">✗ One lowercase letter</p>
+                                    <p id="rule-number" class="text-red-400">✗ One number</p>
+                                    <p id="rule-special" class="text-red-400">✗ One special character</p>
+                                </div>
+                                <p class="ds-help" id="password-strength"></p>
+                                <p class="ds-error" id="password-error" role="alert" aria-live="polite"></p>
+                                <p id="signup-caps-lock-warning" class="hidden text-yellow-400 text-sm mt-2">Caps Lock is ON</p>
+                            </div>
+
+                            <!-- CONFIRM PASSWORD -->
+                            <div>
+                                <label class="ds-label" for="confirm-password-field">Confirm Password</label>
+                                <div class="ds-input-group">
+                                    <i class="fi fi-rr-lock ds-input-icon"></i>
+                                    <input id="confirm-password-field" placeholder="Re-enter your password" type="password" autocomplete="new-password" required aria-describedby="confirm-password-error" />
+                                </div>
+                                <p class="ds-error" id="confirm-password-error" role="alert" aria-live="polite"></p>
+                                <p id="confirm-caps-lock-warning" class="hidden text-yellow-400 text-sm mt-2">Caps Lock is ON</p>
+                            </div>
+
+                        </div>
+
+                        <!-- TERMS -->
+                        <div class="auth-terms">
+                            <input id="terms-checkbox" type="checkbox" required>
+                            <div class="auth-terms-text">
+                                I agree to the <a href="javascript:void(0)" onclick="openLegalModal('terms')">Terms</a> and <a href="javascript:void(0)" onclick="openLegalModal('privacy')">Privacy Policy</a>
+                            </div>
+                        </div>
+
+                        <!-- BUTTON -->
+                        <div class="auth-actions">
+                            <button class="ds-btn-submit" id="submit-btn" type="submit">
+                                <span class="btn-spinner" id="btn-spinner"></span>
+                                <span class="btn-label" id="btn-label">Sign Up</span>
+                            </button>
+                        </div>
+
+                    </form>
+
+                    <!-- FOOTER -->
+                    <div class="auth-footer" id="nav-toggle">
+                        Already have an account? <a href="login.html">Log In</a>
                     </div>
 
                 </div>
@@ -369,52 +219,18 @@
     </div>
 
     <!-- LEGAL MODAL -->
-
-    <div
-        id="legal-modal"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300"
-    >
-
-        <div
-            id="legal-modal-content"
-            class="glass-panel"
-            style="
-                width:100%;
-                max-width:560px;
-                padding:32px;
-                border-radius:28px;
-                position:relative;
-            "
-        >
-
-            <button
-                onclick="closeLegalModal()"
-                aria-label="Close modal"
-                style="
-                    position:absolute;
-                    right:24px;
-                    top:24px;
-                    background:none;
-                    border:none;
-                    color:rgba(255,255,255,.6);
-                    cursor:pointer;
-                "
-            >
-
-                <i class="fi fi-rr-cross-small"></i>
-
+    <div id="legal-modal" class="legal-modal">
+        <div id="legal-modal-content" class="legal-modal-content">
+            <button onclick="closeLegalModal()" aria-label="Close modal" style="position:absolute; right:24px; top:24px; background:none; border:none; color:var(--text-muted); cursor:pointer;">
+                <i class="fi fi-rr-cross-small" style="font-size: 20px;"></i>
             </button>
-
-            
-
+            <h3 id="legal-modal-title" style="margin-bottom:16px; font-size:24px; font-weight:700; color:var(--text);"></h3>
+            <div id="legal-modal-text" style="font-size:14px; line-height:1.6; color:var(--text-muted); max-height:60vh; overflow-y:auto;"></div>
         </div>
-
     </div>
 
     <!-- SCRIPT -->
-
     <script src="auth.js" defer></script>
 
 </body>
-
 </html>

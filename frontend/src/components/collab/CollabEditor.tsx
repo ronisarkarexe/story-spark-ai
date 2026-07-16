@@ -64,8 +64,9 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     quillCursorsRef.current = cursors as unknown as QuillCursorsModule;
 
     // Bind Yjs text to Quill
-    new QuillBinding(ytext, quill);
+    const binding = new QuillBinding(ytext, quill);
 
+    // Setup awareness for presence
     const awareness = new Awareness(ydoc);
     awarenessRef.current = awareness;
     awareness.setLocalStateField('user', {
@@ -106,46 +107,71 @@ export default function CollabEditor({ storyId, userId, username, userColor }: C
     };
     awareness.on('update', renderRemoteCursors);
 
-    // Connect to backend socket.io namespace for Yjs sync
+    // Connect to backend socket.io namespace for Yjs sync.
+    // If VITE_SOCKET_URL is unconfigured, resolveSocketUrl() returns "".
+    // Skip the socket entirely so we don't attempt a doomed connection to
+    // the app's own origin (which has no Socket.IO server) and retry forever.
+    // The editor still works locally via Yjs + IndexedDB persistence.
     const socketUrl = resolveSocketUrl();
-    const socket = io(`${socketUrl}/yjs`, {
-      transports: ['websocket', 'polling'],
-      query: { storyId },
-      withCredentials: true,
-    });
-    socketRef.current = socket;
+    let socket: Socket | null = null;
+    let sendUpdate: ((update: Uint8Array) => void) | null = null;
 
-    // Receive initial sync from server
-    socket.on('sync', (update: Uint8Array) => {
-      Y.applyUpdate(ydoc, update);
-    });
+    if (socketUrl) {
+      socket = io(`${socketUrl}/yjs`, {
+        transports: ['websocket', 'polling'],
+        query: { storyId },
+        withCredentials: true,
+      });
+      socketRef.current = socket;
 
-    // Receive remote updates
-    socket.on('update', (update: Uint8Array) => {
-      Y.applyUpdate(ydoc, update);
-    });
+      socket.on('connect_error', (err: Error) => {
+        console.warn('[Story Spark] Collab editor socket connection error:', err.message);
+      });
 
-    // Broadcast local updates
-    const sendUpdate = (update: Uint8Array) => {
-      socket.emit('update', update);
-    };
-    ydoc.on('update', sendUpdate);
+      // Receive initial sync from server
+      socket.on('sync', (update: Uint8Array) => {
+        Y.applyUpdate(ydoc, update);
+      });
 
-    // Awareness updates
-    const sendAwareness = (awarenessUpdate: Uint8Array) => {
-      socket.emit('awareness', awarenessUpdate);
-    };
-    awareness.on('update', ({ added, updated, removed }: { added: Array<number>; updated: Array<number>; removed: Array<number> }) => {
-      const awUpdate = encodeAwarenessUpdate(awareness, added.concat(updated).concat(removed));
-      sendAwareness(awUpdate);
-    });
-    socket.on('awareness', (aw: Uint8Array) => {
-      applyAwarenessUpdate(awareness, aw, 'remote');
-    });
+      // Receive remote updates
+      socket.on('update', (update: Uint8Array) => {
+        Y.applyUpdate(ydoc, update);
+      });
+
+      // Broadcast local updates
+      sendUpdate = (update: Uint8Array) => {
+        socket!.emit('update', update);
+      };
+      ydoc.on('update', sendUpdate);
+
+      // Awareness updates
+      const sendAwareness = (awarenessUpdate: Uint8Array) => {
+        socket!.emit('awareness', awarenessUpdate);
+      };
+      awareness.on('update', ({ added, updated, removed }: { added: Array<number>; updated: Array<number>; removed: Array<number> }) => {
+        const awUpdate = encodeAwarenessUpdate(awareness, added.concat(updated).concat(removed));
+        sendAwareness(awUpdate);
+      });
+      socket.on('awareness', (aw: Uint8Array) => {
+        applyAwarenessUpdate(awareness, aw, 'remote');
+      });
+    } else {
+      console.warn(
+        '[Story Spark] Real-time sync disabled: VITE_SOCKET_URL is not configured. ' +
+        'The collaborative editor will work locally only (no live sync between users).'
+      );
+    }
 
     return () => {
-      ydoc.off('update', sendUpdate);
-      socket.disconnect();
+      if (sendUpdate) {
+        ydoc.off('update', sendUpdate);
+      }
+      socket?.disconnect();
+      awareness.off('update', renderRemoteCursors);
+      awareness.destroy();
+      binding.destroy();
+      persistence.destroy();
+      ydoc.destroy();
     };
   }, [storyId, userId, username, userColor]);
 

@@ -1,9 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-type WordRange = {
-  start: number;
-  end: number;
-};
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
 export interface SpeechVoiceOption {
   id: string;
@@ -21,6 +16,11 @@ export interface SpeechProgress {
   currentWordIndex: number;
   totalWords: number;
   percentage: number;
+}
+
+export interface WordRange {
+  start: number;
+  end: number;
 }
 
 export interface UseSpeechSynthesisResult {
@@ -63,7 +63,6 @@ const clampRate = (nextRate: number): number => {
   if (Number.isNaN(nextRate)) {
     return 1;
   }
-
   return Math.min(SPEED_MAX, Math.max(SPEED_MIN, nextRate));
 };
 
@@ -94,7 +93,10 @@ const filterVoicesByGender = (
   const pattern = gender === "female" ? femalePattern : malePattern;
   const filtered = browserVoices.filter((voice) => pattern.test(voice.name));
 
-  return filtered.length > 0 ? filtered : browserVoices;
+  if (filtered.length < 3) {
+    return browserVoices;
+  }
+  return filtered;
 };
 
 const toVoiceOptions = (browserVoices: SpeechSynthesisVoice[]): SpeechVoiceOption[] =>
@@ -158,8 +160,6 @@ export const useSpeechSynthesis = (
   text: string = "",
   voiceGender?: "female" | "male",
 ): UseSpeechSynthesisResult => {
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const browserVoicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   const [isSupported, setIsSupported] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -174,30 +174,11 @@ export const useSpeechSynthesis = (
   const [selectedVoiceId, setSelectedVoiceId] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("en-US");
 
-  const voices = useMemo(
-    () => toVoiceOptions(filterVoicesByGender(browserVoices, voiceGender)),
-    [browserVoices, voiceGender],
-  );
-
-  const languageOptions = useMemo<LanguageOption[]>(() => {
-    const counts = new Map<string, number>();
-    for (const voice of voices) {
-      counts.set(voice.lang, (counts.get(voice.lang) ?? 0) + 1);
-    }
-
-    return Array.from(counts.entries())
-      .map(([lang, voiceCount]) => ({
-        lang,
-        label: getLanguageLabel(lang),
-        voiceCount,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [voices]);
-
   const synthRef = useRef<SpeechSynthesis | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const textRef = useRef(text);
   const wordRangesRef = useRef<WordRange[]>(buildWordRanges(text));
-
+  const browserVoicesRef = useRef<SpeechSynthesisVoice[]>([]);
   useEffect(() => {
     textRef.current = text;
     wordRangesRef.current = buildWordRanges(text);
@@ -283,6 +264,7 @@ export const useSpeechSynthesis = (
       utterance.rate = rateState;
       utterance.pitch = pitchState;
       utterance.volume = volumeState;
+      utterance.lang = selectedLanguage;
 
       const browserVoice = resolveBrowserVoice(selectedVoiceId);
       if (browserVoice) {
@@ -335,7 +317,7 @@ export const useSpeechSynthesis = (
       synthRef.current.speak(utterance);
       setCurrentWordIndex(0);
     },
-    [isSupported, rateState, pitchState, volumeState, resolveBrowserVoice, selectedVoiceId, stop],
+    [browserVoices, isSupported, rateState, pitchState, volumeState, selectedVoiceId, selectedLanguage, stop, resolveBrowserVoice],
   );
 
   const pause = useCallback(() => {
@@ -360,19 +342,31 @@ export const useSpeechSynthesis = (
 
   const setPitch = useCallback((nextPitch: number) => {
     setPitchState(nextPitch);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.pitch = nextPitch;
-    }
   }, []);
 
   const setVolume = useCallback((nextVolume: number) => {
     setVolumeState(nextVolume);
-
-    if (utteranceRef.current) {
-      utteranceRef.current.volume = nextVolume;
-    }
   }, []);
+
+  const voices = useMemo(
+    () => toVoiceOptions(filterVoicesByGender(browserVoices, voiceGender)),
+    [browserVoices, voiceGender],
+  );
+
+  const languageOptions = useMemo<LanguageOption[]>(() => {
+    const counts = new Map<string, number>();
+    for (const voice of voices) {
+      counts.set(voice.lang, (counts.get(voice.lang) ?? 0) + 1);
+    }
+
+    return Array.from(counts.entries())
+      .map(([lang, voiceCount]) => ({
+        lang,
+        label: getLanguageLabel(lang),
+        voiceCount,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [voices]);
 
   useEffect(() => {
     if (voices.length === 0) {
