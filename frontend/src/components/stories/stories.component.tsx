@@ -661,6 +661,7 @@ useEffect(() => {
 
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
   const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
+  const [selectedAudience, setSelectedAudience] = useState<string>("General Audience");
   const [textareaValue, setTextareaValue] = useState<string>(() => {
     return location.state?.prompt || draft?.prompt || "";
   });
@@ -1016,6 +1017,7 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
         wordLength: selectedLength === "short" ? 175 : selectedLength === "long" ? 800 : 450,
         language: selectedLanguage,
         tone: selectedTone || undefined,
+        targetAudience: selectedAudience,
         characters: characters.map(({ name, role, personality }) => ({ name, role, personality })),
       };
 
@@ -2096,6 +2098,24 @@ onKeyDown={(e) => {
           }`}
         >
           {length.charAt(0).toUpperCase() + length.slice(1)}
+        </button>
+      ))}
+    </div>
+
+    <div className="flex flex-wrap items-center gap-2 mb-3">
+      <span className="text-xs text-gray-400 mr-1">👥 Audience:</span>
+      {["Children (5-10)", "Young Adult (12-18)", "General Audience", "Professionals"].map((audience) => (
+        <button
+          key={audience}
+          type="button"
+          onClick={() => setSelectedAudience(audience)}
+          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+            selectedAudience === audience
+              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+          }`}
+        >
+          {audience}
         </button>
       ))}
     </div>
