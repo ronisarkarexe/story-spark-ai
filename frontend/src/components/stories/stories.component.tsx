@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import jsPDF from "jspdf";
-import logo from "../../assets/logo.png";
 import StoriesViewComponent from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
@@ -536,21 +535,20 @@ const StoriesComponent = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
 
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(draft?.language || "English");
+  const [selectedLanguage] = useState<string>(draft?.language || "English");
   const [selectedGenre, setSelectedGenre] = useState<string>(
     draft?.genre
       ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
       : "🧙 Fantasy"
   );
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">((draft?.tone as ToneLabel) || "");
+  const [selectedTone] = useState<ToneLabel | "">((draft?.tone as ToneLabel) || "");
   const [characters, setCharacters] = useState<ICharacter[]>([]);
-  const [isHighLatency, setIsHighLatency] = useState<boolean>(false);
   const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
   const isGenerationInProgressRef = useRef(false);
   const [topics, setTopics] = useState<ITopicData[]>(topicsData);
   const [newTopicTitle, setNewTopicTitle] = useState("");
-  const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
+  const { addPrompt } = useRecentPrompts();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
@@ -580,7 +578,6 @@ const StoriesComponent = () => {
     }
     isGenerationInProgressRef.current = false;
     setLoading(false);
-    setIsHighLatency(false);
     if (showToast) {
       toast.success("Generation cancelled.");
     }
@@ -720,13 +717,7 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
     }
 
     setLoading(true);
-    setIsHighLatency(false);
     isGenerationInProgressRef.current = true;
-
-    // Timeout to simulate high latency state if generation takes more than 5s
-    let latencyTimeoutId: ReturnType<typeof setTimeout> | null = setTimeout(() => {
-      setIsHighLatency(true);
-    }, 5000);
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -780,13 +771,9 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      if (latencyTimeoutId) {
-        clearTimeout(latencyTimeoutId);
-      }
       activeGenerationRef.current = null;
       isGenerationInProgressRef.current = false;
       setLoading(false);
-      setIsHighLatency(false);
     }
   }, [
     login,
