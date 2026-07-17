@@ -45,7 +45,7 @@ type Inputs = {
 const MAX_PROMPT_LENGTH = 2000;
 const lengths = ["short", "medium", "long"] as const;
 
-const WARN_THRESHOLD = 0.8;
+const WARN_THRESHOLD = 0.85;
 const DANGER_THRESHOLD = 0.95;
 
 const LANGUAGES = [
@@ -681,15 +681,31 @@ useEffect(() => {
   return () => {
     document.removeEventListener("mousedown", handleClickOutside);
     document.removeEventListener("keydown", handleKeyDown);
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
   };
 }, []);
 
 useEffect(() => {
-  if (location.state && location.state.prompt) {
-    setTextareaValue(location.state.prompt);
-    navigate(location.pathname, { replace: true, state: {} });
+  if (location.state) {
+    if (location.state.prompt) {
+      setTextareaValue(location.state.prompt);
+    }
+
+    if (location.state.genre) {
+      const matchedGenre =
+        GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
+      setSelectedGenre(matchedGenre);
+    }
+
+    navigate(location.pathname, {
+      replace: true,
+      state: {},
+    });
   }
-}, [location, navigate]);
+}, [location, navigate, setSelectedGenre, setTextareaValue]);
+
 
 useEffect(() => {
   setValue("prompt", textareaValue);
@@ -872,7 +888,6 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
               </div>
             </Link>
           </div>
-
           {!login && (
             <div className="pt-2 text-center">
               <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed">

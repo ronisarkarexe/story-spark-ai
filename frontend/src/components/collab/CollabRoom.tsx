@@ -1,11 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { io, Socket } from "socket.io-client";
+
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import { resolveSocketUrl } from '../../helpers/socket-url';
 import CollabEditor from './CollabEditor';
+import { io, type Socket } from "socket.io-client";
 import CollabChatPanel from './CollabChatPanel';
+
 interface Participant {
   userId: string;
   username: string;

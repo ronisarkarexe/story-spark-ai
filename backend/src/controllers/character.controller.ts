@@ -75,6 +75,10 @@ export const updateCharacter = async (req: Request, res: Response) => {
     }
 
     const updates = req.body;
+    delete updates.userId;
+    delete updates._id;
+    delete updates.createdAt;
+    delete updates.updatedAt;
     const character = await Character.findOneAndUpdate(
       { _id: id, userId },
       { $set: updates },

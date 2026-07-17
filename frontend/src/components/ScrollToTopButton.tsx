@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ChevronUp } from "lucide-react";
 
 const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -33,7 +34,7 @@ const ScrollToTopButton = () => {
       onClick={scrollToTop}
       aria-label="Scroll to top"
       className={`
-        fixed bottom-28 right-6 lg:bottom-6
+        fixed bottom-28 right-6 lg:bottom-24
         w-14 h-14 rounded-full
         border-none cursor-pointer
         bg-gradient-to-br from-blue-500 to-indigo-500
@@ -47,8 +48,8 @@ const ScrollToTopButton = () => {
           : "opacity-0 translate-y-3 pointer-events-none"
         }
       `}
-
     >
+      <ChevronUp className="h-6 w-6" />
     </button>
   );
 };

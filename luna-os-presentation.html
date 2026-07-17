@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUNA OS - The AI-Native Clinical Companion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── DESIGN SYSTEM & VARIABLE TOKENS ── */
+    :root {
+      --bg-color: #05060B;
+      --card-bg: rgba(13, 16, 29, 0.65);
+      --card-border: rgba(139, 61, 255, 0.15);
+      --card-border-hover: rgba(0, 196, 204, 0.4);
+      --primary-neon: #8B3DFF;
+      --secondary-neon: #00C4CC;
+      --text-main: #FFFFFF;
+      --text-muted: #9BA4B5;
+      --glow-purple: rgba(139, 61, 255, 0.25);
+      --glow-cyan: rgba(0, 196, 204, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(139, 61, 255, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 196, 204, 0.06) 0%, transparent 40%),
+        linear-gradient(to right, rgba(255,255,255,0.01) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.01) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 24px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+      box-shadow: 0 0 12px var(--primary-neon);
+      position: relative;
+    }
+    
+    .logo-icon::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--bg-color);
+    }
+
+    .logo-text {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #FFF 40%, var(--secondary-neon) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .conf-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--secondary-neon);
+      border: 1px solid rgba(0, 196, 204, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(0, 196, 204, 0.05);
+      letter-spacing: 1px;
+    }
+
+    /* ── SLIDE DECK CONTAINER ── */
+    .deck-container {
+      flex-grow: 1;
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 40px;
+    }
+
+    .slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+      pointer-events: none;
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 1;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      z-index: 2;
+    }
+
+    /* ── SLIDE STYLES (TECH-NOIR CARDS) ── */
+    .card-layout {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 50px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(139, 61, 255, 0.05);
+      backdrop-filter: blur(16px);
+      width: 100%;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.4s ease;
+    }
+
+    .card-layout::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-neon), var(--secondary-neon));
+      opacity: 0.8;
+    }
+
+    .card-layout:hover {
+      border-color: var(--card-border-hover);
+      box-shadow: 0 20px 60px rgba(0, 196, 204, 0.05), inset 0 0 30px rgba(0, 196, 204, 0.02);
+    }
+
+    /* ── SLIDE 1: TITLE PAGE ── */
+    .title-slide {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+
+    .title-glow-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .title-glow-wrap::after {
+      content: 'LUNA OS';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 6rem;
+      font-weight: 900;
+      letter-spacing: 12px;
+      color: var(--primary-neon);
+      filter: blur(25px);
+      opacity: 0.6;
+      z-index: -1;
+    }
+
+    .main-title {
+      font-size: 6rem;
+      font-weight: 900;
+      letter-spacing: 12px;
+      background: linear-gradient(135deg, #FFFFFF 30%, #A370FF 70%, var(--primary-neon) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.1;
+    }
+
+    .tagline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.25rem;
+      color: var(--secondary-neon);
+      letter-spacing: 6px;
+      margin-bottom: 30px;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(0, 196, 204, 0.3);
+    }
+
+    .sub-tagline {
+      font-size: 1.5rem;
+      font-style: italic;
+      color: var(--text-muted);
+      font-weight: 300;
+      margin-bottom: 50px;
+    }
+
+    .title-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 20px;
+      width: 100%;
+      max-width: 600px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .title-footer strong {
+      color: #FFF;
+    }
+
+    /* ── GRID CONFIG & CONTENT CARDS (SLIDES 2-5) ── */
+    .slide-header {
+      margin-bottom: 35px;
+    }
+
+    .slide-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--primary-neon);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .slide-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #FFF, var(--text-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .intro-paragraph {
+      font-size: 1.2rem;
+      color: #E2E8F0;
+      line-height: 1.6;
+      margin-bottom: 35px;
+      font-weight: 300;
+      border-left: 3px solid var(--primary-neon);
+      padding-left: 20px;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      flex-grow: 1;
+    }
+
+    .grid-container.cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+    }
+
+    .grid-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .grid-card:hover {
+      background: rgba(139, 61, 255, 0.04);
+      border-color: rgba(139, 61, 255, 0.25);
+      transform: translateY(-4px);
+    }
+
+    .grid-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 24px;
+      width: 40px;
+      height: 2px;
+      background: var(--primary-neon);
+    }
+
+    .grid-card.alt-glow::before {
+      background: var(--secondary-neon);
+    }
+
+    .grid-card.alt-glow:hover {
+      background: rgba(0, 196, 204, 0.03);
+      border-color: rgba(0, 196, 204, 0.2);
+    }
+
+    .card-label {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #FFF;
+      letter-spacing: -0.2px;
+    }
+
+    .card-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── SLIDE 6: CLINICAL INTELLIGENCE ── */
+    .split-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 40px;
+      align-items: center;
+      height: 100%;
+    }
+
+    .split-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .bullet-list {
+      list-style: none;
+      margin-top: 15px;
+    }
+
+    .bullet-item {
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 18px;
+      font-size: 1.1rem;
+      color: #E2E8F0;
+      line-height: 1.5;
+    }
+
+    .bullet-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 10px;
+      height: 10px;
+      background-color: var(--secondary-neon);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--secondary-neon);
+    }
+
+    .split-right {
+      background: rgba(5, 6, 11, 0.5);
+      border: 1px dashed rgba(139, 61, 255, 0.3);
+      border-radius: 20px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .hud-circle {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: 4px double var(--secondary-neon);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      box-shadow: 0 0 30px rgba(0, 196, 204, 0.15);
+      animation: pulseGlow 3s infinite alternate;
+    }
+
+    .hud-val {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--secondary-neon);
+      line-height: 1;
+    }
+
+    .hud-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      margin-top: 5px;
+    }
+
+    @keyframes pulseGlow {
+      0% {
+        box-shadow: 0 0 20px rgba(0, 196, 204, 0.1);
+        border-color: rgba(0, 196, 204, 0.4);
+      }
+      100% {
+        box-shadow: 0 0 40px rgba(0, 196, 204, 0.3);
+        border-color: var(--secondary-neon);
+      }
+    }
+
+    /* ── SLIDE 7: ARCHITECTS, STACK & ROADMAP ── */
+    .architect-section {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .arch-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .arch-card h4 {
+      font-size: 1.15rem;
+      color: var(--secondary-neon);
+      margin-bottom: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 8px;
+    }
+
+    .stack-item {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+    }
+    
+    .stack-item:last-child { margin-bottom: 0; }
+
+    .stack-item-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #FFF;
+    }
+
+    .stack-item-val {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .roadmap-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .roadmap-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .step-badge {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--primary-neon);
+      color: #FFF;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .step-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .step-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #FFF;
+    }
+
+    .step-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ── FOOTER & CONTROLS ── */
+    footer {
+      padding: 24px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(5, 6, 11, 0.8);
+      backdrop-filter: blur(10px);
+    }
+
+    .slide-progress {
+      display: flex;
+      gap: 8px;
+    }
+
+    .progress-dot {
+      width: 30px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      transition: background-color 0.3s ease, width 0.3s ease;
+      cursor: pointer;
+    }
+
+    .progress-dot.active {
+      background: var(--secondary-neon);
+      width: 45px;
+      box-shadow: 0 0 10px var(--secondary-neon);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+
+    .control-btn:hover {
+      background: var(--primary-neon);
+      border-color: var(--primary-neon);
+      box-shadow: 0 0 15px var(--primary-neon);
+      transform: scale(1.05);
+    }
+
+    .keyboard-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .key-badge {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #FFF;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-container">
+      <div class="logo-icon"></div>
+      <div class="logo-text">LUNA OS</div>
+    </div>
+    <div class="conf-tag">SYSTEMS CLASSIFIED // HACKATHON STAGE 1</div>
+  </header>
+
+  <!-- DECK CONTAINER -->
+  <div class="deck-container">
+
+    <!-- SLIDE 1: TITLE PAGE -->
+    <div class="slide active" id="slide-1">
+      <div class="title-slide">
+        <div class="title-glow-wrap">
+          <h1 class="main-title">LUNA OS</h1>
+        </div>
+        <div class="tagline">The AI-Native Clinical Companion</div>
+        <div class="sub-tagline">"Your body, finally understood."</div>
+        <div class="title-footer">
+          Built by <strong>Abdisa Jemal Hasen</strong> &amp; <strong>Sonu Sharma</strong><br>
+          <span style="font-family:'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--secondary-neon); margin-top: 5px; display: block;">Team WEBTitans</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: INTRODUCTION & PROJECT WORKFLOW -->
+    <div class="slide" id="slide-2">
+      <div class="card-layout">
+        <div class="slide-header">
+          <div class="slide-num">Slide 02 // Core Foundation</div>
+          <h2 class="slide-title">Introduction &amp; Project Workflow</h2>
+        </div>
+        <p class="intro-paragraph">
+          Luna OS is a high-performance AI companion engineered for women's health. Built specifically to handle complex biometric data and clinical symptoms, it ensures real-time, personalized care for the menopause transition.
+        </p>
+        <div class="grid-container cols-2">
+          <div class="grid-card">
+            <div class="card-label">Biometric Ingestion</div>
+            <div class="card-desc">The platform captures live telemetry metrics like HRV (Heart Rate Variability), skin temperature, and sleep architecture via wearable integration.</div>
+          </div>
+          <div class="grid-card">
+            <div class="card-label">Background AI Operations</div>
+            <div class="card-desc">To guarantee an uninterrupted experience, heavy pattern-recognition (analyzing a 30-day longitudinal history of 34 symptoms) is offloaded to our background LLM engine.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: PROBLEM STATEMENT -->
+    <div class="slide" id="slide-3">
+      <div class="card-layout">
+        <div class="slide-header">
+          <div class="slide-num">Slide 03 // Market Gaps</div>
+          <h2 class="slide-title">Problem Statement</h2>
+        </div>
+        <div class="grid-container">
+          <div class="grid-card alt-glow">
+            <div class="card-label">Complexity</div>
+            <div class="card-desc">A standard 12-minute doctor visit is completely insufficient to track and diagnose up to 34 distinct, interacting symptoms spanning over decades.</div>
+          </div>
+          <div class="grid-card alt-glow">
+            <div class="card-label">Vulnerability</div>
+            <div class="card-desc">80% of OB-GYNs lack formal menopause training. Over 1.1 Billion women are affected globally, resulting in $150B lost annually in workplace productivity due to unmanaged symptoms.</div>
+          </div>
+          <div class="grid-card alt-glow">
+            <div class="card-label">Dependency</div>
+            <div class="card-desc">Existing FemTech platforms are merely menstrual trackers. They act as static lookup tables instead of natively analyzing complex perimenopausal transitions over time.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: SOLUTION APPROACH -->
+    <div class="slide" id="slide-4">
+      <div class="card-layout">
+        <div class="slide-header">
+          <div class="slide-num">Slide 04 // Architecture Design</div>
+          <h2 class="slide-title">Solution Approach</h2>
+        </div>
+        <div class="grid-container">
+          <div class="grid-card">
+            <div class="card-label">Data Privacy (Local-First)</div>
+            <div class="card-desc">Isolates PII (Personally Identifiable Information) from the AI layer to maintain strict HIPAA-aligned safety protocols and prevent data collisions.</div>
+          </div>
+          <div class="grid-card">
+            <div class="card-label">Real-Time Safety Thread</div>
+            <div class="card-desc">Shifts emergency keyword classification to a prioritized loop. Instantly bypasses the AI and surfaces crisis lifelines if severe medical symptoms are detected.</div>
+          </div>
+          <div class="grid-card">
+            <div class="card-label">Context AI Engine</div>
+            <div class="card-desc">Injects the user's 30-day continuous symptom history directly into the LLM. Analyzes daily metrics against NAMS 2022 clinical guidelines to forecast trigger events natively.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: SYSTEM RESILIENCE -->
+    <div class="slide" id="slide-5">
+      <div class="card-layout">
+        <div class="slide-header">
+          <div class="slide-num">Slide 05 // Technical Guardrails</div>
+          <h2 class="slide-title">System Resilience</h2>
+        </div>
+        <div class="grid-container">
+          <div class="grid-card alt-glow">
+            <div class="card-label">Pattern Recognition (Concurrency)</div>
+            <div class="card-desc">Handles overlapping health inputs smoothly. Uses advanced RAG to cross-reference multiple clinical databases (vasomotor, sleep, psychiatry) instantly.</div>
+          </div>
+          <div class="grid-card alt-glow">
+            <div class="card-label">Clinical Stability</div>
+            <div class="card-desc">Keeps AI outputs strictly evidence-based. Prevents AI hallucinations and medical over-reliance by refusing to recommend specific prescription dosages.</div>
+          </div>
+          <div class="grid-card alt-glow">
+            <div class="card-label">Emergency Persistence</div>
+            <div class="card-desc">Enforces secure escalation paths. Any input matching crisis keywords triggers a hard-coded safety override.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: WORKSPACE (CLINICAL) INTELLIGENCE -->
+    <div class="slide" id="slide-6">
+      <div class="card-layout">
+        <div class="slide-header">
+          <div class="slide-num">Slide 06 // Live Metrics</div>
+          <h2 class="slide-title">Clinical Intelligence</h2>
+        </div>
+        <div class="split-layout">
+          <div class="split-left">
+            <p class="intro-paragraph" style="margin-bottom: 20px;">
+              Luna OS integrates a native background predictive AI model to monitor, analyze, and forecast clinical transitions continuously.
+            </p>
+            <ul class="bullet-list">
+              <li class="bullet-item">Luna OS integrates a native background predictive AI model.</li>
+              <li class="bullet-item">It monitors sleep architecture, daily mood logs, and biometrics continuously.</li>
+              <li class="bullet-item">The system automatically builds a real-time 24-Hour Hot Flash Risk Forecast.</li>
+              <li class="bullet-item">Generates a proactive "Doctor Prep" clinical dossier without manual input, saving vital time during physician visits.</li>
+            </ul>
+          </div>
+          <div class="split-right">
+            <div class="hud-circle">
+              <div class="hud-val">87%</div>
+              <div class="hud-label">FORECAST ACCURACY</div>
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--secondary-neon);">
+              MODEL: LUNA-TRANSITION-V1
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: THE ARCHITECTS, CORE STACK & ROADMAP -->
+    <div class="slide" id="slide-7">
+      <div class="card-layout">
+        <div class="slide-header" style="margin-bottom: 25px;">
+          <div class="slide-num">Slide 07 // Delivery Model</div>
+          <h2 class="slide-title">Architects, Core Stack &amp; Roadmap</h2>
+        </div>
+        <div class="architect-section">
+          <!-- Column 1: The Architects -->
+          <div class="arch-card">
+            <h4>The Architects</h4>
+            <div class="stack-item" style="margin-bottom: 16px;">
+              <span class="stack-item-title">Sonu Sharma</span>
+              <span class="stack-item-val">Lead Full-Stack &amp; Systems Engineer</span>
+            </div>
+            <div class="stack-item">
+              <span class="stack-item-title">Abdisa Jemal Hasen</span>
+              <span class="stack-item-val">Lead AI &amp; Prompt Engineer</span>
+            </div>
+          </div>
+          
+          <!-- Column 2: Core Stack -->
+          <div class="arch-card">
+            <h4>Core Stack</h4>
+            <div class="stack-item">
+              <span class="stack-item-title">Systems Frontend</span>
+              <span class="stack-item-val">React Native framework with high-contrast Tech-Noir custom Tailwind CSS design.</span>
+            </div>
+            <div class="stack-item">
+              <span class="stack-item-title">Intelligence Plane</span>
+              <span class="stack-item-val">Anthropic Claude API for intent triage and RAG-grounded response generation.</span>
+            </div>
+            <div class="stack-item">
+              <span class="stack-item-title">Backend Concurrency</span>
+              <span class="stack-item-val">Node.js API with PostgreSQL, running via Replit Agent for rapid live deployment.</span>
+            </div>
+          </div>
+
+          <!-- Column 3: Roadmap -->
+          <div class="arch-card">
+            <h4>Roadmap</h4>
+            <div class="roadmap-list">
+              <div class="roadmap-step">
+                <span class="step-badge">P1</span>
+                <div class="step-details">
+                  <span class="step-name">Hackathon Baseline</span>
+                  <span class="step-desc">Deploying conversational AI &amp; emergency triage safeguard.</span>
+                </div>
+              </div>
+              <div class="roadmap-step">
+                <span class="step-badge">P2</span>
+                <div class="step-details">
+                  <span class="step-name">Closed Beta</span>
+                  <span class="step-desc">Onboarding 50 real users to validate trigger-detection.</span>
+                </div>
+              </div>
+              <div class="roadmap-step">
+                <span class="step-badge">P3</span>
+                <div class="step-details">
+                  <span class="step-name">Zenith Scalability</span>
+                  <span class="step-desc">Stripe payment &amp; B2B employer telehealth pilots.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER CONTROLS -->
+  <footer>
+    <div class="keyboard-hint">
+      <span class="key-badge">←</span>
+      <span class="key-badge">→</span>
+      <span>Use arrow keys to navigate</span>
+    </div>
+    
+    <div class="slide-progress" id="progress-dots">
+      <!-- Dots will be rendered dynamically -->
+    </div>
+
+    <div class="controls">
+      <button class="control-btn" id="prev-btn" aria-label="Previous Slide">←</button>
+      <button class="control-btn" id="next-btn" aria-label="Next Slide">→</button>
+    </div>
+  </footer>
+
+  <!-- DECK LOGIC -->
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const dotsContainer = document.getElementById('progress-dots');
+    
+    let currentSlide = 0;
+
+    // Create progress dots dynamically
+    slides.forEach((_, idx) => {
+      const dot = document.createElement('div');
+      dot.classList.add('progress-dot');
+      if (idx === 0) dot.classList.add('active');
+      dot.addEventListener('click', () => goToSlide(idx));
+      dotsContainer.appendChild(dot);
+    });
+
+    const dots = document.querySelectorAll('.progress-dot');
+
+    function updateSlidePosition() {
+      slides.forEach((slide, idx) => {
+        slide.classList.remove('active');
+        dots[idx].classList.remove('active');
+        if (idx === currentSlide) {
+          slide.classList.add('active');
+          dots[idx].classList.add('active');
+        }
+      });
+    }
+
+    function nextSlide() {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        updateSlidePosition();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlidePosition();
+      }
+    }
+
+    function goToSlide(idx) {
+      currentSlide = idx;
+      updateSlidePosition();
+    }
+
+    // Event Listeners
+    nextBtn.addEventListener('click', nextSlide);
+    prevBtn.addEventListener('click', prevSlide);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      }
+    });
+  </script>
+</body>
+</html>

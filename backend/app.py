@@ -741,7 +741,12 @@ if __name__ == "__main__":
 def create_app(testing=True):
     from flask import Flask
     from ml.score_api import score_bp
+    from gallery_api import gallery_bp  # <--- Import gallery blueprint
+
     app = Flask(__name__)
     app.config["TESTING"] = testing
     app.register_blueprint(score_bp)
+    app.register_blueprint(gallery_bp)  # <--- Register gallery route (/api/gallery)
+
     return app
+

@@ -20,13 +20,17 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    const savedProgress = localStorage.getItem(storageKey);
-    if (savedProgress) {
-      const progressValue = Number(savedProgress);
-      setProgress(progressValue);
-      if (progressValue > 0 && progressValue < 100) {
-        setShowResumeBanner(true);
+    try {
+      const savedProgress = localStorage.getItem(storageKey);
+      if (savedProgress) {
+        const progressValue = Number(savedProgress);
+        setProgress(progressValue);
+        if (progressValue > 0 && progressValue < 100) {
+          setShowResumeBanner(true);
+        }
       }
+    } catch (e) {
+      console.warn("Failed to read reading progress from storage:", e);
     }
   }, [storageKey]);
 
@@ -40,9 +44,17 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
       const currentProgress = (container.scrollTop / maxScroll) * 100;
       const rounded = Math.min(100, Math.max(0, Math.round(currentProgress)));
       setProgress(rounded);
-      localStorage.setItem(storageKey, rounded.toString());
-      if (rounded === 100) {
-        localStorage.removeItem(storageKey);
+      try {
+        localStorage.setItem(storageKey, rounded.toString());
+        if (rounded === 100) {
+          localStorage.removeItem(storageKey);
+        }
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "QuotaExceededError") {
+          toast.error("Reading progress could not be saved because storage is full.");
+        } else {
+          console.warn("Failed to persist reading progress:", e);
+        }
       }
     };
 
@@ -53,14 +65,18 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
   const handleResume = () => {
     const container = containerRef.current;
     if (!container) return;
-    const savedProgress = localStorage.getItem(storageKey);
-    if (savedProgress) {
-      const progressValue = Number(savedProgress);
-      const maxScroll = container.scrollHeight - container.clientHeight;
-      container.scrollTo({
-        top: (progressValue / 100) * maxScroll,
-        behavior: "smooth",
-      });
+    try {
+      const savedProgress = localStorage.getItem(storageKey);
+      if (savedProgress) {
+        const progressValue = Number(savedProgress);
+        const maxScroll = container.scrollHeight - container.clientHeight;
+        container.scrollTo({
+          top: (progressValue / 100) * maxScroll,
+          behavior: "smooth",
+        });
+      }
+    } catch (e) {
+      console.warn("Failed to read reading progress from storage:", e);
     }
     setShowResumeBanner(false);
   };

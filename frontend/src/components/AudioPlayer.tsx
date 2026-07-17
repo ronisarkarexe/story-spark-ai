@@ -181,8 +181,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       };
     }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
 
-
-
     const scrollToTop = () => {
       const container = document.querySelector('[role="region"]');
       if (container) {
