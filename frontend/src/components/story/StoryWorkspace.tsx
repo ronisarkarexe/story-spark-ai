@@ -99,12 +99,11 @@ const StoryWorkspace = () => {
       });
 
       exportWorkspacePDF({
-  title,
-  authorName,
-  dateStr: formattedDate,
-  chapters: currentStory.chapters || [],
-  theme: selectedTheme,
-});
+        title,
+        authorName,
+        dateStr: formattedDate,
+        chapters: currentStory.chapters || [],
+      });
 
       toast.success("PDF downloaded!");
     } catch (error) {
@@ -131,12 +130,11 @@ const StoryWorkspace = () => {
       });
 
       const blob = createWorkspaceDocxBlob({
-  title,
-  authorName,
-  dateStr: formattedDate,
-  chapters: currentStory.chapters || [],
-  theme: selectedTheme,
-});
+        title,
+        authorName,
+        dateStr: formattedDate,
+        chapters: currentStory.chapters || [],
+      });
 
       downloadBlob(blob, getSafeFileName(title, "docx"));
       toast.success("DOCX downloaded!");
@@ -256,9 +254,7 @@ const StoryWorkspace = () => {
   }
 />
 
-<StoryBranchingEditor
-  storyTitle={currentStory.title}
-/>
+<StoryBranchingEditor />
 
   <StoryViewer
     chapters={currentStory.chapters}

@@ -127,8 +127,9 @@ const NavListComponent = () => {
             </NavLink>
           </motion.div>
         ))}
+      </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

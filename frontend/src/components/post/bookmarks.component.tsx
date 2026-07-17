@@ -73,7 +73,7 @@ const BookmarksComponent = () => {
 
     if (!search) return allPosts;
 
-    return postFuse.search(search).map((result) => result.item);
+    return postFuse.search(search).map((result: any) => result.item);
   }, [debouncedSearch, allPosts, postFuse]);
 
 
@@ -82,7 +82,7 @@ const BookmarksComponent = () => {
 
     if (!search) return sessionStories;
 
-    return storyFuse.search(search).map((result) => result.item);
+    return storyFuse.search(search).map((result: any) => result.item);
   }, [debouncedSearch, sessionStories, storyFuse]);
 
   return (
@@ -245,7 +245,7 @@ const BookmarksComponent = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
-                    {filteredSessionStories.map((story) => (
+                    {filteredSessionStories.map((story: IStories) => (
                       <StoryTradingCard key={story.uuid} story={story} />
                     ))}
                   </div>
