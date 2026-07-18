@@ -28,6 +28,7 @@ import { formatReadingStats } from "../../utils/story-utils";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 
 import { useToggleReactionMutation } from "../../redux/apis/reaction.api";
+import SimilarStories from "../recommendations/SimilarStories";
 
 import {
   useToggleFollowMutation,
@@ -494,11 +495,11 @@ const PostDetailsComponent = () => {
   {post?.content && (
     <>
       <span className="inline-flex items-center rounded-full bg-slate-700/60 text-slate-300 border border-slate-600/50 py-1 px-3 text-xs font-semibold gap-1 select-none">
-        ⏱️ {calculateReadingTime(post.content)} min read
+        <span aria-hidden="true" role="img" aria-label="reading time">&#x23F1;&#xFE0F;</span> {calculateReadingTime(post.content)} min read
       </span>
 
       <span className="inline-flex items-center rounded-full bg-slate-800/60 text-slate-400 border border-slate-700/50 py-1 px-3 text-xs font-semibold">
-        📖 {formatReadingStats(post.content)}
+        {formatReadingStats(post.content)}
       </span>
     </>
   )}
@@ -625,6 +626,15 @@ const PostDetailsComponent = () => {
       <p>No related stories found.</p>
     </div>
   )}
+</div>
+<div className="mt-12">
+  <h3 className="text-xl font-semibold mb-4 text-slate-900 dark:text-gray-300">
+    Similar Stories
+  </h3>
+
+  <SimilarStories
+    stories={relatedPost || []}
+  />
 </div>
           </div>
         </div>

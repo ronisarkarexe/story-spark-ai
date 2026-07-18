@@ -31,13 +31,16 @@ beforeEach(() => {
   vi.clearAllMocks();
   objectUrlCounter = 0;
   BLOB_URL_MAP.clear();
+  clearObjectUrls();
   Object.defineProperty(globalThis, "caches", {
     value: { open: mockCachesOpen },
     writable: true,
+    configurable: true,
   });
   Object.defineProperty(globalThis, "fetch", {
     value: mockFetch,
     writable: true,
+    configurable: true,
   });
   Object.defineProperty(globalThis, "URL", {
     value: {
@@ -45,6 +48,7 @@ beforeEach(() => {
       revokeObjectURL: mockRevokeObjectURL,
     },
     writable: true,
+    configurable: true,
   });
 });
 
@@ -52,6 +56,7 @@ afterAll(() => {
   Object.defineProperty(globalThis, "caches", {
     value: originalCaches,
     writable: true,
+    configurable: true,
   });
   Object.defineProperty(globalThis, "URL", {
     value: {
@@ -59,6 +64,7 @@ afterAll(() => {
       revokeObjectURL: originalRevokeObjectURL,
     },
     writable: true,
+    configurable: true,
   });
 });
 
@@ -77,7 +83,7 @@ describe("getCachedImageUrl", () => {
     const blob = createMockBlob("fake image data");
     mockCache.match.mockResolvedValue(null);
     mockFetch.mockResolvedValueOnce(
-      new Response(blob, { status: 200, headers: { "content-type": "image/png" } })
+      new Response("fake image data", { status: 200, headers: { "content-type": "image/png" } })
     );
     mockCache.put.mockResolvedValue(undefined);
 
@@ -93,6 +99,7 @@ describe("getCachedImageUrl", () => {
     Object.defineProperty(globalThis, "caches", {
       value: undefined,
       writable: true,
+      configurable: true,
     });
 
     const result = await getCachedImageUrl("https://example.com/image.png");
@@ -108,8 +115,7 @@ describe("getCachedImageUrl", () => {
   });
 
   it("returns cached blob URL when cache hit occurs", async () => {
-    const blob = createMockBlob("cached image");
-    const cachedResponse = new Response(blob, {
+    const cachedResponse = new Response("cached image", {
       status: 200,
       headers: { "content-type": "image/png" },
     });
@@ -124,7 +130,7 @@ describe("getCachedImageUrl", () => {
     const blob = createMockBlob("new image");
     mockCache.match.mockResolvedValue(null);
     mockFetch.mockResolvedValueOnce(
-      new Response(blob, { status: 200, headers: { "content-type": "image/png" } })
+      new Response("new image", { status: 200, headers: { "content-type": "image/png" } })
     );
     mockCache.put.mockResolvedValue(undefined);
 
@@ -136,8 +142,17 @@ describe("getCachedImageUrl", () => {
 });
 
 describe("clearObjectUrls", () => {
-  it("clears the cache storage", async () => {
-    await clearObjectUrls();
-    expect(mockCachesOpen).toHaveBeenCalledWith("story-spark-ai-image-cache");
+  it("clears the object URLs and revokes them", async () => {
+    mockCache.match.mockResolvedValue(null);
+    mockFetch.mockResolvedValueOnce(
+      new Response("image to clear", { status: 200, headers: { "content-type": "image/png" } })
+    );
+    mockCache.put.mockResolvedValue(undefined);
+
+    await getCachedImageUrl("https://example.com/image-to-clear.png");
+    
+    clearObjectUrls();
+
+    expect(mockRevokeObjectURL).toHaveBeenCalled();
   });
 });
