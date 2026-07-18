@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+
 import { getToken } from "../../services/auth.service";
 import { isLoggedIn, getUserInfo } from "../../services/auth.service";
 import { resolveSocketUrl } from '../../helpers/socket-url';
@@ -54,7 +55,6 @@ export default function CollabRoom() {
   
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
-
   const user = getUserInfo();
 
   useEffect(() => {
@@ -139,11 +139,6 @@ export default function CollabRoom() {
       socketInstance.on("collab:error", handleError);
 
       return () => {
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-          typingTimeoutRef.current = null;
-        }
-        isTypingRef.current = false;
         socketInstance.off("collab:room_updated", handleRoomUpdated);
         socketInstance.off("collab:story_updated", handleStoryUpdated);
         socketInstance.off("collab:user_typing", handleUserTyping);

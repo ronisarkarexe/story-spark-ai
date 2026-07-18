@@ -74,13 +74,7 @@ try {
 });
 
 const getProductiveHours = catchAsync(async (req: Request, res: Response) => {
-let token = null;
-
-try {
-  token = getToken(req);
-} catch (error) {
-  token = null;
-}
+  const token = getToken(req);
   const result = await AnalyticsService.getProductiveHours(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -91,13 +85,7 @@ try {
 });
 
 const getEmotionDistribution = catchAsync(async (req: Request, res: Response) => {
-let token = null;
-
-try {
-  token = getToken(req);
-} catch (error) {
-  token = null;
-}
+  const token = getToken(req);
   const result = await AnalyticsService.getEmotionDistribution(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -108,13 +96,7 @@ try {
 });
 
 const getMoodTimeline = catchAsync(async (req: Request, res: Response) => {
-let token = null;
-
-try {
-  token = getToken(req);
-} catch (error) {
-  token = null;
-}
+  const token = getToken(req);
   const result = await AnalyticsService.getMoodTimeline(token);
   sendResponse(res, {
     statusCode: httpStatus.OK,

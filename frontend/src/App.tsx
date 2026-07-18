@@ -14,28 +14,11 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import ThemeSwitcher from "./components/theme-switcher/ThemeSwitcher";
 import ErrorBoundary from "./components/ErrorBoundary";
-import HeroSectionComponent from "./components/hero/hero_section.component";
-import HomeComponent from "./components/home/home.component";
 
-import NotFoundComponent from "./components/not-found.component";
-import Leaderboard from "./pages/Leaderboard";
-import PaymentComponent from "./components/home/pricing/payment.component";
-import PostDetailsComponent from "./components/post/post.details.component";
-import PostListsComponent from "./components/dashboard/posts/post_lists.component";
-import PricingComponent from "./components/pricing/pricing.component";
-import PrivacyPolicy from "./components/footer/Privacy.tsx";
-import ProfileComponent from "./components/dashboard/profile/profile.component";
-import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
-import ReportBug from "./components/report-bug/ReportBug";
-import ResourceDetailComponent from "./components/community/resource_detail.component";
-import ResourcesListComponent from "./components/community/resources_list.component";
-import ScrollToTop from "./components/ScrollToTop";
-import ScrollToTopButton from "./components/ScrollToTopButton";
-import SettingComponent from "./components/dashboard/settings/settings.component";
-import SignUpComponent from "./components/signup/signup.component";
-import SimpleProtectedRoute from "./components/ProtectedRoute";
-import StoriesComponent from "./components/stories/stories.component";
-import ChatPage from "./components/chat/ChatPage";
+// Layout & Title Updater Imports
+import RootLayout from "./components/layout/root_layout.component";
+import PageTitleUpdater from "./components/PageTitleUpdater";
+import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import ReadingStatistics from "./pages/ReadingStatistics";
 
 type ProtectedRouteProps = {
@@ -54,15 +37,15 @@ const PricingComponent = lazy(() => import("./components/pricing/pricing.compone
 const PostDetailsComponent = lazy(() => import("./components/post/post.details.component"));
 const PublicProfileComponent = lazy(() => import("./components/profile/public_profile.component"));
 const Contact = lazy(() => import("./components/contactus/contactus"));
-const AboutUsComponent = lazy(() => import("./components/footer/about-us.tsx"));
-const CareerComponent = lazy(() => import("./components/footer/career.tsx"));
-const BlogComponent = lazy(() => import("./components/footer/blog.tsx"));
-const PrivacyPolicy = lazy(() => import("./components/footer/Privacy.tsx"));
-const CookiePolicy = lazy(() => import("./components/footer/cookie-policy.tsx"));
-const Terms = lazy(() => import("./components/footer/terms.tsx"));
+const AboutUsComponent = lazy(() => import("./components/footer/about-us"));
+const CareerComponent = lazy(() => import("./components/footer/career"));
+const BlogComponent = lazy(() => import("./components/footer/blog"));
+const PrivacyPolicy = lazy(() => import("./components/footer/Privacy"));
+const CookiePolicy = lazy(() => import("./components/footer/cookie-policy"));
+const Terms = lazy(() => import("./components/footer/terms"));
 const HelpCenterComponent = lazy(() => import("./components/help_center/help_center.component"));
-const GuidelinesComponent = lazy(() => import("./components/footer/guidelines.tsx"));
-const ContributorsComponent = lazy(() => import("./components/footer/contributors.tsx"));
+const GuidelinesComponent = lazy(() => import("./components/footer/guidelines"));
+const ContributorsComponent = lazy(() => import("./components/footer/contributors"));
 const ReportBug = lazy(() => import("./components/report-bug/ReportBug"));
 const ExploreComponent = lazy(() => import("./components/post/post.component"));
 const BookmarksComponent = lazy(() => import("./components/post/bookmarks.component"));
@@ -86,6 +69,7 @@ const PostListsComponent = lazy(() => import("./components/dashboard/posts/post_
 const EmailValidationComponent = lazy(() => import("./components/email_validation/email.validation.component"));
 const PaymentComponent = lazy(() => import("./components/home/pricing/payment.component"));
 const ChatPage = lazy(() => import("./components/chat/ChatPage"));
+const SearchPage = lazy(() => import("./pages/analytics/SearchPage"));
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
@@ -152,7 +136,7 @@ const router = createBrowserRouter([
       { path: "community", element: lazyPage(<CommunityComponent />) },
       { path: "report-bug", element: lazyPage(<ReportBug />) },
       { path: "chat", element: lazyPage(<ChatPage />) },
-      { path: "search", element: lazyPage(<SearchPageComponent />) },
+      { path: "search", element: lazyPage(<SearchPage />) },
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
@@ -226,7 +210,7 @@ const router = createBrowserRouter([
           { path: "resources", element: lazyPage(<ResourcesListComponent />) },
           { path: "resources/:resourceName", element: lazyPage(<ResourceDetailComponent />) },
           { path: "chat", element: lazyPage(<ChatPage />) },
-          { path: "search", element: lazyPage(<SearchPageComponent />) },
+          { path: "search", element: lazyPage(<SearchPage />) },
 
           // Protected routes
           {

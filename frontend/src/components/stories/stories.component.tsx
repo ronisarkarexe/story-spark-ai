@@ -1,9 +1,10 @@
-import React, { useCallback, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import jsPDF from "jspdf";
-import StoriesViewComponent, { IStories } from "./stories.view.component";
+import StoriesViewComponent from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
-import { getRequestLimit, getWordCount, prompts } from "./stories.utils";
+import { getRequestLimit, getWordCount, prompts, ITopicData, topicsData, SELECTED_TOPIC_CLASSES } from "./stories.utils";
+import { useRecentPrompts } from "../../hooks/useRecentPrompts";
 import {
   useGenerateFreeModelMutation,
   useGenerateModelMutation,
@@ -36,7 +37,6 @@ const soundtrackMap: Record<string, string> = {
   "🤖 Tech / Sci-Fi": "/audio/sci-fi.mp3",
   "💖 Romance / Love": "/audio/romance.mp3",
 };
-
 type Inputs = {
   prompt: string;
 };
@@ -44,7 +44,6 @@ type Inputs = {
 const MAX_PROMPT_LENGTH = 2000;
 const lengths = ["short", "medium", "long"] as const;
 
-const StoriesComponent = () => {
 const WARN_THRESHOLD = 0.85;
 const DANGER_THRESHOLD = 0.95;
 
@@ -452,7 +451,7 @@ const TonePicker: React.FC<TonePickerProps> = React.memo(({ selected, onChange }
   );
 });
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
-import { useLocation } from "react-router-dom";
+
 import {
   useGenerateAlternateEndingsMutation,
   useGenerateFreeAlternateEndingsMutation,
@@ -522,6 +521,7 @@ const getUniqueStories = (storyList: IStories[]) => {
 // Main StoriesComponent
 // ---------------------------------------------------------------------------
 const StoriesComponent = () => {
+  const draft = loadStoryDraft();
   const [currentPage, setCurrentPage] = useState(1);
   const storiesPerPage = 10;
   const location = useLocation();
@@ -529,24 +529,59 @@ const StoriesComponent = () => {
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
 
 
-  const sentenceMatches = content.match(/[^.!?]+[.!?]*\s*/g) ?? [content];
-  const segments: StorySentenceSegment[] = [];
-  let wordCursor = 0;
 
-  sentenceMatches.forEach((sentence, index) => {
-    const trimmedSentence = sentence.trim();
-    if (!trimmedSentence) {
-      return;
-    }
-
-
-  const [stories, setStories] = useState<IStories[]>(
-    draft?.stories?.length ? getUniqueStories(draft.stories) : [{ uuid: "test-1", title: "The Wizard's Journey", content: "Merlin walked through the forest toward the castle. The village was far behind him. He crossed the bridge over the river and entered the dungeon beneath the tower. Dragons guarded the mountain beyond the valley. Elena watched from the palace window as Merlin approached the cave near the ocean shore.", tag: "Fantasy", imageURL: "" }]
-  );
-
+  const [stories, setStories] = useState<IStories[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
+
+  const [selectedLanguage] = useState<string>(draft?.language || "English");
+  const [selectedGenre, setSelectedGenre] = useState<string>(
+    draft?.genre
+      ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
+      : "🧙 Fantasy"
+  );
+  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
+  const [selectedTone] = useState<ToneLabel | "">((draft?.tone as ToneLabel) || "");
+  const [characters, setCharacters] = useState<ICharacter[]>([]);
+  const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
+  const isGenerationInProgressRef = useRef(false);
+  const [topics, setTopics] = useState<ITopicData[]>(topicsData);
+  const [newTopicTitle, setNewTopicTitle] = useState("");
+  const { addPrompt } = useRecentPrompts();
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    audioRef.current = new Audio();
+    return () => {
+      audioRef.current?.pause();
+    };
+  }, []);
+
+  const playSoundtrack = useCallback((genre: string) => {
+    const soundtrack = soundtrackMap[genre];
+    if (!soundtrack) return;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.src = soundtrack;
+      audioRef.current.play().catch(() => {
+        /* ignore autoplay restrictions */
+      });
+    }
+  }, []);
+
+  const handleCancelGeneration = useCallback((showToast = false) => {
+    if (activeGenerationRef.current) {
+      activeGenerationRef.current.abort();
+      activeGenerationRef.current = null;
+    }
+    isGenerationInProgressRef.current = false;
+    setLoading(false);
+    if (showToast) {
+      toast.success("Generation cancelled.");
+    }
+  }, []);
 
   const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
 
@@ -590,11 +625,6 @@ const StoriesComponent = () => {
 
 
 
-    wordCursor += wordsInSentence;
-  });
-
-  return segments;
-};
 
 interface ICharacter {
   id: string;
@@ -603,18 +633,8 @@ interface ICharacter {
   personality: string;
 }
 
-const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
-  stories,
-  isLogin,
-  setStories,
-  isLoading,
-  onPublishSuccess,
-}) => {
-  const location = useLocation();
-const navigate = useNavigate();
-const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
-  const [stories, setStories] = useState<IStories[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+
+
   const { data } = useGetProfileInfoQuery(undefined);
   const userRole = getUserInfo();
   const subscriptionType = (userRole?.subscriptionType as string) || "free";
@@ -623,8 +643,6 @@ const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [showHelpModal, setShowHelpModal] = useState(false);
-const [selectedGenre, setSelectedGenre] = useState<string>("");
-const [selectedLength, setSelectedLength] = useState<string>("medium");
 const [textareaValue, setTextareaValue] = useState<string>("");
 const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 const dropdownRef = useRef<HTMLDivElement>(null);
@@ -651,334 +669,40 @@ useEffect(() => {
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
       setIsDropdownOpen(false);
-
-  const [selectedGenre, setSelectedGenre] = useState<string>(
-
-    draft?.genre
-      ? (GENRES.find((g) => g.name === draft.genre || g.value === draft.genre)?.value ?? "🧙 Fantasy")
-      : "🧙 Fantasy",
-  );
-
-  const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
-  const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
-  const [textareaValue, setTextareaValue] = useState<string>(() => {
-    return location.state?.prompt || draft?.prompt || "";
-  });
-
-
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
-  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
-
-
-
-
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const languageDropdownRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-
-  const playSoundtrack = (genre: string) => {
-
-    const soundtrack = soundtrackMap[genre];
-
-    if (!soundtrack) return;
-
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current.src = soundtrack;
-      audioRef.current.play().catch(() => {
-        /* ignore autoplay restrictions */
-      });
-    }
-  }, []);
-
-  const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
-  const [, setShowRemix] = useState<boolean>(false);
-  const [createPost] = useCreatePostMutation();
-  const [deletePost] = useDeletePostMutation();
-  const { data: profile } = useGetProfileInfoQuery(undefined, { skip: !isLogin });
-  const lastSavedContentRef = useRef<string>("");
-  const isSavingRef = useRef<boolean>(false);
-  const hasSavedSessionRef = useRef<boolean>(false);
-  const savedPostIdRef = useRef<string | null>(null);
-  // Alternate ending state & hooks
-  const [endingsCache, setEndingsCache] = useState<{
-    [uuid: string]: { style: string; ending: string; fullStory: string }[];
-  }>({});
-  const [originalStoryContent, setOriginalStoryContent] = useState<{
-    [uuid: string]: string;
-  }>({});
-  const [isGeneratingEndings, setIsGeneratingEndings] = useState<boolean>(false);
-  const [activeEndingTab, setActiveEndingTab] = useState<string>("Happy Ending");
-  const [narrationWordIndex, setNarrationWordIndex] = useState<number>(0);
-  const [narrationState, setNarrationState] = useState<NarrationPlaybackState>("idle");
-
-  const [generateAlternateEndings] = useGenerateAlternateEndingsMutation();
-  const [generateFreeAlternateEndings] = useGenerateFreeAlternateEndingsMutation();
-
-  useEffect(() => {
-    if (selectedStory && !originalStoryContent[selectedStory.uuid]) {
-      setOriginalStoryContent((prev) => ({
-        ...prev,
-        [selectedStory.uuid]: selectedStory.content,
-      }));
-    }
-  }, [selectedStory, originalStoryContent]);
-
-  useEffect(() => {
-    if (narrationState === "playing") {
-      const activeWordElement = document.querySelector('[data-active-word="true"]');
-      if (activeWordElement) {
-        activeWordElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest"
-        });
-      }
-    }
-  }, [narrationWordIndex, narrationState]);
-
-  const activeGenerationRef = useRef<{ abort: () => void } | null>(null);
-  const isGenerationInProgressRef = useRef(false);
-  
-  const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
-    parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
-  );
-  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
-  const [isRecentPromptsOpen, setIsRecentPromptsOpen] = useState<boolean>(false);
-  const [isHighLatency, setIsHighLatency] = useState<boolean>(false);
-  const { recentPrompts, addPrompt, removePrompt, clearAll } = useRecentPrompts();
-  
-  const text = UI_TEXT[selectedLanguage] ?? UI_TEXT.English;
-  const genreLabels = GENRE_LABELS[selectedLanguage] ?? GENRE_LABELS.English;
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  const handleGenerateAlternateEndings = async () => {
-    if (!selectedStory) return;
-    setIsGeneratingEndings(true);
-    const toastId = toast.loading("Generating alternate endings...");
-    try {
-      const payload = {
-        title: selectedStory.title,
-        content: originalStoryContent[selectedStory.uuid] || selectedStory.content,
-        tag: selectedStory.tag,
-
-        language: selectedStory.language || "English",
-
-      };
-      
-      const generationRequest = isLogin
-        ? generateAlternateEndings(payload)
-        : generateFreeAlternateEndings(payload);
-        
-      const res = await generationRequest.unwrap();
-      if (res && res.data) {
-        setEndingsCache((prev) => ({
-          ...prev,
-          [selectedStory.uuid]: res.data,
-        }));
-        toast.success("Alternate endings generated successfully!");
-      } else {
-        toast.error("Failed to generate alternate endings.");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to generate alternate endings. Please try again.");
-    } finally {
-      toast.dismiss(toastId);
-      setIsGeneratingEndings(false);
     }
   };
 
-  const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
-    if (!selectedStory) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: endingData.fullStory,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success(`${endingData.style} applied to story!`);
-  };
+  document.addEventListener("mousedown", handleClickOutside);
+  document.addEventListener("keydown", handleKeyDown);
 
-  const handleResetEnding = () => {
-    if (!selectedStory) return;
-    const originalContent = originalStoryContent[selectedStory.uuid];
-    if (!originalContent) return;
-    const updatedStory = {
-      ...selectedStory,
-      content: originalContent,
-    };
-    setSelectedStory(updatedStory);
-    setStories(
-      stories.map((s) => (s.uuid === selectedStory.uuid ? updatedStory : s))
-    );
-    toast.success("Reverted to original story ending!");
-  };
-
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [isPausedAudio, setIsPausedAudio] = useState<boolean>(false);
-
-  // Draft restore + autosave
-  useEffect(() => {
-    if (!textareaValue.trim()) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      const draftData: StoryDraftData = {
-        prompt: textareaValue,
-        genre: selectedGenre,
-        length: selectedLength,
-        language: selectedLanguage,
-        tone: selectedTone,
-        savedAt: new Date().toISOString(),
-      };
-
-      try {
-        saveStoryDraft(draftData);
-        setDraftStatus(`Draft saved ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "QuotaExceededError") {
-
-          toast.error("Couldn't autosave draft â€” storage limit reached.");
-        }
-
-      }
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [textareaValue, selectedGenre, selectedLength, selectedLanguage, selectedTone]);
-
-
-
-    if (!("speechSynthesis" in window)) {
-      toast.error("Text-to-speech is not supported in this browser.");
-      return;
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+    document.removeEventListener("keydown", handleKeyDown);
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
     }
   };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (location.state) {
-      if (location.state.prompt) {
-        setTextareaValue(location.state.prompt);
-      }
-
-      if (location.state.genre) {
-        const matchedGenre =
-          GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
-        setSelectedGenre(matchedGenre);
-      }
-
-      navigate(location.pathname, {
-        replace: true,
-        state: {},
-      });
-    }
-  }, [location, navigate, setSelectedGenre, setTextareaValue]);
-
-
-  useEffect(() => {
-    setValue("prompt", debouncedPrompt);
-  }, [debouncedPrompt, setValue]);
-
-  useEffect(() => {
-    setNarrationWordIndex(0);
-    setNarrationState("idle");
-  }, [selectedStory?.uuid]);
-
-  const sentenceSegments = useMemo(() => {
-    return buildSentenceSegments(selectedStory?.content ?? "");
-  }, [selectedStory?.content]);
-
-  // Sync state instantly whenever a new template is submitted or selected
-  useEffect(() => {
-    if (stories && stories.length > 0) {
-      setSelectedStory(stories[0]);
-    } else {
-      setSelectedStory(null);
-    }
-    // Reset auto-save status for new story session
-    lastSavedContentRef.current = "";
-    hasSavedSessionRef.current = false;
-    savedPostIdRef.current = null;
-  }, [stories]);
-
-  useEffect(() => {
-    const autoSaveStory = async () => {
-      // 1. Prevent guest auto-save requests
-      if (!isLogin || !selectedStory) return;
-
-      // 2. Prevent duplicate auto-save requests for unchanged story content
-      if (selectedStory.content === lastSavedContentRef.current) {
-        return;
-      }
-
-      // 3. Only one draft/post is created per story session (prevent variation/topic duplicates)
-      if (hasSavedSessionRef.current) {
-        return;
-      }
-
-      // 4. Prevent duplicate network calls while a save is already running
-      if (isSavingRef.current) return;
-
-      isSavingRef.current = true;
-
-      const post: IPost = {
-        ...selectedStory,
-        topic: selectTopics,
-      };
-
-      try {
-        const result = await createPost(post).unwrap();
-        if (result && result.data && result.data._id) {
-          savedPostIdRef.current = result.data._id;
-        }
-        lastSavedContentRef.current = selectedStory.content;
-        hasSavedSessionRef.current = true;
-        toast.success("Story auto-saved!");
-      } catch (error) {
-        console.error("Auto-save failed", error);
-      } finally {
-        isSavingRef.current = false;
-      }
-    };
-
-    // Debounce to prevent multiple immediate renders/rerenders from triggering save
-    const timer = setTimeout(() => {
-      autoSaveStory();
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [selectedStory, selectedStory?.content, isLogin, selectTopics, createPost]);
+}, []);
 
 useEffect(() => {
-  if (location.state && location.state.prompt) {
-    setTextareaValue(location.state.prompt);
-    navigate(location.pathname, { replace: true, state: {} });
+  if (location.state) {
+    if (location.state.prompt) {
+      setTextareaValue(location.state.prompt);
+    }
+
+    if (location.state.genre) {
+      const matchedGenre =
+        GENRES.find((g) => g.name === location.state.genre)?.value ?? "";
+      setSelectedGenre(matchedGenre);
+    }
+
+    navigate(location.pathname, {
+      replace: true,
+      state: {},
+    });
   }
-}, [location, navigate]);
+}, [location, navigate, setSelectedGenre, setTextareaValue]);
+
 
 useEffect(() => {
   setValue("prompt", textareaValue);
@@ -993,13 +717,7 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
     }
 
     setLoading(true);
-    setIsHighLatency(false);
     isGenerationInProgressRef.current = true;
-
-    // Timeout to simulate high latency state if generation takes more than 5s
-    let latencyTimeoutId: ReturnType<typeof setTimeout> | null = setTimeout(() => {
-      setIsHighLatency(true);
-    }, 5000);
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -1031,11 +749,14 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
         setSelectedPrompt("");
         setValue("prompt", "");
         // Clear draft after successful generation
-        localStorage.removeItem(DRAFT_KEY);
-        setDraftStatus("");
+        clearStoryDraft();
         reset();
         setCharacters([]);
-        setCurrentStep(1);
+        if (!login) {
+          const newCount = guestRequestCount + 1;
+          setGuestRequestCount(newCount);
+          localStorage.setItem("guestRequestCount", String(newCount));
+        }
         if (selectedGenre) {
           playSoundtrack(selectedGenre);
         }
@@ -1050,13 +771,9 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      if (latencyTimeoutId) {
-        clearTimeout(latencyTimeoutId);
-      }
       activeGenerationRef.current = null;
       isGenerationInProgressRef.current = false;
       setLoading(false);
-      setIsHighLatency(false);
     }
   }, [
     login,
@@ -1074,6 +791,15 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
     characters,
     reset,
   ]);
+
+  const handleClearPrompt = () => {
+    setTextareaValue("");
+    setSelectedPrompt("");
+    setValue("prompt", "");
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
 
   const handleAddTopic = () => {
     const title = newTopicTitle.trim();
@@ -1115,238 +841,7 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
     );
   };
 
-  const handleCopyStory = async () => {
-    if (selectedStory?.content) {
-      await navigator.clipboard.writeText(selectedStory.content);
-      setIsCopied(true);
-      toast.success("Story copied!");
-      setTimeout(() => setIsCopied(false), 2000);
-    }
-  };
 
-  const handleExportPDF = async () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
-    const toastId = toast.loading("Preparing your premium PDF...");
-
-    try {
-      // Helper to load image assets asynchronously with a safe timeout
-      const loadImageWithTimeout = (src: string, timeoutMs: number = 3000): Promise<HTMLImageElement> => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          const timeout = setTimeout(() => {
-            img.src = ""; // stop loading
-            reject(new Error(`Timeout loading image: ${src}`));
-          }, timeoutMs);
-
-          img.onload = () => {
-            clearTimeout(timeout);
-            resolve(img);
-          };
-          img.onerror = (e) => {
-            clearTimeout(timeout);
-            reject(e);
-          };
-          img.src = src;
-        });
-      };
-
-      let logoImg: HTMLImageElement | null = null;
-      let storyImg: HTMLImageElement | null = null;
-
-      try {
-        logoImg = await loadImageWithTimeout(logo);
-      } catch (err) {
-        console.warn("Failed to load StorySparkAI logo for PDF", err);
-      }
-
-      if (selectedStory.imageURL) {
-        try {
-          storyImg = await loadImageWithTimeout(selectedStory.imageURL);
-        } catch (err) {
-          console.warn("Failed to load story banner image for PDF", err);
-        }
-      }
-
-      // Initialize A4 PDF document (210mm x 297mm)
-      const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const title = selectedStory.title || "Untitled Story";
-      const content = selectedStory.content || "";
-      const tag = (selectedStory.tag || "STORY").toUpperCase();
-
-      const leftMargin = 20;
-      const rightMargin = 20;
-      const topMargin = 20;
-      const bottomMargin = 20;
-      const printableWidth = 210 - leftMargin - rightMargin; // 170 mm
-      const maxY = 297 - bottomMargin - 10; // Bottom boundary (267mm) leaving room for footer
-
-      let yCursor = topMargin;
-
-      // 1. Header (Logo & Sub-header)
-      if (logoImg) {
-        const logoHeight = 8;
-        const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
-        doc.addImage(logoImg, "PNG", leftMargin, yCursor, logoWidth, logoHeight);
-      } else {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.setTextColor(99, 102, 241); // Brand Indigo
-        doc.text("StorySparkAI", leftMargin, yCursor + 6);
-      }
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(148, 163, 184); // Slate 400
-      doc.text("PREMIUM AI GENERATED STORY", 190, yCursor + 5, { align: "right" });
-
-      yCursor += 10;
-
-      // Header Divider Line
-      doc.setDrawColor(99, 102, 241); // Brand Indigo
-      doc.setLineWidth(0.5);
-      doc.line(leftMargin, yCursor, 190, yCursor);
-
-      yCursor += 8;
-
-      // 2. Story Banner Image (only on Page 1)
-      if (storyImg) {
-        const bannerHeight = 55;
-        doc.addImage(storyImg, "JPEG", leftMargin, yCursor, printableWidth, bannerHeight);
-        yCursor += bannerHeight + 8;
-      }
-
-      // 3. Story Title
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(22);
-      doc.setTextColor(30, 41, 59); // Slate 800
-      const splitTitle = doc.splitTextToSize(title, printableWidth);
-      splitTitle.forEach((line: string) => {
-        doc.text(line, leftMargin, yCursor);
-        yCursor += 9;
-      });
-
-      yCursor += 1;
-
-      // 4. Meta Row (Generated Date & Genre Pill Badge)
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(100, 116, 139); // Slate 500
-      const formattedDate = new Date().toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-      doc.text(`Generated on ${formattedDate}`, leftMargin, yCursor);
-
-      // Genre pill badge on the right
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      const tagWidth = doc.getTextWidth(tag);
-      const chipWidth = tagWidth + 5;
-      const chipHeight = 5;
-      const chipX = 190 - chipWidth;
-      const chipY = yCursor - 3.8;
-
-      doc.setFillColor(99, 102, 241); // Brand Indigo background
-      doc.roundedRect(chipX, chipY, chipWidth, chipHeight, 1, 1, "F");
-
-      doc.setTextColor(255, 255, 255); // White text inside pill
-      doc.text(tag, chipX + 2.5, chipY + 3.5);
-
-      yCursor += 4.5;
-
-      // Meta row bottom line
-      doc.setDrawColor(226, 232, 240); // Slate 200
-      doc.setLineWidth(0.2);
-      doc.line(leftMargin, yCursor, 190, yCursor);
-
-      yCursor += 10;
-
-      // 5. Story Paragraphs Flowing
-      const paragraphs = content.split(/\n+/);
-      const lineHeight = 6.5;
-      const paragraphSpacing = 4.5;
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.setTextColor(30, 41, 59); // Slate 800
-
-      paragraphs.forEach((para: string, pIdx: number) => {
-        const cleanPara = para.trim();
-        if (!cleanPara) return;
-
-        const lines = doc.splitTextToSize(cleanPara, printableWidth);
-        lines.forEach((line: string) => {
-          if (yCursor > maxY) {
-            doc.addPage();
-            yCursor = 30; // Top padding for subsequent pages
-          }
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(11);
-          doc.setTextColor(30, 41, 59); // Slate 800
-          doc.text(line, leftMargin, yCursor);
-          yCursor += lineHeight;
-        });
-
-        if (pIdx < paragraphs.length - 1) {
-          yCursor += paragraphSpacing;
-        }
-      });
-
-      // 6. Running Header and Footer generation
-      const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-
-        // Footer line
-        doc.setDrawColor(241, 245, 249);
-        doc.setLineWidth(0.25);
-        doc.line(leftMargin, 280, 190, 280);
-
-        // Footer Text
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(100, 116, 139); // Slate 500
-        doc.text("Generated with StorySparkAI", leftMargin, 285);
-        doc.text(`Page ${i} of ${totalPages}`, 190, 285, { align: "right" });
-
-        // Header on pages 2+
-        if (i > 1) {
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8);
-          doc.setTextColor(99, 102, 241); // Brand Indigo
-          doc.text("StorySparkAI", leftMargin, 14);
-
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8);
-          doc.setTextColor(148, 163, 184); // Slate 400
-          const headerTitle = title.length > 50 ? title.substring(0, 50) + "..." : title;
-          doc.text(headerTitle, 190, 14, { align: "right" });
-
-          doc.setDrawColor(241, 245, 249);
-          doc.setLineWidth(0.2);
-          doc.line(leftMargin, 17, 190, 17);
-        }
-      }
-
-      // Save PDF with sanitized name
-      const safeTitle = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-      doc.save(`storyspark_${safeTitle}.pdf`);
-      toast.dismiss(toastId);
-      toast.success("PDF generated successfully!");
-    } catch (err) {
-      console.error("PDF generation error:", err);
-      toast.dismiss(toastId);
-      toast.error("Failed to generate PDF. Please try again.");
-    }
-  };
 
   const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
   const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
@@ -1369,189 +864,17 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
   },
   hasStory: stories.length > 0,
 });
-  }, []);
-
-  const generateId = () => Math.random().toString(36).substring(2, 9);
-      }
-
-      // Save PDF with sanitized name
-      const safeTitle = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-      doc.save(`${safeTitle}.pdf`);
-      toast.dismiss(toastId);
-      toast.success("Premium PDF downloaded!");
-    } catch (error) {
-      console.error(error);
-      toast.dismiss(toastId);
-      toast.error("Failed to export PDF.");
-    }
-  };
-
-  const downloadBlob = (blob: Blob, filename: string) => {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-const getSafeFileName = (title: string, ext: string) => {
-  const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  return `${cleanTitle || "story"}.${ext}`;
-};
-
-const handleExportMarkdown = () => {
-    if (!selectedStory) { toast.error("No story available to export."); return; }
-    if (!selectedStory.content?.trim()) {toast.error("Story content is empty. Cannot export.");return;}
-    try {
-      const title = selectedStory.title || "Story";
-      const content = selectedStory.content || "";
-      const tag = selectedStory.tag || "General";
-      const authorName = isLogin && profile?.name ? profile.name : "Anonymous";
-      const isoDate = new Date().toISOString().split("T")[0];
-      const markdownContent = `---\ntitle: "${title.replace(/"/g, '\\"')}"\ntag: "${tag.replace(/"/g, '\\"')}"\nauthor: "${authorName.replace(/"/g, '\\"')}"\ndate: "${isoDate}"\n---\n\n# ${title}\n\n${content}\n`;
-      const blob = new Blob([markdownContent], { type: "text/markdown;charset=utf-8;" });
-      downloadBlob(blob, getSafeFileName(title, "md"));
-      toast.success("Markdown downloaded!");
-    } catch (error) { console.error(error); toast.error("Failed to export Markdown."); }
-  };
-
-
-  const isOverLimit = textareaValue.length >= MAX_PROMPT_LENGTH;
-  const isNearLimit = textareaValue.length >= MAX_PROMPT_LENGTH * WARN_THRESHOLD;
-  const isGenerateDisabled = loading || isOverLimit || !textareaValue.trim();
-
-  useKeyboardShortcuts({
-    onOpenHelp: () => setShowHelpModal(true),
-    onCloseHelp: () => setShowHelpModal(false),
-    onGenerate: () => {
-      if (isGenerateDisabled) return;
-      if (inputRef.current) {
-        const form = inputRef.current.closest("form");
-        if (form) form.requestSubmit();
-      }
-    },
-    onPublish: () => {
-      const btn = document.getElementById("publish-story-btn");
-      btn?.click();
-    },
-    focusPrompt: () => inputRef.current?.focus(),
-    hasStory: stories.length > 0,
-  });
-
-  const handelPublishStory = useCallback(async () => {
-    if (!isLogin) {
-      toast.error("Please login to publish the story.");
-      return;
-    }
-    if (!selectedStory) {
-      toast.error("No story available. Please generate a story first.");
-      return;
-    }
-
-    const post: IPost = {
-      ...selectedStory,
-      topic: selectTopics,
-    };
-
-    setLoading(true);
-    try {
-      const result = await createPost(post).unwrap();
-      if (result) {
-        toast.success("Story published successfully!");
-        setStories([]);
-        setSelectedStory(null);
-        onPublishSuccess?.();
-      }
-    } catch (error) {
-      const message = getErrorMessage(error);
-      toast.error(message || "Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }, [isLogin, selectedStory, selectTopics, createPost, setStories, setSelectedStory, onPublishSuccess]);
-
-  const calculateReadingTime = (content: string): number => {
-    const words = getWordCount(content);
-    return Math.max(1, Math.ceil(words / 200));
-  };
-
-  const isNarrationActive = narrationState !== "idle";
-
-
-  const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
-
-  const uniqueStories = useMemo(() => getUniqueStories(stories), [stories]);
-
-  const filteredStories = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) return uniqueStories;
-    const query = debouncedSearchQuery.toLowerCase();
-    
-    return uniqueStories.filter((story) => {
-      switch (searchFilter) {
-        case "title":
-          return story.title?.toLowerCase().includes(query);
-        case "content":
-          return story.content?.toLowerCase().includes(query);
-        case "genre":
-          return story.tag?.toLowerCase().includes(query);
-        case "all":
-        default:
-          return (
-            story.title?.toLowerCase().includes(query) ||
-            story.content?.toLowerCase().includes(query) ||
-            story.tag?.toLowerCase().includes(query)
-          );
-      }
-    });
-  }, [uniqueStories, debouncedSearchQuery, searchFilter]);
-
-  const indexOfLastStory = currentPage * storiesPerPage;
-  const indexOfFirstStory = indexOfLastStory - storiesPerPage;
-  const currentStories = useMemo(() => {
-    return filteredStories.slice(indexOfFirstStory, indexOfLastStory);
-  }, [filteredStories, indexOfFirstStory, indexOfLastStory]);
-
-  const totalPages = useMemo(() => {
-    return Math.ceil(filteredStories.length / storiesPerPage);
-  }, [filteredStories.length, storiesPerPage]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearchQuery, searchFilter]);
-
-  if (isLoading) {
-    return (
-      <div className="bg-gradient-to-br animate-gradient-slow min-h-screen relative overflow-x-hidden">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
-            <div className="pt-2 w-full md:w-auto flex justify-start">
-              <Link to="/">
-                <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
-                  <i className="fa-solid fa-left-long"></i> BACK
-                </div>
-              </Link>
-            </div>
-
-            {!login && (
-              <div className="pt-2 text-center">
-                <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed">
-                  <span>
-                    Free access for 3 requests — <Link to="/login"><span className="text-indigo-400 underline font-semibold">Login</span></Link> for more!
-                  </span>
-                </div>
+  return (
+    <div className="bg-gradient-to-br animate-gradient-slow min-h-screen relative overflow-x-hidden">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
+          <div className="pt-2 w-full md:w-auto flex justify-start">
+            <Link to="/">
+              <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
+                <i className="fa-solid fa-left-long"></i> BACK
               </div>
-            )}
-
-            <div className="flex items-center justify-center py-20">
-              <StoryGeneratingAnimation />
-            </div>
+            </Link>
           </div>
-        </div>
-      </div>
-    );
-  }
-
           {!login && (
             <div className="pt-2 text-center">
               <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed">
@@ -1590,13 +913,8 @@ const handleExportMarkdown = () => {
             ✨ Turn Your Ideas Into{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
               Amazing Stories!
-          <h1 className="text-slate-900 dark:text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">
-            âœ¨ {text.titleStart}{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-
-              {text.titleAccent}
             </span>{" "}
-            âœ¨
+            ✨
           </h1>
 
           <div className="max-w-3xl mx-auto px-4 sm:px-0">
@@ -1630,461 +948,11 @@ const handleExportMarkdown = () => {
         </button>
       ))}
     </div>
-        </div>
-          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <h3 className="text-xl font-bold text-slate-200 relative z-10">
-                Generated Story
-              </h3>
-              <div className="flex flex-wrap items-center gap-2 relative z-10">
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-slate-700 text-slate-200 font-semibold cursor-pointer hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleCopyStory}
-                  disabled={!selectedStory}
-                >
-                  {isCopied ? "Γ£ô Copied" : "≡ƒôï Copy"}
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportPDF}
-                  disabled={!selectedStory}
-                >
-                  ≡ƒôä Export PDF
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-indigo-700 text-slate-200 font-semibold cursor-pointer hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleExportMarkdown}
-                  disabled={!selectedStory}
-                >
-                  Γ¼ç∩╕Å Export as Markdown
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-violet-700 text-slate-200 font-semibold cursor-pointer hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowWorldMap(true)}
-                  disabled={!selectedStory}
-                >
-                  Γëí╞Æ├╣ΓòæΓê⌐Γòò├à World Map
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-fuchsia-700 text-slate-200 font-semibold cursor-pointer hover:bg-fuchsia-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setShowRemix(true)}
-                  disabled={!selectedStory}
-                >
-                  Γëí╞Æ├╢├ç Remix
-                </button>
-                <button
-                  type="button"
-                  id="publish-story-btn"
-                  className={`rounded-lg px-5 py-2 font-semibold flex items-center space-x-2 cursor-pointer bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    loading ? "" : "hover:bg-blue-500 hover:shadow-lg active:scale-95"
-                  }`}
-                  onClick={handelPublishStory}
-                  disabled={loading || !selectedStory}
-                >
-                  {loading ? "Publishing..." : "Publish"}
-                </button>
-              </div>
-            </div>
-
-          <div className="max-w-3xl mx-auto px-4 sm:px-0">
-            <div className="bg-gray-50 rounded-md p-4 border border-gray-200 text-slate-900 dark:bg-blue-500/10 dark:border-gray-400 dark:text-white overflow-hidden">
-              <div className="relative w-full">
-                <form className="space-y-4 w-full" onSubmit={handleSubmit(onSubmit)}>
-
-                  {/* â”€â”€ Genre chips â”€â”€ */}
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {GENRES.map((genre) => (
-                      <button
-                        key={genre.value}
-                        type="button"
-                        disabled={loading}
-                        onClick={() => {
-                          if (loading) return;
-                          const newGenre = selectedGenre === genre.value ? "" : genre.value;
-                          setSelectedGenre(newGenre);
-                          if (newGenre) {
-                            playSoundtrack(newGenre);
-                          } else if (audioRef.current) {
-                            audioRef.current.pause();
-                            audioRef.current.currentTime = 0;
-                          }
-                        }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedGenre === genre.value
-                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                            : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                          } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
-                      >
-                        {genre.icon} {genreLabels[genre.name]}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* â”€â”€ NEW: Tone picker â”€â”€ */}
-                  {/* ── NEW: Tone picker ── */}
-                  <TonePicker selected={selectedTone} onChange={setSelectedTone} />
-
-
-                    const rawParts = segment.text.split(/(\s+)/);
-                    let wordOffset = 0;
-
-
-                      {(["short", "medium", "long"] as const).map((length) => (
-                        <button
-                          key={length}
-                          type="button"
-                          disabled={loading}
-                          onClick={() => setSelectedLength(length)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedLength === length
-                              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
-                            } ${loading ? "cursor-not-allowed opacity-50" : ""}`}
-                        >
-                          {text[length]}
-                        </button>
-                      ))}
-                    </div>
-
-
-                    <div className="flex items-center gap-2" ref={languageDropdownRef}>
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1">🌐 {text.language}:</span>
-                      <div className="relative">
-            <div className="relative z-10 mt-6">
-              <AudioPlayer
-                ref={audioPlayerRef}
-                text={selectedStory.content}
-                title={selectedStory.title}
-                onWordIndexChange={setNarrationWordIndex}
-                onPlaybackStateChange={setNarrationState}
-              />
-            </div>
-          </div>
-          <div className="mt-7">
-            <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
-              <h3 className="text-lg font-bold text-slate-200 mb-4">
-                Select Topics
-              </h3>
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <input
-                  type="text"
-                  value={newTopicTitle}
-                  onChange={(event) => setNewTopicTitle(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      handleAddTopic();
-                    }
-                  }}
-                  placeholder="Add related topic"
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                />
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-500 transition-colors"
-                  onClick={handleAddTopic}
-                >
-                  Add Topic
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedStory ? (
-                  <>
-                    {topics.map((topic, index) => (
-                      <span
-                        key={index}
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 ${topic.className} rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-sm`}
-                      >
-                        <button
-
-                          disabled={loading}
-                          onClick={() => !loading && setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                          className={`flex items-center gap-2 px-3 py-1 bg-white/10 text-gray-300 border border-slate-700/50 rounded-full text-xs font-semibold hover:bg-white/20 transition-all duration-200 ${loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                            }`}
-                        >
-                          <span>{LANGUAGES.find(l => l.name === selectedLanguage)?.name || "English"}</span>
-                          <span className="text-gray-400 text-[10px]">â–¼</span>
-
-                        </button>
-
-                        {isLanguageDropdownOpen && (
-                          <ul className="absolute right-0 z-20 mt-1.5 max-h-48 w-40 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-xl focus:outline-none divide-y divide-slate-100 dark:divide-white/5 p-1 box-border list-none m-0">
-                            {LANGUAGES.map((lang) => (
-                              <li key={lang.code} className="p-0 m-0 list-none">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedLanguage(lang.name);
-                                    setIsLanguageDropdownOpen(false);
-                                  }}
-
-                                  className={`w-full text-left px-3 py-2 text-xs transition-colors duration-150 cursor-pointer ${selectedLanguage === lang.name
-                                      ? "bg-indigo-600 text-white font-bold"
-                                      : "text-gray-400 hover:bg-indigo-600/50 hover:text-white"
-                                    }`}
-
-                                >
-                                  {lang.name}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-
-                  {/* â”€â”€ Prompt textarea â”€â”€ */}
-                  <div className="relative w-full">
-
-                    <textarea
-                      {...register("prompt")}
-                      ref={(el) => {
-                        register("prompt").ref(el);
-                        inputRef.current = el;
-                      }}
-
-                      disabled={loading}
-                      aria-busy={loading}
-                      className={`w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-800 dark:text-gray-200 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 dark:placeholder:text-gray-400 pr-12 transition-colors duration-200 box-border ${isOverLimit
-                          ? "ring-1 ring-red-500 rounded"
-                          : isNearLimit
-                            ? "ring-1 ring-yellow-400 rounded"
-                            : ""
-                        }`}
-
-                      placeholder={text.promptPlaceholder}
-                      value={textareaValue}
-                      maxLength={MAX_PROMPT_LENGTH}
-                      onChange={(e) => setTextareaValue(e.target.value)}
-onKeyDown={(e) => {
-                        // Keep existing behavior: Enter -> next step (unless Shift is held)
-                        if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-                          e.preventDefault();
-
-                          if (isGenerateDisabled) {
-                            return;
-                          }
-                          const form = e.currentTarget.closest("form");
-                          if (form) form.requestSubmit();
-
-                        }
-                      }}
-                    />
-
-                    <div className="absolute right-3.5 top-3.5 flex flex-col gap-2.5">
-                      {textareaValue.length > 0 && (
-                          {topic.selected ? (
-                            <i className="fa-solid fa-check"></i>
-                          ) : (
-                            <i className="fa-solid fa-plus"></i>
-                          )}{" "}
-                          {topic.title}
-                        </button>
-                        <button
-                          type="button"
-                          className="cursor-pointer border-l border-current/30 pl-2 disabled:cursor-not-allowed disabled:opacity-40"
-                          onClick={() => handleRemoveTopic(index)}
-                          disabled={topics.length <= 2}
-                          aria-label={`Remove ${topic.title}`}
-                        >
-                          <i className="fa-solid fa-xmark"></i>
-                        </button>
-
-                      )}
-
-                      <button
-                        type="button"
-
-                        disabled={loading}
-                        onClick={handleClearPrompt}
-                        className={`absolute right-2 top-2 text-gray-400 transition-colors duration-200 ${loading
-                            ? "cursor-not-allowed opacity-50"
-                            : "hover:text-red-500"
-                          }`}
-                        aria-label={text.close}
-                        title={text.close}
-
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-200/40 dark:border-white/5 select-none w-full box-border">
-                      <div className="flex-1 min-w-0 pr-4">
-                        {isOverLimit ? (
-                          <p className="text-[11px] font-semibold text-red-500 dark:text-red-400 flex items-center gap-1 truncate m-0">
-                            <span>⚠</span> {text.characterLimit}
-                          </p>
-                        ) : isNearLimit ? (
-                          <p className="text-[11px] font-semibold text-amber-500 dark:text-amber-400 flex items-center gap-1 truncate m-0">
-                            <span>⚠</span> {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-                          </p>
-                        ) : null}
-                      </div>
-
-                      <span
-  aria-live="polite"
-  className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
-    isOverLimit || isDangerLimit
-      ? "text-red-500 dark:text-red-400"
-      : isNearLimit
-      ? "text-amber-500"
-      : "text-slate-400"
-  }`}
->
-  {textareaValue.length} / {MAX_PROMPT_LENGTH}
-</span>
-                    </div>
-                  </div>
-
-                  <div className="text-[11px] font-medium leading-relaxed text-slate-400 dark:text-slate-500 select-none w-full box-border">
-                    💡 <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">{text.keyboardTip}</span>
-                    {text.press} <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Enter</kbd> to continue &bull;{" "}
-                    Press <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">{typeof navigator !== "undefined" && navigator.platform.toUpperCase().includes("MAC") ? "Cmd" : "Ctrl"} + Enter</kbd> to generate &bull;{" "}
-                    <kbd className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-md text-slate-700 dark:text-slate-300 mx-0.5 shadow-sm">Shift + Enter</kbd> {text.forNewLine}
-                  </div>
-
-
-                  <div className="flex justify-end pt-2 w-full box-border">
-                    <button
-                      type="button"
-
-                      disabled={loading}
-                      onClick={() => !loading && setIsRecentPromptsOpen(!isRecentPromptsOpen)}
-                      className={`absolute right-2 top-12 bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2 ${loading
-                          ? "cursor-not-allowed opacity-60"
-                          : "hover:bg-indigo-700"
-                        }`}
-                      aria-label={text.recentPrompts}
-                      title={text.recentPrompts}
-
-                    >
-                      <span>Next: Cast of Characters ➡️</span>
-                    </button>
-            {/* Alternate Endings Section */}
-            {selectedStory && (
-              <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mt-8 relative overflow-hidden">
-                <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-200 flex items-center gap-2">
-                      Alternate Endings
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Explore alternate narrative styles for your story context.
-                    </p>
-                  </div>
-                  {selectedStory.content !== originalStoryContent[selectedStory.uuid] && (
-                    <button
-                      type="button"
-                      onClick={handleResetEnding}
-                      className="rounded-lg px-4 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-200 border border-red-700/50 font-semibold text-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
-                    >
-                      <i className="fa-solid fa-rotate-left"></i> Reset to Original
-                    </button>
-                  )}
-                </div>
-
-                  <div className="space-y-2 select-none">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Cast of Characters</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Define custom characters to ensure Gemini maintains character roles, personality traits, and dynamic relationships consistently throughout the story.
-                    </p>
-                  </div>
-
-
-                    <div className="flex items-center justify-between mt-1 px-1">
-                      {isOverLimit ? (
-                        <p className="text-xs text-red-400 flex items-center gap-1">
-                          <span>⚠️</span> {text.characterLimit}
-                        </p>
-                      ) : isNearLimit ? (
-                        <p className="text-xs text-yellow-400 flex items-center gap-1">
-                          <span>⚠️</span>{" "}
-                          {MAX_PROMPT_LENGTH - textareaValue.length} {text.charactersRemaining}
-                        </p>
-                      ) : (
-                        <span />
-                      )}
-
-                      <span
-                        className={`text-xs tabular-nums ml-auto ${isOverLimit
-                            ? "text-red-400 font-medium"
-                            : isNearLimit
-                              ? "text-yellow-400"
-                              : "text-gray-500"
-                          }`}
-                      >
-                        {textareaValue.length} / {MAX_PROMPT_LENGTH}
-                      </span>
-
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {characters.map((char, index) => (
-                        <div
-                          key={char.id}
-                          className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl space-y-4 relative"
-                        >
-                          <div className="flex items-center justify-between select-none">
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                              👤 Character #{index + 1}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveCharacter(char.id)}
-                              className="text-xs font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
-                            >
-                              Remove
-                            </button>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Name</label>
-                              <input
-                                type="text"
-                                value={char.name}
-                                onChange={(e) => handleCharacterChange(char.id, "name", e.target.value)}
-                                placeholder="e.g. Leo, Sir Cedric, Bella"
-                                className="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl outline-none focus:border-blue-500/40 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 placeholder:italic"
-                              />
-                            </div>
-
-                  <div className="space-y-4">
-                    {characters.map((char, index) => (
-                      <div
-                        key={char.id}
-                        className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl space-y-4 relative"
-                      >
-                        <div className="flex items-center justify-between select-none">
-                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                            👤 Character #{index + 1}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCharacter(char.id)}
-                            className="text-xs font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
-                          >
-                            Remove
-                          </button>
-                        </div>
 
     <div className="flex flex-wrap items-center gap-2 mb-3">
       <span className="text-xs text-gray-400 mr-1">📏 Length:</span>
 
-      {lengths.map((length) => (
+      {lengths.map((length: string) => (
         <button
           key={length}
           type="button"
@@ -2258,277 +1126,6 @@ onKeyDown={(e) => {
     )}
   </div>
 </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Name</label>
-                            <input
-                              type="text"
-                              value={char.name}
-                              onChange={(e) => handleCharacterChange(char.id, "name", e.target.value)}
-                              placeholder="e.g. Leo, Sir Cedric, Bella"
-                              className="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl outline-none focus:border-blue-500/40 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 placeholder:italic"
-                            />
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Role</label>
-                            <select
-                              value={char.role}
-                              onChange={(e) => handleCharacterChange(char.id, "role", e.target.value)}
-                              className="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl outline-none focus:border-blue-500/40 text-slate-800 dark:text-slate-200"
-                            >
-                              <option value="Protagonist">Protagonist (Hero/Main Character)</option>
-                              <option value="Companion">Companion (Sidekick/Friend)</option>
-                              <option value="Rival">Rival (Competitor)</option>
-                              <option value="Antagonist">Antagonist (Villain/Obstacle)</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Personality & Traits</label>
-                          <textarea
-                            value={char.personality}
-                            onChange={(e) => handleCharacterChange(char.id, "personality", e.target.value)}
-                            placeholder="e.g. Brave but clumsy, loves eating carrots, afraid of the dark..."
-                            rows={2}
-                            className="w-full px-3 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl outline-none resize-none focus:border-blue-500/40 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 placeholder:italic"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <p className="text-xs text-gray-500 mt-1 px-1">
-                    💡 <span className="font-medium">{text.keyboardTip}</span> {text.press}{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Enter
-                    </kbd>{" "}
-                    {text.toGenerate} &bull;{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Ctrl + Enter
-                    </kbd>{" "}
-                    {text.alsoWorks} &bull;{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">
-                      Shift + Enter
-                    </kbd>{" "}
-                    {text.forNewLine}
-                  </p>
-
-                  {/* â”€â”€ Generate button row â”€â”€ */}
-                  <div className="flex items-center justify-between mt-2 w-full">
-                    {/* Active tone badge */}
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      {selectedTone && (
-                        <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 border border-white/10">
-                          {TONES.find((t) => t.label === selectedTone)?.emoji}{" "}
-                          <span className="font-medium">{selectedTone}</span>
-
-                          <button
-                            key={s.name}
-                            type="button"
-
-                            disabled={loading}
-                            onClick={() => setSelectedTone("")}
-                            className={`ml-1 text-gray-500 transition-colors ${loading
-                                ? "cursor-not-allowed opacity-50"
-                                : "hover:text-red-400"
-                              }`}
-                            aria-label="Remove tone"
-                          >
-                            Ã—
-
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Tab content */}
-                    {(() => {
-                      const currentEndings = endingsCache[selectedStory.uuid] || [];
-                      const currentEndingData = currentEndings.find((e) => e.style === activeEndingTab);
-                      if (!currentEndingData) return null;
-                      
-                      const isCurrentlyApplied = selectedStory.content === currentEndingData.fullStory;
-                      
-                      return (
-                        <div className="bg-slate-900/40 rounded-xl p-6 border border-slate-700/30">
-                          <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-lg font-bold text-slate-200">
-                              {activeEndingTab} Suggestion
-                            </h4>
-                            <div>
-                              {isCurrentlyApplied ? (
-                                <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
-                                  <i className="fa-solid fa-check"></i> Applied to Story
-                                </span>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleApplyEnding(currentEndingData)}
-                                  className="rounded-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-sm transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md hover:shadow-purple-500/20"
-                                >
-                                  Apply to Story
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-4">
-                            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-800 leading-relaxed text-slate-300 text-sm md:text-base italic shadow-inner whitespace-pre-wrap">
-                              <p>{currentEndingData.ending}</p>
-                            </div>
-                            
-                            <div>
-                              <details className="group border border-slate-800 rounded-lg overflow-hidden bg-slate-950/20">
-                                <summary className="list-none flex items-center justify-between p-3 text-xs font-bold text-slate-400 hover:text-slate-200 cursor-pointer select-none">
-                                  <span>PREVIEW FULL STORY WITH THIS ENDING</span>
-                                  <span className="transition-transform duration-200 group-open:rotate-180">Γû╝</span>
-                                </summary>
-                                <div className="p-4 border-t border-slate-800/80 text-xs text-slate-400 leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap">
-                                  {currentEndingData.fullStory}
-                                </div>
-                              </details>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8 bg-slate-900/20 border border-dashed border-slate-700/40 rounded-xl">
-                    <button
-
-                      type="submit"
-                      disabled={isGenerateDisabled}
-                      aria-busy={loading}
-                      aria-disabled={isGenerateDisabled}
-                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${isGenerateDisabled
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer hover:shadow-lg hover:shadow-indigo-500/50 hover:scale-105"
-                        } transition-all duration-300 transform flex items-center space-x-2 group`}
-                    >
-                      {loading ? (
-                        <i className="fas fa-circle-notch text-xl animate-spin"></i>
-                      ) : (
-                        <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
-                      )}
-                      <span>{loading ? text.generating : text.generate}</span>
-
-                    </button>
-                    <p className="text-xs text-slate-400 mt-3 text-center max-w-sm px-4 leading-relaxed">
-                      Uses the story context to produce 5 unique ending variations (Happy, Dark, Plot Twist, Open, Cliffhanger) for comparison.
-                    </p>
-                  </div>
-
-                  {loading && (
-                    <p className="text-sm text-indigo-300 mt-3 text-right" aria-live="polite">
-                      Your story is being generated. You can cancel the request if it takes too long.
-                    </p>
-                  )}
-                </form>
-              </div>
-            </div>
-
-
-                  <span className={`text-[11px] font-bold tabular-nums shrink-0 ml-auto ${
-                    isOverLimit || isDangerLimit ? "text-red-500 dark:text-red-400" : isNearLimit ? "text-amber-500" : "text-slate-400"
-                  }`}>
-                    {textareaValue.length} / {MAX_PROMPT_LENGTH}
-                  </span>
-
-                  <span
-                    className={`text-gray-300 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""
-                      }`}
-                  >
-                    â–¼
-                  </span>
-                </button>
-                {isDropdownOpen && (
-                  <ul className="relative z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
-                    {prompts.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedPrompt(item.prompt);
-                            setTextareaValue(item.prompt);
-                            setIsDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
-                        >
-                          {item.prompt}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-              </div>
-
-              <div className="flex justify-end pt-2 w-full box-border">
-                <button
-                  type="button"
-                  disabled={loading || isOverLimit}
-                  aria-busy={loading}
-                  aria-disabled={loading || isOverLimit}
-                  onClick={handleGenerateClick}
-                  className={`w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-xl shadow-md shadow-blue-500/10 transition-all duration-150 active:scale-[0.98] select-none uppercase tracking-wider flex items-center justify-center gap-2 ${
-                    loading || isOverLimit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-                  } group`}
-                >
-                  <i className="fas fa-wand-magic-sparkles text-sm group-hover:scale-110 transition-transform duration-200" />
-                  <span>{loading ? text.generating : text.generate}</span>
-                </button>
-              </div>
-                </>
-              )}
-            </form>
-          </div>
-
-          <div className="w-full text-left box-border">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 select-none px-0.5">
-              {text.examples}
-            </h3>
-
-            <div className="relative w-full" ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={handleToggleDropdown}
-                className="w-full p-3.5 bg-white dark:bg-[#111827]/40 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500/30 flex items-center justify-between text-xs sm:text-sm font-medium text-left transition-all duration-150 cursor-pointer select-none shadow-sm"
-              >
-                <span className="truncate pr-4">
-                  {selectedPrompt || text.selectPrompt}
-                </span>
-                <span className={`text-slate-400 dark:text-slate-500 text-[9px] transition-transform duration-150 shrink-0 ${isDropdownOpen ? "rotate-180" : ""}`}>
-                  ▼
-                </span>
-              </button>
-
-              {isDropdownOpen && (
-                <ul className="absolute z-30 w-full mt-1.5 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-xl focus:outline-none divide-y divide-slate-100 dark:divide-white/5 p-1 box-border list-none m-0">
-                  {prompts.map((item) => (
-                    <li key={item.id} className="p-0 m-0 list-none">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedPrompt(item.prompt);
-                          setTextareaValue(item.prompt);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors duration-150 whitespace-normal break-words leading-relaxed font-medium cursor-pointer"
-                      >
-                        {item.prompt}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -2551,7 +1148,6 @@ onKeyDown={(e) => {
             <button
               onClick={() => setShowHelpModal(false)}
               className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg"
-
             >
               Close
             </button>
@@ -2565,10 +1161,6 @@ onKeyDown={(e) => {
         isLogin={login}
         setStories={setStories}
       />
-      <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
-
-      <div className="fixed top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
-
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
 
       {showLimitModal && (
@@ -2604,37 +1196,9 @@ onKeyDown={(e) => {
         </div>
       )}
 
-
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-6">
-          <button
-            onClick={() => setCurrentPage((p) => p - 1)}
-            disabled={currentPage === 1}
-            className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50"
-          >
-            Previous
-          </button>
-
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <button
-            onClick={() => setCurrentPage((p) => p + 1)}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded bg-slate-700 text-white disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      )}
-
-
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 };
 
 export default StoriesComponent;
-
-

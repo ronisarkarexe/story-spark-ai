@@ -3,7 +3,6 @@ import { Chapter } from "../../types/story.types";
 import ReadingTimeBadge from "../ReadingTimeBadge";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
-import { AudioPlayer } from "../AudioPlayer";
 
 interface Props {
   chapters: Chapter[];
@@ -190,7 +189,6 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
       toast.error("Failed to export PDF.");
     }
   };
-
   return (
     <div
       ref={containerRef}
