@@ -8,6 +8,11 @@ import { Server } from "socket.io";
 import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
+import { setupCollabSocket } from "./socket/collab.socket";
+import { setNotificationSocket } from "./socket/notification.socket";
+import { YjsGateway } from "./app/modules/collab/yjs.gateway";
+import { socketRateLimiter } from "./socket/socket-rate-limiter";
+
 
 // Override DNS resolvers only when explicitly configured, default to the platform environment
 if (config.dns_servers?.length) {
@@ -22,11 +27,68 @@ if (config.disable_logs) {
   console.debug = noop;
 }
 
+const MAX_MONGO_RECONNECT_ATTEMPTS = 5;
+const MONGO_RECONNECT_DELAY_MS = 2000;
+let isMongoReconnectInProgress = false;
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function reconnectMongo() {
+  if (isMongoReconnectInProgress) return;
+  isMongoReconnectInProgress = true;
+
+  try {
+    for (let attempt = 1; attempt <= MAX_MONGO_RECONNECT_ATTEMPTS; attempt += 1) {
+      try {
+        logger.info(`MongoDB reconnect attempt ${attempt}/${MAX_MONGO_RECONNECT_ATTEMPTS}`);
+        await mongoose.connect(config.database_url as string, {
+          serverSelectionTimeoutMS: 10000,
+          socketTimeoutMS: 45000,
+          connectTimeoutMS: 10000,
+        });
+        logger.info('MongoDB reconnected successfully.');
+        return;
+      } catch (error) {
+        logger.error(`MongoDB reconnect attempt ${attempt} failed:`, error);
+        if (attempt < MAX_MONGO_RECONNECT_ATTEMPTS) {
+          await delay(MONGO_RECONNECT_DELAY_MS * attempt);
+        }
+      }
+    }
+
+    logger.error(
+      `MongoDB failed to reconnect after ${MAX_MONGO_RECONNECT_ATTEMPTS} attempts. ` +
+        'Database operations may fail until the service becomes available again.'
+    );
+  } finally {
+    isMongoReconnectInProgress = false;
+  }
+}
+
 async function connectDB() {
   if (mongoose.connection.readyState === 1) return;
   // config.database_url is guaranteed non-empty by config/index.ts – if it throws at
   // module load time if DATABASE_URL is missing, so no runtime guard is needed here
-  await mongoose.connect(config.database_url as string);
+  if (!mongoose.connection.listeners('error').length) {
+    mongoose.connection.on('error', (err) => {
+      logger.error('MongoDB runtime connection error:', err);
+    });
+
+    mongoose.connection.on('disconnected', async () => {
+      logger.warn('MongoDB disconnected. Attempting to reconnect...');
+      await reconnectMongo();
+    });
+
+    mongoose.connection.on('reconnected', () => {
+      logger.info('MongoDB connection reestablished.');
+    });
+  }
+
+  await mongoose.connect(config.database_url as string, {
+    serverSelectionTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+    connectTimeoutMS: 10000,
+  });
 }
 
 async function main() {
@@ -39,6 +101,12 @@ async function main() {
 
     try {
       if (mongoose && mongoose.connection && mongoose.connection.readyState !== 0) {
+        await new Promise<void>((resolve, reject) => {
+        httpServer.close((err) => {
+        if (err) reject(err);
+        else resolve();
+  });
+});
         await mongoose.connection.close();
         logger.info('🔌 MongoDB connection safely closed.');
       }
@@ -55,6 +123,13 @@ async function main() {
   });
 
   // Intercept unexpected application crashes before they tear down the system
+  process.on("unhandledRejection", (reason) => {
+  void handleGracefulShutdown("Unhandled Rejection", reason);
+  });
+
+  process.on("uncaughtException", (error) => {
+  void handleGracefulShutdown("Uncaught Exception", error);
+  });
   process.on('uncaughtException', (error: Error) => {
     handleGracefulShutdown('Uncaught Exception', error);
   });
@@ -73,7 +148,34 @@ async function main() {
     config.cors_origins && config.cors_origins.length > 0
       ? config.cors_origins
       : defaultCorsOrigins;
+  // Instantiate Socket.IO on top of the HTTP server (previously imported
+  // but never constructed — realtime features were silently dead).
+  const io = new Server(httpServer, {
+    cors: {
+      origin: socketCorsOrigins,
+      credentials: true,
+    },
+  });
 
+
+  // Initialize Socket.IO server with rate limiting
+  const io = new Server(httpServer, {
+    cors: {
+      origin: socketCorsOrigins,
+      credentials: true,
+      methods: ["GET", "POST"],
+    },
+  });
+
+  // Apply rate limiting to all Socket.IO connections
+  io.use(socketRateLimiter);
+
+  // Setup Socket.IO namespaces
+  setupCollabSocket(io);
+  setNotificationSocket(io);
+  new YjsGateway(io);
+
+  logger.info("🔌 Socket.IO server initialized with rate limiting");
   // Start the server listener
   const PORT = config.port || 4000;
   httpServer.listen(PORT, () => {

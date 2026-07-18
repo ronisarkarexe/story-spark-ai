@@ -8,6 +8,8 @@ interface StoryMeta {
 
 export function useStoryMeta({ title, description, imageUrl }: StoryMeta) {
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     document.title = `${title} – Story Spark AI`;
 
     const setMeta = (sel: string, val: string) => {

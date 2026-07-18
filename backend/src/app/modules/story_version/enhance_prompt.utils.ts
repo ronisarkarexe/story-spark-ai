@@ -1,5 +1,3 @@
- 
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   GEMINI_MODEL,
@@ -10,7 +8,6 @@ import {
   getGeminiClient,
 } from "../../../services/ai.service";
 
-
 export const enhancePrompt = (prompt: string, context?: string): string => {
   // Use the following story context if available
   const compressedContext = context ? context : "No previous context";
@@ -19,10 +16,7 @@ export const enhancePrompt = (prompt: string, context?: string): string => {
 
 Context: ${compressedContext}
 
-Prompt: ${prompt}`;
-
-  return metaPrompt;
-};
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export const enhancePromptWithGemini = async (
   prompt: string,
@@ -128,4 +122,3 @@ Prompt: ${prompt}`;
 
   return text;
 };
-

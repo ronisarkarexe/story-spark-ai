@@ -13,8 +13,11 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
+const AUTH_PATHS = ["/login", "/signup", "/forgot-password"];
+
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
+  const isAuthPage = AUTH_PATHS.includes(pathname);
 
   const [cookieBannerHeight, setCookieBannerHeight] = useState(0);
 
@@ -33,7 +36,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
       <div className="flex-grow min-h-0">{children}</div>
 
       <FooterComponent />
-<ChatComponent />
+      {!isAuthPage && <ChatComponent />}
     </div>
   );
 };

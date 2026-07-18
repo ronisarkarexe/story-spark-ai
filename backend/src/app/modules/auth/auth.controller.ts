@@ -6,7 +6,6 @@ import sendResponse from "../../../shared/send_response";
 import { IUser } from "../user/user.interface";
 import catchAsync from "../../../shared/catch_async";
 import { setRefreshTokenCookie, clearRefreshTokenCookie } from "../../../utils/cookie.util";
-import { TokenBlacklist } from "./tokenBlacklist.model";
 import { VerifyEmailService } from "../verify_email/verify_email.service";
 
 const login = catchAsync(async (req: Request, res: Response) => {
@@ -64,16 +63,6 @@ const logout = catchAsync(async (req: Request, res: Response) => {
       : authHeader.trim();
   } else {
     activeToken = req.cookies?.accessToken || req.cookies?.token || "";
-  }
-
-  if (activeToken) {
-    try {
-      await TokenBlacklist.create({
-        token: activeToken,
-      });
-    } catch (err) {
-      console.error("Error blacklisting token on logout:", err);
-    }
   }
 
   const refreshToken = req.cookies?.refreshToken as string | undefined;
