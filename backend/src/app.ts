@@ -14,6 +14,7 @@ import cookieParser from "cookie-parser";
 import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
+import ApiError from "./errors/api_error";
 
 const app: Application = express();
 app.set("trust proxy", 1);
@@ -26,7 +27,7 @@ const limiter = rateLimit({
 });
 app.use(limiter as unknown as RequestHandler);
 
-const defaultCorsOrigins = [
+export const defaultCorsOrigins = [
   "http://localhost:4001",
   "http://localhost:4002",
   "https://storysparkai-five.vercel.app",
@@ -62,19 +63,18 @@ app.use(cookieParser() as unknown as RequestHandler);
 
 app.use("/api/v1", Routers);
 
-app.use((req: Request, res: Response, _next: NextFunction) => {
-  res.status(httpStatus.NOT_FOUND).json({
-    success: false,
-    message: "Not Found",
-    errorMessages: [
-      {
-        path: req.originalUrl,
-        message: "API Not Found",
-      },
-    ],
-  });
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  const error = new ApiError(httpStatus.NOT_FOUND, "API Not Found");
+  error.errorMessages = [
+    {
+      path: req.originalUrl,
+      message: "The requested API endpoint route does not exist.",
+    },
+  ];
+  next(error);
 });
 
 app.use(globalErrorHandler);
 
 export default app;
+export { defaultCorsOrigins };

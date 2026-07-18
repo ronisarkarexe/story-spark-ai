@@ -13,6 +13,17 @@ type JwtVerifiedUser = {
   role?: string;
   iat?: number;
 };
+const isJwtVerifiedUser = (
+  payload: unknown
+): payload is JwtVerifiedUser => {
+  return (
+    typeof payload === "object" &&
+    payload !== null &&
+    "_id" in payload &&
+    typeof (payload as { _id?: unknown })._id === "string"
+  );
+};
+
 
 const extractBearerToken = (authHeader: string): string => {
   if (!authHeader) return "";
@@ -30,8 +41,8 @@ const extractTokenFromRequest = (req: Request): string => {
   const bearerToken = extractBearerToken(authHeader ?? "");
 
   const cookieToken =
-    (req).cookies?.accessToken ||
-    (req).cookies?.token;
+    req.cookies?.accessToken ||
+    req.cookies?.token;
 
   return bearerToken || cookieToken || "";
 };
@@ -53,14 +64,26 @@ const auth =
         const verifiedUser = JwtHelpers.verifyToken(
           token,
           config.jwt.secret as Secret
-        ) as unknown as JwtVerifiedUser;
+        ) as JwtVerifiedUser;
 
         if (!verifiedUser?._id) {
           throw new ApiError(
             httpStatus.UNAUTHORIZED,
             "Invalid token"
+
+          const decodedUser = JwtHelpers.verifyToken(
+            token,
+            config.jwt.secret as Secret
           );
+
+          if (!isJwtVerifiedUser(decodedUser)) {
+            throw new ApiError(
+              httpStatus.UNAUTHORIZED,
+              "Invalid token"
+            );
         }
+
+      const verifiedUser = decodedUser;
 
         const user = await User.findById(verifiedUser._id);
 
@@ -112,7 +135,7 @@ const auth =
           }
         }
 
-        (req as any).user = user;
+        req.user = user as Express.Request["user"];
 
         next();
       } catch (err) {

@@ -11,10 +11,10 @@ import HeroSectionComponent from "./components/hero/hero_section.component";
 import HomeComponent from "./components/home/home.component";
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
+import PageTitleUpdater from "./components/PageTitleUpdater";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import ThemeSwitcher from "./components/theme-switcher/ThemeSwitcher";
 import ErrorBoundary from "./components/ErrorBoundary";
-import PageTitleUpdater from "./components/PageTitleUpdater";
 
 // Import DashboardLayout directly (it exists in your codebase)
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
@@ -30,6 +30,8 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => <>{children}
 const TemplatesComponent = lazy(() => import("./components/templates/templates.component"));
 const WritingAssistantComponent = lazy(() => import("./components/writing-assistant/writing_assistant.component"));
 const StoryInspirationWrapper = lazy(() => import("./components/StoryInspirationWrapper"));
+// TODO: confirm the actual file location for this component — path below is a placeholder
+const StoryConsistencyGuardian = lazy(() => import("./components/story-consistency/StoryConsistencyGuardian"));
 const LoginComponent = lazy(() => import("./components/login/login.component"));
 const SignUpComponent = lazy(() => import("./components/signup/signup.component"));
 const ForgotPasswordComponent = lazy(() => import("./components/login/forgot_password.component"));
@@ -110,6 +112,7 @@ const router = createBrowserRouter([
         path: "writing-assistant",
         element: <ProtectedRoute allowedRoles={ALL_ROLES}>{lazyPage(<WritingAssistantComponent />)}</ProtectedRoute>,
       },
+      { path: "story-consistency", element: <ProtectedRoute allowedRoles={ALL_ROLES}>{lazyPage(<StoryConsistencyGuardian />)}</ProtectedRoute> },
       { path: "story-inspiration", element: lazyPage(<StoryInspirationWrapper />) },
       { path: "login", element: lazyPage(<LoginComponent />) },
       { path: "signup", element: lazyPage(<SignUpComponent />) },
@@ -131,6 +134,7 @@ const router = createBrowserRouter([
       { path: "leaderboard", element: <Leaderboard /> },
       { path: "community", element: lazyPage(<CommunityComponent />) },
       { path: "report-bug", element: lazyPage(<ReportBug />) },
+
       // Public routes
       { path: "explore", element: lazyPage(<ExploreComponent />) },
       { path: "resources", element: lazyPage(<ResourcesListComponent />) },

@@ -17,6 +17,31 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const storageKey = `story-progress-${storyId}`;
 
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+
+const handleCopy = async (text: string, id: number) => {
+  try {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
+
+    setCopiedId(id);
+
+    setTimeout(() => {
+      setCopiedId(null);
+    }, 3000);
+  } catch (error) {
+    console.error("Copy failed:", error);
+  }
+};
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -251,10 +276,20 @@ const StoryViewer: React.FC<Props> = ({ chapters, storyId, truncated }) => {
       <div className="max-w-4xl mx-auto">
         {chapters.map((chapter) => (
           <div key={chapter.id} className="mb-16">
-            <h1 className="text-4xl font-extrabold tracking-tight text-white mb-6">
-              {chapter.title}
-            </h1>
-            <ReadingTimeBadge text={chapter.content} />
+            <div className="flex items-center justify-between mb-6">
+  <h1 className="text-4xl font-extrabold tracking-tight text-white">
+    {chapter.title}
+  </h1>
+
+  <button
+    onClick={() => handleCopy(chapter.content, chapter.id)}
+    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition"
+  >
+    {copiedId === chapter.id ? "Copied! ✓" : "Copy"}
+  </button>
+</div>
+
+<ReadingTimeBadge text={chapter.content} />
             <p className="text-lg text-zinc-300 whitespace-pre-line leading-9">
               {chapter.content}
             </p>

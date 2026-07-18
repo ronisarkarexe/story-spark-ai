@@ -11,6 +11,7 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
+import { useGetCharactersQuery, useSaveCharacterMutation } from "../../redux/apis/character.api";
 import { getErrorMessage } from "../../error/error.message";
 import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
