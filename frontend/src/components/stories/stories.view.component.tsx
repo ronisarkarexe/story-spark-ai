@@ -15,11 +15,11 @@ import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
 import { formatReadingStats } from "../../utils/story-utils";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
-import jsPDF from "jspdf";
 import toast, { Toaster } from "react-hot-toast";
 import StoryTranslator from "../translate/StoryTranslator";
 import AudioPlayer, { type AudioPlayerHandle, type NarrationPlaybackState } from "../AudioPlayer";
 import { useLocation } from "react-router-dom";
+import ExportStoryModal from "./ExportStoryModal";
 
 export interface IStories {
   uuid: string;
@@ -97,6 +97,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [characterProfiles, setCharacterProfiles] = useState<CharacterProfile[]>([]);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [showTranslator, setShowTranslator] = useState<boolean>(false);
+  const [showExportModal, setShowExportModal] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
 
@@ -191,34 +192,6 @@ const handleCopyStory = async () => {
        }
     };
 
-const handleExportPDF = () => {
-  if (!selectedStory) {
-    toast.error("No story available to export.");
-    return;
-  }
-
-  try {
-    const doc = new jsPDF();
-
-    const title = selectedStory.title || "Story";
-    const content = selectedStory.content || "";
-
-    doc.setFontSize(18);
-    doc.text(title, 15, 20);
-
-    doc.setFontSize(12);
-
-    const splitText = doc.splitTextToSize(content, 180);
-    doc.text(splitText, 15, 35);
-
-    doc.save(`${title}.pdf`);
-
-    toast.success("PDF downloaded!");
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to export PDF.");
-  }
-};
 
 const handleGenerateCharacterProfile = async () => {
   if (!selectedStory) {
@@ -384,9 +357,9 @@ if (!stories || stories.length === 0) {
                     <button
                       type="button"
                       className="rounded-lg px-4 py-2 bg-purple-700 text-slate-200 font-semibold cursor-pointer hover:bg-purple-600 transition-colors"
-                      onClick={handleExportPDF}
+                      onClick={() => setShowExportModal(true)}
                     >
-                      📄 Export PDF
+                      📄 Export
                     </button>
                     <button
                       type="button"
@@ -623,6 +596,14 @@ if (!stories || stories.length === 0) {
           story={selectedStory}
           isLogin={isLogin}
           onClose={() => setShowTranslator(false)}
+        />
+      )}
+
+      {showExportModal && selectedStory && (
+        <ExportStoryModal
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          story={selectedStory as any}
         />
       )}
     </div>
