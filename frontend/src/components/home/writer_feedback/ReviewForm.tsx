@@ -251,12 +251,13 @@ const ReviewForm: React.FC = () => {
 
             {/* Rating */}
             <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5">
-              <div className="pb-8">
-                <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
-                  <span className="text-blue-400">⭐</span>
-                  Rating
-                  <span className="text-red-400">*</span>
-                </label>
+              <label className="mb-3 flex items-center gap-2 text-base font-semibold text-gray-200">
+                <span className="text-blue-400">⭐</span>
+                Rating
+                <span className="text-red-400">*</span>
+              </label>
+
+              <StarRating rating={rating} setRating={setRating} />
 
                 <StarRating rating={rating} setRating={setRating} />
 
