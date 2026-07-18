@@ -11,14 +11,26 @@ export interface StoryNode {
   choices: StoryChoice[];
 }
 
-export const createNode = (...) => {};
+export const createNode = (): StoryNode => {
+  throw new Error("Not implemented.");
+};
 
-export const addChoice = (...) => {};
+export const addChoice = (): void => {
+  throw new Error("Not implemented.");
+};
 
-export const removeChoice = (...) => {};
+export const removeChoice = (): void => {
+  throw new Error("Not implemented.");
+};
 
-export const updateChoice = (...) => {};
+export const updateChoice = (): void => {
+  throw new Error("Not implemented.");
+};
 
-export const deleteNode = (...) => {};
+export const deleteNode = (): void => {
+  throw new Error("Not implemented.");
+};
 
-export const validateStoryTree = (...) => {};
+export const validateStoryTree = (): boolean => {
+  throw new Error("Not implemented.");
+};

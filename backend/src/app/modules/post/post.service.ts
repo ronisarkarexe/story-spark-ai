@@ -449,7 +449,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (isBookmarked) {
     await Post.updateOne(
       { _id: postId },
-      { $pull: { bookmarks: user._id } }
+      { $pull: { bookmarks: user._id }, $inc: { bookmarksCount: -1 } }
     );
 
     return {
@@ -460,7 +460,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
 
   await Post.updateOne(
     { _id: postId },
-    { $addToSet: { bookmarks: user._id } }
+    { $addToSet: { bookmarks: user._id }, $inc: { bookmarksCount: 1 } }
   );
 
   return {

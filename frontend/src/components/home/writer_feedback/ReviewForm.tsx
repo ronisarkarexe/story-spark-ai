@@ -66,7 +66,6 @@ const ReviewForm: React.FC = () => {
   const [rating, setRating] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
-  const [isDark, setIsDark] = useState(false);
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
@@ -96,8 +95,7 @@ const ReviewForm: React.FC = () => {
       setFeedback("");
       setRating(0);
       setErrors({});
-    } catch (err) {
-      // keep error message generic
+    } catch {
       setErrors({ submit: "Failed to submit review. Please try again." });
       setSuccess(false);
     }
@@ -254,8 +252,6 @@ const ReviewForm: React.FC = () => {
             {/* Rating */}
             <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5">
               <label className="mb-3 flex items-center gap-2 text-base font-semibold text-gray-200">
-            <div className="pb-8">
-              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                 <span className="text-blue-400">⭐</span>
                 Rating
                 <span className="text-red-400">*</span>
@@ -263,18 +259,21 @@ const ReviewForm: React.FC = () => {
 
               <StarRating rating={rating} setRating={setRating} />
 
-              <p className="mt-3 text-sm text-gray-400">
-                Select a rating based on your overall experience.
-              </p>
+                <StarRating rating={rating} setRating={setRating} />
 
-              {errors.rating && (
-                <p className="mt-2 flex items-center gap-1 text-sm font-medium text-red-400">
-                  <span>⚠</span>
-                  {errors.rating}
+                <p className="mt-3 text-sm text-gray-400">
+                  Select a rating based on your overall experience.
                 </p>
-              )}
-            </div>
 
+                {errors.rating && (
+                  <p className="mt-2 flex items-center gap-1 text-sm font-medium text-red-400">
+                    <span>⚠</span>
+                    {errors.rating}
+                  </p>
+                )}
+              </div>
+            </div>
+            
             <div className="mt-8 pt-2">
               <button
                 type="button"
@@ -282,37 +281,10 @@ const ReviewForm: React.FC = () => {
                 disabled={isLoading}
                 className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3.5 text-lg font-bold tracking-wide text-white transition-all duration-200 hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
               >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="h-5 w-5 animate-spin"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    />
-                  </svg>
-                  Submitting...
-                </span>
-              ) : (
-                "Share Review ✨"
-              )}
-            </button>
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <svg
-                      className="h-4 w-4 animate-spin"
+                      className="h-5 w-5 animate-spin"
                       viewBox="0 0 24 24"
                       fill="none"
                     >

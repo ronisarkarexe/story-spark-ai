@@ -29,6 +29,10 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+# ── Add TTS imports ───────────────────────────────────────────────────────────
+from flask import Response, jsonify, request
+from tts_service import AVAILABLE_VOICES, generate_speech_bytes
+
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Writer's Block Detector",
@@ -741,7 +745,36 @@ if __name__ == "__main__":
 def create_app(testing=True):
     from flask import Flask
     from ml.score_api import score_bp
+    
     app = Flask(__name__)
     app.config["TESTING"] = testing
     app.register_blueprint(score_bp)
+
+    # ── TTS Routes for Issue #5015 ────────────────────────────────────────────
+    @app.route("/api/tts/voices", methods=["GET"])
+    def get_tts_voices():
+        """Returns available narrator voices."""
+        return jsonify({"voices": AVAILABLE_VOICES})
+
+    @app.route("/api/tts/generate", methods=["POST"])
+    def generate_tts():
+        """Generates and streams MP3 audio narration for requested text."""
+        data = request.get_json() or {}
+        text = data.get("text", "").strip()
+        voice = data.get("voice", "alloy")
+
+        if not text:
+            return jsonify({"error": "Text cannot be empty."}), 400
+
+        try:
+            audio_bytes = generate_speech_bytes(text, voice)
+            return Response(
+                audio_bytes,
+                mimetype="audio/mpeg",
+                headers={"Content-Disposition": "inline; filename=narration.mp3"}
+            )
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
     return app
+

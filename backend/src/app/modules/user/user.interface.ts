@@ -8,6 +8,7 @@ export interface IUser {
   name: string;
   email: string;
   password?: string;
+  passwordChangedAt?: Date;
   role: string;
   status: string;
   subscriptionType: SubscriptionType;

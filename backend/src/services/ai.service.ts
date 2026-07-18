@@ -5,8 +5,9 @@ import { buildStoryPrompt, PromptOptions } from "../utils/promptBuilder";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Anthropic from "@anthropic-ai/sdk";
-import { StoryCache } from "../models/storyCache.model"; // Added Cache Model Import
+import { StoryCache } from "../models/storyCache.model";
 import { assertAIProviderConfigured } from "../config";
+import { getNextApiKey } from "./apiKeyRotationService";
 
 let openai: OpenAI | null = null;
 let genAI: GoogleGenerativeAI | null = null;
@@ -14,9 +15,9 @@ let anthropic: Anthropic | null = null;
 
 export function getGeminiClient(): GoogleGenerativeAI {
   if (!genAI) {
-    const key = process.env.GEMINI_API_KEY;
+    const key = process.env.GEMINI_API_KEY || getNextApiKey();
     if (!key) {
-      throw new Error("Gemini API key is required but was not provided. Please set GEMINI_API_KEY environment variable.");
+      throw new Error("Gemini API key is required. Set GEMINI_API_KEY or AI_API_KEYS.");
     }
     genAI = new GoogleGenerativeAI(key);
   }
@@ -25,9 +26,9 @@ export function getGeminiClient(): GoogleGenerativeAI {
 
 export function getOpenAIClient(): OpenAI {
   if (!openai) {
-    const key = process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY;
+    const key = process.env.OPEN_AI_KEY || process.env.OPENAI_API_KEY || getNextApiKey();
     if (!key) {
-      throw new Error("OpenAI API key is required but was not provided. Please set OPEN_AI_KEY environment variable.");
+      throw new Error("OpenAI API key is required. Set OPEN_AI_KEY or AI_API_KEYS.");
     }
     openai = new OpenAI({ apiKey: key });
   }
@@ -36,9 +37,9 @@ export function getOpenAIClient(): OpenAI {
 
 export function getAnthropicClient(): Anthropic {
   if (!anthropic) {
-    const key = process.env.ANTHROPIC_API_KEY;
+    const key = process.env.ANTHROPIC_API_KEY || getNextApiKey();
     if (!key) {
-      throw new Error("Anthropic API key is required but was not provided. Please set ANTHROPIC_API_KEY environment variable.");
+      throw new Error("Anthropic API key is required. Set ANTHROPIC_API_KEY or AI_API_KEYS.");
     }
     anthropic = new Anthropic({ apiKey: key });
   }

@@ -18,6 +18,13 @@ type Inputs = {
   password: string;
 };
 
+type LoginError = {
+  data?: {
+    message?: string;
+  };
+  message?: string;
+};
+
 const LoginComponent = () => {
   const [loginUser] = useLoginUserMutation();
   const [googleLogin] = useGoogleLoginMutation();
@@ -44,10 +51,12 @@ const LoginComponent = () => {
         const from = location.state?.from || "/dashboard";
         navigate(from, { replace: true });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const loginError = error as LoginError;
+
       toast.error(
-        error?.data?.message ||
-        error?.message ||
+        loginError.data?.message ||
+        loginError.message ||
         "Login failed. Please try again.")
     } finally {
       setIsBusy(false);
@@ -153,7 +162,7 @@ const LoginComponent = () => {
           </div>
         </motion.div>
 
-                <div className="flex justify-center w-full box-border">
+        <div className="flex justify-center w-full box-border">
           <div className="w-full max-w-md bg-slate-50 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl box-border overflow-hidden relative mx-auto">
             <button
               onClick={() => navigate("/")}
@@ -203,7 +212,7 @@ const LoginComponent = () => {
                   required
                   icon="fi fi-rr-lock"
                   register={register}
-                    validation={{
+                  validation={{
                     required: "Password is required",
                     minLength: {
                       value: 8,
@@ -217,7 +226,7 @@ const LoginComponent = () => {
                 <div className="flex justify-end pt-2">
                   <Link
                     to="/forgot-password"
-                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors focus:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm"
                   >
                     Forgot Password?
                   </Link>
@@ -225,11 +234,11 @@ const LoginComponent = () => {
               </div>
 
               <div className="pt-2">
-               <SSButton
-                    text="Sign In"
-                    type="submit"
-                    isLoading={isBusy}
-                    disabled={isBusy}
+                <SSButton
+                  text="Sign In"
+                  type="submit"
+                  isLoading={isBusy}
+                  disabled={isBusy}
                 />
               </div>
             </form>
