@@ -50,6 +50,12 @@ function getStoredTheme() {
       const parsed = JSON.parse(saved);
       return themes.find((t) => t.id === parsed.id) || themes[0];
     }
+
+    // Keep the palette switcher aligned with the shared light/dark preference.
+    // This prevents mounting the switcher from resetting a light theme to dark.
+    if (localStorage.getItem("theme") === "light") {
+      return themes.find((theme) => theme.name === "Light") || themes[0];
+    }
   } catch {
     // ignore parse errors, fall through to default
   }

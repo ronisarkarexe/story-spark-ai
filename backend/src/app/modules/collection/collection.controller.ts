@@ -5,6 +5,7 @@ import { getToken } from "../../middleware/token";
 import sendResponse from "../../../shared/send_response";
 import httpStatus from "http-status";
 import { CollectionService } from "./collection.service";
+import { ITokenPayload } from "../../../interfaces/token";
 
 // --- Interfaces for Request Bodies (Type Safety) ---
 interface CreateCollectionBody {
@@ -24,10 +25,10 @@ interface AddStoryBody {
   storyId: string;
 }
 
-// --- Helper Utility (Can be moved to your token middleware file) ---
-const getOptionalToken = async (req: Request): Promise<string | null> => {
+
+const getOptionalToken = async (req: Request): Promise<ITokenPayload  | null> => {
   try {
-    return await getToken(req);
+    return getToken(req);
   } catch {
     return null; // Unauthenticated visitor
   }
@@ -66,7 +67,7 @@ const updateCollection = catchAsync(async (req: Request, res: Response) => {
 
 const getCollectionById = catchAsync(async (req: Request, res: Response) => {
   const id = routeParam(req.params.id);
-  const token = await getOptionalToken(req); // Cleaned up DRY logic
+  const token = getOptionalToken(req); // Cleaned up DRY logic
   
   const result = await CollectionService.getCollectionById(id, token);
   
@@ -80,7 +81,7 @@ const getCollectionById = catchAsync(async (req: Request, res: Response) => {
 
 const getUserCollections = catchAsync(async (req: Request, res: Response) => {
   const userId = routeParam(req.params.userId);
-  const token = await getOptionalToken(req); // Cleaned up DRY logic
+  const token = getOptionalToken(req); // Cleaned up DRY logic
   
   const result = await CollectionService.getUserCollections(userId, token);
   

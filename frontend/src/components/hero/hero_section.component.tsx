@@ -21,8 +21,6 @@ const containerVariants: Variants = {
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-
-
   visible: {
     opacity: 1,
     y: 0,
@@ -356,16 +354,6 @@ const HeroSectionComponent = () => {
           </div>
         </div>
       </div>
-
-
-      <motion.div
-        variants={itemVariants}
-        className="relative z-10 mx-auto mt-16 grid max-w-7xl grid-cols-1 gap-6 px-4 sm:grid-cols-2 lg:grid-cols-3"
-      >
-        {features.map((feature, index) => (
-          <FeatureCard key={index} feature={feature} />
-        ))}
-      </motion.div>
     </motion.div>
   );
 };

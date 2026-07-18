@@ -8,6 +8,11 @@ import { Server } from "socket.io";
 import { JwtHelpers } from "./utils/jwt.helper";
 import { Secret } from "jsonwebtoken";
 import logger from "./utils/logger.util";
+import { setupCollabSocket } from "./socket/collab.socket";
+import { setNotificationSocket } from "./socket/notification.socket";
+import { YjsGateway } from "./app/modules/collab/yjs.gateway";
+import { socketRateLimiter } from "./socket/socket-rate-limiter";
+
 
 // Override DNS resolvers only when explicitly configured, default to the platform environment
 if (config.dns_servers?.length) {
@@ -143,7 +148,34 @@ async function main() {
     config.cors_origins && config.cors_origins.length > 0
       ? config.cors_origins
       : defaultCorsOrigins;
+  // Instantiate Socket.IO on top of the HTTP server (previously imported
+  // but never constructed — realtime features were silently dead).
+  const io = new Server(httpServer, {
+    cors: {
+      origin: socketCorsOrigins,
+      credentials: true,
+    },
+  });
 
+
+  // Initialize Socket.IO server with rate limiting
+  const io = new Server(httpServer, {
+    cors: {
+      origin: socketCorsOrigins,
+      credentials: true,
+      methods: ["GET", "POST"],
+    },
+  });
+
+  // Apply rate limiting to all Socket.IO connections
+  io.use(socketRateLimiter);
+
+  // Setup Socket.IO namespaces
+  setupCollabSocket(io);
+  setNotificationSocket(io);
+  new YjsGateway(io);
+
+  logger.info("🔌 Socket.IO server initialized with rate limiting");
   // Start the server listener
   const PORT = config.port || 4000;
   httpServer.listen(PORT, () => {
