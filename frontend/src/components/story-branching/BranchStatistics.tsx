@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { BranchingService, BranchStatistics } from "../../services/branching.service";
+import { BranchingService, type BranchStatistics as BranchStatisticsData } from "../../services/branching.service";
 import "./BranchStatistics.css";
 
 interface StatisticsSummary {
   totalSegments: number;
   totalChoices: number;
   totalSelections: number;
-  mostPopularChoices: BranchStatistics[];
+  mostPopularChoices: BranchStatisticsData[];
   avgSegmentsPerPath: string;
 }
 

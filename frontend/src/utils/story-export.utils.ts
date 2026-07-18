@@ -81,6 +81,7 @@ export interface WorkspaceDocxParams {
   authorName: string;
   dateStr: string;
   chapters: Array<{ title: string; content: string }>;
+  theme?: string;
 }
 
 export const createWorkspaceDocxBlob = ({
@@ -129,6 +130,7 @@ export interface WorkspacePdfParams {
   authorName: string;
   dateStr: string;
   chapters: Array<{ title: string; content: string }>;
+  theme?: string;
 }
 
 export const exportWorkspacePDF = ({

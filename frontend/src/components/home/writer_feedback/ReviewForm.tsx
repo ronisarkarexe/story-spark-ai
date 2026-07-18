@@ -96,6 +96,7 @@ const ReviewForm: React.FC = () => {
       setRating(0);
       setErrors({});
     } catch {
+      // keep error message generic
       setErrors({ submit: "Failed to submit review. Please try again." });
       setSuccess(false);
     }
@@ -264,7 +265,6 @@ const ReviewForm: React.FC = () => {
                 <p className="mt-3 text-sm text-gray-400">
                   Select a rating based on your overall experience.
                 </p>
-
                 {errors.rating && (
                   <p className="mt-2 flex items-center gap-1 text-sm font-medium text-red-400">
                     <span>⚠</span>
@@ -273,7 +273,8 @@ const ReviewForm: React.FC = () => {
                 )}
               </div>
             </div>
-            
+
+            {/* Submit Button */}
             <div className="mt-8 pt-2">
               <button
                 type="button"

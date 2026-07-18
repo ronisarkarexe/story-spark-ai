@@ -8,8 +8,8 @@ import React, {
 } from "react";
 import {
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
+  // ChevronDown,
+  // ChevronUp,
   LoaderCircle,
   Pause,
   Play,
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
-import { useVoicePreview } from "../hooks/useVoicePreview";
+// import { useVoicePreview } from "../hooks/useVoicePreview";
 import { useVoiceFavorites } from "../hooks/useVoiceFavorites";
 
 export type NarrationPlaybackState = "idle" | "playing" | "paused";
@@ -78,7 +78,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     }, [voiceGender]);
 
     const speech = useSpeechSynthesis(text, voiceGender);
-    const preview = useVoicePreview();
+    // const preview = useVoicePreview();
     const favorites = useVoiceFavorites();
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
@@ -132,7 +132,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
           speech.setSelectedVoiceId(displayedVoices[0].id);
         }
       }
-    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId]);
+    }, [showFavoritesOnly, displayedVoices, speech.selectedVoiceId, speech.setSelectedVoiceId]);
 
     useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -181,7 +181,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       };
     }, [speech.isPlaying, speech.isPaused, speech.rate, speech.pause, speech.resume, speech.play, speech.setRate]);
 
-     const scrollToTop = () => {
+    const scrollToTop = () => {
       const container = document.querySelector('[role="region"]');
       if (container) {
         container.scrollTo({ top: 0, behavior: 'smooth' });
@@ -194,7 +194,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
         container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
       }
     };
-
     const isLoading = speech.isSupported && !speech.isReady;
     const canNarrate = speech.isSupported && speech.isReady && text.trim().length > 0;
 

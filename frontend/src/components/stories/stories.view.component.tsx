@@ -1,19 +1,20 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
+import jsPDF from "jspdf";
 import {
   getShortenedText,
   ITopicData,
   topicsData,
   CharacterProfile,
-  getWordCount,
-  SELECTED_TOPIC_CLASSES,
+  // getWordCount,
+  // SELECTED_TOPIC_CLASSES,
 } from "./stories.utils";
-import { calculateReadingTime } from "../../utils/reading-time";
+// import { calculateReadingTime } from "../../utils/reading-time";
 import CharacterProfileCard from "./CharacterProfileCard";
 import StoryGenreTransformation from "./StoryGenreTransformation";
-import StoryMoodDashboard from "./StoryMoodDashboard";
-import StoryTitleSuggestions from "./StoryTitleSuggestions";
+// import StoryMoodDashboard from "./StoryMoodDashboard";
+// import StoryTitleSuggestions from "./StoryTitleSuggestions";
 import StoryVersionHistory from "./StoryVersionHistory";
-import { formatReadingStats } from "../../utils/story-utils";
+// import { formatReadingStats } from "../../utils/story-utils";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import toast, { Toaster } from "react-hot-toast";
 import StoryTranslator from "../translate/StoryTranslator";
@@ -27,7 +28,6 @@ export interface IStories {
   content: string;
   tag: string;
   imageURL: string;
-
   genre?: string;
   language?: string;
 }
@@ -76,16 +76,22 @@ interface IPost extends IStories {
   topic: ITopicData[];
 }
 
+// ADD isLoading TO THE PROPS INTERFACE
 interface StoriesComponentProps {
   stories: IStories[];
   isLogin: boolean;
   setStories: (stories: IStories[]) => void;
+  onPublishSuccess?: () => void;
+  isLoading?: boolean; // ADD THIS LINE
 }
 
+// ADD isLoading TO THE COMPONENT DESTRUCTURING
 const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   stories,
   isLogin,
   setStories,
+  onPublishSuccess,
+  isLoading = false, // ADD THIS LINE with default value
 }) => {
   const [selectedStory, setSelectedStory] = useState<IStories | null>(
     stories && stories[0]
@@ -133,101 +139,145 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
     }
   }, [stories]);
 
-useEffect(() => {
-  if (!selectedStory || !isLogin) return;
+  useEffect(() => {
+    if (!selectedStory || !isLogin) return;
 
-  const timer = setTimeout(async () => {
-    const post: IPost = {
-      ...selectedStory,
-      topic: selectTopics,
-    };
+    const timer = setTimeout(async () => {
+      const post: IPost = {
+        ...selectedStory,
+        topic: selectTopics,
+      };
 
-    try {
-      await createPost(post).unwrap();
-      toast.success("Story auto-saved!");
-    } catch (error) {
-      console.error("Auto-save failed", error);
-    }
-  }, 1500);
+      try {
+        await createPost(post).unwrap();
+        toast.success("Story auto-saved!");
+      } catch (error) {
+        console.error("Auto-save failed", error);
+      }
+    }, 1500);
 
-  return () => clearTimeout(timer);
-}, [selectedStory, isLogin, selectTopics]);
+    return () => clearTimeout(timer);
+  }, [selectedStory, isLogin, selectTopics, createPost]);
+
+  // Show loading state when isLoading is true
+  if (isLoading) {
+    return (
+      <div className="mt-16 px-4 sm:px-6 lg:px-8 pb-16 flex justify-center">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 sm:p-12 text-center text-slate-400 max-w-2xl w-full shadow-lg">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+            <h3 className="text-xl font-semibold text-slate-200">Loading your stories...</h3>
+            <p className="text-slate-400">Please wait while we prepare your content.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handelStorySelection = (story: IStories) => {
     setSelectedStory(story);
   };
 
   const handleRestoreVersion = (restoredContent: string) => {
-  if (!selectedStory) return;
+    if (!selectedStory) return;
 
-  const updatedStory = {
-    ...selectedStory,
-    content: restoredContent,
+    const updatedStory = {
+      ...selectedStory,
+      content: restoredContent,
+    };
+
+    setSelectedStory(updatedStory);
+
+    setStories(
+      stories.map((story) =>
+        story.uuid === selectedStory.uuid
+          ? updatedStory
+          : story
+      )
+    );
+
+    toast.success("Story version restored successfully!");
   };
-
-  setSelectedStory(updatedStory);
-
-  setStories(
-    stories.map((story) =>
-      story.uuid === selectedStory.uuid
-        ? updatedStory
-        : story
-    )
-  );
-
-  toast.success("Story version restored successfully!");
-};
 
   const handleTopicClick = (index: number) => {
     const updatedTopics = [...topics];
     updatedTopics[index].selected = !updatedTopics[index].selected;
     setTopics(updatedTopics);
   };
-const handleCopyStory = async () => {
-  if (selectedStory?.content) {
-    await navigator.clipboard.writeText(selectedStory.content);
-    setIsCopied(true);
-    toast.success("Story copied!");
-    setTimeout(() => setIsCopied(false), 2000);
-       }
-    };
 
+  const handleCopyStory = async () => {
+    if (selectedStory?.content) {
+      await navigator.clipboard.writeText(selectedStory.content);
+      setIsCopied(true);
+      toast.success("Story copied!");
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
 
-const handleGenerateCharacterProfile = async () => {
-  if (!selectedStory) {
-    toast.error("No story selected!");
-    return;
-  }
+  const handleExportPDF = () => {
+    if (!selectedStory) {
+      toast.error("No story available to export.");
+      return;
+    }
 
-  setProfileLoading(true);
+    try {
+      const doc = new jsPDF();
 
-  try {
-    // Replace with your backend API endpoint
-    const response = await fetch(
-      "/api/generate-character-profile",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          story: selectedStory.content,
-        }),
-      }
-    );
+      const title = selectedStory.title || "Story";
+      const content = selectedStory.content || "";
 
-    const data = await response.json();
+      doc.setFontSize(18);
+      doc.text(title, 15, 20);
 
-    setCharacterProfiles(data.data);
+      doc.setFontSize(12);
 
-    toast.success("Character profiles generated!");
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to generate profiles.");
-  } finally {
-    setProfileLoading(false);
-  }
-};
+      const splitText = doc.splitTextToSize(content, 180);
+      doc.text(splitText, 15, 35);
+
+      doc.save(`${title}.pdf`);
+
+      toast.success("PDF downloaded!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export PDF.");
+    }
+  };
+
+  const handleGenerateCharacterProfile = async () => {
+    if (!selectedStory) {
+      toast.error("No story selected!");
+      return;
+    }
+
+    setProfileLoading(true);
+
+    try {
+      // Replace with your backend API endpoint
+      const response = await fetch(
+        "/api/generate-character-profile",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            story: selectedStory.content,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      setCharacterProfiles(data.data);
+
+      toast.success("Character profiles generated!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate profiles.");
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const handelPublishStory = async () => {
     if (!isLogin) {
@@ -249,34 +299,35 @@ const handleGenerateCharacterProfile = async () => {
         toast.success("Story published successfully!");
         setStories([]);
         setSelectedStory(null);
+        onPublishSuccess?.();
       }
     } catch (error) {
-      const message = error?.data?.message || error?.message || "Something went wrong. Please try again.";
+      const message = (error as any)?.data?.message || (error as any)?.message || "Something went wrong. Please try again.";
       toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
-if (!selectedStory) {
-  return null;
-}
+  if (!selectedStory) {
+    return null;
+  }
 
-if (!stories || stories.length === 0) {
-  return (
-    <div className="mt-16 px-4 sm:px-6 lg:px-8 pb-16 flex justify-center">
-      <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 sm:p-12 text-center text-slate-400 max-w-2xl w-full shadow-lg transition-all duration-500 ease-in-out mx-auto">
-        <div className="text-5xl mb-6 animate-pulse">✨</div>
-        <h3 className="text-2xl font-bold text-slate-200 tracking-wide">
-          Your AI-generated story will appear here
-        </h3>
-        <p className="mt-3 text-base text-slate-400">
-          Enter a creative prompt above and let StorySparkAI craft something magical.
-        </p>
+  if (!stories || stories.length === 0) {
+    return (
+      <div className="mt-16 px-4 sm:px-6 lg:px-8 pb-16 flex justify-center">
+        <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-8 sm:p-12 text-center text-slate-400 max-w-2xl w-full shadow-lg transition-all duration-500 ease-in-out mx-auto">
+          <div className="text-5xl mb-6 animate-pulse">✨</div>
+          <h3 className="text-2xl font-bold text-slate-200 tracking-wide">
+            Your AI-generated story will appear here
+          </h3>
+          <p className="mt-3 text-base text-slate-400">
+            Enter a creative prompt above and let StorySparkAI craft something magical.
+          </p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
@@ -329,7 +380,6 @@ if (!stories || stories.length === 0) {
           </div>
 
           <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-            {/* Ambient AI Glow inside the story card */}
             <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
             
@@ -491,23 +541,23 @@ if (!stories || stories.length === 0) {
             )}
           </div>
           <div className="mt-6">
-  {characterProfiles.length > 0 && (
-    <>
-      <h3 className="text-xl font-bold text-white mb-4">
-        Character Profiles
-      </h3>
+            {characterProfiles.length > 0 && (
+              <>
+                <h3 className="text-xl font-bold text-white mb-4">
+                  Character Profiles
+                </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {characterProfiles.map((profile, index) => (
-          <CharacterProfileCard
-            key={index}
-            profile={profile}
-          />
-        ))}
-      </div>
-    </>
-  )}
-</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {characterProfiles.map((profile, index) => (
+                    <CharacterProfileCard
+                      key={index}
+                      profile={profile}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <div className="mt-7">
             <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl p-6 mb-8">
               <h3 className="text-lg font-bold text-slate-200 mb-4">
@@ -540,9 +590,6 @@ if (!stories || stories.length === 0) {
             </div>
           </div>
         </div>
-
-        
-
 
         <div className="col-span-1 lg:col-span-4">
           <div className="mb-5">

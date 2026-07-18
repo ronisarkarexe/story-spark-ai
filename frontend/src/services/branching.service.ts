@@ -1,7 +1,7 @@
 import axios from "axios";
-import { API_BASE_URL } from "./api";
+import { getBaseUrl } from "../helpers/config";
 
-const BASE_URL = `${API_BASE_URL}/story-branches`;
+const BASE_URL = `${getBaseUrl()}/story-branches`;
 
 export interface BranchChoice {
   id: string;
