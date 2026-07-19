@@ -1,4 +1,4 @@
-﻿import {
+import {
   GoogleGenerativeAI,
   HarmCategory,
   HarmBlockThreshold,
@@ -11,7 +11,6 @@ import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding, ICharacter } from "./ai_model.interface";
 import ApiError from "../../../errors/api_error";
 import httpStatus from "http-status";
-import { sanitizeJsonText } from "../../../utils/promptSecurity";
 import type {
   IStoryVisualizerPayload,
   IStoryVisualizerResult,
@@ -31,6 +30,15 @@ const geminiApiKey = config.gemini_api_key?.trim() ?? "";
 const genAI = new GoogleGenerativeAI(geminiApiKey);
 const MISSING_GEMINI_API_KEY_MESSAGE =
   "Gemini API key is not configured. Set GEMINI_API_KEY before using Gemini generation features.";
+
+const sanitizeJsonText = (rawText: string): string => {
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith("```")) return trimmed;
+  return trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+};
 
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
@@ -83,7 +91,7 @@ interface Story {
 // NEW: Map each tone label to a precise writing instruction injected into the AI prompt.
 // Keeping these as concrete directives (not vague adjectives) gives Gemini clear stylistic targets.
 const TONE_INSTRUCTIONS: Record<string, string> = {
-  Dark: "Write in a dark, gritty, and emotionally heavy tone. Explore themes of shadow, loss, moral ambiguity, and consequence. Avoid happy resolutions â€” let tension linger.",
+  Dark: "Write in a dark, gritty, and emotionally heavy tone. Explore themes of shadow, loss, moral ambiguity, and consequence. Avoid happy resolutions — let tension linger.",
   Humorous:
     "Write in a light-hearted, witty, and comedic tone. Include clever wordplay, funny observations, and absurd situations. Keep the mood playful throughout.",
   Romantic:
@@ -92,7 +100,7 @@ const TONE_INSTRUCTIONS: Record<string, string> = {
   Mysterious:
     "Write in a suspenseful, atmospheric, and unsettling tone. Leave things deliberately unsaid. Build intrigue through detail and implication rather than exposition.",
   "Children's":
-    "Write in a simple, wholesome, imaginative, and age-appropriate tone. Use short sentences, gentle humour, and a sense of wonder. Suitable for readers aged 5â€“10.",
+    "Write in a simple, wholesome, imaginative, and age-appropriate tone. Use short sentences, gentle humour, and a sense of wonder. Suitable for readers aged 5–10.",
 };
 
 /**
@@ -128,6 +136,11 @@ const buildToneInstruction = (tone?: string): string => {
   return `Tone & Style Directive: ${instruction}\n\n`;
 };
 
+const buildAudienceInstruction = (targetAudience?: string): string => {
+  if (!targetAudience) return "";
+  return `Target Audience Directive: Write the story specifically tailored for a ${targetAudience}. Adjust the complexity of the vocabulary, sentence structure, and thematic depth appropriately for this demographic.\n\n`;
+};
+
 const throwIfAborted = (signal?: AbortSignal): void => {
   if (signal?.aborted) {
     throw new GenerationAbortedError();
@@ -143,12 +156,6 @@ const buildCharactersInstruction = (characters?: ICharacter[]): string => {
     )
     .join("\n");
   return `Cast of Characters (You MUST incorporate these characters into all generated stories and maintain their roles, relationship dynamics, and traits consistently):\n${charsString}\n\n`;
-};
-
-const sanitizeJsonText = (rawText: string): string => {
-  const trimmed = rawText.trim();
-  if (!trimmed.startsWith("```")) return trimmed;
-  return trimmed.replace(/^```(json)?/, "").replace(/```$/, "").trim();
 };
 
 import { GenerativeModel } from "@google/generative-ai";
@@ -212,6 +219,7 @@ export async function generateWithGeminiStories(
   signal?: AbortSignal,
   tone?: string, // NEW: optional tone parameter
   genre?: string, // NEW: optional genre parameter
+  targetAudience?: string,
   characters?: ICharacter[],
 ): Promise<Story[]> {
   throwIfAborted(signal);
@@ -221,6 +229,7 @@ export async function generateWithGeminiStories(
   try {
     const genreInstruction = buildGenreInstruction(genre);
     const toneInstruction = buildToneInstruction(tone);
+    const audienceInstruction = buildAudienceInstruction(targetAudience);
     const charactersInstruction = buildCharactersInstruction(characters);
 
     const response = await executeWithRetryAndFallback(async (activeModel) => {
@@ -232,10 +241,11 @@ export async function generateWithGeminiStories(
 
       const toneInstruction = buildToneInstruction(tone);
       const genreInstruction = buildGenreInstruction(genre);
+      const audienceInstruction = buildAudienceInstruction(targetAudience);
       const charactersInstruction = buildCharactersInstruction(characters);
 
       return chatSession.sendMessage(
-        `${buildGenreInstruction(genre)}${buildToneInstruction(tone)}${buildCharactersInstruction(characters)}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
+        `${genreInstruction}${toneInstruction}${audienceInstruction}${charactersInstruction}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".
         First, enhance this prompt to be more emotionally engaging and context-sensitive (e.g., add suspense, joy, or mystery).
         Then, generate ${numStories} different short stories based on this ENHANCED prompt.
         The stories MUST be written entirely in the ${language} language.
@@ -645,7 +655,7 @@ Return a JSON object with this exact structure:
   "content": "translated content in ${targetLanguage}"
 }
 
-Preserve the story's tone, style and meaning. Only translate â€” do not modify the story.`;
+Preserve the story's tone, style and meaning. Only translate — do not modify the story.`;
 
   try {
     const result = await executeWithRetryAndFallback(async (activeModel) => {
@@ -758,6 +768,7 @@ Rules:
           "Invalid AI response: Storyboard scenes are malformed.",
         );
       }
+
       return {
         sceneNumber: index + 1,
         caption: scene.caption.trim(),
