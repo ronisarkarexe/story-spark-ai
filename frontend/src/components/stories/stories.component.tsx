@@ -7,7 +7,9 @@ import { getRequestLimit, getWordCount, prompts, STORY_TEMPLATES } from "./stori
 import {
   useGenerateFreeModelMutation,
   useGenerateModelMutation,
+  useGetUsageQuery,
 } from "../../redux/apis/ai.model.api";
+import { UpgradeModal } from "./UpgradeModal";
 import toast, { Toaster } from "react-hot-toast";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
@@ -609,6 +611,8 @@ const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
   const userRole = getUserInfo();
   const subscriptionType = (userRole?.subscriptionType as string) || "free";
   const login = isLoggedIn();
+  const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
+  const { data: usageData, refetch: refetchUsage } = useGetUsageQuery(undefined, { skip: !login });
   const [generateModel] = useGenerateModelMutation();
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
@@ -1065,6 +1069,14 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
         setTextareaValue("");
         setSelectedPrompt("");
         setValue("prompt", "");
+        reset();
+        if (login) {
+          refetchUsage();
+        }
+        if (!login) {
+          const newCount = guestRequestCount + 1;
+          setGuestRequestCount(newCount);
+          localStorage.setItem("guestRequestCount", String(newCount));
         // Clear draft after successful generation
         localStorage.removeItem(DRAFT_KEY);
         setDraftStatus("");
@@ -1333,7 +1345,25 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
         if (pIdx < paragraphs.length - 1) {
           yCursor += paragraphSpacing;
         }
+      }
+    } catch (error: any) {
+      if (
+        error?.status === 429 ||
+        error?.status === "429" ||
+        error?.data?.error === "QUOTA_EXCEEDED" ||
+        (typeof error?.data?.message === "string" && error.data.message.includes("limit exceeded"))
+      ) {
+        setShowUpgradeModal(true);
+      } else {
+        toast.error(getErrorMessage(error));
+      }
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
       });
+
 
       // 6. Running Header and Footer generation
       const totalPages = doc.getNumberOfPages();
@@ -2573,6 +2603,60 @@ onKeyDown={(e) => {
 
               </div>
 
+              {/* Quota Progress Bar */}
+              {login && usageData && (
+                <div className="w-full mb-4 p-4 rounded-xl border bg-slate-900/50 border-slate-800/80 backdrop-blur-md text-left box-border">
+                  <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-1.5 select-none">
+                    <i className="fas fa-chart-pie text-indigo-400" />
+                    Monthly Quota Limits ({usageData.plan.toUpperCase()})
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Story Generations */}
+                    <div>
+                      <div className="flex justify-between text-xs mb-1 select-none">
+                        <span className="text-slate-400 font-medium">Story Generations</span>
+                        <span className="text-slate-300 font-bold">
+                          {usageData.usage.story_generate.used} / {usageData.usage.story_generate.limit === null || usageData.usage.story_generate.limit === Infinity ? "∞" : usageData.usage.story_generate.limit}
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="bg-indigo-500 h-1.5 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${usageData.usage.story_generate.limit === null || usageData.usage.story_generate.limit === Infinity ? 0 : Math.min(100, (usageData.usage.story_generate.used / (usageData.usage.story_generate.limit || 1)) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Story Continuations */}
+                    <div>
+                      <div className="flex justify-between text-xs mb-1 select-none">
+                        <span className="text-slate-400 font-medium">Story Continuations</span>
+                        <span className="text-slate-300 font-bold">
+                          {usageData.usage.story_continue.used} / {usageData.usage.story_continue.limit === null || usageData.usage.story_continue.limit === Infinity ? "∞" : usageData.usage.story_continue.limit}
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="bg-purple-500 h-1.5 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${usageData.usage.story_continue.limit === null || usageData.usage.story_continue.limit === Infinity ? 0 : Math.min(100, (usageData.usage.story_continue.used / (usageData.usage.story_continue.limit || 1)) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {usageData.plan === "free" && (
+                    <p className="text-[10px] text-indigo-400/80 mt-3 flex items-center gap-1 select-none">
+                      <i className="fas fa-info-circle" />
+                      Free quota resets on {new Date(usageData.resetsAt).toLocaleDateString()}.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="flex justify-end pt-2 w-full box-border">
                 <button
                   type="button"
@@ -2737,6 +2821,7 @@ onKeyDown={(e) => {
       )}
 
 
+      <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} plan={usageData?.plan || "free"} />
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
