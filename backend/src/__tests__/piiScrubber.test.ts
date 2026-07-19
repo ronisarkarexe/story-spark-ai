@@ -1,11 +1,12 @@
 import { scrubPII, piiScrubberMiddleware } from "../app/middleware/pii_scrubber";
 import type { Request, Response, NextFunction } from "express";
+import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
 jest.mock("compromise", () => {
-  return jest.fn().mockImplementation((text: string) => ({
+  return jest.fn().mockImplementation((text: unknown) => ({
     people: () => ({
       out: () => {
-        const matches = text.match(/\[NAME:([^\]]+)\]/g) ?? [];
+        const matches = String(text).match(/\[NAME:([^\]]+)\]/g) ?? [];
         return matches.map((m) => m.replace("[NAME:", "").replace("]", "").trim());
       },
     }),
@@ -157,7 +158,9 @@ describe("scrubPII — idempotency", () => {
 
 
 describe("piiScrubberMiddleware — body fields", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
   it("scrubs the prompt field and calls next()", () => {
     const { req, res, next } = buildMiddlewareMocks({
@@ -204,7 +207,7 @@ describe("piiScrubberMiddleware — body fields", () => {
       prompt: "some text",
     });
     piiScrubberMiddleware(req, res, next);
-    const err = (next as jest.Mock).mock.calls[0][0];
+    const err = (next as jest.Mock).mock.calls[0][0] as Error;
     expect(err).toBeInstanceOf(Error);
     expect(err.message).toBe("NLP crashed");
   });
@@ -309,5 +312,35 @@ describe("scrubPII — expanded test matrix", () => {
     const input = "My address is 123 Main St Apt 4B, New York, NY 10001 or 456 S. 2nd Ave Suite 100, San Jose, CA 95112";
     const result = scrubPII(input);
     expect(result).toBe("My address is [REDACTED_ADDRESS] or [REDACTED_ADDRESS]");
+  });
+
+  it("redacts bank account numbers when labeled", () => {
+    const result = scrubPII("Bank account number 1234567890123456 is confidential.");
+    expect(result).not.toContain("1234567890123456");
+    expect(result).toContain("[REDACTED_ACCOUNT_NUMBER]");
+  });
+
+  it("redacts passport numbers when labeled", () => {
+    const result = scrubPII("Passport number P1234567 should stay private.");
+    expect(result).not.toContain("P1234567");
+    expect(result).toContain("[REDACTED_PASSPORT]");
+  });
+
+  it("redacts driver's license numbers when labeled", () => {
+    const result = scrubPII("Driver's license DL12345678 is required.");
+    expect(result).not.toContain("DL12345678");
+    expect(result).toContain("[REDACTED_DRIVER_LICENSE]");
+  });
+
+  it("redacts tax identifiers when labeled", () => {
+    const result = scrubPII("Tax ID: 12-3456789 is used for filing.");
+    expect(result).not.toContain("12-3456789");
+    expect(result).toContain("[REDACTED_TAX_ID]");
+  });
+
+  it("redacts government-issued IDs when labeled", () => {
+    const result = scrubPII("Government ID 123456789 is not for sharing.");
+    expect(result).not.toContain("123456789");
+    expect(result).toContain("[REDACTED_GOVERNMENT_ID]");
   });
 });

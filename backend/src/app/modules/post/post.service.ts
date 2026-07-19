@@ -250,7 +250,7 @@ const getPublishedPostsByAuthor = async (
   filters: Pick<IPostSearchFields, "searchTerm">,
   pagination: IPaginationOptions
 ): Promise<IGenericResponse<IPost[]>> => {
-  const { page, limit, skip, sortBy, orderBy } = paginationHelper(pagination);
+  const { page, limit, cursor, sortBy, orderBy } = paginationHelper(pagination);
   const user = await User.findOne({ email: token.email, role: token.role });
 
   if (!user) {
@@ -279,6 +279,8 @@ const getPublishedPostsByAuthor = async (
     }
   }
 
+  const countCondition = andCondition.length > 0 ? { $and: andCondition } : {};
+
   const sortCondition: { [key: string]: SortOrder } = {};
   if (sortBy && orderBy) {
     sortCondition[sortBy] = orderBy === "asc" ? 1 : -1;
@@ -286,24 +288,32 @@ const getPublishedPostsByAuthor = async (
     sortCondition.publishedAt = -1;
     sortCondition.createdAt = -1;
   }
+  sortCondition._id = orderBy === "asc" ? 1 : -1;
 
-  const whereCondition = { $and: andCondition };
+  const cursorCondition = getCursorCondition(sortBy, orderBy, cursor);
+  if (cursorCondition) {
+    andCondition.push(cursorCondition);
+  }
+
+  const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
   const result = await Post.find(whereCondition)
     .sort(sortCondition)
-    .skip(skip)
     .limit(limit)
     .populate("author", "name createdAt")
     .populate({
       path: "reactions",
       populate: { path: "userId", select: "_id" },
     });
-  const total = await Post.countDocuments(whereCondition);
+  const total = await Post.countDocuments(countCondition);
+  const nextCursor = result.length === limit ? encodeCursor(result[result.length - 1], sortBy) : undefined;
 
   return {
     meta: {
       page,
       limit,
       total,
+      nextCursor,
+      hasMore: Boolean(nextCursor),
     },
     data: result,
   };
@@ -439,7 +449,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   if (isBookmarked) {
     await Post.updateOne(
       { _id: postId },
-      { $pull: { bookmarks: user._id } }
+      { $pull: { bookmarks: user._id }, $inc: { bookmarksCount: -1 } }
     );
 
     return {
@@ -450,7 +460,7 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
 
   await Post.updateOne(
     { _id: postId },
-    { $addToSet: { bookmarks: user._id } }
+    { $addToSet: { bookmarks: user._id }, $inc: { bookmarksCount: 1 } }
   );
 
   return {

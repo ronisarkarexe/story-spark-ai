@@ -216,6 +216,14 @@ export const verifyPayment = async (
 
     const selectedPlan = PLANS[plan];
 
+    if (Number(localOrder.amount) !== selectedPlan.amountPaise) {
+      res.status(400).json({
+        success: false,
+        error: "Stored order amount does not match the selected plan.",
+      });
+      return;
+    }
+
     if (Number(razorpayOrder.amount) !== selectedPlan.amountPaise) {
       res.status(400).json({
         success: false,
