@@ -43,6 +43,8 @@
     "jszip": "^3.10.1",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^1.16.0",
+    "quill": "^2.0.0",
+    "quill-cursors": "^4.0.2",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.0.0",
@@ -57,15 +59,16 @@
     "socket.io-client": "^4.8.3",
     "tailwindcss": "^4.0.6",
     "yjs": "^13.6.31",
-    "y-quill": "^1.2.0",
+    "y-quill": "1.0.0",
     "y-indexeddb": "^9.0.12",
     "y-protocols": "^1.0.6",
-    "quill": "^2.0.0",
-    "quill-cursors": "^4.0.2"
+    "y-quill": "^1.0.0",
+    "yjs": "^13.6.31"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
     "@tailwindcss/forms": "^0.5.11",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@tailwindcss/container-queries": "^0.1.1",
@@ -87,7 +90,7 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.22.0",
     "vite": "^6.1.0",
-    "vite-plugin-pwa": "^0.19.0",
+    "vite-plugin-pwa": "^0.19.8",
     "vitest": "^4.1.8"
   },
   "optionalDependencies": {

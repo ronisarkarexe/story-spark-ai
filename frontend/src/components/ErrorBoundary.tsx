@@ -13,58 +13,80 @@ interface State {
   retryLimitReached: boolean;
 }
 
+const MAX_ERROR_LOGS = 10;
+const LOG_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+const ERROR_LOG_KEY = "app_error_log";
+
 class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { 
+    this.state = {
       hasError: false,
       retryCount: 0,
       retryLimitReached: false,
     };
+    this.clearExpiredLogs();
+  }
+
+  private clearExpiredLogs(): void {
+    try {
+      const existing = JSON.parse(
+        localStorage.getItem(ERROR_LOG_KEY) || "[]"
+      );
+      const now = Date.now();
+      const fresh = existing.filter((log: { timestamp: string }) => {
+        return now - new Date(log.timestamp).getTime() < LOG_EXPIRY_MS;
+      });
+      if (fresh.length !== existing.length) {
+        localStorage.setItem(ERROR_LOG_KEY, JSON.stringify(fresh));
+      }
+    } catch {
+    }
+  }
+
+  static clearAllLogs(): void {
+    try {
+      localStorage.removeItem(ERROR_LOG_KEY);
+    } catch {
+    }
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    return { 
+    return {
       hasError: true,
       error,
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Track retry count across errors
     this.setState((prev) => ({
       retryCount: prev.retryCount + 1,
     }));
 
-    // Console logging
     console.error("Error caught by ErrorBoundary:", error, errorInfo);
 
-    // Structured error logging - could be sent to Sentry or similar service
     try {
       const errorLog = {
         timestamp: new Date().toISOString(),
         message: error.toString(),
         stack: error.stack,
         componentStack: errorInfo.componentStack,
-        // Path only, no query string, so tokens or PII in params are not persisted.
         url:
           typeof window !== "undefined"
             ? window.location.origin + window.location.pathname
             : "",
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       };
-
-      // Try to persist to localStorage for diagnostics
+      this.clearExpiredLogs();
       const existing = JSON.parse(
-        localStorage.getItem("app_error_log") || "[]"
+        localStorage.getItem(ERROR_LOG_KEY) || "[]"
       );
       existing.unshift(errorLog);
       localStorage.setItem(
-        "app_error_log",
-        JSON.stringify(existing.slice(0, 10))
+        ERROR_LOG_KEY,
+        JSON.stringify(existing.slice(0, MAX_ERROR_LOGS))
       );
     } catch {
-      // Fail silently if localStorage is unavailable
     }
 
     this.setState({ errorInfo });
@@ -72,19 +94,19 @@ class ErrorBoundary extends Component<Props, State> {
 
   handleRetry = () => {
     const { retryCount } = this.state;
-    
-    // Cap retries at 3 to prevent infinite loops
+
     if (retryCount >= 3) {
+      ErrorBoundary.clearAllLogs();
       this.setState({ retryLimitReached: true });
       window.location.reload();
       return;
     }
 
-    // Clear error boundary state to retry
     this.setState((prev) => ({
       hasError: false,
       error: undefined,
       errorInfo: undefined,
+      retryCount: prev.retryCount,
     }));
   };
 
@@ -92,7 +114,6 @@ class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return <ErrorPage />;
     }
-
     return this.props.children;
   }
 }
