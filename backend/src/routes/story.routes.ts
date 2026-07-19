@@ -19,6 +19,17 @@ import rateLimit from "express-rate-limit";
 
 const router = express.Router();
 
+const MAX_PROMPT_LENGTH = 2000;
+
+const validatePromptLength = (prompt: string): void => {
+  if (!prompt || typeof prompt !== "string") {
+    throw new Error("Prompt is required and must be a string.");
+  }
+  if (prompt.length > MAX_PROMPT_LENGTH) {
+    throw new Error(`Prompt must not exceed ${MAX_PROMPT_LENGTH} characters.`);
+  }
+};
+
 const generateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 15,
@@ -53,6 +64,8 @@ router.post(
         "Quota guard missing — checkRequestLimit middleware is required"
       );
     }
+
+    validatePromptLength(prompt);
 
     const controller = new AbortController();
     req.on("close", () => controller.abort());
@@ -136,6 +149,7 @@ router.post(
   ),
   generateLimiter,
   checkRequestLimit(),
+  validateRequest(AIModelValidator.aiStoryGenerate),
   catchAsync(async (req: Request, res: Response) => {
     const { prompt, provider, options } = req.body;
     const guard = res.locals.quotaRefundGuard;
@@ -145,6 +159,8 @@ router.post(
         "Quota guard missing — checkRequestLimit middleware is required"
       );
     }
+
+    validatePromptLength(prompt);
 
     const controller = new AbortController();
     req.on("close", () => controller.abort());

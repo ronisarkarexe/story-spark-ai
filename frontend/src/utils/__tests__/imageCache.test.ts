@@ -27,12 +27,81 @@ describe('imageCache utility', () => {
     global.URL.createObjectURL = vi.fn().mockReturnValue('blob:http://localhost/blob-id');
     global.URL.revokeObjectURL = vi.fn();
     global.fetch = vi.fn();
+
+/**
+ * @vitest-environment jsdom
+ */
+import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
+import { getCachedImageUrl, clearObjectUrls } from "../imageCache";
+
+const originalCaches = globalThis.caches;
+const mockCache = {
+  match: vi.fn(),
+  put: vi.fn(),
+};
+const mockCachesOpen = vi.fn(() => Promise.resolve(mockCache));
+
+const originalCreateObjectURL = URL.createObjectURL;
+const originalRevokeObjectURL = URL.revokeObjectURL;
+const BLOB_URL_MAP = new Map<string, Blob>();
+let objectUrlCounter = 0;
+
+const mockCreateObjectURL = vi.fn((blob: Blob) => {
+  const url = `blob:mock:${++objectUrlCounter}`;
+  BLOB_URL_MAP.set(url, blob);
+  return url;
+});
+const mockRevokeObjectURL = vi.fn((url: string) => {
+  BLOB_URL_MAP.delete(url);
+});
+
+const mockFetch = vi.fn();
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  objectUrlCounter = 0;
+  BLOB_URL_MAP.clear();
+  clearObjectUrls();
+  Object.defineProperty(globalThis, "caches", {
+    value: { open: mockCachesOpen },
+    writable: true,
+    configurable: true,
   });
+  Object.defineProperty(globalThis, "fetch", {
+    value: mockFetch,
+    writable: true,
+    configurable: true,
+  });
+  Object.defineProperty(globalThis, "URL", {
+    value: {
+      createObjectURL: mockCreateObjectURL,
+      revokeObjectURL: mockRevokeObjectURL,
+    },
+    writable: true,
+    configurable: true,
+
+  });
+
 
   afterEach(() => {
     vi.restoreAllMocks();
     // Clean up shared state between tests
     clearObjectUrls();
+
+afterAll(() => {
+  Object.defineProperty(globalThis, "caches", {
+    value: originalCaches,
+    writable: true,
+    configurable: true,
+  });
+  Object.defineProperty(globalThis, "URL", {
+    value: {
+      createObjectURL: originalCreateObjectURL,
+      revokeObjectURL: originalRevokeObjectURL,
+    },
+    writable: true,
+    configurable: true,
+
   });
 
   describe('getCachedImageUrl', () => {
@@ -51,6 +120,7 @@ describe('imageCache utility', () => {
       expect(result).toBe('https://example.com/image.png');
     });
 
+
     it('returns cached blob URL on cache hit without calling fetch', async () => {
       const cachedBlob = new Blob(['cached-data'], { type: 'image/png' });
       const cachedResponse = {
@@ -59,12 +129,22 @@ describe('imageCache utility', () => {
       } as unknown as Response;
       mockCache.match = vi.fn().mockResolvedValue(cachedResponse);
 
+  it("uses in-memory blob URL cache for repeated calls", async () => {
+    const blob = createMockBlob("fake image data");
+    mockCache.match.mockResolvedValue(null);
+    mockFetch.mockResolvedValueOnce(
+      new Response("fake image data", { status: 200, headers: { "content-type": "image/png" } })
+    );
+    mockCache.put.mockResolvedValue(undefined);
+
+
       const result = await getCachedImageUrl('https://example.com/cached.png');
 
       expect(result).toBe('blob:http://localhost/blob-id');
       expect(mockCache.match).toHaveBeenCalledWith('https://example.com/cached.png');
       expect(mockCache.put).not.toHaveBeenCalled();
     });
+
 
     it('fetches, caches, and returns blob URL on cache miss', async () => {
       mockCache.match = vi.fn().mockResolvedValue(undefined);
@@ -76,6 +156,13 @@ describe('imageCache utility', () => {
       expect(mockCache.match).toHaveBeenCalledWith('https://example.com/new.png');
       expect(global.fetch).toHaveBeenCalledWith('https://example.com/new.png');
       expect(mockCache.put).toHaveBeenCalled();
+
+  it("falls back to original URL when Cache API is not available", async () => {
+    Object.defineProperty(globalThis, "caches", {
+      value: undefined,
+      writable: true,
+      configurable: true,
+
     });
 
     it('returns original URL when fetch fails', async () => {
@@ -92,9 +179,16 @@ describe('imageCache utility', () => {
       const badResponse = { ok: false } as unknown as Response;
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(badResponse);
 
+
       const result = await getCachedImageUrl('https://example.com/404.png');
 
       expect(result).toBe('https://example.com/404.png');
+
+  it("returns cached blob URL when cache hit occurs", async () => {
+    const cachedResponse = new Response("cached image", {
+      status: 200,
+      headers: { "content-type": "image/png" },
+
     });
 
     it('deduplicates concurrent requests for the same URL', async () => {
@@ -113,17 +207,43 @@ describe('imageCache utility', () => {
     });
   });
 
+
   describe('clearObjectUrls', () => {
     it('revokes blob URLs and clears the map', async () => {
       mockCache.match = vi.fn().mockResolvedValue(undefined);
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+
+  it("stores fetched image in cache and returns blob URL", async () => {
+    const blob = createMockBlob("new image");
+    mockCache.match.mockResolvedValue(null);
+    mockFetch.mockResolvedValueOnce(
+      new Response("new image", { status: 200, headers: { "content-type": "image/png" } })
+    );
+    mockCache.put.mockResolvedValue(undefined);
+
 
       await getCachedImageUrl('https://example.com/to-clear.png');
       expect(global.URL.createObjectURL).toHaveBeenCalled();
 
       clearObjectUrls();
 
+
       expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:http://localhost/blob-id');
     });
+
+describe("clearObjectUrls", () => {
+  it("clears the object URLs and revokes them", async () => {
+    mockCache.match.mockResolvedValue(null);
+    mockFetch.mockResolvedValueOnce(
+      new Response("image to clear", { status: 200, headers: { "content-type": "image/png" } })
+    );
+    mockCache.put.mockResolvedValue(undefined);
+
+    await getCachedImageUrl("https://example.com/image-to-clear.png");
+    
+    clearObjectUrls();
+
+    expect(mockRevokeObjectURL).toHaveBeenCalled();
+
   });
 });

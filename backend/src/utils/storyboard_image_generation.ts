@@ -1,130 +1,111 @@
-import { generateStoryboardImage } from "../storyboard_image_generation";
+import config from "../config";
 
-// Mock the config module
-jest.mock("../../config", () => ({
-  default: {
-    image_generation_provider: "",
-    image_generation_api_key: "",
-    openai_key: "",
-  },
-}));
+const OPENAI_IMAGE_GENERATION_URL = "https://api.openai.com/v1/images/generations";
+const IMAGE_REQUEST_TIMEOUT_MS = 45000;
 
-// Mock global fetch
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
+type OpenAIImageResponse = {
+  data?: Array<{
+    url?: string;
+    b64_json?: string;
+  }>;
+};
 
-// Get reference to mocked config
-import config from "../../config";
-const mockConfig = config as jest.Mocked<typeof config>;
+const getProvider = (): string => {
+  return (config.image_generation_provider || "").trim().toLowerCase();
+};
 
-beforeEach(() => {
-  jest.clearAllMocks();
-  mockConfig.image_generation_provider = "";
-  mockConfig.image_generation_api_key = "";
-  mockConfig.openai_key = "";
-});
+const getApiKey = (): string => {
+  return (
+    config.image_generation_api_key ||
+    config.openai_key ||
+    ""
+  ).trim();
+};
 
-describe("generateStoryboardImage", () => {
+const generateWithOpenAI = async (
+  prompt: string,
+  signal?: AbortSignal
+): Promise<string | null> => {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    return null;
+  }
 
-  it("returns null when no provider is set", async () => {
-    mockConfig.image_generation_provider = "";
-    const result = await generateStoryboardImage("a dragon in the sky");
-    expect(result).toBeNull();
-    expect(mockFetch).not.toHaveBeenCalled();
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    IMAGE_REQUEST_TIMEOUT_MS
+  );
 
-  it("returns null when provider is openai but no api key is set", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.image_generation_api_key = "";
-    mockConfig.openai_key = "";
-    const result = await generateStoryboardImage("a dragon in the sky");
-    expect(result).toBeNull();
-    expect(mockFetch).not.toHaveBeenCalled();
-  });
+  let abortHandler: (() => void) | null = null;
+  if (signal) {
+    if (signal.aborted) {
+      clearTimeout(timeoutId);
+      controller.abort();
+      return null;
+    }
+    abortHandler = () => {
+      controller.abort();
+    };
+    signal.addEventListener("abort", abortHandler);
+  }
 
-  it("returns image URL when provider is openai and api key is set", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.openai_key = "test-openai-key";
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        data: [{ url: "https://example.com/image.png" }],
+  try {
+    const response = await fetch(OPENAI_IMAGE_GENERATION_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt,
+        size: "1024x1024",
+        quality: "low",
+        n: 1,
       }),
+      signal: controller.signal,
     });
 
-    const result = await generateStoryboardImage("a dragon in the sky");
-    expect(result).toBe("https://example.com/image.png");
-  });
+    if (!response.ok) {
+      return null;
+    }
 
-  it("returns base64 image when response contains b64_json", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.openai_key = "test-openai-key";
+    const data = (await response.json()) as OpenAIImageResponse;
+    const image = data.data?.[0];
+    if (image?.url) {
+      return image.url;
+    }
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        data: [{ b64_json: "abc123" }],
-      }),
-    });
+    if (image?.b64_json) {
+      return `data:image/png;base64,${image.b64_json}`;
+    }
 
-    const result = await generateStoryboardImage("a castle at night");
-    expect(result).toBe("data:image/png;base64,abc123");
-  });
+    return null;
+  } catch (error) {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+    if (signal && abortHandler) {
+      signal.removeEventListener("abort", abortHandler);
+    }
+  }
+};
 
-  it("returns null when openai API responds with error", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.openai_key = "test-openai-key";
+export const generateStoryboardImage = async (
+  prompt: string,
+  signal?: AbortSignal
+): Promise<string | null> => {
+  const provider = getProvider();
 
-    mockFetch.mockResolvedValueOnce({ ok: false });
+  if (!provider) {
+    return null;
+  }
 
-    const result = await generateStoryboardImage("a dragon in the sky");
-    expect(result).toBeNull();
-  });
+  if (provider === "openai") {
+    return generateWithOpenAI(prompt, signal);
+  }
 
-  it("returns null when fetch throws an error", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.openai_key = "test-openai-key";
+  return null;
+};
 
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
-
-    const result = await generateStoryboardImage("a dragon in the sky");
-    expect(result).toBeNull();
-  });
-
-  it("returns null when signal is already aborted", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.openai_key = "test-openai-key";
-
-    const controller = new AbortController();
-    controller.abort();
-
-    const result = await generateStoryboardImage("a dragon", controller.signal);
-    expect(result).toBeNull();
-    expect(mockFetch).not.toHaveBeenCalled();
-  });
-
-  it("uses image_generation_api_key over openai_key when both are set", async () => {
-    mockConfig.image_generation_provider = "openai";
-    mockConfig.image_generation_api_key = "primary-key";
-    mockConfig.openai_key = "fallback-key";
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: [{ url: "https://example.com/img.png" }] }),
-    });
-
-    await generateStoryboardImage("a sunset");
-
-    const callHeaders = mockFetch.mock.calls[0][1].headers;
-    expect(callHeaders["Authorization"]).toBe("Bearer primary-key");
-  });
-
-  it("returns null for unknown provider", async () => {
-    mockConfig.image_generation_provider = "gemini";
-
-    const result = await generateStoryboardImage("a dragon in the sky");
-    expect(result).toBeNull();
-    expect(mockFetch).not.toHaveBeenCalled();
-  });
-});

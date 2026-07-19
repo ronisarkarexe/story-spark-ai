@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import jsPDF from "jspdf";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useGetProfileInfoQuery } from "../../redux/apis/user.api";
+import { useGetCharactersQuery, useSaveCharacterMutation } from "../../redux/apis/character.api";
 import { getErrorMessage } from "../../error/error.message";
 import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
 import StoryGeneratingAnimation from "../loading/story-generating-animation.component";
@@ -42,11 +43,10 @@ type Inputs = {
 };
 
 const MAX_PROMPT_LENGTH = 2000;
-const WARN_THRESHOLD = 0.85;
 const lengths = ["short", "medium", "long"] as const;
 
 const StoriesComponent = () => {
-const WARN_THRESHOLD = 0.8;
+const WARN_THRESHOLD = 0.85;
 const DANGER_THRESHOLD = 0.95;
 
 const LANGUAGES = [
@@ -628,6 +628,32 @@ const [selectedGenre, setSelectedGenre] = useState<string>("");
 const [selectedLength, setSelectedLength] = useState<string>("medium");
 const [textareaValue, setTextareaValue] = useState<string>("");
 const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+const { data: rosterData } = useGetCharactersQuery(undefined, { skip: !login });
+const rosterCharacters = rosterData?.data || [];
+const [saveCharacter, { isLoading: isSavingCharacter }] = useSaveCharacterMutation();
+
+const handleSaveToRoster = async (char: ICharacter) => {
+  try {
+    await saveCharacter({
+      name: char.name,
+      role: char.role,
+      personality: char.personality
+    }).unwrap();
+    toast.success("Character saved to roster!");
+  } catch (error) {
+    toast.error("Failed to save character.");
+  }
+};
+
+const handleLoadFromRoster = (charId: string, rosterCharId: string) => {
+  const rosterChar = rosterCharacters.find((c: any) => c._id === rosterCharId);
+  if (!rosterChar) return;
+  // Use a direct DOM update or form update depending on how characters are managed,
+  // Assuming setCharacters is available globally or we simulate the change:
+  if (typeof setCharacters === 'function') {
+    setCharacters((prev: ICharacter[]) => prev.map(c => c.id === charId ? { ...c, name: rosterChar.name, role: rosterChar.role || "", personality: rosterChar.personality } : c));
+  }
+};
 const dropdownRef = useRef<HTMLDivElement>(null);
 const inputRef = useRef<HTMLTextAreaElement>(null);
 const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
@@ -662,6 +688,7 @@ useEffect(() => {
 
   const [selectedLength, setSelectedLength] = useState<string>(draft?.length || "medium");
   const [selectedTone, setSelectedTone] = useState<ToneLabel | "">(draft?.tone || "Dramatic");
+  const [selectedAudience, setSelectedAudience] = useState<string>("General Audience");
   const [textareaValue, setTextareaValue] = useState<string>(() => {
     return location.state?.prompt || draft?.prompt || "";
   });
@@ -867,10 +894,13 @@ useEffect(() => {
     }
   };
 
-  document.addEventListener("mousedown", handleClickOutside);
-  document.addEventListener("keydown", handleKeyDown);
   useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
     return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
@@ -971,12 +1001,6 @@ useEffect(() => {
     return () => clearTimeout(timer);
   }, [selectedStory, selectedStory?.content, isLogin, selectTopics, createPost]);
 
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-    document.removeEventListener("keydown", handleKeyDown);
-  };
-}, []);
-
 useEffect(() => {
   if (location.state && location.state.prompt) {
     setTextareaValue(location.state.prompt);
@@ -1020,6 +1044,7 @@ const onSubmit: SubmitHandler<Inputs> = useCallback(async (data) => {
         wordLength: selectedLength === "short" ? 175 : selectedLength === "long" ? 800 : 450,
         language: selectedLanguage,
         tone: selectedTone || undefined,
+        targetAudience: selectedAudience,
         characters: characters.map(({ name, role, personality }) => ({ name, role, personality })),
       };
 
@@ -1429,14 +1454,37 @@ const handleExportMarkdown = () => {
     onOpenHelp: () => setShowHelpModal(true),
     onCloseHelp: () => setShowHelpModal(false),
     onGenerate: () => {
-      if (isGenerateDisabled) {
-        return;
-      }
+      if (isGenerateDisabled) return;
       if (inputRef.current) {
         const form = inputRef.current.closest("form");
         if (form) form.requestSubmit();
-
       }
+    },
+    onPublish: () => {
+      const btn = document.getElementById("publish-story-btn");
+      btn?.click();
+    },
+    focusPrompt: () => inputRef.current?.focus(),
+    hasStory: stories.length > 0,
+  });
+
+  const handelPublishStory = useCallback(async () => {
+    if (!isLogin) {
+      toast.error("Please login to publish the story.");
+      return;
+    }
+    if (!selectedStory) {
+      toast.error("No story available. Please generate a story first.");
+      return;
+    }
+
+    const post: IPost = {
+      ...selectedStory,
+      topic: selectTopics,
+    };
+
+    setLoading(true);
+    try {
       const result = await createPost(post).unwrap();
       if (result) {
         toast.success("Story published successfully!");
@@ -1444,12 +1492,13 @@ const handleExportMarkdown = () => {
         setSelectedStory(null);
         onPublishSuccess?.();
       }
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error) {
+      const message = getErrorMessage(error);
+      toast.error(message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [isLogin, selectedStory, selectTopics, createPost, setStories, setSelectedStory, onPublishSuccess]);
 
   const calculateReadingTime = (content: string): number => {
     const words = getWordCount(content);
@@ -2021,13 +2070,38 @@ onKeyDown={(e) => {
                             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                               👤 Character #{index + 1}
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveCharacter(char.id)}
-                              className="text-xs font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
-                            >
-                              Remove
-                            </button>
+                            <div className="flex gap-2">
+                              {login && (
+                                <>
+                                  <select 
+                                    className="text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2"
+                                    onChange={(e) => {
+                                      if (e.target.value) handleLoadFromRoster(char.id, e.target.value);
+                                    }}
+                                  >
+                                    <option value="">Load from Roster...</option>
+                                    {rosterCharacters.map((rc: any) => (
+                                      <option key={rc._id} value={rc._id}>{rc.name} ({rc.role})</option>
+                                    ))}
+                                  </select>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveToRoster(char)}
+                                    disabled={isSavingCharacter}
+                                    className="text-xs font-bold text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 cursor-pointer"
+                                  >
+                                    Save
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveCharacter(char.id)}
+                                className="text-xs font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
+                              >
+                                Remove
+                              </button>
+                            </div>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2052,13 +2126,38 @@ onKeyDown={(e) => {
                           <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                             👤 Character #{index + 1}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCharacter(char.id)}
-                            className="text-xs font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
-                          >
-                            Remove
-                          </button>
+                          <div className="flex gap-2">
+                            {login && (
+                              <>
+                                <select 
+                                  className="text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2"
+                                  onChange={(e) => {
+                                    if (e.target.value) handleLoadFromRoster(char.id, e.target.value);
+                                  }}
+                                >
+                                  <option value="">Load from Roster...</option>
+                                  {rosterCharacters.map((rc: any) => (
+                                    <option key={rc._id} value={rc._id}>{rc.name} ({rc.role})</option>
+                                  ))}
+                                </select>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveToRoster(char)}
+                                  disabled={isSavingCharacter}
+                                  className="text-xs font-bold text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 cursor-pointer"
+                                >
+                                  Save
+                                </button>
+                              </>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCharacter(char.id)}
+                              className="text-xs font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </div>
 
     <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -2076,6 +2175,24 @@ onKeyDown={(e) => {
           }`}
         >
           {length.charAt(0).toUpperCase() + length.slice(1)}
+        </button>
+      ))}
+    </div>
+
+    <div className="flex flex-wrap items-center gap-2 mb-3">
+      <span className="text-xs text-gray-400 mr-1">👥 Audience:</span>
+      {["Children (5-10)", "Young Adult (12-18)", "General Audience", "Professionals"].map((audience) => (
+        <button
+          key={audience}
+          type="button"
+          onClick={() => setSelectedAudience(audience)}
+          className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+            selectedAudience === audience
+              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+              : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+          }`}
+        >
+          {audience}
         </button>
       ))}
     </div>

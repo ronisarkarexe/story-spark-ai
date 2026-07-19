@@ -13,12 +13,11 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
+const AUTH_PATHS = ["/login", "/signup", "/forgot-password"];
+
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
-
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
-  const hideHeader = isAuthPage;
-  const hideFooter = isAuthPage;
+  const isAuthPage = AUTH_PATHS.includes(pathname);
 
   const [cookieBannerHeight, setCookieBannerHeight] = useState(0);
 
@@ -28,18 +27,16 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
 
   return (
     <div
-      className={`flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 ${
-        !isAuthPage ? "pb-20 lg:pb-0" : ""
-      }`}
-      style={{ paddingBottom: isAuthPage ? 0 : cookieBannerHeight }}
+      className={`flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 pb-20 lg:pb-0`}
+      style={{ paddingBottom: cookieBannerHeight }}
     >
-      {!hideHeader && <NavListComponent />}
+      <NavListComponent />
       <CookieConsentBanner onLayoutChange={handleCookieLayoutChange} />
 
       <div className="flex-grow min-h-0">{children}</div>
 
-      {!hideFooter && <FooterComponent />}
-<ChatComponent />
+      <FooterComponent />
+      {!isAuthPage && <ChatComponent />}
     </div>
   );
 };
