@@ -249,7 +249,7 @@ const ReviewForm: React.FC = () => {
               </div>
             </div>
 
-            {/* Rating */}
+                        {/* Rating */}
             <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5">
               <label className="mb-3 flex items-center gap-2 text-base font-semibold text-gray-200">
                 <span className="text-blue-400">⭐</span>
@@ -259,21 +259,18 @@ const ReviewForm: React.FC = () => {
 
               <StarRating rating={rating} setRating={setRating} />
 
-                <StarRating rating={rating} setRating={setRating} />
+              <p className="mt-3 text-sm text-gray-400">
+                Select a rating based on your overall experience.
+              </p>
 
-                <p className="mt-3 text-sm text-gray-400">
-                  Select a rating based on your overall experience.
+              {errors.rating && (
+                <p className="mt-2 flex items-center gap-1 text-sm font-medium text-red-400">
+                  <span>⚠</span>
+                  {errors.rating}
                 </p>
-
-                {errors.rating && (
-                  <p className="mt-2 flex items-center gap-1 text-sm font-medium text-red-400">
-                    <span>⚠</span>
-                    {errors.rating}
-                  </p>
-                )}
-              </div>
+              )}
             </div>
-            
+
             <div className="mt-8 pt-2">
               <button
                 type="button"
@@ -308,7 +305,7 @@ const ReviewForm: React.FC = () => {
                   "Share Review ✨"
                 )}
               </button>
-            </div>
+                        </div>
           </div>
         </div>
       </div>
