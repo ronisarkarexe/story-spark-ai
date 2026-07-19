@@ -51,9 +51,9 @@ const aiFreeModelGenerate = catchAsync(async (req: Request, res: Response) => {
   const controller = new AbortController();
   req.on("close", () => controller.abort());
 
+  await reserveGuestQuota(userId);
   const guard = createGuestQuotaGuard(userId);
   await runWithQuotaCleanup(guard, async () => {
-    await reserveGuestQuota(userId);
     const result = await AiModelService.aiFreeModelGenerate(prompt, controller.signal);
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -102,9 +102,9 @@ const aiFreeModelAlternateEndings = catchAsync(
     const controller = new AbortController();
     req.on("close", () => controller.abort());
 
+    await reserveGuestQuota(userId);
     const guard = createGuestQuotaGuard(userId);
     await runWithQuotaCleanup(guard, async () => {
-      await reserveGuestQuota(userId);
       const result = await AiModelService.aiFreeModelAlternateEndings(payload, controller.signal);
       sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -203,9 +203,9 @@ const aiFreeModelRemix = catchAsync(async (req: Request, res: Response) => {
   const controller = new AbortController();
   req.on("close", () => controller.abort());
 
+  await reserveGuestQuota(userId);
   const guard = createGuestQuotaGuard(userId);
   await runWithQuotaCleanup(guard, async () => {
-    await reserveGuestQuota(userId);
     const result = await AiModelService.aiFreeModelRemix(payload, controller.signal);
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -253,9 +253,9 @@ const aiFreeModelTranslate = catchAsync(async (req: Request, res: Response) => {
   const controller = new AbortController();
   req.on("close", () => controller.abort());
 
+  await reserveGuestQuota(userId);
   const guard = createGuestQuotaGuard(userId);
   await runWithQuotaCleanup(guard, async () => {
-    await reserveGuestQuota(userId);
     const result = await AiModelService.aiFreeModelTranslate(payload, controller.signal);
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -303,9 +303,9 @@ const aiFreeModelChat = catchAsync(async (req: Request, res: Response) => {
   const controller = new AbortController();
   req.on("close", () => controller.abort());
 
+  await reserveGuestQuota(userId);
   const guard = createGuestQuotaGuard(userId);
   await runWithQuotaCleanup(guard, async () => {
-    await reserveGuestQuota(userId);
     const result = await AiModelService.aiFreeModelChat(payload, controller.signal);
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -353,9 +353,9 @@ const aiFreeStoryContinuation = catchAsync(async (req: Request, res: Response) =
   const controller = new AbortController();
   req.on("close", () => controller.abort());
 
+  await reserveGuestQuota(userId);
   const guard = createGuestQuotaGuard(userId);
   await runWithQuotaCleanup(guard, async () => {
-    await reserveGuestQuota(userId);
     const result = await AiModelService.aiFreeStoryContinuation(payload, controller.signal);
     sendResponse(res, {
       statusCode: httpStatus.OK,

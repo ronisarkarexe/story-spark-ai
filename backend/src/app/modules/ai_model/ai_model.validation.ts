@@ -45,6 +45,8 @@ const aiModel = z.object({
       })
       .optional(),
 
+    targetAudience: z.string().max(100).optional(),
+
     characters: z
       .array(
         z.object({
@@ -123,6 +125,16 @@ const aiTranslate = z.object({
   }),
 });
 
+const aiStoryGenerate = z.object({
+  body: z.object({
+    prompt: z
+      .string({ required_error: "Prompt is required!" })
+      .trim()
+      .min(1, "Prompt is required!")
+      .max(2000, "Prompt must not exceed 2000 characters"),
+  }).passthrough(),
+});
+
 export const AIModelValidator = {
   aiModel,
   aiAlternateEndings,
@@ -130,4 +142,5 @@ export const AIModelValidator = {
   aiChat,
   aiRemix,
   aiTranslate,
+  aiStoryGenerate,
 };
