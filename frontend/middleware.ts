@@ -1,89 +1,98 @@
-import { NextRequest, NextResponse } from "next/server";
+const CRAWLER_RE = /Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|facebookexternalhit|Slack-ImgProxy|facebot|Pinterest/i;
 
-const STORY_ROUTE = /^\/stor(?:y|ies)\/([^/?#]+)/;
+const STORY_ROUTE = /^\/post\/([^/?#]+)/;
 
-const API_BASE =
-  process.env.VITE_API_BASE_URL || "https://storysparkai.vercel.app/api/v1";
+const API_BASE = process.env.API_BASE_URL || process.env.VITE_BASE_URL || "";
 
-// Module-scoped cache — persists across invocations on the same edge instance  
-let cachedHtml: string | null = null;
-let cachedHtmlExpiry = 0;
-const HTML_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const FALLBACK_OG_IMAGE = "https://storysparkai.vercel.app/og-image.jpg";
+
+const HTML_CACHE_TTL_MS = 300_000;
+
+let cachedIndexHtml: string | null = null;
+let cachedIndexExpiry = 0;
 
 export const config = {
-  matcher: ["/story/:id*", "/stories/:id*"],
+  matcher: ["/post/:id"],
 };
 
-export default async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const match = pathname.match(STORY_ROUTE);
+export default async function middleware(request: Request): Promise<Response | undefined> {
+  const url = new URL(request.url);
+  const match = url.pathname.match(STORY_ROUTE);
 
-  if (!match) return NextResponse.next();
+  if (!match) return;
+
+  const ua = request.headers.get("user-agent") || "";
+  if (!CRAWLER_RE.test(ua)) return;
 
   const storyId = match[1];
+  const apiUrl = API_BASE
+    ? `${API_BASE.replace(/\/+$/, "")}/post/${storyId}`
+    : null;
 
-  try {
-    const now = Date.now();
-    const needsFreshHtml = !cachedHtml || now > cachedHtmlExpiry;
+  let story: { title?: string; content?: string; imageURL?: string } | null = null;
 
-    // Run story fetch and (conditionally) html fetch in parallel
-    const [res, html] = await Promise.all([
-      fetch(`${API_BASE}/stories/${storyId}`, {
+  if (apiUrl) {
+    try {
+      const res = await fetch(apiUrl, {
         headers: { Accept: "application/json" },
-        signal: AbortSignal.timeout(3000),
-      }),
-      needsFreshHtml
-        ? fetch(new URL("/index.html", req.url).toString()).then((r) =>
-            r.text()
-          )
-        : Promise.resolve(cachedHtml as string),
-    ]);
-
-    if (!res.ok) return NextResponse.next();
-
-    const story = await res.json();
-
-    if (needsFreshHtml) {
-      cachedHtml = html;
-      cachedHtmlExpiry = now + HTML_CACHE_TTL_MS;
+        signal: AbortSignal.timeout(4_000),
+      });
+      if (res.ok) story = await res.json();
+    } catch {
+      // backend unreachable — serve generic fallback
     }
-
-    const title = story.title ?? "Story Spark AI";
-    const description = (story.content ?? story.description ?? "")
-      .replace(/<[^>]+>/g, "")
-      .slice(0, 160);
-    const image =
-      story.coverImage ??
-      story.imageUrl ??
-      "https://storysparkai.vercel.app/og-default.png";
-    const url = `https://storysparkai.vercel.app${pathname}`;
-
-    const ogTags = `
-    <meta property="og:type"        content="article" />
-    <meta property="og:title"       content="${escapeAttr(title)}" />
-    <meta property="og:description" content="${escapeAttr(description)}" />
-    <meta property="og:image"       content="${escapeAttr(image)}" />
-    <meta property="og:url"         content="${escapeAttr(url)}" />
-    <meta property="og:site_name"   content="Story Spark AI" />
-    <meta name="twitter:card"        content="summary_large_image" />
-    <meta name="twitter:title"       content="${escapeAttr(title)}" />
-    <meta name="twitter:description" content="${escapeAttr(description)}" />
-    <meta name="twitter:image"       content="${escapeAttr(image)}" />
-    <meta name="description"         content="${escapeAttr(description)}" />`;
-
-    const patched = html
-      .replace(/<meta\s+(?:property|name)="(?:og:|twitter:)[^"]*"[^>]*>/gi, "")
-      .replace("</head>", `${ogTags}\n  </head>`);
-
-    return new NextResponse(patched, {
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
-      },
-    });
-  } catch {
-    return NextResponse.next();
   }
+
+  const title = story?.title || "Story Spark AI";
+  const description = (story?.content || "")
+    .replace(/<[^>]+>/g, "")
+    .slice(0, 160);
+  const image = story?.imageURL || FALLBACK_OG_IMAGE;
+  const pageUrl = `https://storysparkai.vercel.app${url.pathname}`;
+
+  let html: string;
+
+  const now = Date.now();
+  if (cachedIndexHtml && now < cachedIndexExpiry) {
+    html = cachedIndexHtml;
+  } else {
+    html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Story Spark AI</title>
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary_large_image" />
+</head>
+<body>
+  <script>window.location.href = ${JSON.stringify(pageUrl)};</script>
+  <noscript><meta http-equiv="refresh" content="0;url=${pageUrl}" /></noscript>
+</body>
+</html>`;
+    cachedIndexHtml = html;
+    cachedIndexExpiry = now + HTML_CACHE_TTL_MS;
+  }
+
+  const ogTags = [
+    `<meta property="og:title"       content="${escapeAttr(title)}" />`,
+    `<meta property="og:description" content="${escapeAttr(description)}" />`,
+    `<meta property="og:image"       content="${escapeAttr(image)}" />`,
+    `<meta property="og:url"         content="${escapeAttr(pageUrl)}" />`,
+    `<meta name="twitter:title"       content="${escapeAttr(title)}" />`,
+    `<meta name="twitter:description" content="${escapeAttr(description)}" />`,
+    `<meta name="twitter:image"       content="${escapeAttr(image)}" />`,
+    `<meta name="description"         content="${escapeAttr(description)}" />`,
+  ].join("\n    ");
+
+  const patched = html.replace("</head>", `    ${ogTags}\n  </head>`);
+
+  return new Response(patched, {
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
+    },
+  });
 }
 
 function escapeAttr(str: string): string {

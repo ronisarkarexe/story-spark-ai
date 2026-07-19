@@ -46,7 +46,6 @@ const FORBIDDEN_PATTERNS: RegExp[] = [
   /###\s*instructions?/i,
 ];
 
-
 const canonicalizeSecurityText = (input: string): string => {
   // Normalize & harden against common normalization-evasion techniques.
   // - NFKC collapses compatibility variants
@@ -55,7 +54,8 @@ const canonicalizeSecurityText = (input: string): string => {
   return (input ?? "")
     .normalize("NFKC")
     .replace(/\u200B|\u200C|\u200D|\uFEFF|\u2060|\u180E/g, "")
-    .replace(/[\s\u00A0]+/g, " ")
+    .replace(/[\s\u00A0]+/g, " ");
+};
 
 /**
  * Normalize input to prevent Unicode substitution and obfuscation bypasses.
@@ -65,29 +65,21 @@ const normalizeInput = (input: string): string => {
     .normalize("NFKC") // Unicode normalization
     .replace(/[\u200B-\u200D\uFEFF]/g, "") // Remove zero-width characters
     .replace(/\s+/g, " ") // Collapse whitespace
- main
     .trim();
 };
 
 export const validateAndFormatPrompt = (userPrompt: string): string => {
-
-  const canonical = canonicalizeSecurityText(userPrompt);
-
-  // 1. Semantic Filtering (run against canonicalized input)
-  for (const pattern of FORBIDDEN_PATTERNS) {
-    if (pattern.test(canonical)) {
-
   if (!userPrompt || typeof userPrompt !== "string") {
     throw new Error("Security Violation: Invalid prompt input.");
   }
 
   // Normalize input before security analysis
   const normalizedPrompt = normalizeInput(userPrompt);
+  const canonical = canonicalizeSecurityText(normalizedPrompt);
 
   // Semantic filtering against expanded pattern set
   for (const pattern of FORBIDDEN_PATTERNS) {
-    if (pattern.test(normalizedPrompt)) {
- main
+    if (pattern.test(canonical)) {
       throw new Error("Security Violation: Malicious prompt injection detected.");
     }
   }
@@ -100,8 +92,11 @@ export const validateAndFormatPrompt = (userPrompt: string): string => {
 };
 
 export const validateOutput = (aiResponse: string): string => {
+  if (!aiResponse || typeof aiResponse !== "string") {
+    throw new Error("Security Violation: Invalid AI response.");
+  }
 
-  // 4. Post-generation validation — check for leaked system instructions
+  // Post-generation validation — check for leaked system instructions
   const canonical = canonicalizeSecurityText(aiResponse).toLowerCase();
 
   if (
@@ -111,9 +106,6 @@ export const validateOutput = (aiResponse: string): string => {
     canonical.includes("developer instructions")
   ) {
     throw new Error("Security Violation: AI output leaked system instructions.");
-
-  if (!aiResponse || typeof aiResponse !== "string") {
-    throw new Error("Security Violation: Invalid AI response.");
   }
 
   const lowerResponse = aiResponse.toLowerCase();
@@ -137,16 +129,10 @@ export const validateOutput = (aiResponse: string): string => {
     if (lowerResponse.includes(pattern)) {
       throw new Error("Security Violation: AI output leaked system instructions.");
     }
-main
   }
 
   // Content moderation — block harmful/inappropriate output
   assertContentSafe(aiResponse);
 
   return aiResponse;
-
 };
-
-
-};
- main
