@@ -43,7 +43,7 @@
 <body>
 
     <!-- PARTICLE CANVAS BACKGROUND -->
-    <canvas id="particle-canvas"></canvas>
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
     <!-- MAIN WRAPPER -->
 
@@ -269,6 +269,11 @@
                                              right:18px;
                                              top:50%;
                                              transform:translateY(-50%);
+                                             display:flex;
+                                             align-items:center;
+                                             justify-content:center;
+                                             padding:0;
+                                             margin:0;
                                              background:none;
                                              border:none;
                                              color:rgba(255,255,255,.5);
@@ -298,13 +303,13 @@
 
                                 I agree to the
 
-                                <a onclick="openLegalModal('terms')">
+                                <a href="javascript:void(0)" onclick="openLegalModal('terms')">
                                     Terms
                                 </a>
 
                                 and
 
-                                <a onclick="openLegalModal('privacy')">
+                                <a href="javascript:void(0)" onclick="openLegalModal('privacy')">
                                     Privacy Policy
                                 </a>
 

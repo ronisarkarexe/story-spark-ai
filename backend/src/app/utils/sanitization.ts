@@ -4,6 +4,47 @@
  * to reduce the risk of HTML injection and ensure consistent string formatting.
  */
 
+// Dangerous URL protocols that can be used for XSS attacks
+const DANGEROUS_URL_PROTOCOLS = [
+  'javascript:',
+  'data:',
+  'vbscript:',
+  'mocha:',
+  'livescript:',
+  'about:',
+  'file:',
+  'view-source:',
+  'jar:',
+  'apt:',
+];
+
+/**
+ * Checks whether a URL uses an allowed (safe) protocol.
+ * URLs with dangerous protocols like javascript:, data:, vbscript:, etc.
+ * can be used for XSS attacks and should be rejected.
+ */
+export const isAllowedUrlProtocol = (url: string): boolean => {
+  if (!url || typeof url !== 'string') return false;
+  const lower = url.trim().toLowerCase();
+  for (const protocol of DANGEROUS_URL_PROTOCOLS) {
+    if (lower.startsWith(protocol)) return false;
+  }
+  return true;
+};
+
+/**
+ * Sanitizes a URL by validating its protocol. Returns the URL unchanged
+ * if the protocol is safe, otherwise returns the provided fallback value.
+ * This prevents XSS via javascript:, data:, and other dangerous protocols.
+ */
+export const sanitizeUrl = (
+  url: string,
+  fallback = '',
+): string => {
+  if (!url || typeof url !== 'string') return fallback;
+  return isAllowedUrlProtocol(url) ? url.trim() : fallback;
+};
+
 /**
  * Removes all HTML tags from a string using a regex that handles both
  * complete tags (<tag>) and incomplete openers (<script without >).

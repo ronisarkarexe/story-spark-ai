@@ -3,9 +3,10 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface ICharacter extends Document {
   userId: mongoose.Types.ObjectId;
   name: string;
+  role?: string;
   age?: number;
-  personality: string[];
-  appearance: string;
+  personality: string;
+  appearance?: string;
   background?: string;
   traits: string[];
   notes?: string;
@@ -25,17 +26,20 @@ const CharacterSchema = new Schema<ICharacter>(
       required: true,
       trim: true,
     },
+    role: {
+      type: String,
+      trim: true,
+    },
     age: {
       type: Number,
       min: 0,
     },
     personality: {
-      type: [String],
-      default: [],
+      type: String,
+      required: true,
     },
     appearance: {
       type: String,
-      required: true,
     },
     background: {
       type: String,
