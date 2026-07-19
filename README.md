@@ -231,6 +231,7 @@ cp frontend/.env.example frontend/.env
 |----------|---------|----------|-------------|
 | `NODE_ENV` | `development` | ✅ Yes | Environment mode |
 | `PORT` | `5000` | ✅ Yes | Backend server port |
+| `FRONTEND_URL` | `https://storysparkai.vercel.app` | ⚠️ Optional | Primary frontend URL (used in production for CORS/WebSockets) |
 | `CORS_ORIGINS` | `http://localhost:4001` | ✅ Yes | Allowed frontend origin |
 
 #### 🗄️ Database
@@ -290,6 +291,7 @@ cp frontend/.env.example frontend/.env
 ```env
 NODE_ENV=development
 PORT=5000
+FRONTEND_URL=https://storysparkai.vercel.app
 CORS_ORIGINS=http://localhost:4001
 DATABASE_URL=mongodb://127.0.0.1:27017/story_spark_ai
 SALT_ROUNDS=10
