@@ -29,7 +29,9 @@ import { SearchRouter } from "../app/modules/search/search.router";
 
 import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
 import { StoryRatingRouter } from "../app/modules/story_rating/story_rating.router";
+import { UsageRouter } from "../app/modules/ai_model/usage.router";
 import { CollectionRouter } from "../app/modules/collection/collection.router";
+import { StoryBranchingRouter } from "../app/modules/story_branching/story_branching.router";
 const router = express.Router();
 
 const modules = [
@@ -154,8 +156,16 @@ const modules = [
     router: StoryRatingRouter,
   },
   {
+    path: "/usage",
+    router: UsageRouter,
+  },
+  {
     path: "/collections",
     router: CollectionRouter,
+  },
+  {
+    path: "/story-branches",
+    router: StoryBranchingRouter,
   },
 ];
 

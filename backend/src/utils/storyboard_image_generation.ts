@@ -92,18 +92,115 @@ const generateWithOpenAI = async (
   }
 };
 
+type GoogleImageResponse = {
+  predictions?: Array<{
+    bytesBase64Encoded?: string;
+    mimeType?: string;
+  }>;
+};
+
+const getGoogleApiKey = (): string => {
+  return (
+    config.image_generation_api_key ||
+    config.gemini_api_key ||
+    ""
+  ).trim();
+};
+
+const generateWithGoogle = async (
+  prompt: string,
+  signal?: AbortSignal
+): Promise<string | null> => {
+  const apiKey = getGoogleApiKey();
+  if (!apiKey) {
+    return null;
+  }
+
+  const modelName = config.gemini_image_model || "imagen-3.0-generate-002";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:predict?key=${apiKey}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    IMAGE_REQUEST_TIMEOUT_MS
+  );
+
+  let abortHandler: (() => void) | null = null;
+  if (signal) {
+    if (signal.aborted) {
+      clearTimeout(timeoutId);
+      controller.abort();
+      return null;
+    }
+    abortHandler = () => {
+      controller.abort();
+    };
+    signal.addEventListener("abort", abortHandler);
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        instances: [{ prompt }],
+        parameters: {
+          sampleCount: 1,
+          outputMimeType: "image/jpeg",
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = (await response.json()) as GoogleImageResponse;
+    const prediction = data.predictions?.[0];
+    if (prediction?.bytesBase64Encoded) {
+      const mime = prediction.mimeType || "image/jpeg";
+      return `data:${mime};base64,${prediction.bytesBase64Encoded}`;
+    }
+
+    return null;
+  } catch (error) {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+    if (signal && abortHandler) {
+      signal.removeEventListener("abort", abortHandler);
+    }
+  }
+};
+
 export const generateStoryboardImage = async (
   prompt: string,
   signal?: AbortSignal
 ): Promise<string | null> => {
   const provider = getProvider();
 
-  if (!provider) {
-    return null;
-  }
-
   if (provider === "openai") {
     return generateWithOpenAI(prompt, signal);
+  }
+
+  if (provider === "google" || provider === "gemini") {
+    return generateWithGoogle(prompt, signal);
+  }
+
+  // Fallback chain when provider is unset
+  if (!provider) {
+    const hasOpenAI = getApiKey() !== "";
+    if (hasOpenAI) {
+      return generateWithOpenAI(prompt, signal);
+    }
+
+    const hasGoogle = getGoogleApiKey() !== "";
+    if (hasGoogle) {
+      return generateWithGoogle(prompt, signal);
+    }
   }
 
   return null;

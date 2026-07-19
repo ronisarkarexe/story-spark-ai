@@ -54,6 +54,7 @@ function initInlineValidation() {
     const emailField = document.getElementById('email-field');
     const passwordField = document.getElementById('password-field');
     const confirmPasswordField = document.getElementById('confirm-password-field');
+    const signupCapsWarning = document.getElementById("signup-caps-lock-warning");
 
     if (nameField) {
         nameField.addEventListener('blur', () => validateName(true));
@@ -89,6 +90,25 @@ function initInlineValidation() {
             validateConfirmPassword(false);
         });
     }
+const inputs = document.querySelectorAll("#auth-form input");
+
+inputs.forEach(input => {
+    input.addEventListener("keydown", (event) => {
+        if (!signupCapsWarning) return;
+
+        signupCapsWarning.textContent = event.getModifierState("CapsLock")
+            ? "Caps Lock is ON"
+            : "Caps Lock is OFF";
+    });
+
+    input.addEventListener("keyup", (event) => {
+        if (!signupCapsWarning) return;
+
+        signupCapsWarning.textContent = event.getModifierState("CapsLock")
+            ? "Caps Lock is ON"
+            : "Caps Lock is OFF";
+    });
+});
 }
 
 function setAlert(variant, message) {
@@ -310,7 +330,7 @@ function initParticleSystem() {
     
     const ctx = canvas.getContext('2d');
     const section = canvas.parentElement;
-    const PARTICLE_COUNT = 120;
+    const PARTICLE_COUNT = 700;
     const MOUSE_RADIUS = 140;
     const REPEL_STRENGTH = 0.06;
     const COLORS = [
@@ -548,7 +568,7 @@ function togglePasswordVisibility(event) {
     
     const field = document.getElementById('password-field');
     const button = event?.currentTarget || document.querySelector('[onclick*="togglePasswordVisibility"]');
-    const icon = document.getElementById('eye-icon');
+    const icon = document.getElementById('password-eye-icon');
     const tooltip = button?.querySelector('.password-tooltip');
     const tooltipText = button?.querySelector('#tooltip-text');
     
@@ -562,14 +582,15 @@ function togglePasswordVisibility(event) {
     // Update icon with better contrast
     if (isVisible) {
         // Password hidden
-        icon.className = 'fi fi-rr-eye-crossed text-[16px]';
+        
+         icon.className = "fi fi-rr-eye-crossed";
         button.setAttribute('aria-label', 'Show password. Press Space or Enter to toggle.');
         button.setAttribute('aria-pressed', 'false');
         button.setAttribute('title', 'Show password (Space/Enter)');
         if (tooltipText) tooltipText.textContent = 'Show password (Space/Enter)';
     } else {
         // Password visible
-        icon.className = 'fi fi-rr-eye text-[16px]';
+       icon.className = "fi fi-rr-eye";
         button.setAttribute('aria-label', 'Hide password. Press Space or Enter to toggle.');
         button.setAttribute('aria-pressed', 'true');
         button.setAttribute('title', 'Hide password (Space/Enter)');
@@ -630,7 +651,6 @@ function toggleConfirmPasswordVisibility(event) {
         }, 1500);
     }
 }
-
 // Add keyboard support and tooltip interactions
 document.addEventListener('DOMContentLoaded', () => {
     const passwordButtons = document.querySelectorAll('.password-toggle-btn');
@@ -676,29 +696,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-/* caps-lock-warning */
-const passwordField = document.getElementById("password-field");
-
-if (passwordField) {
-  passwordField.addEventListener("keyup", (event) => {
-    const loginCapsWarning = document.getElementById("login-caps-lock-warning");
-    const signupCapsWarning = document.getElementById("signup-caps-lock-warning");
-    const confirmCapsWarning = document.getElementById("confirm-caps-lock-warning");
-
-    const isCapsLockOn = event.getModifierState("CapsLock");
-
-    if (loginCapsWarning) {
-      loginCapsWarning.classList.toggle("hidden", !isCapsLockOn);
-    }
-
-    if (signupCapsWarning) {
-      signupCapsWarning.classList.toggle("hidden", !isCapsLockOn);
-    }
-    if (confirmCapsWarning) {
-      confirmCapsWarning.classList.toggle("hidden", !isCapsLockOn);
-    }
-  });
-}
 
 /* ── Form Submission handling ── */
 async function handleFormSubmit(e) {
