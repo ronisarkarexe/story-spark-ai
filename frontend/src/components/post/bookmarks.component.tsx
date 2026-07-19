@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDebounce } from "use-debounce";
+import Fuse from "fuse.js";
 import ExploreViewListComponent from "./post.view.list.component";
 import { Post } from "../../models/post";
 import { useGetMyBookmarksQuery } from "../../redux/apis/bookmark.api";
@@ -11,9 +13,9 @@ import { IStories } from "../stories/stories.view.component";
 const BookmarksComponent = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [debouncedSearch] = useDebounce(searchTerm, 400);
   const [size, setSize] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
-  const [sortBy, setSortBy] = useState<string>("newest");
 
   const query: Record<string, string | number> = {
     page,
@@ -42,41 +44,46 @@ const BookmarksComponent = () => {
     };
   }, []);
 
-  const filteredSessionStories = sessionStories.filter(
-    (story: IStories) =>
-      story &&
-      ((story.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (story.tag?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
-  );
+
 
   // Implement client-side instant search for bookmarks
-  const filteredPosts = allPosts.filter(
-    (story: Post) =>
-      story &&
-      ((story.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (story.tag?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (story.content?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
-  );
+  const postFuse = useMemo(() => {
+    return new Fuse(allPosts, {
+      keys: ["title", "tag", "content"],
+      threshold: 0.35,
+      ignoreLocation: true,
+      includeScore: true,
+      minMatchCharLength: 2,
+    });
+  }, [allPosts]);
 
-  // Sort posts client-side
-  const sortedPosts = [...filteredPosts].sort((a, b) => {
-    switch (sortBy) {
-      case "oldest":
-        return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
-      case "title-asc":
-        return (a.title || "").localeCompare(b.title || "");
-      case "title-desc":
-        return (b.title || "").localeCompare(a.title || "");
-      case "length-asc":
-        return (a.content || "").length - (b.content || "").length;
-      case "length-desc":
-        return (b.content || "").length - (a.content || "").length;
-      case "newest":
-      default:
-        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-    }
-  });
+  const storyFuse = useMemo(() => {
+    return new Fuse(sessionStories, {
+      keys: ["title", "tag", "content"],
+      threshold: 0.35,
+      ignoreLocation: true,
+      includeScore: true,
+      minMatchCharLength: 2,
+    });
+  }, [sessionStories]);
+
+
+  const filteredPosts = useMemo(() => {
+    const search = debouncedSearch.trim();
+
+    if (!search) return allPosts;
+
+    return postFuse.search(search).map((result) => result.item);
+  }, [debouncedSearch, allPosts, postFuse]);
+
+
+  const filteredSessionStories = useMemo(() => {
+    const search = debouncedSearch.trim();
+
+    if (!search) return sessionStories;
+
+    return storyFuse.search(search).map((result) => result.item);
+  }, [debouncedSearch, sessionStories, storyFuse]);
 
   return (
     <div className="pt-0 min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
@@ -84,12 +91,12 @@ const BookmarksComponent = () => {
         <div className="pt-4 pb-8 flex flex-col md:flex-row gap-6 items-center justify-between">
           <div className="w-full md:w-auto">
             <Link to="/">
-              <div className="group flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-full transition-all duration-300 shadow-sm border border-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-300 dark:border-slate-700">
+              <button className="group flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-full transition-all duration-300 shadow-sm border border-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-300 dark:border-slate-700">
                 <div className="bg-slate-50 dark:bg-slate-900 rounded-full w-8 h-8 flex items-center justify-center shadow-inner group-hover:-translate-x-1 transition-transform">
                   <i className="fa-solid fa-arrow-left text-sm"></i>
                 </div>
                 Return Home
-              </div>
+              </button>
             </Link>
           </div>
           <div className="w-full md:w-1/2 lg:w-1/3">
@@ -105,6 +112,24 @@ const BookmarksComponent = () => {
                   setPage(1);
                 }}
               />
+              {searchTerm !== debouncedSearch && (
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  Searching...
+                </p>
+              )}
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setPage(1);
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition-colors"
+                  aria-label="Clear search"
+                >
+                  <i className="fas fa-times-circle"></i>
+                </button>
+              )}
               <i className="fas fa-search absolute left-5 top-1/2 transform -translate-y-1/2 text-indigo-500 dark:text-indigo-400 text-lg"></i>
             </div>
           </div>
@@ -126,40 +151,22 @@ const BookmarksComponent = () => {
                 </p>
               </div>
               {activeTab === "posts" && allPosts.length > 0 && (
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center space-x-2">
-                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Sort By</label>
-                    <select
-                      className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                    >
-                      <option value="newest">Newest Bookmarked</option>
-                      <option value="oldest">Oldest Bookmarked</option>
-                      <option value="title-asc">Alphabetical (A-Z)</option>
-                      <option value="title-desc">Alphabetical (Z-A)</option>
-                      <option value="length-asc">Shortest First</option>
-                      <option value="length-desc">Longest First</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
-                    <select
-                      className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                      value={size}
-                      onChange={(e) => {
-                        setSize(Number(e.target.value));
-                        setPage(1);
-                      }}
-                    >
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                    <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
-                  </div>
+                <div className="flex items-center space-x-4">
+                  <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">Show</label>
+                  <select
+                    className="!rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500/20 bg-white text-slate-700 py-1.5 px-3 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                    value={size}
+                    onChange={(e) => {
+                      setSize(Number(e.target.value));
+                      setPage(1);
+                    }}
+                  >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                  <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider dark:text-gray-400">entries</span>
                 </div>
               )}
             </div>
@@ -169,22 +176,20 @@ const BookmarksComponent = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab("posts")}
-                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
-                  activeTab === "posts"
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
+                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${activeTab === "posts"
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
               >
                 Published Stories ({allPosts.length})
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("generated")}
-                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
-                  activeTab === "generated"
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
+                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${activeTab === "generated"
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
               >
                 Generated Drafts ({sessionStories.length})
               </button>
@@ -214,7 +219,7 @@ const BookmarksComponent = () => {
                   </div>
                 ) : (
                   <ExploreViewListComponent
-                    posts={sortedPosts}
+                    posts={filteredPosts}
                     isLoading={isLoading}
                   />
                 )

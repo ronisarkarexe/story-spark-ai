@@ -17,6 +17,7 @@ import {
   generateWithGeminiStories,
   generateRemixWithGemini,
   generateStoryContinuationWithGemini,
+  generateStoryContinuationMultipleWithGemini,
   translateStoryWithGemini,
   chatWithGemini,
 } from "./ai_model.utils";
@@ -41,6 +42,7 @@ const normalizeStoryPayload = (payload: IAIModel) => ({
   language: payload.language ?? "English",
   tone: payload.tone ?? undefined,
   genre: payload.genre ?? undefined,
+  targetAudience: payload.targetAudience ?? undefined,
   characters: payload.characters ?? undefined,
 });
 
@@ -63,7 +65,7 @@ const mapGenerationError = (error: unknown, message: string): never => {
 // Bug fix 1: quota.lifecycle owns rollback — no manual User.updateOne needed.
 // Bug fix 2: _token kept as unused param (quota handled upstream by middleware).
 const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal?: AbortSignal) => {
-  const { prompt, wordLength, numStories, language, tone, genre, characters } =
+  const { prompt, wordLength, numStories, language, tone, genre, targetAudience, characters } =
     normalizeStoryPayload(payload);
 
   try {
@@ -77,6 +79,7 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal
           signal,
           tone,
           genre,
+          targetAudience,
           characters,
         ),
       AUTHENTICATED_GENERATION_TIMEOUT_MS,
@@ -90,7 +93,7 @@ const aiModelGenerate = async (payload: IAIModel, _token?: ITokenPayload, signal
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel, signal?: AbortSignal) => {
-  const { prompt, wordLength, numStories, language, tone, genre, characters } =
+  const { prompt, wordLength, numStories, language, tone, genre, targetAudience, characters } =
     normalizeStoryPayload(payload);
 
   try {
@@ -104,6 +107,7 @@ const aiFreeModelGenerate = async (payload: IAIModel, signal?: AbortSignal) => {
           signal,
           tone,
           genre,
+          targetAudience,
           characters,
         ),
       FREE_GENERATION_TIMEOUT_MS,
@@ -244,6 +248,24 @@ const aiFreeStoryContinuation = async (payload: { prompt: string; language?: str
   }
 };
 
+const aiFreeStoryContinuationMultiple = async (
+  payload: { prompt: string; language?: string; count?: number },
+  signal?: AbortSignal
+) => {
+  const { prompt, language = "English", count = 3 } = payload;
+
+  try {
+    const result = await raceGenerationWithTimeout(
+      (s) => generateStoryContinuationMultipleWithGemini(prompt, count, language, s),
+      FREE_GENERATION_TIMEOUT_MS,
+      signal
+    );
+    return result;
+  } catch (error) {
+    mapGenerationError(error, "Story continuation generation failed.");
+  }
+};
+
 const aiModelChat = async (payload: IChatPayload, _token?: ITokenPayload, signal?: AbortSignal) => {
   const { message, history = [] } = payload;
 
@@ -284,9 +306,41 @@ const aiFreeModelChat = async (payload: IChatPayload, signal?: AbortSignal) => {
   }
 };
 
+const generateCharacterProfile = async (story: string) => {
+  try {
+    const characterPrompt = `
+Analyze the following story and extract all important characters.
+
+For each character provide:
+- name
+- role
+- personality
+- strengths
+- weaknesses
+- relationships
+
+Return the response only in JSON array format.
+
+Story:
+${story}
+`;
+
+    const result = await raceGenerationWithTimeout(
+      (signal) => generateWithGeminiStories(characterPrompt, 300, 1, "English", signal),
+      30000,
+    );
+
+    return result;
+  } catch (error) {
+    if (error instanceof GenerationTimeoutError || error instanceof ApiError) throw error;
+    mapGenerationError(error, "Failed to generate character profiles!");
+  }
+};
+
 export const AiModelService = {
   aiModelGenerate,
   aiFreeModelGenerate,
+  generateCharacterProfile,
   aiModelAlternateEndings,
   aiFreeModelAlternateEndings,
   aiModelRemix,
@@ -295,6 +349,7 @@ export const AiModelService = {
   aiFreeModelTranslate,
   aiModelStoryContinuation,
   aiFreeStoryContinuation,
+  aiFreeStoryContinuationMultiple,
   aiModelChat,
   aiFreeModelChat,
 };

@@ -1,20 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import ExploreViewListComponent from "./post.view.list.component";
 import ExploreFeatureComponent from "./post.feature.component";
 import { Link } from "react-router-dom";
 import { useGetPostListsQuery, useGetGenresQuery } from "../../redux/apis/post.api";
 import type { Post } from "../../models/post";
 import { useDebounced } from "../../hooks/global";
-import PaginationComponent from "../pagination/pagination.component";
+
 
 export const ExploreComponent = () => {
   const [sortBy, setSortBy] = useState<string>("createdAt");
   const [sortOrder, setSortOrder] = useState<string>("desc");
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [size, setSize] = useState<number>(10);
+  const size = 12;
   const [page, setPage] = useState<number>(1);
   const [featuredPost, setFeaturedPost] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
   const query: Record<string, string | number> = {
     page,
@@ -49,9 +50,10 @@ export const ExploreComponent = () => {
     setPage(1);
   };
 
-  const onPaginationChange = (page: number, pageSize: number) => {
-    setPage(page);
-    setSize(pageSize);
+  const loadMore = () => {
+    if (data?.meta && filteredPosts.length < data.meta.total) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   const handleTagClick = (tag: string) => {
@@ -71,6 +73,14 @@ export const ExploreComponent = () => {
   ).slice(0, 8);
 
   const availableGenres = genres ?? [];
+
+  const filteredSuggestions = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+    const term = searchTerm.toLowerCase();
+    const tagSuggestions = availableTags.filter(tag => tag.toLowerCase().includes(term));
+    const genreSuggestions = (availableGenres ?? []).filter(g => g.toLowerCase().includes(term)).map(g => `#${g.toLowerCase()}`);
+    return [...new Set([...tagSuggestions, ...genreSuggestions])].slice(0, 8);
+  }, [searchTerm, availableTags, availableGenres]);
 
   return (
     <div className="pt-0 min-h-screen bg-white text-slate-900 relative overflow-hidden transition-colors duration-300 dark:bg-[#0b1329] dark:text-white">
@@ -96,10 +106,39 @@ export const ExploreComponent = () => {
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
                   setPage(1);
+                  setIsDropdownOpen(true);
                 }}
+                onFocus={() => setIsDropdownOpen(true)}
+                onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
               />
 
               <i className="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+
+              {isDropdownOpen && searchTerm && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-2xl z-50 max-h-64 overflow-y-auto">
+                  {filteredSuggestions.length > 0 ? (
+                    filteredSuggestions.map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        onMouseDown={() => {
+                          setSearchTerm(suggestion);
+                          setIsDropdownOpen(false);
+                          setPage(1);
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"
+                      >
+                        <i className="fas fa-search text-slate-400 text-xs"></i>
+                        <span>{suggestion}</span>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                      <i className="fas fa-info-circle text-slate-400"></i>
+                      No suggestions found
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -107,19 +146,24 @@ export const ExploreComponent = () => {
         {/* Main Layout */}
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar */}
-          <div className="w-full md:w-64 flex-shrink-0">
+          <div className="w-full md:w-64 md:min-w-64 flex-shrink-0">
             <div className="sticky top-4 bg-gray-50 border border-gray-200 text-slate-900 backdrop-blur-xl rounded-2xl p-6 shadow-xl z-10 transition-colors duration-300 dark:bg-slate-900/50 dark:border-none dark:text-white">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   Filters
                 </h3>
 
-                <button
-                  onClick={resetAllStates}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  Reset
-                </button>
+                {(searchTerm ||
+                  selectedTags.length > 0 ||
+                  sortBy !== "createdAt" ||
+                  sortOrder !== "desc") && (
+                  <button
+                    onClick={resetAllStates}
+                    className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Reset
+                  </button>
+                )}
               </div>
 
               <div className="space-y-6">
@@ -211,8 +255,8 @@ export const ExploreComponent = () => {
           {/* Content */}
           <div className="flex-1 flex flex-col min-h-[70vh]">
             <div className={`${featuredPost ? "mb-6" : ""}`}>
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-4 items-center overflow-x-auto">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-wrap gap-4 items-center">
                   <h2
                     onClick={() => setFeaturedPost(false)}
                     className={`text-3xl font-extrabold mb-6 cursor-pointer transition-all duration-300 ${
@@ -238,24 +282,64 @@ export const ExploreComponent = () => {
                 </div>
 
                 <div className="flex items-center space-x-4">
-                  <select
-                    className="!rounded-button border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-gray-100 text-slate-900 py-1.5 px-3 outline-none transition-all appearance-none cursor-pointer dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                    value={size}
-                    onChange={(e) => {
-                      setSize(Number(e.target.value));
-                      setPage(1);
-                    }}
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
+                  {/* Entries dropdown removed for infinite scroll */}
                 </div>
               </div>
 
               {featuredPost && <ExploreFeatureComponent />}
             </div>
+
+            {/* Active Filters Summary */}
+            {(searchTerm.trim() !== "" || selectedTags.length > 0) && (
+              <div className="mb-6 flex flex-wrap items-center gap-3 animate-fade-in">
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  Active Filters:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {searchTerm.trim() !== "" && (
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 text-xs font-medium dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50 shadow-sm transition-all hover:bg-blue-100 dark:hover:bg-blue-900/50">
+                      <i className="fas fa-search text-[10px] opacity-70"></i>
+                      Search: "{searchTerm}"
+                      <button
+                        onClick={() => {
+                          setSearchTerm("");
+                          setPage(1);
+                        }}
+                        className="ml-1 hover:text-blue-900 dark:hover:text-blue-100 transition-colors cursor-pointer"
+                        aria-label="Remove search filter"
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </span>
+                  )}
+
+                  {selectedTags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs font-medium dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800/50 shadow-sm transition-all hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                    >
+                      <i className="fas fa-tag text-[10px] opacity-70"></i>
+                      {tag.startsWith("#") ? tag : `#${tag}`}
+                      <button
+                        onClick={() => handleTagClick(tag)}
+                        className="ml-1 hover:text-indigo-900 dark:hover:text-indigo-100 transition-colors cursor-pointer"
+                        aria-label={`Remove ${tag} filter`}
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </span>
+                  ))}
+
+                  <button
+                    onClick={resetAllStates}
+                    className="ml-2 text-xs font-bold text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 group cursor-pointer"
+                  >
+                    Clear All
+                    <i className="fas fa-trash-can text-[10px] group-hover:rotate-12 transition-transform"></i>
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="flex-grow">
               {!isLoading && filteredPosts.length === 0 ? (
@@ -292,17 +376,21 @@ export const ExploreComponent = () => {
               )}
             </div>
 
-            {!featuredPost && data?.meta && (
-
-              <div className="sticky bottom-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 z-20 mt-8 shadow-[0_-10px_40px_-10px_rgba(15,23,42,0.12)] transition-colors duration-300 dark:bg-[#0b1329]/80 dark:border-slate-800 dark:shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)]">
-                <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                  <PaginationComponent
-                    current={page}
-                    pageSize={size}
-                    total={data.meta.total}
-                    onChange={onPaginationChange}
-                  />
-                </div>
+            {!featuredPost && data?.meta && filteredPosts.length > 0 && filteredPosts.length < data.meta.total && (
+              <div className="flex justify-center mt-8 mb-8 z-20 relative">
+                <button
+                  onClick={loadMore}
+                  disabled={isLoading}
+                  className="cursor-pointer !rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 shadow-lg shadow-blue-500/30 transition-all duration-300 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <i className="fas fa-spinner fa-spin"></i> Loading...
+                    </span>
+                  ) : (
+                    "Load More"
+                  )}
+                </button>
               </div>
             )}
           </div>

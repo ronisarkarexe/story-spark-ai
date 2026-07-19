@@ -5,7 +5,7 @@ import { AIModelValidator } from "../app/modules/ai_model/ai_model.validation";
 import { ReviewValidator } from "../app/modules/review/review.validation";
 import validateRequest from "../app/middleware/validate.request";
 import auth from "../app/middleware/auth.middleware";
-import freeAiRateLimiter from "../app/middleware/free-ai.rate-limiter";
+import checkRequestLimit from "../app/middleware/check.request.limit";
 import storyGenerationRateLimiter from "../app/middleware/story.rate-limiter";
 import { ENUM_USER_ROLE } from "../enums/user";
 import catchAsync from "../shared/catch_async";
@@ -13,17 +13,38 @@ import sendResponse from "../shared/send_response";
 import httpStatus from "http-status";
 import { Request, Response } from "express";
 import piiScrubberMiddleware from "../app/middleware/pii_scrubber";
+import { generateStory } from "../services/ai.service";
+import { runWithQuotaCleanup } from "../app/modules/ai_model/quota.lifecycle";
+import rateLimit from "express-rate-limit";
 
 const router = express.Router();
+
+const MAX_PROMPT_LENGTH = 2000;
+
+const validatePromptLength = (prompt: string): void => {
+  if (!prompt || typeof prompt !== "string") {
+    throw new Error("Prompt is required and must be a string.");
+  }
+  if (prompt.length > MAX_PROMPT_LENGTH) {
+    throw new Error(`Prompt must not exceed ${MAX_PROMPT_LENGTH} characters.`);
+  }
+};
+
+const generateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 15,
+  keyGenerator: (req: Request & { user?: any }) => req.user?.id ?? req.ip ?? "unknown",
+  standardHeaders: true,
+  handler: (req: Request, res: Response) => {
+    res.status(429).json({ error: "Generation limit reached. Please try again in an hour." });
+  },
+});
 
 /** STORY CONTINUATION - single */
 router.post(
   "/continue",
-  // For authenticated users: apply per-user tier-aware limit (fixes #3023).
-  // For unauthenticated guests: fall back to the IP-based free limit.
-  // Both middlewares are intentionally stacked so unauthenticated requests
-  // still get the IP cap while authenticated users get the user-keyed one.
-  freeAiRateLimiter,
+  // Authenticated users get the per-user storyGenerationRateLimiter.
+  // Unauthenticated requests are rejected by auth middleware first.
   auth(
     ENUM_USER_ROLE.USER,
     ENUM_USER_ROLE.WRITER,
@@ -31,15 +52,35 @@ router.post(
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
   storyGenerationRateLimiter,
+  checkRequestLimit(),
   piiScrubberMiddleware,
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {
     const { prompt, language } = req.body as { prompt: string; language?: string };
-    const result = await AiModelService.aiModelStoryContinuation({ prompt, language });
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      data: result,
+    const guard = res.locals.quotaRefundGuard;
+
+    if (!guard) {
+      throw new Error(
+        "Quota guard missing — checkRequestLimit middleware is required"
+      );
+    }
+
+    validatePromptLength(prompt);
+
+    const controller = new AbortController();
+    req.on("close", () => controller.abort());
+
+    await runWithQuotaCleanup(guard, async () => {
+      const result = await AiModelService.aiModelStoryContinuation(
+        { prompt, language },
+        undefined,
+        controller.signal
+      );
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        data: result,
+      });
     });
   })
 );
@@ -53,15 +94,33 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
+  storyGenerationRateLimiter,
+  checkRequestLimit(),
   piiScrubberMiddleware,
   validateRequest(AIModelValidator.aiStoryContinuation),
   catchAsync(async (req: Request, res: Response) => {
     const { prompt, language, count } = req.body as { prompt: string; language?: string; count?: number };
-    const result = await AiModelService.aiFreeStoryContinuationMultiple({ prompt, language, count });
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      data: result,
+    const guard = res.locals.quotaRefundGuard;
+
+    if (!guard) {
+      throw new Error(
+        "Quota guard missing — checkRequestLimit middleware is required"
+      );
+    }
+
+    const controller = new AbortController();
+    req.on("close", () => controller.abort());
+
+    await runWithQuotaCleanup(guard, async () => {
+      const result = await AiModelService.aiFreeStoryContinuationMultiple(
+        { prompt, language, count },
+        controller.signal
+      );
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        data: result,
+      });
     });
   })
 );
@@ -77,6 +136,45 @@ router.post(
   ),
   validateRequest(ReviewValidator.createReview),
   ReviewController.createReview
+);
+
+/** GENERATE STORY */
+router.post(
+  "/generate",
+  auth(
+    ENUM_USER_ROLE.USER,
+    ENUM_USER_ROLE.WRITER,
+    ENUM_USER_ROLE.ADMIN,
+    ENUM_USER_ROLE.SUPER_ADMIN
+  ),
+  generateLimiter,
+  checkRequestLimit(),
+  validateRequest(AIModelValidator.aiStoryGenerate),
+  catchAsync(async (req: Request, res: Response) => {
+    const { prompt, provider, options } = req.body;
+    const guard = res.locals.quotaRefundGuard;
+
+    if (!guard) {
+      throw new Error(
+        "Quota guard missing — checkRequestLimit middleware is required"
+      );
+    }
+
+    validatePromptLength(prompt);
+
+    const controller = new AbortController();
+    req.on("close", () => controller.abort());
+
+    await runWithQuotaCleanup(guard, async () => {
+      const result = await generateStory(prompt, provider, options);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Story generated successfully in structured format!",
+        data: result,
+      });
+    });
+  })
 );
 
 export default router;

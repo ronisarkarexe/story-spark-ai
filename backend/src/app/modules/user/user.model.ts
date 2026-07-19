@@ -10,8 +10,9 @@ import { USER_STATUS } from "../../../enums/user_status";
 export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
   {
     email: { type: String, required: true, unique: true, lowercase: true },
-    name: { type: String, maxlength: 100, minlength: 5 },
+    name: { type: String, maxlength: 100, minlength: 1 },
     password: { type: String, required: false, default: "" },
+    passwordChangedAt: { type: Date },
     role: {
       type: String,
       required: true,
@@ -54,6 +55,9 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
     following: [{ type: Schema.Types.ObjectId, ref: "User" }],
     requestsThisMonth: { type: Number, default: 0 },
     lastRequestDate: { type: Date, default: null },
+    subscriptionExpiry: { type: Date, default: null },
+    lastPaymentId: { type: String, default: "" },
+    lastOrderId: { type: String, default: "" },
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     isApplyForWriter: { type: Boolean, default: false },
     tokenVersion: { type: Number, default: 0 },
@@ -99,6 +103,9 @@ UserSchema.pre("save", async function (next) {
   const user = this;
   if (!user.isModified("password")) {
     return next();
+  }
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date(Date.now() - 1000);
   }
 
   // Only hash password if it exists, is not empty, and has been modified (for password-based auth)

@@ -61,6 +61,9 @@ const ForgotPasswordComponent = () => {
   const [expiredAt, setExpiredAt] = useState<number>(0);
 
   const password = watch("password") || "";
+  const confirmPassword = watch("confirmPassword") || "";
+  const passwordsMatch =
+    password.length > 0 && password === confirmPassword;
 
   const getApiErrorMessage = (error: unknown, fallback: string): string => {
     if (!error || typeof error !== "object") return fallback;
@@ -135,8 +138,6 @@ const ForgotPasswordComponent = () => {
           "Failed to request OTP. Please ensure email is registered.",
         ),
       );
-      console.log("error: ", error);
-    } finally {
       setIsBusy(false);
     }
   };
@@ -172,9 +173,7 @@ const ForgotPasswordComponent = () => {
           "OTP verification failed. Please check the code and try again.",
         ),
       );
-      console.log("error: ", error);
     } finally {
-      setIsBusy(false);
     }
   };
 
@@ -210,7 +209,6 @@ const ForgotPasswordComponent = () => {
       toast.error(
         getApiErrorMessage(error, "Password reset failed. Please restart the process."),
       );
-      console.log("error: ", error);
     } finally {
       setIsBusy(false);
     }
@@ -240,7 +238,6 @@ const ForgotPasswordComponent = () => {
       }
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, "Failed to resend OTP. Please try again."));
-      console.log("resend error: ", error);
     } finally {
       setIsBusy(false);
     }
@@ -300,6 +297,7 @@ const ForgotPasswordComponent = () => {
                 label="OTP"
                 name="otp"
                 placeholder="Enter the 6-digit OTP"
+                autoFocus={true}
                 required={true}
                 icon="fas fa-key"
                 register={register}
@@ -392,9 +390,31 @@ const ForgotPasswordComponent = () => {
                 required={true}
                 icon="fas fa-eye"
                 register={register}
+                
               />
-
-              <SSButton text="Reset Password" type="submit" isLoading={isBusy} />
+                  {confirmPassword.length > 0 && (
+                    <p
+                      className={`text-xs font-semibold ${
+                        passwordsMatch
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {passwordsMatch
+                        ? "✅ Passwords match"
+                        : "❌ Passwords do not match"}
+                    </p>
+                  )}
+              <SSButton text="Reset Password" type="submit" isLoading={isBusy}
+                disabled={
+                    !passwordChecks.length ||
+                    !passwordChecks.uppercase ||
+                    !passwordChecks.lowercase ||
+                    !passwordChecks.number ||
+                    !passwordChecks.special ||
+                    !passwordsMatch
+                }
+              />
             </form>
           )}
 

@@ -1,5 +1,5 @@
-import ReactFlow from "reactflow";
-import "reactflow/dist/style.css";
+import { ReactFlow } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 
 const nodes = [
   {

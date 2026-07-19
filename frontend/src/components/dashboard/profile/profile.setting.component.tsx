@@ -1,4 +1,5 @@
 import { useState, ChangeEvent, FormEvent } from "react";
+import { FaXTwitter } from "react-icons/fa6";
 import { User } from "../../../models/user";
 
 interface ProfileSettingComponentProps {
@@ -74,7 +75,7 @@ export const ProfileSettingComponent = ({
   };
 
   const inputClassName =
-    "w-full px-4 py-2 border border-slate-350 rounded-lg bg-white text-slate-800 dark:bg-slate-900/70 dark:text-gray-100 dark:border-slate-700/50 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition";
+    "w-full px-4 py-2 border border-slate-300 rounded-lg bg-white !text-black font-medium dark:bg-slate-900/70 dark:!text-white dark:border-slate-700/50 !placeholder-gray-600 disabled:!text-gray-800 disabled:bg-gray-100 disabled:!opacity-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition";
 
   return (
     <div className="w-full">
@@ -190,14 +191,8 @@ export const ProfileSettingComponent = ({
                       htmlFor="twitter"
                       className="block text-sm font-medium text-slate-600 dark:text-gray-400 mb-1 flex items-center"
                     >
-                      <svg
-                        className="w-5 h-5 mr-2 text-blue-400"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                      </svg>
-                      Twitter
+                      <FaXTwitter className="w-5 h-5 mr-2 text-blue-400" />
+                      X
                     </label>
                     <input
                       type="url"
@@ -206,7 +201,7 @@ export const ProfileSettingComponent = ({
                       value={formData.social.twitter}
                       onChange={handleChange}
                       className={inputClassName}
-                      placeholder="https://twitter.com/username"
+                      placeholder="https://x.com/username"
                     />
                   </div>
 

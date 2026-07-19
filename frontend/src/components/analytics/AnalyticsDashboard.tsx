@@ -31,8 +31,8 @@ interface IGenre { genre: string; count: number; }
 interface IWordCloud { text: string; value: number; }
 interface IHour { hour: number; count: number; }
 
-const HOUR_LABELS = ["12am","1am","2am","3am","4am","5am","6am","7am","8am","9am","10am","11am",
-  "12pm","1pm","2pm","3pm","4pm","5pm","6pm","7pm","8pm","9pm","10pm","11pm"];
+const HOUR_LABELS = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am",
+  "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"];
 
 export default function AnalyticsDashboard() {
   const [overview, setOverview] = useState<IOverview | null>(null);
@@ -42,7 +42,7 @@ export default function AnalyticsDashboard() {
   const [hours, setHours] = useState<IHour[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const [searchWord, setSearchWord] = useState("");
   const token = getFromLocalStorage(AUTH_KEY) || "";
 
   const fetchData = async (
@@ -114,6 +114,10 @@ export default function AnalyticsDashboard() {
   );
 
   const maxHour = hours.reduce((max, h) => h.count > max.count ? h : max, hours[0] || { hour: 0, count: 0 });
+  const consistencyScore = Math.min(
+    100,
+    (overview?.currentStreak || 0) * 10
+  );
 
   // Derived Data
   const storyLengthData = overview?.storyLengths ? [
@@ -124,7 +128,20 @@ export default function AnalyticsDashboard() {
 
   // Sort heatmap by date for line chart timeline
   const timelineData = [...heatmap].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const filteredWords = wordCloud.filter((word) =>
+    word.text.toLowerCase().includes(searchWord.toLowerCase())
+  );
+  const sortedGenres = [...genres].sort(
+    (a, b) => b.count - a.count
+  );
 
+  const totalGenreStories = genres.reduce(
+    (sum, g) => sum + g.count,
+    0
+  );
+  const recentActivity = timelineData
+    .slice(-7)
+    .reduce((sum, d) => sum + d.count, 0);
   const badges = [
     { id: "first_story", name: "First Story", desc: "Write your first story", icon: "✨", unlocked: (overview?.totalStories || 0) > 0 },
     { id: "novelist", name: "Novelist", desc: "Write over 10,000 words", icon: "📚", unlocked: (overview?.totalWords || 0) > 10000 },
@@ -132,6 +149,21 @@ export default function AnalyticsDashboard() {
     { id: "popular", name: "Popular Author", desc: "Receive 100+ total views", icon: "🌟", unlocked: (overview?.totalViews || 0) >= 100 },
     { id: "engaging", name: "Engaging Storyteller", desc: "Receive 50+ total likes", icon: "💖", unlocked: (overview?.totalLikes || 0) >= 50 },
   ];
+  const unlockedCount = badges.filter(
+    (b) => b.unlocked
+  ).length;
+
+  const copySummary = () => {
+  navigator.clipboard.writeText(`
+    Stories: ${overview?.totalStories || 0}
+    Words: ${overview?.totalWords || 0}
+    Current Streak: ${overview?.currentStreak || 0}
+    Likes: ${overview?.totalLikes || 0}
+    Views: ${overview?.totalViews || 0}
+      `).catch(() => {});
+  alert("Analytics copied!");
+};
+
 
   return (
     <div className="min-h-screen bg-[#0d0d14] text-white px-6 py-10">
@@ -139,25 +171,34 @@ export default function AnalyticsDashboard() {
 
         {/* Header */}
         {/* Header */}
-<div className="flex items-center justify-between mb-10">
-  <div>
-    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-      📊 Story Analytics
-    </h1>
-    <p className="text-white/40 mt-2">
-      Your personal writing insights and patterns
-    </p>
-  </div>
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              📊 Story Analytics
+            </h1>
+            <p className="text-white/40 mt-2">
+              Your personal writing insights and patterns
+            </p>
+          </div>
 
-  <Link
-   to="/"
-    className="px-4 py-2 rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/30 transition"
-  >
-    ← Back to Home
-  </Link>
-</div>
+          <div className="flex gap-3">
+            <button
+              onClick={copySummary}
+              className="px-4 py-2 rounded-xl bg-green-500/20 border border-green-400/30"
+            >
+              📋 Copy Stats
+            </button>
+
+            <Link
+              to="/"
+              className="px-4 py-2 rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/30 transition"
+            >
+              ← Back to Home
+            </Link>
+          </div>
+        </div>
         {/* Overview Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
           {[
             { label: "Stories", value: overview?.totalStories || 0, icon: "📖" },
             { label: "Words Written", value: (overview?.totalWords || 0).toLocaleString(), icon: "✍️" },
@@ -165,6 +206,9 @@ export default function AnalyticsDashboard() {
             { label: "Longest Streak", value: `${overview?.longestStreak || 0}d`, icon: "🏆" },
             { label: "Total Likes", value: overview?.totalLikes || 0, icon: "❤️" },
             { label: "Total Views", value: overview?.totalViews || 0, icon: "👁️" },
+            {
+              label: "Consistency", value: `${consistencyScore}%`, icon: "⭐"
+            }
           ].map((card) => (
             <div key={card.label} className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
               <div className="text-2xl mb-1">{card.icon}</div>
@@ -177,6 +221,10 @@ export default function AnalyticsDashboard() {
         {/* Achievements */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-10">
           <h2 className="text-xl font-bold mb-4 text-white">🏆 Achievements</h2>
+          <p className="text-indigo-400 mb-4">
+            {unlockedCount}/{badges.length}
+            achievements unlocked
+          </p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {badges.map(badge => (
               <div key={badge.id} className={`p-4 rounded-xl border text-center transition-all ${badge.unlocked ? "bg-indigo-500/10 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]" : "bg-white/5 border-white/10 opacity-50 grayscale"}`}>
@@ -192,15 +240,27 @@ export default function AnalyticsDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
           {/* Genre Distribution */}
+
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <h2 className="text-lg font-semibold mb-4 text-indigo-300">🎭 Genre Distribution</h2>
+            <p className="text-sm text-white/50 mb-3">
+              Total Stories Categorized: {totalGenreStories}
+            </p>
             {genres.length === 0 ? (
               <p className="text-white/30 text-center py-8">No genre data yet</p>
             ) : (
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
-                  <Pie data={genres} dataKey="count" nameKey="genre" cx="50%" cy="50%" outerRadius={90} label={({ name }: { name?: string }) => name ?? ""}>
-                    {genres.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  <Pie data={sortedGenres} dataKey="count" nameKey="genre" cx="50%" cy="50%" outerRadius={90} label={({
+                    name,
+                    percent,
+                  }: {
+                    name?: string;
+                    percent?: number;
+                  }) =>
+                    `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                  }>
+                    {sortedGenres.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
                   <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #ffffff20", borderRadius: 8 }} />
                 </PieChart>
@@ -211,7 +271,9 @@ export default function AnalyticsDashboard() {
           {/* Productive Hours */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <h2 className="text-lg font-semibold mb-1 text-indigo-300">⏰ Most Productive Hours</h2>
-            {maxHour && <p className="text-xs text-white/40 mb-4">You write best at {HOUR_LABELS[maxHour.hour]}</p>}
+              <div className="text-green-400 text-sm mb-2">
+                Best Writing Time: {HOUR_LABELS[maxHour.hour]}
+              </div>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={hours.map(h => ({ ...h, label: HOUR_LABELS[h.hour] }))}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
@@ -228,6 +290,9 @@ export default function AnalyticsDashboard() {
           {/* Timeline */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <h2 className="text-lg font-semibold mb-4 text-indigo-300">📈 Creation Timeline</h2>
+            <div className="text-green-400 text-sm mb-3">
+  Last 7 Days: {recentActivity} stories
+</div>
             {timelineData.length === 0 ? (
               <p className="text-white/30 text-center py-8">No data to display</p>
             ) : (
@@ -279,7 +344,15 @@ export default function AnalyticsDashboard() {
                   return (
                     <div
                       key={dateStr}
-                      title={`${dateStr}: ${count} stories`}
+                      title={`${dateStr}
+                      Stories: ${count}
+                      ${
+                        count >= 3
+                          ? "Very Active"
+                          : count > 0
+                          ? "Active"
+                          : "No Activity"
+                      }`}
                       className="w-3 h-3 rounded-sm"
                       style={{ backgroundColor: `rgba(99, 102, 241, ${opacity})` }}
                     />
@@ -300,11 +373,18 @@ export default function AnalyticsDashboard() {
         {/* Word Cloud */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
           <h2 className="text-lg font-semibold mb-4 text-indigo-300">☁️ Your Story Themes</h2>
+          <input
+            type="text"
+            value={searchWord}
+            onChange={(e) => setSearchWord(e.target.value)}
+            placeholder="Search themes..."
+            className="w-full mb-4 p-2 rounded-lg bg-white/10 border border-white/20"
+          />
           {wordCloud.length === 0 ? (
             <p className="text-white/30 text-center py-8">No stories yet — generate some!</p>
           ) : (
             <div className="flex flex-wrap gap-2 justify-center py-4">
-              {wordCloud.map((word, i) => {
+              {filteredWords.map((word, i) => {
                 const size = Math.max(12, Math.min(36, 12 + (word.value / wordCloud[0].value) * 24));
                 return (
                   <span

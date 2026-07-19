@@ -8,9 +8,13 @@ export interface IUser {
   name: string;
   email: string;
   password?: string;
+  passwordChangedAt?: Date;
   role: string;
   status: string;
   subscriptionType: SubscriptionType;
+  subscriptionExpiry?: Date;
+  lastPaymentId?: string;
+  lastOrderId?: string;
   postsCount: number;
   followers: Types.ObjectId[];
   following: Types.ObjectId[];
