@@ -1,6 +1,6 @@
 import { Response } from "express";
 import config from "../config";
-
+import { durationToMilliseconds } from "./duration.util";
 const isProd = config.env === "production";
 
 /**
@@ -24,8 +24,8 @@ export const setRefreshTokenCookie = (
     refreshToken: string
 ): void => {
     res.cookie("refreshToken", refreshToken, {
-        ...cookieOptions,
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      ...cookieOptions,
+      maxAge: durationToMilliseconds(config.jwt.refresh_expires_in ?? "7d"),
     });
 };
 
